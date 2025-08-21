@@ -133,7 +133,7 @@ public class PartitionerServiceCreatePartitionTests
 
 		final List<Partition> partitions = partitionerService.createPartition0(PartitionRequestFactory.builder().setConfig(config).build());
 		assertThat(partitions).hasSize(1); // guard
-		final Partition fullyLoadedPartition = partitionerService.loadWithAllRecords(partitions.get(0));
+		final Partition fullyLoadedPartition = partitionerService.loadWithAllRecords(partitions.getFirst());
 
 		assertThat(partitions).isNotNull();
 		assertThat(partitions).hasSize(1);
@@ -141,7 +141,7 @@ public class PartitionerServiceCreatePartitionTests
 
 		assertThat(fullyLoadedPartition.getRecordsFlat()).isNotNull();
 		assertThat(fullyLoadedPartition.getRecordsFlat()).hasSize(1);
-		assertThat(fullyLoadedPartition.getRecordsFlat().get(0)).isEqualTo(asTableRef(payment));
+		assertThat(fullyLoadedPartition.getRecordsFlat().getFirst()).isEqualTo(asTableRef(payment));
 	}
 
 	/**
@@ -243,15 +243,15 @@ public class PartitionerServiceCreatePartitionTests
 		//
 		// verify
 		assertThat(partitions).isNotNull();
-		assertThat(partitions.get(0).getConfig()).isEqualTo(config);
+		assertThat(partitions.getFirst().getConfig()).isEqualTo(config);
 
-		assertThat(partitions.get(0).getConfig().getLines()).hasSize(3); // the config has no more or less lines than it had before
+		assertThat(partitions.getFirst().getConfig().getLines()).hasSize(3); // the config has no more or less lines than it had before
 
-		assertThat(partitions.get(0).getRecordsFlat()).isNotNull();
-		assertThat(partitions.get(0).getRecordsFlat()).hasSize(3);
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(order));
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(invoice));
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(payment));
+		assertThat(partitions.getFirst().getRecordsFlat()).isNotNull();
+		assertThat(partitions.getFirst().getRecordsFlat()).hasSize(3);
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(order));
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(invoice));
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(payment));
 	}
 
 	/**
@@ -338,10 +338,10 @@ public class PartitionerServiceCreatePartitionTests
 		InterfaceWrapperHelper.save(order2);
 
 		final List<Partition> partitions = partitionerService.createPartition0(PartitionRequestFactory.builder().setConfig(config).build());
-		assertThat(partitions.get(0).getRecordsFlat()).hasSize(3);
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(order));
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(orderLine));
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(invoice));
+		assertThat(partitions.getFirst().getRecordsFlat()).hasSize(3);
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(order));
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(orderLine));
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(invoice));
 
 		return partitions;
 	}
@@ -380,17 +380,17 @@ public class PartitionerServiceCreatePartitionTests
 		//
 		// verify
 		assertThat(partitions).isNotNull();
-		assertThat(partitions.get(0).getConfig()).isEqualTo(config);
+		assertThat(partitions.getFirst().getConfig()).isEqualTo(config);
 
-		assertThat(partitions.get(0).getConfig().getLines()).hasSize(1); // the config has no more or less lines than it had before
-		assertThat(partitions.get(0).getConfig().getLines().get(0).getReferences()).hasSize(1); // the single config line has no more or less references than it had before.
+		assertThat(partitions.getFirst().getConfig().getLines()).hasSize(1); // the config has no more or less lines than it had before
+		assertThat(partitions.getFirst().getConfig().getLines().getFirst().getReferences()).hasSize(1); // the single config line has no more or less references than it had before.
 
-		assertThat(partitions.get(0).getRecordsFlat()).isNotNull();
-		assertThat(partitions.get(0).getRecordsFlat()).hasSize(2);
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(invoice));
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(creditmemo));
+		assertThat(partitions.getFirst().getRecordsFlat()).isNotNull();
+		assertThat(partitions.getFirst().getRecordsFlat()).hasSize(2);
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(invoice));
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(creditmemo));
 
-		return partitions.get(0);
+		return partitions.getFirst();
 	}
 
 	private Partition testWithOrderAndInvoice(final PartitionConfig config)
@@ -413,7 +413,7 @@ public class PartitionerServiceCreatePartitionTests
 				.setConfig(config)
 				.build();
 		final List<Partition> partitions = partitionerService.createPartition0(otherConfig);
-		final Partition fullyLoadedPartition = partitionerService.loadWithAllRecords(partitions.get(0));
+		final Partition fullyLoadedPartition = partitionerService.loadWithAllRecords(partitions.getFirst());
 
 		//
 		// verify
@@ -488,9 +488,9 @@ public class PartitionerServiceCreatePartitionTests
 
 		final List<Partition> partitions = partitionerService.createPartition0(PartitionRequestFactory.builder().setConfig(config).build());
 
-		assertThat(partitions.get(0).getRecordsFlat()).hasSize(2);
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(request));
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(order));
+		assertThat(partitions.getFirst().getRecordsFlat()).hasSize(2);
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(request));
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(order));
 	}
 
 	@Test
@@ -517,7 +517,7 @@ public class PartitionerServiceCreatePartitionTests
 		final List<Partition> partitions = partitionerService.createPartition0(
 				PartitionRequestFactory.builder().setConfig(config).build());
 
-		final Partition fullyLoadedPartition = partitionerService.loadWithAllRecords(partitions.get(0));
+		final Partition fullyLoadedPartition = partitionerService.loadWithAllRecords(partitions.getFirst());
 
 		assertThat(fullyLoadedPartition.getRecordsFlat()).contains(asTableRef(request2)); // request2 shall be in the partion
 		assertThat(fullyLoadedPartition.getRecordsFlat()).doesNotContain(asTableRef(order2)); // order2 is not referenced by request2 and shall therefore not me in the partition
@@ -596,11 +596,11 @@ public class PartitionerServiceCreatePartitionTests
 
 		//
 		// verify that the unrelated request2 is in one partition and the other three interconnected connected records are in the other partition
-		assertThat(partitions.get(0).getRecordsFlat()).hasSize(1);
-		assertThat(partitions.get(0).getRecordsFlat()).contains(asTableRef(request2));
-		assertThat(partitions.get(0).getRecordsFlat()).doesNotContain(asTableRef(order));
-		assertThat(partitions.get(0).getRecordsFlat()).doesNotContain(asTableRef(request));
-		assertThat(partitions.get(0).getRecordsFlat()).doesNotContain(asTableRef(invoice));
+		assertThat(partitions.getFirst().getRecordsFlat()).hasSize(1);
+		assertThat(partitions.getFirst().getRecordsFlat()).contains(asTableRef(request2));
+		assertThat(partitions.getFirst().getRecordsFlat()).doesNotContain(asTableRef(order));
+		assertThat(partitions.getFirst().getRecordsFlat()).doesNotContain(asTableRef(request));
+		assertThat(partitions.getFirst().getRecordsFlat()).doesNotContain(asTableRef(invoice));
 
 		assertThat(partitions.get(1).getRecordsFlat()).hasSize(3);
 		assertThat(partitions.get(1).getRecordsFlat()).doesNotContain(asTableRef(request2));
@@ -633,8 +633,8 @@ public class PartitionerServiceCreatePartitionTests
 
 		// expecting one partition with invoice1, because the partitioner only looked at that invoice
 		assertThat(partitions).hasSize(1);
-		assertThat(partitions.get(0).getRecordsFlat()).hasSize(1);
-		assertThat(partitions.get(0).getRecordsFlat().get(0)).isEqualTo(TableRecordReference.ofOrNull(invoice1));
+		assertThat(partitions.getFirst().getRecordsFlat()).hasSize(1);
+		assertThat(partitions.getFirst().getRecordsFlat().getFirst()).isEqualTo(TableRecordReference.ofOrNull(invoice1));
 	}
 
 	/**
@@ -662,9 +662,9 @@ public class PartitionerServiceCreatePartitionTests
 
 		// expecting two partitions because the partitioner looked at each config line and found one partition for each line
 		assertThat(partitions).hasSize(2);
-		assertThat(partitions.get(0).getRecordsFlat()).hasSize(1);
-		assertThat(partitions.get(0).getRecordsFlat().get(0)).isEqualTo(TableRecordReference.ofOrNull(invoice1));
+		assertThat(partitions.getFirst().getRecordsFlat()).hasSize(1);
+		assertThat(partitions.getFirst().getRecordsFlat().getFirst()).isEqualTo(TableRecordReference.ofOrNull(invoice1));
 		assertThat(partitions.get(1).getRecordsFlat()).hasSize(1);
-		assertThat(partitions.get(1).getRecordsFlat().get(0)).isEqualTo(TableRecordReference.ofOrNull(order1));
+		assertThat(partitions.get(1).getRecordsFlat().getFirst()).isEqualTo(TableRecordReference.ofOrNull(order1));
 	}
 }

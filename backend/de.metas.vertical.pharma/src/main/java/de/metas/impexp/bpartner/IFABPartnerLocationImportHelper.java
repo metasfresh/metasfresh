@@ -85,7 +85,7 @@ import java.util.stream.Collectors;
 		{
 			if (previousImportRecordsHaveAnEqualAddress)
 			{
-				bpartnerLocation = importRecordsWithEqualAddresses.get(0).getC_BPartner_Location();
+				bpartnerLocation = importRecordsWithEqualAddresses.getFirst().getC_BPartner_Location();
 			}
 
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
@@ -132,7 +132,7 @@ import java.util.stream.Collectors;
 
 		if (filtered.size() > 0)
 		{
-			final I_C_BPartner_Location bpartnerLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(importRecord.getC_BPartner_ID(), matchedAddreses.get(0).getBpLocationId()));
+			final I_C_BPartner_Location bpartnerLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(importRecord.getC_BPartner_ID(), matchedAddreses.getFirst().getBpLocationId()));
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
 			return bpartnerLocation;
 		}

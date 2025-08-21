@@ -105,7 +105,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	{
 		final GroupId groupId = extractSingleGroupId(invoiceCandidates);
 
-		final I_C_Order order = invoiceCandidates.get(0).getC_Order();
+		final I_C_Order order = invoiceCandidates.getFirst().getC_Order();
 		if (order == null)
 		{
 			throw new AdempiereException("Invoice candidate has no order: " + invoiceCandidates);

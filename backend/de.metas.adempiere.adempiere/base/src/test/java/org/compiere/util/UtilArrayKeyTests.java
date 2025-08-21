@@ -59,8 +59,8 @@ public class UtilArrayKeyTests
 	@Test
 	public void integerArrarysArenotEqual()
 	{
-		final Integer[] intArray1 = new Integer[] { new Integer(1), new Integer(2) };
-		final Integer[] intArray2 = new Integer[] { new Integer(1), new Integer(2) };
+		final Integer[] intArray1 = new Integer[] { Integer.valueOf(1), Integer.valueOf(2) };
+		final Integer[] intArray2 = new Integer[] { Integer.valueOf(1), Integer.valueOf(2) };
 
 		assertTrue(intArray1[0].equals(intArray2[0]));
 		assertTrue(intArray1[1].equals(intArray2[1]));
@@ -72,8 +72,8 @@ public class UtilArrayKeyTests
 	@Test
 	public void arraysKeyWithIntegerAreEqual()
 	{
-		final Util.ArrayKey key1 = Util.mkKey(new Integer(1), new Integer(2));
-		final Util.ArrayKey key2 = Util.mkKey(new Integer(1), new Integer(2));
+		final Util.ArrayKey key1 = Util.mkKey(Integer.valueOf(1), Integer.valueOf(2));
+		final Util.ArrayKey key2 = Util.mkKey(Integer.valueOf(1), Integer.valueOf(2));
 
 		assertTrue(key1.equals(key2));
 		assertTrue(key2.equals(key1));

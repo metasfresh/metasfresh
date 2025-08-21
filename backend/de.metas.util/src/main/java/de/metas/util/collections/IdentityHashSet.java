@@ -23,6 +23,7 @@ package de.metas.util.collections;
  */
 
 
+import java.io.Serial;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.IdentityHashMap;
@@ -45,6 +46,7 @@ public class IdentityHashSet<E> extends AbstractSet<E>
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 2272822291760142606L;
 
 	// Dummy value to associate with an Object in the backing Map

@@ -75,12 +75,12 @@ public class AttachmentEntryServiceTest
 		assertThat(bpartnerRecordEntries).hasSize(2);
 		// we need to compare them without linked records because productRecordEntries.get(1) now also has the product; also note that the younger entry is first in the list
 		assertThat(bpartnerRecordEntries.get(1).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
-		assertThat(bpartnerRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry2);
+		assertThat(bpartnerRecordEntries.getFirst()).isEqualTo(bpartnerAttachmentEntry2);
 
 		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
 		assertThat(productRecordEntries).hasSize(1);
 		// we need to compare them without linked records because productRecordEntries.get(0) has the product and bpartnerAttachmentEntry1 has the bpartner
-		assertThat(productRecordEntries.get(0).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
+		assertThat(productRecordEntries.getFirst().withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class AttachmentEntryServiceTest
 		// the entries to productRecord shall not be changed by the addition uf an entry for bpartnerRecord
 		assertThat(productRecordEntries).hasSize(1);
 		// we need to compare them without linked records because productRecordEntries.get(0) has the product and bpartnerAttachmentEntry1 has the bpartner
-		assertThat(productRecordEntries.get(0).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
+		assertThat(productRecordEntries.getFirst().withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
 	}
 
 	@Test
@@ -116,7 +116,7 @@ public class AttachmentEntryServiceTest
 
 		final List<AttachmentEntry> entriesOfProductRecord2 = attachmentEntryService.getByReferencedRecord(productRecord2);
 		assertThat(entriesOfProductRecord2).hasSize(1);
-		assertThat(entriesOfProductRecord2.get(0)).isEqualTo(entry);
+		assertThat(entriesOfProductRecord2.getFirst()).isEqualTo(entry);
 	}
 
 	@Test
@@ -229,7 +229,7 @@ public class AttachmentEntryServiceTest
 		assertThat(filteredAttachments).isNotEmpty();
 		assertThat(filteredAttachments.size()).isEqualTo(1);
 
-		final EmailAttachment attachmentEntry = filteredAttachments.get(0);
+		final EmailAttachment attachmentEntry = filteredAttachments.getFirst();
 		assertThat(attachmentEntry.getFilename()).isEqualTo("bPartnerAttachment_with_tags");
 		assertThat(attachmentEntry.getAttachmentDataSupplier().get()).isEqualTo("bPartnerAttachment_with_tags.data".getBytes());
 	}

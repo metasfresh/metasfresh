@@ -161,6 +161,6 @@ public class MTree_NodeCMC extends X_AD_TreeNodeCMC
 	 */
 	public void setParent_ID (int Parent_ID)
 	{
-		set_Value ("Parent_ID", new Integer(Parent_ID));
+		set_Value ("Parent_ID", Integer.valueOf(Parent_ID));
 	}
 }	//	MTree_NodeCMC

@@ -107,7 +107,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		//
 		// Check produced schedules count: it shall be only one
 		Assertions.assertEquals(1, schedules.size(), "Only one receipt schedule shall be produced");
-		final I_M_ReceiptSchedule schedule = schedules.get(0);
+		final I_M_ReceiptSchedule schedule = schedules.getFirst();
 
 		//
 		// Check Schedule's Warehouses
@@ -137,7 +137,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		// Check generated receipts count: it shall be only one
 		final List<I_M_InOut> receipts = receiptGenerateResult.getInOuts();
 		Assertions.assertEquals(1, receipts.size(), "Only one receipt shall be produced");
-		final I_M_InOut receipt = receipts.get(0);
+		final I_M_InOut receipt = receipts.getFirst();
 		List<I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt, I_M_InOutLine.class);
 
 		// Check receipt's warehouse
@@ -150,13 +150,13 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceiptLines(receiptLines, null);
 		Assertions.assertNotNull(movements, "Movement shall be generated");
 		Assertions.assertEquals(1, movements.size(), "Only one movement shall be generated");
-		final I_M_Movement movement = movements.get(0);
+		final I_M_Movement movement = movements.getFirst();
 
 		//
 		// Check Movement Line
 		final List<I_M_MovementLine> movementLines = Services.get(IMovementDAO.class).retrieveLines(movement);
 		Assertions.assertEquals(1, movementLines.size(), "Movement shall have only one line");
-		final I_M_MovementLine movementLine = movementLines.get(0);
+		final I_M_MovementLine movementLine = movementLines.getFirst();
 		// Check Movement Line warehouses
 		Assertions.assertEquals(
 				receipt.getM_Warehouse_ID(),

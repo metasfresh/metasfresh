@@ -466,7 +466,7 @@ public class PartitionerService implements IPartitionerService
 
 			// also make sure that there is a line for the referenced table
 			// otherwise, the view DLM_Partition_Record_V and therefore the method loadForTable() doesn't work.
-			if (!config.getLine(referencedTableName).isPresent())
+			if (config.getLine(referencedTableName).isEmpty())
 			{
 				builder
 						.setChanged(true)

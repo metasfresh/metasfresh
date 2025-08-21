@@ -69,7 +69,7 @@ public class C_Invoice_Candidate
 			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 			final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-			final I_C_ILCandHandler handler = handlerDAO.retrieveForTable(ctx, ManualCandidateHandler.MANUAL).get(0);
+			final I_C_ILCandHandler handler = handlerDAO.retrieveForTable(ctx, ManualCandidateHandler.MANUAL).getFirst();
 
 			final LocalDate today = invoiceCandBL.getToday();
 			final Timestamp todayAsTimestamp = TimeUtil.asTimestamp(today, orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID())));

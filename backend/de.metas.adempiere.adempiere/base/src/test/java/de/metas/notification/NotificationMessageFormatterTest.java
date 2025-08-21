@@ -1,14 +1,6 @@
 package de.metas.notification;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.text.MessageFormat;
-import java.util.HashMap;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -16,9 +8,15 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.text.MessageFormat;
+import java.util.HashMap;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

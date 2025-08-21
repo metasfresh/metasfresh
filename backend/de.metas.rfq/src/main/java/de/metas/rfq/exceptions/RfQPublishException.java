@@ -32,9 +32,9 @@ public class RfQPublishException extends RfQException
 {
 	public static final RfQPublishException wrapIfNeeded(final Throwable e)
 	{
-		if (e instanceof RfQPublishException)
+		if (e instanceof RfQPublishException exception)
 		{
-			return (RfQPublishException)e;
+			return exception;
 		}
 
 		final Throwable cause = extractCause(e);

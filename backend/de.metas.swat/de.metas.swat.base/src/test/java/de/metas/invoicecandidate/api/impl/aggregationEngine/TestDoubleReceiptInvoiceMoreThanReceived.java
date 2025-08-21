@@ -60,7 +60,7 @@ public class TestDoubleReceiptInvoiceMoreThanReceived extends AbstractDoubleRece
 				.as("We are expecting one invoice: %s", invoices)
 				.hasSize(1);
 
-		final IInvoiceHeader invoice1 = invoices.remove(0);
+		final IInvoiceHeader invoice1 = invoices.removeFirst();
 
 		assertThat(invoice1.isSOTrx()).isEqualTo(config_IsSOTrx());
 		assertThat(invoice1.getPOReference()).isEqualTo(IC_PO_REFERENCE);

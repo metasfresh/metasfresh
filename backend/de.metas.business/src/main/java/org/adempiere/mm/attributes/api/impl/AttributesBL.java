@@ -129,9 +129,8 @@ public class AttributesBL implements IAttributesBL
 
 		//
 		// First try: check if attributeHandler is implementing IAttributeValuesProvider and return it if that's the case
-		if (attributeHandler instanceof IAttributeValuesProviderFactory)
+		if (attributeHandler instanceof IAttributeValuesProviderFactory factory)
 		{
-			final IAttributeValuesProviderFactory factory = (IAttributeValuesProviderFactory)attributeHandler;
 			return factory.createAttributeValuesProvider(attribute);
 		}
 		//
@@ -152,9 +151,9 @@ public class AttributesBL implements IAttributesBL
 	public IAttributeValueGenerator getAttributeValueGeneratorOrNull(@NonNull final org.compiere.model.I_M_Attribute attributeParam)
 	{
 		final IAttributeValueHandler handler = getAttributeValueHandlerOrNull(attributeParam);
-		if (handler instanceof IAttributeValueGenerator)
+		if (handler instanceof IAttributeValueGenerator generator)
 		{
-			return (IAttributeValueGenerator)handler;
+			return generator;
 		}
 		return null;
 	}

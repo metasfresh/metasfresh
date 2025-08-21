@@ -69,9 +69,9 @@ public class UserQueryFieldHelper
 			// Return Timestamp
 			else if (DisplayType.isDate(displayType))
 			{
-				if (valueObj instanceof java.util.Date)
+				if (valueObj instanceof java.util.Date date)
 				{
-					return TimeUtil.asTimestamp((java.util.Date)valueObj);
+					return TimeUtil.asTimestamp(date);
 				}
 				long time;
 				try
@@ -87,9 +87,9 @@ public class UserQueryFieldHelper
 				return new Timestamp(time);
 			}
 			// Return Y/N for Boolean
-			else if (valueObj instanceof Boolean)
+			else if (valueObj instanceof Boolean boolean1)
 			{
-				return DisplayType.toBooleanString((Boolean)valueObj);
+				return DisplayType.toBooleanString(boolean1);
 			}
 		}
 		catch (final Exception ex)

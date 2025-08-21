@@ -37,10 +37,10 @@ import de.metas.rest_api.v2.product.command.GetProductsCommand;
 import de.metas.util.Check;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -131,16 +131,16 @@ public class ProductsRestController
 		}
 	}
 
-	@ApiOperation("Create or update products, corresponding Bpartner-products and Product Tax Categories.")
+	@Operation(summary = "Create or update products, corresponding Bpartner-products and Product Tax Categories.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created or updated product(s)"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully created or updated product(s)"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
 	@PutMapping("{orgCode}")
 	public ResponseEntity<JsonResponseUpsert> upsertProducts(
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") @Nullable final String orgCode,
 			@RequestBody @NonNull final JsonRequestProductUpsert request)
 
@@ -150,17 +150,17 @@ public class ProductsRestController
 		return ResponseEntity.ok().body(responseUpsert);
 	}
 
-	@ApiOperation("Retrieve product by product identifier.")
+	@Operation(summary = "Retrieve product by product identifier.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Product successfully retrieved"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "200", description = "Product successfully retrieved"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
 	@GetMapping("{orgCode}/{externalIdentifier}")
 	public ResponseEntity<?> getByExternalIdentifier(
 			@PathVariable("orgCode") @Nullable final String orgCode,
-			@ApiParam(PRODUCT_IDENTIFIER_DOC) @PathVariable(value = "externalIdentifier") @NonNull final String externalIdentifier)
+			@Parameter(description = PRODUCT_IDENTIFIER_DOC) @PathVariable(value = "externalIdentifier") @NonNull final String externalIdentifier)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
@@ -180,7 +180,7 @@ public class ProductsRestController
 
 			Check.assumeEquals(response.getProducts().size(), 1, "JsonGetProductsResponse should have only one JsonProduct!");
 
-			return ResponseEntity.ok().body(response.getProducts().get(0));
+			return ResponseEntity.ok().body(response.getProducts().getFirst());
 		}
 		catch (final Exception ex)
 		{

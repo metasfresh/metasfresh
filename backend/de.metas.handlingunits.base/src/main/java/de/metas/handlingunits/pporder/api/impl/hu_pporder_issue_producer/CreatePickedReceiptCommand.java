@@ -144,7 +144,7 @@ public class CreatePickedReceiptCommand
 			return null; // no candidate
 		}
 
-		return productStorages.get(0);
+		return productStorages.getFirst();
 	}
 
 	@Nullable

@@ -148,7 +148,7 @@ public class GithubImporterServiceTest
 		final ImmutableList<ImportIssueInfo> importIssueInfos = importIssuesQueue.drainAll();
 
 		assertEquals(importIssueInfos.size(), 1);
-		final ImportIssueInfo issueInfo = importIssueInfos.get(0);
+		final ImportIssueInfo issueInfo = importIssueInfos.getFirst();
 
 		assertEquals(issueInfo.getBudget(), BigDecimal.valueOf(6));
 		assertEquals(issueInfo.getEstimation(), BigDecimal.valueOf(4.25));
@@ -306,7 +306,7 @@ public class GithubImporterServiceTest
 		assertEquals(importIssueInfos.size(), 2);
 
 		//the parent issue should be first in queue
-		final ImportIssueInfo parentIssue = importIssueInfos.get(0);
+		final ImportIssueInfo parentIssue = importIssueInfos.getFirst();
 
 		assertEquals(parentIssue.getBudget(), BigDecimal.valueOf(6));
 		assertEquals(parentIssue.getEstimation(), BigDecimal.valueOf(4.25));
@@ -356,7 +356,7 @@ public class GithubImporterServiceTest
 		assertNotNull(issueLabels);
 		assertEquals(issueLabels.size(), 3);
 
-		assertEquals(issueLabels.get(0).getValue(), MOCK_VALUE);
+		assertEquals(issueLabels.getFirst().getValue(), MOCK_VALUE);
 		assertEquals(issueLabels.get(1).getValue(), MOCK_BUD_6_LABEL);
 		assertEquals(issueLabels.get(2).getValue(), MOCK_EST_4_25_LABEL);
 	}

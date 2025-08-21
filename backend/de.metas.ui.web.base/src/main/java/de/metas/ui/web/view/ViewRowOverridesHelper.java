@@ -29,9 +29,9 @@ public final class ViewRowOverridesHelper
 {
 	public static final IViewRowOverrides getViewRowOverrides(final IView view)
 	{
-		if (view instanceof IViewRowOverrides)
+		if (view instanceof IViewRowOverrides overrides)
 		{
-			return (IViewRowOverrides)view;
+			return overrides;
 		}
 		else
 		{

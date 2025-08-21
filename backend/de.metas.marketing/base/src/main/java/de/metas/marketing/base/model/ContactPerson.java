@@ -63,8 +63,8 @@ public class ContactPerson implements DataRecord
 
 	public static Optional<ContactPerson> cast(@Nullable final DataRecord dataRecord)
 	{
-		return dataRecord instanceof ContactPerson
-				? Optional.of((ContactPerson)dataRecord)
+		return dataRecord instanceof ContactPerson cp
+				? Optional.of(cp)
 				: Optional.empty();
 	}
 

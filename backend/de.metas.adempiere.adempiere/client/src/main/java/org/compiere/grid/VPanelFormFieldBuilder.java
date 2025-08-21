@@ -156,17 +156,17 @@ public final class VPanelFormFieldBuilder
 		// Add provided editor listener (if any)
 		final EventListener editorListener = getEditorListener();
 		boolean editorListenerInstalled = false;
-		if (editorListener instanceof VetoableChangeListener)
+		if (editorListener instanceof VetoableChangeListener listener)
 		{
 			// Editor:VetoableChange -> Form
-			editor.addVetoableChangeListener((VetoableChangeListener)editorListener);
+			editor.addVetoableChangeListener(listener);
 			editorListenerInstalled = true;
 		}
-		if (editorListener instanceof ActionListener && getDisplayType() == DisplayType.Button)
+		if (editorListener instanceof ActionListener listener && getDisplayType() == DisplayType.Button)
 		{
 			// Button:Action -> Form
 			// Only needed for Buttons because other editors are fully covered by VetoableChange support.
-			editor.addActionListener((ActionListener)editorListener);
+			editor.addActionListener(listener);
 			editorListenerInstalled = true;
 		}
 		// Notify the developer if the editor listener could not be installed

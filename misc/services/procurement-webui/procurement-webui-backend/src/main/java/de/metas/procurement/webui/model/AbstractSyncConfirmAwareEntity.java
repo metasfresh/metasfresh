@@ -3,7 +3,7 @@ package de.metas.procurement.webui.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Transient;
+import jakarta.persistence.Transient;
 
 /*
  * #%L

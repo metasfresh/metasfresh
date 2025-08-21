@@ -38,6 +38,7 @@ package it.cnr.imaa.essi.lablib.gui.checkboxtree;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.Serial;
 
 import javax.swing.JTree;
 import javax.swing.tree.TreeCellRenderer;
@@ -113,9 +114,10 @@ import javax.swing.tree.TreeSelectionModel;
 
 public class CheckboxTree extends JTree {
 
-    /**
+	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 5053940041969726028L;
 	private TreeCheckingModel checkingModel;
 

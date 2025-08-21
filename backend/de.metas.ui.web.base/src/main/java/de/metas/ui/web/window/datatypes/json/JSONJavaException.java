@@ -71,9 +71,9 @@ public class JSONJavaException
 	@Nullable
 	private static Map<String, Object> extractAttributes(@NonNull final Exception exception, @NonNull final JSONOptions jsonOpts)
 	{
-		if (exception instanceof AdempiereException)
+		if (exception instanceof AdempiereException adempiereException)
 		{
-			final Map<String, Object> exceptionAttributes = ((AdempiereException)exception).getParameters();
+			final Map<String, Object> exceptionAttributes = adempiereException.getParameters();
 			if (exceptionAttributes == null || exceptionAttributes.isEmpty())
 			{
 				return null;

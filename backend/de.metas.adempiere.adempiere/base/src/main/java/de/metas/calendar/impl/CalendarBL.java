@@ -71,7 +71,7 @@ public class CalendarBL implements ICalendarBL
 
 		final int numberOfPeriods = periodsOfTheYear.size();
 
-		final Timestamp firstDate = periodsOfTheYear.get(0).getStartDate();
+		final Timestamp firstDate = periodsOfTheYear.getFirst().getStartDate();
 		final Timestamp lastDate = periodsOfTheYear.get(numberOfPeriods - 1).getEndDate();
 
 		if (TimeUtil.addYears(TimeUtil.asTimestamp(firstDate), 1).compareTo(TimeUtil.addDays(lastDate, 1)) == 0)

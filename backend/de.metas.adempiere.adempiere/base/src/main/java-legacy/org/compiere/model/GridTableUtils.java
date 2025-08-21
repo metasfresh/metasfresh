@@ -76,7 +76,7 @@ final class GridTableUtils
 						|| IColumnBL.isRecordIdColumnName(columnName) && DisplayType.Button == displayType // metas: Record_ID buttons are Integer IDs
 				)
 				{
-					rowData[j] = new Integer(rs.getInt(j + 1));	// Integer
+					rowData[j] = Integer.valueOf(rs.getInt(j + 1));	// Integer
 					if (rs.wasNull())
 					{
 						rowData[j] = null;

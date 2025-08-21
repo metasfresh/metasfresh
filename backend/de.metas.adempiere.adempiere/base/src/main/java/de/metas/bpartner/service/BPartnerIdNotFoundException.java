@@ -2,6 +2,8 @@ package de.metas.bpartner.service;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.ordercandidate.rest-api-impl
@@ -27,6 +29,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 public class BPartnerIdNotFoundException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -4776977540135879202L;
 
 	public BPartnerIdNotFoundException(String msg)

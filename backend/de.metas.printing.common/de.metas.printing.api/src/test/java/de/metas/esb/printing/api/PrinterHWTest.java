@@ -23,7 +23,6 @@ package de.metas.esb.printing.api;
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.metas.printing.esb.api.PrinterHWList;
 import org.junit.jupiter.api.Test;
 

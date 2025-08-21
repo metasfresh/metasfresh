@@ -144,10 +144,12 @@ public final class DocumentFieldAsCalloutField implements ICalloutField, IProces
 		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 		if (NullDocumentChangesCollector.isNull(changesCollector))
 		{
-			logger.warn("Got WARNING on field {} but there is no changes collector to dispatch"
-					+ "\n captionAD_Message={}"
-					+ "\n message={}"
-					+ "\n isError={}",
+			logger.warn("""
+					Got WARNING on field {} but there is no changes collector to dispatch
+					 captionAD_Message={}
+					 message={}
+					 isError={}\
+					""",
 					documentField, captionAD_Message, message, isError);
 		}
 		else
@@ -200,9 +202,9 @@ public final class DocumentFieldAsCalloutField implements ICalloutField, IProces
 		{
 			return -1;
 		}
-		else if (valueObj instanceof Number)
+		else if (valueObj instanceof Number number)
 		{
-			return ((Number)valueObj).intValue();
+			return number.intValue();
 		}
 		else
 		{

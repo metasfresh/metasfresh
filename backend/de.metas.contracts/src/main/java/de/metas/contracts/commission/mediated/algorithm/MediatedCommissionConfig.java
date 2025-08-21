@@ -67,9 +67,9 @@ public class MediatedCommissionConfig implements CommissionConfig
 	@NonNull
 	public static Optional<MediatedCommissionConfig> castOrEmpty(@NonNull final CommissionConfig commissionConfig)
 	{
-		if (commissionConfig instanceof MediatedCommissionConfig)
+		if (commissionConfig instanceof MediatedCommissionConfig config)
 		{
-			return Optional.of((MediatedCommissionConfig)commissionConfig);
+			return Optional.of(config);
 		}
 		return Optional.empty();
 	}

@@ -90,7 +90,7 @@ public class SalesInvoiceFactory
 			return Optional.empty();
 		}
 		final Optional<BPartnerId> salesRepBPartnerId = getSalesRepId(invoiceRecord);
-		if (!salesRepBPartnerId.isPresent())
+		if (salesRepBPartnerId.isEmpty())
 		{
 			logger.debug("C_Invoice has C_BPartner_SalesRep_ID={}; -> return empty", invoiceRecord.getC_BPartner_SalesRep_ID());
 			return Optional.empty();

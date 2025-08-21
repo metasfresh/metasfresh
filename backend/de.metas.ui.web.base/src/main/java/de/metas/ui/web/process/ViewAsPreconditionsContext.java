@@ -68,9 +68,9 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	@Nullable
 	public static ViewAsPreconditionsContext castOrNull(final IProcessPreconditionsContext context)
 	{
-		if (context instanceof ViewAsPreconditionsContext)
+		if (context instanceof ViewAsPreconditionsContext preconditionsContext)
 		{
-			return (ViewAsPreconditionsContext)context;
+			return preconditionsContext;
 		}
 		else
 		{

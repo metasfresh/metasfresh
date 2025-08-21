@@ -286,7 +286,7 @@ class BankStatementPaymentBLTest
 			bankStatementPaymentBL.linkSinglePayment(bankStatement, bankStatementLine, payment);
 
 			assertThat(paymentsLinked).hasSize(1);
-			assertThat(paymentsLinked.get(0)).isEqualTo(PaymentLinkResult.builder()
+			assertThat(paymentsLinked.getFirst()).isEqualTo(PaymentLinkResult.builder()
 					.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
 					.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
 					.bankStatementLineRefId(null)
@@ -748,7 +748,7 @@ class BankStatementPaymentBLTest
 						.build());
 
 				assertThat(result.getPayments()).hasSize(1);
-				final PaymentLinkResult paymentLinkResult = result.getPayments().get(0);
+				final PaymentLinkResult paymentLinkResult = result.getPayments().getFirst();
 				assertThat(paymentLinkResult.getPaymentId()).isEqualTo(paymentId);
 				assertThat(paymentLinkResult.getStatementTrxAmt()).isEqualTo(Money.of(-123, euroCurrencyId));
 

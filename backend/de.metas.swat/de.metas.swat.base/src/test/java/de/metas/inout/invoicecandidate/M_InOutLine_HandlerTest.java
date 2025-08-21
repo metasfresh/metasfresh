@@ -213,7 +213,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
@@ -234,7 +234,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
@@ -252,7 +252,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
 
@@ -272,7 +272,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTermId));
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
@@ -293,7 +293,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTermId));
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
@@ -513,7 +513,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
@@ -538,7 +538,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
@@ -560,7 +560,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
@@ -585,7 +585,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate());
@@ -610,7 +610,7 @@ public class M_InOutLine_HandlerTest
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
+		final I_C_Invoice_Candidate ic = result.getFirst();
 		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTermId));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher

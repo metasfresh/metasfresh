@@ -189,14 +189,13 @@ import java.util.stream.Collectors;
 		{
 			return CellValue.ofDate(DateTimeConverters.fromObject(value, widgetType));
 		}
-		else if (value instanceof JSONLookupValue)
+		else if (value instanceof JSONLookupValue lookupValue)
 		{
-			final String valueStr = ((JSONLookupValue)value).getCaption();
+			final String valueStr = lookupValue.getCaption();
 			return CellValues.toCellValue(valueStr, widgetType.getDisplayType());
 		}
-		else if (value instanceof JSONLookupValuesList)
+		else if (value instanceof JSONLookupValuesList jsonLookupValuesList)
 		{
-			final JSONLookupValuesList jsonLookupValuesList = (JSONLookupValuesList)value;
 			final String valueStr = jsonLookupValuesList
 					.getValues()
 					.stream()

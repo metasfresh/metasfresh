@@ -9,20 +9,18 @@
 			<defaultValue>server</defaultValue>
 		</discriminator>
 		<sift>
-			<appender name="FILE-byRemoteAddr-${RemoteAddr}" class="de.metas.logging.MetasfreshFileAppender">
+			<appender name="FILE-byRemoteAddr-${RemoteAddr}" class="ch.qos.logback.core.rolling.RollingFileAppender">
 				<encoder>
 					<pattern>${FILE_LOG_PATTERN}</pattern>
 				</encoder>
 
 				<!-- it works with changing the logging.path property -->
-				<rollingPolicy class="de.metas.logging.MetasfreshTimeBasedRollingPolicy">
+				<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 					<LogDir>${LOG_PATH}/byRemoteAddr/${RemoteAddr}</LogDir>
-					<LogFilePrefix>-</LogFilePrefix>
-					<LogFileDatePattern>%d{yyyy-MM-dd}_%d{HHmmss,aux}
-					</LogFileDatePattern>
+                    <FileNamePattern>metasfresh-%d{yyyy-MM-dd}.log</FileNamePattern>
 
 					<TimeBasedFileNamingAndTriggeringPolicy
-						class="de.metas.logging.MetasfreshTimeBasedFileNamingAndTriggeringPolicy" />
+						class="ch.qos.logback.core.rolling.DefaultTimeBasedFileNamingAndTriggeringPolicy" />
 				</rollingPolicy>
 			</appender>
 		</sift>

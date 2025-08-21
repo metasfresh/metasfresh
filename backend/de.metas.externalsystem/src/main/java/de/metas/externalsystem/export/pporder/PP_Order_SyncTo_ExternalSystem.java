@@ -55,7 +55,7 @@ public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess impleme
 					.collect(ImmutableList.toImmutableList());
 
 			return activeConfigs.size() == 1
-					? activeConfigs.get(0).getChildConfig().getId().getRepoId()
+					? activeConfigs.getFirst().getChildConfig().getId().getRepoId()
 					: IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
 

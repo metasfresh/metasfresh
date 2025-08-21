@@ -263,7 +263,7 @@ public class CampaignServiceTest
 
 			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
 			assertThat(existingContactPersons).hasSize(1);
-			assertThat(existingContactPersons.get(0).getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
+			assertThat(existingContactPersons.getFirst().getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
 
 		}
 
@@ -345,7 +345,7 @@ public class CampaignServiceTest
 
 			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
 			assertThat(existingContactPersons).hasSize(1);
-			assertThat(existingContactPersons.get(0).getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
+			assertThat(existingContactPersons.getFirst().getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
 		}
 
 		@Test
@@ -426,7 +426,7 @@ public class CampaignServiceTest
 
 			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
 			assertThat(existingContactPersons).hasSize(1);
-			assertThat(existingContactPersons.get(0).getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
+			assertThat(existingContactPersons.getFirst().getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
 		}
 
 		@Test

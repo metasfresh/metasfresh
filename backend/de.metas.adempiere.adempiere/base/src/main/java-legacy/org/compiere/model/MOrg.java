@@ -162,7 +162,7 @@ public class MOrg extends X_AD_Org
 			{
 				C_BPartner_ID = 0;
 			}
-			m_linkedBPartner = new Integer (C_BPartner_ID);
+			m_linkedBPartner = Integer.valueOf(C_BPartner_ID);
 		}
 		return m_linkedBPartner.intValue();
 	}	//	getLinkedC_BPartner_ID

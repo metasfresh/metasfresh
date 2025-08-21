@@ -23,13 +23,15 @@ package org.compiere.util;
  */
 
 
+import java.io.Serial;
 import java.util.Map;
 
 public class CallableResult extends ExecuteResult {
-	
+
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -3931232160704716852L;
 	private Map<Integer, OutputParameter> m_ordinalOutput = null;	
 	private Map<String, OutputParameter> m_namedOutput = null;	

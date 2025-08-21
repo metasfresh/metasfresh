@@ -83,7 +83,7 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates, 
 			@NonNull final List<I_M_InOutLine> inOutLines)
 	{
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		if (config_getQualityDiscount_Override() == null)
 		{
@@ -107,7 +107,7 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 	{
 		assertThat(invoices).as("We are expecting one invoice: " + invoices).hasSize(1);
 
-		final IInvoiceHeader invoice1 = invoices.get(0); // don't remove, because the subclass implementation might also want to get it.
+		final IInvoiceHeader invoice1 = invoices.getFirst(); // don't remove, because the subclass implementation might also want to get it.
 
 		assertThat(invoice1.getPOReference()).isEqualTo(IC_PO_REFERENCE);
 		assertThat(invoice1.getDateAcct()).isEqualTo(IC_DATE_ACCT);

@@ -85,7 +85,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 	@SuppressWarnings("unused")
 	private void test_2StepShipment_WithDifferentInvoicesOverall(final String invoiceRuleOverride)
 	{
-		final I_C_Invoice_Candidate ic = test_2StepShipment_CommonSetup_Step01(false, null).get(0); // isSOTrx, priceEntered_Override
+		final I_C_Invoice_Candidate ic = test_2StepShipment_CommonSetup_Step01(false, null).getFirst(); // isSOTrx, priceEntered_Override
 
 		//
 		// Partially invoice both at the same time
@@ -258,7 +258,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 				.as("We are expecting only one invoice: %s", invoices)
 				.hasSize(1);
 
-			final IInvoiceHeader invoice = invoices.get(0);
+			final IInvoiceHeader invoice = invoices.getFirst();
 			assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.VendorInvoice);
 			assertThat(invoice.getM_InOut_ID()).as("Invalid M_InOut_ID").isEqualTo(inOut1.getM_InOut_ID());
 			validateInvoiceHeader("Invoice", invoice, ic);
@@ -341,7 +341,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 				.as("We are expecting only one invoice: %s", invoices)
 				.hasSize(1);
 
-			final IInvoiceHeader invoice = invoices.get(0);
+			final IInvoiceHeader invoice = invoices.getFirst();
 			assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.VendorInvoice);
 			// Assert.assertEquals("Invalid M_InOut_ID", inOut2.getM_InOut_ID(), invoice.getM_InOut_ID());
 			validateInvoiceHeader("Invoice", invoice, ic);
@@ -351,7 +351,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 				.as("We are expecting only one invoice line: %s", invoiceLines)
 				.hasSize(1);
 
-			final IInvoiceLineRW invoiceLine = invoiceLines.get(0);
+			final IInvoiceLineRW invoiceLine = invoiceLines.getFirst();
 			assertThat(invoiceLine.getPriceActual().toBigDecimal().intValue())
 				.as("Invalid PriceActual")
 				.isEqualTo(1);

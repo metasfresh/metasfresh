@@ -107,7 +107,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	@NonNull
 	public static ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> getIncludedEntitiesDescriptors(@NonNull final SqlEntityBinding binding)
 	{
-		return binding instanceof SqlViewBinding ? ((SqlViewBinding)binding).getIncludedEntitiesDescriptors() : ImmutableMap.of();
+		return binding instanceof SqlViewBinding svb ? svb.getIncludedEntitiesDescriptors() : ImmutableMap.of();
 	}
 
 	private SqlViewBinding(final Builder builder)

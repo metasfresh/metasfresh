@@ -51,6 +51,7 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -498,7 +499,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		if (M_AttributeSetInstance_ID == 0)
 		{
-			set_Value("M_AttributeSetInstance_ID", new Integer(0));
+			set_Value("M_AttributeSetInstance_ID", Integer.valueOf(0));
 		}
 		else
 		{
@@ -816,7 +817,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		if (QtyEntered != null && getC_UOM_ID() != 0)
 		{
 			int precision = MUOM.getPrecision(getCtx(), getC_UOM_ID());
-			QtyEntered = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			QtyEntered = QtyEntered.setScale(precision, RoundingMode.HALF_UP);
 		}
 		super.setQtyEntered(QtyEntered);
 	}    // setQtyEntered
@@ -833,7 +834,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		if (QtyInvoiced != null && product != null)
 		{
 			int precision = product.getUOMPrecision();
-			QtyInvoiced = QtyInvoiced.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			QtyInvoiced = QtyInvoiced.setScale(precision, RoundingMode.HALF_UP);
 		}
 		super.setQtyInvoiced(QtyInvoiced);
 	}    // setQtyInvoiced

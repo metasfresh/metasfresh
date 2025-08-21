@@ -26,6 +26,8 @@ package de.metas.handlingunits.exceptions;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.storage.IHUItemStorage;
 
+import java.io.Serial;
+
 /**
  * This exception is thrown when we are dealing with infinite quantities. E.G. when a complete allocation is needed on a (virtual) PI with infinite capacity.
  *
@@ -37,6 +39,7 @@ public class HUInfiniteQtyAllocationException extends HUException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 3930115720300580304L;
 
 	public HUInfiniteQtyAllocationException(final IAllocationRequest request, final IHUItemStorage storage)

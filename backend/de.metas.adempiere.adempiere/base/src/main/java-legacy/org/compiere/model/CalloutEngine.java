@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -276,7 +277,7 @@ public class CalloutEngine implements Callout
 
 		if (rate1.signum() != 0)
 		{
-			rate2 = one.divide(rate1, 12, BigDecimal.ROUND_HALF_UP);
+			rate2 = one.divide(rate1, 12, RoundingMode.HALF_UP);
 		}
 
 		//

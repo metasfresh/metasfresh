@@ -92,11 +92,11 @@ public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 		final String prefixToUse;
 		if (attemptCount <= 1)
 		{
-			prefixToUse = String.format("%s-", voidedOrderDocumentNoPrefix);
+			prefixToUse = "%s-".formatted(voidedOrderDocumentNoPrefix);
 		}
 		else
 		{
-			prefixToUse = String.format("%s(%s)-", voidedOrderDocumentNoPrefix, attemptCount);
+			prefixToUse = "%s(%s)-".formatted(voidedOrderDocumentNoPrefix, attemptCount);
 		}
 
 		final String documentNo = orderRecord.getDocumentNo();

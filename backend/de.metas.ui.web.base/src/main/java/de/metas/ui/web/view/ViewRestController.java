@@ -547,9 +547,8 @@ public class ViewRestController
 
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr));
 		final IView view = viewsRepo.getView(viewId);
-		if (view instanceof IViewZoomIntoFieldSupport)
+		if (view instanceof IViewZoomIntoFieldSupport zoomIntoSupport)
 		{
-			final IViewZoomIntoFieldSupport zoomIntoSupport = (IViewZoomIntoFieldSupport)view;
 			final DocumentId rowId = DocumentId.of(rowIdStr);
 			final DocumentZoomIntoInfo zoomIntoInfo = zoomIntoSupport.getZoomIntoInfo(rowId, fieldName);
 			final DocumentPath zoomIntoDocumentPath = documentZoomIntoService.getDocumentPath(zoomIntoInfo);

@@ -176,7 +176,7 @@ final class ManufacturingOrdersSetExportStatusCommand
 			return null;
 		}
 
-		final JsonErrorItem errorItem = error.getErrors().get(0);
+		final JsonErrorItem errorItem = error.getErrors().getFirst();
 		return errorManager.createIssue(IssueCreateRequest.builder()
 				.summary(errorItem.getMessage() + "; " + errorItem.getDetail())
 				.stackTrace(errorItem.getStackTrace())

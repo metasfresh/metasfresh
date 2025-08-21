@@ -53,7 +53,7 @@ public class JSONMenuNode
 		}
 		else if (path.size() == 1)
 		{
-			final MenuNode node = path.get(0);
+			final MenuNode node = path.getFirst();
 			final boolean favorite = menuNodeFavoriteProvider.isFavorite(node);
 			return new JSONMenuNode(node, favorite, null);
 		}

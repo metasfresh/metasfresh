@@ -573,7 +573,7 @@ public final class Calendar extends CDialog implements ActionListener, MouseList
 		fHour.setSelectedIndex(hourIndex);
 		//	Set Minute
 		final int minute = m_calendar.get(java.util.Calendar.MINUTE);
-		fMinute.setValue(new Integer(minute));
+		fMinute.setValue(Integer.valueOf(minute));
 		//	Set PM
 		cbPM.setSelected(pm);
 		//	Set TZ

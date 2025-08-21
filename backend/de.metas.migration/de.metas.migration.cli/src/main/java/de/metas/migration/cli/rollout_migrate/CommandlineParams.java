@@ -304,9 +304,11 @@ class CommandlineParams
 		final String header = "Util to apply metasfresh migration scripts to a POstgresSQL database. The database settings are read from a settings (properties) file.\n"
 				+ "The tool will by default only run if its own version (as set in in the " + RolloutVersionLoader.PROP_VERSION + " property of its " + RolloutVersionLoader.BUILD_INFO_FILENAME + ")"
 				+ " is higher than the version selected from the DB (AD_System.DBVersion).";
-		final String footer = "\nHints: "
-				+ "* For each individual migration file the tool checks against the Table AD_MigrationScript if the migration file was already been applied"
-				+ "* The migration files are ordered by their filenames \"globally\", no matter in thich directory they are";
+		final String footer = """
+				
+				Hints: \
+				* For each individual migration file the tool checks against the Table AD_MigrationScript if the migration file was already been applied\
+				* The migration files are ordered by their filenames "globally", no matter in thich directory they are""";
 
 		final HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp(

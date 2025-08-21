@@ -39,7 +39,7 @@ public class CompositeBusinessDayMatcher implements IBusinessDayMatcher
 	{
 		if (matchers.size() == 1)
 		{
-			return matchers.get(0);
+			return matchers.getFirst();
 		}
 		else
 		{

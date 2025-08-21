@@ -63,6 +63,7 @@ import org.eevolution.model.validator.PPOrderChangedEventFactory;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 
 import java.io.File;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.Duration;
@@ -79,6 +80,7 @@ import java.util.Properties;
 @SuppressWarnings("unused")
 public class MPPOrder extends X_PP_Order implements IDocument
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	@SuppressWarnings("unused")

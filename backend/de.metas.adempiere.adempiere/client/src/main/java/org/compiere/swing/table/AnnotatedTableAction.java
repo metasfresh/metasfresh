@@ -7,6 +7,8 @@ import javax.swing.table.TableModel;
 
 import de.metas.util.Check;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.client
@@ -39,6 +41,7 @@ import de.metas.util.Check;
  */
 public abstract class AnnotatedTableAction extends AbstractAction
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	private JTable _table;
@@ -84,9 +87,9 @@ public abstract class AnnotatedTableAction extends AbstractAction
 			return null;
 		}
 		final TableModel tableModel = table.getModel();
-		if (tableModel instanceof AnnotatedTableModel<?>)
+		if (tableModel instanceof AnnotatedTableModel<?> model)
 		{
-			return (AnnotatedTableModel<?>)tableModel;
+			return model;
 		}
 
 		return null;

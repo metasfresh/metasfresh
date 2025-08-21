@@ -88,7 +88,7 @@ public class ImageElement extends PrintElement
 	 */
 	public static ImageElement get (final int AD_PrintFormatItem_ID)
 	{
-		Object key = new Integer(AD_PrintFormatItem_ID);
+		Object key = Integer.valueOf(AD_PrintFormatItem_ID);
 		ImageElement image = s_cache.get(key);
 		if (image == null)
 		{

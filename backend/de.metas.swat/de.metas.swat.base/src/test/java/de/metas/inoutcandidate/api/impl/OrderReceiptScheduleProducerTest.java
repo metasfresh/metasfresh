@@ -142,7 +142,7 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 		final List<I_M_ReceiptSchedule> rcs = orderReceiptScheduleProducer.createOrUpdateReceiptSchedules(order, ImmutableList.of());
 		Assertions.assertEquals(1, rcs.size());
 
-		final I_M_ReceiptSchedule rc = rcs.get(0);
+		final I_M_ReceiptSchedule rc = rcs.getFirst();
 		assertOrderMatches(rc, order);
 		assertOrderLineMatches(rc, ol);
 	}

@@ -125,7 +125,7 @@ public class DemandCandiateHandlerTest
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records).hasSize(4);
-		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
 		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("23");
@@ -133,7 +133,7 @@ public class DemandCandiateHandlerTest
 		assertThat(demandStockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 		assertThat(demandStockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
 
-		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).getFirst();
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo("23");
 		final I_MD_Candidate supplyStockRecord = DispoTestUtils.retrieveStockCandidate(supplyRecord);
 		assertThat(supplyStockRecord.getQty()).isEqualByComparingTo("0"); // ..because there was no older record, the "delta" we provided is the current quantity
@@ -160,7 +160,7 @@ public class DemandCandiateHandlerTest
 
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
 
-		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
 		assertThat(demandRecord).extracting("qty", "StorageAttributesKey")
 				.containsExactly(BigDecimal.valueOf(23), STORAGE_ATTRIBUTES_KEY.getAsString());
 
@@ -172,7 +172,7 @@ public class DemandCandiateHandlerTest
 						"SeqNo")
 				.containsExactly(demandRecord.getMD_Candidate_ID(), BigDecimal.valueOf(-23), STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
 
-		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).getFirst();
 		assertThat(supplyRecord).extracting("qty", "StorageAttributesKey")
 				.containsExactly(BigDecimal.valueOf(13), STORAGE_ATTRIBUTES_KEY.getAsString());
 
@@ -221,7 +221,7 @@ public class DemandCandiateHandlerTest
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
 
-		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.get(0);
+		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.getFirst();
 		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE);
 		assertThat(unrelatedTransactionCandidate.getQty()).isEqualByComparingTo("10");
 
@@ -283,8 +283,8 @@ public class DemandCandiateHandlerTest
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
-			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
-			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).getFirst();
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
 
 			assertThat(demandRecord.getQty()).isEqualByComparingTo(qty);
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(qty.negate()); // ..because there was no older record, the "delta" we provided is the current quantity
@@ -328,8 +328,8 @@ public class DemandCandiateHandlerTest
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
-			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
-			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).getFirst();
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
 
 			assertThat(demandRecord.getQty()).isEqualByComparingTo(expectedQty);
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(expectedQty.negate());

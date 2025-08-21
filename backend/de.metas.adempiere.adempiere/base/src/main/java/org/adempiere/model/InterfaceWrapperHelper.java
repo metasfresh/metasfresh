@@ -631,9 +631,9 @@ public class InterfaceWrapperHelper
 	private static Object extractModelToSave(final Object model)
 	{
 		final Object modelToSave;
-		if (model instanceof IModelWrapper)
+		if (model instanceof IModelWrapper wrapper)
 		{
-			modelToSave = ((IModelWrapper)model).getModel();
+			modelToSave = wrapper.getModel();
 		}
 		else
 		{
@@ -685,18 +685,18 @@ public class InterfaceWrapperHelper
 		{
 			return Env.getCtx();
 		}
-		else if (model instanceof ModelContextAware)
+		else if (model instanceof ModelContextAware aware1)
 		{
 			// we have an IContextAware that is based on a model, so we can act on the value of the given useClientOrgFromModel
-			return ((ModelContextAware)model).getCtx(useClientOrgFromModel);
+			return aware1.getCtx(useClientOrgFromModel);
 		}
-		else if (model instanceof IContextAware)
+		else if (model instanceof IContextAware aware)
 		{
-			return ((IContextAware)model).getCtx();
+			return aware.getCtx();
 		}
-		else if (model instanceof Properties)
+		else if (model instanceof Properties properties)
 		{
-			return (Properties)model; // this *is* already the ctx
+			return properties; // this *is* already the ctx
 		}
 		else
 		{
@@ -727,9 +727,9 @@ public class InterfaceWrapperHelper
 		{
 			return ITrx.TRXNAME_None;
 		}
-		else if (model instanceof IContextAware)
+		else if (model instanceof IContextAware aware)
 		{
-			return ((IContextAware)model).getTrxName();
+			return aware.getTrxName();
 		}
 		else if (model instanceof Properties)
 		{
@@ -743,9 +743,9 @@ public class InterfaceWrapperHelper
 
 	public static IContextAware getContextAware(final Object model)
 	{
-		if (model instanceof IContextAware)
+		if (model instanceof IContextAware aware)
 		{
-			return (IContextAware)model;
+			return aware;
 		}
 		else
 		{
@@ -825,9 +825,9 @@ public class InterfaceWrapperHelper
 		{
 			return -1;
 		}
-		else if (model instanceof ITableRecordReference)
+		else if (model instanceof ITableRecordReference reference)
 		{
-			return ((ITableRecordReference)model).getRecord_ID();
+			return reference.getRecord_ID();
 		}
 		else
 		{
@@ -1075,9 +1075,9 @@ public class InterfaceWrapperHelper
 		{
 			return null;
 		}
-		else if (model instanceof ITableRecordReference)
+		else if (model instanceof ITableRecordReference reference)
 		{
-			return ((ITableRecordReference)model).getTableName();
+			return reference.getTableName();
 		}
 		else
 		{
@@ -1139,9 +1139,9 @@ public class InterfaceWrapperHelper
 		}
 
 		final Object value = getValue(model, columnName).orElse(null);
-		if (value instanceof String)
+		if (value instanceof String string)
 		{
-			return Check.isEmpty((String)value);
+			return Check.isEmpty(string);
 		}
 
 		return false;

@@ -22,16 +22,14 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.List;
-
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
-import lombok.EqualsAndHashCode;
-
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Date TRUNC modifier
@@ -157,9 +155,8 @@ public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 	public String getValueSql(final Object value, final List<Object> params)
 	{
 		final String valueSql;
-		if (value instanceof ModelColumnNameValue<?>)
+		if (value instanceof ModelColumnNameValue<?> modelValue)
 		{
-			final ModelColumnNameValue<?> modelValue = (ModelColumnNameValue<?>)value;
 			valueSql = modelValue.getColumnName();
 		}
 		else

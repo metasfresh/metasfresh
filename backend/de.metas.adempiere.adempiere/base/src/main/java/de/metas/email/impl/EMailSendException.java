@@ -1,8 +1,9 @@
 package de.metas.email.impl;
 
+import de.metas.email.EMailSentStatus;
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.email.EMailSentStatus;
+import java.io.Serial;
 
 /*
  * #%L
@@ -34,6 +35,7 @@ import de.metas.email.EMailSentStatus;
  */
 public class EMailSendException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -4519372831111638967L;
 
 	private final boolean connectionError;

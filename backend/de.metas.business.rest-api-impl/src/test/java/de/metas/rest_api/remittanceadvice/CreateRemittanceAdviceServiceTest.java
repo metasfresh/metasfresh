@@ -236,12 +236,12 @@ class CreateRemittanceAdviceServiceTest
 		// invoke the method under test
 		final JsonCreateRemittanceAdviceResponse response = createRemittanceAdviceService.createRemittanceAdviceList(request);
 
-		final JsonMetasfreshId remittanceAdviceId = response.getIds().get(0).getRemittanceAdviceId();
+		final JsonMetasfreshId remittanceAdviceId = response.getIds().getFirst().getRemittanceAdviceId();
 
 		final List<I_C_RemittanceAdvice> records = POJOLookupMap.get().getRecords(I_C_RemittanceAdvice.class);
 		assertThat(records).hasSize(1);
 
-		final I_C_RemittanceAdvice c_remittanceAdvice = records.get(0);
+		final I_C_RemittanceAdvice c_remittanceAdvice = records.getFirst();
 		assertThat(c_remittanceAdvice.getC_RemittanceAdvice_ID()).isEqualTo(JsonMetasfreshId.toValue(remittanceAdviceId));
 		assertThat(c_remittanceAdvice.getAD_Org_ID()).isEqualTo(groupRecord.getAD_Org_ID());
 		assertThat(c_remittanceAdvice.getAD_Client_ID()).isEqualTo(groupRecord.getAD_Client_ID());
@@ -271,7 +271,7 @@ class CreateRemittanceAdviceServiceTest
 		final List<I_C_RemittanceAdvice_Line> lineRecords = POJOLookupMap.get().getRecords(I_C_RemittanceAdvice_Line.class);
 		assertThat(lineRecords).hasSize(2);
 
-		final I_C_RemittanceAdvice_Line remittanceAdvice_line0 = lineRecords.get(0);
+		final I_C_RemittanceAdvice_Line remittanceAdvice_line0 = lineRecords.getFirst();
 		assertThat(remittanceAdvice_line0.getC_RemittanceAdvice_ID()).isEqualTo(JsonMetasfreshId.toValue(remittanceAdviceId));
 		assertThat(remittanceAdvice_line0.getAD_Org_ID()).isEqualTo(groupRecord.getAD_Org_ID());
 		assertThat(remittanceAdvice_line0.getC_BPartner_ID()).isEqualTo(senderBPRecord.getC_BPartner_ID());
@@ -344,12 +344,12 @@ class CreateRemittanceAdviceServiceTest
 		// invoke the method under test
 		final JsonCreateRemittanceAdviceResponse response = createRemittanceAdviceService.createRemittanceAdviceList(request);
 
-		final JsonMetasfreshId remittanceAdviceId = response.getIds().get(0).getRemittanceAdviceId();
+		final JsonMetasfreshId remittanceAdviceId = response.getIds().getFirst().getRemittanceAdviceId();
 
 		final List<I_C_RemittanceAdvice> records = POJOLookupMap.get().getRecords(I_C_RemittanceAdvice.class);
 		assertThat(records).hasSize(1);
 
-		final I_C_RemittanceAdvice c_remittanceAdvice = records.get(0);
+		final I_C_RemittanceAdvice c_remittanceAdvice = records.getFirst();
 		assertThat(c_remittanceAdvice.getC_RemittanceAdvice_ID()).isEqualTo(JsonMetasfreshId.toValue(remittanceAdviceId));
 		assertThat(c_remittanceAdvice.getAD_Org_ID()).isEqualTo(groupRecord.getAD_Org_ID());
 		assertThat(c_remittanceAdvice.getAD_Client_ID()).isEqualTo(groupRecord.getAD_Client_ID());
@@ -379,7 +379,7 @@ class CreateRemittanceAdviceServiceTest
 		final List<I_C_RemittanceAdvice_Line> lineRecords = POJOLookupMap.get().getRecords(I_C_RemittanceAdvice_Line.class);
 		assertThat(lineRecords).hasSize(1);
 
-		final I_C_RemittanceAdvice_Line c_remittanceAdvice_line = lineRecords.get(0);
+		final I_C_RemittanceAdvice_Line c_remittanceAdvice_line = lineRecords.getFirst();
 		assertThat(c_remittanceAdvice_line.getC_RemittanceAdvice_ID()).isEqualTo(JsonMetasfreshId.toValue(remittanceAdviceId));
 		assertThat(c_remittanceAdvice_line.getAD_Org_ID()).isEqualTo(groupRecord.getAD_Org_ID());
 		assertThat(c_remittanceAdvice_line.getC_BPartner_ID()).isEqualTo(senderBPRecord.getC_BPartner_ID());
@@ -442,12 +442,12 @@ class CreateRemittanceAdviceServiceTest
 		// invoke the method under test
 		final JsonCreateRemittanceAdviceResponse response = createRemittanceAdviceService.createRemittanceAdviceList(request);
 
-		final JsonMetasfreshId remittanceAdviceId = response.getIds().get(0).getRemittanceAdviceId();
+		final JsonMetasfreshId remittanceAdviceId = response.getIds().getFirst().getRemittanceAdviceId();
 
 		final List<I_C_RemittanceAdvice> records = POJOLookupMap.get().getRecords(I_C_RemittanceAdvice.class);
 		assertThat(records).hasSize(1);
 
-		final I_C_RemittanceAdvice c_remittanceAdvice = records.get(0);
+		final I_C_RemittanceAdvice c_remittanceAdvice = records.getFirst();
 		assertThat(c_remittanceAdvice.getC_RemittanceAdvice_ID()).isEqualTo(JsonMetasfreshId.toValue(remittanceAdviceId));
 		assertThat(c_remittanceAdvice.getAD_Org_ID()).isEqualTo(groupRecord.getAD_Org_ID());
 		assertThat(c_remittanceAdvice.getAD_Client_ID()).isEqualTo(groupRecord.getAD_Client_ID());
@@ -477,7 +477,7 @@ class CreateRemittanceAdviceServiceTest
 		final List<I_C_RemittanceAdvice_Line> lineRecords = POJOLookupMap.get().getRecords(I_C_RemittanceAdvice_Line.class);
 		assertThat(lineRecords).hasSize(1);
 
-		final I_C_RemittanceAdvice_Line c_remittanceAdvice_line = lineRecords.get(0);
+		final I_C_RemittanceAdvice_Line c_remittanceAdvice_line = lineRecords.getFirst();
 		assertThat(c_remittanceAdvice_line.getC_RemittanceAdvice_ID()).isEqualTo(JsonMetasfreshId.toValue(remittanceAdviceId));
 		assertThat(c_remittanceAdvice_line.getAD_Org_ID()).isEqualTo(groupRecord.getAD_Org_ID());
 		assertThat(c_remittanceAdvice_line.getC_BPartner_ID()).isEqualTo(destinationBPRecord.getC_BPartner_ID());

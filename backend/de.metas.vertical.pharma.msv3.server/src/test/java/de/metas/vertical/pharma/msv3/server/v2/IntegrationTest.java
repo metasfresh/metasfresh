@@ -39,6 +39,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRuec
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne.Artikel;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsantwortArtikel;
+import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -56,8 +57,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import javax.xml.bind.JAXBElement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -296,8 +295,8 @@ public class IntegrationTest
 		soapRequest.setBestellung(soapOrder);
 
 		final BestellenResponse soapResponse = orderWebService.createOrder(jaxbObjectFactory.createBestellen(soapRequest)).getValue();
-		final BestellungAntwortAuftrag soapResponseOrderPackage = soapResponse.getReturn().getAuftraege().get(0);
-		final BestellungAntwortPosition soapResponseOrderPackageItem = soapResponseOrderPackage.getPositionen().get(0);
+		final BestellungAntwortAuftrag soapResponseOrderPackage = soapResponse.getReturn().getAuftraege().getFirst();
+		final BestellungAntwortPosition soapResponseOrderPackageItem = soapResponseOrderPackage.getPositionen().getFirst();
 		assertThat(soapResponseOrderPackageItem.getBestellPzn()).isEqualTo(pzn.getValueAsLong());
 		assertThat(soapResponseOrderPackageItem.getBestellMenge()).isEqualTo(qtyOrderedExpected);
 	}
@@ -350,11 +349,11 @@ public class IntegrationTest
 	private void testStockAvailability(final PZN pzn, final int qtyRequired, final int qtyExpected)
 	{
 		final VerfuegbarkeitAnfragenResponse soapResponse = stockAvailabilityWebService.getStockAvailability(createStockAvailabilityQuery(pzn, qtyRequired)).getValue();
-		final VerfuegbarkeitsantwortArtikel item = soapResponse.getReturn().getArtikel().get(0);
+		final VerfuegbarkeitsantwortArtikel item = soapResponse.getReturn().getArtikel().getFirst();
 		assertThat(item.getAnfragePzn()).isEqualTo(pzn.getValueAsLong());
 		assertThat(item.getAnfrageMenge()).isEqualTo(qtyRequired);
 
-		final VerfuegbarkeitAnteil itemPart = item.getAnteile().get(0);
+		final VerfuegbarkeitAnteil itemPart = item.getAnteile().getFirst();
 		if (qtyExpected == 0)
 		{
 			assertThat(itemPart.getMenge()).isEqualTo(qtyRequired);
@@ -367,7 +366,7 @@ public class IntegrationTest
 		}
 	}
 
-	private final JAXBElement<VerfuegbarkeitAnfragen> createStockAvailabilityQuery(final PZN pzn, final int qtyRequired)
+	private JAXBElement<VerfuegbarkeitAnfragen> createStockAvailabilityQuery(final PZN pzn, final int qtyRequired)
 	{
 		final Artikel stockAvailabilityQueryItem = jaxbObjectFactory.createVerfuegbarkeitsanfrageEinzelneArtikel();
 		stockAvailabilityQueryItem.setPzn(pzn.getValueAsLong());

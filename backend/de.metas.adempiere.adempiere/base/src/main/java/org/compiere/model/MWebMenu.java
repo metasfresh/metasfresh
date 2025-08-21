@@ -41,15 +41,17 @@ package org.compiere.model;
  * #L%
  */
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 
 public class MWebMenu extends X_U_WebMenu
 {
-    /**
+	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -7370745711964160621L;
 
 	public MWebMenu(Properties ctx, int U_WebMenu_ID, String trxName) 

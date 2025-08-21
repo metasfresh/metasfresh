@@ -40,9 +40,9 @@ public interface IEditableView extends IView
 {
 	static IEditableView asEditableView(final IView view)
 	{
-		if (view instanceof IEditableView)
+		if (view instanceof IEditableView editableView)
 		{
-			return (IEditableView)view;
+			return editableView;
 		}
 		else
 		{

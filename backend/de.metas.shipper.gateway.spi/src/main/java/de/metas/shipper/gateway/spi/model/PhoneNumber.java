@@ -42,7 +42,7 @@ public class PhoneNumber
 			throw new IllegalArgumentException("Invalid PhoneNo string: " + phoneNoAsStr);
 		}
 
-		String countryCode = parts.get(0);
+		String countryCode = parts.getFirst();
 		if (countryCode.startsWith("+"))
 		{
 			countryCode = countryCode.substring(1);

@@ -132,27 +132,27 @@ public class BPartnerCompositeAuditServiceTest
 		//validate DataExportAuditLog records
 		final ImmutableList<DataExportAuditLog> bPartnerLogs = dataExportAuditLogRepository.getByDataExportAuditId(bPartnerDataExportAudit.get().getId());
 		assertThat(bPartnerLogs).hasSize(1);
-		assertThat(bPartnerLogs.get(0).getAction()).isEqualTo(Action.Standalone);
-		assertThat(bPartnerLogs.get(0).getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
-		assertThat(bPartnerLogs.get(0).getAdPInstanceId()).isEqualTo(pInstanceId);
+		assertThat(bPartnerLogs.getFirst().getAction()).isEqualTo(Action.Standalone);
+		assertThat(bPartnerLogs.getFirst().getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
+		assertThat(bPartnerLogs.getFirst().getAdPInstanceId()).isEqualTo(pInstanceId);
 
 		final ImmutableList<DataExportAuditLog> bPartnerLocationLogs = dataExportAuditLogRepository.getByDataExportAuditId(bPartnerLocationDataExportAudit.get().getId());
 		assertThat(bPartnerLocationLogs).hasSize(1);
-		assertThat(bPartnerLocationLogs.get(0).getAction()).isEqualTo(Action.AlongWithParent);
-		assertThat(bPartnerLocationLogs.get(0).getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
-		assertThat(bPartnerLocationLogs.get(0).getAdPInstanceId()).isEqualTo(pInstanceId);
+		assertThat(bPartnerLocationLogs.getFirst().getAction()).isEqualTo(Action.AlongWithParent);
+		assertThat(bPartnerLocationLogs.getFirst().getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
+		assertThat(bPartnerLocationLogs.getFirst().getAdPInstanceId()).isEqualTo(pInstanceId);
 
 		final ImmutableList<DataExportAuditLog> locationLogs = dataExportAuditLogRepository.getByDataExportAuditId(locationDataExportAudit.get().getId());
 		assertThat(locationLogs).hasSize(1);
-		assertThat(locationLogs.get(0).getAction()).isEqualTo(Action.AlongWithParent);
-		assertThat(locationLogs.get(0).getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
-		assertThat(locationLogs.get(0).getAdPInstanceId()).isEqualTo(pInstanceId);
+		assertThat(locationLogs.getFirst().getAction()).isEqualTo(Action.AlongWithParent);
+		assertThat(locationLogs.getFirst().getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
+		assertThat(locationLogs.getFirst().getAdPInstanceId()).isEqualTo(pInstanceId);
 
 		final ImmutableList<DataExportAuditLog> userLogs = dataExportAuditLogRepository.getByDataExportAuditId(userDataExportAudit.get().getId());
 		assertThat(userLogs).hasSize(1);
-		assertThat(userLogs.get(0).getAction()).isEqualTo(Action.AlongWithParent);
-		assertThat(userLogs.get(0).getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
-		assertThat(userLogs.get(0).getAdPInstanceId()).isEqualTo(pInstanceId);
+		assertThat(userLogs.getFirst().getAction()).isEqualTo(Action.AlongWithParent);
+		assertThat(userLogs.getFirst().getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
+		assertThat(userLogs.getFirst().getAdPInstanceId()).isEqualTo(pInstanceId);
 	}
 
 	private void createPrerequisites()

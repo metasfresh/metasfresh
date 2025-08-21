@@ -52,7 +52,7 @@ public class SchedulerDao
 			return Optional.empty();
 		}
 
-		return Optional.of(records.get(0));
+		return Optional.of(records.getFirst());
 	}
 
 	@NonNull

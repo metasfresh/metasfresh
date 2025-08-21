@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -51,7 +51,7 @@ public class JsonExternalSystemRequest
 
 	String command;
 
-	@ApiModelProperty("Optional `AD_PInstance_ID` of the process instance which created this request. Can be used when reporting errors or the current status back to metasfresh")
+	@Schema(description = "Optional `AD_PInstance_ID` of the process instance which created this request. Can be used when reporting errors or the current status back to metasfresh")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId adPInstanceId;

@@ -101,7 +101,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	@Nullable
 	private String getOrLoadLotNoFromSeq(final @NonNull I_M_ReceiptSchedule receiptSchedule)
 	{
-		if (!lotNumberFromSeq.isPresent())
+		if (lotNumberFromSeq.isEmpty())
 		{
 			final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(receiptSchedule.getC_DocType_ID()));
 			final DocSequenceId lotNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getLotNo_Sequence_ID());

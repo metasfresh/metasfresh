@@ -40,11 +40,14 @@ import org.compiere.apps.wf.WFPanel;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.util.DB;
 
+import java.io.Serial;
+
 /**
  * Manufacturing WorkFlow Editor
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
 public class WFPanelManufacturing extends WFPanel {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	private static final String WF_WhereClause = X_AD_Workflow.COLUMNNAME_WorkflowType+" IN ("

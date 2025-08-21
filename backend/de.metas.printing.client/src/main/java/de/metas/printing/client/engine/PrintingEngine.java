@@ -300,9 +300,8 @@ public class PrintingEngine
 
 		for (final Media media : medias)
 		{
-			if (media instanceof MediaTray)
+			if (media instanceof MediaTray mediaTray)
 			{
-				final MediaTray mediaTray = (MediaTray)media;
 				if (mediaTray.getValue() == requiredTrayNo)
 				{
 					request.getAttributes().add(mediaTray);
@@ -334,7 +333,7 @@ public class PrintingEngine
 					if (printServiceList.contains(defaultPrintService))
 					{
 						printServiceList.remove(defaultPrintService);
-						printServiceList.add(0, defaultPrintService);
+						printServiceList.addFirst(defaultPrintService);
 						printServiceList.toArray(_printServices);
 					}
 				}
@@ -399,9 +398,8 @@ public class PrintingEngine
 					// printerHWMediaSize.setIsDefault(isDefault);
 					printerHWMediaSizes.add(printerHWMediaSize);
 				}
-				else if (media instanceof MediaTray)
+				else if (media instanceof MediaTray mediaTray)
 				{
-					final MediaTray mediaTray = (MediaTray)media;
 					final String name = mediaTray.toString();
 					final String trayNumber = Integer.toString(mediaTray.getValue());
 
@@ -412,7 +410,7 @@ public class PrintingEngine
 					// 04005: default media tray shall be first in the list
 					if (mediaTray.equals(defaultMediaTray))
 					{
-						printerHWMediaTrays.add(0, printerHWMediaTray);
+						printerHWMediaTrays.addFirst(printerHWMediaTray);
 					}
 					else
 					{

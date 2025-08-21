@@ -86,7 +86,7 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 	{
 		//
 		// Get shipment schedules
-		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.get(0);
+		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.getFirst();
 		final I_M_ShipmentSchedule shipmentSchedule2 = shipmentSchedules.get(1);
 		final I_M_ShipmentSchedule shipmentSchedule3 = shipmentSchedules.get(2);
 		//
@@ -206,7 +206,7 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 		//
 		// Get generated shipment
 		Assertions.assertEquals( 1,  generatedShipments.size(), "Invalid generated shipments count");
-		final I_M_InOut shipment = generatedShipments.get(0);
+		final I_M_InOut shipment = generatedShipments.getFirst();
 
 		//
 		// Retrieve generated shipment lines
@@ -228,7 +228,7 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 		//
 		// Get LUs Package
 		Assertions.assertEquals( 1,  mpackagesForAggregatedHUs.size(), "Invalid generated LU packages count");
-		final I_M_Package mpackage_TU = mpackagesForAggregatedHUs.get(0);
+		final I_M_Package mpackage_TU = mpackagesForAggregatedHUs.getFirst();
 
 		//
 		// Get generated shipment

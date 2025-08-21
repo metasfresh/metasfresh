@@ -113,12 +113,12 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		// Validate PrintPackage Infos
 		final List<I_C_Print_PackageInfo> printPackageInfos = helper.getDAO().retrievePrintPackageInfo(printPackage);
 		Assertions.assertEquals(1, printPackageInfos.size(), "Invalid infos count: " + printPackageInfos);
-		Assertions.assertEquals(1, printPackageInfos.get(0).getPageFrom(), "Invalid PageFrom for " + printPackageInfos.get(0));
-		Assertions.assertEquals(60, printPackageInfos.get(0).getPageTo(), "Invalid PageTo for " + printPackageInfos.get(0));
+		Assertions.assertEquals(1, printPackageInfos.getFirst().getPageFrom(), "Invalid PageFrom for " + printPackageInfos.getFirst());
+		Assertions.assertEquals(60, printPackageInfos.getFirst().getPageTo(), "Invalid PageTo for " + printPackageInfos.getFirst());
 
 		// 03733 begin
-		Assertions.assertEquals(10, printPackageInfos.get(0).getCalX(), "Invalid CalX for " + printPackageInfos.get(0));
-		Assertions.assertEquals(20, printPackageInfos.get(0).getCalY(), "Invalid CalY for " + printPackageInfos.get(0));
+		Assertions.assertEquals(10, printPackageInfos.getFirst().getCalX(), "Invalid CalX for " + printPackageInfos.getFirst());
+		Assertions.assertEquals(20, printPackageInfos.getFirst().getCalY(), "Invalid CalY for " + printPackageInfos.getFirst());
 		// 03733 end
 	}
 
@@ -150,12 +150,12 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		// Validate PrintPackage Infos
 		final List<I_C_Print_PackageInfo> printPackageInfos = helper.getDAO().retrievePrintPackageInfo(printPackage);
 		Assertions.assertEquals(1, printPackageInfos.size(), "Invalid infos count: " + printPackageInfos);
-		Assertions.assertEquals(1, printPackageInfos.get(0).getPageFrom(), "Invalid PageFrom for " + printPackageInfos.get(0));
-		Assertions.assertEquals(60, printPackageInfos.get(0).getPageTo(), "Invalid PageTo for " + printPackageInfos.get(0));
+		Assertions.assertEquals(1, printPackageInfos.getFirst().getPageFrom(), "Invalid PageFrom for " + printPackageInfos.getFirst());
+		Assertions.assertEquals(60, printPackageInfos.getFirst().getPageTo(), "Invalid PageTo for " + printPackageInfos.getFirst());
 
 		// 03733 begin
-		Assertions.assertEquals(0, printPackageInfos.get(0).getCalX(), "Invalid CalX for " + printPackageInfos.get(0));
-		Assertions.assertEquals(0, printPackageInfos.get(0).getCalY(), "Invalid CalY for " + printPackageInfos.get(0));
+		Assertions.assertEquals(0, printPackageInfos.getFirst().getCalX(), "Invalid CalX for " + printPackageInfos.getFirst());
+		Assertions.assertEquals(0, printPackageInfos.getFirst().getCalY(), "Invalid CalY for " + printPackageInfos.getFirst());
 		// 03733 end
 	}
 
@@ -196,8 +196,8 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		// Validate PrintPackage Infos
 		final List<I_C_Print_PackageInfo> printPackageInfos = helper.getDAO().retrievePrintPackageInfo(printPackage);
 		Assertions.assertEquals(1, printPackageInfos.size(), "Invalid infos count: " + printPackageInfos);
-		Assertions.assertEquals(1, printPackageInfos.get(0).getPageFrom(), "Invalid PageFrom for " + printPackageInfos.get(0));
-		Assertions.assertEquals(20 + 6 + 20, printPackageInfos.get(0).getPageTo(), "Invalid PageTo for " + printPackageInfos.get(0));
+		Assertions.assertEquals(1, printPackageInfos.getFirst().getPageFrom(), "Invalid PageFrom for " + printPackageInfos.getFirst());
+		Assertions.assertEquals(20 + 6 + 20, printPackageInfos.getFirst().getPageTo(), "Invalid PageTo for " + printPackageInfos.getFirst());
 	}
 
 	@Test

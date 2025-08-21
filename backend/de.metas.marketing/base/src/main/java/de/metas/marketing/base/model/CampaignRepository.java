@@ -151,19 +151,15 @@ public class CampaignRepository
 		final Campaign campaign = Campaign.cast(syncResult.getSynchedDataRecord());
 		final I_MKTG_Campaign campaignRecord = createOrUpdateRecordDontSave(campaign);
 
-		if (syncResult instanceof LocalToRemoteSyncResult)
+		if (syncResult instanceof LocalToRemoteSyncResult localToRemoteSyncResult)
 		{
 			campaignRecord.setLastSyncOfLocalToRemote(de.metas.common.util.time.SystemTime.asTimestamp());
-
-			final LocalToRemoteSyncResult localToRemoteSyncResult = (LocalToRemoteSyncResult)syncResult;
 			campaignRecord.setLastSyncStatus(localToRemoteSyncResult.getLocalToRemoteStatus().toString());
 			campaignRecord.setLastSyncDetailMessage(localToRemoteSyncResult.getErrorMessage());
 		}
-		else if (syncResult instanceof RemoteToLocalSyncResult)
+		else if (syncResult instanceof RemoteToLocalSyncResult remoteToLocalSyncResult)
 		{
 			campaignRecord.setLastSyncOfRemoteToLocal(SystemTime.asTimestamp());
-
-			final RemoteToLocalSyncResult remoteToLocalSyncResult = (RemoteToLocalSyncResult)syncResult;
 			campaignRecord.setLastSyncStatus(remoteToLocalSyncResult.getRemoteToLocalStatus().toString());
 			campaignRecord.setLastSyncDetailMessage(remoteToLocalSyncResult.getErrorMessage());
 		}

@@ -64,17 +64,17 @@ public class SwingAskDialogBuilder implements IAskDialogBuilder
 		final int messageType = JOptionPane.QUESTION_MESSAGE;
 
 		boolean answer = false;
-		if (parent instanceof JFrame)
+		if (parent instanceof JFrame frame)
 		{
-			final ADialogDialog dialog = new ADialogDialog((JFrame)parent, title);
+			final ADialogDialog dialog = new ADialogDialog(frame, title);
 			dialog.setMessage(message, messageType);
 			dialog.setInitialAnswer(defaultAnswer ? ADialogDialog.A_OK : ADialogDialog.A_CANCEL);
 			dialog.showCenterScreen();
 			answer = dialog.getReturnCode() == ADialogDialog.A_OK;
 		}
-		else if (parent instanceof JDialog)
+		else if (parent instanceof JDialog jDialog)
 		{
-			final ADialogDialog dialog = new ADialogDialog((JDialog)parent, title);
+			final ADialogDialog dialog = new ADialogDialog(jDialog, title);
 			dialog.setMessage(message, messageType);
 			dialog.setInitialAnswer(defaultAnswer ? ADialogDialog.A_OK : ADialogDialog.A_CANCEL);
 			dialog.showCenterScreen();
@@ -149,9 +149,9 @@ public class SwingAskDialogBuilder implements IAskDialogBuilder
 	private Window getParentWindowOrNull()
 	{
 		Window parent = null;
-		if (_parentCompObj instanceof Component)
+		if (_parentCompObj instanceof Component component)
 		{
-			parent = SwingUtils.getParentWindow((Component)_parentCompObj);
+			parent = SwingUtils.getParentWindow(component);
 		}
 
 		if (parent == null && Env.isRegularOrMainWindowNo(_parentWindowNo))

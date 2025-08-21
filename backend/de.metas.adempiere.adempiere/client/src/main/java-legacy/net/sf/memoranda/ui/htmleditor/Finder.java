@@ -124,6 +124,11 @@ public class Finder extends Thread {
                     editor.toolsPanel.addTab(Local.getString("Find"), cdlg);
                     showCdlg = true;
                 }                
+                /*                
+                 * `Thread.suspend()` always throws a `new UnsupportedOperationException()` in Java 21+.                
+                 * For detailed migration instructions see the migration guide available at                
+                 * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html                
+                 */                
                 this.suspend();
 
                 if (cdlg.cancel) {

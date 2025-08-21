@@ -62,9 +62,9 @@ public class HierarchyConfig implements CommissionConfig
 
 	public static HierarchyConfig cast(@NonNull final CommissionConfig config)
 	{
-		if (config instanceof HierarchyConfig)
+		if (config instanceof HierarchyConfig hierarchyConfig)
 		{
-			return (HierarchyConfig)config;
+			return hierarchyConfig;
 		}
 
 		throw new AdempiereException("Cannot cast the given config to HierarchyConfig")

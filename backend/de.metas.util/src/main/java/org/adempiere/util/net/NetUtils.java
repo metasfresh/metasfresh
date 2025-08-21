@@ -114,9 +114,8 @@ public final class NetUtils
 				return true;
 			}
 
-			if (obj instanceof HostIdentifier)
+			if (obj instanceof HostIdentifier other)
 			{
-				final HostIdentifier other = (HostIdentifier)obj;
 				return Objects.equals(hostName, other.hostName)
 						&& Objects.equals(hostAddress, other.hostAddress);
 			}

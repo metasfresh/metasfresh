@@ -66,7 +66,7 @@ public class InsertPause
 			return;
 		}
 
-		final I_C_SubscriptionProgress firstSpAfterBeginOfPause = allSpsAfterBeginOfPause.get(0);
+		final I_C_SubscriptionProgress firstSpAfterBeginOfPause = allSpsAfterBeginOfPause.getFirst();
 		createBeginOfPause(term, dateFrom, firstSpAfterBeginOfPause.getSeqNo());
 
 		final ImmutableList<I_C_SubscriptionProgress> updatedSpsWithinPause = processAndCollectRecordWithinPause(allSpsAfterBeginOfPause, dateTo);
@@ -130,7 +130,7 @@ public class InsertPause
 
 	private static int computeEndOfPauseSeqNo(final I_C_SubscriptionProgress firstSpAfterBeginOfPause, final ImmutableList<I_C_SubscriptionProgress> spsWithinPause)
 	{
-		return spsWithinPause.isEmpty() ? firstSpAfterBeginOfPause.getSeqNo() + 1 : spsWithinPause.get(spsWithinPause.size() - 1).getSeqNo() + 1;
+		return spsWithinPause.isEmpty() ? firstSpAfterBeginOfPause.getSeqNo() + 1 : spsWithinPause.getLast().getSeqNo() + 1;
 	}
 
 	private void createEndOfPause(

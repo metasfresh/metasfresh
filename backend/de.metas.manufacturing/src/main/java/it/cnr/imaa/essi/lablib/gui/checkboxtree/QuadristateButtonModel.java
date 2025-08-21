@@ -37,6 +37,8 @@ package it.cnr.imaa.essi.lablib.gui.checkboxtree;
 
 import javax.swing.DefaultButtonModel;
 
+import java.io.Serial;
+
 /**
  * The model for a quadristate CheckBox. Available states are UNCHECKED,
  * CHECKED, GREY_CHECKED, GREY_UNCHECKED
@@ -45,9 +47,10 @@ import javax.swing.DefaultButtonModel;
  */
 public class QuadristateButtonModel extends DefaultButtonModel {
 
-    /**
+	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -3876388376253061011L;
 
 	public enum State {

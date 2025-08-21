@@ -86,7 +86,7 @@ public class Meter implements IMeter
 		else
 		{
 			invokeRate = new BigDecimal("1000")
-					.setScale(2, BigDecimal.ROUND_HALF_UP)
+					.setScale(2, RoundingMode.HALF_UP)
 					.divide(intervalLastInvokeLocal, RoundingMode.HALF_UP)
 					.abs(); // be tolerant against intervalLastChange < 0
 		}

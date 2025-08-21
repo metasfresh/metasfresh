@@ -64,10 +64,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
-import java.io.File;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -93,6 +90,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
 
+	@Serial
 	private static final long serialVersionUID = 5825759144157759944L;
 	private static final Logger log = LogManager.getLogger(MADBoilerPlate.class);
 
@@ -1125,9 +1123,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		public int getWindowNo()
 		{
 			final Object windowNoObj = get(VAR_WindowNo);
-			if (windowNoObj instanceof Number)
+			if (windowNoObj instanceof Number number)
 			{
-				return ((Number)windowNoObj).intValue();
+				return number.intValue();
 			}
 			else
 			{
@@ -1295,9 +1293,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return null;
 			}
 
-			if (obj instanceof SourceDocument)
+			if (obj instanceof SourceDocument document)
 			{
-				return (SourceDocument)obj;
+				return document;
 			}
 
 			final PO po = getPO(obj);

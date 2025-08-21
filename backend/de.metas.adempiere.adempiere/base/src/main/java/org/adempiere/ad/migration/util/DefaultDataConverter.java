@@ -22,6 +22,12 @@ package org.adempiere.ad.migration.util;
  * #L%
  */
 
+import de.metas.logging.LogManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.POInfoColumn;
+import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -29,13 +35,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.POInfoColumn;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.DisplayType;
 
 public class DefaultDataConverter implements IDataConverter
 {
@@ -164,9 +163,9 @@ public class DefaultDataConverter implements IDataConverter
 		}
 		else if (DisplayType.YesNo == displayType)
 		{
-			if (value instanceof Boolean)
+			if (value instanceof Boolean boolean1)
 			{
-				valueStr = ((Boolean)value) ? "true" : "false";
+				valueStr = boolean1 ? "true" : "false";
 			}
 			else
 			{

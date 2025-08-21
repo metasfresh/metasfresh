@@ -8,6 +8,10 @@ import de.metas.email.impl.EMailSendException;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import jakarta.mail.Address;
+import jakarta.mail.AuthenticationFailedException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.SendFailedException;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -16,10 +20,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import javax.mail.Address;
-import javax.mail.AuthenticationFailedException;
-import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
 import java.io.Serializable;
 import java.util.function.Consumer;
 
@@ -108,9 +108,8 @@ public final class EMailSentStatus implements Serializable
 		boolean printed = false;
 		do
 		{
-			if (ex instanceof SendFailedException)
+			if (ex instanceof SendFailedException sfex)
 			{
-				final SendFailedException sfex = (SendFailedException)ex;
 				final Address[] invalid = sfex.getInvalidAddresses();
 				if (!printed)
 				{
@@ -187,9 +186,9 @@ public final class EMailSentStatus implements Serializable
 				}
 			}
 			// Next Exception
-			if (ex instanceof MessagingException)
+			if (ex instanceof MessagingException exception)
 			{
-				ex = ((MessagingException)ex).getNextException();
+				ex = exception.getNextException();
 			}
 			else
 			{
@@ -224,9 +223,9 @@ public final class EMailSentStatus implements Serializable
 
 	public static boolean isConnectionError(final Exception e)
 	{
-		if (e instanceof EMailSendException)
+		if (e instanceof EMailSendException exception)
 		{
-			return ((EMailSendException)e).isConnectionError();
+			return exception.isConnectionError();
 		}
 		else
 			return e instanceof java.net.ConnectException;

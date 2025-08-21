@@ -45,10 +45,10 @@ import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.compiere.util.Env;
 import org.slf4j.MDC;
@@ -97,17 +97,17 @@ public class BpartnerRestController
 	}
 
 	//
-	@ApiOperation("The identified bpartner needs to be in the current user's organisation.")
+	@Operation(summary = "The identified bpartner needs to be in the current user's organisation.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved bpartner"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved bpartner"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{bpartnerIdentifier}")
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
 	{
@@ -117,11 +117,11 @@ public class BpartnerRestController
 	@GetMapping("{orgCode}/{bpartnerIdentifier}")
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
 
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
 	{
@@ -131,21 +131,21 @@ public class BpartnerRestController
 	}
 
 	//
-	@ApiOperation("The identified bpartner needs to be in the current user's organisation.")
+	@Operation(summary = "The identified bpartner needs to be in the current user's organisation.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved location"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved location"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{bpartnerIdentifier}/location/{locationIdentifier}")
 	public ResponseEntity<JsonResponseLocation> retrieveBPartnerLocation(
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
-			@ApiParam(required = true, value = LOCATION_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = LOCATION_IDENTIFIER_DOC) //
 			@PathVariable("locationIdentifier") //
 			@NonNull final String locationIdentifierStr)
 	{
@@ -153,23 +153,23 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved location"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved location"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{orgCode}/{bpartnerIdentifier}/location/{locationIdentifier}")
 	public ResponseEntity<JsonResponseLocation> retrieveBPartnerLocation(
 
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
-			@ApiParam(required = true, value = LOCATION_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = LOCATION_IDENTIFIER_DOC) //
 			@PathVariable("locationIdentifier") //
 			@NonNull final String locationIdentifierStr)
 	{
@@ -180,21 +180,21 @@ public class BpartnerRestController
 		return okOrNotFound(location);
 	}
 
-	@ApiOperation("The identified bpartner needs to be in the current user's organisation.")
+	@Operation(summary = "The identified bpartner needs to be in the current user's organisation.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved contact"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved contact"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{bpartnerIdentifier}/contact/{contactIdentifier}")
 	public ResponseEntity<JsonResponseContact> retrieveBPartnerContact(
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
-			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifierStr)
 	{
@@ -202,23 +202,23 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved contact"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved contact"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{orgCode}/{bpartnerIdentifier}/contact/{contactIdentifier}")
 	public ResponseEntity<JsonResponseContact> retrieveBPartnerContact(
 
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
-			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifierStr)
 	{
@@ -230,19 +230,19 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved bpartner(s)"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved bpartner(s)"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "There is no page for the given 'next' value")
 	})
 	@GetMapping
 	public ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSince(
 
-			@ApiParam(SINCE_DOC) //
+			@Parameter(description = SINCE_DOC) //
 			@RequestParam(name = "since", required = false) //
 			@Nullable final Long epochTimestampMillis,
 
-			@ApiParam(NEXT_DOC) //
+			@Parameter(description = NEXT_DOC) //
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
@@ -259,17 +259,17 @@ public class BpartnerRestController
 		}
 	}
 
-	@ApiOperation("The identified bpartner products need to be in the current user's organisation.")
+	@Operation(summary = "The identified bpartner products need to be in the current user's organisation.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved bpartner products"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved bpartner products"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{bpartnerIdentifier}/products")
 	public ResponseEntity<JsonResponseProductBPartner> retrieveBPartnerProducts(
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
 	{
@@ -277,19 +277,19 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved bpartner products"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved bpartner products"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{orgCode}/{bpartnerIdentifier}/products")
 	public ResponseEntity<JsonResponseProductBPartner> retrieveBPartnerProducts(
 
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
 	{
@@ -300,15 +300,15 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "201", description = "Successfully created or updated bpartner(s)"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
 	@PutMapping("{orgCode}")
 	public ResponseEntity<JsonResponseBPartnerCompositeUpsert> createOrUpdateBPartner(
 
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
@@ -336,12 +336,12 @@ public class BpartnerRestController
 		return new ResponseEntity<>(response.build(), HttpStatus.CREATED);
 	}
 
-	@ApiOperation("The identified bpartner needs to be in the current user's organisation.")
+	@Operation(summary = "The identified bpartner needs to be in the current user's organisation.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "201", description = "Successfully created or updated bpartner(s)"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
 	@PutMapping
 	public ResponseEntity<JsonResponseBPartnerCompositeUpsert> createOrUpdateBPartner(
@@ -352,18 +352,19 @@ public class BpartnerRestController
 
 	//
 	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Successfully created or updated location"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "201", description = "Successfully created or updated location"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a locations for a particular bpartner.\n"
-			+ "The identified bpartner needs to be in the current user's organisation.\n"
-			+ "If a location exists, then those of its properties that are *not* specified are left untouched.")
+	@Operation(summary = """
+			Create or update a locations for a particular bpartner.
+			The identified bpartner needs to be in the current user's organisation.
+			If a location exists, then those of its properties that are *not* specified are left untouched.""")
 	@PutMapping("{bpartnerIdentifier}/location")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -373,20 +374,20 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Successfully created or updated location"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "201", description = "Successfully created or updated location"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a locations for a particular bpartner. If a location exists, then its properties that are *not* specified are left untouched.")
+	@Operation(summary = "Create or update a locations for a particular bpartner. If a location exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{orgCode}/{bpartnerIdentifier}/location")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -407,19 +408,20 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "201", description = "Successfully created or updated contact"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The bpartner you were trying to reach is not found"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a contacts for a particular bpartner.\n"
-			+ "The identified bpartner needs to be in the current user's organisation.\n"
-			+ "If a contact exists, then its properties that are *not* specified are left untouched.")
+	@Operation(summary = """
+			Create or update a contacts for a particular bpartner.
+			The identified bpartner needs to be in the current user's organisation.
+			If a contact exists, then its properties that are *not* specified are left untouched.""")
 	@PutMapping("{bpartnerIdentifier}/contact")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -429,22 +431,22 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "201", description = "Successfully created or updated contact"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The bpartner you were trying to reach is not found"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a contacts for a particular bpartner.\n"
+	@Operation(summary = "Create or update a contacts for a particular bpartner.\n"
 			+ "If a contact exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{orgCode}/{bpartnerIdentifier}/contact")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -466,19 +468,20 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Successfully created or updated bank account"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "201", description = "Successfully created or updated bank account"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The bpartner you were trying to reach is not found"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a bank account for a particular bpartner.\n"
-			+ "The identified bpartner needs to be in the current user's organisation.\n"
-			+ "If a bank account exists, then its properties that are *not* specified are left untouched.")
+	@Operation(summary = """
+			Create or update a bank account for a particular bpartner.
+			The identified bpartner needs to be in the current user's organisation.
+			If a bank account exists, then its properties that are *not* specified are left untouched.""")
 	@PutMapping("{bpartnerIdentifier}/bankAccount")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateBankAccount(
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -488,21 +491,21 @@ public class BpartnerRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Successfully created or updated bank account"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "201", description = "Successfully created or updated bank account"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The bpartner you were trying to reach is not found"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
-	@ApiOperation("Create or update a bank account for a particular bpartner. If a bank account exists, then its properties that are *not* specified are left untouched.")
+	@Operation(summary = "Create or update a bank account for a particular bpartner. If a bank account exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{orgCode}/{bpartnerIdentifier}/bankAccount")
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateBankAccount(
 
-			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 

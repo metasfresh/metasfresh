@@ -1071,7 +1071,7 @@ public class AltHTMLWriter extends AbstractWriter {
                     if (weightValue != null) {
                         int fweight;
                         try {
-                            fweight = new Integer(weightValue).intValue();
+                            fweight = Integer.valueOf(weightValue).intValue();
                         }
                         catch (Exception ex) {
                             fweight = -1;

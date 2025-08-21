@@ -155,13 +155,13 @@ public final class MQuery implements Serializable
 				double d = rs.getDouble(4);
 				if (!rs.wasNull())
 				{
-					P_Number = new Double(d);
+					P_Number = Double.valueOf(d);
 				}
 				Double P_Number_To = null;
 				d = rs.getDouble(5);
 				if (!rs.wasNull())
 				{
-					P_Number_To = new Double(d);
+					P_Number_To = Double.valueOf(d);
 				}
 				//
 				Timestamp P_Date = rs.getTimestamp(6);
@@ -388,7 +388,7 @@ public final class MQuery implements Serializable
 		{
 			query.setTableName(columnName.substring(0, columnName.length() - 3));
 		}
-		query.addRestriction(columnName, Operator.EQUAL, new Integer(value));
+		query.addRestriction(columnName, Operator.EQUAL, Integer.valueOf(value));
 		query.setRecordCount(1);	// guess
 		return query;
 	}	// getEqualQuery
@@ -1422,7 +1422,7 @@ public final class MQuery implements Serializable
 		}
 		else if (code instanceof KeyNamePair)
 		{
-			codeNorm = new Integer(((KeyNamePair)code).getKey());
+			codeNorm = Integer.valueOf(((KeyNamePair)code).getKey());
 		}
 		else if (code instanceof ValueNamePair)
 		{

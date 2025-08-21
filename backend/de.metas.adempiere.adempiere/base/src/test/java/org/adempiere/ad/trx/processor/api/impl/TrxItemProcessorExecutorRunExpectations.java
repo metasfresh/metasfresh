@@ -73,9 +73,9 @@ class TrxItemProcessorExecutorRunExpectations<IT, RT>
 		public void onItemError(Throwable e, Object item)
 		{
 			super.onItemError(e, item);
-			if (item instanceof Item)
+			if (item instanceof Item item1)
 			{
-				((Item)item).setOnItemErrorException(e);
+				item1.setOnItemErrorException(e);
 			}
 		}
 	};

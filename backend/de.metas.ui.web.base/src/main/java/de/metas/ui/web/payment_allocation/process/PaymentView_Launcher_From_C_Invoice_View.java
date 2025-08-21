@@ -48,7 +48,7 @@ public class PaymentView_Launcher_From_C_Invoice_View extends ViewBasedProcessTe
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSingleSelectedInvoiceId().isPresent())
+		if (getSingleSelectedInvoiceId().isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a single selected Invoice");
 		}

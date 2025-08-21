@@ -276,9 +276,8 @@ public final class CompositeStringExpression implements IStringExpression
 				return this;
 			}
 
-			if (expr instanceof CompositeStringExpression)
+			if (expr instanceof CompositeStringExpression compositeExpr)
 			{
-				final CompositeStringExpression compositeExpr = (CompositeStringExpression)expr;
 				appendAll(compositeExpr.expressions);
 			}
 			else
@@ -305,9 +304,8 @@ public final class CompositeStringExpression implements IStringExpression
 		 */
 		private void reduceAndAppend(final IStringExpression expr)
 		{
-			if (expr instanceof ConstantStringExpression)
+			if (expr instanceof ConstantStringExpression constantExpr)
 			{
-				final ConstantStringExpression constantExpr = (ConstantStringExpression)expr;
 				appendToLastConstantBuffer(constantExpr.getConstantValue());
 				return;
 			}

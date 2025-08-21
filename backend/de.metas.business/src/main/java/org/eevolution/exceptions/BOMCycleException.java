@@ -27,6 +27,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_PP_Product_BOM;
 
 import de.metas.product.IProductBL;
+
+import java.io.Serial;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 
@@ -35,6 +37,7 @@ public class BOMCycleException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 6859323608419524916L;
 
 	public BOMCycleException(final I_PP_Product_BOM bom, final ProductId componentProductId)

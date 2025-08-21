@@ -36,7 +36,7 @@ import org.compiere.model.I_EXP_Processor;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_S_PostgREST_Config;
 import org.compiere.util.Env;
-import org.springframework.util.SocketUtils;
+import org.springframework.test.util.TestSocketUtils;
 
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
 import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
@@ -69,7 +69,7 @@ public class CucumberLifeCycleSupport
 			final String dbHost = infrastructureSupport.getDbHost();
 			final String dbPort = Integer.toString(infrastructureSupport.getDbPort());
 
-			final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
+			final int appServerPort = TestSocketUtils.findAvailableTcpPort();
 			System.setProperty("server.port", Integer.toString(appServerPort));
 
 			System.setProperty("java.awt.headless", "true"); // "simulate headless mode

@@ -317,12 +317,12 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		setupContext(100);
 
 		final List<I_M_HU> luHUs = createLUs(helper, huDefPalet, huDefIFCO, COUNT_Tomatoes_Per_IFCO);
-		final I_M_HU luHU = luHUs.get(0);
+		final I_M_HU luHU = luHUs.getFirst();
 
 		final List<I_M_HU> aggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
 		assertThat(aggregateHUs).hasSize(1);
 
-		final I_M_HU aggregateVhu = aggregateHUs.get(0);
+		final I_M_HU aggregateVhu = aggregateHUs.getFirst();
 		Assertions.assertTrue(Services.get(IHandlingUnitsBL.class).isAggregateHU(aggregateVhu));
 
 		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);

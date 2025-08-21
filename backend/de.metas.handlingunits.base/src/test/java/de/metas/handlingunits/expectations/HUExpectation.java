@@ -411,7 +411,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		else
 		{
 			@SuppressWarnings("unchecked")
-			final HUItemExpectation<HUExpectation<ParentExpectationType>> expectation = (HUItemExpectation<HUExpectation<ParentExpectationType>>)matchingExpectations.get(0);
+			final HUItemExpectation<HUExpectation<ParentExpectationType>> expectation = (HUItemExpectation<HUExpectation<ParentExpectationType>>)matchingExpectations.getFirst();
 			return expectation;
 		}
 	}

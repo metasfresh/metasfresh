@@ -113,7 +113,7 @@ public class MStatusCategory extends X_R_StatusCategory
 	 */
 	public static MStatusCategory get (Properties ctx, int R_StatusCategory_ID)
 	{
-		Integer key = new Integer (R_StatusCategory_ID);
+		Integer key = Integer.valueOf(R_StatusCategory_ID);
 		MStatusCategory retValue = (MStatusCategory)s_cache.get (key);
 		if (retValue != null)
 			return retValue;

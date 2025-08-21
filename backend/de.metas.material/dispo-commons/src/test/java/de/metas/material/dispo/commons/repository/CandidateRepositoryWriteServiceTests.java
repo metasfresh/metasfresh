@@ -168,9 +168,9 @@ public class CandidateRepositoryWriteServiceTests
 
 		final List<I_MD_Candidate_Demand_Detail> allDemandDetails = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Demand_Detail.class).create().list();
 		assertThat(allDemandDetails).hasSize(1);
-		assertThat(allDemandDetails.get(0).getM_ShipmentSchedule_ID()).isEqualTo(20);
-		assertThat(allDemandDetails.get(0).getM_ForecastLine_ID()).isLessThanOrEqualTo(0);
-		assertThat(allDemandDetails.get(0).getC_OrderLine_ID()).isLessThanOrEqualTo(0);
+		assertThat(allDemandDetails.getFirst().getM_ShipmentSchedule_ID()).isEqualTo(20);
+		assertThat(allDemandDetails.getFirst().getM_ForecastLine_ID()).isLessThanOrEqualTo(0);
+		assertThat(allDemandDetails.getFirst().getC_OrderLine_ID()).isLessThanOrEqualTo(0);
 	}
 
 	@Test
@@ -274,7 +274,7 @@ public class CandidateRepositoryWriteServiceTests
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
-		final I_MD_Candidate record = filtered.get(0);
+		final I_MD_Candidate record = filtered.getFirst();
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
 		assertThat(CandidateBusinessCase.ofNullableCode(record.getMD_Candidate_BusinessCase())).isEqualTo(productionCandidate.getBusinessCase());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
@@ -383,7 +383,7 @@ public class CandidateRepositoryWriteServiceTests
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
-		final I_MD_Candidate record = filtered.get(0);
+		final I_MD_Candidate record = filtered.getFirst();
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
 		assertThat(CandidateBusinessCase.ofNullableCode(record.getMD_Candidate_BusinessCase())).isEqualTo(distributionCandidate.getBusinessCase());
 		assertThat(record.getM_Product_ID()).isEqualTo(distributionCandidate.getMaterialDescriptor().getProductId());
@@ -419,7 +419,7 @@ public class CandidateRepositoryWriteServiceTests
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
-		final I_MD_Candidate record = filtered.get(0);
+		final I_MD_Candidate record = filtered.getFirst();
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
 		assertThat(CandidateBusinessCase.ofNullableCode(record.getMD_Candidate_BusinessCase())).isEqualTo(productionCandidate.getBusinessCase());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
@@ -452,7 +452,7 @@ public class CandidateRepositoryWriteServiceTests
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID + productIdOffSet);
 		assertThat(filtered).hasSize(1);
 
-		final I_MD_Candidate record = filtered.get(0);
+		final I_MD_Candidate record = filtered.getFirst();
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId().getRepoId());
 		assertThat(CandidateBusinessCase.ofNullableCode(record.getMD_Candidate_BusinessCase())).isEqualTo(productionCandidate.getBusinessCase());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());

@@ -183,7 +183,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		//
 		// Get Material Tracking I_M_Attribute's Id, if it exists
 		final Optional<AttributeId> materialTrackingAttributeId = getMaterialTrackingAttributeId();
-		if (!materialTrackingAttributeId.isPresent())
+		if (materialTrackingAttributeId.isEmpty())
 		{
 			return null;
 		}
@@ -369,7 +369,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		}
 
 		final Optional<AttributeId> materialTrackingAttributeId = getMaterialTrackingAttributeId();
-		if (!materialTrackingAttributeId.isPresent())
+		if (materialTrackingAttributeId.isEmpty())
 		{
 			return false;
 		}

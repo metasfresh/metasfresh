@@ -52,41 +52,10 @@ package org.adempiere.plaf;
  * #L%
  */
 
+import com.jgoodies.looks.Options;
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JViewport;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ComponentUI;
@@ -94,9 +63,12 @@ import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import javax.swing.plaf.metal.MetalTabbedPaneUI;
 import javax.swing.text.View;
-
-import com.jgoodies.looks.Options;
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * The JGoodies Plastic Look&amp;Feel implementation of <code>TabbedPaneUI</code>.
@@ -468,9 +440,9 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 
 		if (scrollableTabLayoutEnabled())
 		{
-			if (g instanceof Graphics2D)
+			if (g instanceof Graphics2D graphics2D)
 			{
-				g2 = (Graphics2D)g;
+				g2 = graphics2D;
 
 				// Render visual for cropped tab edge...
 				Rectangle viewRect = tabScroller.viewport.getViewRect();
@@ -1165,9 +1137,8 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 		
 		int tabLevel = 0;
 		final Component comp = tabPane.getComponentAt(tabIndex);
-		if (comp instanceof JComponent)
+		if (comp instanceof JComponent jc)
 		{
-			final JComponent jc = (JComponent)comp;
 			try
 			{
 				final Integer levelObj = (Integer)jc.getClientProperty(AdempiereLookAndFeel.TABLEVEL);
@@ -1600,9 +1571,9 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 			visibleComponent.requestFocus();
 			return true;
 		}
-		if (visibleComponent instanceof JComponent)
+		if (visibleComponent instanceof JComponent component)
 		{
-			if (((JComponent)visibleComponent).requestDefaultFocus())
+			if (component.requestDefaultFocus())
 			{
 				return true;
 			}
@@ -1623,9 +1594,9 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 		{
 			JTabbedPane pane = null;
 			Object src = e.getSource();
-			if (src instanceof JTabbedPane)
+			if (src instanceof JTabbedPane tabbedPane)
 			{
-				pane = (JTabbedPane)src;
+				pane = tabbedPane;
 			}
 			else if (src != null
 					&& src.getClass().getName().equals("com.jgoodies.looks.plastic.com.jgoodies.looks.plastic"))
@@ -1658,9 +1629,9 @@ public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 		{
 			JTabbedPane pane = null;
 			Object src = e.getSource();
-			if (src instanceof JTabbedPane)
+			if (src instanceof JTabbedPane tabbedPane)
 			{
-				pane = (JTabbedPane)src;
+				pane = tabbedPane;
 			}
 			else if (src != null
 					&& src.getClass().getName().equals("com.jgoodies.looks.plastic.com.jgoodies.looks.plastic"))

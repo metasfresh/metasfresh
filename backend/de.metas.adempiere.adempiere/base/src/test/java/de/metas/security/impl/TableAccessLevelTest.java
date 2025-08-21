@@ -22,19 +22,17 @@ package de.metas.security.impl;
  * #L%
  */
 
+import de.metas.security.TableAccessLevel;
+import de.metas.util.Pair;
+import org.compiere.model.X_AD_Role;
+import org.compiere.model.X_AD_Table;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-
-import org.compiere.model.X_AD_Role;
-import org.compiere.model.X_AD_Table;
-
-import de.metas.security.TableAccessLevel;
-import de.metas.util.Pair;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 /**
  * Tests {@link TableAccessLevel} logic.

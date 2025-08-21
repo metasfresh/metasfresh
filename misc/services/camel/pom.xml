@@ -40,12 +40,7 @@
         can't set it to another version -->
     <version>10.0.0</version>
     <packaging>pom</packaging>
-
-    <properties>
-        <!-- mockito 2.7.22 doesn't work with java-17-->
-        <mockito.version>4.3.1</mockito.version>
-    </properties>
-
+    
     <modules>
         <module>de-metas-camel-edi</module>
         <module>de-metas-camel-externalsystems</module>
@@ -59,13 +54,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -82,16 +70,12 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                    <source>14</source>
-                    <target>14</target>
+                    <source>21</source>
+                    <target>21</target>
                 </configuration>
             </plugin>
         </plugins>

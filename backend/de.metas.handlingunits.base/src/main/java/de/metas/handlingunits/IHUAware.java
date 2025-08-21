@@ -60,9 +60,9 @@ public interface IHUAware
 	@Nullable
 	static I_M_HU getM_HUOrNull(final Object model)
 	{
-		if(model instanceof IHUAware)
+		if(model instanceof IHUAware aware)
 		{
-			return ((IHUAware)model).getM_HU();
+			return aware.getM_HU();
 		}
 		else
 		{

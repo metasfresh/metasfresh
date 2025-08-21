@@ -91,7 +91,7 @@ public class LUTUProducerDestinationLoadTests
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 		Assertions.assertThat(createdHUs).hasSize(1);
 
-		final Node createdHuXMLs = HUXmlConverter.toXml(createdHUs.get(0));
+		final Node createdHuXMLs = HUXmlConverter.toXml(createdHUs.getFirst());
 		// System.out.println(HUXmlConverter.toString(createdHuXMLs));
 
 		XmlAssert.assertThat(createdHuXMLs).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])").isEqualTo("1");
@@ -136,7 +136,7 @@ public class LUTUProducerDestinationLoadTests
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 
 		Assertions.assertThat(createdHUs).hasSize(1);
-		final Node createdHuXML = HUXmlConverter.toXml(createdHUs.get(0));
+		final Node createdHuXML = HUXmlConverter.toXml(createdHUs.getFirst());
 		// System.out.println(HUXmlConverter.toString(createdHuXML));
 
 		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
@@ -194,7 +194,7 @@ public class LUTUProducerDestinationLoadTests
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 
 		// data.helper.commitAndDumpHU(createdHUs.get(0));
-		final Node createdHuXML = HUXmlConverter.toXml(createdHUs.get(0));
+		final Node createdHuXML = HUXmlConverter.toXml(createdHUs.getFirst());
 		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-TU_IFCO/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
 
 		// reach far down, to check if everything is as expected also in general
@@ -239,7 +239,7 @@ public class LUTUProducerDestinationLoadTests
 		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("109.4"), data.helper.uomKg);
 		Assertions.assertThat(lutuProducer.getCreatedHUs()).hasSize(1);
 
-		final I_M_HU createdLU = lutuProducer.getCreatedHUs().get(0);
+		final I_M_HU createdLU = lutuProducer.getCreatedHUs().getFirst();
 
 		final Node createdLuXML = HUXmlConverter.toXml(createdLU);
 
@@ -443,7 +443,7 @@ public class LUTUProducerDestinationLoadTests
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 
-		new de.metas.handlingunits.util.HUTracerInstance().dump(createdHUs.get(0));
+		new de.metas.handlingunits.util.HUTracerInstance().dump(createdHUs.getFirst());
 
 		// example: for 6000 CUs:
 		// there shall be 30 Aggregate HU
@@ -572,7 +572,7 @@ public class LUTUProducerDestinationLoadTests
 
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 		Assertions.assertThat(createdLUs).hasSize(1);
-		final I_M_HU createdLU = createdLUs.get(0);
+		final I_M_HU createdLU = createdLUs.getFirst();
 
 		// data.helper.commitAndDumpHU(createdLU);
 

@@ -1,19 +1,17 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3;
 
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPException;
-
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPException;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
-import org.springframework.ws.transport.http.HttpComponentsMessageSender;
-
-import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
-import lombok.NonNull;
+import org.springframework.ws.transport.http.HttpComponents5MessageSender;
 
 /*
  * #%L
@@ -42,7 +40,7 @@ public class MSV3ConnectionFactory
 {
 	public WebServiceTemplate createWebServiceTemplate(@NonNull final MSV3ClientConfig config)
 	{
-		final HttpComponentsMessageSender messageSender = createMessageSender(config.getAuthUsername(), config.getAuthPassword());
+		final HttpComponents5MessageSender messageSender = createMessageSender(config.getAuthUsername(), config.getAuthPassword());
 
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
 		marshaller.setPackagesToScan(config.getVersion().getJaxbPackagesToScan());
@@ -69,14 +67,17 @@ public class MSV3ConnectionFactory
 		return webServiceTemplate;
 	}
 
-	private static HttpComponentsMessageSender createMessageSender(
+	private static HttpComponents5MessageSender createMessageSender(
 			@NonNull final String authUsername,
 			@NonNull final String authPassword)
 	{
-		final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(authUsername, authPassword);
+		final HttpComponents5MessageSender messageSender = new HttpComponents5MessageSender();
 
-		final HttpComponentsMessageSender messageSender = new HttpComponentsMessageSender();
+		// Add basic authentication interceptor
+		final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(authUsername, authPassword.toCharArray());
+
 		messageSender.setCredentials(credentials);
+
 		try
 		{
 			messageSender.afterPropertiesSet(); // to make sure credentials are set to HttpClient
@@ -88,5 +89,4 @@ public class MSV3ConnectionFactory
 		}
 		return messageSender;
 	}
-
 }

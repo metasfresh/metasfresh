@@ -104,7 +104,7 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 			throw new AdempiereException("@QueryMoreThanOneRecordsFound@ @C_ILCandHandler@ (@Classname@:" + handlerClass + "): " + result);
 		}
 
-		return result.get(0);
+		return result.getFirst();
 	}
 
 	@Override

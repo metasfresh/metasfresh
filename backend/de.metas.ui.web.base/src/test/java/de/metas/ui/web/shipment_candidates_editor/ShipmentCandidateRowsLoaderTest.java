@@ -147,7 +147,7 @@ public class ShipmentCandidateRowsLoaderTest
 
 			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
 			assertThat(rows).hasSize(1);
-			final ShipmentCandidateRow row = rows.get(0);
+			final ShipmentCandidateRow row = rows.getFirst();
 			assertThat(row.getQtyOrdered()).isEqualTo("1");
 		}
 
@@ -160,7 +160,7 @@ public class ShipmentCandidateRowsLoaderTest
 
 			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
 			assertThat(rows).hasSize(1);
-			final ShipmentCandidateRow row = rows.get(0);
+			final ShipmentCandidateRow row = rows.getFirst();
 			assertThat(row.getQtyOrdered()).isEqualTo("2");
 		}
 
@@ -173,7 +173,7 @@ public class ShipmentCandidateRowsLoaderTest
 
 			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
 			assertThat(rows).hasSize(1);
-			final ShipmentCandidateRow row = rows.get(0);
+			final ShipmentCandidateRow row = rows.getFirst();
 			assertThat(row.getQtyOrdered()).isEqualTo("3");
 		}
 	}
@@ -190,7 +190,7 @@ public class ShipmentCandidateRowsLoaderTest
 
 			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
 			assertThat(rows).hasSize(1);
-			final ShipmentCandidateRow row = rows.get(0);
+			final ShipmentCandidateRow row = rows.getFirst();
 			assertThat(row.getQtyToDeliverUserEntered()).isEqualTo("1");
 		}
 
@@ -203,7 +203,7 @@ public class ShipmentCandidateRowsLoaderTest
 
 			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
 			assertThat(rows).hasSize(1);
-			final ShipmentCandidateRow row = rows.get(0);
+			final ShipmentCandidateRow row = rows.getFirst();
 			assertThat(row.getQtyToDeliverUserEntered()).isEqualTo("2");
 		}
 
@@ -216,7 +216,7 @@ public class ShipmentCandidateRowsLoaderTest
 
 			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
 			assertThat(rows).hasSize(1);
-			final ShipmentCandidateRow row = rows.get(0);
+			final ShipmentCandidateRow row = rows.getFirst();
 			assertThat(row.getQtyToDeliverUserEntered()).isEqualTo("3");
 		}
 	}

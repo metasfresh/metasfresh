@@ -325,13 +325,13 @@ import de.metas.common.util.CoalesceUtil;
 		{
 			comp = null;
 		}
-		else if (rootPaneContainer instanceof Window)
+		else if (rootPaneContainer instanceof Window window)
 		{
-			return (Window)rootPaneContainer;
+			return window;
 		}
-		else if (rootPaneContainer instanceof Component)
+		else if (rootPaneContainer instanceof Component component)
 		{
-			comp = (Component)rootPaneContainer;
+			comp = component;
 		}
 		else
 		{

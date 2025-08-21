@@ -145,9 +145,8 @@ public class HideColumnIfCommand extends AbstractCommand
 	private void hideColumn(final CellRef cellRef)
 	{
 		final Transformer transformer = getTransformer();
-		if (transformer instanceof PoiTransformer)
+		if (transformer instanceof PoiTransformer poiTransformer)
 		{
-			final PoiTransformer poiTransformer = (PoiTransformer)transformer;
 			final Workbook poiWorkbook = poiTransformer.getWorkbook();
 			if (poiWorkbook == null)
 			{

@@ -27,11 +27,14 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.util.Check;
 
+import java.io.Serial;
+
 public class EDIMissingDependencyException extends AdempiereException
 {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 2710688915672646730L;
 
 	public EDIMissingDependencyException(final String dependencyMessage, final String recordName, final String recordIdentifier)

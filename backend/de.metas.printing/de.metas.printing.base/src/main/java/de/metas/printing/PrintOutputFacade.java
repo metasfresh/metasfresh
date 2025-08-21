@@ -153,7 +153,7 @@ public class PrintOutputFacade
 					{
 						throw new AdempiereException(ERROR_MSG_EXTERNAL_SYSTEM_CONFIG).markAsUserValidationError();
 					}
-					final ExternalSystemParentConfigId configId = printingDataForExternalSystems.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
+					final ExternalSystemParentConfigId configId = printingDataForExternalSystems.getFirst().getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
 					Check.assumeNotNull(configId, "ExternalSystemParentConfigId shouldn't be null");
 					final int firstExternalSystemId = configId.getRepoId();
 					final PrintingClientRequest request = PrintingClientRequest.builder()
@@ -172,7 +172,7 @@ public class PrintOutputFacade
 
 	private boolean hasMultipleExternalSystemConfigs(@NonNull final List<PrintingData> printingDataList)
 	{
-		final ExternalSystemParentConfigId configId = printingDataList.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
+		final ExternalSystemParentConfigId configId = printingDataList.getFirst().getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
 		Check.assumeNotNull(configId, "ExternalSystemParentConfigId shouldn't be null");
 		final int firstExternalSystemId = configId.getRepoId();
 		for (final PrintingData printingData : printingDataList)

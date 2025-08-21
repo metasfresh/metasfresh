@@ -197,7 +197,7 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 			return null;
 		}
 
-		final I_C_Print_Job_Instructions instructions = result.get(0);
+		final I_C_Print_Job_Instructions instructions = result.getFirst();
 		InterfaceWrapperHelper.setTrxName(instructions, trxName);
 
 		final boolean locked = Services.get(ILockManager.class).lock(instructions);

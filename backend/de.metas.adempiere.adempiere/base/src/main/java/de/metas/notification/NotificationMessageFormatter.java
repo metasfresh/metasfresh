@@ -1,21 +1,6 @@
 package de.metas.notification;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.ecs.StringElement;
-import org.apache.ecs.xhtml.a;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
@@ -25,6 +10,19 @@ import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.ecs.StringElement;
+import org.apache.ecs.xhtml.a;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -208,15 +206,14 @@ final class NotificationMessageFormatter
 		{
 			return null;
 		}
-		else if (obj instanceof TableRecordReference)
+		else if (obj instanceof TableRecordReference reference)
 		{
-			return (TableRecordReference)obj;
+			return reference;
 		}
 		// Extract the TableRecordReference from Map.
 		// Usually that's the case when the parameters were deserialized and the the TableRecordRefererence was deserialized as Map.
-		else if (obj instanceof Map)
+		else if (obj instanceof Map<?, ?> map)
 		{
-			final Map<?, ?> map = (Map<?, ?>)obj;
 			return TableRecordReference.ofMapOrNull(map);
 		}
 		else

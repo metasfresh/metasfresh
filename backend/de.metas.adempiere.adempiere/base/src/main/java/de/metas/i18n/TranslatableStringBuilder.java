@@ -83,7 +83,7 @@ public final class TranslatableStringBuilder
 		}
 		else if (parts.size() == 1)
 		{
-			return parts.get(0);
+			return parts.getFirst();
 		}
 		else
 		{
@@ -131,9 +131,9 @@ public final class TranslatableStringBuilder
 		{
 			return append("null");
 		}
-		else if (obj instanceof ITranslatableString)
+		else if (obj instanceof ITranslatableString string)
 		{
-			return append((ITranslatableString)obj);
+			return append(string);
 		}
 		// TODO: handle more types, like date, integer, BigDecimal etc
 		else
@@ -149,7 +149,7 @@ public final class TranslatableStringBuilder
 			return this;
 		}
 
-		parts.add(0, value);
+		parts.addFirst(value);
 		return this;
 	}
 

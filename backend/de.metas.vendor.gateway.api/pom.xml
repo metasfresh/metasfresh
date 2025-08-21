@@ -35,6 +35,10 @@
 			<artifactId>de.metas.util</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
+		</dependency>
 		<!-- Avoid any other metasfresh/adempiere dependencies -->
 
 		<dependency>

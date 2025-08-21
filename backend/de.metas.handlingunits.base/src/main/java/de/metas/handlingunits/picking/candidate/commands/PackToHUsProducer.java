@@ -215,9 +215,9 @@ public class PackToHUsProducer
 			weightUpdater.updatePickFromHUs(pickFromHUs.toHUsList());
 
 			final LUTUResult result;
-			if (packToDestination instanceof ILUTUProducerAllocationDestination)
+			if (packToDestination instanceof ILUTUProducerAllocationDestination destination)
 			{
-				result = ((ILUTUProducerAllocationDestination)packToDestination).getResult();
+				result = destination.getResult();
 			}
 			else
 			{
@@ -561,7 +561,7 @@ public class PackToHUsProducer
 			{
 				return false;
 			}
-			final PickFromHU hu = list.get(0);
+			final PickFromHU hu = list.getFirst();
 
 			// NOTE we check isGeneratedFromInventory because we want to avoid splitting an HU that we just generated it, even if checkIfAlreadyPacked=false
 			if (checkIfAlreadyPacked || hu.isGeneratedFromInventory())

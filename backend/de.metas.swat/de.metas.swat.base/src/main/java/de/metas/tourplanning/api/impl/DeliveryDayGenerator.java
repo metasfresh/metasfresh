@@ -78,9 +78,9 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 		Check.assumeNotNull(context, "context not null");
 		this.context = context;
 
-		if (context instanceof ILoggable)
+		if (context instanceof ILoggable iLoggable)
 		{
-			this.loggable = (ILoggable)context;
+			this.loggable = iLoggable;
 		}
 		else
 		{

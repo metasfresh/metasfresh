@@ -22,14 +22,12 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.List;
-
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 
-import lombok.EqualsAndHashCode;
-
 import javax.annotation.Nullable;
+import java.util.List;
 
 @EqualsAndHashCode
 public final class UpperCaseQueryFilterModifier implements IQueryFilterModifier
@@ -51,9 +49,8 @@ public final class UpperCaseQueryFilterModifier implements IQueryFilterModifier
 	public String getValueSql(Object value, List<Object> params)
 	{
 		final String valueSql;
-		if (value instanceof ModelColumnNameValue<?>)
+		if (value instanceof ModelColumnNameValue<?> modelValue)
 		{
-			final ModelColumnNameValue<?> modelValue = (ModelColumnNameValue<?>)value;
 			valueSql = modelValue.getColumnName();
 		}
 		else

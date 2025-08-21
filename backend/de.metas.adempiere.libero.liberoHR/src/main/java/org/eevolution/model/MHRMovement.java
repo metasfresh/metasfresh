@@ -14,6 +14,8 @@
  * Contributor(s): Victor Perez www.e-evolution.com                           *
  *****************************************************************************/
 package org.eevolution.model;
+
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -35,6 +37,7 @@ public class MHRMovement extends X_HR_Movement
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 6705848510397126140L;
 
 	/**
@@ -116,9 +119,9 @@ public class MHRMovement extends X_HR_Movement
 		}
 		else if(MHRConcept.COLUMNTYPE_Date.equals(columnType))
 		{
-			if (value instanceof Timestamp)
+			if (value instanceof Timestamp timestamp)
 			{
-				setServiceDate((Timestamp)value);
+				setServiceDate(timestamp);
 			}
 			else
 			{

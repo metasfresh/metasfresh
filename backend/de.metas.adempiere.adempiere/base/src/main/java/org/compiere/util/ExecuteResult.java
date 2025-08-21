@@ -23,6 +23,7 @@ package org.compiere.util;
  */
 
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,6 +33,7 @@ public class ExecuteResult implements Serializable {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -1121381937893681417L;
 	private int m_updateCount = 0;
 	private ArrayList<ResultSet> m_resultSets = new ArrayList<ResultSet>();

@@ -22,9 +22,10 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.api.ICalloutFactory;
 import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.spi.CompositeCalloutProvider;
@@ -33,11 +34,8 @@ import org.adempiere.ad.callout.spi.IDefaultCalloutProvider;
 import org.adempiere.ad.callout.spi.impl.NullCalloutProvider;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Properties;
 
 public class CalloutFactory implements ICalloutFactory
 {
@@ -76,9 +74,9 @@ public class CalloutFactory implements ICalloutFactory
 	final List<ICalloutProvider> getCalloutProvidersList()
 	{
 		final ICalloutProvider providers = this.providers;
-		if (providers instanceof CompositeCalloutProvider)
+		if (providers instanceof CompositeCalloutProvider provider)
 		{
-			return ((CompositeCalloutProvider)providers).getProvidersList();
+			return provider.getProvidersList();
 		}
 		else if (NullCalloutProvider.isNull(providers))
 		{

@@ -48,7 +48,7 @@ public class GroupTests
 		final List<Group> groups = objectMapper.readValue(serializedGroups, new TypeReference<List<Group>>() {});
 		assertThat(groups).hasSize(1);
 
-		final Group group = groups.get(0);
+		final Group group = groups.getFirst();
 		assertThat(group.getName()).isEqualTo("rainbows and unicorns");
 		assertThat(group.getId()).isEqualTo(565397);
 	}

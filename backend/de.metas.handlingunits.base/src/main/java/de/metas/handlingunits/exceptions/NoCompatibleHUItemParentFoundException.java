@@ -25,6 +25,8 @@ package de.metas.handlingunits.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * @author al
  */
@@ -33,6 +35,7 @@ public class NoCompatibleHUItemParentFoundException extends AdempiereException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -1258572193234632997L;
 
 	public static final String ERR_TU_NOT_ALLOWED_ON_LU = "TUNotAllowedOnLU";

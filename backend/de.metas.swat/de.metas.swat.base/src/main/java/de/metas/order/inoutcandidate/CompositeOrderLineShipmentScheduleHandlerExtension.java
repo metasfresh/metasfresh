@@ -47,7 +47,7 @@ final class CompositeOrderLineShipmentScheduleHandlerExtension implements OrderL
 		}
 		else if (extensionsList.size() == 1)
 		{
-			return extensionsList.get(0);
+			return extensionsList.getFirst();
 		}
 		else
 		{

@@ -25,12 +25,15 @@ package de.metas.dunning.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 public class DunningException extends AdempiereException
 {
 
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -4930254789037821267L;
 
 	public DunningException(String message, Throwable cause)

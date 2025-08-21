@@ -93,7 +93,7 @@ public class MPrintColor extends X_AD_PrintColor
 	{
 	//	if (AD_PrintColor_ID == 0)
 	//		return new MPrintColor (ctx, 0);
-		Integer key = new Integer(AD_PrintColor_ID);
+		Integer key = Integer.valueOf(AD_PrintColor_ID);
 		MPrintColor pc = s_colors.get(key);
 		if (pc == null)
 		{

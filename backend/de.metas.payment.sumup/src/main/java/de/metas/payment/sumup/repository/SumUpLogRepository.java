@@ -58,9 +58,9 @@ public class SumUpLogRepository
 			return null;
 		}
 
-		if (obj instanceof String)
+		if (obj instanceof String string)
 		{
-			return StringUtils.trimBlankToNull((String)obj);
+			return StringUtils.trimBlankToNull(string);
 		}
 
 		try

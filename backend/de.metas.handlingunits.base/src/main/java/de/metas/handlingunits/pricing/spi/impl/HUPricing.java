@@ -247,9 +247,9 @@ public class HUPricing extends AttributePricing
 
 		//
 		// check if we have an piip-aware
-		if (referencedObj instanceof I_M_HU_PI_Item_Product_Aware)
+		if (referencedObj instanceof I_M_HU_PI_Item_Product_Aware aware)
 		{
-			final int packingMaterialRepoId = ((I_M_HU_PI_Item_Product_Aware)referencedObj).getM_HU_PI_Item_Product_ID();
+			final int packingMaterialRepoId = aware.getM_HU_PI_Item_Product_ID();
 			return HUPIItemProductId.ofRepoIdOrNull(packingMaterialRepoId);
 		}
 

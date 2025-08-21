@@ -252,7 +252,7 @@ public class ESRImportDAO implements IESRImportDAO
 			throw new AdempiereException("More then one assigned invoice found for " + esrReferenceNumber + " (" + referenceNo + ")");
 		}
 
-		return invoiceDocs.get(0);
+		return invoiceDocs.getFirst();
 	}
 
 	private I_C_ReferenceNo fetchESRInvoiceReferenceNumber(@NonNull final String esrReferenceNumber, @NonNull final OrgId orgId)

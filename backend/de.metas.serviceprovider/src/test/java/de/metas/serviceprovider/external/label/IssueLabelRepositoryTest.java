@@ -70,9 +70,9 @@ public class IssueLabelRepositoryTest
 		final ImmutableList<I_S_IssueLabel> storedLabels = issueLabelRepository.getRecordsByIssueId(MOCK_ISSUE_ID);
 
 		assertEquals(2, storedLabels.size());
-		assertEquals(storedLabels.get(0).getS_Issue_ID(), MOCK_ISSUE_ID.getRepoId());
-		assertEquals(storedLabels.get(0).getAD_Org_ID(), MOCK_ORG_ID.getRepoId());
-		assertEquals(storedLabels.get(0).getLabel(), MOCK_VALUE);
+		assertEquals(storedLabels.getFirst().getS_Issue_ID(), MOCK_ISSUE_ID.getRepoId());
+		assertEquals(storedLabels.getFirst().getAD_Org_ID(), MOCK_ORG_ID.getRepoId());
+		assertEquals(storedLabels.getFirst().getLabel(), MOCK_VALUE);
 
 		assertEquals(storedLabels.get(1).getS_Issue_ID(), MOCK_ISSUE_ID.getRepoId());
 		assertEquals(storedLabels.get(1).getAD_Org_ID(), MOCK_ORG_ID.getRepoId());

@@ -723,13 +723,13 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		{
 			return null;
 		}
-		else if (value instanceof BigDecimal)
+		else if (value instanceof BigDecimal decimal)
 		{
-			return (BigDecimal)value;
+			return decimal;
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer integer)
 		{
-			return BigDecimal.valueOf((Integer)value);
+			return BigDecimal.valueOf(integer);
 		}
 		else
 		{
@@ -916,7 +916,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return null;
 		}
 
-		final T record = records.get(0);
+		final T record = records.getFirst();
 
 		final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orElse(null);
 
@@ -1041,7 +1041,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		PageDescriptor nextPageDescriptor = pages.size() > 1 ? currentPageDescriptor.createNext() : null;
-		final QueryResultPage<ET> firstQueryResultPage = new QueryResultPage<>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.get(0)));
+		final QueryResultPage<ET> firstQueryResultPage = new QueryResultPage<>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.getFirst()));
 		UUID_TO_PAGE.put(firstQueryResultPage.getCurrentPageDescriptor().getPageIdentifier().getCombinedUid(), firstQueryResultPage);
 
 		currentPageDescriptor = nextPageDescriptor;

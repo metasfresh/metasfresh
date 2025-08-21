@@ -195,6 +195,6 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 			return null;
 		}
 
-		return calendarNames.get(0);
+		return calendarNames.getFirst();
 	}
 }

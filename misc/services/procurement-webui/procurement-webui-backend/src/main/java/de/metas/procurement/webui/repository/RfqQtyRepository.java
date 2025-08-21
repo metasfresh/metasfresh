@@ -2,7 +2,7 @@ package de.metas.procurement.webui.repository;
 
 import java.util.List;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.springframework.stereotype.Repository;
 

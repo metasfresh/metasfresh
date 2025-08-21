@@ -188,37 +188,34 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_Date(date);
 		}
-		else if (parameterValue instanceof BigDecimal)
+		else if (parameterValue instanceof BigDecimal valueBD)
 		{
-			final BigDecimal valueBD = (BigDecimal)parameterValue;
 			workpackageParam.setAD_Reference_ID(DisplayType.Number);
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_Number(valueBD);
 		}
-		else if (parameterValue instanceof Number)
+		else if (parameterValue instanceof Number number)
 		{
-			final int valueInt = ((Number)parameterValue).intValue();
+			final int valueInt = number.intValue();
 			workpackageParam.setAD_Reference_ID(DisplayType.Integer);
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_Number(BigDecimal.valueOf(valueInt));
 		}
-		else if (parameterValue instanceof RepoIdAware)
+		else if (parameterValue instanceof RepoIdAware aware)
 		{
-			final int valueInt = ((RepoIdAware)parameterValue).getRepoId();
+			final int valueInt = aware.getRepoId();
 			workpackageParam.setAD_Reference_ID(DisplayType.Integer);
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_Number(BigDecimal.valueOf(valueInt));
 		}
-		else if (parameterValue instanceof Boolean)
+		else if (parameterValue instanceof Boolean valueBoolean)
 		{
-			final boolean valueBoolean = (boolean)parameterValue;
 			workpackageParam.setAD_Reference_ID(DisplayType.YesNo);
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_String(StringUtils.ofBoolean(valueBoolean));
 		}
-		else if (parameterValue instanceof ReferenceListAwareEnum)
+		else if (parameterValue instanceof ReferenceListAwareEnum valueEnum)
 		{
-			final ReferenceListAwareEnum valueEnum = (ReferenceListAwareEnum)parameterValue;
 			workpackageParam.setAD_Reference_ID(DisplayType.String);
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_String(valueEnum.getCode());

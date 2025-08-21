@@ -113,7 +113,7 @@ public class CompositePriceLimitRule implements IPriceLimitRule
 	{
 		if (notApplicableResults.size() == 1)
 		{
-			return notApplicableResults.get(0);
+			return notApplicableResults.getFirst();
 		}
 
 		final TranslatableStringBuilder builder = TranslatableStrings.builder();

@@ -1,14 +1,13 @@
 package de.metas.impexp.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.impexp.format.ImpFormat;
 import de.metas.impexp.format.ImpFormatColumn;
-import groovy.transform.ToString;
 import lombok.NonNull;
+import lombok.ToString;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L

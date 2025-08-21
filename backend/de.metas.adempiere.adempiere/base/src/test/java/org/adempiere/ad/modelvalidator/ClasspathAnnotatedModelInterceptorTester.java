@@ -68,8 +68,9 @@ public class ClasspathAnnotatedModelInterceptorTester
 
 		if (classes.isEmpty())
 		{
-			throw new AdempiereException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
-					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+			throw new AdempiereException("""
+					No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin.
+					 See https://github.com/metasfresh/metasfresh/issues/4773.""");
 		}
 
 		return sortByName(classes);

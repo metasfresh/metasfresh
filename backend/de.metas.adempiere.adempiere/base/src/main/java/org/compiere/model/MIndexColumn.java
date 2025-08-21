@@ -27,6 +27,7 @@ package org.compiere.model;
 
 import de.metas.util.Check;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -39,6 +40,7 @@ public class MIndexColumn extends X_AD_Index_Column {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 1907712672821691643L;
 
 	public MIndexColumn(Properties ctx, int AD_Index_Column_ID, String trxName) {

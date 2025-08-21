@@ -29,6 +29,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -38,8 +39,6 @@ import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.TabCallout;
 import org.compiere.model.I_M_CostRevaluation;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 @Component
 @Callout(I_M_CostRevaluation.class)

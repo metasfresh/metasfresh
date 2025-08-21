@@ -207,9 +207,9 @@ import java.util.List;
 			return null;
 		}
 
-		if (resultAction instanceof CreateAndOpenIncludedViewAction)
+		if (resultAction instanceof CreateAndOpenIncludedViewAction action)
 		{
-			final IView view = viewRepos.createView(((CreateAndOpenIncludedViewAction)resultAction).getCreateViewRequest());
+			final IView view = viewRepos.createView(action.getCreateViewRequest());
 			return OpenIncludedViewAction.builder().viewId(view.getViewId()).build();
 		}
 

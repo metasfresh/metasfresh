@@ -24,7 +24,7 @@ package de.metas.common.ordercandidates.v2.request;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.Check;
-import de.pentabyte.springfox.ApiEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -33,18 +33,17 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Schema(enumAsRef = true, description = "JsonOrderDocType: \n" +
+		"* `SalesOrder` - Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.\n" +
+		"* `ReturnMaterial` - Specifies if the order is ReturnMaterial\n" +
+		"* `Proposal` - Specifies if the order is Quotation\n" +
+		"* `PrepayOrder` - Specifies if the order will be prepaid\n" +
+		"")
 public enum JsonOrderDocType
 {
-	@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.")
 	SalesOrder("SO"),
-
-	@ApiEnum("Specifies if the order is ReturnMaterial")
 	ReturnMaterial("RM"),
-
-	@ApiEnum("Specifies if the order is Quotation")
 	Proposal("ON"),
-
-	@ApiEnum("Specifies if the order will be prepaid")
 	PrepayOrder("PR");
 
 	@Getter

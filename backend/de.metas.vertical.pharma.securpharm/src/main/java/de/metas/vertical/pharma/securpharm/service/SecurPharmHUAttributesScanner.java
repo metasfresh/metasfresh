@@ -179,11 +179,11 @@ public class SecurPharmHUAttributesScanner
 		}
 		else if (result.size() == 1)
 		{
-			cu = result.get(0);
+			cu = result.getFirst();
 		}
 		else
 		{
-			cu = result.get(0);
+			cu = result.getFirst();
 		}
 
 		return cu;

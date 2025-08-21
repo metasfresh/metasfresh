@@ -216,7 +216,7 @@ public class AvailableToPromiseRepositoryTest
 
 		final AvailableToPromiseResult result = availableToPromiseRepository.retrieveAvailableStock(multiQuery);
 		assertThat(result.getResultGroups()).hasSize(1); // there is just one predefined bucket
-		assertThat(result.getResultGroups().get(0).getQty()).isEqualByComparingTo("30");
+		assertThat(result.getResultGroups().getFirst().getQty()).isEqualByComparingTo("30");
 	}
 
 	/**

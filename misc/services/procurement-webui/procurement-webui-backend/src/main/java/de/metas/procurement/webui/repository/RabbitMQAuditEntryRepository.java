@@ -25,7 +25,7 @@ package de.metas.procurement.webui.repository;
 import de.metas.procurement.webui.model.RabbitMQAuditEntry;
 import org.springframework.stereotype.Repository;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 @Repository
 @Transactional

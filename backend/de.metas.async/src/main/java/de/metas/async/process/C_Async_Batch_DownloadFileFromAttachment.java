@@ -76,7 +76,7 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 		final List<AttachmentEntry> attachments = getAttachmentEntries(record);
 		if (!attachments.isEmpty())
 		{
-			final AttachmentEntry attachment = attachments.get(0); // take first one
+			final AttachmentEntry attachment = attachments.getFirst(); // take first one
 			final Resource data = attachmentEntryService.retrieveDataResource(attachment.getId());
 
 			getResult().setReportData(data, attachment.getFilename(), attachment.getMimeType());

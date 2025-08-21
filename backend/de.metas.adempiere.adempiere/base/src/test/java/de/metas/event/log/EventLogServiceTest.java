@@ -74,17 +74,19 @@ public class EventLogServiceTest
 		final List<I_AD_EventLog> eventLogRecords = pojoLookupMap.getRecords(I_AD_EventLog.class);
 		assertThat(eventLogRecords).hasSize(1);
 
-		final I_AD_EventLog eventLogRecord = eventLogRecords.get(0);
+		final I_AD_EventLog eventLogRecord = eventLogRecords.getFirst();
 		assertThat(eventLogRecord.getEvent_UUID()).isEqualTo(event.getUuid().toString());
 		assertThat(eventLogRecord.getEventTopicName()).isEqualTo(MOCKED_EVENT_BUS_NAME);
 		assertThat(eventLogRecord.getEventTypeName()).isEqualTo(MOCKED_EVENT_BUS_TYPE.toString());
 		assertThat(eventLogRecord.getEventData())
-				.isEqualToNormalizingWhitespace("{\n" +
-						"  \"uuid\" : \"5fc6dbeb-aee4-4ac7-89ca-d31ff50d6421\",\n" +
-						"  \"when\" : \"2018-01-02T07:08:14.521Z\",\n" +
-						"  \"senderId\" : \"testSenderId\",\n" +
-						"  \"loggingStatus\" : \"SHALL_NOT_BE_LOGGED\"\n" +
-						"}");
+				.isEqualToNormalizingWhitespace("""
+						{
+						  "uuid" : "5fc6dbeb-aee4-4ac7-89ca-d31ff50d6421",
+						  "when" : "2018-01-02T07:08:14.521Z",
+						  "senderId" : "testSenderId",
+						  "loggingStatus" : "SHALL_NOT_BE_LOGGED"
+						}\
+						""");
 
 		final List<I_AD_EventLog_Entry> eventLogEntryRecords = pojoLookupMap.getRecords(I_AD_EventLog_Entry.class);
 		assertThat(eventLogEntryRecords).as("just string the event log does not mean any entries were created").isEmpty();
@@ -123,7 +125,7 @@ public class EventLogServiceTest
 		final List<I_AD_EventLog> eventLogRecords = pojoLookupMap.getRecords(I_AD_EventLog.class);
 		assertThat(eventLogRecords).hasSize(1);
 
-		assertThat( EventLogId.ofRepoId(eventLogRecords.get(0).getAD_EventLog_ID())).isEqualTo(eventLogId);
+		assertThat( EventLogId.ofRepoId(eventLogRecords.getFirst().getAD_EventLog_ID())).isEqualTo(eventLogId);
 
 		final Event loadedEvent = eventLogService.loadEventForReposting(eventLogId);
 		final List<Object> processedbyHandlerInfo = loadedEvent.getProperty(EventLogUserService.PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES);

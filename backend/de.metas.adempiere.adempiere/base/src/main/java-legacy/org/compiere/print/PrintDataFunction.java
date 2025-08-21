@@ -17,6 +17,7 @@
 package org.compiere.print;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -132,25 +133,25 @@ public class PrintDataFunction
 		//	Mean = sum/count - round to 4 digits
 		if (function == F_MEAN)
 		{
-			BigDecimal mean = m_sum.divide(count, 4, BigDecimal.ROUND_HALF_UP);
+			BigDecimal mean = m_sum.divide(count, 4, RoundingMode.HALF_UP);
 			if (mean.scale() > 4)
-				mean = mean.setScale(4, BigDecimal.ROUND_HALF_UP);
+				mean = mean.setScale(4, RoundingMode.HALF_UP);
 			return mean;
 		}
 		//	Variance = sum of squares - (square of sum / count)
 		BigDecimal ss = m_sum.multiply(m_sum);
-		ss = ss.divide(count, 4, BigDecimal.ROUND_HALF_UP);
+		ss = ss.divide(count, 4, RoundingMode.HALF_UP);
 		BigDecimal variance = m_sumSquare.subtract(ss);
 		if (function == F_VARIANCE)
 		{
 			if (variance.scale() > 4)
-				variance = variance.setScale(4, BigDecimal.ROUND_HALF_UP);
+				variance = variance.setScale(4, RoundingMode.HALF_UP);
 			return variance;
 		}
 		//	Standard Deviation
 		BigDecimal deviation = new BigDecimal(Math.sqrt(variance.doubleValue()));
 		if (deviation.scale() > 4)
-			deviation = deviation.setScale(4, BigDecimal.ROUND_HALF_UP);
+			deviation = deviation.setScale(4, RoundingMode.HALF_UP);
 		return deviation;
 	}	//	getValue
 

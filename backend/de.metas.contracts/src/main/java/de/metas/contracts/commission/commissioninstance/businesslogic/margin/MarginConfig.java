@@ -73,9 +73,9 @@ public class MarginConfig implements CommissionConfig
 	@NonNull
 	public static Optional<MarginConfig> castOrEmpty(@NonNull final CommissionConfig commissionConfig)
 	{
-		if (commissionConfig instanceof MarginConfig)
+		if (commissionConfig instanceof MarginConfig config)
 		{
-			return Optional.of((MarginConfig)commissionConfig);
+			return Optional.of(config);
 		}
 		return Optional.empty();
 	}

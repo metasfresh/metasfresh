@@ -1,13 +1,9 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
@@ -15,10 +11,12 @@ import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Standard implementation of {@link IStringExpression}
@@ -46,9 +44,9 @@ import com.google.common.collect.ImmutableSet;
 		final Set<CtxName> ctxNameParams = new LinkedHashSet<>(); // NOTE: preserve parameters order because at least some tests are relying on this
 		for (final Object chunk : expressionChunks)
 		{
-			if (chunk instanceof CtxName)
+			if (chunk instanceof CtxName name)
 			{
-				ctxNameParams.add((CtxName)chunk);
+				ctxNameParams.add(name);
 			}
 		}
 		parametersAsCtxName = ImmutableSet.copyOf(ctxNameParams);
@@ -111,9 +109,8 @@ import com.google.common.collect.ImmutableSet;
 		final StringBuilder sb = new StringBuilder();
 		for (final Object chunk : expressionChunks)
 		{
-			if (chunk instanceof CtxName)
+			if (chunk instanceof CtxName name)
 			{
-				final CtxName name = (CtxName)chunk;
 				sb.append(name.toStringWithMarkers());
 			}
 			else
@@ -148,9 +145,8 @@ import com.google.common.collect.ImmutableSet;
 		{
 			for (final Object chunk : expressionChunks)
 			{
-				if (chunk instanceof CtxName)
+				if (chunk instanceof CtxName token)
 				{
-					final CtxName token = (CtxName)chunk;
 					final String value = StringExpressionsHelper.evaluateParam(token, ctx, onVariableNotFound);
 					if (value == null || value == EMPTY_RESULT)
 					{
@@ -189,9 +185,8 @@ import com.google.common.collect.ImmutableSet;
 
 			for (final Object chunk : expressionChunks)
 			{
-				if (chunk instanceof CtxName)
+				if (chunk instanceof CtxName token)
 				{
-					final CtxName token = (CtxName)chunk;
 					final String tokenValueConstant = StringExpressionsHelper.evaluateParam(token, ctx, OnVariableNotFound.ReturnNoResult);
 					if (tokenValueConstant == null || tokenValueConstant == EMPTY_RESULT)
 					{

@@ -56,7 +56,7 @@ public class PartitionerTools
 		allRecords.stream()
 				.collect(Collectors.groupingBy(ITableRecordReference::getTableName))
 				.forEach((t, r) -> {
-					System.out.println(t + ":\tsize=" + r.size() + ";\trepresentant=" + r.get(0).getModel(ctxProvider, IDLMAware.class));
+					System.out.println(t + ":\tsize=" + r.size() + ";\trepresentant=" + r.getFirst().getModel(ctxProvider, IDLMAware.class));
 				});
 	}
 

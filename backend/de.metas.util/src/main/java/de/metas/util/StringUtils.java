@@ -190,7 +190,7 @@ public final class StringUtils
 				Check.errorIf(true, "Unexpected parameter TruncateAt={}; lenght={}; string={}", side, maxLength, string);
 				result = ""; // won't be reached;
 		}
-		
+
 		if (onTrunc != null && !Objects.equals(string, result))
 		{
 			onTrunc.accept(string, result);
@@ -288,9 +288,9 @@ public final class StringUtils
 		{
 			return defaultValue;
 		}
-		else if (value instanceof Boolean)
+		else if (value instanceof Boolean boolean1)
 		{
-			return (Boolean)value;
+			return boolean1;
 		}
 		else
 		{
@@ -453,10 +453,8 @@ public final class StringUtils
 		final ArrayList<Object> result = new ArrayList<>(params.length);
 		for (final Object param : params)
 		{
-			if (param instanceof Supplier)
+			if (param instanceof @SuppressWarnings("rawtypes") final Supplier paramSupplier)
 			{
-				@SuppressWarnings("rawtypes") final Supplier paramSupplier = (Supplier)param;
-
 				result.add(paramSupplier.get());
 			}
 			else

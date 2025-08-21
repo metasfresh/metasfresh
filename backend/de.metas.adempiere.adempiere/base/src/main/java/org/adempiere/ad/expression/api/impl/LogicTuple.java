@@ -1,23 +1,20 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.Check;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.Check;
-
 import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicTuple extends AbstractLogicExpression
@@ -93,9 +90,9 @@ import javax.annotation.Nullable;
 
 		this.constantValue = constantValue;
 
-		expressionStr = (operand1 instanceof CtxName ? ((CtxName)operand1).toStringWithMarkers() : operand1.toString())
+		expressionStr = (operand1 instanceof CtxName cn ? cn.toStringWithMarkers() : operand1.toString())
 				+ operator
-				+ (operand2 instanceof CtxName ? ((CtxName)operand2).toStringWithMarkers() : operand2.toString());
+				+ (operand2 instanceof CtxName cn ? cn.toStringWithMarkers() : operand2.toString());
 	}
 
 	/** Constant LogicTuple constructor */
@@ -204,13 +201,13 @@ import javax.annotation.Nullable;
 			else
 			{
 				final Set<CtxName> result = new LinkedHashSet<>();
-				if (operand1 instanceof CtxName)
+				if (operand1 instanceof CtxName name)
 				{
-					result.add((CtxName)operand1);
+					result.add(name);
 				}
-				if (operand2 instanceof CtxName)
+				if (operand2 instanceof CtxName name)
 				{
-					result.add((CtxName)operand2);
+					result.add(name);
 				}
 				_parameters = ImmutableSet.copyOf(result);
 			}

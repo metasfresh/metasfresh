@@ -6,10 +6,10 @@ import lombok.NonNull;
 import lombok.Setter;
 
 import javax.annotation.Nullable;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 
 

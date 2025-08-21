@@ -214,9 +214,9 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 		{
 			return null;
 		}
-		else if (valueKey instanceof Number)
+		else if (valueKey instanceof Number number)
 		{
-			final int valueKeyAsInt = ((Number)valueKey).intValue();
+			final int valueKeyAsInt = number.intValue();
 			return String.valueOf(valueKeyAsInt);
 		}
 		else

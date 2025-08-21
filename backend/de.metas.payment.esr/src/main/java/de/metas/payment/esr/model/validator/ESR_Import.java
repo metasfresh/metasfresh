@@ -78,7 +78,7 @@ public class ESR_Import
 	{
 		final OrgId orgId = OrgId.ofRepoId(esrImport.getAD_Org_ID());
 		final Optional<BPartnerId> orgBPartnerIdOptional = bPartnerOrgBL.retrieveLinkedBPartnerId(orgId);
-		if (!orgBPartnerIdOptional.isPresent())
+		if (orgBPartnerIdOptional.isEmpty())
 		{
 			throw new OrgHasNoBPartnerLinkException(orgId);
 		}
@@ -87,7 +87,7 @@ public class ESR_Import
 		final Optional<I_C_BP_BankAccount> orgBankAccount =
 				bankAccountDAO.retrieveDefaultBankAccountInTrx(orgBpartnerId);
 
-		if (!orgBankAccount.isPresent())
+		if (orgBankAccount.isEmpty())
 		{
 
 			final I_AD_Org org = orgDAO.getById(orgId);

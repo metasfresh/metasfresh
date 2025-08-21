@@ -35,12 +35,13 @@ package org.compiere.FA;
  * #L%
  */
 
+import org.compiere.util.DB;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import org.compiere.util.DB;
 /**
  * Fixed Asset Depreciation
  * 
@@ -99,7 +100,7 @@ public class DepreciationAdj {
 		  try {				
 				ResultSet rs = pstmt.executeQuery();
 				while (rs.next()){					 
-					A_Dep_Adj = p_A_ASSET_ADJUSTMENT.divide(new BigDecimal(rs.getDouble("A_LIFE_PERIOD")-rs.getDouble("A_PERIOD_POSTED")+1),2, BigDecimal.ROUND_HALF_UP);					 	
+					A_Dep_Adj = p_A_ASSET_ADJUSTMENT.divide(new BigDecimal(rs.getDouble("A_LIFE_PERIOD") - rs.getDouble("A_PERIOD_POSTED") + 1), 2, RoundingMode.HALF_UP);					 	
 				 
 				}
 				//System.out.println("LDI: "+A_Period_Exp);
@@ -146,7 +147,7 @@ public class DepreciationAdj {
 		  try {				
 				ResultSet rs = pstmt.executeQuery();
 				while (rs.next()){					 
-					A_Dep_Adj = p_A_ASSET_ADJUSTMENT.divide(new BigDecimal(12-p_A_PERIODNO),2, BigDecimal.ROUND_HALF_UP);				 
+					A_Dep_Adj = p_A_ASSET_ADJUSTMENT.divide(new BigDecimal(12 - p_A_PERIODNO), 2, RoundingMode.HALF_UP);				 
 				}
 				//System.out.println("LDI: "+A_Period_Exp);
 				return A_Dep_Adj;

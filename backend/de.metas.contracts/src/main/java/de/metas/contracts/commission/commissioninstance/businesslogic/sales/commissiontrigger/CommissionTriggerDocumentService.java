@@ -70,7 +70,7 @@ public class CommissionTriggerDocumentService
 			final boolean candidateDeleted)
 	{
 		final Optional<CommissionInstance> instance = commissionInstanceRepository.getByDocumentId(commissionTriggerDocument.getId());
-		if (!instance.isPresent())
+		if (instance.isEmpty())
 		{
 			createNewInstance(commissionTriggerDocument, candidateDeleted);
 			return;

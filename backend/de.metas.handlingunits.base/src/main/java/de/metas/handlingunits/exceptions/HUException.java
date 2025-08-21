@@ -30,6 +30,8 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+import java.io.Serial;
+
 /**
  * Root of Handling Units module exceptions hierarchy.
  *
@@ -39,6 +41,7 @@ import javax.annotation.Nullable;
 public class HUException extends AdempiereException
 {
 
+	@Serial
 	private static final long serialVersionUID = 800341714184424257L;
 
 	public static final HUException ofAD_Message(final String adMessage)

@@ -163,9 +163,9 @@ public class Context implements IContext
 		{
 			return defaultValue;
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			return ((Number)value).intValue();
+			return number.intValue();
 		}
 		else if (value instanceof String)
 		{
@@ -203,9 +203,8 @@ public class Context implements IContext
 			final String classname = value.toString();
 			return Util.getInstance(classname, interfaceClazz);
 		}
-		else if (value instanceof Class)
+		else if (value instanceof Class<?> clazz)
 		{
-			final Class<?> clazz = (Class<?>)value;
 			if (interfaceClazz.isAssignableFrom(clazz))
 			{
 				try

@@ -14,7 +14,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<slf4j.version>1.7.25</slf4j.version>
+		<slf4j.version>2.0.17</slf4j.version>
 	</properties>
 
 	<modules>
@@ -27,7 +27,7 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>${slf4j.version}</version>
+				<version>${slf4j-api.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

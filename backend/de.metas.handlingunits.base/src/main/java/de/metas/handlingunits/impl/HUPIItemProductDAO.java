@@ -718,7 +718,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			if (originalHUPIItemProduct != null)     // kindda redundant check
 			{
 				removeDuplicatePIResultsWithoutPartner(originalHUPIItemProduct, availableHUPIItemProducts);
-				availableHUPIItemProducts.add(0, originalHUPIItemProduct); // add original PI at index 0
+				availableHUPIItemProducts.addFirst(originalHUPIItemProduct); // add original PI at index 0
 			}
 		}
 

@@ -88,7 +88,7 @@ class LMQRCodeParser
 			final List<String> parts = SPLITTER.splitToList(globalQRCode.getPayloadAsJson());
 			return LMQRCode.builder()
 					.code(globalQRCode)
-					.weightInKg(new BigDecimal(parts.get(0)))
+					.weightInKg(new BigDecimal(parts.getFirst()))
 					.bestBeforeDate(parts.size() >= 2 ? LocalDate.parse(parts.get(1), BEST_BEFORE_DATE_FORMAT) : null)
 					.lotNumber(parts.size() >= 3 ? StringUtils.trimBlankToNull(parts.get(2)) : null)
 					.productNo(parts.size() >= 4 ? StringUtils.trimBlankToNull(parts.get(3)) : null)

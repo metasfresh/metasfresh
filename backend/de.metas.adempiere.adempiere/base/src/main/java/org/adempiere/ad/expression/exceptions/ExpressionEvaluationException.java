@@ -44,9 +44,9 @@ public class ExpressionEvaluationException extends ExpressionException
 	{
 		Check.assumeNotNull(throwable, "throwable not null");
 
-		if (throwable instanceof ExpressionEvaluationException)
+		if (throwable instanceof ExpressionEvaluationException exception)
 		{
-			return (ExpressionEvaluationException)throwable;
+			return exception;
 		}
 
 		final Throwable cause = extractCause(throwable);

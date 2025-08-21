@@ -81,7 +81,7 @@ public class FindPathIterateResultTests
 
 		assertThat(path).isNotNull();
 		assertThat(path).hasSize(3);
-		assertThat(path.get(0)).isEqualTo(paymentRef);
+		assertThat(path.getFirst()).isEqualTo(paymentRef);
 		assertThat(path.get(1)).isEqualTo(invoiceRef);
 		assertThat(path.get(2)).isEqualTo(orderRef);
 	}
@@ -118,7 +118,7 @@ public class FindPathIterateResultTests
 
 		assertThat(path).isNotNull();
 		assertThat(path).hasSize(3);
-		assertThat(path.get(0)).isEqualTo(paymentRef);
+		assertThat(path.getFirst()).isEqualTo(paymentRef);
 		assertThat(path.get(1)).isEqualTo(orderRef);
 		assertThat(path.get(2)).isEqualTo(invoiceRef);
 	}

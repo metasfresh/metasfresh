@@ -60,7 +60,7 @@ public class IssueHierarchy
 	{
 		final Optional<IssueEntity> issue = getIssueForId(issueId);
 
-		if (!issue.isPresent())
+		if (issue.isEmpty())
 		{
 			return ImmutableList.of();
 		}

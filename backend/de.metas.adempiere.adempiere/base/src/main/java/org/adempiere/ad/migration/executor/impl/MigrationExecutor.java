@@ -22,13 +22,9 @@ package org.adempiere.ad.migration.executor.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.migration.executor.IMigrationExecutor;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
 import org.adempiere.ad.migration.executor.IPostponedExecutable;
@@ -47,9 +43,11 @@ import org.compiere.util.DB;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 class MigrationExecutor implements IMigrationExecutor
 {
@@ -257,7 +255,7 @@ class MigrationExecutor implements IMigrationExecutor
 					final boolean fatal = MigrationExecutorException.isFatal(e);
 					if (fatal && migrationCtx.isFailOnFirstError())
 					{
-						throw e instanceof MigrationExecutorException ? (MigrationExecutorException)e : new MigrationExecutorException(e);
+						throw e instanceof MigrationExecutorException mee ? mee : new MigrationExecutorException(e);
 					}
 				}
 			}

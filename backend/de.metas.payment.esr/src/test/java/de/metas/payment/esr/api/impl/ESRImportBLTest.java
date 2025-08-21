@@ -357,7 +357,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
-		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
+		final I_ESR_ImportLine esrImportLine1 = lines.getFirst();
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		final I_ESR_ImportLine esrImportLine3 = lines.get(2);
 
@@ -397,7 +397,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
-		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
+		final I_ESR_ImportLine esrImportLine1 = lines.getFirst();
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		final I_ESR_ImportLine esrImportLine3 = lines.get(2);
 
@@ -453,7 +453,7 @@ public class ESRImportBLTest extends ESRTestBase
 	{
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, 20, 30);
 
-		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
+		final I_ESR_ImportLine esrImportLine1 = lines.getFirst();
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		final I_ESR_ImportLine esrImportLine3 = lines.get(2);
 
@@ -519,7 +519,7 @@ public class ESRImportBLTest extends ESRTestBase
 	{
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, 30, 20);
 
-		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
+		final I_ESR_ImportLine esrImportLine1 = lines.getFirst();
 		final I_ESR_ImportLine esrImportLine2 = lines.get(2);
 		final I_ESR_ImportLine esrImportLine3 = lines.get(1);
 
@@ -766,12 +766,12 @@ public class ESRImportBLTest extends ESRTestBase
 
 		I_C_Payment payment = newInstance(I_C_Payment.class);
 		payment.setPayAmt(ESR_LINE_1_AMOUNT);
-		payment.setC_BPartner_ID(lines.get(0).getC_BPartner_ID());
+		payment.setC_BPartner_ID(lines.getFirst().getC_BPartner_ID());
 		payment.setDocumentNo("452432");
-		payment.setAD_Org_ID(lines.get(0).getAD_Org_ID());
+		payment.setAD_Org_ID(lines.getFirst().getAD_Org_ID());
 		save(payment);
 
-		lines.get(0).setC_Payment_ID(payment.getC_Payment_ID());
+		lines.getFirst().setC_Payment_ID(payment.getC_Payment_ID());
 
 		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 
@@ -780,7 +780,7 @@ public class ESRImportBLTest extends ESRTestBase
 			assertThat(line.getESR_Payment_Action()).isNull();
 		}
 
-		assertThat(lines.get(0).getESR_Invoice_Openamt()).isEqualByComparingTo(INVOICE_GRANDTOTAL.subtract(ESR_LINE_1_AMOUNT).subtract(externallyAllocatedAmt));
+		assertThat(lines.getFirst().getESR_Invoice_Openamt()).isEqualByComparingTo(INVOICE_GRANDTOTAL.subtract(ESR_LINE_1_AMOUNT).subtract(externallyAllocatedAmt));
 
 	}
 
@@ -793,7 +793,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
 
-		final I_ESR_ImportLine line1 = lines.get(0);
+		final I_ESR_ImportLine line1 = lines.getFirst();
 		line1.setC_Payment_ID(0); // if the line has no payment assigned, then we assume that ESR_LINE_1_AMOUNT has not yet been allocated against the invoice
 
 		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
@@ -813,13 +813,13 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
 
-		final I_ESR_ImportLine line1 = lines.get(0);
+		final I_ESR_ImportLine line1 = lines.getFirst();
 
 		I_C_Payment payment = newInstance(I_C_Payment.class);
 		payment.setPayAmt(ESR_LINE_1_AMOUNT);
-		payment.setC_BPartner_ID(lines.get(0).getC_BPartner_ID());
+		payment.setC_BPartner_ID(lines.getFirst().getC_BPartner_ID());
 		payment.setDocumentNo("452432");
-		payment.setAD_Org_ID(lines.get(0).getAD_Org_ID());
+		payment.setAD_Org_ID(lines.getFirst().getAD_Org_ID());
 		save(payment);
 
 		// if the line has a C_Payment_ID>0 payment assigned, then we assume that ESR_LINE_1_AMOUNT was allocated against the invoice
@@ -841,7 +841,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
 
-		final I_ESR_ImportLine line1 = lines.get(0);
+		final I_ESR_ImportLine line1 = lines.getFirst();
 		line1.setC_Payment_ID(0); // if the line has no payment assigned, then we assume that ESR_LINE_1_AMOUNT has not yet been allocated against the invoice
 
 		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
@@ -863,12 +863,12 @@ public class ESRImportBLTest extends ESRTestBase
 
 		I_C_Payment payment = newInstance(I_C_Payment.class);
 		payment.setPayAmt(ESR_LINE_1_AMOUNT);
-		payment.setC_BPartner_ID(lines.get(0).getC_BPartner_ID());
+		payment.setC_BPartner_ID(lines.getFirst().getC_BPartner_ID());
 		payment.setDocumentNo("452432");
-		payment.setAD_Org_ID(lines.get(0).getAD_Org_ID());
+		payment.setAD_Org_ID(lines.getFirst().getAD_Org_ID());
 		save(payment);
 
-		final I_ESR_ImportLine line1 = lines.get(0);
+		final I_ESR_ImportLine line1 = lines.getFirst();
 		line1.setC_Payment_ID(payment.getC_Payment_ID()); // if the line has a C_Payment_ID>0 payment assigned, then we assume that ESR_LINE_1_AMOUNT is *already* allocated against the invoice and is therefore part of the
 		// sum that makes up alreadyAllocatedAmt
 

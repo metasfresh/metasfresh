@@ -90,7 +90,7 @@ public class ExternalServices
 			return;
 		}
 
-		final ExternalSystemServiceInstance matchedInstance = matchingServiceInstances.get(0);
+		final ExternalSystemServiceInstance matchedInstance = matchingServiceInstances.getFirst();
 		final ExternalStatus expectedStatus = matchedInstance.getService().getStatusByCommand(command);
 
 		final ExternalSystemServiceInstance instanceWithRefreshedStatus = matchedInstance.toBuilder().expectedStatus(expectedStatus).build();
@@ -142,7 +142,7 @@ public class ExternalServices
 				.filter(service -> { //dev-note: just a guard for the future
 					final Optional<ExternalSystemServiceInstance> instance = serviceInstanceRepo.getByConfigAndServiceId(configId, service.getId());
 
-					return !instance.isPresent();
+					return instance.isEmpty();
 				})
 				.map(service -> CreateServiceInstanceRequest.builder()
 						.configId(configId)
@@ -206,6 +206,6 @@ public class ExternalServices
 			return Optional.empty();
 		}
 
-		return Optional.of(externalSystemServices.get(0));
+		return Optional.of(externalSystemServices.getFirst());
 	}
 }

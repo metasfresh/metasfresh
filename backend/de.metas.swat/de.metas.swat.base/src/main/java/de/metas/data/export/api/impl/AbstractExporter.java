@@ -192,9 +192,8 @@ public abstract class AbstractExporter implements IExporter
 	 */
 	private static final void close(Object closeableObj)
 	{
-		if (closeableObj instanceof Closeable)
+		if (closeableObj instanceof Closeable closeable)
 		{
-			final Closeable closeable = (Closeable)closeableObj;
 			try
 			{
 				closeable.close();

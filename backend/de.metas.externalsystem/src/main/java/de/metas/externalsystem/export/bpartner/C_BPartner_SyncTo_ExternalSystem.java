@@ -69,7 +69,7 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 					.collect(ImmutableList.toImmutableList());
 
 			return activeConfigs.size() == 1
-					? activeConfigs.get(0).getChildConfig().getId().getRepoId()
+					? activeConfigs.getFirst().getChildConfig().getId().getRepoId()
 					: IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;

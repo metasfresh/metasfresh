@@ -83,7 +83,7 @@ public class CandidateAssignServiceExceedingQtyTest
 
 		final RefundInvoiceCandidate assignedRefundInvoiceCandidate = result.getLeft()
 				.getAssignmentsToRefundCandidates()
-				.get(0)
+				.getFirst()
 				.getRefundInvoiceCandidate();
 
 		assertThat(assignedRefundInvoiceCandidate.getId()).isEqualTo(refundCandidate.getId());

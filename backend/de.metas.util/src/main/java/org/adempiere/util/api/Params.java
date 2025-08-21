@@ -68,9 +68,9 @@ public final class Params implements IParams
 
 	public static Params copyOf(@NonNull final IParams from)
 	{
-		if (from instanceof Params)
+		if (from instanceof Params params)
 		{
-			return (Params)from;
+			return params;
 		}
 		else
 		{
@@ -201,21 +201,20 @@ public final class Params implements IParams
 		{
 			return null;
 		}
-		else if (valueObj instanceof Timestamp)
+		else if (valueObj instanceof Timestamp timestamp)
 		{
-			return (Timestamp)valueObj;
+			return timestamp;
 		}
-		else if (valueObj instanceof Instant)
+		else if (valueObj instanceof Instant instant1)
 		{
-			return Timestamp.from((Instant)valueObj);
+			return Timestamp.from(instant1);
 		}
-		else if (valueObj instanceof ZonedDateTime)
+		else if (valueObj instanceof ZonedDateTime time)
 		{
-			return Timestamp.from(((ZonedDateTime)valueObj).toInstant());
+			return Timestamp.from(time.toInstant());
 		}
-		else if (valueObj instanceof LocalDate)
+		else if (valueObj instanceof LocalDate localDate)
 		{
-			final LocalDate localDate = (LocalDate)valueObj;
 			final Instant instant = localDate.atStartOfDay(SystemTime.zoneId()).toInstant();
 			return Timestamp.from(instant);
 		}

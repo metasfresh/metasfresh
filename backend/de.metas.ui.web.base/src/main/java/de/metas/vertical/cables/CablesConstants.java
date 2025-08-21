@@ -1,8 +1,7 @@
 package de.metas.vertical.cables;
 
-import org.adempiere.mm.attributes.AttributeCode;
-
 import lombok.experimental.UtilityClass;
+import org.adempiere.mm.attributes.AttributeCode;
 
 /*
  * #%L
@@ -35,7 +34,7 @@ public final class CablesConstants
 	 *
 	 * There is a template AD_Sysconfig record for further info.
 	 */
-	public static final String PROFILE = "de.metas.vertical.cables";
+	public static final String PROFILE = "de-metas-vertical-cables";
 
 	public static final AttributeCode ATTRIBUTE_CableLength = AttributeCode.ofString("CableLength");
 }

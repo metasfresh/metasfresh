@@ -232,7 +232,7 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 			{
 				if (tailSize > 0 && tail.size() >= tailSize)
 				{
-					tail.remove(0);
+					tail.removeFirst();
 					truncatedLines++;
 				}
 				tail.add(line);
@@ -240,7 +240,7 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 
 			if (truncatedLines > 0)
 			{
-				tail.add(0, "(Truncated " + truncatedLines + " lines. Preserved last " + tail.size() + " lines)");
+				tail.addFirst("(Truncated " + truncatedLines + " lines. Preserved last " + tail.size() + " lines)");
 			}
 
 			return ImmutableList.copyOf(tail);

@@ -85,8 +85,7 @@ final class CreateReturnedHUsTrxListener implements IHUTrxListener
 
 		customerReturnTrxList.stream()
 				.map(this::buildRequest)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.forEach(huTraceEventService::createAndAddFor);
 	}
 

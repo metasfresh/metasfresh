@@ -23,6 +23,7 @@
 package de.metas.error;
 
 import de.metas.util.Services;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.service.ADSystemInfo;
@@ -35,7 +36,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -67,9 +67,8 @@ public class AdIssueFactory
 		issue.setLocal_Host(NetUtils.getLocalHost().toString());
 
 		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		if (requestAttributes instanceof ServletRequestAttributes)
+		if (requestAttributes instanceof ServletRequestAttributes servletRequestAttributes)
 		{
-			final ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)requestAttributes;
 			final HttpServletRequest httpServletRequest = servletRequestAttributes.getRequest();
 			issue.setRemote_Addr(httpServletRequest.getRemoteAddr());
 			issue.setRemote_Host(httpServletRequest.getRemoteHost());

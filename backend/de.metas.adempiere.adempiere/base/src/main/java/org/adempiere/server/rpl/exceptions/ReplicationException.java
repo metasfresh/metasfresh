@@ -6,6 +6,8 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * @author ad
  * task http://dewiki908/mediawiki/index.php/03000:_ADempiere_Replication_understandable_Errormessages_% 282012071810000029%29
@@ -15,6 +17,7 @@ public class ReplicationException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 8608172237424907859L;
 
 	private final String adMessage;

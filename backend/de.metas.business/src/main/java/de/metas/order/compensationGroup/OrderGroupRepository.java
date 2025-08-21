@@ -239,7 +239,7 @@ public class OrderGroupRepository implements GroupRepository
 
 		final GroupId groupId = extractSingleGroupId(groupOrderLines);
 
-		final I_C_OrderLine groupFirstOrderLine = groupOrderLines.get(0);
+		final I_C_OrderLine groupFirstOrderLine = groupOrderLines.getFirst();
 		final I_C_Order order = groupFirstOrderLine.getC_Order();
 		final I_C_Order_CompensationGroup orderCompensationGroupPO = groupFirstOrderLine.getC_Order_CompensationGroup();
 
@@ -444,13 +444,13 @@ public class OrderGroupRepository implements GroupRepository
 			throw new AdempiereException("Mixed groups not allowed")
 					.setParameter("groupIds", groupIds);
 		}
-		else if (groupIds.isEmpty() || groupIds.get(0) == null)
+		else if (groupIds.isEmpty() || groupIds.getFirst() == null)
 		{
 			return createNewGroupFromOrderLines(request, orderLines);
 		}
 		else
 		{
-			final GroupId groupId = groupIds.get(0);
+			final GroupId groupId = groupIds.getFirst();
 			// NOTE: it's not enough to create the Group using currently loaded orderLines because those might not be the all of them
 			return retrieveGroup(groupId);
 		}

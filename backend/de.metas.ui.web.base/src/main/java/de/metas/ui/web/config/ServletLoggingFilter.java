@@ -1,27 +1,24 @@
 package de.metas.ui.web.config;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.springframework.stereotype.Component;
-
 import com.google.common.base.Stopwatch;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /*
  * #%L
@@ -137,9 +134,8 @@ public class ServletLoggingFilter implements Filter
 
 	private static final String extractRequestInfo(final ServletRequest request)
 	{
-		if (request instanceof HttpServletRequest)
+		if (request instanceof HttpServletRequest httpRequest)
 		{
-			final HttpServletRequest httpRequest = (HttpServletRequest)request;
 
 			final String httpMethod = httpRequest.getMethod();
 

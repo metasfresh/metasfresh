@@ -1,21 +1,19 @@
 package de.metas.ui.web.config;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import de.metas.hostkey.api.IHostKeyBL;
+import de.metas.hostkey.spi.IHostKeyStorage;
+import de.metas.hostkey.spi.IHttpSessionProvider;
+import de.metas.hostkey.spi.impl.HttpCookieHostKeyStorage;
+import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
+import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import de.metas.hostkey.api.IHostKeyBL;
-import de.metas.hostkey.spi.IHostKeyStorage;
-import de.metas.hostkey.spi.impl.HttpCookieHostKeyStorage;
-import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
-import de.metas.hostkey.spi.IHttpSessionProvider;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -101,9 +99,9 @@ public class HostKeyConfig
 		private ServletRequestAttributes getRequestAttributes()
 		{
 			final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-			if (requestAttributes instanceof ServletRequestAttributes)
+			if (requestAttributes instanceof ServletRequestAttributes attributes)
 			{
-				return (ServletRequestAttributes)requestAttributes;
+				return attributes;
 			}
 			else
 			{

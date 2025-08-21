@@ -43,6 +43,7 @@ package org.compiere.model;
  * #L%
  */
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -51,6 +52,7 @@ public class MBlackListCheque extends X_U_BlackListCheque
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 6958839594386806390L;
 
 	public MBlackListCheque(Properties ctx, int U_BlackListCheque_ID, String trxName)

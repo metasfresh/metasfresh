@@ -15,6 +15,7 @@
  *****************************************************************************/
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ import de.metas.cache.CCache;
  */
 public class MHREmployee extends X_HR_Employee
 {
+	@Serial
 	private static final long serialVersionUID = -7083160315471023587L;
 
 	public static MHREmployee get(Properties ctx, int HR_Employee_ID)

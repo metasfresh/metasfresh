@@ -12,6 +12,8 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -25,8 +27,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -88,7 +88,7 @@ public class UserDAO implements IUserDAO
 		}
 		else
 		{
-			return users.get(0);
+			return users.getFirst();
 		}
 	}
 

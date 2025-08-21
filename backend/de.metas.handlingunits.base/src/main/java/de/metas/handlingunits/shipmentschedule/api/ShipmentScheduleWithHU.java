@@ -550,7 +550,7 @@ public class ShipmentScheduleWithHU
 			}
 
 			Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, tuOrVhu, huMaterialItems);
-			final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
+			final I_M_HU_Item huMaterialItem = huMaterialItems.getFirst();
 			materialPIItem = handlingUnitsBL.getPIItem(huMaterialItem);
 		}
 

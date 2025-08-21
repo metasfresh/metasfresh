@@ -25,7 +25,7 @@ package de.metas.common.rest_api.v2;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -33,12 +33,14 @@ import lombok.Value;
 
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Value
 @JsonDeserialize(builder = JsonPurchaseCandidatesRequest.JsonPurchaseCandidatesRequestBuilder.class)
 public class JsonPurchaseCandidatesRequest
 {
-	@ApiModelProperty(position = 10, required = true, //
-			value = "Specifies the purchase candidates to return the ordering status of.")
+	@Schema(requiredMode = REQUIRED, //
+			description = "Specifies the purchase candidates to return the ordering status of.")
 	@JsonProperty("purchaseCandidates")
 	List<JsonPurchaseCandidateReference> purchaseCandidates;
 

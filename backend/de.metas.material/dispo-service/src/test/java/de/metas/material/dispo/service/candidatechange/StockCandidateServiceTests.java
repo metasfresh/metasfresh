@@ -294,13 +294,13 @@ public class StockCandidateServiceTests
 
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 		assertThat(records).hasSize(4);
-		assertDateAndQty(records.get(0), t00, "10");
+		assertDateAndQty(records.getFirst(), t00, "10");
 		assertDateAndQty(records.get(1), t10, "6");
 		assertDateAndQty(records.get(2), t20, "3");
 		assertDateAndQty(records.get(3), t30, "5");
 
 		// all these stock records need to have the same group-ID
-		final int groupId = records.get(0).getMD_Candidate_GroupId();
+		final int groupId = records.getFirst().getMD_Candidate_GroupId();
 		assertThat(groupId).isGreaterThan(0);
 		records.forEach(r -> assertThat(r.getMD_Candidate_GroupId()).isEqualTo(groupId));
 	}
@@ -312,14 +312,14 @@ public class StockCandidateServiceTests
 		{
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(1);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 		}
 
 		invokeStockCandidateService(t30, "2");  // (t1 => 10), (t4 => 12)
 		{
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(2);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 			assertDateAndQty(records.get(1), t30, "12");
 		}
 
@@ -327,7 +327,7 @@ public class StockCandidateServiceTests
 		{
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(3);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 			assertDateAndQty(records.get(1), t20, "7");
 			assertDateAndQty(records.get(2), t30, "9");
 		}
@@ -336,7 +336,7 @@ public class StockCandidateServiceTests
 		{
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(4);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 			assertDateAndQty(records.get(1), t10, "6");
 			assertDateAndQty(records.get(2), t20, "3");
 			assertDateAndQty(records.get(3), t30, "5");
@@ -344,7 +344,7 @@ public class StockCandidateServiceTests
 
 		// all these stock records need to have the same group-ID
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
-		final int groupId = records.get(0).getMD_Candidate_GroupId();
+		final int groupId = records.getFirst().getMD_Candidate_GroupId();
 		assertThat(groupId).isGreaterThan(0);
 		records.forEach(r -> assertThat(r.getMD_Candidate_GroupId()).isEqualTo(groupId));
 	}
@@ -363,7 +363,7 @@ public class StockCandidateServiceTests
 
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(1);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 		}
 
 		{
@@ -372,7 +372,7 @@ public class StockCandidateServiceTests
 
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(2);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 			assertDateAndQty(records.get(1), t30, "12");
 		}
 
@@ -382,7 +382,7 @@ public class StockCandidateServiceTests
 
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(3);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 			assertDateAndQty(records.get(1), t20, "7");
 			assertDateAndQty(records.get(2), t30, "9");
 		}
@@ -393,7 +393,7 @@ public class StockCandidateServiceTests
 
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(4);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 			assertDateAndQty(records.get(1), t20, "7");
 			assertDateAndQty(records.get(2), t20, "3");
 			assertDateAndQty(records.get(3), t30, "5");
@@ -401,9 +401,9 @@ public class StockCandidateServiceTests
 
 		// all these stock records need to have the same group-ID
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllStockRecords();
-		assertThatModel(records.get(0)).hasValueGreaterThanZero(I_MD_Candidate.COLUMN_MD_Candidate_GroupId);
+		assertThatModel(records.getFirst()).hasValueGreaterThanZero(I_MD_Candidate.COLUMN_MD_Candidate_GroupId);
 
-		final int groupId = records.get(0).getMD_Candidate_GroupId();
+		final int groupId = records.getFirst().getMD_Candidate_GroupId();
 		assertThat(records).allSatisfy(r -> assertThatModel(r).hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, groupId));
 	}
 
@@ -421,7 +421,7 @@ public class StockCandidateServiceTests
 		{ // guard
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(5);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 			assertDateAndQty(records.get(1), t20, "7");
 			assertDateAndQty(records.get(2), t30, "9");
 			assertDateAndQty(records.get(3), t40, "6");
@@ -461,7 +461,7 @@ public class StockCandidateServiceTests
 		// expecting (t20=> 10), (t2 => 7), (t3 => 4), (t4 => 6), (t6 => 11)
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 		assertThat(records).hasSize(5);
-		assertDateAndQty(records.get(0), t00, "10");
+		assertDateAndQty(records.getFirst(), t00, "10");
 		assertDateAndQty(records.get(1), t20, "7");
 		assertDateAndQty(records.get(2), t30, "9");
 		assertDateAndQty(records.get(3), t40, "6");
@@ -481,7 +481,7 @@ public class StockCandidateServiceTests
 		{ // guard
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(5);
-			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.getFirst(), t00, "10");
 			assertDateAndQty(records.get(1), t10, "7"); // 10 - 3
 			assertDateAndQty(records.get(2), t20, "4"); //  7 - 3
 			assertDateAndQty(records.get(3), t30, "6"); //  4 + 2
@@ -502,7 +502,7 @@ public class StockCandidateServiceTests
 		// expecting (t1 => 10), (t3 => 7), (t4 => 9), (t5 => 6), (t6 => 11)
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 		assertThat(records).hasSize(5);
-		assertDateAndQty(records.get(0), t00, "10");
+		assertDateAndQty(records.getFirst(), t00, "10");
 		assertDateAndQty(records.get(1), t20, "7"); // 10 - 3 (the t3's "-3")
 		assertDateAndQty(records.get(2), t30, "9"); //  7 + 2
 		assertDateAndQty(records.get(3), t40, "6"); //  9 - 3 (the -3 of the previous ts that is now t5)

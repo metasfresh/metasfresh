@@ -1266,8 +1266,8 @@ public class GridTable extends AbstractTableModel
 
 		// Save old value
 		m_oldValue = new Object[3];
-		m_oldValue[0] = new Integer(row);
-		m_oldValue[1] = new Integer(col);
+		m_oldValue[0] = Integer.valueOf(row);
+		m_oldValue[1] = Integer.valueOf(col);
 		m_oldValue[2] = oldValue;
 
 		// Set Data item
@@ -2888,8 +2888,8 @@ public class GridTable extends AbstractTableModel
 						// give the other processes a chance
 						try
 						{
-							yield();
-							sleep(10); // .01 second
+							Thread.yield();
+							Thread.sleep(10); // .01 second
 						}
 						catch (InterruptedException ie)
 						{

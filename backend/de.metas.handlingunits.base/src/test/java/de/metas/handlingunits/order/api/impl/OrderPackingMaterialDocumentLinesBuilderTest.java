@@ -1,24 +1,5 @@
 package de.metas.handlingunits.order.api.impl;
 
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -29,6 +10,24 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.impl.OrderLineBL;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -68,7 +67,7 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 
 		// we don't want to invoke the pricing logic
 		final OrderLineBL orderLineBL = Mockito.spy(new OrderLineBL());
-		Mockito.doNothing().when(orderLineBL).updatePrices(Matchers.any(OrderLinePriceUpdateRequest.class));
+		Mockito.doNothing().when(orderLineBL).updatePrices(ArgumentMatchers.any(OrderLinePriceUpdateRequest.class));
 		Services.registerService(IOrderLineBL.class, orderLineBL);
 
 		final I_C_UOM packageProductUom = newInstance(I_C_UOM.class);

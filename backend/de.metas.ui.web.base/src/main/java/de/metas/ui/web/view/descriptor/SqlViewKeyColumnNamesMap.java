@@ -135,7 +135,7 @@ public final class SqlViewKeyColumnNamesMap
 				throw new AdempiereException("No more available key columns found in " + I_T_WEBUI_ViewSelection.Table_Name + " for " + keyField);
 			}
 
-			final String webuiSelectionColumnName = availableKeys.remove(0);
+			final String webuiSelectionColumnName = availableKeys.removeFirst();
 
 			final KeyColumnNameInfo keyColumnNameInfo = KeyColumnNameInfo.builder()
 					.keyColumnName(keyField.getColumnName())

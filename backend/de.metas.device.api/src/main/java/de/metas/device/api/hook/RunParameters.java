@@ -58,6 +58,6 @@ public class RunParameters
 	{
 		return Optional.ofNullable(parameters.get(paramName))
 				.filter(list -> list.size() == 1)
-				.map(list -> list.get(0));
+				.map(list -> list.getFirst());
 	}
 }

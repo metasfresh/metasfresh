@@ -166,7 +166,7 @@ public class TcpConnectionReadLineEndPointTest
 				.as("Unexpected number of received messages")
 				.hasSize(1);
 		
-		assertThat(serverSocketReceived.get(0))
+		assertThat(serverSocketReceived.getFirst())
 				.as("Unexpected first received message")
 				.isEqualTo(cmd);
 	}
@@ -189,7 +189,7 @@ public class TcpConnectionReadLineEndPointTest
 				.as("Unexpected number of received messages after first call")
 				.hasSize(1);
 		
-		assertThat(serverSocketReceived.get(0))
+		assertThat(serverSocketReceived.getFirst())
 				.as("Unexpected first received message")
 				.isEqualTo(cmd);
 

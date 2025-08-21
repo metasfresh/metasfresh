@@ -1,15 +1,5 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability;
 
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.AvailabilityType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
@@ -31,7 +21,15 @@ import de.metas.vertical.pharma.msv3.server.stockAvailability.jpa.JpaProductExcl
 import de.metas.vertical.pharma.msv3.server.stockAvailability.jpa.JpaProductExcludeRepository;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.jpa.JpaStockAvailability;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.jpa.JpaStockAvailabilityRepository;
+import jakarta.transaction.Transactional;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * #%L

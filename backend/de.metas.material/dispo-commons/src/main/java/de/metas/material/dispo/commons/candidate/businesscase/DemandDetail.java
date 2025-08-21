@@ -51,18 +51,17 @@ public class DemandDetail implements BusinessCaseDetail
 		final int orderId;
 		final int orderLineId;
 		final int subscriptionProgressId;
-		if (documentDescriptor instanceof OrderLineDescriptor)
+		if (documentDescriptor instanceof OrderLineDescriptor orderLineDescriptor)
 		{
-			final OrderLineDescriptor orderLineDescriptor = (OrderLineDescriptor)documentDescriptor;
 			orderLineId = orderLineDescriptor.getOrderLineId();
 			orderId = orderLineDescriptor.getOrderId();
 			subscriptionProgressId = UNSPECIFIED_REPO_ID;
 		}
-		else if (documentDescriptor instanceof SubscriptionLineDescriptor)
+		else if (documentDescriptor instanceof SubscriptionLineDescriptor descriptor)
 		{
 			orderLineId = UNSPECIFIED_REPO_ID;
 			orderId = UNSPECIFIED_REPO_ID;
-			subscriptionProgressId = ((SubscriptionLineDescriptor)documentDescriptor).getSubscriptionProgressId();
+			subscriptionProgressId = descriptor.getSubscriptionProgressId();
 		}
 		else
 		{

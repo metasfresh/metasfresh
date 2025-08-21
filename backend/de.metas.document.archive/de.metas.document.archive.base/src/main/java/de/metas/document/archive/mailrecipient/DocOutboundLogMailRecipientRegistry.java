@@ -45,7 +45,7 @@ public class DocOutboundLogMailRecipientRegistry
 	public DocOutboundLogMailRecipientRegistry(
 			@NonNull final Optional<List<DocOutboundLogMailRecipientProvider>> providers)
 	{
-		if (!providers.isPresent())
+		if (providers.isEmpty())
 		{
 			defaultProvider = null;
 			tableName2provider = ImmutableMap.of();

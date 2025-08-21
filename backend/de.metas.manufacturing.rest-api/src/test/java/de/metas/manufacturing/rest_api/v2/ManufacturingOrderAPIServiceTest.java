@@ -77,6 +77,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -92,7 +93,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -117,7 +117,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ManufacturingOrderAPIServiceTest
@@ -337,7 +337,7 @@ public class ManufacturingOrderAPIServiceTest
 
 				assertThat(result.getTransactionKey()).isNotNull();
 				assertThat(result.getItems()).hasSize(1);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().getFirst().getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.isHasMoreItems()).isTrue();
 			}
 
@@ -351,7 +351,7 @@ public class ManufacturingOrderAPIServiceTest
 
 				assertThat(result.getTransactionKey()).isNotNull();
 				assertThat(result.getItems()).hasSize(2);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().getFirst().getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
 				assertThat(result.isHasMoreItems()).isTrue();
 			}
@@ -365,7 +365,7 @@ public class ManufacturingOrderAPIServiceTest
 						"en_US");
 
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().getFirst().getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
 				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isTrue();
@@ -393,7 +393,7 @@ public class ManufacturingOrderAPIServiceTest
 
 				assertThat(result.getTransactionKey()).isNotNull();
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().getFirst().getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
 				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isFalse();
@@ -409,7 +409,7 @@ public class ManufacturingOrderAPIServiceTest
 
 				assertThat(result.getTransactionKey()).isNotNull();
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().getFirst().getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
 				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isFalse();
@@ -437,7 +437,7 @@ public class ManufacturingOrderAPIServiceTest
 						QueryLimit.NO_LIMIT,
 						"en_US");
 				assertThat(result.getItems()).hasSize(1);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().getFirst().getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.isHasMoreItems()).isFalse();
 			}
 
@@ -449,7 +449,7 @@ public class ManufacturingOrderAPIServiceTest
 						QueryLimit.NO_LIMIT,
 						"en_US");
 				assertThat(result.getItems()).hasSize(2);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().getFirst().getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
 				assertThat(result.isHasMoreItems()).isFalse();
 			}
@@ -462,7 +462,7 @@ public class ManufacturingOrderAPIServiceTest
 						QueryLimit.NO_LIMIT,
 						"en_US");
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().getFirst().getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
 				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isFalse();
@@ -476,7 +476,7 @@ public class ManufacturingOrderAPIServiceTest
 						QueryLimit.NO_LIMIT,
 						"en_US");
 				assertThat(result.getItems()).hasSize(3);
-				assertThat(result.getItems().get(0).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
+				assertThat(result.getItems().getFirst().getOrderId()).isEqualTo(toJsonMetasfreshId(orderId1));
 				assertThat(result.getItems().get(1).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId2));
 				assertThat(result.getItems().get(2).getOrderId()).isEqualTo(toJsonMetasfreshId(orderId3));
 				assertThat(result.isHasMoreItems()).isFalse();
@@ -506,8 +506,8 @@ public class ManufacturingOrderAPIServiceTest
 
 			final ManufacturingOrderExportAudit audit = orderExportAuditRepo.getByTransactionId(APITransactionId.ofString("trx1"));
 			assertThat(audit.getItems()).hasSize(1);
-			assertThat(audit.getItems().get(0).getExportStatus()).isEqualTo(APIExportStatus.ExportedAndForwarded);
-			assertThat(audit.getItems().get(0).getIssueId()).isNull();
+			assertThat(audit.getItems().getFirst().getExportStatus()).isEqualTo(APIExportStatus.ExportedAndForwarded);
+			assertThat(audit.getItems().getFirst().getIssueId()).isNull();
 		}
 
 		@Test
@@ -531,53 +531,12 @@ public class ManufacturingOrderAPIServiceTest
 
 			final ManufacturingOrderExportAudit audit = orderExportAuditRepo.getByTransactionId(APITransactionId.ofString("trx1"));
 			assertThat(audit.getItems()).hasSize(1);
-			assertThat(audit.getItems().get(0).getExportStatus()).isEqualTo(APIExportStatus.ExportedAndError);
-			assertThat(audit.getItems().get(0).getIssueId()).isNotNull();
+			assertThat(audit.getItems().getFirst().getExportStatus()).isEqualTo(APIExportStatus.ExportedAndError);
+			assertThat(audit.getItems().getFirst().getIssueId()).isNotNull();
 		}
 	}
 
-	@Nested
-	public class report
-	{
 		private HUTestHelper huTestHelper;
-		private I_C_UOM uomEach;
-		private LocatorId locatorId;
-		private ResourceId plantId;
-
-		@BeforeEach
-		public void beforeEach()
-		{
-			huTestHelper = HUTestHelper.newInstanceOutOfTrx();
-			uomEach = huTestHelper.uomEach;
-
-			plantId = createPlant("plant");
-
-			huTestHelper.createDimensionSpec_PP_Order_ProductAttribute_To_Transfer();
-
-			createDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
-
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(huTestHelper.defaultWarehouse.getM_Warehouse_ID());
-			locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
-		}
-
-		public ResourceId createPlant(final String name)
-		{
-			final I_S_Resource plant = newInstance(I_S_Resource.class);
-			plant.setIsManufacturingResource(true);
-			plant.setManufacturingResourceType(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
-			plant.setValue(name);
-			plant.setName(name);
-			saveRecord(plant);
-			return ResourceId.ofRepoId(plant.getS_Resource_ID());
-		}
-
-		private void createDocType(final String docBaseType)
-		{
-			final I_C_DocType docType = newInstance(I_C_DocType.class);
-			docType.setName(docBaseType);
-			docType.setDocBaseType(docBaseType);
-			saveRecord(docType);
-		}
 
 		@Builder(builderMethodName = "vhu", builderClassName = "VHUBuilder")
 		private HuId createVHU(
@@ -614,6 +573,48 @@ public class ManufacturingOrderAPIServiceTest
 			return HuId.ofRepoId(vhu.getM_HU_ID());
 		}
 
+	@Nested
+	public class report
+	{
+		private I_C_UOM uomEach;
+		private LocatorId locatorId;
+		private ResourceId plantId;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			huTestHelper = HUTestHelper.newInstanceOutOfTrx();
+			uomEach = huTestHelper.uomEach;
+
+			plantId = createPlant("plant");
+
+			huTestHelper.createDimensionSpec_PP_Order_ProductAttribute_To_Transfer();
+
+			createDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
+
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(huTestHelper.defaultWarehouse.getM_Warehouse_ID());
+			locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+		}
+
+		public ResourceId createPlant(final String name)
+		{
+			final I_S_Resource plant = newInstance(I_S_Resource.class);
+			plant.setIsManufacturingResource(true);
+			plant.setManufacturingResourceType(ManufacturingResourceType.Plant.getCode());
+			plant.setValue(name);
+			plant.setName(name);
+			saveRecord(plant);
+			return ResourceId.ofRepoId(plant.getS_Resource_ID());
+		}
+
+		private void createDocType(final String docBaseType)
+		{
+			final I_C_DocType docType = newInstance(I_C_DocType.class);
+			docType.setName(docBaseType);
+			docType.setDocBaseType(docBaseType);
+			saveRecord(docType);
+		}
+
 		@Test
 		public void receive()
 		{
@@ -646,14 +647,14 @@ public class ManufacturingOrderAPIServiceTest
 					.containsExactly(
 							JsonResponseReceiveFromManufacturingOrder.builder()
 									.requestId("req1")
-									.costCollectorIds(result.getReceipts().get(0).getCostCollectorIds()) // could not check
+									.costCollectorIds(result.getReceipts().getFirst().getCostCollectorIds()) // could not check
 									.build());
 
 			//
 			// Check cost collector
 			final List<I_PP_Cost_Collector> costCollectors = costCollectorDAO.getByOrderId(orderId);
 			assertThat(costCollectors).hasSize(1);
-			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
+			final I_PP_Cost_Collector costCollector = costCollectors.getFirst();
 			assertThat(costCollector.getCostCollectorType()).isEqualTo(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt);
 			assertThat(costCollector.getMovementQty()).isEqualTo("10");
 			assertThat(costCollector.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
@@ -663,7 +664,7 @@ public class ManufacturingOrderAPIServiceTest
 			// Check HU
 			final List<I_M_HU> hus = costCollectorBL.getTopLevelHUs(costCollector);
 			assertThat(hus).hasSize(1);
-			final I_M_HU hu = hus.get(0);
+			final I_M_HU hu = hus.getFirst();
 			assertThat(handlingUnitsBL.getHU_UnitType(hu)).isEqualTo(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI);
 			assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 			assertThat(hu.getM_Locator_ID()).isEqualTo(locatorId.getRepoId());
@@ -698,8 +699,8 @@ public class ManufacturingOrderAPIServiceTest
 							.item(ManufacturingOrderReportAuditItem.builder()
 									.orderId(orderId)
 									.costCollectorId(costCollectorId)
-									.jsonRequest(toJsonString(request.getReceipts().get(0)))
-									.jsonResponse(toJsonString(result.getReceipts().get(0)))
+									.jsonRequest(toJsonString(request.getReceipts().getFirst()))
+									.jsonResponse(toJsonString(result.getReceipts().getFirst()))
 									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.SUCCESS)
 									.build())
 							.build());
@@ -765,8 +766,8 @@ public class ManufacturingOrderAPIServiceTest
 			assertThat(result.getReceipts()).isEmpty();
 			assertThat(result.getIssues()).hasSize(2);
 
-			final JsonResponseIssueToManufacturingOrderDetail orderDetail1 = result.getIssues().get(0).getDetails().get(0);
-			final JsonResponseIssueToManufacturingOrderDetail orderDetail2 = result.getIssues().get(1).getDetails().get(0);
+			final JsonResponseIssueToManufacturingOrderDetail orderDetail1 = result.getIssues().getFirst().getDetails().getFirst();
+			final JsonResponseIssueToManufacturingOrderDetail orderDetail2 = result.getIssues().get(1).getDetails().getFirst();
 
 			assertThat(result.getIssues())
 					.containsExactly(
@@ -822,9 +823,9 @@ public class ManufacturingOrderAPIServiceTest
 							.importStatus(ManufacturingOrderReportAudit.ImportStatus.SUCCESS)
 							.item(ManufacturingOrderReportAuditItem.builder()
 									.orderId(orderId)
-									.costCollectorId(audit.getItems().get(0).getCostCollectorId()) // cannot check
-									.jsonRequest(toJsonString(request.getIssues().get(0)))
-									.jsonResponse(toJsonString(result.getIssues().get(0)))
+									.costCollectorId(audit.getItems().getFirst().getCostCollectorId()) // cannot check
+									.jsonRequest(toJsonString(request.getIssues().getFirst()))
+									.jsonResponse(toJsonString(result.getIssues().getFirst()))
 									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.SUCCESS)
 									.build())
 							.item(ManufacturingOrderReportAuditItem.builder()
@@ -875,7 +876,7 @@ public class ManufacturingOrderAPIServiceTest
 			assertThat(result.getReceipts()).isEmpty();
 			assertThat(result.getIssues()).isEmpty();
 
-			final JsonErrorItem jsonErrorItem = result.getError().getErrors().get(0);
+			final JsonErrorItem jsonErrorItem = result.getError().getErrors().getFirst();
 			assertThat(jsonErrorItem.getMessage()).startsWith("No HU found ");
 			assertThat(jsonErrorItem.getAdIssueId()).isNotNull();
 
@@ -895,7 +896,7 @@ public class ManufacturingOrderAPIServiceTest
 							.item(ManufacturingOrderReportAuditItem.builder()
 									.orderId(orderId)
 									.costCollectorId(null)
-									.jsonRequest(toJsonString(request.getIssues().get(0)))
+									.jsonRequest(toJsonString(request.getIssues().getFirst()))
 									.jsonResponse(null)
 									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.FAILED)
 									.errorMsg(jsonErrorItem.getMessage())
@@ -949,7 +950,7 @@ public class ManufacturingOrderAPIServiceTest
 			assertThat(result.getReceipts()).isEmpty();
 			assertThat(result.getIssues()).isEmpty();
 
-			final JsonErrorItem jsonErrorItem = result.getError().getErrors().get(0);
+			final JsonErrorItem jsonErrorItem = result.getError().getErrors().getFirst();
 			assertThat(jsonErrorItem.getMessage()).startsWith("No HU found ");
 			assertThat(jsonErrorItem.getAdIssueId()).isNotNull();
 
@@ -968,9 +969,9 @@ public class ManufacturingOrderAPIServiceTest
 							.adIssueId(AdIssueId.ofRepoId(jsonErrorItem.getAdIssueId().getValue()))
 							.item(ManufacturingOrderReportAuditItem.builder()
 									.orderId(orderId)
-									.costCollectorId(audit.getItems().get(0).getCostCollectorId()) // cannot check
-									.jsonRequest(toJsonString(request.getIssues().get(0)))
-									.jsonResponse(audit.getItems().get(0).getJsonResponse()) // cannot check
+									.costCollectorId(audit.getItems().getFirst().getCostCollectorId()) // cannot check
+									.jsonRequest(toJsonString(request.getIssues().getFirst()))
+									.jsonResponse(audit.getItems().getFirst().getJsonResponse()) // cannot check
 									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.SUCCESS_BUT_ROLLED_BACK)
 									.build())
 							.item(ManufacturingOrderReportAuditItem.builder()

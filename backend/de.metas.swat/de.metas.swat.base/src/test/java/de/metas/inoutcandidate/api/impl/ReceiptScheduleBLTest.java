@@ -68,8 +68,8 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		Assertions.assertEquals(4, result.getInOutCount(), "Invalid amount of generated receipts");
 
 		final List<I_M_InOut> receipts = result.getInOuts();
-		assertMatches(schedules.get(0), receipts.get(0));
-		assertMatches(schedules.get(1), receipts.get(0));
+		assertMatches(schedules.getFirst(), receipts.getFirst());
+		assertMatches(schedules.get(1), receipts.getFirst());
 		assertMatches(schedules.get(2), receipts.get(1));
 		assertMatches(schedules.get(3), receipts.get(2));
 		assertMatches(schedules.get(4), receipts.get(3));
@@ -117,10 +117,10 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		// invoke method under test
 		receiptScheduleBL.generateInOuts(ctx, schedulesList.iterator(), result, complete);
 
-		final I_M_ReceiptSchedule schedule = schedulesList.get(0);
+		final I_M_ReceiptSchedule schedule = schedulesList.getFirst();
 		final List<I_M_InOut> receipts = result.getInOuts();
 
-		assertMatches(schedule, receipts.get(0));
+		assertMatches(schedule, receipts.getFirst());
 	}
 
 	/**
@@ -137,13 +137,13 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedulesList.iterator(), result, complete);
 
-		final I_M_ReceiptSchedule schedule1 = schedulesList.get(0);
+		final I_M_ReceiptSchedule schedule1 = schedulesList.getFirst();
 		final I_M_ReceiptSchedule schedule2 = schedulesList.get(1);
 		final I_M_ReceiptSchedule schedule3 = schedulesList.get(2);
 		final List<I_M_InOut> receipts = result.getInOuts();
 
-		assertMatches(schedule1, receipts.get(0));
-		assertMatches(schedule2, receipts.get(0));
+		assertMatches(schedule1, receipts.getFirst());
+		assertMatches(schedule2, receipts.getFirst());
 		assertMatches(schedule3, receipts.get(1));
 	}
 
@@ -163,9 +163,9 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				.fromToMultiplier(BigDecimal.ONE)
 				.build());
 
-		schedulesList.get(0).setC_OrderLine_ID(111);
-		schedulesList.get(0).setC_UOM_ID(uomRecord.getC_UOM_ID());
-		schedulesList.get(0).setAD_Org_ID(3);
+		schedulesList.getFirst().setC_OrderLine_ID(111);
+		schedulesList.getFirst().setC_UOM_ID(uomRecord.getC_UOM_ID());
+		schedulesList.getFirst().setAD_Org_ID(3);
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 
 		// invoke the method under test
@@ -173,11 +173,11 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 
 		final IInOutDAO inOutDao = Services.get(IInOutDAO.class);
 
-		final I_M_ReceiptSchedule schedule = schedulesList.get(0);
+		final I_M_ReceiptSchedule schedule = schedulesList.getFirst();
 		final List<I_M_InOut> receipts = result.getInOuts();
 
-		final List<I_M_InOutLine> receiptLine = inOutDao.retrieveLines(receipts.get(0));
-		assertLineMatches(schedule, receiptLine.get(0));
+		final List<I_M_InOutLine> receiptLine = inOutDao.retrieveLines(receipts.getFirst());
+		assertLineMatches(schedule, receiptLine.getFirst());
 
 	}
 
@@ -196,17 +196,17 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		receiptScheduleBL.generateInOuts(ctx, schedulesList.iterator(), result, complete);
 		final IInOutDAO inOutDao = Services.get(IInOutDAO.class);
 
-		final I_M_ReceiptSchedule schedule1 = schedulesList.get(0);
+		final I_M_ReceiptSchedule schedule1 = schedulesList.getFirst();
 		final I_M_ReceiptSchedule schedule2 = schedulesList.get(1);
 		final I_M_ReceiptSchedule schedule3 = schedulesList.get(2);
 		final List<I_M_InOut> receipts = result.getInOuts();
 
-		final List<I_M_InOutLine> receiptLines1 = inOutDao.retrieveLines(receipts.get(0));
+		final List<I_M_InOutLine> receiptLines1 = inOutDao.retrieveLines(receipts.getFirst());
 		final List<I_M_InOutLine> receiptLines2 = inOutDao.retrieveLines(receipts.get(1));
 
-		assertLineMatches(schedule1, receiptLines1.get(0));
+		assertLineMatches(schedule1, receiptLines1.getFirst());
 		assertLineMatches(schedule2, receiptLines1.get(1));
-		assertLineMatches(schedule3, receiptLines2.get(0));
+		assertLineMatches(schedule3, receiptLines2.getFirst());
 
 	}
 

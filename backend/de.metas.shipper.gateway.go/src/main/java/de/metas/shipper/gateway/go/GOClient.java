@@ -1,26 +1,9 @@
 package de.metas.shipper.gateway.go;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import javax.xml.bind.JAXBElement;
-
 import com.google.common.annotations.VisibleForTesting;
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.ws.client.core.WebServiceTemplate;
-import org.springframework.ws.transport.http.HttpComponentsMessageSender;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.shipper.gateway.go.GOClientLogEvent.GOClientLogEventBuilder;
 import de.metas.shipper.gateway.go.schema.Fehlerbehandlung;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
@@ -46,8 +29,22 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.Check;
+import jakarta.xml.bind.JAXBElement;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.ws.client.core.WebServiceTemplate;
+import org.springframework.ws.transport.http.HttpComponentsMessageSender;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -205,16 +202,14 @@ public class GOClient implements ShipperGatewayClient
 				objectFactory.createGOWebServiceSendungsnummern(goRequest),
 				"getPackageLabelsList",
 				deliveryOrder.getId().getRepoId());
-		if (goResponseObj instanceof Label)
+		if (goResponseObj instanceof Label goLabels)
 		{
-			final Label goLabels = (Label)goResponseObj;
 			final List<PackageLabels> packageLabels = createDeliveryPackageLabels(goLabels);
 			logger.trace("getPackageLabelsList: got packageLabels={}", packageLabels);
 			return packageLabels;
 		}
-		else if (goResponseObj instanceof Fehlerbehandlung)
+		else if (goResponseObj instanceof Fehlerbehandlung errorResponse)
 		{
-			final Fehlerbehandlung errorResponse = (Fehlerbehandlung)goResponseObj;
 			throw extractException(errorResponse);
 		}
 		else
@@ -451,7 +446,7 @@ public class GOClient implements ShipperGatewayClient
 		{
 			throw new ShipperGatewayException("Only one delivery position was expected but got " + goResponseDeliveryPositions);
 		}
-		final SendungsRueckmeldung.Sendung.Position goResponseDeliveryPosition = goResponseDeliveryPositions.get(0);
+		final SendungsRueckmeldung.Sendung.Position goResponseDeliveryPosition = goResponseDeliveryPositions.getFirst();
 
 		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
 				.hwbNumber(HWBNumber.of(goResponseContent.getFrachtbriefnummer()))

@@ -91,7 +91,7 @@ public class AttributesChangedEventHandlerTest
 		//
 		// ATTRIBUTES_CHANGED_FROM:
 		{
-			final Candidate fromCandidate = candidates.get(0);
+			final Candidate fromCandidate = candidates.getFirst();
 			System.out.println("fromCandidate: " + fromCandidate);
 
 			assertThat(fromCandidate.getType()).isEqualTo(CandidateType.ATTRIBUTES_CHANGED_FROM);

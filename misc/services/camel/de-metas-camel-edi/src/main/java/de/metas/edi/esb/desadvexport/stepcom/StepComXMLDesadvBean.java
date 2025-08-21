@@ -73,7 +73,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
 
 import javax.xml.datatype.XMLGregorianCalendar;

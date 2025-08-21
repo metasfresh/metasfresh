@@ -2,16 +2,16 @@ package de.metas.ui.web;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class CORSFilter implements Filter
@@ -34,10 +34,9 @@ public class CORSFilter implements Filter
 	@Override
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException
 	{
-		if (response instanceof HttpServletResponse)
+		if (response instanceof HttpServletResponse httpResponse)
 		{
 			final HttpServletRequest httpRequest = (HttpServletRequest)request;
-			final HttpServletResponse httpResponse = (HttpServletResponse)response;
 
 			setCORSHeaders(httpRequest, httpResponse);
 		}
@@ -75,8 +74,9 @@ public class CORSFilter implements Filter
 			}
 			else
 			{
-				logger.warn("Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set."
-								+ "\n Please and set `{}` SysConfig or allow cross-site-usage (`{}` sysconfig).",
+				logger.warn("""
+								Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set.
+								 Please and set `{}` SysConfig or allow cross-site-usage (`{}` sysconfig).""",
 						WebuiURLs.SYSCONFIG_FRONTEND_URL, WebuiURLs.SYSCONFIG_IsCrossSiteUsageAllowed);
 			}
 		}

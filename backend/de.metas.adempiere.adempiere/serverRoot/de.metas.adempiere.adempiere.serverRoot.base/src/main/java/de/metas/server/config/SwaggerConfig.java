@@ -1,16 +1,3 @@
-package de.metas.server.config;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.util.web.SwaggerUtil;
-import de.pentabyte.springfox.ApiEnumDescriptionPlugin;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.serverRoot.base
@@ -33,21 +20,33 @@ import springfox.documentation.spring.web.plugins.Docket;
  * #L%
  */
 
+package de.metas.server.config;
+
+import de.metas.util.web.SwaggerUtil;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.servers.Server;
+import org.springdoc.core.customizers.OperationCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import static de.metas.util.web.SwaggerUtil.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER;
+
 @Configuration
 @EnableWebMvc
-@Import(ApiEnumDescriptionPlugin.class)  // https://github.com/hoereth/springfox-enum-plugin
 public class SwaggerConfig
 {
 	@Bean
-	public Docket api()
-	{
-		return new Docket(DocumentationType.OAS_30)
-				.globalOperationParameters(ImmutableList.of(SwaggerUtil.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER))
-				.select()
-				.paths(PathSelectors.any())
-				.build()
-				.apiInfo(SwaggerUtil.createApiInfo(
-						"metasfresh application server REST API" /* title */,
-						"metasfresh REST API"/* description */));
+	public OperationCustomizer customize() {
+		return (operation, handlerMethod) -> operation.addParametersItem(SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER);
+	}
+
+	@Bean
+	public OpenAPI appOpenAPI() {
+		return SwaggerUtil.createApiInfo("metasfresh application server REST API",
+										 "metasfresh REST API ( to switch to webui REST API on instances change above to /v3/api-docs ) <br>" +
+											"Currently can't be executed because OpenAPI doesn't allow custom Authorization-header with name Authorization.")
+				.addServersItem(new Server().url("/app").description("default - used on instances to add /app after base-url"))
+				.addServersItem(new Server().url("/").description("for local development"));
 	}
 }

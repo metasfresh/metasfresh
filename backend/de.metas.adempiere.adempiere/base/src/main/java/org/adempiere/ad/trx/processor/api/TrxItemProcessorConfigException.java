@@ -3,6 +3,8 @@ package org.adempiere.ad.trx.processor.api;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -33,6 +35,7 @@ import org.adempiere.exceptions.AdempiereException;
  */
 public class TrxItemProcessorConfigException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = 415994901244958144L;
 
 	public TrxItemProcessorConfigException(final String message)

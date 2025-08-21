@@ -4,6 +4,8 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.lock.api.ILock;
+
+import java.io.Serial;
 import de.metas.lock.api.ILockCommand;
 
 /**
@@ -17,6 +19,7 @@ public class LockChangeFailedException extends LockException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -6916683766355333023L;
 
 	public LockChangeFailedException(final String message, final Throwable cause)

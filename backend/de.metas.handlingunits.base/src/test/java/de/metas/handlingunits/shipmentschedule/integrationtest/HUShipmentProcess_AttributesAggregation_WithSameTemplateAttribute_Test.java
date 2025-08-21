@@ -101,13 +101,13 @@ public class HUShipmentProcess_AttributesAggregation_WithSameTemplateAttribute_T
 		//
 		// Get generated shipment
 		Assertions.assertEquals( 1,  generatedShipments.size(), "Invalid generated shipments count");
-		final I_M_InOut shipment = generatedShipments.get(0);
+		final I_M_InOut shipment = generatedShipments.getFirst();
 
 		//
 		// Retrieve generated shipment lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
 		Assertions.assertEquals( 1,  shipmentLines.size(), "Invalid generated shipment lines count");
-		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
+		final I_M_InOutLine shipmentLine1 = shipmentLines.getFirst();
 
 		// this shall work because we implemeted initializeAttributeConfig
 		assertShipmentLineASIAttributeValueString(lu1_attributeValue, shipmentLine1, attribute);

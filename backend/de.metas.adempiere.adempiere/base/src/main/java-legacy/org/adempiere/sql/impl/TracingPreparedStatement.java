@@ -1,5 +1,8 @@
 package org.adempiere.sql.impl;
 
+import org.compiere.util.CPreparedStatement;
+import org.compiere.util.CStatementVO;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -19,9 +22,6 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
-
-import org.compiere.util.CPreparedStatement;
-import org.compiere.util.CStatementVO;
 
 /*
  * #%L

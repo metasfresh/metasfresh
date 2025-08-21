@@ -13,12 +13,12 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.I_AD_Index_Table;
-import javax.annotation.Nullable;
 import org.compiere.model.MIndexTable;
 import org.compiere.util.DB;
 
+import javax.annotation.Nullable;
+import java.io.Serial;
 import java.sql.SQLException;
-import static de.metas.util.Check.isEmpty;
 
 /**
  * Unique Constraint Exception
@@ -29,6 +29,7 @@ public class DBUniqueConstraintException extends DBException
 {
 	private static final AdMessageKey MSG_SaveErrorNotUnique = AdMessageKey.of("SaveErrorNotUnique");
 	public static final String DB_UNIQUE_CONSTRAINT_ERROR_CODE = "DBUniqueConstraint";
+	@Serial
 	private static final long serialVersionUID = -1436774241410586947L;
 
 	private String constraintName = null;

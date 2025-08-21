@@ -1,28 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.inout.util.DeliveryLineCandidate;
-import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.assertj.core.api.AbstractBigDecimalAssert;
-import org.compiere.model.X_M_Product;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -41,6 +19,25 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.inout.util.DeliveryLineCandidate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.assertj.core.api.AbstractBigDecimalAssert;
+import org.compiere.model.X_M_Product;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -82,7 +79,7 @@ public class ShipmentScheduleUpdater_generate_Test
 	private AbstractBigDecimalAssert<?> assertOneResultWithQtyToDeliver(@NonNull final ShipmentSchedulesDuringUpdate result)
 	{
 		assertThat(result.getAllLines()).hasSize(1);
-		final DeliveryLineCandidate deliveryLineCandidate = result.getAllLines().get(0);
+		final DeliveryLineCandidate deliveryLineCandidate = result.getAllLines().getFirst();
 
 		return assertThat(deliveryLineCandidate.getQtyToDeliver());
 	}
@@ -206,9 +203,6 @@ public class ShipmentScheduleUpdater_generate_Test
 		}
 	}
 
-	@Nested
-	public class PickingBOM_ChristmasBox_5chocolates_3socks_DeliverByAvailability
-	{
 		@Builder(builderMethodName = "prepareTest", buildMethodName = "setupAndInvoke")
 		private ShipmentSchedulesDuringUpdate setupTest(
 				final int christmasPack_qtyOrdered,
@@ -252,6 +246,10 @@ public class ShipmentScheduleUpdater_generate_Test
 
 			return setupAndInvoke(spec);
 		}
+
+	@Nested
+	public class PickingBOM_ChristmasBox_5chocolates_3socks_DeliverByAvailability
+	{
 
 		@Test
 		public void qtyOnHand_0christmasPacks_11chocolates_4socks()
@@ -345,10 +343,10 @@ public class ShipmentScheduleUpdater_generate_Test
 			final ShipmentSchedulesDuringUpdate result = setup("5");
 
 			assertThat(result.getCandidates()).hasSize(1);
-			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().get(0).getLines());
+			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().getFirst().getLines());
 			assertThat(lines).hasSize(1);
 
-			final DeliveryLineCandidate line1 = lines.get(0);
+			final DeliveryLineCandidate line1 = lines.getFirst();
 			assertThat(line1.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
 			assertThat(line1.getQtyToDeliver()).isEqualTo("5");
 			assertThat(line1.getCompleteStatus()).isEqualTo(CompleteStatus.INCOMPLETE_LINE);
@@ -360,10 +358,10 @@ public class ShipmentScheduleUpdater_generate_Test
 			final ShipmentSchedulesDuringUpdate result = setup("15");
 
 			assertThat(result.getCandidates()).hasSize(1);
-			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().get(0).getLines());
+			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().getFirst().getLines());
 			assertThat(lines).hasSize(2);
 
-			final DeliveryLineCandidate line1 = lines.get(0);
+			final DeliveryLineCandidate line1 = lines.getFirst();
 			assertThat(line1.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
 			assertThat(line1.getQtyToDeliver()).isEqualTo("10");
 			assertThat(line1.getCompleteStatus()).isEqualTo(CompleteStatus.OK);
@@ -380,10 +378,10 @@ public class ShipmentScheduleUpdater_generate_Test
 			final ShipmentSchedulesDuringUpdate result = setup("100");
 
 			assertThat(result.getCandidates()).hasSize(1);
-			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().get(0).getLines());
+			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().getFirst().getLines());
 			assertThat(lines).hasSize(2);
 
-			final DeliveryLineCandidate line1 = lines.get(0);
+			final DeliveryLineCandidate line1 = lines.getFirst();
 			assertThat(line1.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
 			assertThat(line1.getQtyToDeliver()).isEqualTo("10");
 			assertThat(line1.getCompleteStatus()).isEqualTo(CompleteStatus.OK);

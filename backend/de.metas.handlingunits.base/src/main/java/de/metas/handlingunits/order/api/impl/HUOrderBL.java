@@ -23,6 +23,7 @@ package de.metas.handlingunits.order.api.impl;
  */
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -389,7 +390,7 @@ public class HUOrderBL implements IHUOrderBL
 		{
 			final BigDecimal capacity = huPIP.getQty();
 
-			order.setQty_FastInput_TU(qtyCU.divide(capacity, 0, BigDecimal.ROUND_UP));
+			order.setQty_FastInput_TU(qtyCU.divide(capacity, 0, RoundingMode.UP));
 		}
 
 		// qty TU was modified

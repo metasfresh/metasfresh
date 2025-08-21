@@ -145,7 +145,7 @@ public class AvailableToPromiseResultTest
 			final List<AvailableToPromiseResultBucket> emptyBuckets = resultBuilder.getBuckets();
 			assertThat(emptyBuckets).hasSize(4);
 			/* bucket 1 */ {
-				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.getFirst();
 				assertThat(bucket.getProduct().getProductId()).isEqualTo(20);
 				assertThat(bucket.getStorageAttributesKeyMatcher()).isEqualTo(matcher("1" + delim + "2"));
 				assertThat(bucket.isZeroQty()).isTrue();
@@ -174,7 +174,7 @@ public class AvailableToPromiseResultTest
 			final ImmutableList<AvailableToPromiseResultGroup> emptyGroups = resultBuilder.build().getResultGroups();
 			assertThat(emptyGroups).hasSize(4);
 			/* group 1 */ {
-				final AvailableToPromiseResultGroup group = emptyGroups.get(0);
+				final AvailableToPromiseResultGroup group = emptyGroups.getFirst();
 				assertThat(group.getProductId().getRepoId()).isEqualTo(20);
 				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1" + delim + "2"));
 				assertThat(group.getQty()).isZero();
@@ -211,7 +211,7 @@ public class AvailableToPromiseResultTest
 			final List<AvailableToPromiseResultBucket> emptyBuckets = resultBuilder.getBuckets();
 			assertThat(emptyBuckets).hasSize(1);
 			{
-				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.getFirst();
 				assertThat(bucket.getProduct().getProductId()).isEqualTo(10);
 				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatternsUtil.matchingAll());
 				assertThat(bucket.isZeroQty()).isTrue();
@@ -222,7 +222,7 @@ public class AvailableToPromiseResultTest
 			final ImmutableList<AvailableToPromiseResultGroup> emptyGroups = resultBuilder.build().getResultGroups();
 			assertThat(emptyGroups).hasSize(1);
 			{
-				final AvailableToPromiseResultGroup group = emptyGroups.get(0);
+				final AvailableToPromiseResultGroup group = emptyGroups.getFirst();
 				assertThat(group.getProductId().getRepoId()).isEqualTo(10);
 				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
 				assertThat(group.getQty()).isZero();
@@ -250,7 +250,7 @@ public class AvailableToPromiseResultTest
 			final List<AvailableToPromiseResultBucket> emptyBuckets = resultBuilder.getBuckets();
 			assertThat(emptyBuckets).hasSize(3);
 			/* bucket 1 */ {
-				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.getFirst();
 				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatternsUtil.matchingAll());
 				assertThat(bucket.isZeroQty()).isTrue();
 			}
@@ -272,7 +272,7 @@ public class AvailableToPromiseResultTest
 			assertThat(emptyGroups).hasSize(2);
 			// NOTE: we expect no group from bucket2 because it was a wildcard matching attribute which cannot generate an empty group
 			/* group 1 (from bucket1) */ {
-				final AvailableToPromiseResultGroup group = emptyGroups.get(0);
+				final AvailableToPromiseResultGroup group = emptyGroups.getFirst();
 				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
 				assertThat(group.getQty()).isZero();
 			}
@@ -294,7 +294,7 @@ public class AvailableToPromiseResultTest
 			final List<AvailableToPromiseResultBucket> emptyBuckets = resultBuilder.getBuckets();
 			assertThat(emptyBuckets).hasSize(1);
 			/* bucket 1 - accepting everything */ {
-				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
+				final AvailableToPromiseResultBucket bucket = emptyBuckets.getFirst();
 				assertThat(bucket.getWarehouse()).isSameAs(WarehouseClassifier.any());
 				assertThat(bucket.getProduct()).isSameAs(ProductClassifier.any());
 				assertThat(bucket.getBpartner()).isSameAs(BPartnerClassifier.any());
@@ -337,7 +337,7 @@ public class AvailableToPromiseResultTest
 			final ImmutableList<AvailableToPromiseResultGroup> groups = result.build().getResultGroups();
 			assertThat(groups).hasSize(1);
 
-			final AvailableToPromiseResultGroup group = groups.get(0);
+			final AvailableToPromiseResultGroup group = groups.getFirst();
 			assertThat(group.getProductId().getRepoId()).isEqualTo(100001);
 			assertThat(group.getQty()).isEqualByComparingTo("10");
 			assertThat(group.getStorageAttributesKey()).isEqualTo(attributesKey);
@@ -406,9 +406,9 @@ public class AvailableToPromiseResultTest
 			final List<AvailableToPromiseResultGroup> groups = resultBuilder.build().getResultGroups();
 			assertThat(groups).hasSize(2);
 
-			assertThat(groups.get(0).getProductId().getRepoId()).isEqualTo(100001);
-			assertThat(groups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1"));
-			assertThat(groups.get(0).getQty()).isEqualByComparingTo("2");
+			assertThat(groups.getFirst().getProductId().getRepoId()).isEqualTo(100001);
+			assertThat(groups.getFirst().getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1"));
+			assertThat(groups.getFirst().getQty()).isEqualByComparingTo("2");
 
 			assertThat(groups.get(1).getProductId().getRepoId()).isEqualTo(100001);
 			assertThat(groups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("2"));
@@ -458,7 +458,7 @@ public class AvailableToPromiseResultTest
 			assertThat(groups).hasSize(5);
 
 			/* group 1 */ {
-				final AvailableToPromiseResultGroup group = groups.get(0);
+				final AvailableToPromiseResultGroup group = groups.getFirst();
 				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
 				assertThat(group.getQty()).isEqualByComparingTo("190");
 			}
@@ -532,7 +532,7 @@ public class AvailableToPromiseResultTest
 			final ImmutableList<AvailableToPromiseResultGroup> groups = result.build().getResultGroups();
 			assertThat(groups).hasSize(1);
 
-			final AvailableToPromiseResultGroup group = groups.get(0);
+			final AvailableToPromiseResultGroup group = groups.getFirst();
 			assertThat(group.getProductId()).isEqualTo(testProductId);
 			assertThat(group.getQty()).isEqualByComparingTo("20");
 			assertThat(group.getStorageAttributesKey()).isEqualTo(emptyAttributesKey);
@@ -562,7 +562,7 @@ public class AvailableToPromiseResultTest
 			final ImmutableList<AvailableToPromiseResultGroup> groups = result.build().getResultGroups();
 			assertThat(groups).hasSize(1);
 			/* group 1 */ {
-				final AvailableToPromiseResultGroup group = groups.get(0);
+				final AvailableToPromiseResultGroup group = groups.getFirst();
 				assertThat(group.getBpartner()).isSameAs(BPartnerClassifier.any());
 				assertThat(group.getWarehouse()).isEqualTo(WarehouseClassifier.specific(WarehouseId.ofRepoId(1)));
 				assertThat(group.getProductId().getRepoId()).isEqualTo(10);
@@ -601,7 +601,7 @@ public class AvailableToPromiseResultTest
 				assertThat(groups).hasSize(2);
 
 				/* group 1 */ {
-					final AvailableToPromiseResultGroup group = groups.get(0);
+					final AvailableToPromiseResultGroup group = groups.getFirst();
 					assertThat(group.getBpartner()).isSameAs(BPartnerClassifier.any());
 					assertThat(group.getWarehouse()).isEqualTo(WarehouseClassifier.specific(WarehouseId.ofRepoId(1)));
 					assertThat(group.getProductId().getRepoId()).isEqualTo(10);

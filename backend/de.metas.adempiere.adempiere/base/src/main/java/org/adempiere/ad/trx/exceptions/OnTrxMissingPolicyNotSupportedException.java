@@ -22,10 +22,10 @@ package org.adempiere.ad.trx.exceptions;
  * #L%
  */
 
-
+import de.metas.util.Check;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 
-import de.metas.util.Check;
+import java.io.Serial;
 
 /**
  * Exception thrown when an {@link OnTrxMissingPolicy} is not supported.
@@ -38,6 +38,7 @@ public class OnTrxMissingPolicyNotSupportedException extends TrxException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 6457136836120178899L;
 
 	/**

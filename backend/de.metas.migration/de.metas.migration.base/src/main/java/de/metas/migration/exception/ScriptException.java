@@ -24,6 +24,7 @@ package de.metas.migration.exception;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.Serial;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class ScriptException extends RuntimeException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 5438314907624287813L;
 
 	private final String _message;
@@ -95,9 +97,8 @@ public class ScriptException extends RuntimeException
 
 			final String name = param.getKey();
 
-			if (value instanceof List<?>)
+			if (value instanceof List<?> list)
 			{
-				final List<?> list = (List<?>)value;
 				if (list.isEmpty())
 				{
 					continue;

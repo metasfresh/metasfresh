@@ -1,5 +1,6 @@
 package de.metas.email;
 
+import jakarta.mail.MessagingException;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +72,7 @@ public class EMailSentStatusTest
 	public void test_errorWithConnectionException()
 	{
 		final java.net.ConnectException connectionEx = new java.net.ConnectException("test connection error");
-		final javax.mail.MessagingException exception = new javax.mail.MessagingException("test messaging exception", connectionEx);
+		final MessagingException exception = new MessagingException("test messaging exception", connectionEx);
 		final String expectedSentMsg = "(ME): test messaging exception - Connection error: test connection error";
 
 		final EMailSentStatus status = EMailSentStatus.error(exception);

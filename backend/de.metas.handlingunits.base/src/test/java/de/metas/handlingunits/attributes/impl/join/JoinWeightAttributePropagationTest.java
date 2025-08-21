@@ -73,13 +73,13 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		//
 		// check out the HU which we just joined
 		Assertions.assertEquals(1, splitTradingUnits.size(), "Invalid amount of remaining TUs after join");
-		final I_M_HU splitTU1 = splitTradingUnits.get(0);
+		final I_M_HU splitTU1 = splitTradingUnits.getFirst();
 		final IAttributeStorage attributeStorageTU1 = attributeStorageFactory.getAttributeStorage(splitTU1);
 		assertSingleHandlingUnitWeights(attributeStorageTU1, newHUWeightsExpectation("8.765", "7.765", "1", "0"));
 
 		//
 		// Simulate - take off one of the TUKeys to bind it to the new LU
-		final I_M_HU tradingUnitToJoin2 = splitTradingUnits.remove(0);
+		final I_M_HU tradingUnitToJoin2 = splitTradingUnits.removeFirst();
 
 		// join another 1x10kg
 		helper.joinHUs(huContext, loadingUnit, tradingUnitToJoin2);
@@ -127,7 +127,7 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		//
 		// Simulate - take off one of the TUKeys to bind it to the new LU
 		final I_M_HU tradingUnitToJoin1 = splitTradingUnits.remove(1);
-		final I_M_HU tradingUnitToJoin2 = splitTradingUnits.remove(0);
+		final I_M_HU tradingUnitToJoin2 = splitTradingUnits.removeFirst();
 
 		helper.joinHUs(huContext, loadingUnit, tradingUnitToJoin1, tradingUnitToJoin2);
 
@@ -173,7 +173,7 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 
 		Assertions.assertEquals(1, splitLUs.size(), "Invalid amount of LUs were split");
 
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		// helper.commitAndDumpHU(splitLU);
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 2,
@@ -234,7 +234,7 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 
 		//
 		// Source LU
-		final I_M_HU sourceLU = splitLUs.get(0);
+		final I_M_HU sourceLU = splitLUs.getFirst();
 		Assertions.assertTrue(sourceLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		final I_M_HU sourceTradingUnitWith10 = findTUInLUWithQty(sourceLU, 10); // find a TU with 10 x CU

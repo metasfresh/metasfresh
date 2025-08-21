@@ -234,7 +234,7 @@ public abstract class ElementAttributes extends GenericElement implements Attrib
     /** Add an attribute to the element. */
     public Element addAttribute(String attribute_name, int attribute_value)
     {
-        getElementHashEntry().put(attribute_name, new Integer(attribute_value));
+        getElementHashEntry().put(attribute_name, Integer.valueOf(attribute_value));
         return(this);
     }
 

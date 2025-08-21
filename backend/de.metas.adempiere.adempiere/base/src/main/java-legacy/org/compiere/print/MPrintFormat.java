@@ -147,7 +147,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		{
 			//	Sort Order and Column must be > 0
 			if (items[i].getSortNo() != 0 && items[i].getAD_Column_ID() != 0)
-				map.put(new Integer(items[i].getSortNo()), new Integer(items[i].getAD_Column_ID()));
+				map.put(Integer.valueOf(items[i].getSortNo()), Integer.valueOf(items[i].getAD_Column_ID()));
 		}
 		//	Get SortNo and Sort them
 		Integer[] keys = new Integer[map.keySet().size()];
@@ -175,7 +175,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		for (int i = 0; i < items.length; i++)
 		{
 			if (items[i].getAD_Column_ID() != 0 && items[i].isPrinted())
-				list.add(new Integer(items[i].getAD_Column_ID()));
+				list.add(Integer.valueOf(items[i].getAD_Column_ID()));
 		}
 		//	Convert
 		int[] retValue = new int[list.size()];
@@ -912,7 +912,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 	 */
 	static public void deleteFromCache (int AD_PrintFormat_ID)
 	{
-		Integer key = new Integer(AD_PrintFormat_ID);
+		Integer key = Integer.valueOf(AD_PrintFormat_ID);
 		s_formats.put(key, null);
 	}	//	deleteFromCache
 

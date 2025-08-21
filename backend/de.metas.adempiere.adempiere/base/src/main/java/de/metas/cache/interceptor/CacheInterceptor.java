@@ -44,6 +44,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.io.Serial;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -54,6 +55,7 @@ class CacheInterceptor implements Serializable
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -6740693287832574641L;
 	
 	/**

@@ -2,9 +2,9 @@ package de.metas.procurement.webui.model;
 
 import com.google.common.base.MoreObjects;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 
 

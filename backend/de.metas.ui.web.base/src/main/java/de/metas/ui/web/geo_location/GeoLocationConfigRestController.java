@@ -46,7 +46,7 @@ public class GeoLocationConfigRestController
 	@GetMapping
 	public JsonGeoLocationConfig getConfig()
 	{
-		if (!geocodingConfigRepository.getGeocodingConfig().isPresent())
+		if (geocodingConfigRepository.getGeocodingConfig().isEmpty())
 		{
 			return JsonGeoLocationConfig.builder().build();
 		}

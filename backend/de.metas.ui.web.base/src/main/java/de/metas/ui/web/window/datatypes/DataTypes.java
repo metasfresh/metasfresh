@@ -80,9 +80,9 @@ public final class DataTypes
 		}
 		//
 		// Special case: BigDecimals => we consider them equal if their value is equal, EXCLUDING the scale
-		else if (value1 instanceof BigDecimal && value2 instanceof BigDecimal)
+		else if (value1 instanceof BigDecimal decimal && value2 instanceof BigDecimal decimal1)
 		{
-			return ((BigDecimal)value1).compareTo((BigDecimal)value2) == 0;
+			return decimal.compareTo(decimal1) == 0;
 		}
 		else
 		{
@@ -265,18 +265,18 @@ public final class DataTypes
 			return null;
 		}
 
-		if (value instanceof String)
+		if (value instanceof String string)
 		{
-			return (String)value;
+			return string;
 		}
 		else if (value instanceof Map)
 		{
 			// this is not allowed for consistency. let it fail.
 			throw new AdempiereException("Converting Map to String is not allowed for consistency. Might be a development error");
 		}
-		else if (value instanceof LookupValue)
+		else if (value instanceof LookupValue lookupValue)
 		{
-			return ((LookupValue)value).getIdAsString();
+			return lookupValue.getIdAsString();
 		}
 		// For any other case, blindly convert it to string
 		else
@@ -292,13 +292,12 @@ public final class DataTypes
 		{
 			return null;
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer integer)
 		{
-			return (Integer)value;
+			return integer;
 		}
-		else if (value instanceof String)
+		else if (value instanceof String valueStr)
 		{
-			final String valueStr = (String)value;
 			if (valueStr.isEmpty())
 			{
 				return null;
@@ -312,17 +311,17 @@ public final class DataTypes
 			final BigDecimal valueBD = new BigDecimal(valueStr);
 			return valueBD.intValueExact();
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			return ((Number)value).intValue();
+			return number.intValue();
 		}
-		else if (value instanceof LookupValue)
+		else if (value instanceof LookupValue lookupValue2)
 		{
-			return ((LookupValue)value).getIdAsInt();
+			return lookupValue2.getIdAsInt();
 		}
-		else if (value instanceof JSONLookupValue)
+		else if (value instanceof JSONLookupValue lookupValue1)
 		{
-			return ((JSONLookupValue)value).getKeyAsInt();
+			return lookupValue1.getKeyAsInt();
 		}
 		else if (value instanceof Map)
 		{
@@ -330,9 +329,9 @@ public final class DataTypes
 			final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 			return lookupValue != null ? lookupValue.getIdAsInt() : null;
 		}
-		else if (value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware aware)
 		{
-			return ((RepoIdAware)value).getRepoId();
+			return aware.getRepoId();
 		}
 		else
 		{
@@ -349,23 +348,21 @@ public final class DataTypes
 		{
 			return null;
 		}
-		else if (value instanceof BigDecimal)
+		else if (value instanceof BigDecimal decimal)
 		{
-			return (BigDecimal)value;
+			return decimal;
 		}
-		if (value instanceof String)
+		if (value instanceof String valueStr)
 		{
-			final String valueStr = (String)value;
 			return valueStr.isEmpty() ? null : new BigDecimal(valueStr);
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer valueInt)
 		{
-			final int valueInt = (int)value;
 			return BigDecimal.valueOf(valueInt);
 		}
-		else if (value instanceof Quantity)
+		else if (value instanceof Quantity quantity)
 		{
-			return ((Quantity)value).toBigDecimal();
+			return quantity.toBigDecimal();
 		}
 		else
 		{
@@ -379,20 +376,20 @@ public final class DataTypes
 		{
 			return false;
 		}
-		else if (value instanceof Boolean)
+		else if (value instanceof Boolean boolean1)
 		{
-			return (boolean)value;
+			return boolean1;
 		}
 		else
 		{
 			final Object valueToConv;
-			if (value instanceof StringLookupValue)
+			if (value instanceof StringLookupValue lookupValue)
 			{
 				// If String lookup value then consider only the Key.
 				// usage example 1: the Posted column which can be Y, N and some other error codes.
 				// In this case we want to convert the "Y" to "true".
 				// usage example 2: some column which is List and the reference is "_YesNo".
-				valueToConv = ((StringLookupValue)value).getIdAsString();
+				valueToConv = lookupValue.getIdAsString();
 			}
 			else
 			{
@@ -418,14 +415,12 @@ public final class DataTypes
 		{
 			return null;
 		}
-		else if (value instanceof LookupValue)
+		else if (value instanceof LookupValue lookupValue)
 		{
-			final LookupValue lookupValue = (LookupValue)value;
 			return toIntegerLookupValue(lookupValue);
 		}
-		else if (value instanceof JSONLookupValue)
+		else if (value instanceof JSONLookupValue json)
 		{
-			final JSONLookupValue json = (JSONLookupValue)value;
 			return json.toIntegerLookupValue();
 		}
 		else if (value instanceof Map)
@@ -450,9 +445,9 @@ public final class DataTypes
 				return lookupValue;
 			}
 		}
-		else if (value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware aware)
 		{
-			final int valueInt = ((RepoIdAware)value).getRepoId();
+			final int valueInt = aware.getRepoId();
 			if (lookupDataSource != null)
 			{
 				final LookupValue lookupValue = lookupDataSource.findById(valueInt);
@@ -465,9 +460,9 @@ public final class DataTypes
 						.setTargetType(IntegerLookupValue.class);
 			}
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			final int valueInt = ((Number)value).intValue();
+			final int valueInt = number.intValue();
 			if (lookupDataSource != null)
 			{
 				final LookupValue lookupValue = lookupDataSource.findById(valueInt);
@@ -481,9 +476,8 @@ public final class DataTypes
 						.setTargetType(IntegerLookupValue.class);
 			}
 		}
-		else if (value instanceof String)
+		else if (value instanceof String valueStr)
 		{
-			final String valueStr = (String)value;
 			if (valueStr.isEmpty())
 			{
 				return null;
@@ -518,14 +512,12 @@ public final class DataTypes
 		{
 			return null;
 		}
-		else if (lookupValue instanceof IntegerLookupValue)
+		else if (lookupValue instanceof IntegerLookupValue value)
 		{
-			return (IntegerLookupValue)lookupValue;
+			return value;
 		}
-		else if (lookupValue instanceof StringLookupValue)
+		else if (lookupValue instanceof StringLookupValue stringLookupValue)
 		{
-			// TODO: implement https://github.com/metasfresh/metasfresh-webui-api/issues/417
-			final StringLookupValue stringLookupValue = (StringLookupValue)lookupValue;
 			return IntegerLookupValue.of(stringLookupValue);
 		}
 		else
@@ -549,14 +541,12 @@ public final class DataTypes
 		{
 			return null;
 		}
-		else if (value instanceof LookupValue)
+		else if (value instanceof LookupValue lookupValue)
 		{
-			final LookupValue lookupValue = (LookupValue)value;
 			return toStringLookupValue(lookupValue);
 		}
-		else if (value instanceof JSONLookupValue)
+		else if (value instanceof JSONLookupValue json)
 		{
-			final JSONLookupValue json = (JSONLookupValue)value;
 			return json.toStringLookupValue();
 		}
 		else if (value instanceof Map)
@@ -577,21 +567,17 @@ public final class DataTypes
 				return lookupValue;
 			}
 		}
-		else if (value instanceof String)
+		else if (value instanceof String valueStr)
 		{
-			final String valueStr = (String)value;
 			return convertToStringLookupValue_fromString(valueStr, lookupDataSource);
 		}
-		else if (value instanceof ReferenceListAwareEnum)
+		else if (value instanceof ReferenceListAwareEnum enum1)
 		{
-			final String valueStr = ((ReferenceListAwareEnum)value).getCode();
+			final String valueStr = enum1.getCode();
 			return convertToStringLookupValue_fromString(valueStr, lookupDataSource);
 		}
-		else if (value instanceof Boolean)
+		else if (value instanceof Boolean valueBoolean)
 		{
-			// corner case: happens for Posted field which is generated as Boolean but is defined as List of "_Posted Status".
-			// approach: convert the boolean to Y or N string. We assume our list contains entries for Y and N.
-			final Boolean valueBoolean = (Boolean)value;
 			final String valueStr = StringUtils.ofBoolean(valueBoolean);
 			return convertToStringLookupValue_fromString(valueStr, lookupDataSource);
 		}
@@ -635,13 +621,12 @@ public final class DataTypes
 		{
 			return null;
 		}
-		else if (lookupValue instanceof StringLookupValue)
+		else if (lookupValue instanceof StringLookupValue value)
 		{
-			return (StringLookupValue)lookupValue;
+			return value;
 		}
-		else if (lookupValue instanceof IntegerLookupValue)
+		else if (lookupValue instanceof IntegerLookupValue lookupValueInt)
 		{
-			final IntegerLookupValue lookupValueInt = (IntegerLookupValue)lookupValue;
 			return StringLookupValue.of(lookupValueInt.getIdAsString(), lookupValueInt.getDisplayName());
 		}
 		else
@@ -659,13 +644,13 @@ public final class DataTypes
 		{
 			return null;
 		}
-		else if (value instanceof String && ((String)value).isEmpty())
+		else if (value instanceof String string && string.isEmpty())
 		{
 			return null;
 		}
-		else if (value instanceof LookupValuesList)
+		else if (value instanceof LookupValuesList list)
 		{
-			return (LookupValuesList)value;
+			return list;
 		}
 		else if (value instanceof Map)
 		{
@@ -677,9 +662,8 @@ public final class DataTypes
 			}
 			return lookupValuesList;
 		}
-		else if (value instanceof Collection)
+		else if (value instanceof Collection<?> fromList)
 		{
-			final Collection<?> fromList = (Collection<?>)value;
 			final ArrayList<LookupValue> lookupValues = new ArrayList<>(fromList.size());
 			for (final Object fromItem : fromList)
 			{
@@ -702,9 +686,9 @@ public final class DataTypes
 		{
 			return null;
 		}
-		else if (value instanceof DateRangeValue)
+		else if (value instanceof DateRangeValue rangeValue)
 		{
-			return (DateRangeValue)value;
+			return rangeValue;
 		}
 		else if (value instanceof Map)
 		{
@@ -724,9 +708,9 @@ public final class DataTypes
 		{
 			return null;
 		}
-		else if (value instanceof ColorValue)
+		else if (value instanceof ColorValue colorValue)
 		{
-			return (ColorValue)value;
+			return colorValue;
 		}
 		else if (value instanceof String)
 		{
@@ -742,15 +726,15 @@ public final class DataTypes
 	{
 		public static ValueConversionException wrapIfNeeded(final Throwable ex)
 		{
-			if (ex instanceof ValueConversionException)
+			if (ex instanceof ValueConversionException exception)
 			{
-				return (ValueConversionException)ex;
+				return exception;
 			}
 
 			final Throwable cause = extractCause(ex);
-			if (cause instanceof ValueConversionException)
+			if (cause instanceof ValueConversionException exception)
 			{
-				return (ValueConversionException)cause;
+				return exception;
 			}
 			else
 			{

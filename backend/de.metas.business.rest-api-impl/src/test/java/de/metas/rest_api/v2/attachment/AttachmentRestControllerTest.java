@@ -108,7 +108,7 @@ public class AttachmentRestControllerTest
 
 		final ResponseEntity<JsonAttachmentResponse> responseEntity = attachmentRestController.createAttachment(attachmentRequest);
 
-		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonAttachmentResponse resultBody = responseEntity.getBody();
 
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);

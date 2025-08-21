@@ -37,11 +37,11 @@ import de.metas.ui.web.kpi.data.KPIPermissionsProvider;
 import de.metas.ui.web.kpi.descriptor.KPIId;
 import de.metas.ui.web.kpi.descriptor.KPIRepository;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Optional;
 

@@ -135,7 +135,7 @@ public class UserAuthTokenRepository
 					.setParameter("AD_Role_ID", roleId.getRepoId());
 		}
 
-		return Optional.of(userAuthTokens.get(0))
+		return Optional.of(userAuthTokens.getFirst())
 				.map(UserAuthTokenRepository::fromRecord);
 	}
 
@@ -165,7 +165,7 @@ public class UserAuthTokenRepository
 			throw new AdempiereException("Invalid token (2)");
 		}
 
-		return fromRecord(userAuthTokens.get(0));
+		return fromRecord(userAuthTokens.getFirst());
 	}
 
 	@NonNull

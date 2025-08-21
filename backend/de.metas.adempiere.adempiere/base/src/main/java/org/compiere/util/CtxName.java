@@ -155,9 +155,8 @@ public final class CtxName
 		}
 
 		final String sourceResult;
-		if (source instanceof Evaluatee2)
+		if (source instanceof Evaluatee2 source2)
 		{
-			final Evaluatee2 source2 = (Evaluatee2)source;
 
 			if (!source2.has_Variable(name))
 			{
@@ -221,9 +220,8 @@ public final class CtxName
 		}
 
 		final Integer sourceResult;
-		if (source instanceof Evaluatee2)
+		if (source instanceof Evaluatee2 source2)
 		{
-			final Evaluatee2 source2 = (Evaluatee2)source;
 
 			if (!source2.has_Variable(name))
 			{
@@ -261,9 +259,8 @@ public final class CtxName
 		}
 
 		final Boolean sourceResult;
-		if (source instanceof Evaluatee2)
+		if (source instanceof Evaluatee2 source2)
 		{
-			final Evaluatee2 source2 = (Evaluatee2)source;
 
 			if (!source2.has_Variable(name))
 			{
@@ -301,9 +298,8 @@ public final class CtxName
 		}
 
 		final BigDecimal sourceResult;
-		if (source instanceof Evaluatee2)
+		if (source instanceof Evaluatee2 source2)
 		{
-			final Evaluatee2 source2 = (Evaluatee2)source;
 			if (!source2.has_Variable(name))
 			{
 				return defaultValueAsBigDecimal;
@@ -345,9 +341,8 @@ public final class CtxName
 		}
 
 		final java.util.Date sourceResult;
-		if (source instanceof Evaluatee2)
+		if (source instanceof Evaluatee2 source2)
 		{
-			final Evaluatee2 source2 = (Evaluatee2)source;
 			if (!source2.has_Variable(name))
 			{
 				return defaultValueAsDate;

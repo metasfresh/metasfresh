@@ -25,8 +25,7 @@ package de.metas.common.product.v2.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,28 +37,28 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_D
 
 @Value
 @Builder(toBuilder = true)
-@ApiModel(description = "Contains an external id and the actual product to insert or update. The response will contain the given external id.")
+@Schema(description = "Contains an external id and the actual product to insert or update. The response will contain the given external id.")
 public class JsonRequestProductUpsertItem
 {
-	@ApiModelProperty(position = 10, value = PRODUCT_IDENTIFIER_DOC)
+	@Schema(description = PRODUCT_IDENTIFIER_DOC)
 	@NonNull
 	String productIdentifier;
 
-	@ApiModelProperty(position = 20, //
-			value = "The version of the product." + EXTERNAL_VERSION_DOC)
+	@Schema(//
+			description = "The version of the product." + EXTERNAL_VERSION_DOC)
 	String externalVersion;
 
-	@ApiModelProperty(position = 25, //
-			value = "URL of the resource in the target external system.")
+	@Schema(//
+			description = "URL of the resource in the target external system.")
 	@Nullable
 	String externalReferenceUrl;
 
-	@ApiModelProperty(position = 30, //
-			value = "ID of the external system config.")
+	@Schema(//
+			description = "ID of the external system config.")
 	@Nullable
 	JsonMetasfreshId externalSystemConfigId;
 	
-	@ApiModelProperty(position = 50)
+	@Schema
 	@NonNull
 	JsonRequestProduct requestProduct;
 

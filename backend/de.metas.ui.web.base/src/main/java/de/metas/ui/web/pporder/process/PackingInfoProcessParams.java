@@ -229,7 +229,7 @@ public class PackingInfoProcessParams
 				"There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
 				productId, bpartnerId);
 
-		final I_M_HU_PI_Item_Product pip = availableHUPIItemProductRecords.get(0);
+		final I_M_HU_PI_Item_Product pip = availableHUPIItemProductRecords.getFirst();
 		defaultLUTUConfig.setM_HU_PI_Item_Product_ID(pip.getM_HU_PI_Item_Product_ID());
 		defaultLUTUConfig.setM_TU_HU_PI_ID(pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
 		defaultLUTUConfig.setQtyCUsPerTU(pip.getQty());
@@ -242,7 +242,7 @@ public class PackingInfoProcessParams
 		}
 		else
 		{
-			final I_M_HU_PI_Item luPiItem = luPIItems.get(0);
+			final I_M_HU_PI_Item luPiItem = luPIItems.getFirst();
 			defaultLUTUConfig.setM_LU_HU_PI_Item(luPiItem);
 			defaultLUTUConfig.setQtyTU(luPiItem.getQty());
 			defaultLUTUConfig.setM_LU_HU_PI_ID(luPiItem.getM_HU_PI_Version().getM_HU_PI_ID());

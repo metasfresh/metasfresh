@@ -48,6 +48,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebsocketActiveSubscriptionsIndex;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -62,7 +63,6 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;

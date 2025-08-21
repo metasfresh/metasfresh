@@ -53,9 +53,8 @@ public class JexlCustomFunctions
 
 	public static void register(final ExpressionEvaluator expressionEvaluator)
 	{
-		if (expressionEvaluator instanceof JexlExpressionEvaluator)
+		if (expressionEvaluator instanceof JexlExpressionEvaluator jexlExpressionEvaluator)
 		{
-			final JexlExpressionEvaluator jexlExpressionEvaluator = (JexlExpressionEvaluator)expressionEvaluator;
 
 			final Map<String, Object> namespaces = new HashMap<>();
 

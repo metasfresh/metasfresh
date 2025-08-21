@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 import javax.annotation.Nullable;
 
@@ -20,7 +20,7 @@ public class SumUpLogRequest
 	@NonNull String requestURI;
 	@Nullable Object requestBody;
 
-	@Nullable HttpStatus responseCode;
+	@Nullable HttpStatusCode responseCode;
 	@Nullable Object responseBody;
 	@Nullable AdIssueId adIssueId;
 	

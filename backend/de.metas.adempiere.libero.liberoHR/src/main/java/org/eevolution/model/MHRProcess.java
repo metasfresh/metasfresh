@@ -35,6 +35,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -61,6 +62,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 570699817555475782L;
 
 	public int m_C_BPartner_ID = 0;

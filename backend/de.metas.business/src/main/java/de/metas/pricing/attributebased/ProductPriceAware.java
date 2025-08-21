@@ -33,9 +33,8 @@ public class ProductPriceAware implements IProductPriceAware
 		{
 			return Optional.empty();
 		}
-		if (model instanceof IProductPriceAware)
+		if (model instanceof IProductPriceAware productPriceAware)
 		{
-			final IProductPriceAware productPriceAware = (IProductPriceAware)model;
 			return Optional.of(productPriceAware);
 		}
 

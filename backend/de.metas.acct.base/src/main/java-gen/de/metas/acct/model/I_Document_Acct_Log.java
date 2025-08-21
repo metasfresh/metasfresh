@@ -1,7 +1,8 @@
 package de.metas.acct.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for Document_Acct_Log
  *  @author metasfresh (generated) 

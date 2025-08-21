@@ -1,5 +1,7 @@
 package org.adempiere.server.rpl.exceptions;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,6 +30,7 @@ public class ExportProcessorException extends ReplicationException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 5770848538735280815L;
 
 	public ExportProcessorException(final String adMessage, final Throwable cause)

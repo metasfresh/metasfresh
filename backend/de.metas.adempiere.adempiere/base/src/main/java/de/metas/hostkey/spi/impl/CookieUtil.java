@@ -22,16 +22,15 @@
 
 package de.metas.hostkey.spi.impl;
 
-import javax.annotation.Nullable;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import javax.annotation.Nullable;
 
 /**
  * Web Browser Cookie Helper

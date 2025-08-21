@@ -282,7 +282,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	private void assertInvoiceCandidates(final InvoiceCandidateGenerateResult candidates, final I_C_Flatrate_Term term1)
 	{
 		assertThat(candidates.getC_Invoice_Candidates()).hasSize(1);
-		final I_C_Invoice_Candidate invoiceCandidate = candidates.getC_Invoice_Candidates().get(0);
+		final I_C_Invoice_Candidate invoiceCandidate = candidates.getC_Invoice_Candidates().getFirst();
 		assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(term1.getM_Product_ID());
 		assertThat(invoiceCandidate.getC_Order()).isNotNull();
 		assertThat(invoiceCandidate.getC_OrderLine()).isEqualTo(term1.getC_OrderLine_Term());

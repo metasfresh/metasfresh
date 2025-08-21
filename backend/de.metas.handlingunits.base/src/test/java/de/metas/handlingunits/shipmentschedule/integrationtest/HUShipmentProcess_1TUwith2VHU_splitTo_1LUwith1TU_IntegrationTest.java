@@ -86,7 +86,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 	{
 		//
 		// Get shipment schedules
-		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.get(0);
+		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.getFirst();
 		final I_M_ShipmentSchedule shipmentSchedule2 = shipmentSchedules.get(1);
 
 		//
@@ -189,7 +189,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 
 		//
 		// Get shipment schedules
-		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.get(0);
+		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.getFirst();
 		final I_M_ShipmentSchedule shipmentSchedule2 = shipmentSchedules.get(1);
 
 		//
@@ -303,14 +303,14 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		//
 		// Get generated shipment
 		Assertions.assertEquals( 1,  generatedShipments.size(), "Invalid generated shipments count");
-		final I_M_InOut shipment = generatedShipments.get(0);
+		final I_M_InOut shipment = generatedShipments.getFirst();
 
 		//
 		// Retrieve generated shipment lines
 		// We expect to have 2 shipment lines, not because we have 2 shipment schedules, but because we have 2 order lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
 		Assertions.assertEquals( 2,  shipmentLines.size(), "Invalid generated shipment lines count");
-		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
+		final I_M_InOutLine shipmentLine1 = shipmentLines.getFirst();
 		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
 
 		//
@@ -334,11 +334,11 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		//
 		// Get LUs Package
 		Assertions.assertEquals( 1,  mpackagesForAggregatedHUs.size(), "Invalid generated LU packages count");
-		final I_M_Package mpackage_LU = mpackagesForAggregatedHUs.get(0);
+		final I_M_Package mpackage_LU = mpackagesForAggregatedHUs.getFirst();
 
 		//
 		// Get generated shipment
-		final I_M_InOut shipment = generatedShipments.get(0);
+		final I_M_InOut shipment = generatedShipments.getFirst();
 
 		//
 		// Shipper Transportation: Make sure LU's M_Package is updated

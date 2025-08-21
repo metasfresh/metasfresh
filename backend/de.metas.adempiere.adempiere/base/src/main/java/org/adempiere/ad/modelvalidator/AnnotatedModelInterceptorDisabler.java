@@ -80,7 +80,7 @@ import java.util.Set;
 	static String createHowtoDisableMessage(@NonNull final Pointcut pointcut)
 	{
 		final String pointcutId = pointcut.getPointcutId();
-		return String.format("Model interceptor method %s threw an exception.\nYou can disable this method with SysConfig %s='N' (with AD_Client_ID and AD_Org_ID=0!)",
+		return "Model interceptor method %s threw an exception.\nYou can disable this method with SysConfig %s='N' (with AD_Client_ID and AD_Org_ID=0!)".formatted(
 				pointcutId, createDisabledSysConfigKey(pointcutId));
 	}
 

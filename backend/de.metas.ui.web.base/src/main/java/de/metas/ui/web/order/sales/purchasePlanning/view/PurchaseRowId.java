@@ -239,7 +239,7 @@ public final class PurchaseRowId
 
 		try
 		{
-			final PurchaseRowType type = PurchaseRowType.ofCode(parts.get(0));
+			final PurchaseRowType type = PurchaseRowType.ofCode(parts.getFirst());
 
 			final PurchaseDemandId purchaseDemandId = PurchaseDemandId.ofId(Integer.parseInt(parts.get(1)));
 

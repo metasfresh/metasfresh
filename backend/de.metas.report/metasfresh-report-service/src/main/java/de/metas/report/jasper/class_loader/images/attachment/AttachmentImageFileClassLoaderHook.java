@@ -145,7 +145,7 @@ public final class AttachmentImageFileClassLoaderHook
 
 		if (!entries.isEmpty())
 		{
-			final AttachmentEntry entry = entries.get(0);
+			final AttachmentEntry entry = entries.getFirst();
 			return entry.getId();
 		}
 		else

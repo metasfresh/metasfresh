@@ -70,7 +70,7 @@ public class MMeasure extends X_PA_Measure
 	 */
 	public static MMeasure get(Properties ctx, int PA_Measure_ID)
 	{
-		Integer key = new Integer(PA_Measure_ID);
+		Integer key = Integer.valueOf(PA_Measure_ID);
 		MMeasure retValue = s_cache.get(key);
 		if (retValue != null)
 			return retValue;

@@ -341,7 +341,7 @@ public class ServiceRepairProjectService
 	{
 		final ImmutableSet<ServiceRepairProjectTaskId> result = retainIdsOfTypeSpareParts(ImmutableSet.of(taskId));
 		return result.size() == 1
-				&& ServiceRepairProjectTaskId.equals(result.asList().get(0), taskId);
+				&& ServiceRepairProjectTaskId.equals(result.asList().getFirst(), taskId);
 	}
 
 	public List<ServiceRepairProjectCostCollector> getCostCollectorsByQuotationLineIds(@NonNull final Set<OrderAndLineId> quotationLineIds)

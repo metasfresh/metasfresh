@@ -60,7 +60,7 @@ final class WebsocketEventsLog
 			final int maxSize = logEventsMaxSize.get();
 			while (loggedEvents.size() > maxSize)
 			{
-				loggedEvents.remove(0);
+				loggedEvents.removeFirst();
 			}
 		}
 	}

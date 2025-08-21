@@ -23,12 +23,14 @@ package org.compiere.util;
  */
 
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class OutputParameter implements Serializable {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 5269261802164086098L;
 
 	public OutputParameter(int sqlType, int scale, String typeName) {

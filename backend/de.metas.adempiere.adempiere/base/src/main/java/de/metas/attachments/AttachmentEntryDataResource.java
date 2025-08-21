@@ -69,9 +69,9 @@ public final class AttachmentEntryDataResource extends AbstractResource
 	@Override
 	public boolean equals(final Object other)
 	{
-		if (other instanceof AttachmentEntryDataResource)
+		if (other instanceof AttachmentEntryDataResource resource)
 		{
-			return Arrays.equals(source, ((AttachmentEntryDataResource)other).source);
+			return Arrays.equals(source, resource.source);
 		}
 		else
 		{

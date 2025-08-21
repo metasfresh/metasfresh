@@ -96,7 +96,7 @@ public class MInterestArea extends X_R_InterestArea
 	 */
 	public static MInterestArea get (Properties ctx, int R_InterestArea_ID)
 	{
-		Integer key = new Integer (R_InterestArea_ID);
+		Integer key = Integer.valueOf(R_InterestArea_ID);
 		MInterestArea retValue = (MInterestArea) s_cache.get (key);
 		if (retValue != null)
 			return retValue;

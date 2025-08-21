@@ -129,8 +129,7 @@ public class ScalesGetWeightHandler<C extends ICmd> implements IDeviceRequestHan
 	@Override
 	public String toString()
 	{
-		return String.format(
-				"ScalesGetWeightHandler [endpoint=%s, parser=%s, cmd=%s, weightFieldName=%s, uomFieldName=%s, weightRoundToPrecision=%s]",
+		return "ScalesGetWeightHandler [endpoint=%s, parser=%s, cmd=%s, weightFieldName=%s, uomFieldName=%s, weightRoundToPrecision=%s]".formatted(
 				endpoint, parser, cmd, weightFieldName, uomFieldName, roundWeightToPrecision);
 	}
 }

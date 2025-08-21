@@ -460,7 +460,7 @@ public class OLCandBL implements IOLCandBL
 					.setParameter("olCandQuery", olCandQuery);
 		}
 
-		final TableRecordReference firstOLCandRef = olCandRefs.get(0);
+		final TableRecordReference firstOLCandRef = olCandRefs.getFirst();
 		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(firstOLCandRef, attachmentEntryCreateRequest);
 
 		if (olCandRefs.size() == 1)

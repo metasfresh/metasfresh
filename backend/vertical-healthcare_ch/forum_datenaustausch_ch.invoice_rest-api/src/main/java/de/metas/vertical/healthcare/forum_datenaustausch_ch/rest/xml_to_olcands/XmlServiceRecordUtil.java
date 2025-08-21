@@ -65,63 +65,56 @@ public class XmlServiceRecordUtil
 		final JsonProductInfo product;
 		final BigDecimal price;
 		final BigDecimal quantity;
-		if (record instanceof RecordTarmedType)
+		if (record instanceof RecordTarmedType recordTarmedType)
 		{
-			final RecordTarmedType recordTarmedType = (RecordTarmedType)record;
 
 			externalLineId = createExternalId(preliminaryRequest, recordTarmedType.getRecordId());
 			product = createProduct(recordTarmedType.getCode(), recordTarmedType.getName(), context);
 			price = recordTarmedType.getAmount();
 			quantity = ONE;
 		}
-		else if (record instanceof RecordDRGType)
+		else if (record instanceof RecordDRGType recordDRGType)
 		{
-			final RecordDRGType recordDRGType = (RecordDRGType)record;
 
 			externalLineId = createExternalId(preliminaryRequest, recordDRGType.getRecordId());
 			product = createProduct(recordDRGType.getCode(), recordDRGType.getName(), context);
 			price = createPrice(recordDRGType.getUnit(), recordDRGType.getUnitFactor(), recordDRGType.getExternalFactor());
 			quantity = recordDRGType.getQuantity();
 		}
-		else if (record instanceof RecordLabType)
+		else if (record instanceof RecordLabType recordLabType)
 		{
-			final RecordLabType recordLabType = (RecordLabType)record;
 
 			externalLineId = createExternalId(preliminaryRequest, recordLabType.getRecordId());
 			product = createProduct(recordLabType.getCode(), recordLabType.getName(), context);
 			price = createPrice(recordLabType.getUnit(), recordLabType.getUnitFactor(), recordLabType.getExternalFactor());
 			quantity = recordLabType.getQuantity();
 		}
-		else if (record instanceof RecordMigelType)
+		else if (record instanceof RecordMigelType recordMigelType)
 		{
-			final RecordMigelType recordMigelType = (RecordMigelType)record;
 
 			externalLineId = createExternalId(preliminaryRequest, recordMigelType.getRecordId());
 			product = createProduct(recordMigelType.getCode(), recordMigelType.getName(), context);
 			price = createPrice(recordMigelType.getUnit(), recordMigelType.getUnitFactor(), recordMigelType.getExternalFactor());
 			quantity = recordMigelType.getQuantity();
 		}
-		else if (record instanceof RecordParamedType)
+		else if (record instanceof RecordParamedType recordParamedOtherType)
 		{
-			final RecordParamedType recordParamedOtherType = (RecordParamedType)record;
 
 			externalLineId = createExternalId(preliminaryRequest, recordParamedOtherType.getRecordId());
 			product = createProduct(recordParamedOtherType.getCode(), recordParamedOtherType.getName(), context);
 			price = createPrice(recordParamedOtherType.getUnit(), recordParamedOtherType.getUnitFactor(), recordParamedOtherType.getExternalFactor());
 			quantity = recordParamedOtherType.getQuantity();
 		}
-		else if (record instanceof RecordDrugType)
+		else if (record instanceof RecordDrugType recordDrugType)
 		{
-			final RecordDrugType recordDrugType = (RecordDrugType)record;
 
 			externalLineId = createExternalId(preliminaryRequest, recordDrugType.getRecordId());
 			product = createProduct(recordDrugType.getCode(), recordDrugType.getName(), context);
 			price = createPrice(recordDrugType.getUnit(), recordDrugType.getUnitFactor(), recordDrugType.getExternalFactor());
 			quantity = recordDrugType.getQuantity();
 		}
-		else if (record instanceof RecordOtherType)
+		else if (record instanceof RecordOtherType recordOtherType)
 		{
-			final RecordOtherType recordOtherType = (RecordOtherType)record;
 
 			externalLineId = createExternalId(preliminaryRequest, recordOtherType.getRecordId());
 			product = createProduct(recordOtherType.getCode(), recordOtherType.getName(), context);

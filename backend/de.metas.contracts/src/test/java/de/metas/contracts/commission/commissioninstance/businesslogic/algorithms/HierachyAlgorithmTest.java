@@ -132,7 +132,7 @@ class HierachyAlgorithmTest
 		final ImmutableList<CommissionShare> sharesAfterInvocation = instance.getShares();
 		assertThat(sharesAfterInvocation).hasSize(3);
 
-		assertThat(sharesAfterInvocation.get(0)).satisfies(share -> {
+		assertThat(sharesAfterInvocation.getFirst()).satisfies(share -> {
 			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 					.contains(CommissionPoints.of("0.00"), CommissionPoints.of("0.00"), CommissionPoints.of("111.00"));
 			assertThat(share.getFacts())
@@ -234,7 +234,7 @@ class HierachyAlgorithmTest
 				.build();
 
 		// guard
-		assertThat(instance.getShares().get(0)).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
+		assertThat(instance.getShares().getFirst()).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 				.contains(CommissionPoints.of("30.00"), CommissionPoints.of("20.00"), CommissionPoints.of("10.00"));
 
 		final CommissionTriggerChange change = CommissionTriggerChange.builder()
@@ -260,7 +260,7 @@ class HierachyAlgorithmTest
 		assertThat(instance).isNotNull();
 		final ImmutableList<CommissionShare> sharesAfterInvocation = instance.getShares();
 		assertThat(sharesAfterInvocation).hasSize(1);
-		final CommissionShare share = sharesAfterInvocation.get(0);
+		final CommissionShare share = sharesAfterInvocation.getFirst();
 
 		assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 				.contains(CommissionPoints.of("0.00"), CommissionPoints.of("0.00"), CommissionPoints.of("-111.00"));
@@ -322,7 +322,7 @@ class HierachyAlgorithmTest
 			assertThat(share.getConfig()).isEqualTo(config);
 		});
 
-		assertThat(shares.get(0)).satisfies(share -> {
+		assertThat(shares.getFirst()).satisfies(share -> {
 			assertThat(share.getBeneficiary()).isEqualTo(salesRep);
 			assertThat(share.getLevel()).isEqualTo(HierarchyLevel.of(0));
 			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")

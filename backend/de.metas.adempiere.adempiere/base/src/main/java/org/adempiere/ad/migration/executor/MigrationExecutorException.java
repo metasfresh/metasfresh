@@ -25,11 +25,14 @@ package org.adempiere.ad.migration.executor;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 public class MigrationExecutorException extends AdempiereException
 {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 5403917143953357678L;
 
 	private final boolean fatal;
@@ -75,9 +78,8 @@ public class MigrationExecutorException extends AdempiereException
 	 */
 	public static boolean isFatal(Throwable e)
 	{
-		if (e instanceof MigrationExecutorException)
+		if (e instanceof MigrationExecutorException mee)
 		{
-			final MigrationExecutorException mee = (MigrationExecutorException)e;
 			return mee.isFatal();
 		}
 

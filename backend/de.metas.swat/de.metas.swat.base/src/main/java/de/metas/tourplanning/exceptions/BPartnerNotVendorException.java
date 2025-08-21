@@ -26,6 +26,8 @@ package de.metas.tourplanning.exceptions;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when a business partner was expected to be a vendor too but it's not.
  * 
@@ -37,6 +39,7 @@ public class BPartnerNotVendorException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -5233575710830756282L;
 	private static final String MSG_PartnerNotVendor = "PartnerNotVendor";
 

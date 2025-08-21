@@ -429,9 +429,9 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 	protected final void assumeProductStorageIsConsideringForceQtyAllocation(final IProductStorage productStorage)
 	{
 		final boolean considerForceQtyAllocationFromRequest;
-		if (productStorage instanceof AbstractProductStorage)
+		if (productStorage instanceof AbstractProductStorage storage)
 		{
-			considerForceQtyAllocationFromRequest = ((AbstractProductStorage)productStorage).isConsiderForceQtyAllocationFromRequest();
+			considerForceQtyAllocationFromRequest = storage.isConsiderForceQtyAllocationFromRequest();
 		}
 		else
 		{

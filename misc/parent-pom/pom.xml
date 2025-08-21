@@ -53,46 +53,35 @@
 
     <properties>
         <!-- this is our default; individual projects might need to specify their own settings -->
-        <metasfresh.java.version>1.8</metasfresh.java.version>
+        <metasfresh.java.version>21</metasfresh.java.version>
 
         <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
-        <jackson.version>2.14.1</jackson.version>
-        <amqp-client.version>5.10.0</amqp-client.version>
+        <jackson.version>2.17.1</jackson.version>
+        <amqp-client.version>5.20.0</amqp-client.version>
 
         <jasperreports.version>6.21.2</jasperreports.version>
 
         <itextpdf.version>5.5.13.3</itextpdf.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
+        <spring-boot-admin.version>3.2.2</spring-boot-admin.version>
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
-        <springfox-swagger.version>3.0.0</springfox-swagger.version>
-        <!--        Compatibility with Springfox-->
-        <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
-        <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
-        <springfox-enum-plugin.version>3.0.0</springfox-enum-plugin.version>
+        <springdoc-swagger.version>1.8.0</springdoc-swagger.version>
 
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
-        <slf4j-api.version>1.7.25</slf4j-api.version>
+        <slf4j-api.version>2.0.17</slf4j-api.version>
 
-        <!-- test related versions -->
-        <!--
-            3.27.2 is currently the latest and greatest. Spring boot declares some 2.x version that
-            see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
-        -->
-        <assertj.version>3.27.2</assertj.version>
         <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
         <xmlunit.version>2.10.0</xmlunit.version>
 
-        <mockito.version>2.7.22</mockito.version>
-        <byte-buddy.version>1.12.20</byte-buddy.version>
         <objenesis.version>3.3</objenesis.version>
 
-        <commons-io.version>2.11.0</commons-io.version>
-        <commons-lang3.version>3.12.0</commons-lang3.version>
-        <guava.version>30.1.1-jre</guava.version>
+        <commons-io.version>2.13.0</commons-io.version>
+        <commons-lang3.version>3.13.0</commons-lang3.version>
+        <guava.version>33.0.0-jre</guava.version>
+        <org.springdoc.version>2.8.8</org.springdoc.version>
 
         <surefire-plugin.version>3.5.3</surefire-plugin.version>
     </properties>
@@ -106,13 +95,13 @@
         <dependency>
             <groupId>io.github.origin-energy</groupId>
             <artifactId>java-snapshot-testing-junit5</artifactId>
-            <version>4.0.2</version>
+            <version>4.0.8</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.github.origin-energy</groupId>
             <artifactId>java-snapshot-testing-plugin-jackson</artifactId>
-            <version>4.0.2</version>
+            <version>4.0.8</version>
             <scope>test</scope>
         </dependency>
 
@@ -139,14 +128,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.18</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>${assertj.version}</version>
-                <scope>test</scope>
+                <version>1.18.38</version>
             </dependency>
 
             <dependency>
@@ -187,6 +169,40 @@
                 <version>3.0.2</version>
             </dependency>
 
+            <!-- JAXB dependencies for Jakarta EE 9+ -->
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>4.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>4.0.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>4.0.5</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>2.1.3</version>
+            </dependency>
+
+            <!-- JAX-WS dependencies for SOAP client generation -->
+            <dependency>
+                <groupId>jakarta.xml.ws</groupId>
+                <artifactId>jakarta.xml.ws-api</artifactId>
+                <version>4.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.ws</groupId>
+                <artifactId>jaxws-rt</artifactId>
+                <version>4.0.2</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
@@ -223,13 +239,10 @@
 
     <build>
         <plugins>
-            <!-- This plugin sometimes causes trouble in eclipse. we could move it to the "jenkins-BUILD_NUMBER-set" profile below,
-            but then when running locally against logstash, we would need to have some special configs which we don't have in prod
-             -->
             <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <version>4.0.4</version>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>9.0.2</version>
                 <executions>
                     <execution>
                         <id>get-the-git-infos</id>
@@ -241,6 +254,7 @@
                     </execution>
                 </executions>
                 <configuration>
+
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
                     <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
                     <!--includeOnlyProperties>
@@ -316,7 +330,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.13.0</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
@@ -333,9 +347,26 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.jvnet.jaxb2.maven2</groupId>
-                    <artifactId>maven-jaxb2-plugin</artifactId>
-                    <version>0.14.0</version>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>jaxb2-maven-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.xml.bind</groupId>
+                            <artifactId>jakarta.xml.bind-api</artifactId>
+                            <version>4.0.1</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.glassfish.jaxb</groupId>
+                            <artifactId>jaxb-runtime</artifactId>
+                            <version>4.0.5</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>jakarta.activation</groupId>
+                            <artifactId>jakarta.activation-api</artifactId>
+                            <version>2.1.3</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 
                 <plugin>
@@ -405,21 +436,10 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${surefire-plugin.version}</version>
                     <dependencies>
-                        <!-- Declaring these explicitly to allow go-offline-maven-plugin to pick it up -->
                         <dependency>
                             <groupId>org.apache.maven.surefire</groupId>
                             <artifactId>surefire-junit-platform</artifactId>
                             <version>${surefire-plugin.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.apache.tomcat</groupId>
-                            <artifactId>tomcat-annotations-api</artifactId>
-                            <version>9.0.70</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.codehaus.plexus</groupId>
-                            <artifactId>plexus-utils</artifactId>
-                            <version>1.1</version>
                         </dependency>
                     </dependencies>
                     <configuration>
@@ -427,7 +447,7 @@
                              Hence it is important to add those command-line params where @{argLine} holds those params.
                              Note that the @ is not a typo.
                              See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html and https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#argLine -->
-                        <argLine>@{argLine} -Xms256m -Xmx2048m</argLine>
+                        <argLine>@{argLine} -Xms256m -Xmx2048m --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
                         <!-- From http://www.jacoco.org/jacoco/trunk/doc/maven.html :
                              When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0
                              or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded.
@@ -457,6 +477,27 @@
                             <!-- additional include, because we often use that pattern -->
                             <include>**/*Tests.java</include>
                         </includes>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <!-- This plugin is used to create the client-code for SOAP-APIs -->
+                    <!-- Note that declaring depdencies in here does not work in conjunction with the docker-builds and the go-offline-maven-plugin -->
+                    <groupId>com.sun.xml.ws</groupId>
+                    <artifactId>jaxws-maven-plugin</artifactId>
+                    <version>4.0.3</version>
+                    <configuration>
+                        <!-- Common configuration that can be overridden -->
+                        <keep>true</keep>
+                        <verbose>true</verbose>
+                        <extension>true</extension>
+                        <target>3.0</target>
+                        <args>
+                            <arg>-B-XautoNameResolution</arg>
+                        </args>
+                        <vmArgs>
+                            <vmArg>-Djakarta.xml.bind.verbose=true</vmArg>
+                        </vmArgs>
                     </configuration>
                 </plugin>
 
@@ -566,6 +607,44 @@
                     <groupId>de.qaware.maven</groupId>
                     <artifactId>go-offline-maven-plugin</artifactId>
                     <version>1.2.8</version>
+                    <configuration>
+                        <!-- not sure - the sources might be needed to be put inside the final artifact -->
+                        <!--<downloadSources>false</downloadSources>-->
+                        <downloadJavadoc>false</downloadJavadoc>
+                        <dynamicDependencies>
+                            <!-- All the following are needed for com.sun.xml.ws:jaxws-maven-plugin:4.0.3 -->
+                            <dynamicDependency>
+                                <groupId>jakarta.xml.ws</groupId>
+                                <artifactId>jakarta.xml.ws-api</artifactId>
+                                <version>4.0.1</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                            <dynamicDependency>
+                                <groupId>jakarta.xml.bind</groupId>
+                                <artifactId>jakarta.xml.bind-api</artifactId>
+                                <version>4.0.1</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                            <dynamicDependency>
+                                <groupId>jakarta.activation</groupId>
+                                <artifactId>jakarta.activation-api</artifactId>
+                                <version>2.1.2</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                            <dynamicDependency>
+                                <groupId>jakarta.xml.soap</groupId>
+                                <artifactId>jakarta.xml.soap-api</artifactId>
+                                <version>3.0.1</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                            <dynamicDependency>
+                                <groupId>com.sun.xml.ws</groupId>
+                                <artifactId>jaxws-tools</artifactId>
+                                <version>4.0.2</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                        </dynamicDependencies>
+                    </configuration>
                 </plugin>
 
             </plugins>

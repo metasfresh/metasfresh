@@ -22,14 +22,14 @@ package org.compiere.model;
  * #L%
  */
 
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 public class CalloutAsset extends CalloutEngine
 {
@@ -102,7 +102,7 @@ public class CalloutAsset extends CalloutEngine
 				DB.close(rs, pstmt);
 			}
 			if (C_Period_ID != 0)
-				mTab.setValue("C_Period_ID", new Integer(C_Period_ID));
+				mTab.setValue("C_Period_ID", Integer.valueOf(C_Period_ID));
 		}
 
 		//  When C_Period_ID is changed, check if in DateAcct range and set to end date if not

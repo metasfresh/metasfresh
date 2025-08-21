@@ -35,11 +35,7 @@ package org.compiere.FA;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
+import de.metas.process.JavaProcess;
 import org.compiere.model.MAssetChange;
 import org.compiere.model.MRefList;
 import org.compiere.model.X_A_Asset;
@@ -50,7 +46,10 @@ import org.compiere.model.X_A_Depreciation_Exp;
 import org.compiere.model.X_A_Depreciation_Workfile;
 import org.compiere.util.DB;
 
-import de.metas.process.JavaProcess;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 
 /**
@@ -130,7 +129,7 @@ public class AssetSplit extends JavaProcess
 		      v_ManDep_Org =v_ManDep_Org.subtract(v_ManDep_New);
 			}
 			else if (AssetSplit.getA_Split_Type().compareTo("QTY")==0) {
-		      v_multiplier_New = AssetSplit.getA_QTY_Split().setScale(5).divide(v_QTY_Org.setScale(5), 0);
+		      v_multiplier_New = AssetSplit.getA_QTY_Split().setScale(5).divide(v_QTY_Org.setScale(5), RoundingMode.UP);
 		      v_AccumBalance_New = v_AccumBalance_Org .multiply(v_multiplier_New);
 		      v_CostBalance_New = v_CostBalance_Org .multiply(v_multiplier_New);		      
 		      v_QTY_New = AssetSplit.getA_QTY_Split();
@@ -143,7 +142,7 @@ public class AssetSplit extends JavaProcess
 		      v_ManDep_Org =v_ManDep_Org.subtract(v_ManDep_New);
 		    }
 		    else if (AssetSplit.getA_Split_Type().compareTo("AMT")==0) {
-		      v_multiplier_New = AssetSplit.getA_Amount_Split().setScale(5).divide(v_CostBalance_Org.setScale(5), 0);		      
+		      v_multiplier_New = AssetSplit.getA_Amount_Split().setScale(5).divide(v_CostBalance_Org.setScale(5), RoundingMode.UP);		      
 		      v_AccumBalance_New = v_AccumBalance_Org .multiply(v_multiplier_New);
 		      v_CostBalance_New = AssetSplit.getA_Amount_Split();
 		      v_QTY_New = v_QTY_Org .multiply(v_multiplier_New);

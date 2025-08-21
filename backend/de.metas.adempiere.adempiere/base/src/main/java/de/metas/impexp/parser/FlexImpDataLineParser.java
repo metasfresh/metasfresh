@@ -1,17 +1,15 @@
 package de.metas.impexp.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.impexp.format.ImpFormat;
 import de.metas.impexp.format.ImpFormatColumn;
 import de.metas.impexp.format.ImpFormatType;
-import groovy.transform.ToString;
 import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L

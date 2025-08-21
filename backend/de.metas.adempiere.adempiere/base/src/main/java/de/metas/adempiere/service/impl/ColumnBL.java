@@ -134,7 +134,7 @@ public class ColumnBL implements IColumnBL
 		{
 			throw new NoSingleKeyColumnException(poInfo);
 		}
-		return keyColumnNames.get(0);
+		return keyColumnNames.getFirst();
 	}
 
 	@Override

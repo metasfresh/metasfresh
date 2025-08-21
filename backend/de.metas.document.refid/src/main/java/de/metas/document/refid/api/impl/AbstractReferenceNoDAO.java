@@ -84,7 +84,7 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 		{
 			throw new DBMoreThanOneRecordsFoundException("@C_ReferenceNo_Type@ with classname " + clazz.getName());
 		}
-		return typesWithClass.get(0);
+		return typesWithClass.getFirst();
 	}
 
 	@Override
@@ -138,7 +138,7 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 		{
 			throw new DBMoreThanOneRecordsFoundException("@C_ReferenceNo_Type@ with name " + typeName);
 		}
-		return typesWithName.get(0);
+		return typesWithName.getFirst();
 	}
 
 	@Override

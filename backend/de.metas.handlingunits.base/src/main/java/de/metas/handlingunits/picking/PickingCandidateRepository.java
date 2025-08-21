@@ -553,7 +553,7 @@ public class PickingCandidateRepository
 
 	private PickingCandidate loadIssuesToBOMLine(@NonNull final PickingCandidate pickingCandidate)
 	{
-		return loadIssuesToBOMLine(ImmutableList.of(pickingCandidate)).get(0);
+		return loadIssuesToBOMLine(ImmutableList.of(pickingCandidate)).getFirst();
 	}
 
 	private ImmutableList<PickingCandidate> loadIssuesToBOMLine(@NonNull final ImmutableList<PickingCandidate> pickingCandidates)

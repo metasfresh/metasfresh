@@ -1,11 +1,11 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import java.util.List;
-
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
+
+import java.util.List;
 
 /*
  * #%L
@@ -32,7 +32,7 @@ import lombok.Value;
 @Builder
 public class JsonCloseInvoiceCandidatesResponse
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	@Singular
 	List<JsonCloseInvoiceCandidatesResponseItem> invoiceCandidates;
 }

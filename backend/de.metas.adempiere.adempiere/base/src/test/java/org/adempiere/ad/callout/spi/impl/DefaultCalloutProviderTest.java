@@ -140,7 +140,7 @@ public class DefaultCalloutProviderTest
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assertions.assertEquals(6, calloutInstances.size(), "Invalid callouts list size: " + calloutInstances);
 
-		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.getFirst(), Callout1.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(1), Callout1.class, AbstractMockedCallout.METHOD_method2);
 		assertLegacyCalloutInstance(calloutInstances.get(2), Callout1.class, AbstractMockedCallout.METHOD_method3);
 		//
@@ -188,7 +188,7 @@ public class DefaultCalloutProviderTest
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assertions.assertEquals(3, calloutInstances.size(), "Invalid callouts list size: " + calloutInstances);
 
-		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.getFirst(), Callout1.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(2), Callout4.class, AbstractMockedCallout.METHOD_method1);
 	}
@@ -207,7 +207,7 @@ public class DefaultCalloutProviderTest
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assertions.assertEquals(2, calloutInstances.size(), "Invalid callouts list size: " + calloutInstances);
 
-		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.getFirst(), Callout1.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, AbstractMockedCallout.METHOD_method1);
 	}
 

@@ -25,11 +25,14 @@ package de.metas.handlingunits.attribute.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 public class InvalidAttributeValueException extends AdempiereException
 {
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -4251286575099577209L;
 
 	public InvalidAttributeValueException(final String message)

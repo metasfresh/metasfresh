@@ -22,27 +22,6 @@ package de.metas.document.archive.spi.impl;
  * #L%
  */
 
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.beans.IBeanEnconder;
-import org.adempiere.util.beans.JsonBeanEncoder;
-import org.adempiere.util.text.MapFormat;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.document.archive.esb.api.ArchiveGetDataRequest;
 import de.metas.document.archive.esb.api.ArchiveGetDataResponse;
 import de.metas.document.archive.esb.api.ArchiveSetDataRequest;
@@ -50,8 +29,28 @@ import de.metas.document.archive.esb.api.ArchiveSetDataResponse;
 import de.metas.document.archive.esb.api.IArchiveEndpoint;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.IOStreamUtils;
+import de.metas.util.Services;
+import lombok.Setter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.beans.IBeanEnconder;
+import org.adempiere.util.beans.JsonBeanEncoder;
+import org.adempiere.util.text.MapFormat;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Rest HTTP Remote Archive Endpoint connector
@@ -64,17 +63,23 @@ public class RestHttpArchiveEndpoint implements IArchiveEndpoint
 	private static final transient Logger logger = LogManager.getLogger(RestHttpArchiveEndpoint.class);
 
 	public static final String SYSCONFIG_ServerUrl = "de.metas.document.archive.spi.impl.RestHttpArchiveEndpoint.ServerUrl";
-	private String serverUrl;
+	@Setter private String serverUrl;
 
-	private final HttpClient httpclient;
+	private final CloseableHttpClient httpclient;
 	private final IBeanEnconder beanEncoder;
 
 	public RestHttpArchiveEndpoint()
 	{
 		beanEncoder = new JsonBeanEncoder();
 
-		httpclient = new HttpClient();
-		// httpclient.getParams().setSoTimeout(socketTimeout);
+		httpclient = HttpClients.createDefault();
+		// For custom configurations:
+		// httpclient = HttpClients.custom()
+		//     .setDefaultRequestConfig(RequestConfig.custom()
+		//         .setResponseTimeout(Timeout.ofSeconds(30))
+		//         .setConnectionRequestTimeout(Timeout.ofSeconds(30))
+		//         .build())
+		//     .build();
 	}
 
 	private int getAD_Session_ID()
@@ -113,14 +118,9 @@ public class RestHttpArchiveEndpoint implements IArchiveEndpoint
 				RestHttpArchiveEndpoint.SYSCONFIG_ServerUrl,
 				(String)null, // defaultValue
 				Env.getAD_Client_ID(Env.getCtx()) // AD_Client_ID
-				);
+		);
 		Check.assumeNotNull(serverUrl, "SysConfig {} is set", RestHttpArchiveEndpoint.SYSCONFIG_ServerUrl);
 		return serverUrl;
-	}
-
-	public void setServerUrl(final String serverUrl)
-	{
-		this.serverUrl = serverUrl;
 	}
 
 	protected Map<String, String> createInitialUrlParams()
@@ -164,52 +164,44 @@ public class RestHttpArchiveEndpoint implements IArchiveEndpoint
 	private <T> T executePost(final String path, final Map<String, String> params, final Object request, final Class<T> responseClass)
 	{
 		final URL url = getURL(path, params);
-		final PostMethod httpPost = new PostMethod(url.toString());
+		final HttpPost httpPost = new HttpPost(url.toString());
 
 		final byte[] data = beanEncoder.encode(request);
-		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
-		httpPost.setRequestEntity(entity);
+		final ContentType contentType = ContentType.parse(beanEncoder.getContentType());
+		final ByteArrayEntity entity = new ByteArrayEntity(data, contentType);
+		httpPost.setEntity(entity);
 
-		int result = -1;
-		InputStream in = null;
 		try
 		{
-			result = executeHttpPost(httpPost);
-			in = httpPost.getResponseBodyAsStream();
-			if (result != 200)
-			{
-				final String errorMsg = in == null ? "code " + result : IOStreamUtils.toString(in);
-				throw new AdempiereException("Error " + result + " while posting on " + url + ": " + errorMsg);
-			}
+			return httpclient.execute(httpPost, response -> {
+				final int statusCode = response.getCode();
+				RestHttpArchiveEndpoint.logger.trace("Result code: {}", statusCode);
 
-			if (responseClass != null)
-			{
-				final T response = beanEncoder.decodeStream(in, responseClass);
-				return response;
-			}
+				final InputStream in = response.getEntity().getContent();
+				try
+				{
+					if (statusCode != 200)
+					{
+						final String errorMsg = in == null ? "code " + statusCode : IOStreamUtils.toString(in);
+						throw new AdempiereException("Error " + statusCode + " while posting on " + url + ": " + errorMsg);
+					}
+
+					if (responseClass != null)
+					{
+						final T responseObj = beanEncoder.decodeStream(in, responseClass);
+						return responseObj;
+					}
+					return null;
+				}
+				finally
+				{
+					IOStreamUtils.close(in);
+				}
+			});
 		}
-		catch (final Exception e)
+		catch (final IOException e)
 		{
 			throw new AdempiereException(e);
 		}
-		finally
-		{
-			IOStreamUtils.close(in);
-			in = null;
-		}
-
-		return null;
-	}
-
-	private int executeHttpPost(final PostMethod httpPost) throws HttpException, IOException
-	{
-		final int result = httpclient.executeMethod(httpPost);
-		RestHttpArchiveEndpoint.logger.trace("Result code: {}", result);
-
-		// final DefaultMethodRetryHandler retryHandler = new DefaultMethodRetryHandler();
-		// retryHandler.setRetryCount(3);
-		// httpPost.setMethodRetryHandler(retryHandler);
-
-		return result;
 	}
 }

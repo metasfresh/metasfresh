@@ -428,13 +428,13 @@ public class ProcessParameterPanelModel
 		//
 		// FIXME: legacy: convert Boolean to String because some of the JavaProcess implementations are checking boolean parametes as:
 		// boolean value = "Y".equals(ProcessInfoParameter.getParameter());
-		if (value instanceof Boolean)
+		if (value instanceof Boolean boolean1)
 		{
-			value = DisplayType.toBooleanString((Boolean)value);
+			value = DisplayType.toBooleanString(boolean1);
 		}
-		if (valueTo instanceof Boolean)
+		if (valueTo instanceof Boolean boolean1)
 		{
-			valueTo = DisplayType.toBooleanString((Boolean)valueTo);
+			valueTo = DisplayType.toBooleanString(boolean1);
 		}
 
 		return new ProcessInfoParameter(columnName, value, valueTo, displayValue, displayValueTo);

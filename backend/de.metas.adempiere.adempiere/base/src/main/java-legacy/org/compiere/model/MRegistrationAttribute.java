@@ -64,7 +64,7 @@ public class MRegistrationAttribute extends X_A_RegistrationAttribute
 			while (rs.next())
 			{
 				MRegistrationAttribute value = new MRegistrationAttribute(ctx, rs, null);
-				Integer key = new Integer(value.getA_RegistrationAttribute_ID());
+				Integer key = Integer.valueOf(value.getA_RegistrationAttribute_ID());
 				s_cache.put(key, value);
 				list.add(value);
 			}
@@ -100,7 +100,7 @@ public class MRegistrationAttribute extends X_A_RegistrationAttribute
 	 */
 	public static MRegistrationAttribute get (Properties ctx, int A_RegistrationAttribute_ID, String trxName)
 	{
-		Integer key = new Integer(A_RegistrationAttribute_ID);
+		Integer key = Integer.valueOf(A_RegistrationAttribute_ID);
 		MRegistrationAttribute retValue = (MRegistrationAttribute)s_cache.get(key);
 		if (retValue == null)
 		{

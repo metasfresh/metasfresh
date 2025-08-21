@@ -87,7 +87,7 @@ public final class PackingItemsMap
 		}
 		else if (items.size() == 1)
 		{
-			return items.get(0);
+			return items.getFirst();
 		}
 		else
 		{

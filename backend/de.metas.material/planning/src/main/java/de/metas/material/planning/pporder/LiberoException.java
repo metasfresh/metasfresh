@@ -4,6 +4,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * Generic libero-specifc exception. Please subclass this one rather than {@link LiberoException} when adding libero related exceptions.
  *
@@ -14,6 +16,7 @@ public class LiberoException extends AdempiereException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 4775225739207748132L;
 
 	public LiberoException(String message)

@@ -247,9 +247,9 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 		{
 			return -1;
 		}
-		else if (idObj instanceof Number)
+		else if (idObj instanceof Number number)
 		{
-			return ((Number)idObj).intValue();
+			return number.intValue();
 		}
 		else
 		{

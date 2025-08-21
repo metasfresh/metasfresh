@@ -71,9 +71,9 @@ public class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		{
 			return false;
 		}
-		else  if (value instanceof String)
+		else  if (value instanceof String string)
 		{
-			return ((String)value).endsWith(endsWithString);
+			return string.endsWith(endsWithString);
 
 		}
 		else

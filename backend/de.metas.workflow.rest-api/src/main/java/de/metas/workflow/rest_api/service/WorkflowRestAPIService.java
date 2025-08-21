@@ -102,9 +102,9 @@ public class WorkflowRestAPIService
 	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)
 	{
 		final MobileApplication mobileApplication = mobileApplicationService.getById(applicationId);
-		if (mobileApplication instanceof WorkflowBasedMobileApplication)
+		if (mobileApplication instanceof WorkflowBasedMobileApplication application)
 		{
-			return (WorkflowBasedMobileApplication)mobileApplication;
+			return application;
 		}
 		else
 		{

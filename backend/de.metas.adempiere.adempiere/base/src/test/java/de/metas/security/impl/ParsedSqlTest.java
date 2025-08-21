@@ -306,11 +306,12 @@ public class ParsedSqlTest
 	@Test
 	public void tableNameParsing_1()
 	{
-		final String sql = "SELECT SUM(il.QtyInvoiced)\n"
-				+ "FROM RV_C_Invoice\n"
-				+ "C_Invoice\n"
-				+ "INNER JOIN RV_C_InvoiceLine il ON (C_Invoice.C_Invoice_ID=il.C_Invoice_ID) WHERE\n"
-				+ "C_Invoice.IsSOTrx='Y' AND C_Invoice.Processed='Y' AND C_Invoice.IsPaid='Y'";
+		final String sql = """
+				SELECT SUM(il.QtyInvoiced)
+				FROM RV_C_Invoice
+				C_Invoice
+				INNER JOIN RV_C_InvoiceLine il ON (C_Invoice.C_Invoice_ID=il.C_Invoice_ID) WHERE
+				C_Invoice.IsSOTrx='Y' AND C_Invoice.Processed='Y' AND C_Invoice.IsPaid='Y'""";
 
 		final ParsedSql actual = ParsedSql.parse(sql);
 
@@ -332,8 +333,9 @@ public class ParsedSqlTest
 	@Test
 	public void tableNameParsing_2()
 	{
-		final String sql = "SELECT C_Invoice.*  FROM C_Invoice\n"
-				+ "INNER JOIN C_BPartner bp ON (bp.C_BPartner_ID=C_Invoice.C_BPartner_ID) WHERE 1=0";
+		final String sql = """
+				SELECT C_Invoice.*  FROM C_Invoice
+				INNER JOIN C_BPartner bp ON (bp.C_BPartner_ID=C_Invoice.C_BPartner_ID) WHERE 1=0""";
 
 		final ParsedSql actual = ParsedSql.parse(sql);
 
@@ -368,11 +370,12 @@ public class ParsedSqlTest
 	@Test
 	public void test_BF2840157()
 	{
-		final String sql = "SELECT 1 FROM M_Product p"
-				+ "\n" + "INNER JOIN M_Product_Category pc on (pc.M_Product_Category_ID=p.M_Product_Category_ID)"
-				+ "\n" + "LEFT OUTER JOIN M_Product_PO mpo ON (mpo.M_Product_ID=p.M_Product_ID)"
-				+ "\n" + " WHERE p.IsActive='Y' AND p.IsPurchased='Y'"
-				+ "\n" + "AND COALESCE(mpo.DeliveryTime_Promised,0) <= 0";
+		final String sql = """
+				SELECT 1 FROM M_Product p
+				INNER JOIN M_Product_Category pc on (pc.M_Product_Category_ID=p.M_Product_Category_ID)
+				LEFT OUTER JOIN M_Product_PO mpo ON (mpo.M_Product_ID=p.M_Product_ID)
+				 WHERE p.IsActive='Y' AND p.IsPurchased='Y'
+				AND COALESCE(mpo.DeliveryTime_Promised,0) <= 0""";
 
 		final ParsedSql actual = ParsedSql.parse(sql);
 
@@ -392,6 +395,7 @@ public class ParsedSqlTest
 	@Test
 	public void rewriteWhereClauseWithLowercaseKeyWords_adaptInnerWhereClause()
 	{
+		// in case you change this to text-block, please make sure the resulting string is still as we want it
 		final String initialWhereClause = "noise WHERE noise NOISE Where noise"
 				+ "\n"
 				+ "WHERE noise FROM"
@@ -417,13 +421,14 @@ public class ParsedSqlTest
 	@Test
 	public void queryContains_IS_NOT_DISTINCT_FROM()
 	{
-		final String sql = "SELECT"
-				+ "\n ?"
-				+ "\n , row_number() OVER (ORDER BY fts.Line, (master.Name) ASC NULLS LAST, (master.Lastname) ASC NULLS LAST, (##) ASC NULLS LAST, (master.C_BP_Contact_ID) ASC NULLS LAST)"
-				+ "\n , master.C_BPartner_Location_ID, master.C_BP_Contact_ID"
-				+ "\n FROM C_BPartner_Adv_Search_v master"
-				+ "\n INNER JOIN T_ES_FTS_Search_Result fts ON (fts.Search_UUID=? AND master.C_BPartner_ID=fts.IntKey1 AND (fts.IntKey2 IS NULL OR master.C_BPartner_Location_ID IS NOT DISTINCT FROM fts.IntKey2) AND (fts.IntKey3 IS NULL OR master.C_BP_Contact_ID IS NOT DISTINCT FROM fts.IntKey3))"
-				+ "\n WHERE 1=1";
+		final String sql = """
+				SELECT
+				 ?
+				 , row_number() OVER (ORDER BY fts.Line, (master.Name) ASC NULLS LAST, (master.Lastname) ASC NULLS LAST, (##) ASC NULLS LAST, (master.C_BP_Contact_ID) ASC NULLS LAST)
+				 , master.C_BPartner_Location_ID, master.C_BP_Contact_ID
+				 FROM C_BPartner_Adv_Search_v master
+				 INNER JOIN T_ES_FTS_Search_Result fts ON (fts.Search_UUID=? AND master.C_BPartner_ID=fts.IntKey1 AND (fts.IntKey2 IS NULL OR master.C_BPartner_Location_ID IS NOT DISTINCT FROM fts.IntKey2) AND (fts.IntKey3 IS NULL OR master.C_BP_Contact_ID IS NOT DISTINCT FROM fts.IntKey3))
+				 WHERE 1=1""";
 
 		final ParsedSql actual = ParsedSql.parse(sql);
 

@@ -25,6 +25,8 @@ package org.adempiere.ad.trx.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * Exception thrown by transaction manager when something went wrong.
  * 
@@ -36,6 +38,7 @@ public class TrxException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -8558441605639046411L;
 
 	// NOTE: this constructor is needed if we want to use it with Check methods

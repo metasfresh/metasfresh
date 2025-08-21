@@ -134,8 +134,8 @@ public class MRequest extends X_R_Request
 			int R_RequestType_ID, String Summary, boolean isSelfService, String trxName)
 	{
 		this(ctx, 0, trxName);
-		set_Value(I_R_Request.COLUMNNAME_SalesRep_ID, SalesRep_ID < 0 ? null : new Integer(SalesRep_ID));	// could be 0
-		set_Value("R_RequestType_ID", new Integer(R_RequestType_ID));
+		set_Value(I_R_Request.COLUMNNAME_SalesRep_ID, SalesRep_ID < 0 ? null : Integer.valueOf(SalesRep_ID));	// could be 0
+		set_Value("R_RequestType_ID", Integer.valueOf(R_RequestType_ID));
 		setSummary(Summary);
 		setIsSelfService(isSelfService);
 		getRequestType();

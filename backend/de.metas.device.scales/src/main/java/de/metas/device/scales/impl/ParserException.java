@@ -26,6 +26,8 @@ package de.metas.device.scales.impl;
 import de.metas.device.api.DeviceException;
 import de.metas.util.StringUtils;
 
+import java.io.Serial;
+
 /**
  * Exception to be thrown by {@link IParser} implementations in case of errors
  *
@@ -37,6 +39,7 @@ public class ParserException extends DeviceException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 6780262709879240414L;
 
 	/**

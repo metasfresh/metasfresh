@@ -176,8 +176,7 @@ public class GithubImporterService implements IssueImporter
 
 			issues.stream()
 					.map(issue -> buildImportIssueInfo(issue, importIssuesRequest, seenExternalIdsByKey))
-					.filter(Optional::isPresent)
-					.map(Optional::get)
+					.flatMap(Optional::stream)
 					.forEach(importIssuesQueue::add);
 		}
 	}
@@ -327,7 +326,7 @@ public class GithubImporterService implements IssueImporter
 
 		final Optional<GithubIssueLink> parentIssueLink = linkMatcher.getFirstMatch(description);
 
-		if (!parentIssueLink.isPresent())
+		if (parentIssueLink.isEmpty())
 		{
 			Loggables.withLogger(log, Level.DEBUG)
 					.addLog(" {} No match found for parent issue! GithubIssueLinkMatcher: "
@@ -390,7 +389,7 @@ public class GithubImporterService implements IssueImporter
 
 		final Optional<ExternalProjectReference> externalProjectReference = externalProjectRepository.getByRequestOptional(getExternalProjectRequest);
 
-		if (!externalProjectReference.isPresent())
+		if (externalProjectReference.isEmpty())
 		{
 			Loggables.withLogger(log, Level.WARN).addLog("No externalProjectReference found for getExternalProjectRequest: " + getExternalProjectRequest);
 			return Optional.empty();

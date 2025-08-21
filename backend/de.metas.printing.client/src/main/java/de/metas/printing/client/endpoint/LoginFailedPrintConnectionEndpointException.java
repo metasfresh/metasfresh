@@ -25,6 +25,8 @@ package de.metas.printing.client.endpoint;
 import de.metas.printing.client.IPrintConnectionEndpoint;
 import de.metas.printing.esb.api.LoginRequest;
 
+import java.io.Serial;
+
 /**
  * Exception thrown if {@link IPrintConnectionEndpoint#login(LoginRequest)} fails.
  *
@@ -37,6 +39,7 @@ public class LoginFailedPrintConnectionEndpointException extends PrintConnection
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 8932182388809426483L;
 
 	public LoginFailedPrintConnectionEndpointException(final String message)

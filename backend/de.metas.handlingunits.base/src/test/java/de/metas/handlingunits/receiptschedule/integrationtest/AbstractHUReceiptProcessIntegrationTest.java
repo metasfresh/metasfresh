@@ -183,7 +183,7 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 		Assertions.assertNotNull(list, prefix + "list not null");
 		Assertions.assertEquals(1, list.size(), prefix + "list shall have only one element");
 
-		final T item = list.get(0);
+		final T item = list.getFirst();
 		Assertions.assertNotNull(item, prefix + "item not null");
 
 	}

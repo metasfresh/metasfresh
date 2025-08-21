@@ -185,7 +185,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		}
 
 		// iterate all scheds and return the maximum
-		ZonedDateTime maxDeliveryDate = schedEffectiveBL.getDeliveryDate(schedules.get(0));
+		ZonedDateTime maxDeliveryDate = schedEffectiveBL.getDeliveryDate(schedules.getFirst());
 		for (int i = 1; i < schedules.size(); i++)
 		{
 			final ZonedDateTime currentDate = schedEffectiveBL.getDeliveryDate(schedules.get(i));

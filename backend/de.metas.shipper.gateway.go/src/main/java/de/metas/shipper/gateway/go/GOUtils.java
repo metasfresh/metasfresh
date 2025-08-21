@@ -54,6 +54,6 @@ public class GOUtils
 				"The GO! implementation needs to always create DeliveryOrders with exactly 1 DeliveryPosition; deliveryOrder={}",
 				deliveryOrder);
 
-		return deliveryOrder.getDeliveryPositions().get(0);
+		return deliveryOrder.getDeliveryPositions().getFirst();
 	}
 }

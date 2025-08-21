@@ -701,7 +701,7 @@ public class InvoiceHistory
 				line.add(rs.getString(1));      		// Name
 				line.add(rs.getBigDecimal(2));  // Qty
 				line.add(rs.getTimestamp(3));   		// Date
-				line.add(new Boolean("Y".equals(rs.getString(4))));	// IsSOTrx
+				line.add(Boolean.valueOf("Y".equals(rs.getString(4))));	// IsSOTrx
 				line.add(rs.getString(5));				// DocNo
 				line.add(rs.getString(6));				// Warehouse
 				data.add(line);

@@ -96,6 +96,6 @@ public class InOutLineBPartnerAware implements IBPartnerAware
 	@Override
 	public String toString()
 	{
-		return String.format("InOutLineBPartnerAware [inoutLine=%s, isSOTrx()=%s, getC_BPartner()=%s, getM_InOut()=%s]", inoutLine, isSOTrx(), getC_BPartner(), getM_InOut());
+		return "InOutLineBPartnerAware [inoutLine=%s, isSOTrx()=%s, getC_BPartner()=%s, getM_InOut()=%s]".formatted(inoutLine, isSOTrx(), getC_BPartner(), getM_InOut());
 	}
 }

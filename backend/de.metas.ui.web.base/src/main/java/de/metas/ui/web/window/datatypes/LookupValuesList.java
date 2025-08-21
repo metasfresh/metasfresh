@@ -226,7 +226,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	public LookupValue getById(final Object id)
 	{
 		final ImmutableList<LookupValue> values = valuesById.get(normalizeId(id));
-		return values.isEmpty() ? null : values.get(0);
+		return values.isEmpty() ? null : values.getFirst();
 	}
 
 	public LookupValuesList getByIdsInOrder(@NonNull final Collection<?> ids)
@@ -257,13 +257,13 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		{
 			return null;
 		}
-		else if (id instanceof RepoIdAware)
+		else if (id instanceof RepoIdAware aware)
 		{
-			return ((RepoIdAware)id).getRepoId();
+			return aware.getRepoId();
 		}
-		if (id instanceof ReferenceListAwareEnum)
+		if (id instanceof ReferenceListAwareEnum enum1)
 		{
-			return ((ReferenceListAwareEnum)id).getCode();
+			return enum1.getCode();
 		}
 		else
 		{

@@ -83,70 +83,65 @@ public final class Values
 		{
 			return JSONNullValue.instance;
 		}
-		else if (value instanceof java.util.Date)
+		else if (value instanceof Date date1)
 		{
-			final Instant valueDate = ((Date)value).toInstant();
+			final Instant valueDate = date1.toInstant();
 			return DateTimeConverters.toJson(valueDate, jsonOpts.getZoneId());
 		}
-		else if (value instanceof LocalDate)
+		else if (value instanceof LocalDate date)
 		{
-			return localDateToJson((LocalDate)value);
+			return localDateToJson(date);
 		}
-		else if (value instanceof LocalTime)
+		else if (value instanceof LocalTime time1)
 		{
-			return DateTimeConverters.toJson((LocalTime)value);
+			return DateTimeConverters.toJson(time1);
 		}
-		else if (value instanceof ZonedDateTime)
+		else if (value instanceof ZonedDateTime time)
 		{
-			return DateTimeConverters.toJson((ZonedDateTime)value, jsonOpts.getZoneId());
+			return DateTimeConverters.toJson(time, jsonOpts.getZoneId());
 		}
-		else if (value instanceof Instant)
+		else if (value instanceof Instant instant)
 		{
-			return DateTimeConverters.toJson((Instant)value, jsonOpts.getZoneId());
+			return DateTimeConverters.toJson(instant, jsonOpts.getZoneId());
 		}
-		else if (value instanceof DateRangeValue)
+		else if (value instanceof DateRangeValue dateRange)
 		{
-			final DateRangeValue dateRange = (DateRangeValue)value;
 			return JSONRange.of(dateRange);
 		}
-		else if (value instanceof LookupValue)
+		else if (value instanceof LookupValue lookupValue)
 		{
-			final LookupValue lookupValue = (LookupValue)value;
 			return JSONLookupValue.ofLookupValue(lookupValue, jsonOpts.getAdLanguage());
 		}
-		else if (value instanceof LookupValuesList)
+		else if (value instanceof LookupValuesList lookupValues)
 		{
-			final LookupValuesList lookupValues = (LookupValuesList)value;
 			return JSONLookupValuesList.ofLookupValuesList(lookupValues, jsonOpts.getAdLanguage());
 		}
-		else if (value instanceof NamePair)
+		else if (value instanceof NamePair lookupValue)
 		{
-			final NamePair lookupValue = (NamePair)value;
 			return JSONLookupValue.ofNamePair(lookupValue);
 		}
-		else if (value instanceof BigDecimal)
+		else if (value instanceof BigDecimal decimal)
 		{
-			return bigDecimalToJson((BigDecimal)value);
+			return bigDecimalToJson(decimal);
 		}
-		else if (value instanceof Quantity)
+		else if (value instanceof Quantity quantity)
 		{
-			return bigDecimalToJson(((Quantity)value).toBigDecimal());
+			return bigDecimalToJson(quantity.toBigDecimal());
 		}
-		else if (value instanceof Money)
+		else if (value instanceof Money money)
 		{
-			return bigDecimalToJson(((Money)value).toBigDecimal());
+			return bigDecimalToJson(money.toBigDecimal());
 		}
-		else if (value instanceof Amount)
+		else if (value instanceof Amount amount)
 		{
-			return bigDecimalToJson(((Amount)value).getAsBigDecimal());
+			return bigDecimalToJson(amount.getAsBigDecimal());
 		}
-		else if (value instanceof DocumentId)
+		else if (value instanceof DocumentId id)
 		{
-			return ((DocumentId)value).toJson();
+			return id.toJson();
 		}
-		else if (value instanceof Collection)
+		else if (value instanceof Collection<?> valuesList)
 		{
-			final Collection<?> valuesList = (Collection<?>)value;
 			return valuesList.stream()
 					.map(v -> valueToJsonObject(v, jsonOpts, fallbackMapper))
 					.collect(Collectors.toCollection(ArrayList::new)); // don't use ImmutableList because we might get null values

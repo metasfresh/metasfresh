@@ -5,5 +5,5 @@
 // Generated on: 2024.11.04 at 04:00:25 PM CET 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://dpd.com/common/service/types/ShipmentService/3.2")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://dpd.com/common/service/types/ShipmentService/3.2")
 package com.dpd.common.service.types.shipmentservice._3;

@@ -71,7 +71,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
@@ -187,13 +187,16 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		}
 		catch (final HttpClientErrorException e)
 		{
-			final HttpStatus statusCode = e.getStatusCode();
+			final HttpStatusCode statusCode = e.getStatusCode();
 			final String responseBodyAsString = e.getResponseBodyAsString();
 			throw createShipperException(dhlOrderRequest, statusCode, responseBodyAsString);
 		}
 	}
 
-	private AdempiereException createShipperException(final @NonNull JSONDhlCreateOrderRequest dhlOrderRequest, @NonNull final HttpStatus statusCode, @NonNull final String responseBodyAsString)
+	private AdempiereException createShipperException(
+			@NonNull final JSONDhlCreateOrderRequest dhlOrderRequest, 
+			@NonNull final HttpStatusCode statusCode,
+			@NonNull final String responseBodyAsString)
 	{
 		final ShipperGatewayException shipperGatewayException = //
 				new ShipperGatewayException("HttpClientErrorException with statusCode=" + statusCode);
@@ -383,7 +386,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					.map(JsonDhlItemResponse::getShipmentNo)
 					.collect(Collectors.joining(", "));
 			getEpicLogger().addLog("Sent {} orders to DHL, but got {} labels for them. Unclear how to perform matching of following AWBs: {}", deliveryOrderLineCount, responseItemsCount, awbs);
-			throw new ShipperGatewayException(String.format("Sent %d orders to DHL, but got %d labels for them. Unclear how to perform matching of following AWBs: %s", deliveryOrderLineCount, responseItemsCount, awbs));
+			throw new ShipperGatewayException("Sent %d orders to DHL, but got %d labels for them. Unclear how to perform matching of following AWBs: %s".formatted(deliveryOrderLineCount, responseItemsCount, awbs));
 		}
 
 		for (int i = 0; i < deliveryOrderLineCount; i++)

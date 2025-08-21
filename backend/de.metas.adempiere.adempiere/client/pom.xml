@@ -43,11 +43,11 @@
 		</dependency>
 		
 		<!-- Groovy script support -->
-		<dependency>
-			<!-- this shall be included on in Swing clients only -->
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-console</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			&lt;!&ndash; this shall be included on in Swing clients only &ndash;&gt;-->
+<!--			<groupId>org.codehaus.groovy</groupId>-->
+<!--			<artifactId>groovy-console</artifactId>-->
+<!--		</dependency>-->
 
 		<!--
 			Lombok

@@ -1,8 +1,9 @@
 package de.metas.dao.selection.pagination;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import lombok.NonNull;
+import java.io.Serial;
 
 /*
  * #%L
@@ -28,6 +29,7 @@ import lombok.NonNull;
 
 public class UnknownPageIdentifierException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -1833126347909632687L;
 
 	public UnknownPageIdentifierException(@NonNull final String pageIdentifier)

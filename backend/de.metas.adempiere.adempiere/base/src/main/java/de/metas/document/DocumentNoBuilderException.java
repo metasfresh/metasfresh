@@ -27,6 +27,8 @@ import de.metas.i18n.ITranslatableString;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * Exception thrown by {@link DocumentNoBuilderException} when building the document number failed.
  *
@@ -38,6 +40,7 @@ public class DocumentNoBuilderException extends AdempiereException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 2107154047622830909L;
 
 	/**
@@ -52,9 +55,9 @@ public class DocumentNoBuilderException extends AdempiereException
 		{
 			return null;
 		}
-		else if (throwable instanceof DocumentNoBuilderException)
+		else if (throwable instanceof DocumentNoBuilderException exception)
 		{
-			return (DocumentNoBuilderException)throwable;
+			return exception;
 		}
 		else
 		{

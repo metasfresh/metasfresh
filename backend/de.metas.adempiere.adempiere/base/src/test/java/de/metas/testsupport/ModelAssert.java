@@ -64,17 +64,15 @@ public class ModelAssert extends AbstractAssert<ModelAssert, Object>
 	{
 		final Object value = retrieveValueNotNull(column);
 
-		if (value instanceof BigDecimal)
+		if (value instanceof BigDecimal bdValue)
 		{
-			final BigDecimal bdValue = (BigDecimal)value;
 			if (bdValue.signum() <= 0)
 			{
 				failWithMessage("Expected column <%s> of \nmodel <%s>\nto be > 0, but is <%s>", column.getColumnName(), actual, bdValue);
 			}
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer intValue)
 		{
-			final Integer intValue = (Integer)value;
 
 			if (intValue <= 0)
 			{
@@ -99,7 +97,7 @@ public class ModelAssert extends AbstractAssert<ModelAssert, Object>
 	{
 		isNotNull();
 		final Optional<Object> value = InterfaceWrapperHelper.getValue(actual, column.getColumnName());
-		if (!value.isPresent())
+		if (value.isEmpty())
 		{
 			failWithMessage("Expected column <%s> of \nmodel <%s>\nto have a value", column.getColumnName(), actual);
 		}

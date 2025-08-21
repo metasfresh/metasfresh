@@ -76,7 +76,7 @@ public class FreshTwoReceiptssOneInvoice_FreshQualityDiscount2_Test extends TwoR
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, ignored);
 
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		assertThat(ic.getC_Invoice_Candidate_Agg()).isEqualTo(freshAgg);
 	}
@@ -85,7 +85,7 @@ public class FreshTwoReceiptssOneInvoice_FreshQualityDiscount2_Test extends TwoR
 	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
 	{
 		assertThat(invoices).as("We are expecting one invoice: " + invoices).hasSize(1);
-		final IInvoiceHeader invoice = invoices.remove(0);
+		final IInvoiceHeader invoice = invoices.removeFirst();
 		final I_C_Invoice_Candidate ic = CollectionUtils.singleElement(invoiceCandidates);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);

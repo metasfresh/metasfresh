@@ -214,7 +214,7 @@ public class HUPickingSlotBL
 		final List<IQueueActionResult> results = addToPickingSlotQueue(pickingSlot, Collections.singletonList(hu));
 		Check.assumeNotEmpty(results, "results not empty"); // shall not happen
 		Check.assume(results.size() == 1, "only one result was expected but we got {}", results); // shall not happen
-		return results.get(0);
+		return results.getFirst();
 	}
 
 	private List<IQueueActionResult> addToPickingSlotQueue(

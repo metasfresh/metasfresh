@@ -24,6 +24,8 @@ package org.adempiere.ad.trx.api.impl;
 
 import org.junit.jupiter.api.Disabled;
 
+import java.io.Serial;
+
 @Disabled
 public class MockedTrxRunnableException extends RuntimeException
 {
@@ -31,6 +33,7 @@ public class MockedTrxRunnableException extends RuntimeException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -7591933540037624603L;
 
 	public MockedTrxRunnableException(final String msg)

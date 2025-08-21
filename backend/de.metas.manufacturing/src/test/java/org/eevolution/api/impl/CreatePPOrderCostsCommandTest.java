@@ -96,7 +96,7 @@ public class CreatePPOrderCostsCommandTest
 		{
 			final List<PPOrderCost> componentCostsList = ppOrderCosts.getByProductAndCostElements(componentId, ImmutableSet.of(helper.costElement.getId()));
 			assertThat(componentCostsList).hasSize(1);
-			assertThat(componentCostsList.get(0).getPrice()).usingRecursiveComparison()
+			assertThat(componentCostsList.getFirst().getPrice()).usingRecursiveComparison()
 					.isEqualTo(CostPrice.builder()
 							.ownCostPrice(CostAmount.of("0.0667", helper.currencyId)) // = 1 EUR/Bag divided 15Kg
 							.componentsCostPrice(CostAmount.zero(helper.currencyId))
@@ -109,7 +109,7 @@ public class CreatePPOrderCostsCommandTest
 		{
 			final List<PPOrderCost> finishedGoodCostsList = ppOrderCosts.getByProductAndCostElements(finishedGoodsProductId, ImmutableSet.of(helper.costElement.getId()));
 			assertThat(finishedGoodCostsList).hasSize(1);
-			assertThat(finishedGoodCostsList.get(0).getPrice()).usingRecursiveComparison()
+			assertThat(finishedGoodCostsList.getFirst().getPrice()).usingRecursiveComparison()
 					.isEqualTo(CostPrice.builder()
 							.ownCostPrice(CostAmount.zero(helper.currencyId))
 							.componentsCostPrice(CostAmount.of("0.1334", helper.currencyId)) // = component cost price x 2(=200/100)
@@ -149,7 +149,7 @@ public class CreatePPOrderCostsCommandTest
 		{
 			final List<PPOrderCost> componentCostsList = ppOrderCosts.getByProductAndCostElements(componentId, ImmutableSet.of(helper.costElement.getId()));
 			assertThat(componentCostsList).hasSize(1);
-			assertThat(componentCostsList.get(0).getPrice()).usingRecursiveComparison()
+			assertThat(componentCostsList.getFirst().getPrice()).usingRecursiveComparison()
 					.isEqualTo(CostPrice.ownCostPrice(CostAmount.of("1", helper.currencyId), helper.uomBagId)); // = 1 EUR/Bag
 		}
 

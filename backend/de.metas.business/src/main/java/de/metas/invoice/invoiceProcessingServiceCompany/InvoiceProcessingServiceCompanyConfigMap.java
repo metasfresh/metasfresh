@@ -107,7 +107,7 @@ import java.util.Optional;
 			}
 		}
 
-		return Optional.of(configs.get(0));
+		return Optional.of(configs.getFirst());
 	}
 }
 

@@ -241,7 +241,7 @@ import de.metas.util.Services;
 					.setParameter("ppOrderRecord", _ppOrder);
 		}
 
-		_productionMaterial_Raw = rawProductionMaterials.get(0);
+		_productionMaterial_Raw = rawProductionMaterials.getFirst();
 		return _productionMaterial_Raw;
 	}
 
@@ -363,7 +363,7 @@ import de.metas.util.Services;
 		}
 		else if (productionMaterials.size() == 1)
 		{
-			return productionMaterials.get(0);
+			return productionMaterials.getFirst();
 		}
 		else
 		{

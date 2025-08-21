@@ -49,9 +49,8 @@ public final class IssueReportableExceptions
 		Throwable currentEx = exception;
 		while (currentEx != null)
 		{
-			if (currentEx instanceof IIssueReportableAware)
+			if (currentEx instanceof IIssueReportableAware issueReportable)
 			{
-				final IIssueReportableAware issueReportable = (IIssueReportableAware)currentEx;
 				issueReportable.markIssueReported(adIssueId);
 			}
 
@@ -73,9 +72,8 @@ public final class IssueReportableExceptions
 
 		while (currentEx != null)
 		{
-			if (currentEx instanceof IIssueReportableAware)
+			if (currentEx instanceof IIssueReportableAware issueReportable)
 			{
-				final IIssueReportableAware issueReportable = (IIssueReportableAware)currentEx;
 				if (issueReportable.isIssueReported())
 				{
 					return true;
@@ -91,9 +89,8 @@ public final class IssueReportableExceptions
 	@Nullable
 	public static AdIssueId getAdIssueIdOrNull(@NonNull final Throwable exception)
 	{
-		if (exception instanceof IIssueReportableAware)
+		if (exception instanceof IIssueReportableAware issueReportable)
 		{
-			final IIssueReportableAware issueReportable = (IIssueReportableAware)exception;
 			if (issueReportable.isIssueReported())
 			{
 				return issueReportable.getAdIssueId();

@@ -96,7 +96,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -862,7 +862,7 @@ public class XmlToOLCandsService
 		{
 			return null;
 		}
-		return online.getEmail().get(0);
+		return online.getEmail().getFirst();
 	}
 
 	private JsonExternalId createBPartnerExternalId(@NonNull final String eanParty)

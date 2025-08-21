@@ -195,7 +195,7 @@ public class QualityInvoiceLineGroupExpectation extends AbstractExpectation
 
 			assertThat(overridingDetail).as("overriding details: there shall be exactly one").hasSize(1);
 
-			overridingDetailException.assertExpected("overridingDetailException", overridingDetail.get(0));
+			overridingDetailException.assertExpected("overridingDetailException", overridingDetail.getFirst());
 		}
 
 		final List<I_C_Invoice_Detail> detailsBefore = retriveInvoiceDetails(ic, true);

@@ -241,8 +241,8 @@ public final class WebSocketProducersRegistry
 		{
 			this.topicName = topicName;
 			this.producerControls = producer;
-			this.onPollingEventsSupplier = (producer instanceof WebSocketProducer.ProduceEventsOnPollSupport)
-					? (WebSocketProducer.ProduceEventsOnPollSupport)producer
+			this.onPollingEventsSupplier = (producer instanceof WebSocketProducer.ProduceEventsOnPollSupport peops)
+					? peops
 					: null;
 			this.scheduler = scheduler;
 			this.websocketSender = websocketSender;

@@ -1,378 +1,378 @@
 exports[`purchase - vendor spec > Create a vendor with two contacts #0`] =
 [
   {
-    "fieldsByName" : {
+    "fieldsByName": {
       "AD_Client_ID": {
-        "displayed" : true,
-        "field" : "AD_Client_ID",
-        "lookupValuesStale" : true,
-        "mandatory" : true,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "AD_Client_ID",
-          "initialValue" : true,
-          "valid" : true
+        "displayed": true,
+        "field": "AD_Client_ID",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "AD_Client_ID",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : {
-          "caption" : "metasfresh",
-          "key" : "1000000"
+        "value": {
+          "caption": "metasfresh",
+          "key": "1000000"
         },
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "List"
+        "viewEditorRenderMode": "always",
+        "widgetType": "List"
       },
       "AD_Language": {
-        "displayed" : true,
-        "field" : "AD_Language",
-        "lookupValuesStale" : true,
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "AD_Language",
-          "initialValue" : true,
-          "valid" : true
+        "displayed": true,
+        "field": "AD_Language",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "AD_Language",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : {
-          "caption" : "English (US)",
-          "key" : "en_US"
+        "value": {
+          "caption": "English (US)",
+          "key": "en_US"
         },
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "List"
+        "viewEditorRenderMode": "always",
+        "widgetType": "List"
       },
       "AD_Org_ID": {
-        "displayed" : true,
-        "field" : "AD_Org_ID",
-        "lookupValuesStale" : true,
-        "mandatory" : true,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "AD_Org_ID",
-          "initialValue" : true,
-          "valid" : true
+        "displayed": true,
+        "field": "AD_Org_ID",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "AD_Org_ID",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : {
-          "caption" : "metasfresh AG",
-          "key" : "1000000"
+        "value": {
+          "caption": "metasfresh AG",
+          "key": "1000000"
         },
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "Lookup"
+        "viewEditorRenderMode": "always",
+        "widgetType": "Lookup"
       },
       "BPartner_Parent_ID": {
-        "displayed" : true,
-        "field" : "BPartner_Parent_ID",
-        "lookupValuesStale" : true,
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "BPartner_Parent_ID",
-          "initialValue" : true,
-          "valid" : true
+        "displayed": true,
+        "field": "BPartner_Parent_ID",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "BPartner_Parent_ID",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : null,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "Lookup"
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "Lookup"
       },
       "C_BP_Group_ID": {
-        "displayed" : true,
-        "field" : "C_BP_Group_ID",
-        "lookupValuesStale" : true,
-        "mandatory" : true,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "C_BP_Group_ID",
-          "initialValue" : true,
-          "valid" : true
+        "displayed": true,
+        "field": "C_BP_Group_ID",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "C_BP_Group_ID",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : {
-          "caption" : "Standard",
-          "key" : "1000000"
+        "value": {
+          "caption": "Standard",
+          "key": "1000000"
         },
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "List"
+        "viewEditorRenderMode": "always",
+        "widgetType": "List"
       },
-      "CreditLimitIndicator" : {
-        "displayed" : true,
-        "field" : "CreditLimitIndicator",
-        "mandatory" : false,
-        "readonly" : true,
-        "validStatus" : {
-          "fieldName" : "CreditLimitIndicator",
-          "initialValue" : true,
-          "valid" : true
+      "CreditLimitIndicator": {
+        "displayed": true,
+        "field": "CreditLimitIndicator",
+        "mandatory": false,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "CreditLimitIndicator",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : null,
-        "viewEditorRenderMode" : "never",
-        "widgetType" : "Text"
+        "value": null,
+        "viewEditorRenderMode": "never",
+        "widgetType": "Text"
       },
-      "Description" : {
-        "displayed" : true,
-        "field" : "Description",
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "Description",
-          "initialValue" : true,
-          "valid" : true
+      "Description": {
+        "displayed": true,
+        "field": "Description",
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "Description",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : null,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "Text"
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "Text"
       },
-      "IsActive" : {
-        "displayed" : true,
-        "field" : "IsActive",
-        "mandatory" : true,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "IsActive",
-          "initialValue" : true,
-          "valid" : true
+      "IsActive": {
+        "displayed": true,
+        "field": "IsActive",
+        "mandatory": true,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "IsActive",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : true,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "Switch"
+        "value": true,
+        "viewEditorRenderMode": "always",
+        "widgetType": "Switch"
       },
-      "IsCompany" : {
-        "displayed" : true,
-        "field" : "IsCompany",
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "IsCompany",
-          "initialValue" : true,
-          "valid" : true
+      "IsCompany": {
+        "displayed": true,
+        "field": "IsCompany",
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "IsCompany",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : true,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "YesNo"
+        "value": true,
+        "viewEditorRenderMode": "always",
+        "widgetType": "YesNo"
       },
-      "IsEdiRecipient" : {
-        "displayed" : true,
-        "field" : "IsEdiRecipient",
-        "mandatory" : true,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "IsEdiRecipient",
-          "initialValue" : true,
-          "valid" : true
+      "IsEdiRecipient": {
+        "displayed": true,
+        "field": "IsEdiRecipient",
+        "mandatory": true,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "IsEdiRecipient",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : false,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "YesNo"
+        "value": false,
+        "viewEditorRenderMode": "always",
+        "widgetType": "YesNo"
       },
-      "IsProducerAllotment" : {
-        "displayed" : true,
-        "field" : "IsProducerAllotment",
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "IsProducerAllotment",
-          "initialValue" : true,
-          "valid" : true
+      "IsProducerAllotment": {
+        "displayed": true,
+        "field": "IsProducerAllotment",
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "IsProducerAllotment",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : false,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "YesNo"
+        "value": false,
+        "viewEditorRenderMode": "always",
+        "widgetType": "YesNo"
       },
-      "IsReplicationLookupDefault" : {
-        "displayed" : true,
-        "field" : "IsReplicationLookupDefault",
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "IsReplicationLookupDefault",
-          "initialValue" : true,
-          "valid" : true
+      "IsReplicationLookupDefault": {
+        "displayed": true,
+        "field": "IsReplicationLookupDefault",
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "IsReplicationLookupDefault",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : false,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "YesNo"
+        "value": false,
+        "viewEditorRenderMode": "always",
+        "widgetType": "YesNo"
       },
       "Labels_548674": {
-        "displayed" : true,
-        "field" : "Labels_548674",
-        "lookupValuesStale" : true,
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "Labels_548674",
-          "initialValue" : true,
-          "valid" : true
+        "displayed": true,
+        "field": "Labels_548674",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "Labels_548674",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : {
-          "values" : []
+        "value": {
+          "values": []
         },
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "Labels"
+        "viewEditorRenderMode": "always",
+        "widgetType": "Labels"
       },
       "Labels_554470": {
-        "displayed" : true,
-        "field" : "Labels_554470",
-        "lookupValuesStale" : true,
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "Labels_554470",
-          "initialValue" : true,
-          "valid" : true
+        "displayed": true,
+        "field": "Labels_554470",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "Labels_554470",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : {
-          "values" : []
+        "value": {
+          "values": []
         },
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "Labels"
+        "viewEditorRenderMode": "always",
+        "widgetType": "Labels"
       },
       "M_FreightCost_ID": {
-        "displayed" : true,
-        "field" : "M_FreightCost_ID",
-        "lookupValuesStale" : true,
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "M_FreightCost_ID",
-          "initialValue" : true,
-          "valid" : true
+        "displayed": true,
+        "field": "M_FreightCost_ID",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "M_FreightCost_ID",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : null,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "List"
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "List"
       },
       "M_Shipper_ID": {
-        "displayed" : true,
-        "field" : "M_Shipper_ID",
-        "lookupValuesStale" : true,
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "M_Shipper_ID",
-          "initialValue" : true,
-          "valid" : true
+        "displayed": true,
+        "field": "M_Shipper_ID",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "M_Shipper_ID",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : null,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "List"
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "List"
       },
-      "URL" : {
-        "displayed" : true,
-        "field" : "URL",
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "URL",
-          "initialValue" : true,
-          "valid" : true
+      "URL": {
+        "displayed": true,
+        "field": "URL",
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "URL",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : null,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "Link"
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "Link"
       },
-      "VATaxID" : {
-        "displayed" : true,
-        "field" : "VATaxID",
-        "mandatory" : false,
-        "readonly" : false,
-        "validStatus" : {
-          "fieldName" : "VATaxID",
-          "initialValue" : true,
-          "valid" : true
+      "VATaxID": {
+        "displayed": true,
+        "field": "VATaxID",
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "VATaxID",
+          "initialValue": true,
+          "valid": true
         },
-        "value" : null,
-        "viewEditorRenderMode" : "always",
-        "widgetType" : "Text"
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "Text"
       }
     },
-    "includedTabsInfo" : {
+    "includedTabsInfo": {
       "AD_Tab-222": {
-        "allowCreateNew" : true,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-222"
+        "allowCreateNew": true,
+        "allowDelete": true,
+        "tabid": "AD_Tab-222"
       },
       "AD_Tab-223": {
-        "allowCreateNew" : false,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-223"
+        "allowCreateNew": false,
+        "allowDelete": true,
+        "tabid": "AD_Tab-223"
       },
       "AD_Tab-224": {
-        "allowCreateNew" : false,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-224"
+        "allowCreateNew": false,
+        "allowDelete": true,
+        "tabid": "AD_Tab-224"
       },
       "AD_Tab-226": {
-        "allowCreateNew" : true,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-226"
+        "allowCreateNew": true,
+        "allowDelete": true,
+        "tabid": "AD_Tab-226"
       },
       "AD_Tab-496": {
-        "allowCreateNew" : true,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-496"
+        "allowCreateNew": true,
+        "allowDelete": true,
+        "tabid": "AD_Tab-496"
       },
       "AD_Tab-540653": {
-        "allowCreateNew" : true,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-540653"
+        "allowCreateNew": true,
+        "allowDelete": true,
+        "tabid": "AD_Tab-540653"
       },
       "AD_Tab-540737": {
-        "allowCreateNew" : false,
-        "allowCreateNewReason" : "Tab is readonly",
-        "allowDelete" : false,
-        "allowDeleteReason" : "Tab is readonly",
-        "tabid" : "AD_Tab-540737"
+        "allowCreateNew": false,
+        "allowCreateNewReason": "Tab is readonly",
+        "allowDelete": false,
+        "allowDeleteReason": "Tab is readonly",
+        "tabid": "AD_Tab-540737"
       },
       "AD_Tab-540739": {
-        "allowCreateNew" : false,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-540739"
+        "allowCreateNew": false,
+        "allowDelete": true,
+        "tabid": "AD_Tab-540739"
       },
       "AD_Tab-540829": {
-        "allowCreateNew" : false,
-        "allowCreateNewReason" : "Tab is readonly",
-        "allowDelete" : false,
-        "allowDeleteReason" : "Tab is readonly",
-        "tabid" : "AD_Tab-540829"
+        "allowCreateNew": false,
+        "allowCreateNewReason": "Tab is readonly",
+        "allowDelete": false,
+        "allowDeleteReason": "Tab is readonly",
+        "tabid": "AD_Tab-540829"
       },
       "AD_Tab-540994": {
-        "allowCreateNew" : true,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-540994"
+        "allowCreateNew": true,
+        "allowDelete": true,
+        "tabid": "AD_Tab-540994"
       },
       "AD_Tab-541077": {
-        "allowCreateNew" : true,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-541077"
+        "allowCreateNew": true,
+        "allowDelete": true,
+        "tabid": "AD_Tab-541077"
       },
       "AD_Tab-541096": {
-        "allowCreateNew" : true,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-541096"
+        "allowCreateNew": true,
+        "allowDelete": true,
+        "tabid": "AD_Tab-541096"
       },
       "AD_Tab-541154": {
-        "allowCreateNew" : false,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-541154"
+        "allowCreateNew": false,
+        "allowDelete": true,
+        "tabid": "AD_Tab-541154"
       },
       "AD_Tab-541155": {
-        "allowCreateNew" : true,
-        "allowDelete" : true,
-        "tabid" : "AD_Tab-541155"
+        "allowCreateNew": true,
+        "allowDelete": true,
+        "tabid": "AD_Tab-541155"
       }
     },
-    "saveStatus" : {
-      "deleted" : false,
-      "error" : false,
-      "hasChanges" : false,
-      "reason" : "just loaded",
-      "saved" : true
+    "saveStatus": {
+      "deleted": false,
+      "error": false,
+      "hasChanges": false,
+      "reason": "just loaded",
+      "saved": true
     },
-    "standardActions" : [
+    "standardActions": [
       "new",
       "advancedEdit",
       "email",
       "letter",
       "delete"
     ],
-    "validStatus" : {
-      "valid" : true
+    "validStatus": {
+      "valid": true
     },
-    "windowId" : "123"
+    "windowId": "123"
   }
 ];

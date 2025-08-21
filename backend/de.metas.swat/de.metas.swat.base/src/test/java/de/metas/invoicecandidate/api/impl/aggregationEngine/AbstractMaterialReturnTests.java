@@ -119,7 +119,7 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 
 		final SoftAssertions softly = new SoftAssertions();
 
-		final IInvoiceHeader invoice1 = invoices.remove(0);
+		final IInvoiceHeader invoice1 = invoices.removeFirst();
 		softly.assertThat(invoice1.getPOReference()).isEqualTo(IC_PO_REFERENCE);
 		softly.assertThat(invoice1.getDateAcct()).isEqualTo(IC_DATE_ACCT); // task 08437
 

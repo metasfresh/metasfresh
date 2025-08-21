@@ -140,7 +140,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 		final I_DD_OrderLine
 
-				ddOrderLine = ddOrderLines.get(0);
+				ddOrderLine = ddOrderLines.getFirst();
 
 		assertThat(ddOrderLine.getM_Locator_ID()).isEqualTo(receiptLocator.getM_Locator_ID());
 		assertThat(ddOrderLine.getM_LocatorTo_ID()).isEqualTo(transitLocator.getM_Locator_ID());

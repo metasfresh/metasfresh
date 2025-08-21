@@ -22,11 +22,11 @@
 
 package de.metas.shipper.gateway.dhl.json;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 @Value

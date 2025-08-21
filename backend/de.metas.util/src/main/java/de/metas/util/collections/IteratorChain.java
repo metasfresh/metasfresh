@@ -71,14 +71,14 @@ public class IteratorChain<E> implements Iterator<E>, Closeable
 
 		while (!iterators.isEmpty())
 		{
-			final Iterator<E> it = iterators.get(0);
+			final Iterator<E> it = iterators.getFirst();
 			final boolean hasNext = it.hasNext();
 			if (hasNext)
 			{
 				return true;
 			}
 
-			final Iterator<E> removedIterator = iterators.remove(0);
+			final Iterator<E> removedIterator = iterators.removeFirst();
 			IteratorUtils.close(removedIterator);
 		}
 
@@ -89,13 +89,13 @@ public class IteratorChain<E> implements Iterator<E>, Closeable
 	public E next()
 	{
 		addingLocked = true;
-		return iterators.get(0).next();
+		return iterators.getFirst().next();
 	}
 
 	@Override
 	public void remove()
 	{
-		iterators.get(0).remove();
+		iterators.getFirst().remove();
 		addingLocked = true;
 	}
 

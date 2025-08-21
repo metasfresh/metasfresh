@@ -22,10 +22,10 @@ package org.adempiere.ad.validationRule.impl;
  * #L%
  */
 
+import org.adempiere.ad.validationRule.IValidationContext;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.adempiere.ad.validationRule.IValidationContext;
 
 /**
  * Simple validation context. Can be used for testing.
@@ -68,7 +68,7 @@ public class PlainValidationContext implements IValidationContext
 	@Override
 	public String toString()
 	{
-		return String.format("PlainValidationContext [contextTableName=%s, tableName=%s, values=%s]", contextTableName, tableName, values);
+		return "PlainValidationContext [contextTableName=%s, tableName=%s, values=%s]".formatted(contextTableName, tableName, values);
 	}
 
 }

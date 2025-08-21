@@ -52,7 +52,7 @@ public class C_OrderFacadeService
 	public void syncOrderToCommissionInstance(@NonNull final I_C_Order order, final boolean isReactivated)
 	{
 		final Optional<MediatedOrder> mediatedOrder = mediatedOrderFactory.forRecord(order);
-		if (!mediatedOrder.isPresent())
+		if (mediatedOrder.isEmpty())
 		{
 			logger.debug("The C_Order is not commission-relevant; -> nothing to do");
 			return;

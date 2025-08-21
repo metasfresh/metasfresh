@@ -236,9 +236,8 @@ class DocumentField implements IDocumentField
 		//
 		// If we are dealing with a lookup value, make, sure it's translated (see https://github.com/metasfresh/metasfresh-webui-api/issues/311 )
 		final LookupDataSource lookupDataSource = getLookupDataSourceOrNull();
-		if (lookupDataSource != null && value instanceof LookupValue)
+		if (lookupDataSource != null && value instanceof LookupValue lookupValue)
 		{
-			final LookupValue lookupValue = (LookupValue)value;
 			final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
 			if (!displayNameTrl.isTranslatedTo(jsonOpts.getAdLanguage()))
 			{
@@ -308,21 +307,21 @@ class DocumentField implements IDocumentField
 		//
 
 		// Apply number precision
-		if (valueConv instanceof BigDecimal)
+		if (valueConv instanceof BigDecimal decimal)
 		{
 			final OptionalInt minPrecision = getDescriptor().getMinPrecision();
 			if (minPrecision.isPresent())
 			{
-				return NumberUtils.setMinimumScale((BigDecimal)valueConv, minPrecision.getAsInt());
+				return NumberUtils.setMinimumScale(decimal, minPrecision.getAsInt());
 			}
 			else
 			{
-				return NumberUtils.stripTrailingDecimalZeros((BigDecimal)valueConv);
+				return NumberUtils.stripTrailingDecimalZeros(decimal);
 			}
 		}
-		else if (valueConv instanceof String)
+		else if (valueConv instanceof String string)
 		{
-			if (((String)valueConv).isEmpty())
+			if (string.isEmpty())
 			{
 				return null;
 			}

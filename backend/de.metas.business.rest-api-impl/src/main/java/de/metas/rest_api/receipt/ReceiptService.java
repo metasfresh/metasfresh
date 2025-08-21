@@ -144,8 +144,7 @@ public class ReceiptService
 		final ImmutableSet<ReceiptScheduleId> updatedScheduleIds = request.getJsonCreateReceiptInfoList()
 				.stream()
 				.map(this::toApplyReceiptScheduleChangesRequest)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.peek(receiptScheduleBL::applyReceiptScheduleChanges)
 				.map(ApplyReceiptScheduleChangesRequest::getReceiptScheduleId)
 				.collect(ImmutableSet.toImmutableSet());

@@ -268,7 +268,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			}
 			else
 			{
-				return Optional.of(plantIds.get(0));
+				return Optional.of(plantIds.getFirst());
 			}
 		}
 	}

@@ -55,7 +55,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 				workpackages.size(), processedWorkpackages.size(), "Processed workpackages list shall have same size as initial workpackages list");
 
 		InterfaceWrapperHelper.refresh(workpackages.get(7));
-		Assertions.assertEquals(workpackages.get(7), processedWorkpackages.get(0), "Priority 1 packages shall be processed first");
+		Assertions.assertEquals(workpackages.get(7), processedWorkpackages.getFirst(), "Priority 1 packages shall be processed first");
 
 		for (final I_C_Queue_WorkPackage wp : processedWorkpackages)
 		{

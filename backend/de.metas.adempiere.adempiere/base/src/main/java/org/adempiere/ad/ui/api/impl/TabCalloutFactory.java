@@ -237,16 +237,15 @@ public class TabCalloutFactory implements ITabCalloutFactory
 		final CompositeTabCallout.Builder tabCalloutsBuilder = CompositeTabCallout.builder();
 		for (final Object tabCalloutObj : tabCalloutsList)
 		{
-			if (tabCalloutObj instanceof Class)
+			if (tabCalloutObj instanceof Class<?> tabCalloutClass)
 			{
 				try
 				{
-					final Class<?> tabCalloutClass = (Class<?>)tabCalloutObj;
 					final ITabCallout tabCalloutInstance = Util.newInstance(ITabCallout.class, tabCalloutClass);
 
-					if (tabCalloutInstance instanceof IStatefulTabCallout)
+					if (tabCalloutInstance instanceof IStatefulTabCallout callout)
 					{
-						((IStatefulTabCallout)tabCalloutInstance).onInit(calloutRecord);
+						callout.onInit(calloutRecord);
 					}
 
 					tabCalloutsBuilder.addTabCallout(tabCalloutInstance);
@@ -256,9 +255,8 @@ public class TabCalloutFactory implements ITabCalloutFactory
 					logger.warn("Failed to initialize {}. Ignored.", tabCalloutObj, e);
 				}
 			}
-			else if (tabCalloutObj instanceof ITabCallout)
+			else if (tabCalloutObj instanceof ITabCallout tabCallout)
 			{
-				final ITabCallout tabCallout = (ITabCallout)tabCalloutObj;
 				tabCalloutsBuilder.addTabCallout(tabCallout);
 			}
 			else

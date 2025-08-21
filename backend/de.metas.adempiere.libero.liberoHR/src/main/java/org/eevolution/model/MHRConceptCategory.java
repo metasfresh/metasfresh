@@ -3,6 +3,7 @@
  */
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -18,10 +19,11 @@ import de.metas.cache.CCache;
  */
 public class MHRConceptCategory extends X_HR_Concept_Category
 {
-	
+
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 8470029939291479283L;
 
 	private static CCache<Integer, MHRConceptCategory> s_cache = new CCache<Integer, MHRConceptCategory>(Table_Name, 20);

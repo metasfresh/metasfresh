@@ -30,6 +30,7 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
 import javax.annotation.concurrent.Immutable;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -64,6 +65,7 @@ public final class OrgPermission extends AbstractPermission implements Serializa
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 6649713070452921967L;
 
 	private final OrgResource resource;

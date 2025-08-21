@@ -810,7 +810,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		if (!bpLocations.isEmpty())
 		{
-			final I_C_BPartner_Location loc = bpLocations.get(0);
+			final I_C_BPartner_Location loc = bpLocations.getFirst();
 			return BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID());
 		}
 

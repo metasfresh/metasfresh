@@ -173,7 +173,7 @@ public final class CollectionUtils
 
 		final int size = result.size();
 		Check.assume(size == 1, "One and only one matching element was expected but we got {}: {}", size, result);
-		return result.get(0);
+		return result.getFirst();
 	}
 
 	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection)
@@ -230,7 +230,7 @@ public final class CollectionUtils
 		}
 		else if (result.size() == 1)
 		{
-			return Optional.of(result.get(0));
+			return Optional.of(result.getFirst());
 		}
 		else
 		{
@@ -628,7 +628,7 @@ public final class CollectionUtils
 						keyFunction,
 						Function.identity(),
 						(u, v) -> {
-							throw new IllegalStateException(String.format("Duplicate key %s", u));
+							throw new IllegalStateException("Duplicate key %s".formatted(u));
 						},
 						LinkedHashMap::new));
 	}

@@ -216,7 +216,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 		{
 			throw new HUException("One and only one VHU was expected but we got: " + hus);
 		}
-		final I_M_HU vhu = hus.get(0);
+		final I_M_HU vhu = hus.getFirst();
 
 		updateAttributes(vhu, receiptSchedule);
 

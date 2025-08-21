@@ -70,7 +70,7 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	@Override
 	public int getColumnCount()
 	{
-		return m_data.get(0).size();
+		return m_data.getFirst().size();
 	}
 
 	@Override

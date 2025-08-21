@@ -105,7 +105,7 @@ public class HUTransformTestsBase
 			final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 
 			assertThat(createdTUs).hasSize(1);
-			sourceTU = createdTUs.get(0);
+			sourceTU = createdTUs.getFirst();
 
 			huStatusBL.setHUStatus(data.helper.getHUContext(), sourceTU, X_M_HU.HUSTATUS_Active);
 			M_HU.INSTANCE.updateChildren(sourceTU);
@@ -119,10 +119,10 @@ public class HUTransformTestsBase
 			XmlAssert.assertThat(sourceTUBeforeSplitXML).valueByXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("2.000");
 			XmlAssert.assertThat(sourceTUBeforeSplitXML).valueByXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("2.000");
 
-			final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTUs.get(0));
+			final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTUs.getFirst());
 			assertThat(createdCUs).hasSize(1);
 
-			cuToSplit = createdCUs.get(0);
+			cuToSplit = createdCUs.getFirst();
 		}
 
 		// invoke the method under test
@@ -140,7 +140,7 @@ public class HUTransformTestsBase
 		XmlAssert.assertThat(cuToSplitXML).valueByXPath("count(HU-VirtualPI[@HUStatus='A'])").isEqualTo("1");
 		XmlAssert.assertThat(cuToSplitXML).valueByXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 
-		final Node newCUXML = HUXmlConverter.toXml(newCUs.get(0));
+		final Node newCUXML = HUXmlConverter.toXml(newCUs.getFirst());
 		XmlAssert.assertThat(newCUXML).doesNotHaveXPath("HU-VirtualPI/M_HU_Item_Parent_ID"); // verify that there is no parent HU
 		XmlAssert.assertThat(newCUXML).valueByXPath("count(HU-VirtualPI[@HUStatus='A'])").isEqualTo("1");
 		XmlAssert.assertThat(newCUXML).valueByXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
@@ -160,7 +160,7 @@ public class HUTransformTestsBase
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("3"), data.helper.uomKg));
 		assertThat(newCUs).hasSize(1);
-		assertThat(newCUs.get(0)).isSameAs(cuToSplit);
+		assertThat(newCUs.getFirst()).isSameAs(cuToSplit);
 
 		return TestHUs.builder().input(cuToSplit).output(newCUs).build();
 	}
@@ -176,7 +176,7 @@ public class HUTransformTestsBase
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("5"), data.helper.uomKg));
 		assertThat(newCUs).hasSize(1);
-		assertThat(newCUs.get(0)).isSameAs(cuToSplit);
+		assertThat(newCUs.getFirst()).isSameAs(cuToSplit);
 
 		return TestHUs.builder().input(cuToSplit).output(newCUs).build();
 	}
@@ -200,7 +200,7 @@ public class HUTransformTestsBase
 								data.helper.uomKg));
 
 		assertThat(newCUs).hasSize(1);
-		assertThat(newCUs.get(0).getM_HU_ID()).isEqualTo(cuToSplit.getM_HU_ID());
+		assertThat(newCUs.getFirst().getM_HU_ID()).isEqualTo(cuToSplit.getM_HU_ID());
 		assertThat(handlingUnitsDAO.retrieveIncludedHUs(parentTU)).isEmpty();
 		Assertions.assertThat(cuToSplit.getM_HU_Item_Parent()).isNull();
 
@@ -239,7 +239,7 @@ public class HUTransformTestsBase
 		XmlAssert.assertThat(parentOfCUToSplitXML).valueByXPath("HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("39.000");
 		XmlAssert.assertThat(parentOfCUToSplitXML).valueByXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("40.000");
 
-		final Node newTUXML = HUXmlConverter.toXml(newTUs.get(0));
+		final Node newTUXML = HUXmlConverter.toXml(newTUs.getFirst());
 		XmlAssert.assertThat(newTUXML).valueByXPath("HU-TU_Bag/@HUStatus").isEqualTo("A");
 		XmlAssert.assertThat(newTUXML).valueByXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
 		XmlAssert.assertThat(newTUXML).valueByXPath("count(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])").isEqualTo("1");

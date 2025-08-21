@@ -12,9 +12,9 @@ public final class WorkpackageProcessor2Wrapper extends WorkpackageProcessorAdap
 {
 	public static IWorkpackageProcessor2 wrapIfNeeded(final IWorkpackageProcessor workpackageProcessor)
 	{
-		if (workpackageProcessor instanceof IWorkpackageProcessor2)
+		if (workpackageProcessor instanceof IWorkpackageProcessor2 processor2)
 		{
-			return (IWorkpackageProcessor2)workpackageProcessor;
+			return processor2;
 		}
 		else
 		{

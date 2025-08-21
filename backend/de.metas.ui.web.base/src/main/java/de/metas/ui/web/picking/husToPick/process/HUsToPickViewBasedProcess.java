@@ -47,7 +47,7 @@ import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		final Optional<HUEditorRow> anyHU = retrieveEligibleHUEditorRows().findAny();
-		if (!anyHU.isPresent())
+		if (anyHU.isEmpty())
 		{
 			final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU);
 			return ProcessPreconditionsResolution.reject(reason);

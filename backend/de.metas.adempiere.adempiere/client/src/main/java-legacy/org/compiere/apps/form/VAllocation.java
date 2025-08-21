@@ -254,7 +254,7 @@ public class VAllocation extends Allocation
 		final MLookupFactory lookupFactory = MLookupFactory.newInstance();
 		MLookup lookupCur = lookupFactory.get (Env.getCtx(), m_WindowNo, 0, AD_Column_ID, DisplayType.TableDir);
 		currencyPick = new VLookup("C_Currency_ID", true, false, true, lookupCur);
-		currencyPick.setValue(new Integer(m_C_Currency_ID));
+		currencyPick.setValue(Integer.valueOf(m_C_Currency_ID));
 		currencyPick.addVetoableChangeListener(this);
 
 		// Organization filter selection

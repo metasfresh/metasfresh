@@ -76,13 +76,12 @@ public final class TableRecordReference implements ITableRecordReference
 	 */
 	public static TableRecordReference of(@NonNull final Object model)
 	{
-		if (model instanceof TableRecordReference)
+		if (model instanceof TableRecordReference reference)
 		{
-			return (TableRecordReference)model;
+			return reference;
 		}
-		else if (model instanceof ITableRecordReference)
+		else if (model instanceof ITableRecordReference recordRef)
 		{
-			final ITableRecordReference recordRef = (ITableRecordReference)model;
 			return new TableRecordReference(recordRef.getTableName(), recordRef.getRecord_ID());
 		}
 		else
@@ -179,7 +178,7 @@ public final class TableRecordReference implements ITableRecordReference
 
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
-		if (!adTableId.isPresent() || !recordId.isPresent())
+		if (adTableId.isEmpty() || recordId.isEmpty())
 		{
 			return null;
 		}
@@ -269,9 +268,9 @@ public final class TableRecordReference implements ITableRecordReference
 		}
 
 		final int recordId;
-		if (recordIdObj instanceof Number)
+		if (recordIdObj instanceof Number number)
 		{
-			recordId = ((Number)recordIdObj).intValue();
+			recordId = number.intValue();
 		}
 		else
 		{
@@ -372,9 +371,8 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			return true;
 		}
-		else if (obj instanceof TableRecordReference)
+		else if (obj instanceof TableRecordReference other)
 		{
-			final TableRecordReference other = (TableRecordReference)obj;
 			return Objects.equals(this.tableName, other.tableName)
 					&& this.recordId == other.recordId;
 		}

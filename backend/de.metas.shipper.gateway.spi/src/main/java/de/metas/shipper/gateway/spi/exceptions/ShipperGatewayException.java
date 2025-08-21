@@ -53,7 +53,7 @@ public class ShipperGatewayException extends RuntimeException
 		}
 		else if (shipperErrorMessages.size() == 1)
 		{
-			final ShipperErrorMessage shipperErrorMessage = shipperErrorMessages.get(0);
+			final ShipperErrorMessage shipperErrorMessage = shipperErrorMessages.getFirst();
 			return shipperErrorMessage.getMessage();
 		}
 		else

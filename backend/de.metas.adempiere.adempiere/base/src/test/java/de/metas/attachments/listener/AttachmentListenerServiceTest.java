@@ -42,7 +42,7 @@ import java.time.ZonedDateTime;
 
 import static de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 
 public class AttachmentListenerServiceTest
 {
@@ -85,8 +85,8 @@ public class AttachmentListenerServiceTest
 		final ImmutableList<AttachmentListenerActionResult> result = tableAttachmentListenerService.fireAfterRecordLinked(attachmentEntryMock, tableRecordReferenceMock);
 
 		assertEquals(1, result.size());
-		assertEquals(SUCCESS, result.get(0).getStatus());
-		assertEquals(DumbAttachmentListener.class, result.get(0).getListener().getClass());
+		assertEquals(SUCCESS, result.getFirst().getStatus());
+		assertEquals(DumbAttachmentListener.class, result.getFirst().getListener().getClass());
 	}
 
 	private void prepareJavaClassTypeMockRecord()

@@ -2,6 +2,8 @@ package de.metas.monitoring.exception;
 
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.monitoring
@@ -34,6 +36,7 @@ public class MonitoringException extends RuntimeException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 575751167769268313L;
 
 	public MonitoringException(String message, Throwable cause)

@@ -127,7 +127,7 @@ public class DeviceAccessorsHub
 			}
 			catch (final Exception e)
 			{
-				final String msg = String.format("Unable to access device identified by %s. Details:\n%s", deviceConfig, e.getLocalizedMessage());
+				final String msg = "Unable to access device identified by %s. Details:\n%s".formatted(deviceConfig, e.getLocalizedMessage());
 				logger.warn(msg + ". Skipped", e);
 
 				if (warningMessage.length() > 0)

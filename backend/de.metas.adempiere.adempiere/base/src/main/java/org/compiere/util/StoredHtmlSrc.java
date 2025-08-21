@@ -25,6 +25,7 @@ package org.compiere.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serial;
 import java.net.URL;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
@@ -37,7 +38,8 @@ import org.apache.ecs.Printable;
  *  Load html-src (text) stored in JAR, e.g. to load a style-sheet
  */
 public class StoredHtmlSrc extends MultiPartElement implements Printable {
-	
+
+	@Serial
 	private static final long serialVersionUID = 50303119083373138L;
 	
 	/**	Logger					*/

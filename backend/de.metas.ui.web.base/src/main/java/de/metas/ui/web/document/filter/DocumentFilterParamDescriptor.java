@@ -155,7 +155,7 @@ public class DocumentFilterParamDescriptor
 
 		// Convert empty string to null
 		// This is a workaround until task https://github.com/metasfresh/metasfresh-webui-frontend/issues/2040 is done.
-		if (valueConv instanceof String && ((String)valueConv).isEmpty())
+		if (valueConv instanceof String string && string.isEmpty())
 		{
 			valueConv = null;
 			logger.warn("Converted empty string to null for value={}, descriptor={}. \n This issue shall be solved by https://github.com/metasfresh/metasfresh-webui-frontend/issues/2040.", value, this);

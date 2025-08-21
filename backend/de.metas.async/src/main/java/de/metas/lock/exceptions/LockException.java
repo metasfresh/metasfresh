@@ -33,6 +33,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import java.io.Serial;
 import java.util.Arrays;
 
 /**
@@ -47,6 +49,7 @@ import java.util.Arrays;
  */
 public abstract class LockException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -2526563115872381426L;
 
 	private String sql;

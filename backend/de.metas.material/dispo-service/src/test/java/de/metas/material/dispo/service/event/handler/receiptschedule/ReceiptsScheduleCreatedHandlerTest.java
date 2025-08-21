@@ -119,7 +119,7 @@ public class ReceiptsScheduleCreatedHandlerTest
 		// Check SUPPLY candidates
 		final List<I_MD_Candidate> supplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
 		assertThat(supplyCandidates).hasSize(1);
-		final I_MD_Candidate supplyCandidate = supplyCandidates.get(0);
+		final I_MD_Candidate supplyCandidate = supplyCandidates.getFirst();
 
 		assertThat(supplyCandidate.getM_Product_ID()).isEqualTo(eventMaterialDescriptor.getProductId());
 		assertThat(supplyCandidate.getQty()).isEqualByComparingTo(eventMaterialDescriptor.getQuantity());
@@ -129,7 +129,7 @@ public class ReceiptsScheduleCreatedHandlerTest
 		// Check PURCHASE DETAILS
 		final List<I_MD_Candidate_Purchase_Detail> purchaseDetails = POJOLookupMap.get().getRecords(I_MD_Candidate_Purchase_Detail.class);
 		assertThat(purchaseDetails).hasSize(1);
-		final I_MD_Candidate_Purchase_Detail purchaseDetail = purchaseDetails.get(0);
+		final I_MD_Candidate_Purchase_Detail purchaseDetail = purchaseDetails.getFirst();
 		assertThat(purchaseDetail.getMD_Candidate_ID()).isEqualTo(supplyCandidate.getMD_Candidate_ID());
 		assertThat(purchaseDetail.getC_OrderLinePO_ID()).isEqualTo(40);
 		assertThat(purchaseDetail.getM_ReceiptSchedule_ID()).isEqualTo(70);
@@ -139,7 +139,7 @@ public class ReceiptsScheduleCreatedHandlerTest
 		//
 		// Check STOCK candidates
 		final List<I_MD_Candidate> stockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
-		final I_MD_Candidate stockCandidate = stockCandidates.get(0);
+		final I_MD_Candidate stockCandidate = stockCandidates.getFirst();
 		assertThat(stockCandidate.getM_Product_ID()).isEqualTo(eventMaterialDescriptor.getProductId());
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo(eventMaterialDescriptor.getQuantity());
 		assertThat(stockCandidate.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(eventMaterialDescriptor.getDate()));

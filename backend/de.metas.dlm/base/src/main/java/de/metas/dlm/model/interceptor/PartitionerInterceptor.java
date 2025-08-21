@@ -136,7 +136,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 
 			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 			final Optional<PartitionerConfigLine> configLine = config.getLine(tableName);
-			if (!configLine.isPresent())
+			if (configLine.isEmpty())
 			{
 				// The line was deleted since we were registered for "tableName".
 				// We can expect the DLM_Partition_Config_Line interceptor to unregister us shortly
@@ -199,7 +199,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 
 			final ITableRecordReference recordReference = TableRecordReference.ofReferencedOrNull(model);
 			final Optional<PartitionerConfigLine> referencedLine = config.getLine(recordReference.getTableName());
-			if (!referencedLine.isPresent())
+			if (referencedLine.isEmpty())
 			{
 				return; // the table we are referencing is not part of DLM; nothing to do
 			}

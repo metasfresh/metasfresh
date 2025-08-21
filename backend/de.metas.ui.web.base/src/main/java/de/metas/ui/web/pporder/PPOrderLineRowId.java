@@ -93,7 +93,7 @@ public class PPOrderLineRowId
 			throw new IllegalArgumentException("Invalid id: " + parts);
 		}
 
-		final PPOrderLineRowType type = PPOrderLineRowType.forCode(parts.get(0));
+		final PPOrderLineRowType type = PPOrderLineRowType.forCode(parts.getFirst());
 		final DocumentId parentRowId = !Check.isEmpty(parts.get(1), true) ? DocumentId.of(parts.get(1)) : null;
 		final int recordId = Integer.parseInt(parts.get(2));
 

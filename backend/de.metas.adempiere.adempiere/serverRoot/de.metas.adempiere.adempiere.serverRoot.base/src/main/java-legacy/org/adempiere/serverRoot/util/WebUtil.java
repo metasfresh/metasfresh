@@ -1,5 +1,13 @@
 package org.adempiere.serverRoot.util;
 
+import de.metas.logging.LogManager;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.compiere.util.WebDoc;
+import org.slf4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,16 +17,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.compiere.util.WebDoc;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
 
 /*
  * #%L

@@ -86,7 +86,7 @@ public final class JSONDocument extends JSONDocumentBase
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
 
 			// Add pseudo "ID" field first
-			jsonFields.add(0, JSONDocumentField.idField(document.getDocumentIdAsJson()));
+			jsonFields.addFirst(JSONDocumentField.idField(document.getDocumentIdAsJson()));
 
 			// Append the other fields
 			document.getFieldViews()

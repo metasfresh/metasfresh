@@ -4,6 +4,8 @@ package de.metas.fresh.partnerreporttext.model;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -16,6 +18,7 @@ import java.util.Properties;
 public class X_C_BPartner_Report_Text extends org.compiere.model.PO implements I_C_BPartner_Report_Text, org.compiere.model.I_Persistent
 {
 
+	@Serial
 	private static final long serialVersionUID = 998540969L;
 
 	/**

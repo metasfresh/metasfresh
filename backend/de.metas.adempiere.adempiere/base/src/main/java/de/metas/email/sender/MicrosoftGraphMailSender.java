@@ -33,6 +33,8 @@ import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import jakarta.mail.Address;
+import jakarta.mail.internet.InternetAddress;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +47,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import javax.mail.Address;
-import javax.mail.internet.InternetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

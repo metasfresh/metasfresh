@@ -132,9 +132,9 @@ public abstract class AbstractChunkBasedExpressionCompiler<V, ET extends IExpres
 		//
 		// Case: if we are dealing with a string expression which actually it's one parameter binding, no strings before, no strings after
 		// then we have a specialized implementation for that
-		if (chunks.size() == 1 && chunks.get(0) instanceof CtxName)
+		if (chunks.size() == 1 && chunks.getFirst() instanceof CtxName)
 		{
-			final CtxName parameter = (CtxName)chunks.get(0);
+			final CtxName parameter = (CtxName)chunks.getFirst();
 			return createSingleParamaterExpression(context, expressionStr, parameter);
 		}
 

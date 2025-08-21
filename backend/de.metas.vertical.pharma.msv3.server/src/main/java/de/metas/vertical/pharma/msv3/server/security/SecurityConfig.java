@@ -22,47 +22,59 @@ package de.metas.vertical.pharma.msv3.server.security;
  * #L%
  */
 
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
-
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter
+public class SecurityConfig
 {
 	private static final String REALM = "MSV3_SERVER";
 	public static final String ROLE_CLIENT = "ROLE_CLIENT";
 	public static final String ROLE_SERVER_ADMIN = "ROLE_SERVER_ADMIN";
 
 	@Autowired
-	public void configureGlobalSecurity(
-			final AuthenticationManagerBuilder auth,
-			final MSV3ServerAuthenticationService msv3authService) throws Exception
-	{
-		auth.userDetailsService(msv3authService);
+	private MSV3ServerAuthenticationService msv3authService;
+
+	@Bean
+	public AuthenticationManager authenticationManager(@NonNull final HttpSecurity http) throws Exception {
+		final AuthenticationManagerBuilder authenticationManagerBuilder = 
+			http.getSharedObject(AuthenticationManagerBuilder.class);
+		authenticationManagerBuilder.userDetailsService(msv3authService);
+		return authenticationManagerBuilder.build();
 	}
 
-	@Override
-	protected void configure(final HttpSecurity http) throws Exception
+	@Bean
+	public SecurityFilterChain filterChain(@NonNull final HttpSecurity http) throws Exception
 	{
 		http
-				.csrf().disable()
-				.authorizeRequests()
-				.antMatchers(MSV3ServerConstants.WEBSERVICE_ENDPOINT_PATH + "/**").hasAuthority(ROLE_CLIENT)
-				.antMatchers(MSV3ServerConstants.REST_ENDPOINT_PATH + "/**").hasAuthority(ROLE_SERVER_ADMIN)
-				.and().httpBasic().realmName(REALM).authenticationEntryPoint(getBasicAuthEntryPoint())
-				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+				.csrf(AbstractHttpConfigurer::disable)
+				.authorizeHttpRequests(authz -> authz
+					.requestMatchers(MSV3ServerConstants.WEBSERVICE_ENDPOINT_PATH + "/**").hasAuthority(ROLE_CLIENT)
+					.requestMatchers(MSV3ServerConstants.REST_ENDPOINT_PATH + "/**").hasAuthority(ROLE_SERVER_ADMIN)
+					.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				)
+				.httpBasic(httpBasic -> httpBasic
+					.realmName(REALM)
+					.authenticationEntryPoint(getBasicAuthEntryPoint())
+				)
+				.sessionManagement(session -> session
+					.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				);
 
+		return http.build();
 	}
 
 	@Bean
@@ -73,10 +85,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 		return authenticationEntryPoint;
 	}
 
-	/* To allow Pre-flight [OPTIONS] request from browser */
-	@Override
-	public void configure(final WebSecurity web) throws Exception
-	{
-		web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
-	}
 }

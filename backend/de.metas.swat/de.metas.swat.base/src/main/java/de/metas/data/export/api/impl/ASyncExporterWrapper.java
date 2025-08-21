@@ -253,7 +253,7 @@ public class ASyncExporterWrapper implements IExporter
 				ex = e;
 			}
 
-			throw ex instanceof AdempiereException ? (AdempiereException)ex : new AdempiereException(ex.getLocalizedMessage(), ex); // NOPMD by tsa on 3/15/13 7:44 PM
+			throw ex instanceof AdempiereException ae ? ae : new AdempiereException(ex.getLocalizedMessage(), ex); // NOPMD by tsa on 3/15/13 7:44 PM
 		}
 		finally
 		{

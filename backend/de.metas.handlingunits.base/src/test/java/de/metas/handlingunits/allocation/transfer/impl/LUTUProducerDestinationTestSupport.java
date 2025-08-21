@@ -264,7 +264,7 @@ public class LUTUProducerDestinationTestSupport
 		assertThat(createdCUs).hasSize(1);
 
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final I_M_HU cuToSplit = createdCUs.get(0);
+		final I_M_HU cuToSplit = createdCUs.getFirst();
 		huStatusBL.setHUStatus(helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
 		save(cuToSplit);
 
@@ -290,7 +290,7 @@ public class LUTUProducerDestinationTestSupport
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 		assertThat(createdTUs).hasSize(1);
 
-		final I_M_HU createdTU = createdTUs.get(0);
+		final I_M_HU createdTU = createdTUs.getFirst();
 		huStatusBL.setHUStatus(helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
 		M_HU.INSTANCE.updateChildren(createdTU);
 		save(createdTU);
@@ -298,7 +298,7 @@ public class LUTUProducerDestinationTestSupport
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
 		assertThat(createdCUs).hasSize(1);
 
-		return createdCUs.get(0);
+		return createdCUs.getFirst();
 	}
 
 	/**
@@ -350,7 +350,7 @@ public class LUTUProducerDestinationTestSupport
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final I_M_HU createdLU = createdLUs.get(0);
+		final I_M_HU createdLU = createdLUs.getFirst();
 		final IMutableHUContext huContext = helper.createMutableHUContextOutOfTransaction();
 		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
 		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
@@ -358,10 +358,10 @@ public class LUTUProducerDestinationTestSupport
 		M_HU.INSTANCE.updateChildren(createdLU);
 		save(createdLU);
 
-		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
+		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.getFirst());
 		assertThat(createdAggregateHUs).hasSize(1);
 
-		final I_M_HU cuToSplit = createdAggregateHUs.get(0);
+		final I_M_HU cuToSplit = createdAggregateHUs.getFirst();
 		assertThat(handlingUnitsBL.isAggregateHU(cuToSplit)).isTrue();
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID()).isEqualTo(piLU_Item_IFCO.getM_HU_PI_Item_ID());
 		assertThat(cuToSplit.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
@@ -402,7 +402,7 @@ public class LUTUProducerDestinationTestSupport
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final I_M_HU createdLU = createdLUs.get(0);
+		final I_M_HU createdLU = createdLUs.getFirst();
 		final IMutableHUContext huContext = helper.createMutableHUContextOutOfTransaction();
 		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
 		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
@@ -410,9 +410,9 @@ public class LUTUProducerDestinationTestSupport
 		M_HU.INSTANCE.updateChildren(createdLU);
 		save(createdLU);
 
-		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
+		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.getFirst());
 
-		final I_M_HU cuToSplit = createdAggregateHUs.get(0);
+		final I_M_HU cuToSplit = createdAggregateHUs.getFirst();
 
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID()).isEqualTo(piLU_Item_Virtual.getM_HU_PI_Item_ID());
 		assertThat(cuToSplit.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);

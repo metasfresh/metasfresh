@@ -26,8 +26,11 @@ import lombok.Getter;
 
 import javax.annotation.Nullable;
 
+import java.io.Serial;
+
 public class XmlInvalidRequestIdException extends RuntimeException
 {
+	@Serial
 	private static final long serialVersionUID = -4688552956794873772L;
 
 	@Getter

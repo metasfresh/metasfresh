@@ -25,12 +25,12 @@ package de.metas.ordercandidate.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.ProcessInfo;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import groovy.lang.Tuple2;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -47,16 +47,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class C_OLCand_SetOverrideValuesTest
 {
-	private final Tuple2<BPartnerLocationId, GLN> bp1LocGLN_123 = new Tuple2<>(
+	private final ImmutablePair<BPartnerLocationId, GLN> bp1LocGLN_123 =ImmutablePair.of(
 			BPartnerLocationId.ofRepoId(1, 100),
 			GLN.ofString("123"));
-	private final Tuple2<BPartnerLocationId, GLN> bp1LocGLN_abc = new Tuple2<>(
+	private final ImmutablePair<BPartnerLocationId, GLN> bp1LocGLN_abc = ImmutablePair.of(
 			BPartnerLocationId.ofRepoId(1, 101),
 			GLN.ofString("abc"));
-	private final Tuple2<BPartnerLocationId, GLN> bp2LocGLN_abc = new Tuple2<>(
+	private final ImmutablePair<BPartnerLocationId, GLN> bp2LocGLN_abc = ImmutablePair.of(
 			BPartnerLocationId.ofRepoId(2, 102),
 			GLN.ofString("abc"));
-	private final Tuple2<BPartnerLocationId, GLN> bp3LocGLN_abcd = new Tuple2<>(
+	private final ImmutablePair<BPartnerLocationId, GLN> bp3LocGLN_abcd = ImmutablePair.of(
 			BPartnerLocationId.ofRepoId(3, 103),
 			GLN.ofString("abcd"));
 
@@ -74,7 +74,7 @@ public class C_OLCand_SetOverrideValuesTest
 	void testWithNoMatchingGLN()
 	{
 		final I_C_OLCand olCand = createOLCandData(bp1LocGLN_123);
-		final C_OLCand_SetOverrideValues process = getProcess(olCand.getC_OLCand_ID(), bp2LocGLN_abc.getFirst().getBpartnerId());
+		final C_OLCand_SetOverrideValues process = getProcess(olCand.getC_OLCand_ID(), bp2LocGLN_abc.getLeft().getBpartnerId());
 		assertThrows(AdempiereException.class, process::prepare);
 	}
 
@@ -82,13 +82,13 @@ public class C_OLCand_SetOverrideValuesTest
 	void testbp1WithMatchingGLN()
 	{
 		final I_C_OLCand olCand = createOLCandData(bp1LocGLN_abc);
-		final C_OLCand_SetOverrideValues process = getProcess(olCand.getC_OLCand_ID(), bp2LocGLN_abc.getFirst().getBpartnerId());
+		final C_OLCand_SetOverrideValues process = getProcess(olCand.getC_OLCand_ID(), bp2LocGLN_abc.getLeft().getBpartnerId());
 		assertDoesNotThrow(process::prepare);
 		assertEquals(olCand.getC_BP_Location_Override_ID(), 0);
 		assertDoesNotThrow(process::doIt);
 
 		InterfaceWrapperHelper.refresh(olCand);
-		assertEquals(olCand.getC_BP_Location_Override_ID(), bp2LocGLN_abc.getFirst().getRepoId());
+		assertEquals(olCand.getC_BP_Location_Override_ID(), bp2LocGLN_abc.getLeft().getRepoId());
 	}
 
 	private C_OLCand_SetOverrideValues getProcess(final Integer olCandId, final BPartnerId bpartnerOverrideId)
@@ -120,21 +120,21 @@ public class C_OLCand_SetOverrideValuesTest
 		createBpartnerLocationData(bp3LocGLN_abcd);
 	}
 
-	private I_C_OLCand createOLCandData(final Tuple2<BPartnerLocationId, GLN> bpLoc)
+	private I_C_OLCand createOLCandData(final ImmutablePair<BPartnerLocationId, GLN> bpLoc)
 	{
 		final I_C_OLCand cand = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
-		cand.setC_BPartner_ID(bpLoc.getFirst().getBpartnerId().getRepoId());
-		cand.setC_BPartner_Location_ID(bpLoc.getFirst().getRepoId());
+		cand.setC_BPartner_ID(bpLoc.getLeft().getBpartnerId().getRepoId());
+		cand.setC_BPartner_Location_ID(bpLoc.getLeft().getRepoId());
 		cand.setAD_User_ID(-1);
 		InterfaceWrapperHelper.save(cand);
 		return cand;
 
 	}
 
-	private void createBpartnerLocationData(final Tuple2<BPartnerLocationId, GLN> bpLoc)
+	private void createBpartnerLocationData(final ImmutablePair<BPartnerLocationId, GLN> bpLoc)
 	{
 		//bpartner
-		final BPartnerId bpartnerId = bpLoc.getFirst().getBpartnerId();
+		final BPartnerId bpartnerId = bpLoc.getLeft().getBpartnerId();
 		I_C_BPartner bpartner;
 		try
 		{
@@ -151,8 +151,8 @@ public class C_OLCand_SetOverrideValuesTest
 		//location
 		final I_C_BPartner_Location location = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
 		location.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		location.setC_BPartner_Location_ID(bpLoc.getFirst().getRepoId());
-		location.setGLN(bpLoc.getSecond().getCode());
+		location.setC_BPartner_Location_ID(bpLoc.getLeft().getRepoId());
+		location.setGLN(bpLoc.getRight().getCode());
 		location.setIsBillTo(true);
 		InterfaceWrapperHelper.save(location);
 	}

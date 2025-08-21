@@ -113,7 +113,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 	private void removeQueueProcessor0(final int queueProcessorId)
 	{
 		final Optional<IQueueProcessor> queueProcessor = asyncProcessorPlanner.getQueueProcessor(QueueProcessorId.ofRepoId(queueProcessorId));
-		if (!queueProcessor.isPresent())
+		if (queueProcessor.isEmpty())
 		{
 			return;
 		}

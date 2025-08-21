@@ -17,6 +17,8 @@ import org.eevolution.api.PPOrderRoutingActivity;
 
 import de.metas.material.planning.pporder.LiberoException;
 
+import java.io.Serial;
+
 /**
  * Thrown when we are trying to process/complete an Order Activity that is already processed/completed
  *
@@ -27,6 +29,7 @@ public class ActivityProcessedException extends LiberoException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 8295005401730471127L;
 
 	public ActivityProcessedException(final PPOrderRoutingActivity activity)

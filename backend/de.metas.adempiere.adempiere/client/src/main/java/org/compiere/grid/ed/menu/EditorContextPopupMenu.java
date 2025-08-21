@@ -29,6 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +65,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 9080629474763433478L;
 
 	/**
@@ -84,9 +86,8 @@ public class EditorContextPopupMenu extends JPopupMenu
 
 	private static EditorContextPopupMenu getEditorContextPopupMenu(final VEditor editor)
 	{
-		if (editor instanceof JComponent)
+		if (editor instanceof JComponent comp)
 		{
-			JComponent comp = (JComponent)editor;
 			final EditorContextPopupMenu popupMenu = (EditorContextPopupMenu)comp.getClientProperty(ATTR_EditorContextPopupMenu);
 			return popupMenu;
 		}
@@ -120,9 +121,8 @@ public class EditorContextPopupMenu extends JPopupMenu
 	{
 		final VEditor editor = menuCtx.getEditor();
 
-		if (editor instanceof JComponent)
+		if (editor instanceof JComponent editorComp)
 		{
-			final JComponent editorComp = (JComponent)editor;
 			editorComp.addMouseListener(new MouseAdapter()
 			{
 				@Override
@@ -150,9 +150,9 @@ public class EditorContextPopupMenu extends JPopupMenu
 		final VEditor editor = menuCtx.getEditor();
 		if(editor != null)
 		{
-			if(editor instanceof java.awt.Component)
+			if(editor instanceof java.awt.Component component)
 			{
-				return Env.getWindowNo((java.awt.Component)editor);
+				return Env.getWindowNo(component);
 			}
 		}
 
@@ -211,7 +211,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		}
 
 		// Action implements IEditorContextPopupMenuComposer, so let it compose by itself
-		if (action instanceof IEditorContextPopupMenuComposer)
+		if (action instanceof IEditorContextPopupMenuComposer actionComposer)
 		{
 			if (!(parent instanceof Container))
 			{
@@ -219,7 +219,6 @@ public class EditorContextPopupMenu extends JPopupMenu
 				return false;
 			}
 			final Container parentContainer = (Container)parent;
-			IEditorContextPopupMenuComposer actionComposer = (IEditorContextPopupMenuComposer)action;
 			return actionComposer.createUI(parentContainer);
 		}
 		// Generic Composer
@@ -297,9 +296,8 @@ public class EditorContextPopupMenu extends JPopupMenu
 
 	private static final MenuElement[] getSubElements(final MenuElement me)
 	{
-		if (me instanceof JMenu)
+		if (me instanceof JMenu menu)
 		{
-			final JMenu menu = (JMenu)me;
 			final int size = menu.getItemCount();
 			final MenuElement[] result = new MenuElement[size];
 			for (int i = 0; i < size; i++)
@@ -308,17 +306,16 @@ public class EditorContextPopupMenu extends JPopupMenu
 			}
 			return result;
 		}
-		else if (me instanceof JPopupMenu)
+		else if (me instanceof JPopupMenu menu)
 		{
-			final JPopupMenu menu = (JPopupMenu)me;
 			final int size = menu.getComponentCount();
 			final List<MenuElement> result = new ArrayList<MenuElement>();
 			for (int i = 0; i < size; i++)
 			{
 				final Component c = menu.getComponent(i);
-				if (c instanceof MenuElement)
+				if (c instanceof MenuElement element)
 				{
-					result.add((MenuElement)c);
+					result.add(element);
 				}
 			}
 			return result.toArray(new MenuElement[result.size()]);
@@ -372,17 +369,17 @@ public class EditorContextPopupMenu extends JPopupMenu
 
 	private static final void addSeparator(final Container menuComp)
 	{
-		if (menuComp instanceof JMenu)
+		if (menuComp instanceof JMenu menu2)
 		{
-			((JMenu)menuComp).addSeparator();
+			menu2.addSeparator();
 		}
-		else if (menuComp instanceof EditorContextPopupMenu)
+		else if (menuComp instanceof EditorContextPopupMenu menu1)
 		{
-			((EditorContextPopupMenu)menuComp).addSeparator();
+			menu1.addSeparator();
 		}
-		else if (menuComp instanceof JPopupMenu)
+		else if (menuComp instanceof JPopupMenu menu)
 		{
-			((JPopupMenu)menuComp).addSeparator();
+			menu.addSeparator();
 		}
 		else
 		{
@@ -402,9 +399,9 @@ public class EditorContextPopupMenu extends JPopupMenu
 			}
 
 			// Execute the action as ActionListener
-			if (action instanceof ActionListener)
+			if (action instanceof ActionListener listener)
 			{
-				((ActionListener)action).actionPerformed(event);
+				listener.actionPerformed(event);
 			}
 			// Fallback: call the action's run() method
 			else
@@ -514,9 +511,8 @@ public class EditorContextPopupMenu extends JPopupMenu
 	private final IContextMenuAction getAction(MenuElement me)
 	{
 		final Component c = me.getComponent();
-		if (c instanceof JComponent)
+		if (c instanceof JComponent jc)
 		{
-			final JComponent jc = (JComponent)c;
 			final IContextMenuAction action = (IContextMenuAction)jc.getClientProperty(ATTR_Action);
 			return action;
 		}

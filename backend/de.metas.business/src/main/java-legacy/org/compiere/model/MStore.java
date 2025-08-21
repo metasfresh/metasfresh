@@ -56,7 +56,7 @@ public class MStore extends X_W_Store
 	 */
 	public static MStore get(Properties ctx, int W_Store_ID)
 	{
-		Integer key = new Integer(W_Store_ID);
+		Integer key = Integer.valueOf(W_Store_ID);
 		MStore retValue = s_cache.get(key);
 		if (retValue != null)
 			return retValue;

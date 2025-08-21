@@ -1,27 +1,26 @@
 package de.metas.impexp.format;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import javax.annotation.Nullable;
-
+import de.metas.common.util.CoalesceUtil;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import de.metas.common.util.CoalesceUtil;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Import Format Column Definition
@@ -300,7 +299,7 @@ public final class ImpFormatColumn
 			if (divideBy100)
 			{
 				// NOTE: assumed two decimal scale
-				bd = bd.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
+				bd = bd.divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
 			}
 
 			return bd;

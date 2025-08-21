@@ -68,7 +68,7 @@ import org.compiere.util.Env;
 	{
 		//
 		// Get shipment schedules
-		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.get(0);
+		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.getFirst();
 		final I_M_ShipmentSchedule shipmentSchedule2 = shipmentSchedules.get(1);
 
 		//

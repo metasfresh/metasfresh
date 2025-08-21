@@ -151,7 +151,7 @@ public class MaterialCockpitRowFactoryTest
 
 		assertThat(groups).hasSize(4);
 
-		dimensionspecGroup_empty = groups.get(0);
+		dimensionspecGroup_empty = groups.getFirst();
 		assertThat(dimensionspecGroup_empty.isEmptyGroup()).isTrue();
 
 		dimensionspecGroup_attr1_value1 = groups.get(1);
@@ -262,7 +262,7 @@ public class MaterialCockpitRowFactoryTest
 		final List<MaterialCockpitRow> result = materialCockpitRowFactory.createRows(request);
 
 		assertThat(result).hasSize(1);
-		final MaterialCockpitRow mainRow = result.get(0);
+		final MaterialCockpitRow mainRow = result.getFirst();
 		assertThat(mainRow.getQtyOnHandStock()).isEqualByComparingTo(ELEVEN.add(TWELVE));
 		assertThat(mainRow.getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN.add(ONE));
 
@@ -371,18 +371,18 @@ public class MaterialCockpitRowFactoryTest
 
 		// then
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().get(0).getMD_Cockpit_ID());
-		assertThat(result.get(0).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
-		assertThat(result.get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+		assertThat(result.getFirst().getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().getFirst().getMD_Cockpit_ID());
+		assertThat(result.getFirst().getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
+		assertThat(result.getFirst().getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 
 		// this is the stockrecord-row. it's a dedicated subrow because of the includePerPlantDetailRows (even though the plant-id is zero)
-		assertThat(result.get(0).getIncludedRows().get(0).getDimensionGroupOrNull()).isNull();
-		assertThat(result.get(0).getIncludedRows().get(0).getQtySupplyPurchaseOrderAtDate()).isNull();
-		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+		assertThat(result.getFirst().getIncludedRows().getFirst().getDimensionGroupOrNull()).isNull();
+		assertThat(result.getFirst().getIncludedRows().getFirst().getQtySupplyPurchaseOrderAtDate()).isNull();
+		assertThat(result.getFirst().getIncludedRows().getFirst().getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 
-		assertThat(result.get(0).getIncludedRows().get(1).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
-		assertThat(result.get(0).getIncludedRows().get(1).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
-		assertThat(result.get(0).getIncludedRows().get(1).getQtyOnHandStock()).isEqualByComparingTo(ZERO);
+		assertThat(result.getFirst().getIncludedRows().get(1).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
+		assertThat(result.getFirst().getIncludedRows().get(1).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
+		assertThat(result.getFirst().getIncludedRows().get(1).getQtyOnHandStock()).isEqualByComparingTo(ZERO);
 	}
 
 	/**
@@ -398,13 +398,13 @@ public class MaterialCockpitRowFactoryTest
 
 		// then
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().get(0).getMD_Cockpit_ID());
-		assertThat(result.get(0).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
-		assertThat(result.get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+		assertThat(result.getFirst().getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().getFirst().getMD_Cockpit_ID());
+		assertThat(result.getFirst().getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
+		assertThat(result.getFirst().getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 
-		assertThat(result.get(0).getIncludedRows().get(0).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
-		assertThat(result.get(0).getIncludedRows().get(0).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
-		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+		assertThat(result.getFirst().getIncludedRows().getFirst().getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
+		assertThat(result.getFirst().getIncludedRows().getFirst().getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
+		assertThat(result.getFirst().getIncludedRows().getFirst().getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 	}
 
 	@Test
@@ -417,18 +417,18 @@ public class MaterialCockpitRowFactoryTest
 
 		// then
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().get(0).getMD_Cockpit_ID());
-		assertThat(result.get(0).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
-		assertThat(result.get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+		assertThat(result.getFirst().getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().getFirst().getMD_Cockpit_ID());
+		assertThat(result.getFirst().getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
+		assertThat(result.getFirst().getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 
 		// this is the stockrecord-row. it's a dedicated subrow because of the includePerPlantDetailRows (even though the plant-id is zero)
-		assertThat(result.get(0).getIncludedRows().get(0).getDimensionGroupOrNull()).isNull();
-		assertThat(result.get(0).getIncludedRows().get(0).getQtySupplyPurchaseOrderAtDate()).isNull();
-		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+		assertThat(result.getFirst().getIncludedRows().getFirst().getDimensionGroupOrNull()).isNull();
+		assertThat(result.getFirst().getIncludedRows().getFirst().getQtySupplyPurchaseOrderAtDate()).isNull();
+		assertThat(result.getFirst().getIncludedRows().getFirst().getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 
-		assertThat(result.get(0).getIncludedRows().get(1).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
-		assertThat(result.get(0).getIncludedRows().get(1).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
-		assertThat(result.get(0).getIncludedRows().get(1).getQtyOnHandStock()).isEqualByComparingTo(ZERO);
+		assertThat(result.getFirst().getIncludedRows().get(1).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
+		assertThat(result.getFirst().getIncludedRows().get(1).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
+		assertThat(result.getFirst().getIncludedRows().get(1).getQtyOnHandStock()).isEqualByComparingTo(ZERO);
 	}
 
 	private CreateRowsRequest setup(MaterialCockpitDetailsRowAggregation detailsRowAggregation)

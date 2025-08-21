@@ -254,7 +254,7 @@ public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvide
 		}
 		else if (sqlWhereClauses.size() == 1)
 		{
-			return sqlWhereClauses.get(0);
+			return sqlWhereClauses.getFirst();
 		}
 		else
 		{

@@ -70,7 +70,7 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
 		final List<I_C_Invoice_Candidate> ics = test_2StepShipment_CommonSetup_Step01(false, null);// isSOTrx, priceEtnered_Override
-		final I_C_Invoice_Candidate ic = ics.get(0);
+		final I_C_Invoice_Candidate ic = ics.getFirst();
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 		ic.setInvoiceRule_Override(null);
 		InterfaceWrapperHelper.save(ic);
@@ -81,7 +81,7 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 	@Override
 	protected List<I_M_InOutLine> step_createInOutLines(final List<I_C_Invoice_Candidate> invoiceCandidates)
 	{
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		{
 			final StockQtyAndUOMQty qtysDelivered_3 = StockQtyAndUOMQtys.create(new BigDecimal("3"), productId, new BigDecimal("30"), uomId);
@@ -117,7 +117,7 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 	@Override
 	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> ignored)
 	{
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
 		InvoiceCandidateExpectation.newExpectation()
@@ -137,7 +137,7 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 			.as("We are expecting one invoice: %s", invoices)
 			.hasSize(1);
 
-		final IInvoiceHeader invoice1 = invoices.remove(0);
+		final IInvoiceHeader invoice1 = invoices.removeFirst();
 
 		//
 		// guard

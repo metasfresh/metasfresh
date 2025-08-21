@@ -169,7 +169,7 @@ public class RefundContractRepository
 		final boolean hasZeroQtyConfig = refundConfigs.stream().anyMatch(config -> config.getMinQty().signum() <= 0);
 		if (!hasZeroQtyConfig)
 		{
-			final RefundConfig template = refundConfigs.get(0);
+			final RefundConfig template = refundConfigs.getFirst();
 
 			final RefundConfig zeroConfig = template
 					.toBuilder()

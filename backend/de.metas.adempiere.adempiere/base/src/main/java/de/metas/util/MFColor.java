@@ -12,6 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
@@ -19,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 @Value
 public final class MFColor implements Serializable
 {
+	@Serial
 	private static final long serialVersionUID = 155277595960307777L;
 
 	private static final LoadingCache<Color, MFColor> flatColorsCache = CacheBuilder.newBuilder()
@@ -482,6 +484,6 @@ public final class MFColor implements Serializable
 		Check.assume(red >= 0 && red <= 255, "Invalid red value: {}", red);
 		Check.assume(green >= 0 && green <= 255, "Invalid green value: {}", green);
 		Check.assume(blue >= 0 && blue <= 255, "Invalid blue value: {}", blue);
-		return String.format("#%02x%02x%02x", red, green, blue);
+		return "#%02x%02x%02x".formatted(red, green, blue);
 	}
 }

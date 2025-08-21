@@ -54,7 +54,7 @@ public class AvailabilityInfoResultForWebui
 		{
 			throw new AdempiereException("Not a single group: " + this);
 		}
-		return groups.get(0);
+		return groups.getFirst();
 	}
 
 	public Quantity getSingleQuantity()

@@ -184,11 +184,15 @@ public class RefundInvoiceCandidateService
 			final boolean quantityWithinCurrentScale = isQuantityWithinCurrentScale(refundCandidate, refundConfig, candidateToAssign.getQuantity());
 			Check.errorUnless(
 					quantityWithinCurrentScale,
-					"The given candidateToAssign has quantity={};"
-							+ " the given candidateToUpdate has assignedQuantity={};"
-							+ " together they exceed the quantity for candidateToUpdate's refund config;"
-							+ " \ncandidateToAssign={}"
-							+ " \ncandidateToUpdate={}",
+					"""
+					The given candidateToAssign has quantity={};\
+					 the given candidateToUpdate has assignedQuantity={};\
+					 together they exceed the quantity for candidateToUpdate's refund config;\
+					\s
+					candidateToAssign={}\
+					\s
+					candidateToUpdate={}\
+					""",
 					candidateToAssign.getQuantity(), refundCandidate.getAssignedQuantity(), candidateToAssign, refundCandidate);
 		}
 

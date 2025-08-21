@@ -24,6 +24,7 @@ package org.compiere.swing.table;
 
 
 import java.awt.event.ActionEvent;
+import java.io.Serial;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.ListSelectionModel;
@@ -46,6 +47,7 @@ import de.metas.util.Services;
  */
 public abstract class AbstractManageSelectableRowsAction extends AnnotatedTableAction
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public AbstractManageSelectableRowsAction(final String nameADMessage)

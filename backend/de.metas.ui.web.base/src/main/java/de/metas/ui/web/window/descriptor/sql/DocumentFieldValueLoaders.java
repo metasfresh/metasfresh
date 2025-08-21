@@ -273,25 +273,23 @@ public final class DocumentFieldValueLoaders
 			{
 				valueBytes = null;
 			}
-			else if (valueObj instanceof Clob)
+			else if (valueObj instanceof Clob lob)
 			{
-				final Clob lob = (Clob)valueObj;
 				final long length = lob.length();
 				valueBytes = lob.getSubString(1, (int)length).getBytes(StandardCharsets.UTF_8);
 			}
-			else if (valueObj instanceof Blob)
+			else if (valueObj instanceof Blob lob)
 			{
-				final Blob lob = (Blob)valueObj;
 				final long length = lob.length();
 				valueBytes = lob.getBytes(1, (int)length);
 			}
-			else if (valueObj instanceof String)
+			else if (valueObj instanceof String string)
 			{
-				valueBytes = ((String)valueObj).getBytes(StandardCharsets.UTF_8);
+				valueBytes = string.getBytes(StandardCharsets.UTF_8);
 			}
-			else if (valueObj instanceof byte[])
+			else if (valueObj instanceof byte[] bytes)
 			{
-				valueBytes = (byte[])valueObj;
+				valueBytes = bytes;
 			}
 			else
 			{

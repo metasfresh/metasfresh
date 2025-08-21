@@ -108,8 +108,7 @@ final class OrderAttachmentRows implements IEditableRowsData<OrderAttachmentRow>
 		final ImmutableList<AttachmentLinksRequest> userChanges = aggregateRowsByAttachmentEntryId()
 				.stream()
 				.map(OrderAttachmentRow::toAttachmentLinksRequest)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.collect(ImmutableList.toImmutableList());
 
 		return !userChanges.isEmpty()
@@ -161,7 +160,7 @@ final class OrderAttachmentRows implements IEditableRowsData<OrderAttachmentRow>
 			final OrderAttachmentRow firstRowAttach = attachmentRowsForEntryId.stream()
 					.filter(OrderAttachmentRow::getIsAttachToPurchaseOrder)
 					.findFirst()
-					.orElseGet(() -> attachmentRowsForEntryId.get(0));
+					.orElseGet(() -> attachmentRowsForEntryId.getFirst());
 
 			attachmentRowCollector.add(firstRowAttach);
 		}

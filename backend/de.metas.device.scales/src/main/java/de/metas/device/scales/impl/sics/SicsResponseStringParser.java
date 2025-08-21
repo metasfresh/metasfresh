@@ -73,6 +73,6 @@ public class SicsResponseStringParser implements IParser<ISiscCmd>
 	@Override
 	public String toString()
 	{
-		return String.format("SicsResponseStringParser []");
+		return "SicsResponseStringParser []".formatted();
 	}
 }

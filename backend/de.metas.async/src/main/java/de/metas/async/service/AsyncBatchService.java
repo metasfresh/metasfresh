@@ -145,7 +145,7 @@ public class AsyncBatchService
 
 		final Optional<Instant> startMonitoringFrom = asyncBatchObserver.getStartMonitoringTimestamp(asyncBatchId);
 
-		if (!startMonitoringFrom.isPresent())
+		if (startMonitoringFrom.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: C_Async_Batch_ID: {} not monitored! Return empty list!", asyncBatchId.getRepoId());
 			return ImmutableList.of();

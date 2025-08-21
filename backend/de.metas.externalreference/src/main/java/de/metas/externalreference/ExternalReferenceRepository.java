@@ -69,7 +69,7 @@ public class ExternalReferenceRepository
 		final Optional<ExternalReference> externalReferenceEntity =
 				getOptionalExternalReferenceBy(query);
 
-		if (!externalReferenceEntity.isPresent())
+		if (externalReferenceEntity.isEmpty())
 		{
 			throw new AdempiereException("ExternalReference not found in metasfresh")
 					.appendParametersToMessage()

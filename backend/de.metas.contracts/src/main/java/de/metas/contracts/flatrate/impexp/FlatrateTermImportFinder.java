@@ -58,7 +58,7 @@ import de.metas.util.Services;
 		}
 		else if (users.size() == 1)
 		{
-			return users.get(0);
+			return users.getFirst();
 		}
 		else
 		{
@@ -86,7 +86,7 @@ import de.metas.util.Services;
 		}
 		else if (users.size() == 1)
 		{
-			return users.get(0);
+			return users.getFirst();
 		}
 		else
 		{

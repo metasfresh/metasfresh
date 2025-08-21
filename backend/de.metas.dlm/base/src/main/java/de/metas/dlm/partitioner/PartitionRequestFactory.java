@@ -172,9 +172,8 @@ public class PartitionRequestFactory
 		{
 			super(template);
 
-			if (template != null && template instanceof CreatePartitionAsyncRequest)
+			if (template != null && template instanceof CreatePartitionAsyncRequest asyncTemplate)
 			{
-				final CreatePartitionAsyncRequest asyncTemplate = (CreatePartitionAsyncRequest)template;
 				setDontReEnqueueAfter(asyncTemplate.getDontReEnqueueAfter());
 				setCount(asyncTemplate.getCount());
 			}

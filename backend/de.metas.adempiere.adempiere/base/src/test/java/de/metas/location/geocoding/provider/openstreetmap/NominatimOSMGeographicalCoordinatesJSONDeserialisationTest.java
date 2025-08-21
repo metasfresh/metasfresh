@@ -32,22 +32,24 @@ class NominatimOSMGeographicalCoordinatesJSONDeserialisationTest
 	@Test
 	void canDeserializeGoodResponse()
 	{
-		final String serialisedResponse = "  {\n"
-				+ "    \"place_id\": 237626930,\n"
-				+ "    \"licence\": \"Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright\",\n"
-				+ "    \"boundingbox\": [\n"
-				+ "      \"45.758244872052\",\n"
-				+ "      \"45.758344872052\",\n"
-				+ "      \"21.224939377961\",\n"
-				+ "      \"21.225039377961\"\n"
-				+ "    ],\n"
-				+ "    \"lat\": \"45.75829487205204\",\n"
-				+ "    \"lon\": \"21.224989377961297\",\n"
-				+ "    \"display_name\": \"Tipografilor, Timișoara, Timiș, 300078, Romania\",\n"
-				+ "    \"class\": \"place\",\n"
-				+ "    \"type\": \"postcode\",\n"
-				+ "    \"importance\": 0.33499999999999996\n"
-				+ "  }\n";
+		final String serialisedResponse = """
+				  {
+				    "place_id": 237626930,
+				    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright",
+				    "boundingbox": [
+				      "45.758244872052",
+				      "45.758344872052",
+				      "21.224939377961",
+				      "21.225039377961"
+				    ],
+				    "lat": "45.75829487205204",
+				    "lon": "21.224989377961297",
+				    "display_name": "Tipografilor, Timișoara, Timiș, 300078, Romania",
+				    "class": "place",
+				    "type": "postcode",
+				    "importance": 0.33499999999999996
+				  }
+				""";
 
 		final NominatimOSMGeographicalCoordinatesJSON expected = NominatimOSMGeographicalCoordinatesJSON.builder()
 				.display_name("Tipografilor, Timișoara, Timiș, 300078, Romania")

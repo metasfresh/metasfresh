@@ -145,9 +145,9 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 		{
 			return null;
 		}
-		else if (valueKey instanceof Number)
+		else if (valueKey instanceof Number number)
 		{
-			final int valueInt = ((Number)valueKey).intValue();
+			final int valueInt = number.intValue();
 			return BPartnerId.ofRepoIdOrNull(valueInt);
 		}
 		else

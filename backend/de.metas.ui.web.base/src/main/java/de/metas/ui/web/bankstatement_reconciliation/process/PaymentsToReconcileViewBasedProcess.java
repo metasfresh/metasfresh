@@ -98,6 +98,6 @@ abstract class PaymentsToReconcileViewBasedProcess extends ViewBasedProcessTempl
 				.streamByIds(selection)
 				.collect(ImmutableList.toImmutableList());
 
-		return rows.size() == 1 ? rows.get(0) : null;
+		return rows.size() == 1 ? rows.getFirst() : null;
 	}
 }

@@ -140,7 +140,7 @@ public class CableSalesOrderLineQuickInputProcessor implements IQuickInputProces
 		}
 		else
 		{
-			final I_PP_Product_BOM bom = boms.get(0);
+			final I_PP_Product_BOM bom = boms.getFirst();
 			return ProductId.ofRepoId(bom.getM_Product_ID());
 		}
 	}

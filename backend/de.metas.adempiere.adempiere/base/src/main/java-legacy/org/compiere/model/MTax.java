@@ -54,7 +54,7 @@ public class MTax extends X_C_Tax
 			return null;
 		}
 		
-		Integer key = new Integer (C_Tax_ID);
+		Integer key = Integer.valueOf(C_Tax_ID);
 		MTax retValue = s_cache.get (key);
 		if (retValue != null)
 			return retValue;

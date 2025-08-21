@@ -29,7 +29,7 @@ import de.metas.printing.client.engine.PrintingEngine;
 import de.metas.printing.client.util.Util;
 import de.metas.printing.esb.api.PrintPackage;
 import de.metas.printing.esb.api.PrintPackageInfo;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.hc.client5.http.utils.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -115,9 +115,9 @@ public class PrintingEngineTestManual
 		final PrintPackage printPackage = new JsonBeanEncoder().decodeStream(getClass().getResourceAsStream("/test02_printpackage.json"), PrintPackage.class);
 
 		// make sure we are using the right printer
-		printPackage.getPrintPackageInfos().get(0).setPrintService(printingServiceName);
-		printPackage.getPrintPackageInfos().get(0).setTray(printingTray);
-		printPackage.getPrintPackageInfos().get(0).setTrayNumber(printingTrayNumber);
+		printPackage.getPrintPackageInfos().getFirst().setPrintService(printingServiceName);
+		printPackage.getPrintPackageInfos().getFirst().setTray(printingTray);
+		printPackage.getPrintPackageInfos().getFirst().setTrayNumber(printingTrayNumber);
 
 		final byte[] data = Base64.decodeBase64(Util.toByteArray(getClass().getResourceAsStream("/test02_printpackage_data_base64.txt")));
 

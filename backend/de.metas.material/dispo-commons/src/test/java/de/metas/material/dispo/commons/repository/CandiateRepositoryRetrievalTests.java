@@ -291,7 +291,7 @@ public class CandiateRepositoryRetrievalTests
 
 		final List<Candidate> retrievedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
 		assertThat(retrievedCandidates).hasSize(1);
-		assertThat(retrievedCandidates.get(0).getId().getRepoId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
+		assertThat(retrievedCandidates.getFirst().getId().getRepoId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
 	}
 
 	@Test
@@ -309,7 +309,7 @@ public class CandiateRepositoryRetrievalTests
 
 		final List<Candidate> retrievedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
 		assertThat(retrievedCandidates).hasSize(1);
-		assertThat(retrievedCandidates.get(0).getId().getRepoId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
+		assertThat(retrievedCandidates.getFirst().getId().getRepoId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
 	}
 
 	@Test
@@ -449,11 +449,11 @@ public class CandiateRepositoryRetrievalTests
 
 		final List<Candidate> expectedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		assertThat(expectedCandidates).hasSize(1);
-		final Candidate expectedCandidate = expectedCandidates.get(0);
+		final Candidate expectedCandidate = expectedCandidates.getFirst();
 		assertThat(expectedCandidate.getId().getRepoId()).isEqualTo(record.getMD_Candidate_ID());
 		assertThat(expectedCandidate.getTransactionDetails()).hasSize(1);
 
-		final TransactionDetail transactionDetail = expectedCandidate.getTransactionDetails().get(0);
+		final TransactionDetail transactionDetail = expectedCandidate.getTransactionDetails().getFirst();
 		assertThat(transactionDetail.getTransactionId()).isEqualTo(TRANSACTION_ID);
 		assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("10");
 		assertThat(transactionDetail.getTransactionDate()).isEqualTo(NOW);
@@ -597,7 +597,7 @@ public class CandiateRepositoryRetrievalTests
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
 		assertThat(result).hasSize(1);
-		final Candidate resultCandidate = result.get(0);
+		final Candidate resultCandidate = result.getFirst();
 		assertThat(resultCandidate.getId().getRepoId()).isEqualTo(candidateRecord.getMD_Candidate_ID());
 		assertThat(resultCandidate.getWarehouseId()).isEqualTo(warehouseId);
 	}
@@ -614,7 +614,7 @@ public class CandiateRepositoryRetrievalTests
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
 		assertThat(result).hasSize(1);
-		final Candidate resultCandidate = result.get(0);
+		final Candidate resultCandidate = result.getFirst();
 		assertThat(resultCandidate.getId().getRepoId()).isEqualTo(candidateRecord.getMD_Candidate_ID());
 		assertThat(resultCandidate.getDemandDetail()).isNotNull();
 		assertThat(resultCandidate.getDemandDetail().getShipmentScheduleId()).isEqualTo(25);
@@ -642,7 +642,7 @@ public class CandiateRepositoryRetrievalTests
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
 		assertThat(result).hasSize(1);
-		final Candidate resultCandidate = result.get(0);
+		final Candidate resultCandidate = result.getFirst();
 		assertThat(resultCandidate.getId().getRepoId()).isEqualTo(candidateRecord.getMD_Candidate_ID());
 		assertThat(resultCandidate.getDemandDetail()).isNotNull();
 		assertThat(resultCandidate.getDemandDetail().getForecastLineId()).isEqualTo(25);

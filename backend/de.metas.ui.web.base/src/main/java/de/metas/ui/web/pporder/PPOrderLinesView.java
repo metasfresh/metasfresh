@@ -267,8 +267,7 @@ public class PPOrderLinesView implements IView, HUReportAwareView
 	{
 		return streamByIds(documentIds)
 				.map(ppOrderLineRow -> getModel(ppOrderLineRow, modelClass))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.collect(Collectors.toList());
 	}
 

@@ -106,17 +106,17 @@ public class MockedTrx extends PlainTrx
 		{
 			if (throwException)
 			{
-				if (exception instanceof RuntimeException)
+				if (exception instanceof RuntimeException runtimeException)
 				{
-					throw (RuntimeException)exception;
+					throw runtimeException;
 				}
-				else if (exception instanceof Error)
+				else if (exception instanceof Error error)
 				{
-					throw (Error)exception;
+					throw error;
 				}
-				else if (exception instanceof SQLException)
+				else if (exception instanceof SQLException lException)
 				{
-					throw (SQLException)exception;
+					throw lException;
 				}
 				else
 				{

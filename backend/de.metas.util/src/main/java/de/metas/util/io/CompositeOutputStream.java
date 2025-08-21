@@ -32,7 +32,7 @@ public class CompositeOutputStream extends OutputStream
 		}
 		else if (outputStreams.size() == 1)
 		{
-			return outputStreams.get(0);
+			return outputStreams.getFirst();
 		}
 		else
 		{

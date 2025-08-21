@@ -90,6 +90,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -1339,7 +1340,7 @@ public class CalloutOrder extends CalloutEngine
 			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
 			BigDecimal QtyOrdered = orderLine.getQtyOrdered();
 			final int precision = MProduct.get(calloutField.getCtx(), M_Product_ID).getUOMPrecision();
-			final BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			final BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, RoundingMode.HALF_UP);
 			if (QtyOrdered.compareTo(QtyOrdered1) != 0)
 			{
 				log.debug("Corrected QtyOrdered Scale " + QtyOrdered + "->" + QtyOrdered1);

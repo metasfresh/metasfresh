@@ -104,15 +104,15 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		final Map<String, Object> valuesMap = wrapper.getValuesMap();
 
 		final Object docTypeId = valuesMap.get("C_DocType_ID");
-		if (docTypeId instanceof Number)
+		if (docTypeId instanceof Number number)
 		{
-			return ((Number)docTypeId).intValue();
+			return number.intValue();
 		}
 
 		final Object docTypeTargetId = valuesMap.get("C_DocTypeTarget_ID");
-		if (docTypeTargetId instanceof Number)
+		if (docTypeTargetId instanceof Number number)
 		{
-			return ((Number)docTypeTargetId).intValue();
+			return number.intValue();
 		}
 
 		return -1;
@@ -293,9 +293,9 @@ public class PlainDocumentBL extends AbstractDocumentBL
 	{
 		final Object documentObjToUse;
 		final POJOWrapper wrapper;
-		if (documentObj instanceof ITableRecordReference)
+		if (documentObj instanceof ITableRecordReference reference)
 		{
-			final Object referencedModel = ((ITableRecordReference)documentObj).getModel(Object.class);
+			final Object referencedModel = reference.getModel(Object.class);
 			documentObjToUse = referencedModel;
 			wrapper = POJOWrapper.getWrapper(referencedModel);
 		}

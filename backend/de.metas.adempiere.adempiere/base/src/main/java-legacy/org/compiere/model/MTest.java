@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -81,7 +82,7 @@ public class MTest extends X_Test
 		setT_DateTime(new Timestamp (System.currentTimeMillis()));
 		setT_Integer(testNo);
 		setT_Amount(new BigDecimal(testNo));
-		setT_Number(Env.ONE.divide(new BigDecimal(testNo), BigDecimal.ROUND_HALF_UP));
+		setT_Number(Env.ONE.divide(new BigDecimal(testNo), RoundingMode.HALF_UP));
 		//
 		setC_Currency_ID(100);		//	USD
 		setC_Location_ID(109);		//	Monroe

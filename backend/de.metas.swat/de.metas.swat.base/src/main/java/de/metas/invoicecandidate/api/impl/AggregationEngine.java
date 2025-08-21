@@ -319,10 +319,12 @@ public final class AggregationEngine
 
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
-			loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: {}\n"
-							+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
-							+ " ic's own headerAggregationKey = {};\n"
-							+ " new headerAndAggregators = {}",
+			loggable.addLog("""
+							Created new InvoiceHeaderAndLineAggregators instance. current number: {}
+							Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];
+							 ic's own headerAggregationKey = {};
+							 new headerAndAggregators = {}\
+							""",
 					key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
 		}
 		else
@@ -694,7 +696,7 @@ public final class AggregationEngine
 	}
 
 	// NOTE: not static because we are using services
-	private/* static */void setDocBaseType(final InvoiceHeaderImpl invoiceHeader)
+	private void setDocBaseType(final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
 		final DocTypeId docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId().orElse(null);

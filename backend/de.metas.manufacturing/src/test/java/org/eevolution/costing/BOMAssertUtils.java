@@ -84,13 +84,13 @@ final class BOMAssertUtils
 		{
 			return null;
 		}
-		else if (valueObj instanceof BigDecimal)
+		else if (valueObj instanceof BigDecimal decimal)
 		{
-			return (BigDecimal)valueObj;
+			return decimal;
 		}
-		else if (valueObj instanceof Integer)
+		else if (valueObj instanceof Integer integer)
 		{
-			return BigDecimal.valueOf((int)valueObj);
+			return BigDecimal.valueOf(integer);
 		}
 		else if (valueObj instanceof String)
 		{

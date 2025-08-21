@@ -90,7 +90,7 @@ public class WEBUIHUCreationWithSerialNumberService
 		final int qtyCU = selectedCuRow.getQtyCU().intValueExact();
 		if (qtyCU == 1)
 		{
-			final String serialNo = availableSerialNumbers.remove(0);
+			final String serialNo = availableSerialNumbers.removeFirst();
 			assignSerialNumberToCU(selectedCuRow.getHuId(), serialNo);
 			huIDsChanged.add(selectedCuRow.getHuId());
 
@@ -187,7 +187,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 				parentHU = createNonAggregatedTU(parentRow, luRow);
 
-				huToSplit = handlingUnitsDAO.retrieveIncludedHUs(parentHU).get(0);
+				huToSplit = handlingUnitsDAO.retrieveIncludedHUs(parentHU).getFirst();
 			}
 
 			final int tuCapacity = calculateTUCapacity(parentHU);
@@ -236,7 +236,7 @@ public class WEBUIHUCreationWithSerialNumberService
 				final List<I_M_HU> tuToNewLUs = newHUTransformation().tuToNewLUs(newTU, QtyTU.ONE, luPIItem, false).getLURecords();
 
 				huIDsToRemove.add(HuId.ofRepoId(oldLU.getM_HU_ID()));
-				huIDsAdded.add(HuId.ofRepoId(tuToNewLUs.get(0).getM_HU_ID()));
+				huIDsAdded.add(HuId.ofRepoId(tuToNewLUs.getFirst().getM_HU_ID()));
 
 			}
 			else
@@ -269,7 +269,7 @@ public class WEBUIHUCreationWithSerialNumberService
 				return;
 			}
 
-			assignSerialNumberToCU(listOfCUIDs.get(i), availableSerialNumbers.remove(0));
+			assignSerialNumberToCU(listOfCUIDs.get(i), availableSerialNumbers.removeFirst());
 		}
 	}
 

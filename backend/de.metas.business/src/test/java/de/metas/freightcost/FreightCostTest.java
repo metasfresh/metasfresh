@@ -178,7 +178,7 @@ public class FreightCostTest
 
 		assertThat(orderLines).hasSize(2);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.getFirst();
 		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
@@ -254,7 +254,7 @@ public class FreightCostTest
 
 		assertThat(orderLines).hasSize(2);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.getFirst();
 		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
@@ -340,7 +340,7 @@ public class FreightCostTest
 
 		assertThat(orderLines).hasSize(2);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.getFirst();
 		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
@@ -426,7 +426,7 @@ public class FreightCostTest
 
 		assertThat(orderLines).hasSize(1);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.getFirst();
 		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 	}
@@ -507,7 +507,7 @@ public class FreightCostTest
 
 		assertThat(orderLines).hasSize(1);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.getFirst();
 		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 	}
@@ -588,7 +588,7 @@ public class FreightCostTest
 
 		assertThat(orderLines).hasSize(1);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.getFirst();
 		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 	}
@@ -657,7 +657,7 @@ public class FreightCostTest
 
 		assertThat(orderLines).hasSize(2);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.getFirst();
 		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
@@ -734,7 +734,7 @@ public class FreightCostTest
 
 		assertThat(orderLines).hasSize(2);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.getFirst();
 		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostOrderLine = orderLines.get(1);
@@ -762,7 +762,7 @@ public class FreightCostTest
 
 		assertThat(orderLines2).hasSize(2);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine2 = orderLines2.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine2 = orderLines2.getFirst();
 		assertThat(productOrderLine2.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostOrderLine2 = orderLines2.get(1);
@@ -790,7 +790,7 @@ public class FreightCostTest
 
 		assertThat(orderLines3).hasSize(2);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine3 = orderLines3.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine3 = orderLines3.getFirst();
 		assertThat(productOrderLine3.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 		final de.metas.interfaces.I_C_OrderLine freightCostOrderLine3 = orderLines3.get(1);
@@ -861,7 +861,7 @@ public class FreightCostTest
 
 		assertThat(orderLines).hasSize(1);
 
-		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.getFirst();
 		assertThat(productOrderLine.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 
 	}

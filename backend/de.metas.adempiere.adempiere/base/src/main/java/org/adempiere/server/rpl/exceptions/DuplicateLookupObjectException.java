@@ -26,6 +26,7 @@ import lombok.Getter;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.compiere.model.PO;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -36,6 +37,7 @@ import java.util.List;
  */
 public final class DuplicateLookupObjectException extends ReplicationException
 {
+	@Serial
 	private static final long serialVersionUID = 5099228399627874129L;
 
 	@Getter

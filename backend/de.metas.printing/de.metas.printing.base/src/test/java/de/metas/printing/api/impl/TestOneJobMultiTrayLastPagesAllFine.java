@@ -106,7 +106,7 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 				.as("Invalid infos count")
 				.hasSize(2);
 
-		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.get(0);
+		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.getFirst();
 		assertThat(printPackageInfo1.getPageFrom())
 				.as("Invalid PageFrom for " + printPackageInfo1)
 				.isEqualTo(1);
@@ -164,7 +164,7 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 				.as("Invalid infos count")
 				.hasSize(2);
 
-		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.get(0);
+		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.getFirst();
 		assertThat(printPackageInfo1.getPageFrom())
 				.as("Invalid PageFrom for " + printPackageInfo1)
 				.isEqualTo(1);
@@ -222,7 +222,7 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 				.as("Invalid infos count")
 				.hasSize(2);
 
-		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.get(0);
+		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.getFirst();
 		assertThat(printPackageInfo1.getPageFrom())
 				.as("Invalid PageFrom for " + printPackageInfo1)
 				.isEqualTo(1);
@@ -280,7 +280,7 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 				.as("Invalid infos count")
 				.hasSize(1);
 
-		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.get(0);
+		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.getFirst();
 		assertThat(printPackageInfo1.getPageFrom())
 				.as("Invalid PageFrom for " + printPackageInfo1)
 				.isEqualTo(1);
@@ -327,7 +327,7 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 				.as("Invalid infos count")
 				.hasSize(1);
 
-		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.get(0);
+		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.getFirst();
 		assertThat(printPackageInfo1.getPageFrom())
 				.as("Invalid PageFrom for " + printPackageInfo1)
 				.isEqualTo(1);
@@ -375,7 +375,7 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 				.as("Invalid infos count")
 				.hasSize(2);
 
-		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.get(0);
+		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.getFirst();
 		assertThat(printPackageInfo1.getPageFrom())
 				.as("Invalid PageFrom for " + printPackageInfo1)
 				.isEqualTo(1);

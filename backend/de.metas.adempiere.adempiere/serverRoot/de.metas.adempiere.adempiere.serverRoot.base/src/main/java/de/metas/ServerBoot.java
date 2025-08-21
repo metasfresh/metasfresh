@@ -68,7 +68,9 @@ import java.util.concurrent.TimeUnit;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@SpringBootApplication(
+		scanBasePackages = { "de.metas", "org.adempiere" },
+		exclude = { org.springframework.boot.autoconfigure.web.reactive.function.client.ClientHttpConnectorAutoConfiguration.class /* exclude deprecated config because we also already have the new one in our classpath */})
 @ServletComponentScan(value = { "de.metas", "org.adempiere" })
 @Profile(Profiles.PROFILE_App)
 public class ServerBoot implements InitializingBean
@@ -132,7 +134,7 @@ public class ServerBoot implements InitializingBean
 					.run(args);
 		}
 		SpringContextHolder.instance.getBean(ServerBoot.class).commandLineOptions = commandLineOptions;
-		
+
 		final ServerBootHealthIndicator healthIndicator = SpringContextHolder.instance.getBean(ServerBootHealthIndicator.class);
 
 		// now init the model validation engine

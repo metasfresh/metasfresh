@@ -22,14 +22,12 @@
 
 package de.metas.greeting;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 
 @Value
 @Builder

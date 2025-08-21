@@ -69,14 +69,12 @@ public class CallCenterValidator implements ModelValidator
 	//@Override
 	public String modelChange(PO po, int type) throws Exception
 	{
-		if (po instanceof X_R_Request && type == TYPE_AFTER_NEW)
+		if (po instanceof X_R_Request r && type == TYPE_AFTER_NEW)
 		{
-			X_R_Request r = (X_R_Request)po;
 			MRGroupProspect.linkRequest(r.getCtx(), r, r.get_TrxName());
 		}
-		else if (po instanceof X_R_Group && (type == TYPE_AFTER_NEW || type == TYPE_AFTER_CHANGE))
+		else if (po instanceof X_R_Group bundle && (type == TYPE_AFTER_NEW || type == TYPE_AFTER_CHANGE))
 		{
-			X_R_Group bundle = (X_R_Group)po;
 			BundleUtil.updateCCM_Bundle_Status(bundle);
 		}
 		return null;

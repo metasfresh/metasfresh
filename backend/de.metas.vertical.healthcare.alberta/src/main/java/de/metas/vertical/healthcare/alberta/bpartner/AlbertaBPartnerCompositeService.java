@@ -125,7 +125,7 @@ public class AlbertaBPartnerCompositeService
 		{
 			return;
 		}
-		else if (!existingAlbertaUserOpt.isPresent() && syncAdvise.getIfNotExists().isFail())
+		else if (existingAlbertaUserOpt.isEmpty() && syncAdvise.getIfNotExists().isFail())
 		{
 			throw MissingResourceException.builder()
 					.resourceName("AlbertaUser")
@@ -169,7 +169,7 @@ public class AlbertaBPartnerCompositeService
 		{
 			return;
 		}
-		else if (!existingAlbertaBPartnerOpt.isPresent() && syncAdvise.getIfNotExists().isFail())
+		else if (existingAlbertaBPartnerOpt.isEmpty() && syncAdvise.getIfNotExists().isFail())
 		{
 			throw MissingResourceException.builder()
 					.resourceName("AlbertaBPartner")
@@ -219,7 +219,7 @@ public class AlbertaBPartnerCompositeService
 		{
 			return;
 		}
-		else if (!existingAlbertaPatientOpt.isPresent() && syncAdvise.getIfNotExists().isFail())
+		else if (existingAlbertaPatientOpt.isEmpty() && syncAdvise.getIfNotExists().isFail())
 		{
 			throw MissingResourceException.builder()
 					.resourceName("AlbertaPatient")
@@ -442,7 +442,7 @@ public class AlbertaBPartnerCompositeService
 		{
 			return;
 		}
-		else if (!existingAlbertaCaregiverOpt.isPresent() && syncAdvise.getIfNotExists().isFail())
+		else if (existingAlbertaCaregiverOpt.isEmpty() && syncAdvise.getIfNotExists().isFail())
 		{
 			throw MissingResourceException.builder()
 					.resourceName("AlbertaCareGiver")

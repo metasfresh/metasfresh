@@ -78,7 +78,7 @@ public class QueryOrderByTest
 		final Comparator<Object> comparator = queryOrderBy.getComparator();
 
 		users.sort(comparator);
-		assertThat(users.get(0).getAD_User_ID()).isEqualTo(user_20.getAD_User_ID());
+		assertThat(users.getFirst().getAD_User_ID()).isEqualTo(user_20.getAD_User_ID());
 		assertThat(users.get(1).getAD_User_ID()).isEqualTo(user_10.getAD_User_ID());
 		assertThat(users.get(2).getAD_User_ID()).isEqualTo(user_null.getAD_User_ID());
 	}
@@ -95,7 +95,7 @@ public class QueryOrderByTest
 		final Comparator<Object> comparator = queryOrderBy.getComparator();
 
 		users.sort(comparator);
-		assertThat(users.get(0).getAD_User_ID()).isEqualTo(user_null.getAD_User_ID());
+		assertThat(users.getFirst().getAD_User_ID()).isEqualTo(user_null.getAD_User_ID());
 		assertThat(users.get(1).getAD_User_ID()).isEqualTo(user_20.getAD_User_ID());
 		assertThat(users.get(2).getAD_User_ID()).isEqualTo(user_10.getAD_User_ID());
 	}
@@ -111,7 +111,7 @@ public class QueryOrderByTest
 		final Comparator<Object> comparator = queryOrderBy.getComparator();
 
 		users.sort(comparator);
-		assertThat(users.get(0).getAD_User_ID()).isEqualTo(user_10.getAD_User_ID());
+		assertThat(users.getFirst().getAD_User_ID()).isEqualTo(user_10.getAD_User_ID());
 		assertThat(users.get(1).getAD_User_ID()).isEqualTo(user_20.getAD_User_ID());
 		assertThat(users.get(2).getAD_User_ID()).isEqualTo(user_null.getAD_User_ID());
 	}
@@ -127,7 +127,7 @@ public class QueryOrderByTest
 		final Comparator<Object> comparator = queryOrderBy.getComparator();
 
 		users.sort(comparator);
-		assertThat(users.get(0).getAD_User_ID()).isEqualTo(user_null.getAD_User_ID());
+		assertThat(users.getFirst().getAD_User_ID()).isEqualTo(user_null.getAD_User_ID());
 		assertThat(users.get(1).getAD_User_ID()).isEqualTo(user_10.getAD_User_ID());
 		assertThat(users.get(2).getAD_User_ID()).isEqualTo(user_20.getAD_User_ID());
 	}

@@ -97,6 +97,6 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 	@Override
 	public String toString()
 	{
-		return String.format("ESRPaymentStringDataProvider [getPaymentString()=%s]", getPaymentString());
+		return "ESRPaymentStringDataProvider [getPaymentString()=%s]".formatted(getPaymentString());
 	}
 }

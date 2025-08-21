@@ -1947,9 +1947,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// 02817: Don't only handle InconsistentUpdateExeptions, but handle RuntimeExceptions in general
 		// (albeit less user-friendly)
 		// Reason: The system should be able to mark the problematic record and go on
-		if (e instanceof InconsistentUpdateException)
+		if (e instanceof InconsistentUpdateException iue)
 		{
-			final InconsistentUpdateException iue = (InconsistentUpdateException)e;
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 			note = new MNote(ctx,
 							 iue.getAdMessageHeadLine().toAD_Message(),

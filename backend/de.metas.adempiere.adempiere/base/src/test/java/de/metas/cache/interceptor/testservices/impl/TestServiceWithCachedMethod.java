@@ -22,17 +22,14 @@ package de.metas.cache.interceptor.testservices.impl;
  * #L%
  */
 
-
-import java.util.UUID;
-
-import org.adempiere.util.proxy.Cached;
-
-
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
 import de.metas.cache.annotation.CacheIgnore;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.interceptor.testservices.ITestServiceWithCachedMethod;
+import org.adempiere.util.proxy.Cached;
 import org.junit.jupiter.api.Disabled;
+
+import java.util.UUID;
 
 @Disabled
 public class TestServiceWithCachedMethod implements ITestServiceWithCachedMethod

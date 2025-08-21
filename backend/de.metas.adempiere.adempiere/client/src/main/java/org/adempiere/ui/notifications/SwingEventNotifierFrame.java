@@ -41,6 +41,7 @@ import org.compiere.util.Env;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
@@ -57,6 +58,7 @@ import java.util.concurrent.TimeUnit;
  */
 class SwingEventNotifierFrame extends JFrame
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**

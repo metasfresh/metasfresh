@@ -227,9 +227,8 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 				logger.trace("constant {} => {}", expr, result);
 				return result;
 			}
-			else if (expr instanceof LogicTuple)
+			else if (expr instanceof LogicTuple tuple)
 			{
-				final LogicTuple tuple = (LogicTuple)expr;
 
 				final String firstEval = ctx.getValue(tuple.getOperand1());
 				//noinspection StringEquality // we're using string == string instead of string.equals(string)
@@ -252,9 +251,8 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 
 				return result;
 			}
-			else if (expr instanceof LogicExpression)
+			else if (expr instanceof LogicExpression logicExpr)
 			{
-				final LogicExpression logicExpr = (LogicExpression)expr;
 
 				// Left value
 				final ILogicExpression leftExpression = logicExpr.getLeft();
@@ -476,9 +474,8 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		{
 			return expr;
 		}
-		else if (expr instanceof LogicTuple)
+		else if (expr instanceof LogicTuple tuple)
 		{
-			final LogicTuple tuple = (LogicTuple)expr;
 
 			final Object operand1 = tuple.getOperand1();
 			final String operand1Resolved = ctx.getValue(operand1);
@@ -507,9 +504,8 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 				return LogicTuple.of(newOperand1, tuple.getOperator(), newOperand2);
 			}
 		}
-		else if (expr instanceof LogicExpression)
+		else if (expr instanceof LogicExpression logicExpr)
 		{
-			final LogicExpression logicExpr = (LogicExpression)expr;
 
 			final ILogicExpression leftExpression = logicExpr.getLeft();
 			final ILogicExpression newLeftExpression = evaluatePartial(ctx, leftExpression);
@@ -582,9 +578,8 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		{
 			//
 			// Case: we deal with a parameter (which we will need to get it from context/source)
-			if (operand instanceof CtxName)
+			if (operand instanceof CtxName ctxName)
 			{
-				final CtxName ctxName = (CtxName)operand;
 				if (ctxNameValues == null)
 				{
 					ctxNameValues = new LinkedHashMap<>();

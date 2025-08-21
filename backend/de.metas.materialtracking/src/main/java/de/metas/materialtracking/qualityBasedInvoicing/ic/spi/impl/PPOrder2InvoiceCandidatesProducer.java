@@ -185,7 +185,7 @@ import java.util.List;
 					.retrieveReferencing(TableRecordReference.of(qiOrder.getPP_Order()));
 			if (!downPaymentICs.isEmpty())
 			{
-				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate firstDownPaymentIC = downPaymentICs.get(0);
+				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate firstDownPaymentIC = downPaymentICs.getFirst();
 				final String msg = "Skip invoice candidates creation because {} is a downpayment quality inspection and there are already C_Invoice_Candidates such as {} for it";
 				loggable.addLog(msg, qiOrder.getPP_Order(), firstDownPaymentIC);
 				return Collections.emptyList();

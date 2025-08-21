@@ -73,18 +73,18 @@ public class MembershipContactBPartnerNameAndGreetingStrategy implements BPartne
 		if (membershipContacts.isEmpty())
 		{
 			return !allContacts.isEmpty()
-					? computeForSingleContact(allContacts.get(0), false)
+					? computeForSingleContact(allContacts.getFirst(), false)
 					: ExplainedOptional.emptyBecause("no membership contact");
 		}
 		else if (membershipContacts.size() == 1)
 		{
-			final ComputeNameAndGreetingRequest.Contact contact = membershipContacts.get(0);
+			final ComputeNameAndGreetingRequest.Contact contact = membershipContacts.getFirst();
 			return computeForSingleContact(contact, true);
 		}
 		else // at least 2 membership contacts
 		{
 			final String adLanguage = StringUtils.trimBlankToOptional(request.getAdLanguage()).orElseGet(Language::getBaseAD_Language);
-			final ComputeNameAndGreetingRequest.Contact person1 = membershipContacts.get(0);
+			final ComputeNameAndGreetingRequest.Contact person1 = membershipContacts.getFirst();
 			final ComputeNameAndGreetingRequest.Contact person2 = membershipContacts.get(1);
 
 			return computeForTwoContacts(person1, person2, adLanguage);

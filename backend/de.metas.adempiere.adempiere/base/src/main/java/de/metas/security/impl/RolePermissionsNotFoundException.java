@@ -22,10 +22,10 @@ package de.metas.security.impl;
  * #L%
  */
 
-
+import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.util.Check;
+import java.io.Serial;
 
 public class RolePermissionsNotFoundException extends AdempiereException
 {
@@ -34,6 +34,7 @@ public class RolePermissionsNotFoundException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -5635853326303323078L;
 
 	public RolePermissionsNotFoundException(final String additionalInfo)
