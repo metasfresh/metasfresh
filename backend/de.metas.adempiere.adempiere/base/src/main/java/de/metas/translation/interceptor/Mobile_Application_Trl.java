@@ -1,9 +1,7 @@
 package de.metas.translation.interceptor;
 
 import de.metas.mobile.application.MobileApplicationRepoId;
-import de.metas.translation.api.IElementTranslationBL;
 import de.metas.translation.api.impl.MobileApplicationTranslationService;
-import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -53,20 +51,18 @@ public class Mobile_Application_Trl
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
-	public void beforeElementTrlChanged(final I_Mobile_Application_Trl adElementTrl)
+	public void beforeMobileApplicationTrlChanged(final I_Mobile_Application_Trl mobileApplicationTrl)
 	{
-		assertNotChangingRegularAndCustomizationFields(adElementTrl);
+		assertNotChangingRegularAndCustomizationFields(mobileApplicationTrl);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
-	public void afterElementTrlChanged(final I_Mobile_Application_Trl adElementTrl)
+	public void afterMobileApplicationTrlChanged(final I_Mobile_Application_Trl mobileApplicationTrl)
 	{
-		final MobileApplicationRepoId adElementId = MobileApplicationRepoId.ofRepoId(adElementTrl.getMobile_Application_ID());
-		final String adLanguage = adElementTrl.getAD_Language();
+		final MobileApplicationRepoId mobileApplicationRepoId = MobileApplicationRepoId.ofRepoId(mobileApplicationTrl.getMobile_Application_ID());
+		final String adLanguage = mobileApplicationTrl.getAD_Language();
 
-		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
-		elementTranslationBL.updateElementFromElementTrlIfBaseLanguage(adElementId, adLanguage);
-		elementTranslationBL.propagateElementTrls(adElementId, adLanguage);
+		mobileApplicationTranslationService.updateMobileApplicationTrl(mobileApplicationRepoId, adLanguage);
 	}
 
 	private static void assertNotChangingRegularAndCustomizationFields(final I_Mobile_Application_Trl mobileApplicationTrl)
@@ -103,28 +99,21 @@ public class Mobile_Application_Trl
 		}
 	}
 
-	private static boolean isValueChanged(final I_Mobile_Application_Trl adElementTrl, final String columnName)
+	private static boolean isValueChanged(final I_Mobile_Application_Trl mobileApplicationTrl, final String columnName)
 	{
-		return InterfaceWrapperHelper.isValueChanged(adElementTrl, columnName);
+		return InterfaceWrapperHelper.isValueChanged(mobileApplicationTrl, columnName);
 	}
 
 	private enum MobileApplicationTranslatedColumn
 	{
 		Name(I_Mobile_Application_Trl.COLUMNNAME_Name, I_Mobile_Application_Trl.COLUMNNAME_Name_Customized), //
 		Description(I_Mobile_Application_Trl.COLUMNNAME_Description, I_Mobile_Application_Trl.COLUMNNAME_Description_Customized), //
-
 		;
 
 		@Getter
 		private final String columnName;
 		@Getter
 		private final String customizationColumnName;
-
-		MobileApplicationTranslatedColumn(@NonNull final String columnName)
-		{
-			this.columnName = columnName;
-			this.customizationColumnName = null;
-		}
 
 		MobileApplicationTranslatedColumn(
 				@NonNull final String columnName,

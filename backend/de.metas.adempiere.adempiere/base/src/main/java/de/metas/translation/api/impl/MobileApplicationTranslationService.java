@@ -22,9 +22,31 @@
 
 package de.metas.translation.api.impl;
 
+import de.metas.mobile.application.MobileApplicationRepoId;
+import lombok.NonNull;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MobileApplicationTranslationService
 {
+	private static final String FUNCTION_update_Mobile_Application_TRLs = "update_Mobile_Application_TRLs";
+
+	public void updateMobileApplicationTrl(final MobileApplicationRepoId mobileApplicationRepoId, @NonNull final String adLanguage)
+	{
+
+		DB.executeFunctionCallEx(
+				ITrx.TRXNAME_ThreadInherited,
+				addUpdateFunctionCall(FUNCTION_update_Mobile_Application_TRLs, mobileApplicationRepoId, adLanguage),
+				null);
+	}
+
+	private String addUpdateFunctionCall(final String functionCall, final MobileApplicationRepoId mobileApplicationRepoId, final String adLanguage)
+	{
+
+		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + mobileApplicationRepoId.getRepoId() + "," + DB.TO_STRING(adLanguage) + ") ";
+	}
+
 }
