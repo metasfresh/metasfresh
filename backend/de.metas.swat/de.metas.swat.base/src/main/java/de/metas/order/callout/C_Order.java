@@ -83,7 +83,7 @@ public class C_Order
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_AD_User_ID, skipIfCopying = true)
-	public void updateRenderedAddressAndCapturedLocation(final I_C_Order order)
+	public void updateBPartnerAddress(final I_C_Order order)
 	{
 		updateRenderedAddressCapturedLocationAndPricingSystem(order);
 	}
@@ -92,7 +92,7 @@ public class C_Order
 			I_C_Order.COLUMNNAME_C_BPartner_ID,
 			I_C_Order.COLUMNNAME_C_BPartner_Location_ID },
 			skipIfCopying = true)
-	public void updateBPartnerAddress(final I_C_Order order)
+	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Order order)
 	{
 		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
 
