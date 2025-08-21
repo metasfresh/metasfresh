@@ -36,6 +36,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
@@ -88,19 +89,14 @@ public class C_Order
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_C_Order order)
 	{
+		final I_C_Order oldRecord = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
+		if (oldRecord.getAD_User_ID() == order.getAD_User_ID())
+		{
+			documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
+		}
+
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
 		
-		orderBL.setM_PricingSystem_ID(order, true); // changed partner/location might imply a changed PS/PL
-	}
-
-	@CalloutMethod(columnNames = {
-			I_C_Order.COLUMNNAME_C_BPartner_ID,
-			I_C_Order.COLUMNNAME_C_BPartner_Location_ID },
-			skipIfCopying = true)
-	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Order order)
-	{
-		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
-
 		orderBL.setM_PricingSystem_ID(order, true); // changed partner/location might imply a changed PS/PL
 	}
 
