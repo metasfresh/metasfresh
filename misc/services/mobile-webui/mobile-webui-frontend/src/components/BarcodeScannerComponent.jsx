@@ -110,10 +110,12 @@ const BarcodeScannerComponent = ({
     onReadDone: (barcode) => {
       console.log('onReadDone', barcode);
       validateScannedBarcodeAndForward({ scannedBarcode: barcode });
-      inputTextRef.current.value = '';
+      if (inputTextRef?.current) {
+        inputTextRef.current.value = '';
+      }
     },
     onReadInProgress: (barcode) => {
-      if (inputTextRef.current) {
+      if (inputTextRef?.current) {
         inputTextRef.current.value = barcode;
       }
     },
