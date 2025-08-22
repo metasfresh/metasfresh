@@ -12,6 +12,7 @@ import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
@@ -91,7 +92,9 @@ public class MobileApplicationInfoRepository
 		for (final I_Mobile_Application_Trl recordTrl : recordTrls)
 		{
 			final String adLanguage = recordTrl.getAD_Language();
-			final String nameTrl = recordTrl.isUseCustomization() ? recordTrl.getName_Customized() : recordTrl.getName();
+			final String nameTrl = recordTrl.isUseCustomization()
+					? StringUtils.trimBlankToOptional(recordTrl.getName_Customized()).orElseGet(recordTrl::getName)
+					: recordTrl.getName();
 			trlMap.put(adLanguage, nameTrl);
 		}
 
