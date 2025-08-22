@@ -12,9 +12,12 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Mobile_Application;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,6 +29,8 @@ public class MobileApplicationInfoRepository
 	private final CCache<Integer, MobileApplicationInfoMap> cache = CCache.<Integer, MobileApplicationInfoMap>builder()
 			.tableName(I_Mobile_Application.Table_Name)
 			.build();
+
+	private static final String FUNCTION_update_Mobile_Application_TRLs = "update_Mobile_Application_TRLs";
 
 	public MobileApplicationInfo getById(final MobileApplicationId applicationId)
 	{
@@ -62,6 +67,21 @@ public class MobileApplicationInfoRepository
 				.caption(trls.getColumnTrl(I_Mobile_Application.COLUMNNAME_Name, record.getName()))
 				.showInMainMenu(record.isShowInMainMenu())
 				.build();
+	}
+
+	public void updateMobileApplicationTrl(final MobileApplicationRepoId mobileApplicationRepoId, @NonNull final String adLanguage)
+	{
+
+		DB.executeFunctionCallEx(
+				ITrx.TRXNAME_ThreadInherited,
+				addUpdateFunctionCall(FUNCTION_update_Mobile_Application_TRLs, mobileApplicationRepoId, adLanguage),
+				null);
+	}
+
+	private String addUpdateFunctionCall(final String functionCall, final MobileApplicationRepoId mobileApplicationRepoId, final String adLanguage)
+	{
+
+		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + mobileApplicationRepoId.getRepoId() + "," + DB.TO_STRING(adLanguage) + ") ";
 	}
 
 	//

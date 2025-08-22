@@ -1,9 +1,10 @@
 package de.metas.translation.interceptor;
 
 import de.metas.mobile.application.MobileApplicationRepoId;
-import de.metas.translation.api.impl.MobileApplicationTranslationService;
+import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,15 +41,11 @@ import java.util.Set;
 
 @Interceptor(I_Mobile_Application_Trl.class)
 @Component
+@RequiredArgsConstructor
 public class Mobile_Application_Trl
 {
 
-	private final MobileApplicationTranslationService mobileApplicationTranslationService;
-
-	public Mobile_Application_Trl(final @NonNull MobileApplicationTranslationService mobileApplicationTranslationService)
-	{
-		this.mobileApplicationTranslationService = mobileApplicationTranslationService;
-	}
+	@NonNull private final MobileApplicationInfoRepository mobileApplicationInfoRepository;
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void beforeMobileApplicationTrlChanged(final I_Mobile_Application_Trl mobileApplicationTrl)
@@ -62,7 +59,7 @@ public class Mobile_Application_Trl
 		final MobileApplicationRepoId mobileApplicationRepoId = MobileApplicationRepoId.ofRepoId(mobileApplicationTrl.getMobile_Application_ID());
 		final String adLanguage = mobileApplicationTrl.getAD_Language();
 
-		mobileApplicationTranslationService.updateMobileApplicationTrl(mobileApplicationRepoId, adLanguage);
+		mobileApplicationInfoRepository.updateMobileApplicationTrl(mobileApplicationRepoId, adLanguage);
 	}
 
 	private static void assertNotChangingRegularAndCustomizationFields(final I_Mobile_Application_Trl mobileApplicationTrl)
