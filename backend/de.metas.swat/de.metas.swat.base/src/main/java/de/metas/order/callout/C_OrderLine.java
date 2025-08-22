@@ -70,8 +70,7 @@ public class C_OrderLine
 
 	@CalloutMethod(columnNames = {
 			I_C_OrderLine.COLUMNNAME_C_BPartner_ID,
-			I_C_OrderLine.COLUMNNAME_C_BPartner_Location_ID,
-			I_C_OrderLine.COLUMNNAME_AD_User_ID },
+			I_C_OrderLine.COLUMNNAME_C_BPartner_Location_ID },
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_C_OrderLine orderLine)
 	{
