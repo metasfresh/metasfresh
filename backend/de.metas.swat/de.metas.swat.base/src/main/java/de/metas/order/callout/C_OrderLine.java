@@ -70,24 +70,20 @@ public class C_OrderLine
 
 	@CalloutMethod(columnNames = {
 			I_C_OrderLine.COLUMNNAME_C_BPartner_ID,
-			I_C_OrderLine.COLUMNNAME_C_BPartner_Location_ID,
-			I_C_OrderLine.COLUMNNAME_AD_User_ID },
+			I_C_OrderLine.COLUMNNAME_C_BPartner_Location_ID },
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_C_OrderLine orderLine)
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 	}
 
-	@CalloutMethod(columnNames = {
-			I_C_OrderLine.COLUMNNAME_C_BPartner_ID,
-			I_C_OrderLine.COLUMNNAME_C_BPartner_Location_ID},
-			skipIfCopying = true)
-	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_OrderLine orderLine)
+	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_AD_User_ID, skipIfCopying = true)
+	public void updateRenderedAddress(final I_C_OrderLine orderLine)
 	{
-		documentLocationBL.updateCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
+		documentLocationBL.updateRenderedAddress(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 	}
 
-	@CalloutMethod(columnNames = {I_C_OrderLine.COLUMNNAME_C_BPartner_ID},
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID },
 			skipIfCopying = true)
 	public void updateBPartnerLocation(final I_C_OrderLine orderLine)
 	{
