@@ -1,8 +1,8 @@
-DROP FUNCTION pp_product_bom_recursive(numeric,
+DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive(numeric,
                                        varchar)
 ;
 
-CREATE FUNCTION pp_product_bom_recursive(p_pp_product_bom_id numeric,
+CREATE FUNCTION PP_Product_BOM_Recursive(p_PP_Product_BOM_ID numeric,
                                          p_ad_language       character varying)
     RETURNS TABLE
             (
@@ -43,7 +43,7 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                                 AND pt.isActive = 'Y'
                                      LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = COALESCE(bom.C_UOM_ID, bomProduct.C_UOM_ID)
                                      LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.IsActive = 'Y' AND uomt.AD_Language = p_ad_language
-                            WHERE bom.PP_Product_BOM_ID = PP_Product_BOM_Recursive.p_PP_Product_BOM_ID)
+                            WHERE bom.PP_Product_BOM_ID = p_PP_Product_BOM_ID)
                            --
                            UNION ALL
                            --
