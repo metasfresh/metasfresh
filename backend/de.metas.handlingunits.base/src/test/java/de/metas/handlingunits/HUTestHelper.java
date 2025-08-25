@@ -63,7 +63,6 @@ import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -453,7 +452,6 @@ public class HUTestHelper
 		beforeRegisteringServices();
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting());
