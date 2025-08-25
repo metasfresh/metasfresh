@@ -29,7 +29,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -79,15 +78,12 @@ public class ShipperDeliveryService
 
 	private final InOutToTransportationOrderService inOutToTransportationOrderService;
 	private final ShipperGatewayFacade shipperGatewayFacade;
-	private final ShipperTransportationRepository shipperTransportationRepository;
 
 	public ShipperDeliveryService(
 			@NonNull final ShipperGatewayFacade shipperGatewayFacade,
-			@NonNull final ShipperTransportationRepository shipperTransportationRepository,
 			@NonNull final InOutToTransportationOrderService inOutToTransportationOrderService)
 	{
 		this.shipperGatewayFacade = shipperGatewayFacade;
-		this.shipperTransportationRepository = shipperTransportationRepository;
 		this.inOutToTransportationOrderService = inOutToTransportationOrderService;
 	}
 
@@ -129,11 +125,11 @@ public class ShipperDeliveryService
 		final ShipperTransportationId shipperTransportationId;
 		if (createOneTransportationOrderPerDay)
 		{
-			shipperTransportationId = shipperTransportationRepository.getOrCreate(createShipperTransportationRequest);
+			shipperTransportationId = shipperTransportationDAO.getOrCreate(createShipperTransportationRequest);
 		}
 		else
 		{
-			shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);
+			shipperTransportationId = shipperTransportationDAO.create(createShipperTransportationRequest);
 		}
 
 		final List<I_M_Package> addedPackages = inOutToTransportationOrderService.addShipmentsToTransportationOrder(shipperTransportationId, ImmutableList.of(inOutId));

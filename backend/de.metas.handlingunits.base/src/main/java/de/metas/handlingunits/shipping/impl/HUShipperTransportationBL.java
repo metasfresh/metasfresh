@@ -11,7 +11,6 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
@@ -82,7 +81,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final ShipperTransportationRepository shipperTransportationRepository = SpringContextHolder.instance.getBean(ShipperTransportationRepository.class);
+	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	@VisibleForTesting
@@ -253,12 +252,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		//
 		// NOTE: the method which is retrieving the HUs to generate shipment from them is getting only the LUs:
 		// de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.retrieveCandidates(I_C_Queue_WorkPackage, String)
-		if (!handlingUnitsBL.isTopLevel(hu))
-		{
-			return false;
-		}
-
-		return true;
+		return handlingUnitsBL.isTopLevel(hu);
 	}
 
 	@Override
@@ -391,7 +385,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.build();
 
-		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);
+		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(createShipperTransportationRequest);
 
 		final CreatePackagesForInOutRequest createPackagesForInOutRequest = CreatePackagesForInOutRequest.builder()
 				.shipment(InterfaceWrapperHelper.create(shipment, de.metas.inout.model.I_M_InOut.class))

@@ -53,6 +53,8 @@ public interface IShipperTransportationDAO extends ISingletonService
 	@Nullable
 	I_M_ShipperTransportation retrieve(@NonNull final ShipperTransportationId shipperTransportationId);
 
+	ShipperTransportationId create(@NonNull CreateShipperTransportationRequest request);
+
 	@NonNull
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
 }

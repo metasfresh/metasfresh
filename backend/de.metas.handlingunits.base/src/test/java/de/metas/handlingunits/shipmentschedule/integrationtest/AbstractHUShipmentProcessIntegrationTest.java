@@ -32,7 +32,6 @@ import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
@@ -215,7 +214,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Services
 		// this.huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 		// this.huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
 		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 

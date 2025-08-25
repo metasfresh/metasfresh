@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyRepository;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.sscc18.ISSCC18CodeBL;
@@ -98,7 +97,6 @@ public class AllAvailableSingletonServicesTest
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(new BankAccountService(new BankRepository(), new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));

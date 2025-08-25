@@ -47,6 +47,7 @@ import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
@@ -136,7 +137,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 {
 	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
-
+	private final static AdMessageKey MSG_PackageNumberNotMatching = AdMessageKey.of("de.metas.handlingunits.HUReceiptSchedule.PackageNumberNotMatching");
 	private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationRepository.class);
 
 	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
@@ -427,7 +428,10 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		final Map<String, Package> mutableSSCCToPackageMap = new HashMap<>(packages.stream()
 				.collect(ImmutableMap.toImmutableMap(Package::getSscc, Function.identity())));
-		Check.assume(selectedLUQtyHUs.size() <= packages.size(), "Not enough unassigned packages to match all selected HUs");
+		if (selectedLUQtyHUs.size() > packages.size())
+		{
+			throw new AdempiereException(MSG_PackageNumberNotMatching);
+		}
 
 		final Map<HuId, String> huIdToSscc18Map = selectedLUQtyHUs.stream()
 				.collect(HashMap::new,
