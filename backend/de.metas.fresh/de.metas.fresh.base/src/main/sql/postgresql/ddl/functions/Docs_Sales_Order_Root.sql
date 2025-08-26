@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN p_ad_language Character Varying (6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN record_id numeric, IN ad_language Character Varying (6));
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN p_ad_language Character Varying (6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN record_id numeric, IN ad_language Character Varying (6))
 RETURNS TABLE 
 	(
 	ad_org_id numeric(10,0),
@@ -44,10 +44,10 @@ SELECT
 	END AS isprepay
 FROM
 	C_Order o
-	INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
-	LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_ad_language
+	INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
 WHERE
-	o.C_Order_ID = p_record_id
+	o.C_Order_ID = $1 AND o.isActive = 'Y'
 $$
 LANGUAGE sql STABLE
 ;

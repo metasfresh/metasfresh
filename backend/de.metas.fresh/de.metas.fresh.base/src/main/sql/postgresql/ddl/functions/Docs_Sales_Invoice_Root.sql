@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Root (IN p_record_id numeric, IN p_ad_language Character Varying (6));
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Root (IN p_record_id numeric, IN p_ad_language Character Varying (6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Root ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Root ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
 RETURNS TABLE 
 	(AD_Org_ID numeric,
 	DocStatus character(2),
@@ -36,14 +36,14 @@ SELECT
 	END AS isCreditMemo
 FROM
 	C_Invoice i
-	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID
-	LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_ad_language
+	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
 
 	LEFT OUTER JOIN C_BPartner_Location bpl ON bpl.C_BPartner_Location_id = i.C_BPartner_Location_ID 
 	LEFT OUTER JOIN C_Location l ON l.C_Location_ID = bpl.C_Location_ID 
 	LEFT OUTER JOIN C_Country c ON c.C_Country_ID = l.C_Country_ID 
 WHERE
-	i.C_Invoice_ID = p_record_id
+	i.C_Invoice_ID = $1 AND i.isActive = 'Y'
 $$
 LANGUAGE sql STABLE	
 ;
