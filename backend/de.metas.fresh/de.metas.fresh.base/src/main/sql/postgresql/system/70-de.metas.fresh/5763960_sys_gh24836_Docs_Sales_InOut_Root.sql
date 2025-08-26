@@ -1,8 +1,7 @@
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root
-;
-
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root (IN p_record_id numeric, IN p_ad_language Character Varying (6));
 
+DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root
+;
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root (IN p_record_id numeric, IN p_ad_language Character Varying (6))
     RETURNS TABLE
