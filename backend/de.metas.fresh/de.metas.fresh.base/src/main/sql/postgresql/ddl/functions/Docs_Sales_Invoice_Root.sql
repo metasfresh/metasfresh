@@ -20,9 +20,12 @@ SELECT
 	CASE
 		WHEN
 		EXISTS(
-			SELECT il.M_HU_PI_Item_Product_ID
+			SELECT 0
 			FROM C_InvoiceLine il
-			WHERE il.C_Invoice_ID = i.C_Invoice_ID
+			INNER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+			WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
+			AND il.C_Invoice_ID = i.C_Invoice_ID AND il.isActive = 'Y'
 		)
 		THEN 'Y'
 		ELSE 'N'
