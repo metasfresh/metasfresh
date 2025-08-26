@@ -105,6 +105,7 @@ public class PurchaseOrderToShipperTransportationService
 				.shipperId(shipperId)
 				.orgId(OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()))
 				.assignAnonymouslyPickedHUs(true)
+				.isSOTrx(false)
 				.shipDate(TimeUtil.asLocalDate(purchaseOrder.getDatePromised()))
 				.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(purchaseOrder.getC_BPartner_ID()), purchaseOrder.getC_BPartner_Location_ID()))
 				.build());
@@ -130,6 +131,7 @@ public class PurchaseOrderToShipperTransportationService
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.shipDate(TimeUtil.asLocalDate(order.getDatePromised()))
 				.assignAnonymouslyPickedHUs(true)
+				.isSOTrx(false)
 				.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(order.getC_BPartner_ID()), order.getC_BPartner_Location_ID()))
 				.build());
 

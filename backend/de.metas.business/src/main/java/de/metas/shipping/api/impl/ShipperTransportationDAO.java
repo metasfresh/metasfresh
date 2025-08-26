@@ -103,6 +103,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		shipperTransportation.setShipper_BPartner_ID(request.getShipperBPartnerAndLocationId().getBpartnerId().getRepoId());
 		shipperTransportation.setShipper_Location_ID(request.getShipperBPartnerAndLocationId().getRepoId());
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(request.getShipDate()));
+		shipperTransportation.setIsSOTrx(request.isSOTrx());
 		shipperTransportation.setAssignAnonymouslyPickedHUs(request.isAssignAnonymouslyPickedHUs());
 
 		saveRecord(shipperTransportation);

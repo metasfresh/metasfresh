@@ -383,6 +383,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipperBPartnerAndLocationId(shipFromBPLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
+				.isSOTrx(true)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(createShipperTransportationRequest);
