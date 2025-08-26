@@ -23,14 +23,18 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.DataTableUtil;
+=======
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+>>>>>>> 35b06f5141 (Fix Moving Average Invoice costing bugs + cucumber test (#21145))
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.Services;
@@ -41,13 +45,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_HU_CreateReceipt_StepDef
 {
@@ -73,6 +73,7 @@ public class M_HU_CreateReceipt_StepDef
 	@And("create material receipt")
 	public void create_materialReceipt(@NonNull final DataTable dataTable)
 	{
+<<<<<<< HEAD
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
 		{
@@ -121,5 +122,61 @@ public class M_HU_CreateReceipt_StepDef
 			final String inoutIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 			inOutTable.putOrReplace(inoutIdentifier, huInOut);
 		}
+=======
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+							final I_M_InOut materialReceipt = createMaterialReceipt(
+									IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
+											.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
+											.ctx(Env.getCtx())
+											.receiptSchedules(ImmutableList.of(extractAndRefreshReceiptSchedule(row)))
+											.selectedHuIds(extractHuIds(row))
+											.build()
+							);
+
+							row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).ifPresent(inoutIdentifier -> inOutTable.putOrReplace(inoutIdentifier, materialReceipt));
+						}
+				);
+>>>>>>> 35b06f5141 (Fix Moving Average Invoice costing bugs + cucumber test (#21145))
 	}
+
+	private @NonNull I_M_ReceiptSchedule extractAndRefreshReceiptSchedule(final DataTableRow row)
+	{
+		final StepDefDataIdentifier receiptScheduleIdentifier = row.getAsIdentifier(I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID);
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
+		InterfaceWrapperHelper.refresh(receiptSchedule);
+		return receiptSchedule;
+	}
+
+	private Set<HuId> extractHuIds(final DataTableRow row)
+	{
+		final StepDefDataIdentifier huIdentifier = row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).orElse(null);
+		final StepDefDataIdentifier huListIdentifier = row.getAsOptionalIdentifier("HUList").orElse(null);
+
+		assertThat(huIdentifier != null /*XOR*/ ^ huListIdentifier != null).isTrue();
+
+		final Set<HuId> huIdSet;
+		if (huIdentifier != null)
+		{
+			huIdSet = ImmutableSet.of(HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID()));
+		}
+		else
+		{
+			assertThat(huListIdentifier).isNotNull();
+
+			huIdSet = huListTable.get(huListIdentifier)
+					.stream()
+					.map(I_M_HU::getM_HU_ID)
+					.map(HuId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		return huIdSet;
+	}
+
+	public I_M_InOut createMaterialReceipt(final IHUReceiptScheduleBL.CreateReceiptsParameters parameters)
+	{
+		return huReceiptScheduleBL.processReceiptSchedules(parameters)
+				.getSingleInOut(I_M_InOut.class);
+	}
+
 }

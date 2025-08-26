@@ -23,6 +23,34 @@ import java.util.Set;
 @UtilityClass
 public class AccountingCucumberHelper
 {
+<<<<<<< HEAD
+=======
+	public static void repost(final TableRecordReferenceSet recordRefs)
+	{
+		final IPostingService postingService = Services.get(IPostingService.class);
+
+		streamPostingInfo(recordRefs)
+				.map(AccountingCucumberHelper::toDocumentPostRequest)
+				.collect(DocumentPostMultiRequest.collect())
+				.ifPresent(postingService::postAfterCommit);
+	}
+
+	private static DocumentPostRequest toDocumentPostRequest(final PostingInfo postingInfo)
+	{
+		return DocumentPostRequest.builder()
+				.record(postingInfo.getRecordRef())
+				.clientId(postingInfo.getClientId())
+				.force(true)
+				.onErrorNotifyUserId(Env.getLoggedUserId())
+				.build();
+	}
+	
+	public static void waitUtilPosted(final TableRecordReferenceSet recordRefs) throws InterruptedException
+	{
+		waitUtilPosted(recordRefs.toSet());
+	}
+
+>>>>>>> 35b06f5141 (Fix Moving Average Invoice costing bugs + cucumber test (#21145))
 	public static void waitUtilPosted(final Set<TableRecordReference> recordRefs) throws InterruptedException
 	{
 		if (recordRefs.isEmpty())

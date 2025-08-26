@@ -31,7 +31,6 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -352,6 +351,12 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@Nullable
+	public static Timestamp extractDateTimestampForColumnNameOrNull(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractDateTimestampForColumnNameOrNull(dataTableRow.asMap(), columnName);
 	}
 
 	@Nullable

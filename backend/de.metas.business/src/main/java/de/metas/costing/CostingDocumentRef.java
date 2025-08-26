@@ -13,6 +13,7 @@ import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_CostRevaluationLine;
@@ -199,4 +200,6 @@ public class CostingDocumentRef
 	}
 
 	public static boolean equals(CostingDocumentRef ref1, CostingDocumentRef ref2) {return Objects.equals(ref1, ref2);}
+
+	public TableRecordReference toTableRecordReference() {return TableRecordReference.of(tableName, id);}
 }
