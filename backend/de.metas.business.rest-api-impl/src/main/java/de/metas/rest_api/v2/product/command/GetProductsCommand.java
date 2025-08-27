@@ -337,8 +337,7 @@ public class GetProductsCommand
 				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartnerId)))
 				.name(record.getName())
 				.qty(record.getQty())
-				.uom(uomId != null ? servicesFacade.getUOMSymbol(uomId) : null)
-
+				.uom(uomId != null ? servicesFacade.getX12DE355(uomId) : null)
 				//
 				.build();
 	}
