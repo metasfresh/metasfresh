@@ -33,6 +33,7 @@ import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -120,7 +121,7 @@ public class ShipperDeliveryService
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(inOutBL.retrieveMovementDate(shipment))
 				.assignAnonymouslyPickedHUs(true)
-				.isSOTrx(true)
+				.isSOTrx(SOTrx.SALES)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId;

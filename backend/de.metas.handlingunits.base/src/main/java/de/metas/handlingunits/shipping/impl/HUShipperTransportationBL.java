@@ -23,6 +23,7 @@ import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
 import de.metas.inout.IInOutDAO;
+import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
@@ -383,7 +384,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipperBPartnerAndLocationId(shipFromBPLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
-				.isSOTrx(true)
+				.isSOTrx(SOTrx.SALES)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(createShipperTransportationRequest);

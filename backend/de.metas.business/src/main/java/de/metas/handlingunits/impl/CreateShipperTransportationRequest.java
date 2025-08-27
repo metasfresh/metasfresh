@@ -23,6 +23,7 @@
 package de.metas.handlingunits.impl;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
@@ -53,5 +54,5 @@ public class CreateShipperTransportationRequest
 	 */
 	boolean assignAnonymouslyPickedHUs;
 
-	boolean isSOTrx;
+	SOTrx isSOTrx;
 }
