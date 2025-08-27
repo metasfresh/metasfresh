@@ -86,6 +86,12 @@ public interface IShipmentSchedulePA extends ISingletonService
 	void updateDeliveryDate_Override(Timestamp deliveryDate, PInstanceId pinstanceId);
 
 	/**
+	 * Mass update MovementDate
+	 * No invalidation.
+	 */
+	void updateMovementDate(Timestamp movementDate, PInstanceId pinstanceId);
+
+	/**
 	 * Mass update PreparationDate_Override
 	 * Invalidation in case preparationDate is null
 	 */

@@ -464,6 +464,20 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
+	public void updateMovementDate(final Timestamp movementDate, final PInstanceId pinstanceId)
+	{
+		final boolean invalidate = false;
+
+		updateColumnForSelection(
+				I_M_ShipmentSchedule.COLUMNNAME_MovementDate,
+				movementDate,
+				false,
+				pinstanceId,
+				invalidate
+		);
+	}
+
+	@Override
 	public void updatePreparationDate_Override(final Timestamp preparationDate, final PInstanceId pinstanceId)
 	{
 		// in case the preparation date is given, it will only be set. No Invalidation needed

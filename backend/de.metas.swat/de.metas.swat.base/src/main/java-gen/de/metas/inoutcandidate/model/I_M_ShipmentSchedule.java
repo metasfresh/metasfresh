@@ -2240,4 +2240,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_M_ShipmentSchedule.class, "ExternalLineId", null);
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
+	 * Set Date.
+	 * Date a product was moved in or out of inventory
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Date.
+	 * Date a product was moved in or out of inventory
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getMovementDate();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_MovementDate = new ModelColumn<>(I_M_ReceiptSchedule.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
 }
