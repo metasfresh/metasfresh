@@ -28,6 +28,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -77,7 +78,9 @@ public class ReplenishInfoRepository
 		else
 		{
 			min = StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Min(), productId, uomId);
-			max = StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Max(), productId, uomId);
+
+
+			max = NumberUtils.isZeroOrNull(replenishRecord.getLevel_Max()) ? min : StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Max(), productId, uomId);
 			highPriority = replenishRecord.isHighPriority();
 		}
 
