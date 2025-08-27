@@ -1642,16 +1642,4 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalLineId);
 	}
-
-	@Override
-	public void setMovementDate (final @Nullable java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getMovementDate()
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
-	}
 }

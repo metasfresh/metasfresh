@@ -41,6 +41,7 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.modelvalidator.M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
@@ -80,6 +81,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -576,6 +578,29 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 								 return;
 							 }
 							 record.setExportStatus(newExportStatus.getCode());
+							 updateCanBeExportedFrom(record);
+							 InterfaceWrapperHelper.saveRecord(record);
+
+							 updatedCounter.incrementAndGet();
+						 });
+
+		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ReceiptSchedules", updatedCounter.get(), allCounter.get());
+	}
+
+	@Override
+	public void updateMovementDate( @NonNull final Timestamp movementDate, @NonNull  final PInstanceId pinstanceId)
+	{
+		final AtomicInteger allCounter = new AtomicInteger(0);
+		final AtomicInteger updatedCounter = new AtomicInteger(0);
+
+		queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.setOnlySelection(pinstanceId)
+				.create()
+				.iterateAndStream()
+				.forEach(record ->
+						 {
+							 allCounter.incrementAndGet();
+							 record.setMovementDate(movementDate);
 							 updateCanBeExportedFrom(record);
 							 InterfaceWrapperHelper.saveRecord(record);
 

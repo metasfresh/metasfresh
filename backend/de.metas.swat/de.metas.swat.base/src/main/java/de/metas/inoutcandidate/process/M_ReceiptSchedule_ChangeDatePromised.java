@@ -22,12 +22,18 @@ package de.metas.inoutcandidate.process;
  * #L%
  */
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
+import de.metas.process.Param;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
@@ -40,52 +46,41 @@ import java.sql.Timestamp;
 
 public class M_ReceiptSchedule_ChangeDatePromised extends JavaProcess implements IProcessPrecondition
 {
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
+	private static final AdMessageKey MSG_NO_UNPROCESSED_LINES = AdMessageKey.of("receiptschedule.noUnprocessedLines");
 
 	public static final String PARAM_DatePromised = "DatePromised";
-
+	@Param(parameterName = PARAM_DatePromised, mandatory = true)
 	private Timestamp p_datePromised;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectionSize().isNoSelection())
+		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParametersAsArray())
-		{
-			if (para.getParameter() == null)
-			{
-				continue;
-			}
-			final String parameterName = para.getParameterName();
+		final IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
+		final IQueryBuilder<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> queryBuilderForShipmentSchedulesSelection = receiptScheduleDAO.createQueryForReceiptScheduleSelection(getCtx(), userSelectionFilter);
 
-			if (PARAM_DatePromised.equals(parameterName))
-			{
-				p_datePromised = para.getParameterAsTimestamp();
-			}
-		}
-
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
-		final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
-		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilderForShipmentSchedulesSelection = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter);
-
-		//
 		// Create selection and return how many items were added
-		final int selectionCount =  queryBuilderForShipmentSchedulesSelection
+		final int selectionCount = queryBuilderForShipmentSchedulesSelection
 				.create()
 				.createSelection(getPinstanceId());
 
 		if (selectionCount <= 0)
 		{
-			throw new AdempiereException("@NoSelection@");
+			throw new AdempiereException(MSG_NO_UNPROCESSED_LINES)
+					.markAsUserValidationError();
 		}
 
 	}
@@ -95,11 +90,8 @@ public class M_ReceiptSchedule_ChangeDatePromised extends JavaProcess implements
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
 
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
-		shipmentSchedulePA.updateMovementDate(p_datePromised, pinstanceId);
+		receiptScheduleBL.updateMovementDate(p_datePromised, pinstanceId);
 
 		return MSG_OK;
-
 	}
 }

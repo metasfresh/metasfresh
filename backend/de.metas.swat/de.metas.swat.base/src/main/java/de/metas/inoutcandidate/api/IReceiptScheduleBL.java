@@ -46,6 +46,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -227,6 +228,8 @@ public interface IReceiptScheduleBL extends ISingletonService
 	void applyReceiptScheduleChanges(ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest);
 
 	void updateExportStatus(@NonNull APIExportStatus exportStatus, @NonNull PInstanceId pinstanceId);
+
+	void updateMovementDate(@NonNull Timestamp movementDate, @NonNull PInstanceId pinstanceId);
 
 	void updateCanBeExportedFrom(@NonNull I_M_ReceiptSchedule receiptSchedule);
 
