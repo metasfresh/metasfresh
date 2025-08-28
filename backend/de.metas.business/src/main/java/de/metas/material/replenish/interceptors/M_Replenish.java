@@ -44,6 +44,13 @@ public class M_Replenish
 		final BigDecimal levelMinQty = CoalesceUtil.coalesceNotNull(m_replenish.getLevel_Min(), BigDecimal.ZERO);
 		final BigDecimal levelMaxQty = CoalesceUtil.coalesceNotNull(m_replenish.getLevel_Max(), BigDecimal.ZERO);
 
-		m_replenish.setLevel_Max(levelMaxQty.max(levelMinQty));
+		if(levelMaxQty.equals(levelMinQty))
+		{
+			m_replenish.setLevel_Max(null);
+		}
+		else
+		{
+			m_replenish.setLevel_Max(levelMaxQty);
+		}
 	}
 }

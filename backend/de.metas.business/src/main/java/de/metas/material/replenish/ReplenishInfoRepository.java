@@ -28,7 +28,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,6 +36,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Replenish;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.adempiere.ad.dao.IQueryOrderBy.Direction.Ascending;
@@ -79,15 +79,14 @@ public class ReplenishInfoRepository
 		{
 			min = StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Min(), productId, uomId);
 
-
-			max = NumberUtils.isZeroOrNull(replenishRecord.getLevel_Max()) ? min : StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Max(), productId, uomId);
+			max = replenishRecord.getLevel_Max() == null ? null : StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Max(), productId, uomId);
 			highPriority = replenishRecord.isHighPriority();
 		}
 
 		return ReplenishInfo.builder()
 				.identifier(identifier)
 				.min(min)
-				.max(max)
+				.max(max== null ? min : max)
 				.highPriority(highPriority)
 				.build();
 	}
@@ -97,8 +96,11 @@ public class ReplenishInfoRepository
 		final I_M_Replenish replenishRecord = getRecordByIdentifier(replenishInfo.getIdentifier())
 				.orElseGet(() -> initNewRecord(replenishInfo.getIdentifier()));
 
-		replenishRecord.setLevel_Min(replenishInfo.getMin().getStockQty().toBigDecimal());
-		replenishRecord.setLevel_Max(replenishInfo.getMax().getStockQty().toBigDecimal());
+		final BigDecimal levelMin = replenishInfo.getMin().getStockQty().toBigDecimal();
+		final BigDecimal levelMax = replenishInfo.getMax().getStockQty().toBigDecimal();
+
+		replenishRecord.setLevel_Min(levelMin);
+		replenishRecord.setLevel_Max(levelMax.equals(levelMin) ? null : levelMax);
 
 		saveRecord(replenishRecord);
 	}
