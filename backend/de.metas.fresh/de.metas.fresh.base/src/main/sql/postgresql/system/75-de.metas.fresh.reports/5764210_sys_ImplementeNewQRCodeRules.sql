@@ -1,3 +1,32 @@
+CREATE OR REPLACE FUNCTION extract_street_and_number(p_full_address TEXT)
+    RETURNS TABLE
+            (
+                street TEXT,
+                number TEXT
+            )
+AS
+$$
+DECLARE
+    v_extracted_number TEXT;
+    v_extracted_street TEXT;
+BEGIN
+    SELECT REGEXP_SUBSTR(p_full_address, '[a-zA-Z0-9]+$') INTO v_extracted_number;
+
+    IF v_extracted_number IS NOT NULL THEN
+        SELECT TRIM(SUBSTRING(p_full_address FROM 1 FOR LENGTH(p_full_address) - LENGTH(v_extracted_number) - 1)) INTO v_extracted_street;
+    ELSE
+        v_extracted_street := p_full_address;
+        v_extracted_number := NULL;
+    END IF;
+
+    RETURN QUERY SELECT v_extracted_street, v_extracted_number;
+
+END;
+$$
+    LANGUAGE plpgsql
+;
+
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_QR_Code (IN p_C_invoice_id numeric)
 ;
 
@@ -24,7 +53,7 @@ SELECT ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
         COALESCE(REPLACE(qr_iban, ' ', ''), REPLACE(iban, ' ', ''), '') || E'\n' || -- Account
-        'S' || E'\n' || -- CR - AdressTyp = Combined address
+        'K' || E'\n' || -- CR - AdressTyp = Combined address
         orgbp.name || E'\n' || --CR – Name
         (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
         (extract_street_and_number(COALESCE(orgl.address1, ''))).number || E'\n' || --CR –Street no
@@ -143,3 +172,5 @@ WHERE i.C_Invoice_ID = p_C_invoice_id
 $$
     LANGUAGE sql STABLE
 ;
+
+
