@@ -108,6 +108,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateLocationM_Shippers(selection);
 
+		dbUpdateLocationM_Shipper_Routing_Codes(selection);
+
 		dbUpdateAD_PrintFormats(selection);
 
 		dbUpdateM_PricingSystems(selection);
@@ -802,6 +804,32 @@ public class BPartnerImportTableSqlUpdater
 					.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid location Shipper or DeliveryViaRule", sql);
+		}
+	}
+
+	private void dbUpdateLocationM_Shipper_Routing_Codes(final ImportRecordsSelection selection)
+	{
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET M_Shipper_RoutingCode_ID=(SELECT M_Shipper_RoutingCode_ID FROM M_Shipper_RoutingCode s"
+					+ " WHERE i.ShipperRouteCodeName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ " AND i.Location_M_Shipper_ID = s.M_Shipper_ID "
+					+ "WHERE M_Shipper_RoutingCode_ID IS NULL AND ShipperRouteCodeName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Set M_Shipper_RoutingCode_ID", sql);
+		}
+
+		//
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ShipperRouteCodeName for Location Shipper, ' "
+					+ "WHERE M_Shipper_RoutingCode_ID IS NULL AND ShipperRouteCodeName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Flag records with invalid ShipperRouteCodeName for Location Shipper", sql);
 		}
 	}
 
