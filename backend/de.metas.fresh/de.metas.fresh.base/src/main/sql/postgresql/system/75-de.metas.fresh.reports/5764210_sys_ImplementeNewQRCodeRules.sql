@@ -53,7 +53,7 @@ SELECT ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
         COALESCE(REPLACE(qr_iban, ' ', ''), REPLACE(iban, ' ', ''), '') || E'\n' || -- Account
-        'K' || E'\n' || -- CR - AdressTyp = Combined address
+        'S' || E'\n' || -- CR - AdressTyp = Combined address
         orgbp.name || E'\n' || --CR – Name
         (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
         (extract_street_and_number(COALESCE(orgl.address1, ''))).number || E'\n' || --CR –Street no
