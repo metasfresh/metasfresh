@@ -588,20 +588,19 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void updateMovementDate( @NonNull final Timestamp movementDate, @NonNull  final PInstanceId pinstanceId)
+	public void updateMovementDate( @NonNull final Timestamp movementDate, @NonNull  final PInstanceId selectionId)
 	{
 		final AtomicInteger allCounter = new AtomicInteger(0);
 		final AtomicInteger updatedCounter = new AtomicInteger(0);
 
 		queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.setOnlySelection(pinstanceId)
+				.setOnlySelection(selectionId)
 				.create()
 				.iterateAndStream()
 				.forEach(record ->
 						 {
 							 allCounter.incrementAndGet();
 							 record.setMovementDate(movementDate);
-							 updateCanBeExportedFrom(record);
 							 InterfaceWrapperHelper.saveRecord(record);
 
 							 updatedCounter.incrementAndGet();

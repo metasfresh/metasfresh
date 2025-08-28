@@ -229,7 +229,7 @@ public interface IReceiptScheduleBL extends ISingletonService
 
 	void updateExportStatus(@NonNull APIExportStatus exportStatus, @NonNull PInstanceId pinstanceId);
 
-	void updateMovementDate(@NonNull Timestamp movementDate, @NonNull PInstanceId pinstanceId);
+	void updateMovementDate(@NonNull Timestamp movementDate, @NonNull PInstanceId selectionId);
 
 	void updateCanBeExportedFrom(@NonNull I_M_ReceiptSchedule receiptSchedule);
 

@@ -69,11 +69,8 @@ public class M_ReceiptSchedule_ChangeDatePromised extends JavaProcess implements
 	@Override
 	protected void prepare()
 	{
-		final IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
-		final IQueryBuilder<de.metas.inoutcandidate.model.I_M_ReceiptSchedule> queryBuilderForShipmentSchedulesSelection = receiptScheduleDAO.createQueryForReceiptScheduleSelection(getCtx(), userSelectionFilter);
-
 		// Create selection and return how many items were added
-		final int selectionCount = queryBuilderForShipmentSchedulesSelection
+		final int selectionCount = receiptScheduleDAO.createQueryForReceiptScheduleSelection(getCtx(), getProcessInfo().getQueryFilterOrElseFalse())
 				.create()
 				.createSelection(getPinstanceId());
 
