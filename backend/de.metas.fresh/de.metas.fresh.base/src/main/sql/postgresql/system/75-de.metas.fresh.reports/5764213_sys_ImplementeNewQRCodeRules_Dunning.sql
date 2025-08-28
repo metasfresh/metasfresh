@@ -42,11 +42,7 @@ SELECT ('SPC' || E'\n' || --QRType
         TO_CHAR((i.grandtotal - COALESCE(y.zuordnung, 0)), 'FM99990.00') || E'\n' ||
         cur.iso_code || E'\n' ||
         'S' || E'\n' || -- UD– AdressTyp = Combined address
-        (CASE
-             WHEN bp.IsCompany = 'Y' THEN bp.companyname
-                                     ELSE (COALESCE(u.FirstName, '') || ' ' || COALESCE(u.LastName, ''))
-         END)
-            || E'\n' || --UD – Name
+        SUBSTRING(i.bpartneraddress FROM 1 FOR POSITION(E'\n' IN i.bpartneraddress)) || --UD – Name
         (extract_street_and_number(COALESCE(l.address1, ''))).street || E'\n' || --UD –Street
         (extract_street_and_number(COALESCE(l.address1, ''))).number || E'\n' || --UD –Street no
         COALESCE(l.postal, '') || E'\n' || -- UD Postal code
@@ -73,13 +69,13 @@ SELECT ('SPC' || E'\n' || --QRType
         'EPD' || E'\n' || --Trailer
 
         '' || E'\n' --Billing information
-           )                                                                        AS QR_Code,
-       COALESCE(iban, '')                                                           AS CR_IBAN,
-       COALESCE(qr_iban, '')                                                        AS CR_QR_IBAN,
-       (CASE WHEN orgbp.IsCompany = 'Y' THEN orgbp.Companyname ELSE orgbp.name END) AS CR_Name,
+           )                                                   AS QR_Code,
+       COALESCE(iban, '')                                      AS CR_IBAN,
+       COALESCE(qr_iban, '')                                   AS CR_QR_IBAN,
+       orgbp.name                                              AS CR_Name,
        ((CASE WHEN NULLIF(TRIM(orgl.address1), '') IS NOT NULL THEN (orgl.address1 || E'\n') ELSE '' END) ||
         COALESCE(orgl.postal, '') || ' ' || COALESCE(orgl.city, '') || E'\n' ||
-        orgc.countrycode)                                                           AS CR_Addres,
+        orgc.countrycode)                                      AS CR_Addres,
 
        (CASE
             WHEN NULLIF(TRIM(qr_iban), '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN
@@ -93,29 +89,23 @@ SELECT ('SPC' || E'\n' || --QRType
                                                                                       THEN 'RF' || orgbpb.sepa_creditoridentifier
                                                                                       ELSE ''
         END)
-                                                                                    AS referenceno,
+                                                               AS referenceno,
 
-       ((CASE
-             WHEN bp.IsCompany = 'Y' THEN bp.companyname
-                                     ELSE (COALESCE(u.FirstName, '') || ' ' || COALESCE(u.LastName, ''))
-         END) || E'\n' ||
-        COALESCE(l.address1, '') || E'\n' ||
-        COALESCE(l.postal, '') || ' ' || COALESCE(l.city, ''))                      AS DR_Address,
-       i.grandtotal - COALESCE(y.zuordnung, 0)                                      AS Amount,
-       cur.iso_code                                                                 AS currency,
+       i.bpartneraddress AS DR_Address,
+       i.grandtotal - COALESCE(y.zuordnung, 0)                 AS Amount,
+       cur.iso_code                                            AS currency,
        (CASE
             WHEN i.DocumentNo IS NOT NULL THEN ('Rechnungs-Nr. ' || i.DocumentNo)
                                           ELSE ''
-        END)                                                                        AS additional_informations,
-       orgbpb.sepa_creditoridentifier                                               AS SCOR,
-       cl.referenceno                                                               AS codeline,
+        END)                                                   AS additional_informations,
+       orgbpb.sepa_creditoridentifier                          AS SCOR,
+       cl.referenceno                                          AS codeline,
        i.DocumentNo,
        y.zuordnung
 
 FROM C_Invoice i
          JOIN C_BPartner bp
               ON i.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT JOIN AD_User u ON i.AD_User_ID = u.AD_user_ID
          JOIN c_bpartner_location bpl ON i.c_bpartner_location_id = bpl.c_bpartner_location_id
          JOIN c_location l ON bpl.c_location_id = l.c_location_id
          JOIN C_Country c ON l.c_country_id = c.c_country_id
@@ -128,7 +118,7 @@ FROM C_Invoice i
          JOIN C_Country orgc ON orgl.c_country_id = orgc.c_country_id
          LEFT JOIN C_BPartner orgbp ON o.AD_Org_ID = orgbp.AD_OrgBP_ID
          LEFT JOIN C_BP_Bankaccount orgbpb
-                   ON orgbpb.C_BPartner_ID = orgbp.C_BPartner_ID AND orgbpb.IsEsrAccount = 'Y' AND orgbpb.IsActive='Y'
+                   ON orgbpb.C_BPartner_ID = orgbp.C_BPartner_ID AND orgbpb.IsEsrAccount = 'Y' AND orgbpb.IsActive = 'Y'
     --- refno
          LEFT JOIN (SELECT rn.referenceNo, rnd.Record_ID
                     FROM C_ReferenceNo_Doc rnd
@@ -164,5 +154,3 @@ WHERE dd.C_DunningDoc_ID = p_C_DunningDoc_ID
 $$
     LANGUAGE sql STABLE
 ;
-
-
