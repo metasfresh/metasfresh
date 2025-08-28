@@ -2,6 +2,7 @@ package de.metas.shipping.api.impl;
 
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
+import de.metas.lang.SOTrx;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -93,6 +94,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		return load(shipperTransportationId, I_M_ShipperTransportation.class);
 	}
 
+	@Override
 	public ShipperTransportationId create(@NonNull final CreateShipperTransportationRequest request)
 	{
 		final I_M_ShipperTransportation shipperTransportation = newInstance(I_M_ShipperTransportation.class);
@@ -102,6 +104,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		shipperTransportation.setShipper_BPartner_ID(request.getShipperBPartnerAndLocationId().getBpartnerId().getRepoId());
 		shipperTransportation.setShipper_Location_ID(request.getShipperBPartnerAndLocationId().getRepoId());
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(request.getShipDate()));
+		shipperTransportation.setIsSOTrx(SOTrx.toBoolean(request.getIsSOTrx()));
 		shipperTransportation.setAssignAnonymouslyPickedHUs(request.isAssignAnonymouslyPickedHUs());
 
 		saveRecord(shipperTransportation);

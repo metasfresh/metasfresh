@@ -240,6 +240,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public void saveHUItem(@NonNull final I_M_HU_Item huItem)
 	{
+		getHUAndItemsDAO().saveHUItem(huItem);
 		InterfaceWrapperHelper.save(huItem);
 	}
 
@@ -256,7 +257,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(final @NonNull I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveParentId(hu);
 	}

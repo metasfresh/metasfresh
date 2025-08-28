@@ -260,6 +260,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return queryBL.createQueryBuilder(I_PP_Product_BOM.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_DocStatus, X_PP_Product_BOM.DOCSTATUS_Completed)
 				.create()
 				.anyMatch();
 	}

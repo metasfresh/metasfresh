@@ -22,7 +22,6 @@ package de.metas.handlingunits.shipping.process;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -139,8 +138,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			throw new AdempiereException(msgBL.getMsg(getCtx(), AdMessageKey.of(CreateFromPickingSlots_MSG_DOC_PROCESSED)));
 		}
 
-		final BPartnerId shipperPartnerId = BPartnerId.ofRepoId(shipperTransportation.getShipper_BPartner_ID());
-		shipperId = shipperDAO.getShipperIdByShipperPartnerId(shipperPartnerId);
+		shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
 
 		// ts: not brilliant, but note there aren't that many picking slots to i guess it's OK to iterate them all
 		final List<I_M_PickingSlot> pickingSlots = InterfaceWrapperHelper.createList(

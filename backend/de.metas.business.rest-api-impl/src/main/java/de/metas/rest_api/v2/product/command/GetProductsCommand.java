@@ -309,8 +309,8 @@ public class GetProductsCommand
 	private JsonProductUOMConversion toJsonProductUOMConversion(final UOMConversionRate record)
 	{
 		return JsonProductUOMConversion.builder()
-				.fromUomCode(servicesFacade.getUOMSymbol(record.getFromUomId()))
-				.toUomCode(servicesFacade.getUOMSymbol(record.getToUomId()))
+				.fromUomCode(servicesFacade.getX12DE355(record.getFromUomId()))
+				.toUomCode(servicesFacade.getX12DE355(record.getToUomId()))
 				.fromToMultiplier(record.getFromToMultiplier())
 				.catchUOMForProduct(record.isCatchUOMForProduct())
 				.build();
@@ -337,8 +337,7 @@ public class GetProductsCommand
 				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartnerId)))
 				.name(record.getName())
 				.qty(record.getQty())
-				.uom(uomId != null ? servicesFacade.getUOMSymbol(uomId) : null)
-
+				.uom(uomId != null ? servicesFacade.getX12DE355(uomId) : null)
 				//
 				.build();
 	}

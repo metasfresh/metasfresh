@@ -122,12 +122,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static de.metas.handlingunits.impl.HandlingUnitsBL.getTUsCount;
+import static de.metas.handlingunits.impl.HandlingUnitsBL.isAggregatedTUHolder;
+
 /**
  * This class contains business logic run by clients when they transform HUs.
  * Use {@link #newInstance(IHUContext)} to obtain an instance.
- *
- * @author metas-dev <dev@metasfresh.com>
- * task https://github.com/metasfresh/metasfresh-webui/issues/181
  */
 public class HUTransformService
 {
@@ -885,7 +885,7 @@ public class HUTransformService
 	 */
 	public LUTUResult luExtractTUs(@NonNull final LUExtractTUsRequest request)
 	{
-		@NonNull final I_M_HU sourceLU = request.getSourceLU();
+		@NonNull final LU sourceLU = retrieveLUWithTUs(request.getSourceLU());
 		@NonNull final QtyTU qtyTU = request.getQtyTU();
 		@NonNull final HashSet<HuId> alreadyExtractedTUIds = request.getAlreadyExtractedTUIds() != null
 				? request.getAlreadyExtractedTUIds()
@@ -894,25 +894,35 @@ public class HUTransformService
 
 		//
 		// Validate request
-		Check.assume(handlingUnitsBL.isLoadingUnit(sourceLU), "Source shall be a LU: {}", sourceLU);
 		Check.assumeGreaterThanZero(qtyTU.toInt(), "qtyTU");
 
 		TargetLU targetLU = request.getTargetLU();
 		QtyTU qtyTUsRemaining = qtyTU; // how many TUs we still have to extract
-		LUTUResult allExtractedTUs = LUTUResult.EMPTY;
+		LUTUResult result = LUTUResult.EMPTY;
+
+		//
+		// Check if we can take the LU as is
+		if (!sourceLU.containsAnyOfHUIds(alreadyExtractedTUIds) // sourceLU shall not (soon to) be modified, it must be intact
+				&& QtyTU.equals(sourceLU.getQtyTU(), qtyTU) // expected number of TUs
+				&& isSourceLUMatching_TargetLU(sourceLU, targetLU) // expected packing
+				&& isSourceLUMatching_SingleProductId(sourceLU, expectedProductId) // expected single product
+		)
+		{
+			return LUTUResult.ofLU(sourceLU);
+		}
 
 		// if keepSourceLuAsParent==true, then includedHUs probably contains TUs we already extracted; that's why we need alreadyExtractedTUIds.
-		for (final I_M_HU tu : handlingUnitsDAO.retrieveIncludedHUs(sourceLU))
+		for (final TU tu : sourceLU.getTus())
 		{
 			if (qtyTUsRemaining.isZero())
 			{
 				break;
 			}
-			if (alreadyExtractedTUIds.contains(HuId.ofRepoId(tu.getM_HU_ID())))
+			if (alreadyExtractedTUIds.contains(tu.getId()))
 			{
 				continue;
 			}
-			if (expectedProductId != null && !huContext.getHUStorageFactory().isSingleProductStorageMatching(tu, expectedProductId))
+			if (expectedProductId != null && !huContext.getHUStorageFactory().isSingleProductStorageMatching(tu.toHU(), expectedProductId))
 			{
 				continue;
 			}
@@ -921,9 +931,9 @@ public class HUTransformService
 
 			//
 			// TU (aggregated or non-aggregated)
-			if (handlingUnitsBL.isTransportUnitOrAggregate(tu))
+			if (tu.isTransportUnitOrAggregate())
 			{
-				final QtyTU qtyTUsAvailable = getMaximumQtyTU(tu);
+				final QtyTU qtyTUsAvailable = tu.getQtyTU();
 				if (qtyTUsAvailable.isZero())
 				{
 					continue;
@@ -932,17 +942,17 @@ public class HUTransformService
 				final QtyTU qtyTUsToExtract = qtyTUsRemaining.min(qtyTUsAvailable);
 				if (targetLU.isExistingLU())
 				{
-					extractedTUs = tuToExistingLU(tu, qtyTUsToExtract, targetLU.getExistingLUNotNull());
+					extractedTUs = tuToExistingLU(tu.toHU(), qtyTUsToExtract, targetLU.getExistingLUNotNull());
 				}
 				else if (targetLU.isNewLU())
 				{
-					extractedTUs = tuToNewLU(tu, qtyTUsToExtract, targetLU.getNewLUIdNotNull());
+					extractedTUs = tuToNewLU(tu.toHU(), qtyTUsToExtract, targetLU.getNewLUIdNotNull());
 					extractedTUs.assertNoTopLevelTUs();
 					targetLU = TargetLU.ofExistingLU(extractedTUs.getSingleLURecord());
 				}
 				else if (targetLU.isNone())
 				{
-					extractedTUs = tuToNewTUs(tu, qtyTUsToExtract);
+					extractedTUs = tuToNewTUs(tu.toHU(), qtyTUsToExtract);
 				}
 				else
 				{
@@ -951,9 +961,9 @@ public class HUTransformService
 			}
 			//
 			// VHU on LU
-			else if (handlingUnitsBL.isVirtual(tu))
+			else if (tu.isVHU())
 			{
-				// Skip VHUs which are directly set on LU
+				// Skip VHUs, which are directly set on LU
 				extractedTUs = LUTUResult.EMPTY;
 			}
 			else
@@ -961,14 +971,91 @@ public class HUTransformService
 				throw new AdempiereException("Unknown HU type: " + tu);
 			}
 
-			allExtractedTUs = allExtractedTUs.mergeWith(extractedTUs);
+			result = result.mergeWith(extractedTUs);
 			qtyTUsRemaining = qtyTUsRemaining.subtractOrZero(extractedTUs.getQtyTUs());
 
 		} // each TU
 
-		alreadyExtractedTUIds.addAll(allExtractedTUs.getAllTUIds());
+		alreadyExtractedTUIds.addAll(result.getAllTUIds());
 
-		return allExtractedTUs;
+		return result;
+	}
+
+	private boolean isSourceLUMatching_TargetLU(
+			@NonNull final LU sourceLU,
+			@NonNull final TargetLU targetLU)
+	{
+		if (targetLU.isNone())
+		{
+			return true;
+		}
+		else if (targetLU.isNewLU())
+		{
+			return HuPackingInstructionsId.equals(targetLU.getNewLUIdNotNull(), handlingUnitsBL.getPIId(sourceLU.toHU()));
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	private boolean isSourceLUMatching_SingleProductId(
+			@NonNull final LU sourceLU,
+			@Nullable final ProductId expectedProductId)
+	{
+		return expectedProductId == null || huContext.getHUStorageFactory().isSingleProductStorageMatching(sourceLU.toHU(), expectedProductId);
+	}
+
+	private LU retrieveLUWithTUs(@NonNull final I_M_HU luHU)
+	{
+		Check.assume(handlingUnitsBL.isLoadingUnit(luHU), "Expected LU: {}", luHU);
+
+		final ArrayList<TU> tus = new ArrayList<>();
+
+		final Set<Integer> seenTUIds = new HashSet<>();
+		for (final I_M_HU_Item luItem : handlingUnitsDAO.retrieveItems(luHU))
+		{
+			for (final I_M_HU tuHU : handlingUnitsDAO.retrieveIncludedHUs(luItem))
+			{
+				final int tuId = tuHU.getM_HU_ID();
+				if (!seenTUIds.add(tuId))
+				{
+					continue;
+				}
+
+				final TU tu;
+
+				//
+				// Aggregated TUs
+				if (isAggregatedTUHolder(luItem))
+				{
+					final QtyTU qtyTUs = getTUsCount(luItem);
+					if (qtyTUs.isPositive())
+					{
+						tu = TU.ofAggregatedTU(tuHU, qtyTUs);
+					}
+					else
+					{
+						tu = null;
+					}
+				}
+				//
+				// Single (non-aggregated) TU
+				// or VHU on LU
+				else
+				{
+					tu = TU.ofSingleTU(tuHU);
+				}
+
+				if (tu != null)
+				{
+					tus.add(tu);
+				}
+			}
+		}
+
+		return LU.of(luHU, tus)
+				.markedAsPreExistingLU();
 	}
 
 	/**
