@@ -109,6 +109,12 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 	}
 
 	@Override
+	public void saveHUItem(@NonNull final I_M_HU_Item huItem)
+	{
+		getDelegate(huItem).saveHUItem(huItem);
+	}
+
+	@Override
 	public void delete(final I_M_HU hu)
 	{
 		getDelegate(hu).delete(hu);

@@ -22,14 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TrxRunnable;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUPIInvalidConfigurationException;
@@ -40,10 +33,13 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.List;
 
 public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 {
-	public static final transient HUAndItemsDAO instance = new HUAndItemsDAO();
+	public static final HUAndItemsDAO instance = new HUAndItemsDAO();
 
 	private HUAndItemsDAO()
 	{
@@ -72,6 +68,12 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 				IncludedHUsLocalCache.getCreate(parentHUItem).removeItem(hu);
 			}
 		}
+	}
+
+	@Override
+	public void saveHUItem(@NonNull final I_M_HU_Item huItem)
+	{
+		InterfaceWrapperHelper.saveRecord(huItem);
 	}
 
 	@Override

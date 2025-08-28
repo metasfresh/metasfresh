@@ -26,6 +26,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -34,6 +35,8 @@ import java.util.Optional;
 public interface IHUAndItemsDAO
 {
 	void saveHU(I_M_HU hu);
+
+	void saveHUItem(@NonNull I_M_HU_Item huItem);
 
 	void delete(I_M_HU hu);
 
