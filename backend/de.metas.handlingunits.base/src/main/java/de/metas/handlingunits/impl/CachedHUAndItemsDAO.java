@@ -187,7 +187,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(final @NonNull I_M_HU hu)
 	{
 		return db.retrieveParentId(hu);
 	}

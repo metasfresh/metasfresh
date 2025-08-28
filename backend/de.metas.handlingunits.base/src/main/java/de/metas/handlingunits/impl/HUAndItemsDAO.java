@@ -23,6 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUPIInvalidConfigurationException;
@@ -101,14 +102,14 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(final @NonNull I_M_HU hu)
 	{
 		final I_M_HU_Item itemParent = hu.getM_HU_Item_Parent();
 		if (itemParent == null)
 		{
-			return -1;
+			return null;
 		}
-		return itemParent.getM_HU_ID();
+		return HuId.ofRepoIdOrNull(itemParent.getM_HU_ID());
 	}
 
 	@Override

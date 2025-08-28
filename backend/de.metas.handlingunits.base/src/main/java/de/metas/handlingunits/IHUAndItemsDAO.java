@@ -47,10 +47,7 @@ public interface IHUAndItemsDAO
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
 
-	/**
-	 * @return parent M_HU_ID or -1
-	 */
-	int retrieveParentId(@Nullable I_M_HU hu);
+	@Nullable HuId retrieveParentId(@NonNull I_M_HU hu);
 
 	I_M_HU_Item retrieveParentItem(I_M_HU hu);
 

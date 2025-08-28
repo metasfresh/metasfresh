@@ -22,6 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -127,7 +128,7 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(final @NonNull I_M_HU hu)
 	{
 		return getDelegate(hu).retrieveParentId(hu);
 	}
