@@ -819,28 +819,27 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final I_M_HU_Item parentItem = hu.getM_HU_Item_Parent();
-		if (parentItem == null)
-		{
-			return false;
-		}
+		return isAggregatedTUHolder(parentItem);
+	}
 
-		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
+	public static boolean isAggregatedTUHolder(@Nullable final I_M_HU_Item luItem)
+	{
+		return luItem != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(luItem.getItemType());
 	}
 
 	@Override
 	public QtyTU getTUsCount(@NonNull final I_M_HU tuOrAggregatedTU)
 	{
-		// NOTE: we assume the HU is an TU
+		// NOTE: we assume the HU is a TU
+		final I_M_HU_Item luItem = handlingUnitsRepo.retrieveParentItem(tuOrAggregatedTU);
+		return getTUsCount(luItem);
+	}
 
-		final I_M_HU_Item parentItem = handlingUnitsRepo.retrieveParentItem(tuOrAggregatedTU);
-		if (parentItem != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType()))
-		{
-			return QtyTU.ofBigDecimal(parentItem.getQty());
-		}
-		else
-		{
-			return QtyTU.ONE;
-		}
+	public static QtyTU getTUsCount(@Nullable final I_M_HU_Item luItem)
+	{
+		return isAggregatedTUHolder(luItem)
+				? QtyTU.ofBigDecimal(luItem.getQty())
+				: QtyTU.ONE;
 	}
 
 	@Override
@@ -897,6 +896,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final I_M_HU_PI_Version piVersion = getPIVersion(hu);
 		return piVersion != null ? getPI(piVersion) : null;
+	}
+
+	@NonNull
+	@Override
+	public HuPackingInstructionsId getPIId(final I_M_HU hu)
+	{
+		final I_M_HU_PI_Version piVersion = Check.assumeNotNull(getPIVersion(hu), "PI Version not null for {}", hu);
+		return HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID());
 	}
 
 	@Override
