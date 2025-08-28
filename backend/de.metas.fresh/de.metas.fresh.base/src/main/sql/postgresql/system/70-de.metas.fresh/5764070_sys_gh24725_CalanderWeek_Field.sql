@@ -23,8 +23,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(583880)
 ;
 
--- 2025-08-27T08:07:58.236Z
-/* DDL */ SELECT public.db_alter_table('M_ReceiptSchedule','ALTER TABLE public.M_ReceiptSchedule ADD COLUMN CalendarWeek NUMERIC')
+-- Column: M_ReceiptSchedule.CalendarWeek
+-- 2025-08-28T09:00:48.368Z
+UPDATE AD_Column SET ColumnSQL='(SELECT EXTRACT(WEEK from M_ReceiptSchedule.MovementDate))', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2025-08-28 09:00:48.368000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590640
 ;
 
 -- Field: Wareneingangsdisposition(540196,de.metas.inoutcandidate) -> Wareneingangsdisposition(540526,de.metas.inoutcandidate) -> KW
