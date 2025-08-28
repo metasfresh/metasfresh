@@ -93,7 +93,7 @@ class ReplenishInfoRepositoryTest
 
 		// then
 		assertThat(replenishInfo.getMin().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
-		assertThat(replenishInfo.getMax().getStockQty().toBigDecimal()).isNull();
+		assertThat(replenishInfo.getMax().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
 	}
 
 	@Test
@@ -118,6 +118,6 @@ class ReplenishInfoRepositoryTest
 
 		// then
 		assertThat(replenishInfo.getMin().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
-		assertThat(replenishInfo.getMax().getStockQty().toBigDecimal()).isNull();
+		assertThat(replenishInfo.getMax().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
 	}
 }

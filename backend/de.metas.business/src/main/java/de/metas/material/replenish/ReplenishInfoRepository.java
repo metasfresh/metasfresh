@@ -79,14 +79,14 @@ public class ReplenishInfoRepository
 		{
 			min = StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Min(), productId, uomId);
 
-			max = replenishRecord.getLevel_Max() == null ? null : StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Max(), productId, uomId);
+			max = replenishRecord.getLevel_Max() == null ? min : StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Max(), productId, uomId);
 			highPriority = replenishRecord.isHighPriority();
 		}
 
 		return ReplenishInfo.builder()
 				.identifier(identifier)
 				.min(min)
-				.max(max== null ? min : max)
+				.max(max)
 				.highPriority(highPriority)
 				.build();
 	}
