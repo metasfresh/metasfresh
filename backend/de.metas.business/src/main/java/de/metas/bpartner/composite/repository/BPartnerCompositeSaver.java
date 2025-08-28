@@ -21,6 +21,7 @@ import de.metas.bpartner.creditLimit.BPartnerCreditLimitCreateRequest;
 import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
@@ -42,6 +43,7 @@ import de.metas.organization.OrgId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.title.TitleId;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -111,7 +113,6 @@ final class BPartnerCompositeSaver
 	private final IBPBankAccountDAO bpBankAccountsDAO = Services.get(IBPBankAccountDAO.class);
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
-
 
 	/**
 	 * @param validatePermissions Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org.
@@ -351,7 +352,7 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setIsActive(partnerLocation.isActive());
 			bpartnerLocationRecord.setC_BPartner_ID(request.getBpartnerId().getRepoId());
 
-			if(partnerLocation.getName() != null)
+			if (partnerLocation.getName() != null)
 			{
 				bpartnerLocationRecord.setName(partnerLocation.getName());
 			}
@@ -398,17 +399,17 @@ final class BPartnerCompositeSaver
 
 			// needs to be last, and we generate here to avoid update logs in de.metas.audit.apirequest.ApiAuditLoggable#addTableRecordReferenceLog, if same name is generated
 			final String name = bpartnerLocationRecord.getName();
-			if(name == null || BPARTNER_LOCATION_NAME_DEFAULT.equals(name))
+			if (name == null || BPARTNER_LOCATION_NAME_DEFAULT.equals(name))
 			{
 				bpartnerLocationRecord.setName(MakeUniqueLocationNameCommand.builder()
-										   .name(bpartnerLocationRecord.getName())
-										   .address(bpartnerLocationRecord.getC_Location())
-										   .companyName(bpartnerBL.getBPartnerName(request.getBpartnerId()))
-										   .existingNames(bpartnerBL.getOtherLocationNamesOfBPartner(request.getBpartnerId(),
-																									 BPartnerLocationId.ofRepoIdOrNull(bpartnerLocationRecord.getC_BPartner_ID(),
-																																 bpartnerLocationRecord.getC_BPartner_Location_ID())))
-										   .build()
-										   .execute());
+						.name(bpartnerLocationRecord.getName())
+						.address(bpartnerLocationRecord.getC_Location())
+						.companyName(bpartnerBL.getBPartnerName(request.getBpartnerId()))
+						.existingNames(bpartnerBL.getOtherLocationNamesOfBPartner(request.getBpartnerId(),
+								BPartnerLocationId.ofRepoIdOrNull(bpartnerLocationRecord.getC_BPartner_ID(),
+										bpartnerLocationRecord.getC_BPartner_Location_ID())))
+						.build()
+						.execute());
 			}
 
 			saveRecord(bpartnerLocationRecord);
@@ -584,7 +585,13 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
 			bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
 			bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
-			bpartnerContactRecord.setName(bpartnerContact.getName());
+
+			final String name = CoalesceUtil.coalesce(
+					StringUtils.trimBlankToNull(bpartnerContact.getName()),
+					StringUtils.trimBlankToNull(IUserBL.buildContactName(bpartnerContact.getFirstName(), bpartnerContact.getLastName())),
+					StringUtils.trimBlankToNull(bpartnerContact.getEmail()));
+			bpartnerContactRecord.setName(name);
+
 			bpartnerContactRecord.setEMail(bpartnerContact.getEmail());
 
 			bpartnerContactRecord.setFirstname(bpartnerContact.getFirstName());
