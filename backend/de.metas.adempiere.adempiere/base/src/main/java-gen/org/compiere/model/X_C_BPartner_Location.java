@@ -1,29 +1,30 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
+
 /** Generated Model for C_BPartner_Location
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent
+public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 559091945L;
+	private static final long serialVersionUID = 208495014L;
 
-	/** Standard Constructor */
-	public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
-	{
-		super (ctx, C_BPartner_Location_ID, trxName);
-	}
+    /** Standard Constructor */
+    public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
+    {
+      super (ctx, C_BPartner_Location_ID, trxName);
+    }
 
-	/** Load Constructor */
-	public X_C_BPartner_Location (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-	{
-		super (ctx, rs, trxName);
-	}
+    /** Load Constructor */
+    public X_C_BPartner_Location (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
 
 
 	/** Load Meta Data */
@@ -40,7 +41,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getAddress()
+	public java.lang.String getAddress() 
 	{
 		return get_ValueAsString(COLUMNNAME_Address);
 	}
@@ -60,14 +61,14 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setAD_Org_Mapping_ID (final int AD_Org_Mapping_ID)
 	{
-		if (AD_Org_Mapping_ID < 1)
+		if (AD_Org_Mapping_ID < 1) 
 			set_Value (COLUMNNAME_AD_Org_Mapping_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_Org_Mapping_ID, AD_Org_Mapping_ID);
 	}
 
 	@Override
-	public int getAD_Org_Mapping_ID()
+	public int getAD_Org_Mapping_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Org_Mapping_ID);
 	}
@@ -79,7 +80,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getBPartnerName()
+	public java.lang.String getBPartnerName() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
@@ -87,14 +88,14 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1)
+		if (C_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
-	public int getC_BPartner_ID()
+	public int getC_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
@@ -102,14 +103,14 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
-		if (C_BPartner_Location_ID < 1)
+		if (C_BPartner_Location_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
 	@Override
-	public int getC_BPartner_Location_ID()
+	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
@@ -129,14 +130,14 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_Location_ID (final int C_Location_ID)
 	{
-		if (C_Location_ID < 1)
+		if (C_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_Location_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Location_ID, C_Location_ID);
 	}
 
 	@Override
-	public int getC_Location_ID()
+	public int getC_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Location_ID);
 	}
@@ -156,14 +157,14 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_SalesRegion_ID (final int C_SalesRegion_ID)
 	{
-		if (C_SalesRegion_ID < 1)
+		if (C_SalesRegion_ID < 1) 
 			set_Value (COLUMNNAME_C_SalesRegion_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_SalesRegion_ID, C_SalesRegion_ID);
 	}
 
 	@Override
-	public int getC_SalesRegion_ID()
+	public int getC_SalesRegion_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_SalesRegion_ID);
 	}
@@ -175,7 +176,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getEMail()
+	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
 	}
@@ -187,7 +188,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getEMail2()
+	public java.lang.String getEMail2() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail2);
 	}
@@ -199,7 +200,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getExternalId()
+	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
@@ -211,7 +212,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getFax()
+	public java.lang.String getFax() 
 	{
 		return get_ValueAsString(COLUMNNAME_Fax);
 	}
@@ -223,7 +224,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getFax2()
+	public java.lang.String getFax2() 
 	{
 		return get_ValueAsString(COLUMNNAME_Fax2);
 	}
@@ -235,7 +236,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getGLN()
+	public java.lang.String getGLN() 
 	{
 		return get_ValueAsString(COLUMNNAME_GLN);
 	}
@@ -247,7 +248,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isBillTo()
+	public boolean isBillTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillTo);
 	}
@@ -259,7 +260,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isBillToDefault()
+	public boolean isBillToDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillToDefault);
 	}
@@ -271,7 +272,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isCommissionTo()
+	public boolean isCommissionTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCommissionTo);
 	}
@@ -283,7 +284,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isCommissionToDefault()
+	public boolean isCommissionToDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCommissionToDefault);
 	}
@@ -295,7 +296,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getISDN()
+	public java.lang.String getISDN() 
 	{
 		return get_ValueAsString(COLUMNNAME_ISDN);
 	}
@@ -307,7 +308,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isEphemeral()
+	public boolean isEphemeral() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEphemeral);
 	}
@@ -319,7 +320,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isHandOverLocation()
+	public boolean isHandOverLocation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHandOverLocation);
 	}
@@ -331,7 +332,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isNameReadWrite()
+	public boolean isNameReadWrite() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsNameReadWrite);
 	}
@@ -343,7 +344,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isPayFrom()
+	public boolean isPayFrom() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPayFrom);
 	}
@@ -355,7 +356,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isRemitTo()
+	public boolean isRemitTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRemitTo);
 	}
@@ -367,9 +368,20 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isReplicationLookupDefault()
+	public boolean isReplicationLookupDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReplicationLookupDefault);
+	}
+
+	@Override
+	public void setIsShipperHasRoutingcode (final boolean IsShipperHasRoutingcode)
+	{
+		throw new IllegalArgumentException ("IsShipperHasRoutingcode is virtual column");	}
+
+	@Override
+	public boolean isShipperHasRoutingcode() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipperHasRoutingcode);
 	}
 
 	@Override
@@ -379,7 +391,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isShipTo()
+	public boolean isShipTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShipTo);
 	}
@@ -391,7 +403,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isShipToDefault()
+	public boolean isShipToDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShipToDefault);
 	}
@@ -403,7 +415,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isSubscriptionTo()
+	public boolean isSubscriptionTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSubscriptionTo);
 	}
@@ -415,7 +427,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isSubscriptionToDefault()
+	public boolean isSubscriptionToDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSubscriptionToDefault);
 	}
@@ -435,16 +447,43 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
-		if (M_Shipper_ID < 1)
+		if (M_Shipper_ID < 1) 
 			set_Value (COLUMNNAME_M_Shipper_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
 	}
 
 	@Override
-	public int getM_Shipper_ID()
+	public int getM_Shipper_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper_RoutingCode getM_Shipper_RoutingCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_RoutingCode_ID, org.compiere.model.I_M_Shipper_RoutingCode.class);
+	}
+
+	@Override
+	public void setM_Shipper_RoutingCode(final org.compiere.model.I_M_Shipper_RoutingCode M_Shipper_RoutingCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_RoutingCode_ID, org.compiere.model.I_M_Shipper_RoutingCode.class, M_Shipper_RoutingCode);
+	}
+
+	@Override
+	public void setM_Shipper_RoutingCode_ID (final int M_Shipper_RoutingCode_ID)
+	{
+		if (M_Shipper_RoutingCode_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_RoutingCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_RoutingCode_ID, M_Shipper_RoutingCode_ID);
+	}
+
+	@Override
+	public int getM_Shipper_RoutingCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_RoutingCode_ID);
 	}
 
 	@Override
@@ -454,7 +493,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getName()
+	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
@@ -466,7 +505,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getPhone()
+	public java.lang.String getPhone() 
 	{
 		return get_ValueAsString(COLUMNNAME_Phone);
 	}
@@ -478,7 +517,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getPhone2()
+	public java.lang.String getPhone2() 
 	{
 		return get_ValueAsString(COLUMNNAME_Phone2);
 	}
@@ -486,14 +525,14 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setPrevious_ID (final int Previous_ID)
 	{
-		if (Previous_ID < 1)
+		if (Previous_ID < 1) 
 			set_Value (COLUMNNAME_Previous_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Previous_ID, Previous_ID);
 	}
 
 	@Override
-	public int getPrevious_ID()
+	public int getPrevious_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Previous_ID);
 	}
@@ -505,7 +544,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getSetup_Place_No()
+	public java.lang.String getSetup_Place_No() 
 	{
 		return get_ValueAsString(COLUMNNAME_Setup_Place_No);
 	}
@@ -517,7 +556,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.sql.Timestamp getValidFrom()
+	public java.sql.Timestamp getValidFrom() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
 	}
@@ -529,7 +568,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getVATaxID()
+	public java.lang.String getVATaxID() 
 	{
 		return get_ValueAsString(COLUMNNAME_VATaxID);
 	}
@@ -541,7 +580,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isVisitorsAddress()
+	public boolean isVisitorsAddress() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_VisitorsAddress);
 	}

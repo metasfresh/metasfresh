@@ -1,0 +1,126 @@
+package de.metas.handlingunits.picking.job_schedule.repository;
+
+import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
+import de.metas.handlingunits.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleId;
+import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
+import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import de.metas.workplace.WorkplaceId;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Repository;
+
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.UnaryOperator;
+
+@Repository
+public class PickingJobScheduleRepository
+{
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public PickingJobSchedule create(@NonNull final PickingJobScheduleCreateRepoRequest request)
+	{
+		final I_M_Picking_Job_Schedule record = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Schedule.class);
+		record.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
+		record.setC_Workplace_ID(request.getWorkplaceId().getRepoId());
+		record.setC_UOM_ID(request.getQtyToPick().getUomId().getRepoId());
+		record.setQtyToPick(request.getQtyToPick().toBigDecimal());
+		InterfaceWrapperHelper.saveRecord(record);
+		return fromRecord(record);
+	}
+
+	public void save(@NonNull final PickingJobSchedule schedule)
+	{
+		final I_M_Picking_Job_Schedule record = InterfaceWrapperHelper.load(schedule.getId(), I_M_Picking_Job_Schedule.class);
+		updateRecord(record, schedule);
+		InterfaceWrapperHelper.saveRecord(record);
+	}
+
+	private static void updateRecord(@NonNull final I_M_Picking_Job_Schedule record, final @NotNull PickingJobSchedule from)
+	{
+		record.setM_ShipmentSchedule_ID(from.getShipmentScheduleId().getRepoId());
+		record.setC_Workplace_ID(from.getWorkplaceId().getRepoId());
+		record.setC_UOM_ID(from.getQtyToPick().getUomId().getRepoId());
+		record.setQtyToPick(from.getQtyToPick().toBigDecimal());
+	}
+
+	private static PickingJobSchedule fromRecord(final I_M_Picking_Job_Schedule record)
+	{
+		return PickingJobSchedule.builder()
+				.id(PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
+				.workplaceId(WorkplaceId.ofRepoId(record.getC_Workplace_ID()))
+				.qtyToPick(Quantitys.of(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.build();
+	}
+
+	public void updateByIds(@NonNull final Set<PickingJobScheduleId> ids, @NonNull final UnaryOperator<PickingJobSchedule> updater)
+	{
+		if (ids.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_M_Picking_Job_Schedule record : InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_M_Picking_Job_Schedule.class))
+		{
+			final PickingJobSchedule schedule = fromRecord(record);
+			final PickingJobSchedule scheduleUpdated = updater.apply(schedule);
+			if (!Objects.equals(schedule, scheduleUpdated))
+			{
+				if (scheduleUpdated == null)
+				{
+					InterfaceWrapperHelper.delete(record);
+				}
+				else
+				{
+					updateRecord(record, scheduleUpdated);
+					InterfaceWrapperHelper.saveRecord(record);
+				}
+			}
+		}
+	}
+	
+	public ShipmentScheduleAndJobScheduleIdSet getIdsByShipmentScheduleIdsAndWorkplaceId(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull WorkplaceId workplaceId)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ShipmentScheduleAndJobScheduleIdSet.EMPTY;
+		}
+
+		return queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID, workplaceId)
+				.create()
+				.stream()
+				.map(PickingJobScheduleRepository::extractShipmentScheduleAndJobScheduleId)
+				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
+	}
+
+	private static ShipmentScheduleAndJobScheduleId extractShipmentScheduleAndJobScheduleId(final I_M_Picking_Job_Schedule record)
+	{
+		return ShipmentScheduleAndJobScheduleId.of(
+				ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()),
+				PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID())
+		);
+	}
+
+	public void deleteJobSchedulesById(final @NonNull Set<PickingJobScheduleId> jobScheduleIds)
+	{
+		if (jobScheduleIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleIds)
+				.create()
+				.delete();
+	}
+}
