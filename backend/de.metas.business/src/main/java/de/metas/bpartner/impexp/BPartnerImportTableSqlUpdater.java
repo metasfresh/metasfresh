@@ -812,8 +812,8 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 					+ "SET M_Shipper_RoutingCode_ID=(SELECT M_Shipper_RoutingCode_ID FROM M_Shipper_RoutingCode s"
-					+ " WHERE i.ShipperRouteCodeName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID)) "
-					+ " AND i.Location_M_Shipper_ID = s.M_Shipper_ID "
+					+ " WHERE i.ShipperRouteCodeName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID) "
+					+ " AND i.Location_M_Shipper_ID = s.M_Shipper_ID) "
 					+ "WHERE M_Shipper_RoutingCode_ID IS NULL AND ShipperRouteCodeName IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 					.append(selection.toSqlWhereClause("i"));
