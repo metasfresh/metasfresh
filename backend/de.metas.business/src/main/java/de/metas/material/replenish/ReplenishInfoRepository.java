@@ -101,7 +101,7 @@ public class ReplenishInfoRepository
 		final BigDecimal levelMax = replenishInfo.getMax().getStockQty().toBigDecimal();
 
 		replenishRecord.setLevel_Min(levelMin);
-		replenishRecord.setLevel_Max(levelMax.equals(levelMin) ? null : levelMax);
+		replenishRecord.setLevel_Max(levelMax.compareTo(levelMin) ==0 ? null : levelMax);
 
 		saveRecord(replenishRecord);
 	}

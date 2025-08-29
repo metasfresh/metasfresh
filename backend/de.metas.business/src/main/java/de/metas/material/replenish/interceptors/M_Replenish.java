@@ -37,14 +37,14 @@ import java.math.BigDecimal;
 public class M_Replenish
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {I_M_Replenish.COLUMNNAME_Level_Min, I_M_Replenish.COLUMNNAME_Level_Max}
+			ifColumnsChanged = { I_M_Replenish.COLUMNNAME_Level_Min, I_M_Replenish.COLUMNNAME_Level_Max }
 	)
 	public void ensureValidLevel_Max(@NonNull final I_M_Replenish m_replenish)
 	{
 		final BigDecimal levelMinQty = CoalesceUtil.coalesceNotNull(m_replenish.getLevel_Min(), BigDecimal.ZERO);
 		final BigDecimal levelMaxQty = CoalesceUtil.coalesceNotNull(m_replenish.getLevel_Max(), BigDecimal.ZERO);
 
-		if(levelMaxQty.equals(levelMinQty))
+		if (levelMaxQty.compareTo(levelMinQty) == 0)
 		{
 			m_replenish.setLevel_Max(null);
 		}
