@@ -421,6 +421,31 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_M_Picking_Job_Line_ID = "M_Picking_Job_Line_ID";
 
 	/**
+	 * Set Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_Schedule_ID (int M_Picking_Job_Schedule_ID);
+
+	/**
+	 * Get Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_Schedule_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Schedule getM_Picking_Job_Schedule();
+
+	void setM_Picking_Job_Schedule(@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Schedule M_Picking_Job_Schedule);
+
+	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_Picking_Job_Schedule> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "M_Picking_Job_Schedule_ID", de.metas.handlingunits.model.I_M_Picking_Job_Schedule.class);
+	String COLUMNNAME_M_Picking_Job_Schedule_ID = "M_Picking_Job_Schedule_ID";
+
+	/**
 	 * Set Picking Slot.
 	 *
 	 * <br>Type: Search

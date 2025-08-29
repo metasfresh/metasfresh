@@ -40,7 +40,7 @@ public class PickingShipmentCandidate
 
 	public void addLine(@NonNull final PickingJobLine line)
 	{
-		shipmentScheduleIds.add(line.getShipmentScheduleId());
+		shipmentScheduleIds.add(line.getScheduleId().getShipmentScheduleId());
 	}
 
 	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()

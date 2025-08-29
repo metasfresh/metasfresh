@@ -298,6 +298,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsCatchWeightTUPickingEnabled = "IsCatchWeightTUPickingEnabled";
 
 	/**
+	 * Set Consider only scheduled jobs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsConsideredOnlyScheduledJobs (boolean IsConsideredOnlyScheduledJobs);
+
+	/**
+	 * Get Consider only scheduled jobs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isConsideredOnlyScheduledJobs();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsConsideredOnlyScheduledJobs = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsConsideredOnlyScheduledJobs", null);
+	String COLUMNNAME_IsConsideredOnlyScheduledJobs = "IsConsideredOnlyScheduledJobs";
+
+	/**
 	 * Set Consider sales order capacity.
 	 * If not activated, the quantity allocation for TU Catch Weight is taken from the master data of the product
 	 *

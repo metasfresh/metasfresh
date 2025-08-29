@@ -6,6 +6,7 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -32,4 +33,9 @@ public class PickingJobScheduleId implements RepoIdAware
 	public static int toRepoId(final PickingJobScheduleId id) {return id != null ? id.getRepoId() : -1;}
 
 	public static boolean equals(@Nullable final PickingJobScheduleId id1, @Nullable final PickingJobScheduleId id2) {return Objects.equals(id1, id2);}
+
+	public TableRecordReference toTableRecordReference()
+	{
+		return TableRecordReference.of(I_M_Picking_Job_Schedule.Table_Name, repoId);
+	}
 }

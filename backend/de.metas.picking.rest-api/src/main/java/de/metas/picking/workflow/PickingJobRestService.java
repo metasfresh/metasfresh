@@ -109,7 +109,7 @@ public class PickingJobRestService
 				.deliveryBPLocationId(params.getDeliveryBPLocationId())
 				.warehouseTypeId(params.getWarehouseTypeId())
 				.isAllowPickingAnyHU(allowPickingAnyHU)
-				.shipmentScheduleIds(params.getShipmentScheduleIds())
+				.scheduleIds(params.getScheduleIds())
 				.build());
 	}
 

@@ -88,7 +88,7 @@ public class PickingJobCompleteCommand
 
 		pickingJobHUReservationService.releaseAllReservations(pickingJob);
 
-		pickingJobLockService.unlockShipmentSchedules(pickingJob);
+		pickingJobLockService.unlockSchedules(pickingJob);
 
 		shipmentService.createShipmentIfNeeded(pickingJob);
 

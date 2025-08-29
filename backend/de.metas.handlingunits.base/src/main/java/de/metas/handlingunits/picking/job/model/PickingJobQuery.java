@@ -28,10 +28,12 @@ import com.google.common.collect.Streams;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocumentNoFilter;
-import de.metas.inout.ShipmentScheduleId;
+import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PackageableQuery.PackageableQueryBuilder;
 import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.user.UserId;
+import de.metas.workplace.WorkplaceId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -55,9 +57,10 @@ import static de.metas.common.util.time.SystemTime.asZonedDateTime;
 public class PickingJobQuery
 {
 	@NonNull UserId userId;
-	@NonNull @Builder.Default ImmutableSet<ShipmentScheduleId> excludeShipmentScheduleIds = ImmutableSet.of();
+	@NonNull @Builder.Default ShipmentScheduleAndJobScheduleIdSet excludeScheduleIds = ShipmentScheduleAndJobScheduleIdSet.EMPTY;
 	@Nullable Facets facets;
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyCustomerIds = ImmutableSet.of();
+	@Nullable WorkplaceId scheduledForWorkplaceId;
 	@Nullable WarehouseId warehouseId;
 	@Nullable DocumentNoFilter salesOrderDocumentNo;
 	@Nullable ResolvedScannedProductCodes scannedProductCodes;
@@ -97,13 +100,18 @@ public class PickingJobQuery
 
 	public PackageableQuery toPackageableQuery()
 	{
-		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
+		return toPackageableQueryBuilder().build();
+	}
+
+	public PackageableQueryBuilder toPackageableQueryBuilder()
+	{
+		final PackageableQueryBuilder builder = PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
 				.salesOrderDocumentNo(this.getSalesOrderDocumentNo())
 				.lockedBy(this.getUserId())
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)
-				.excludeShipmentScheduleIds(this.getExcludeShipmentScheduleIds())
+				.excludeShipmentScheduleIds(excludeScheduleIds.getShipmentScheduleIdsWithoutJobSchedules())
 				.scannedProductCodes(this.getScannedProductCodes())
 				.maximumFixedPreparationDate(currentTime)
 				.maximumFixedPreparationDate(currentTime)
@@ -138,8 +146,7 @@ public class PickingJobQuery
 		{
 			builder.warehouseId(workplaceWarehouseId);
 		}
-
-		return builder.build();
+		return builder;
 	}
 
 	//

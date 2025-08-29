@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_Picking_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1628110248L;
+	private static final long serialVersionUID = 986509794L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Line (final Properties ctx, final int M_Picking_Job_Line_ID, @Nullable final String trxName)
@@ -309,6 +309,33 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getM_Picking_Job_Line_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Line_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_Picking_Job_Schedule getM_Picking_Job_Schedule()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Picking_Job_Schedule_ID, de.metas.handlingunits.model.I_M_Picking_Job_Schedule.class);
+	}
+
+	@Override
+	public void setM_Picking_Job_Schedule(final de.metas.handlingunits.model.I_M_Picking_Job_Schedule M_Picking_Job_Schedule)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Picking_Job_Schedule_ID, de.metas.handlingunits.model.I_M_Picking_Job_Schedule.class, M_Picking_Job_Schedule);
+	}
+
+	@Override
+	public void setM_Picking_Job_Schedule_ID (final int M_Picking_Job_Schedule_ID)
+	{
+		if (M_Picking_Job_Schedule_ID < 1) 
+			set_Value (COLUMNNAME_M_Picking_Job_Schedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Picking_Job_Schedule_ID, M_Picking_Job_Schedule_ID);
+	}
+
+	@Override
+	public int getM_Picking_Job_Schedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Schedule_ID);
 	}
 
 	@Override

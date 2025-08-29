@@ -1,8 +1,10 @@
 package de.metas.handlingunits.picking.job_schedule.repository;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
 import de.metas.handlingunits.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleId;
+import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.inout.ShipmentScheduleId;
@@ -12,18 +14,32 @@ import de.metas.util.Services;
 import de.metas.workplace.WorkplaceId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 @Repository
 public class PickingJobScheduleRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)
+	{
+		if (ids.isEmpty()) {return ImmutableList.of();}
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_M_Picking_Job_Schedule.class)
+				.stream()
+				.map(PickingJobScheduleRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	public PickingJobSchedule create(@NonNull final PickingJobScheduleCreateRepoRequest request)
 	{
@@ -86,7 +102,7 @@ public class PickingJobScheduleRepository
 			}
 		}
 	}
-	
+
 	public ShipmentScheduleAndJobScheduleIdSet getIdsByShipmentScheduleIdsAndWorkplaceId(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull WorkplaceId workplaceId)
 	{
 		if (shipmentScheduleIds.isEmpty())
@@ -122,5 +138,37 @@ public class PickingJobScheduleRepository
 				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleIds)
 				.create()
 				.delete();
+	}
+
+	public List<PickingJobSchedule> list(@NonNull PickingJobScheduleQuery query)
+	{
+		return stream(query).collect(ImmutableList.toImmutableList());
+	}
+
+	public Stream<PickingJobSchedule> stream(@NonNull PickingJobScheduleQuery query)
+	{
+		return toSqlQuery(query)
+				.stream()
+				.map(PickingJobScheduleRepository::fromRecord);
+	}
+
+	private IQuery<I_M_Picking_Job_Schedule> toSqlQuery(@NonNull PickingJobScheduleQuery query)
+	{
+		if (query.isAny())
+		{
+			throw new AdempiereException("Any query is not allowed");
+		}
+
+		final IQueryBuilder<I_M_Picking_Job_Schedule> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+				.orderBy(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.orderBy(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+				.addOnlyActiveRecordsFilter();
+
+		if (!query.getWorkplaceIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID, query.getWorkplaceIds());
+		}
+
+		return queryBuilder.create();
 	}
 }

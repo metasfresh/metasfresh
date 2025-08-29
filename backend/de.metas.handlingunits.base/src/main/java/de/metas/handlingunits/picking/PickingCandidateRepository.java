@@ -10,6 +10,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Picking_Candidate_IssueToOrder;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
@@ -335,11 +336,11 @@ public class PickingCandidateRepository
 		InterfaceWrapperHelper.deleteAll(records);
 	}
 
-	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
+	public List<PickingCandidate> getByScheduleIdAndStatus(
+			@NonNull final ShipmentScheduleAndJobScheduleId scheduleId,
 			@NonNull final PickingCandidateStatus status)
 	{
-		return getByShipmentScheduleIdsAndStatus(ImmutableSet.of(shipmentScheduleId), status);
+		return getByShipmentScheduleIdsAndStatus(ImmutableSet.of(scheduleId.getShipmentScheduleId()), status);
 	}
 
 	public List<PickingCandidate> getByShipmentScheduleIdsAndStatus(

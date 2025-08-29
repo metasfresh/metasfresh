@@ -22,11 +22,10 @@
 
 package de.metas.handlingunits.picking.job.model;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
@@ -55,7 +54,7 @@ public class PickingJobCandidate
 	@Nullable ProductId productId;
 	@Nullable ITranslatableString productName;
 	@Nullable Quantity qtyToDeliver;
-	@Nullable ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
+	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
 
 	@Nullable
 	public UomId getUomId() {return qtyToDeliver != null ? qtyToDeliver.getUomId() : null;}
