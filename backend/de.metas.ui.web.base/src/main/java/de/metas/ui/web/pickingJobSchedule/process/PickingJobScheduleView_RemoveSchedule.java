@@ -25,4 +25,12 @@ public class PickingJobScheduleView_RemoveSchedule extends PickingJobScheduleVie
 		pickingJobScheduleService.deleteJobSchedulesById(jobScheduleIds);
 		return MSG_OK;
 	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (!success) {return;}
+
+		getView().invalidateSelection();
+	}
 }

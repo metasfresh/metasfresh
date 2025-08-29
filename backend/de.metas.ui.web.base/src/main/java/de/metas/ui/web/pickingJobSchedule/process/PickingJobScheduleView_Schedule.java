@@ -46,4 +46,12 @@ public class PickingJobScheduleView_Schedule extends PickingJobScheduleViewBased
 
 		return MSG_OK;
 	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (!success) {return;}
+
+		getView().invalidateSelection();
+	}
 }
