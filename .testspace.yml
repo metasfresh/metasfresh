@@ -3,6 +3,7 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
+  - game_time_release
   - temporary_test20240815_hotfix
   - temporary_test20240815_release
   - ghost_rider_hotfix
