@@ -894,42 +894,6 @@ public final class SqlViewSelectionQueryBuilder
 		return SqlAndParams.of(sql, sqlParams);
 	}
 
-	public static SqlAndParams buildSqlSelectRowIdsByPartialKeyFromSelection(
-			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
-			@NonNull final String selectionId,
-			@NonNull String keyColumnName,
-			@NonNull Collection<?> keyValues)
-	{
-		final String selectionColumnName = keyColumnNamesMap.getWebuiSelectionColumnNameForKeyColumnName(keyColumnName);
-
-		final ArrayList<Object> sqlParams = new ArrayList<>();
-		sqlParams.add(selectionId);
-
-		final String sql = "SELECT "
-				+ keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated()
-				+ " FROM " + I_T_WEBUI_ViewSelection.Table_Name
-				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?"
-				+ " AND " + DB.buildSqlList(selectionColumnName, keyValues, sqlParams);
-
-		return SqlAndParams.of(sql, sqlParams);
-	}
-
-	public static SqlAndParams buildSqlSelectRowIdsByPartialKeyFromSourceTable(
-			@NonNull final String sourceTableName,
-			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
-			@NonNull String keyColumnName,
-			@NonNull Collection<?> keyValues)
-	{
-		final ArrayList<Object> sqlParams = new ArrayList<>();
-
-		final String sql = "SELECT "
-				+ keyColumnNamesMap.getKeyColumnNamesCommaSeparated()
-				+ " FROM " + sourceTableName
-				+ " WHERE " + DB.buildSqlList(keyColumnName, keyValues, sqlParams);
-
-		return SqlAndParams.of(sql, sqlParams);
-	}
-
 	private IStringExpressionWrapper securityRestrictionsWrapper(final String sqlTableAlias)
 	{
 		if (applySecurityRestrictions)

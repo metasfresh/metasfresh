@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Set;
 
 /*
@@ -350,34 +349,6 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			final Set<Integer> lineIds)
 	{
 		final SqlAndParams sqlAndParams = SqlViewSelectionQueryBuilder.buildSqlSelectRowIdsForLineIds(keyColumnNamesMap, viewId.getViewId(), lineIds);
-		return retrieveRowIds(sqlAndParams, keyColumnNamesMap, false);
-	}
-
-	public static Set<DocumentId> retrieveRowIdsByPartialKeyFromSelection(
-			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
-			@NonNull final String selectionId,
-			@NonNull String keyColumnName,
-			@NonNull Collection<?> keyValues)
-	{
-		final SqlAndParams sqlAndParams = SqlViewSelectionQueryBuilder.buildSqlSelectRowIdsByPartialKeyFromSelection(keyColumnNamesMap, selectionId, keyColumnName, keyValues);
-		return retrieveRowIds(sqlAndParams, keyColumnNamesMap, false);
-	}
-
-	public static Set<DocumentId> retrieveRowIdsByPartialKeyFromSourceTable(
-			@NonNull final String sourceTableName,
-			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
-			@NonNull String keyColumnName,
-			@NonNull Collection<?> keyValues)
-	{
-		final SqlAndParams sqlAndParams = SqlViewSelectionQueryBuilder.buildSqlSelectRowIdsByPartialKeyFromSourceTable(sourceTableName, keyColumnNamesMap, keyColumnName, keyValues);
-		return retrieveRowIds(sqlAndParams, keyColumnNamesMap, true);
-	}
-
-	private static ImmutableSet<DocumentId> retrieveRowIds(
-			@NonNull final SqlAndParams sqlAndParams, 
-			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap, 
-			boolean useKeyColumnNames)
-	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -389,7 +360,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			final ImmutableSet.Builder<DocumentId> rowIds = ImmutableSet.builder();
 			while (rs.next())
 			{
-				final DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs, "", useKeyColumnNames);
+				final DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs, "", false);
 				if (rowId != null)
 				{
 					rowIds.add(rowId);
