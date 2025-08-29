@@ -49,6 +49,7 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -632,11 +633,11 @@ public class PickingJobPickCommand
 		return HUInfo.ofHuIdAndQRCode(newCUId, huQRCode);
 	}
 
-	private ShipmentScheduleId getShipmentScheduleId()
+	private ShipmentScheduleAndJobScheduleId getScheduleId()
 	{
 		return getStepIfExists()
-				.map(PickingJobStep::getShipmentScheduleId)
-				.orElseGet(() -> getLine().getShipmentScheduleId());
+				.map(PickingJobStep::getScheduleId)
+				.orElseGet(() -> getLine().getScheduleId());
 	}
 
 	private List<PickingJobStepPickedToHU> splitOutPickToHUs()
@@ -973,7 +974,7 @@ public class PickingJobPickCommand
 
 	private ShipmentScheduleInfo getShipmentScheduleInfo()
 	{
-		return shipmentSchedulesCache.computeIfAbsent(getShipmentScheduleId(), this::retrieveShipmentScheduleInfo);
+		return shipmentSchedulesCache.computeIfAbsent(getScheduleId().getShipmentScheduleId(), this::retrieveShipmentScheduleInfo);
 	}
 
 	private ShipmentScheduleInfo retrieveShipmentScheduleInfo(@NonNull final ShipmentScheduleId shipmentScheduleId)

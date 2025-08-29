@@ -50,6 +50,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Value
@@ -137,13 +138,13 @@ public class PickingJobReopenCommand
 	private void reactivateStepIfNeeded(@NonNull final PickingJobStep step)
 	{
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(step.getShipmentScheduleId());
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(step.getScheduleId().getShipmentScheduleId());
 
 		step.getPickFroms().getKeys()
 				.stream()
 				.map(key -> step.getPickFroms().getPickFrom(key))
 				.map(PickingJobStepPickFrom::getPickedTo)
-				.filter(pickedTo -> pickedTo != null)
+				.filter(Objects::nonNull)
 				.map(PickingJobStepPickedTo::getActualPickedHUs)
 				.flatMap(List::stream)
 				.filter(pickStepHu -> huIdsToPick.containsKey(pickStepHu.getActualPickedHU().getId()))

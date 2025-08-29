@@ -30,6 +30,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
+import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,11 +38,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
+import org.adempiere.warehouse.WarehouseId;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
 
@@ -84,9 +88,20 @@ public class PickingWorkflowLaunchersProvider
 
 	private ComputedWorkflowLaunchers computeLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final UserId userId = query.getUserId();
+		final Workplace workplace = workplaceService.getWorkplaceByUserId(userId).orElse(null);
 		boolean returnNoResult = false;
+
+		//noinspection RedundantIfStatement
+		if (profile.isConsiderOnlyJobScheduledToWorkplace() && workplace == null)
+		{
+			returnNoResult = true;
+		}
+
 		ResolvedScannedProductCodes scannedProductCodes = null;
-		if (query.getFilterByQRCode() != null)
+		if (!returnNoResult
+				&& query.getFilterByQRCode() != null)
 		{
 			scannedProductCodes = scannedProductCodeResolver.resolve(query.getFilterByQRCode())
 					.orElse(null);
@@ -96,20 +111,17 @@ public class PickingWorkflowLaunchersProvider
 			}
 		}
 
-		final UserId userId = query.getUserId();
-		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
-		final PickingJobQuery.Facets facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
-
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
 		//
 		// Already started launchers
-		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final PickingJobQuery.Facets facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
+		final WarehouseId warehouseId = workplace != null ? workplace.getWarehouseId() : null;
 		final PickingJobReferenceList existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
 						PickingJobReferenceQuery.builder()
 								.pickerId(userId)
 								.onlyCustomerIds(profile.getPickOnlyCustomerIds())
-								.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+								.warehouseId(warehouseId)
 								.salesOrderDocumentNo(query.getFilterByDocumentNo())
 								.build())
 				.filter(facets::isMatching)
@@ -124,15 +136,17 @@ public class PickingWorkflowLaunchersProvider
 
 		//
 		// New launchers
+		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
 		if (!returnNoResult
 				&& !limit.isLimitHitOrExceeded(currentResult))
 		{
 			final ImmutableList<PickingJobCandidate> newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
 							.userId(userId)
-							.excludeShipmentScheduleIds(existingPickingJobs.getShipmentScheduleIds())
+							.excludeScheduleIds(existingPickingJobs.getScheduleIds())
 							.facets(facets)
 							.onlyCustomerIds(profile.getPickOnlyCustomerIds())
-							.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+							.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() ? workplace.getId() : null)
+							.warehouseId(warehouseId)
 							.salesOrderDocumentNo(query.getFilterByDocumentNo())
 							.scannedProductCodes(scannedProductCodes)
 							.build())
@@ -146,14 +160,20 @@ public class PickingWorkflowLaunchersProvider
 					.forEach(currentResult::add);
 		}
 
-		final WorkflowLaunchersList list = WorkflowLaunchersList.builder()
-				.launchers(ImmutableList.copyOf(currentResult))
-				.orderByField(OrderBy.descending(PickingJobFieldType.RUESTPLATZ_NR))
-				.filterByQRCode(query.getFilterByQRCode() != null ? query.getFilterByQRCode().toPrintableScannedCode() : null)
-				.timestamp(SystemTime.asInstant())
-				.build();
+		return toComputedWorkflowLaunchers(query, currentResult);
+	}
 
-		return ComputedWorkflowLaunchers.ofListAndQuery(list, query);
+	@NotNull
+	private static ComputedWorkflowLaunchers toComputedWorkflowLaunchers(@NotNull final WorkflowLaunchersQuery query, @NonNull final List<WorkflowLauncher> launchers)
+	{
+		return ComputedWorkflowLaunchers.ofListAndQuery(
+				WorkflowLaunchersList.builder()
+						.launchers(ImmutableList.copyOf(launchers))
+						.orderByField(OrderBy.descending(PickingJobFieldType.RUESTPLATZ_NR))
+						.filterByQRCode(query.getFilterByQRCode() != null ? query.getFilterByQRCode().toPrintableScannedCode() : null)
+						.timestamp(SystemTime.asInstant())
+						.build(),
+				query);
 	}
 
 	@NonNull
