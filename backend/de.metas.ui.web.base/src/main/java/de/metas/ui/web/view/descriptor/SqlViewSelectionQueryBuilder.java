@@ -593,7 +593,7 @@ public final class SqlViewSelectionQueryBuilder
 						continue;
 					}
 
-					if (sqlKeyColumnNames.length() > 0)
+					if (!sqlKeyColumnNames.isEmpty())
 					{
 						sqlKeyColumnNames.append("\n, ");
 					}
@@ -890,6 +890,42 @@ public final class SqlViewSelectionQueryBuilder
 				+ " FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name
 				+ " WHERE " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=?"
 				+ " AND " + DB.buildSqlList(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID, lineIds, sqlParams);
+
+		return SqlAndParams.of(sql, sqlParams);
+	}
+
+	public static SqlAndParams buildSqlSelectRowIdsByPartialKeyFromSelection(
+			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
+			@NonNull final String selectionId,
+			@NonNull String keyColumnName,
+			@NonNull Collection<?> keyValues)
+	{
+		final String selectionColumnName = keyColumnNamesMap.getWebuiSelectionColumnNameForKeyColumnName(keyColumnName);
+
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		sqlParams.add(selectionId);
+
+		final String sql = "SELECT "
+				+ keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated()
+				+ " FROM " + I_T_WEBUI_ViewSelection.Table_Name
+				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?"
+				+ " AND " + DB.buildSqlList(selectionColumnName, keyValues, sqlParams);
+
+		return SqlAndParams.of(sql, sqlParams);
+	}
+
+	public static SqlAndParams buildSqlSelectRowIdsByPartialKeyFromSourceTable(
+			@NonNull final String sourceTableName,
+			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
+			@NonNull String keyColumnName,
+			@NonNull Collection<?> keyValues)
+	{
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+
+		final String sql = "SELECT "
+				+ keyColumnNamesMap.getKeyColumnNamesCommaSeparated()
+				+ " FROM " + sourceTableName
+				+ " WHERE " + DB.buildSqlList(keyColumnName, keyValues, sqlParams);
 
 		return SqlAndParams.of(sql, sqlParams);
 	}

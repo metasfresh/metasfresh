@@ -829,6 +829,16 @@ public final class DefaultView implements IEditableView
 		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName));
 	}
 
+	public Set<DocumentId> retrieveRowIdsByPartialKeyFromSelection(@NonNull final String keyColumnName, @NonNull final Set<?> keyValues)
+	{
+		return viewDataRepository.retrieveRowIdsByPartialKeyFromSelection(viewId, keyColumnName, keyValues);
+	}
+
+	public Set<DocumentId> retrieveRowIdsByPartialKeyFromSourceTable(@NonNull final String keyColumnName, @NonNull final Set<?> keyValues)
+	{
+		return viewDataRepository.retrieveRowIdsByPartialKeyFromSourceTable(keyColumnName, keyValues);
+	}
+
 	//
 	//
 	//
