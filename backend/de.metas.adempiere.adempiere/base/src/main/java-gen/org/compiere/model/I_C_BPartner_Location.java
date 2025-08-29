@@ -1,20 +1,19 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_Location
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner_Location
+public interface I_C_BPartner_Location 
 {
 
 	String Table_Name = "C_BPartner_Location";
 
-	//	/** AD_Table_ID=293 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=293 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -639,6 +638,31 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsReplicationLookupDefault = "IsReplicationLookupDefault";
 
 	/**
+	 * Set Shipper Has Routingcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsShipperHasRoutingcode (boolean IsShipperHasRoutingcode);
+
+	/**
+	 * Get Shipper Has Routingcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	boolean isShipperHasRoutingcode();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsShipperHasRoutingcode = new ModelColumn<>(I_C_BPartner_Location.class, "IsShipperHasRoutingcode", null);
+	String COLUMNNAME_IsShipperHasRoutingcode = "IsShipperHasRoutingcode";
+
+	/**
 	 * Set Ship Address.
 	 * Business Partner Shipment Address
 	 *
@@ -683,7 +707,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
 
 	/**
-	 * Set isSubscriptionTo.
+	 * Set Abo Adresse.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -693,7 +717,7 @@ public interface I_C_BPartner_Location
 	void setIsSubscriptionTo (boolean IsSubscriptionTo);
 
 	/**
-	 * Get isSubscriptionTo.
+	 * Get Abo Adresse.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -752,6 +776,31 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_C_BPartner_Location.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
 	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
+	 * Set Routingcode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_RoutingCode_ID (int M_Shipper_RoutingCode_ID);
+
+	/**
+	 * Get Routingcode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_RoutingCode_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper_RoutingCode getM_Shipper_RoutingCode();
+
+	void setM_Shipper_RoutingCode(@Nullable org.compiere.model.I_M_Shipper_RoutingCode M_Shipper_RoutingCode);
+
+	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_M_Shipper_RoutingCode> COLUMN_M_Shipper_RoutingCode_ID = new ModelColumn<>(I_C_BPartner_Location.class, "M_Shipper_RoutingCode_ID", org.compiere.model.I_M_Shipper_RoutingCode.class);
+	String COLUMNNAME_M_Shipper_RoutingCode_ID = "M_Shipper_RoutingCode_ID";
 
 	/**
 	 * Set Name.
@@ -948,5 +997,4 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VisitorsAddress = new ModelColumn<>(I_C_BPartner_Location.class, "VisitorsAddress", null);
 	String COLUMNNAME_VisitorsAddress = "VisitorsAddress";
-
 }
