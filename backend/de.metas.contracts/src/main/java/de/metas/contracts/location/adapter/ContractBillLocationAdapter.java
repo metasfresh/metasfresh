@@ -106,6 +106,12 @@ public class ContractBillLocationAdapter implements IDocumentBillLocationAdapter
 	}
 
 	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentBillLocationAdapter.super.setRenderedAddress(from);
+	}
+
+	@Override
 	public I_C_Flatrate_Term getWrappedRecord()
 	{
 		return delegate;

@@ -113,6 +113,12 @@ public class OrderMainLocationAdapter
 		IDocumentLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
 	}
 
+	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentLocationAdapter.super.setRenderedAddress(from);
+	}
+
 	public void setFrom(@NonNull final I_C_Order from)
 	{
 		setFrom(OrderDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());

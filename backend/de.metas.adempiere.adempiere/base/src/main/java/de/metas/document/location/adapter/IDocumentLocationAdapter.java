@@ -77,6 +77,12 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 	default void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from)
 	{
 		setC_BPartner_Location_Value_ID(LocationId.toRepoId(from.getCapturedLocationId()));
+		setRenderedAddress(from);
+	}
+
+	@Override
+	default void setRenderedAddress(@NonNull final RenderedAddressAndCapturedLocation from)
+	{
 		setBPartnerAddress(from.getRenderedAddress());
 	}
 
