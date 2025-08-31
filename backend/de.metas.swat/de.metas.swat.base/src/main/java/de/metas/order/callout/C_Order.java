@@ -29,6 +29,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -81,16 +82,10 @@ public class C_Order
 		}
 	}
 
-	@CalloutMethod(columnNames = {
-			I_C_Order.COLUMNNAME_C_BPartner_ID,
-			I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
-			I_C_Order.COLUMNNAME_AD_User_ID },
-			skipIfCopying = true)
-	public void updateBPartnerAddress(final I_C_Order order)
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_AD_User_ID, skipIfCopying = true)
+	public void updateRenderedAddress(final I_C_Order order)
 	{
-		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
-		
-		orderBL.setM_PricingSystem_ID(order, true); // changed partner/location might imply a changed PS/PL
+		documentLocationBL.updateRenderedAddress(OrderDocumentLocationAdapterFactory.locationAdapter(order));
 	}
 
 	@CalloutMethod(columnNames = {
@@ -99,15 +94,20 @@ public class C_Order
 			skipIfCopying = true)
 	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Order order)
 	{
-		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
 
 		orderBL.setM_PricingSystem_ID(order, true); // changed partner/location might imply a changed PS/PL
 	}
 
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_Bill_User_ID, skipIfCopying = true)
+	public void updateBillUserRenderedAddress(final I_C_Order order)
+	{
+		documentLocationBL.updateRenderedAddress(OrderDocumentLocationAdapterFactory.billLocationAdapter(order));
+	}
+
 	@CalloutMethod(columnNames = {
 			I_C_Order.COLUMNNAME_Bill_BPartner_ID,
-			I_C_Order.COLUMNNAME_Bill_Location_ID,
-			I_C_Order.COLUMNNAME_Bill_User_ID },
+			I_C_Order.COLUMNNAME_Bill_Location_ID },
 			skipIfCopying = true)
 	public void updateBillToAddress(final I_C_Order order)
 	{
@@ -115,19 +115,9 @@ public class C_Order
 	}
 
 	@CalloutMethod(columnNames = {
-			I_C_Order.COLUMNNAME_Bill_BPartner_ID,
-			I_C_Order.COLUMNNAME_Bill_Location_ID },
-			skipIfCopying = true)
-	public void updateBillToAddressForceUpdateCapturedLocation(final I_C_Order order)
-	{
-		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.billLocationAdapter(order));
-	}
-
-	@CalloutMethod(columnNames = {
 			I_C_Order.COLUMNNAME_IsDropShip,
 			I_C_Order.COLUMNNAME_DropShip_BPartner_ID,
 			I_C_Order.COLUMNNAME_DropShip_Location_ID,
-			I_C_Order.COLUMNNAME_DropShip_User_ID,
 			I_C_Order.COLUMNNAME_M_Warehouse_ID },
 			skipIfCopying = true)
 	public void updateDeliveryToAddress(final I_C_Order order)
@@ -135,26 +125,10 @@ public class C_Order
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order));
 	}
 
-	@CalloutMethod(columnNames = {
-			I_C_Order.COLUMNNAME_IsDropShip,
-			I_C_Order.COLUMNNAME_DropShip_BPartner_ID,
-			I_C_Order.COLUMNNAME_DropShip_Location_ID,
-			I_C_Order.COLUMNNAME_M_Warehouse_ID },
-			skipIfCopying = true)
-	public void updateDeliveryToAddressForceUpdateCaptureLocation(final I_C_Order order)
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_DropShip_User_ID, skipIfCopying = true)
+	public void updateDropShipUserRenderedAddress(final I_C_Order order)
 	{
-		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order));
-	}
-
-	@CalloutMethod(columnNames = {
-			I_C_Order.COLUMNNAME_IsUseHandOver_Location,
-			I_C_Order.COLUMNNAME_HandOver_Partner_ID,
-			I_C_Order.COLUMNNAME_HandOver_Location_ID,
-			I_C_Order.COLUMNNAME_HandOver_User_ID },
-			skipIfCopying = true)
-	public void updateHandOverAddress(final I_C_Order order)
-	{
-		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.handOverLocationAdapter(order));
+		documentLocationBL.updateRenderedAddress(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order));
 	}
 
 	@CalloutMethod(columnNames = {
@@ -162,9 +136,15 @@ public class C_Order
 			I_C_Order.COLUMNNAME_HandOver_Partner_ID,
 			I_C_Order.COLUMNNAME_HandOver_Location_ID },
 			skipIfCopying = true)
-	public void updateHandOverAddressForceUpdateCaptureLocation(final I_C_Order order)
+	public void updateHandOverAddress(final I_C_Order order)
 	{
-		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.handOverLocationAdapter(order));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.handOverLocationAdapter(order));
+	}
+
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_HandOver_User_ID, skipIfCopying = true)
+	public void updateHandOverUserRenderedAddress(final I_C_Order order)
+	{
+		documentLocationBL.updateRenderedAddress(OrderDocumentLocationAdapterFactory.handOverLocationAdapter(order));
 	}
 
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_BPartner_Location_ID, I_C_Order.COLUMNNAME_AD_User_ID })
@@ -197,12 +177,14 @@ public class C_Order
 			order.setPhone(bPartnerLocationRecord.getPhone());
 		}
 	}
+
 	@CalloutMethod(columnNames = {
 			I_C_Order.COLUMNNAME_M_Shipper_ID },
 			skipIfCopying = true)
 	public void updateDeliveryViaRule(final I_C_Order order)
 	{
-		if(order.getM_Shipper_ID() > 0)
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
+		if (shipperId != null)
 		{
 			order.setDeliveryViaRule(X_C_Order.DELIVERYVIARULE_Shipper);
 		}
