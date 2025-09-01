@@ -96,6 +96,7 @@ public class M_HU_PI_Item_Product_StepDef
 
 		final boolean isDefaultForProduct = tableRow.getAsOptionalBoolean(I_M_HU_PI_Item_Product.COLUMNNAME_IsDefaultForProduct).orElse(false);
 		final boolean active = tableRow.getAsOptionalBoolean(I_M_HU_PI_Item_Product.COLUMNNAME_IsActive).orElse(true);
+		final boolean isOrderInTuUomWhenMatched = tableRow.getAsOptionalBoolean(I_M_HU_PI_Item_Product.COLUMNNAME_IsOrderInTuUomWhenMatched).orElse(false);
 
 		final StepDefDataIdentifier huPiItemIdentifier = tableRow.getAsIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID);
 		final Integer huPiItemId = huPiItemTable.getOptional(huPiItemIdentifier)
@@ -104,7 +105,7 @@ public class M_HU_PI_Item_Product_StepDef
 				
 		final String x12de355Code = tableRow.getAsOptionalString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName()).orElse(null);
 
-		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID);
+		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
 		final I_M_HU_PI_Item_Product huPiItemProductRecord = huPiItemProductTable.getOptional(identifier)
 				.orElseGet(() ->
 						{
@@ -127,6 +128,7 @@ public class M_HU_PI_Item_Product_StepDef
 		huPiItemProductRecord.setQty(qty);
 		huPiItemProductRecord.setValidFrom(validFrom);
 		huPiItemProductRecord.setIsActive(active);
+		huPiItemProductRecord.setIsOrderInTuUomWhenMatched(isOrderInTuUomWhenMatched);
 
 		if (Check.isNotBlank(x12de355Code))
 		{
