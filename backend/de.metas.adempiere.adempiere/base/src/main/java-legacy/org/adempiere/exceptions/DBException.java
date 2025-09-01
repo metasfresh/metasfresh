@@ -115,7 +115,7 @@ public class DBException extends AdempiereException
 		}
 	}
 
-	public DBException(final Exception e,  @Nullable final CharSequence sql)
+	public DBException(final Exception e, @Nullable final CharSequence sql)
 	{
 		this(e, sql, (Object[])null);
 	}
@@ -146,6 +146,11 @@ public class DBException extends AdempiereException
 	}
 
 	public DBException(final String msg)
+	{
+		super(msg);
+	}
+
+	protected DBException(final ITranslatableString msg)
 	{
 		super(msg);
 	}

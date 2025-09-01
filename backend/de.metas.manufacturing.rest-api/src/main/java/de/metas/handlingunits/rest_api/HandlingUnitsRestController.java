@@ -37,7 +37,6 @@ import de.metas.common.handlingunits.JsonHUList;
 import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -57,6 +56,7 @@ import de.metas.printing.frontend.FrontendPrinterData;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -310,7 +310,7 @@ public class HandlingUnitsRestController
 				.huId(request.getHuId())
 				.huQRCode(huQRCode)
 				.numberOfTUs(request.getNumberOfTUs())
-				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.targetQRCode(ScannedCode.ofString(request.getTargetQRCode()))
 				.build());
 	}
 
@@ -323,7 +323,7 @@ public class HandlingUnitsRestController
 
 		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
 				.huQrCodes(huQrCodes)
-				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.targetQRCode(ScannedCode.ofString(request.getTargetQRCode()))
 				.build());
 	}
 

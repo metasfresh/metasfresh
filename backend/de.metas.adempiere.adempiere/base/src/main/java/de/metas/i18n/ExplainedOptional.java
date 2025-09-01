@@ -41,6 +41,11 @@ public final class ExplainedOptional<T>
 		return emptyBecause(TranslatableStrings.anyLanguage(explanation));
 	}
 
+	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey explanation)
+	{
+		return emptyBecause(TranslatableStrings.adMessage(explanation));
+	}
+
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final ITranslatableString explanation)
 	{
 		return new ExplainedOptional<>(null, explanation);
