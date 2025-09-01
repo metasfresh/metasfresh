@@ -31,4 +31,6 @@ UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2025-08-31 10:02:41.
 INSERT INTO t_alter_column values('m_hu_pi_item_product','IsOrderInTuUomWhenMatched','CHAR(1)',null,'Y')
 ;
 
-
+-- 2025-08-31T10:02:57.991Z
+UPDATE M_HU_PI_Item_Product SET IsOrderInTuUomWhenMatched='Y' WHERE IsOrderInTuUomWhenMatched IS NULL
+;
