@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.fresh.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +20,17 @@
  * #L%
  */
 
-package de.metas.document.location.adapter;
+-- Run mode: SWING_CLIENT
 
-import de.metas.document.location.RenderedAddressAndCapturedLocation;
-import lombok.NonNull;
+-- Column: M_HU_PI_Item_Product.IsOrderInTuUomWhenMatched
+-- 2025-08-31T10:02:41.258Z
+UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2025-08-31 10:02:41.258000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589626
+;
 
-public interface IDocumentLocationAdapterTemplate
-{
-	void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from);
+-- 2025-08-31T10:02:57.304Z
+INSERT INTO t_alter_column values('m_hu_pi_item_product','IsOrderInTuUomWhenMatched','CHAR(1)',null,'Y')
+;
 
-	void setRenderedAddress(@NonNull final RenderedAddressAndCapturedLocation from);
-}
+-- 2025-08-31T10:02:57.991Z
+UPDATE M_HU_PI_Item_Product SET IsOrderInTuUomWhenMatched='Y' WHERE IsOrderInTuUomWhenMatched IS NULL
+;
