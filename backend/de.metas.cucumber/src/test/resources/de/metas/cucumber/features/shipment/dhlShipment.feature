@@ -84,8 +84,8 @@ Feature: Dhl Shipment
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.M_HU_PackingMaterial_ID.Identifier |
       | dhl_huPiItemTU             | dhl_packingVersionTU          | 0   | PM       | dhl_pm                                 |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | REST.Context      |
-      | dhl_huProductTU_X                  | dhl_huPiItemTU             | test_product_dhl_01     | 5   | 2022-01-10 | dhl_huProductTU_X |
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | REST.Context      | OPT.IsOrderInTuUomWhenMatched |
+      | dhl_huProductTU_X                  | dhl_huPiItemTU             | test_product_dhl_01     | 5   | 2022-01-10 | dhl_huProductTU_X | false                         |
 
   @Id:S0335.1_100
   Scenario: Auto-processing of olcand and shipped via DHL
@@ -181,4 +181,3 @@ Feature: Dhl Shipment
     And validate DHL_ShipmentOrder:
       | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
       | package1     | dhl_customer  | 30             | 20            | 10             | 1              |
-    
