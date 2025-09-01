@@ -147,7 +147,7 @@ Feature: Product price validation (S0144_2)
     # add CU-TU allocation for the product in question
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsOrderInTuUomWhenMatched |
-      | huProductTU                        | huPiItemTU                 | product_S0144.2_120     | 8   | 2022-05-10 | false                         |
+      | huProductTU                        | huPiItemTU                 | product_S0144.2_120     | 8   | 2022-05-10 | true                         |
 
     And metasfresh contains M_AttributeSetInstance with identifier "ppASI_S0144.2_120":
   """
@@ -239,7 +239,7 @@ Feature: Product price validation (S0144_2)
     # add CU-TU allocation for the product in question
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsOrderInTuUomWhenMatched |
-      | huProductTU                        | huPiItemTU                 | product_S0144.2_140     | 8   | 2022-05-10 | false                         |
+      | huProductTU                        | huPiItemTU                 | product_S0144.2_140     | 8   | 2022-05-10 | true                         |
 
     And metasfresh contains M_ProductPrices
       | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.IsAttributeDependant | OPT.UseScalePrice | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -275,7 +275,7 @@ Feature: Product price validation (S0144_2)
     # add CU-TU allocation for the product in question
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsOrderInTuUomWhenMatched |
-      | huProductTU                        | huPiItemTU                 | product_S0144.2_150     | 8   | 2022-05-10 | false                         |
+      | huProductTU                        | huPiItemTU                 | product_S0144.2_150     | 8   | 2022-05-10 | true                         |
 
     And metasfresh contains M_ProductPrices
       | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.IsAttributeDependant | OPT.UseScalePrice | OPT.M_HU_PI_Item_Product_ID.Identifier |
