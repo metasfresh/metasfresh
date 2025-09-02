@@ -59,6 +59,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PCE_UOM_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN_LU_PackingMaterial_Fallback;
+import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_IsOrderInTuUomWhenMatched;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -96,7 +97,6 @@ public class M_HU_PI_Item_Product_StepDef
 
 		final boolean isDefaultForProduct = tableRow.getAsOptionalBoolean(I_M_HU_PI_Item_Product.COLUMNNAME_IsDefaultForProduct).orElse(false);
 		final boolean active = tableRow.getAsOptionalBoolean(I_M_HU_PI_Item_Product.COLUMNNAME_IsActive).orElse(true);
-		final boolean isOrderInTuUomWhenMatched = tableRow.getAsOptionalBoolean(I_M_HU_PI_Item_Product.COLUMNNAME_IsOrderInTuUomWhenMatched).orElse(false);
 
 		final StepDefDataIdentifier huPiItemIdentifier = tableRow.getAsIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID);
 		final Integer huPiItemId = huPiItemTable.getOptional(huPiItemIdentifier)
@@ -104,7 +104,6 @@ public class M_HU_PI_Item_Product_StepDef
 				.orElseGet(() -> Integer.parseInt(huPiItemIdentifier.getAsString()));
 				
 		final String x12de355Code = tableRow.getAsOptionalString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName()).orElse(null);
-
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
 		final I_M_HU_PI_Item_Product huPiItemProductRecord = huPiItemProductTable.getOptional(identifier)
 				.orElseGet(() ->
@@ -122,13 +121,13 @@ public class M_HU_PI_Item_Product_StepDef
 				);
 
 		tableRow.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(huPiItemProductRecord::setGTIN);
-		
+		tableRow.getAsOptionalBoolean(COLUMNNAME_IsOrderInTuUomWhenMatched).ifPresent(huPiItemProductRecord::setIsOrderInTuUomWhenMatched);
+
 		huPiItemProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		huPiItemProductRecord.setM_HU_PI_Item_ID(huPiItemId);
 		huPiItemProductRecord.setQty(qty);
 		huPiItemProductRecord.setValidFrom(validFrom);
 		huPiItemProductRecord.setIsActive(active);
-		huPiItemProductRecord.setIsOrderInTuUomWhenMatched(isOrderInTuUomWhenMatched);
 
 		if (Check.isNotBlank(x12de355Code))
 		{
