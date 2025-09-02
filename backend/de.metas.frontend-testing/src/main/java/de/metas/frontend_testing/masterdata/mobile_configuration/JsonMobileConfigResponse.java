@@ -18,6 +18,7 @@ public class JsonMobileConfigResponse
 	@Nullable MobileAuthMethod defaultAuthMethod;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Picking picking;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Distribution distribution;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Manufacturing manufacturing;
 
 	//
 	//
@@ -52,5 +53,18 @@ public class JsonMobileConfigResponse
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Manufacturing
+	{
+		@Nullable Boolean isScanResourceRequired;
+		@Nullable Boolean isAllowIssuingAnyHU;
 	}
 }
