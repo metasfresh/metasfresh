@@ -44,11 +44,13 @@ public class MobileUIManufacturingConfigRepository
 
 	private MobileUIManufacturingConfig getUserConfig(@NonNull final UserId userId)
 	{
+		//noinspection DataFlowIssue
 		return userConfigsCache.getOrLoad(userId, this::retrieveUserConfig).orElse(null);
 	}
 
 	public MobileUIManufacturingConfig getGlobalConfig(@NonNull final ClientId clientId)
 	{
+		//noinspection DataFlowIssue
 		return globalConfigsCache.getOrLoad(clientId, this::retrieveGlobalConfig).orElse(null);
 	}
 
