@@ -252,6 +252,7 @@ public class ProductsRestControllerTest
 													.description("description1")
 													.ean("ean1")
 													.uom("Ea")
+										  			.uomX12DE355("PCE")
 													.productCategoryId(JsonMetasfreshId.of(3))
 													.bpartner(JsonProductBPartner.builder()
 																	  .bpartnerId(JsonMetasfreshId.of(1))

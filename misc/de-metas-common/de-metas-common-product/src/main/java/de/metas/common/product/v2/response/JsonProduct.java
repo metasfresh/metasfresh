@@ -88,6 +88,11 @@ public class JsonProduct
 	@JsonProperty("uom")
 	String uom;
 
+	@ApiModelProperty("This is the `C_UOM.X12DE355` of the product's unit of measurement.")
+	@NonNull
+	@JsonProperty("uomX12DE355")
+	String uomX12DE355;
+
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			dataType = "java.lang.Integer", //
