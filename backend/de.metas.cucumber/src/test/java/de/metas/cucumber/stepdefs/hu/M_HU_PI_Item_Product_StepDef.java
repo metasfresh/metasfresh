@@ -59,6 +59,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PCE_UOM_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN_LU_PackingMaterial_Fallback;
+import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_IsOrderInTuUomWhenMatched;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -103,8 +104,7 @@ public class M_HU_PI_Item_Product_StepDef
 				.orElseGet(() -> Integer.parseInt(huPiItemIdentifier.getAsString()));
 				
 		final String x12de355Code = tableRow.getAsOptionalString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName()).orElse(null);
-
-		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID);
+		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
 		final I_M_HU_PI_Item_Product huPiItemProductRecord = huPiItemProductTable.getOptional(identifier)
 				.orElseGet(() ->
 						{
@@ -121,7 +121,8 @@ public class M_HU_PI_Item_Product_StepDef
 				);
 
 		tableRow.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(huPiItemProductRecord::setGTIN);
-		
+		tableRow.getAsOptionalBoolean(COLUMNNAME_IsOrderInTuUomWhenMatched).ifPresent(huPiItemProductRecord::setIsOrderInTuUomWhenMatched);
+
 		huPiItemProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		huPiItemProductRecord.setM_HU_PI_Item_ID(huPiItemId);
 		huPiItemProductRecord.setQty(qty);
