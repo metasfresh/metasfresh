@@ -182,8 +182,8 @@ public class ProductsRestControllerTest
 
 	private void createMasterData()
 	{
-		eachUomId = createUOM("Ea");
-		kgUomId = createUOM("Kg");
+		eachUomId = createUOM("Ea", "PCE");
+		kgUomId = createUOM("Kg", "KGM");
 	}
 
 	@Test
@@ -294,10 +294,11 @@ public class ProductsRestControllerTest
 		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
 	}
 
-	private UomId createUOM(@NonNull final String uomSymbol)
+	private UomId createUOM(@NonNull final String uomSymbol, @NonNull final String uomX12DE355)
 	{
 		final I_C_UOM record = newInstance(I_C_UOM.class);
 		record.setUOMSymbol(uomSymbol);
+		record.setX12DE355(uomX12DE355);
 		saveRecord(record);
 		return UomId.ofRepoId(record.getC_UOM_ID());
 	}
