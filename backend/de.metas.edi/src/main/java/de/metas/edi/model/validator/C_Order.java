@@ -29,8 +29,12 @@ import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
+import de.metas.order.IOrderBL;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderDropShipLocationAdapter;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -75,7 +79,7 @@ public class C_Order
 			return;
 		}
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		if (!bpartner.isEdiDesadvRecipient() )
+		if (!bpartner.isEdiDesadvRecipient())
 		{
 			return;
 		}
@@ -102,11 +106,10 @@ public class C_Order
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void setEdiEnabledForNewOrder(final I_C_Order order)
+	public void setEdiEnabledForNewOrder(@NonNull final I_C_Order order)
 	{
 		final boolean ediEnabledByInputDataSource;
-
-		if (order.getAD_InputDataSource_ID()<=0)
+		if (order.getAD_InputDataSource_ID() <= 0)
 		{
 			ediEnabledByInputDataSource = false;
 		}
@@ -114,18 +117,34 @@ public class C_Order
 		{
 			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(order.getAD_InputDataSource_ID());
 		}
+		if (ediEnabledByInputDataSource)
+		{
+			order.setIsEdiEnabled(true);
+			return; // no need to look further
+		}
 
-		final boolean ediEnabledByBPartner;
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.edi.model.I_C_BPartner.class);
-		if (partner == null)
+		final int buyerBPartnerId = OrderDocumentLocationAdapterFactory.billLocationAdapter(order).getBill_BPartner_ID();
+		if (buyerBPartnerId > 0)
 		{
-			ediEnabledByBPartner = false;
+			final I_C_BPartner buyer = InterfaceWrapperHelper.load(buyerBPartnerId, de.metas.edi.model.I_C_BPartner.class);
+			if (buyer.isEdiInvoicRecipient())
+			{
+				order.setIsEdiEnabled(true);
+				return;
+			}
 		}
-		else
+		final int recipientBPartnerId = OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).getDropShip_BPartner_ID();
+		if (recipientBPartnerId > 0)
 		{
-			ediEnabledByBPartner = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
+			final I_C_BPartner recipient = InterfaceWrapperHelper.load(recipientBPartnerId, de.metas.edi.model.I_C_BPartner.class);
+			if (recipient.isEdiDesadvRecipient())
+			{
+				order.setIsEdiEnabled(true);
+				return;
+			}
 		}
-		order.setIsEdiEnabled(ediEnabledByInputDataSource || ediEnabledByBPartner);
+
+		order.setIsEdiEnabled(false);
 	}
 
 	/**
