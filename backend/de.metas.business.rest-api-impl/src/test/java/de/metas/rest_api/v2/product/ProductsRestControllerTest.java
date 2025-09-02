@@ -153,7 +153,7 @@ public class ProductsRestControllerTest
 		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
 
 		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
-		
+
 		final ProductTaxCategoryRepository productTaxCategoryRepository = new ProductTaxCategoryRepository();
 		final ProductTaxCategoryService productTaxCategoryService = new ProductTaxCategoryService(productTaxCategoryRepository);
 		final ProductPriceRepository productPriceRepository = new ProductPriceRepository(productTaxCategoryService);
@@ -286,6 +286,7 @@ public class ProductsRestControllerTest
 													.description("description2")
 													.ean("ean2")
 													.uom("Kg")
+										            .uomX12DE355("KGM")
 													.productCategoryId(JsonMetasfreshId.of(4))
 													.build())
 								   .build());
