@@ -24,14 +24,13 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.order.IOrderBL;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
-import de.metas.order.location.adapter.OrderDropShipLocationAdapter;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,6 +46,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_Order
 {
+	private final IEDIInputDataSourceBL inputDataSourceBL = Services.get(IEDIInputDataSourceBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
@@ -115,7 +117,7 @@ public class C_Order
 		}
 		else
 		{
-			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(order.getAD_InputDataSource_ID());
+			ediEnabledByInputDataSource = inputDataSourceBL.isEDIInputDataSource(order.getAD_InputDataSource_ID());
 		}
 		if (ediEnabledByInputDataSource)
 		{
@@ -123,8 +125,8 @@ public class C_Order
 			return; // no need to look further
 		}
 
-		final int buyerBPartnerId = OrderDocumentLocationAdapterFactory.billLocationAdapter(order).getBill_BPartner_ID();
-		if (buyerBPartnerId > 0)
+		final BPartnerId buyerBPartnerId = orderBL.getEffectiveBillPartnerId(order);
+		if (buyerBPartnerId != null)
 		{
 			final I_C_BPartner buyer = InterfaceWrapperHelper.load(buyerBPartnerId, de.metas.edi.model.I_C_BPartner.class);
 			if (buyer.isEdiInvoicRecipient())
@@ -133,8 +135,8 @@ public class C_Order
 				return;
 			}
 		}
-		final int recipientBPartnerId = OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).getDropShip_BPartner_ID();
-		if (recipientBPartnerId > 0)
+		final BPartnerId recipientBPartnerId =  orderBL.getEffectiveDropshipPartnerId(order);
+		if (recipientBPartnerId != null)
 		{
 			final I_C_BPartner recipient = InterfaceWrapperHelper.load(recipientBPartnerId, de.metas.edi.model.I_C_BPartner.class);
 			if (recipient.isEdiDesadvRecipient())
@@ -161,7 +163,7 @@ public class C_Order
 			return;
 		}
 
-		final boolean isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSourceId);
+		final boolean isEdiEnabled = inputDataSourceBL.isEDIInputDataSource(orderInputDataSourceId);
 		if (isEdiEnabled)
 		{
 			order.setIsEdiEnabled(true);

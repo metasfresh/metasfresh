@@ -36,195 +36,249 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class C_Order_SetEdiEnabledForNewOrderTest
 {
-    private C_Order validator;
-    private IEDIInputDataSourceBL mockEdiInputDataSourceBL;
+	private C_Order validator;
+	private IEDIInputDataSourceBL mockEdiInputDataSourceBL;
 
-    @BeforeEach
-    void setUp()
-    {
-        AdempiereTestHelper.get().init();
-        validator = new C_Order();
+	@BeforeEach
+	void setUp()
+	{
+		AdempiereTestHelper.get().init();
 
 		mockEdiInputDataSourceBL = new MockEDIInputDataSourceBL();
-        Services.registerService(IEDIInputDataSourceBL.class, mockEdiInputDataSourceBL);
-    }
+		Services.registerService(IEDIInputDataSourceBL.class, mockEdiInputDataSourceBL);
 
-    @Test
-    void setEdiEnabledForNewOrder_whenInputDataSourceIsEDI_shouldSetEdiEnabled()
-    {
-        // given
-        final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-        order.setAD_InputDataSource_ID(123);
+		validator = new C_Order();
+	}
 
-        ((MockEDIInputDataSourceBL) mockEdiInputDataSourceBL).setReturnValue(true);
+	@Test
+	void setEdiEnabledForNewOrder_whenInputDataSourceIsEDI_shouldSetEdiEnabled()
+	{
+		// given
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setAD_InputDataSource_ID(123);
 
-        // when
-        validator.setEdiEnabledForNewOrder(order);
+		((MockEDIInputDataSourceBL)mockEdiInputDataSourceBL).setReturnValue(true);
 
-        // then
-        assertThat(order.isEdiEnabled()).isTrue();
-    }
+		// when
+		validator.setEdiEnabledForNewOrder(order);
 
-    @Test
-    void setEdiEnabledForNewOrder_whenInputDataSourceIsNotEDI_andBuyerIsEdiInvoiceRecipient_shouldSetEdiEnabled()
-    {
-        // given
-        final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-        order.setAD_InputDataSource_ID(123);
+		// then
+		assertThat(order.isEdiEnabled()).isTrue();
+	}
 
-        // Create buyer partner that is EDI invoice recipient
-        final I_C_BPartner buyer = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-        buyer.setC_BPartner_ID(456);
-        buyer.setIsEdiInvoicRecipient(true);
-        InterfaceWrapperHelper.save(buyer);
+	@Test
+	void setEdiEnabledForNewOrder_whenInputDataSourceIsNotEDI_andBuyerIsEdiInvoiceRecipient_shouldSetEdiEnabled()
+	{
+		// given
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setAD_InputDataSource_ID(123);
 
-        // Create order with buyer partner as bill partner
-        order.setC_BPartner_ID(456);
-        order.setBill_BPartner_ID(456);
+		// Create buyer partner that is EDI invoice recipient
+		final I_C_BPartner buyer = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		buyer.setC_BPartner_ID(456);
+		buyer.setIsEdiInvoicRecipient(true);
+		InterfaceWrapperHelper.save(buyer);
 
-        ((MockEDIInputDataSourceBL) mockEdiInputDataSourceBL).setReturnValue(false);
+		// Create order with buyer partner as bill partner
+		order.setC_BPartner_ID(456);
+		order.setBill_BPartner_ID(456);
 
-        // when
-        validator.setEdiEnabledForNewOrder(order);
+		((MockEDIInputDataSourceBL)mockEdiInputDataSourceBL).setReturnValue(false);
 
-        // then
-        assertThat(order.isEdiEnabled()).isTrue();
-    }
+		// when
+		validator.setEdiEnabledForNewOrder(order);
 
-    @Test
-    void setEdiEnabledForNewOrder_whenInputDataSourceIsNotEDI_andBuyerIsNotEdiRecipient_andDeliveryPartnerIsEdiDesadvRecipient_shouldSetEdiEnabled()
-    {
-        // given
-        final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-        order.setAD_InputDataSource_ID(123);
+		// then
+		assertThat(order.isEdiEnabled()).isTrue();
+	}
 
-        // Create buyer partner that is NOT EDI recipient
-        final I_C_BPartner buyer = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-        buyer.setC_BPartner_ID(456);
-        buyer.setIsEdiInvoicRecipient(false);
-        InterfaceWrapperHelper.save(buyer);
+	@Test
+	void setEdiEnabledForNewOrder_whenInputDataSourceIsNotEDI_andBuyerIsEdiDesadvRecipient_shouldSetEdiEnabled()
+	{
+		// given
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setAD_InputDataSource_ID(123);
 
-        // Create delivery partner that IS EDI DESADV recipient
-        final I_C_BPartner deliveryPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-        deliveryPartner.setC_BPartner_ID(789);
-        deliveryPartner.setIsEdiDesadvRecipient(true);
-        InterfaceWrapperHelper.save(deliveryPartner);
+		// Create buyer partner that is EDI invoice recipient
+		final I_C_BPartner buyer = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		buyer.setC_BPartner_ID(456);
+		buyer.setIsEdiDesadvRecipient(true);
 
-        // Set up order with both partners
-        order.setC_BPartner_ID(456);
-        order.setBill_BPartner_ID(456);
-        order.setDropShip_BPartner_ID(789);
+		InterfaceWrapperHelper.save(buyer);
 
-        ((MockEDIInputDataSourceBL) mockEdiInputDataSourceBL).setReturnValue(false);
+		order.setC_BPartner_ID(456);
 
-        // when
-        validator.setEdiEnabledForNewOrder(order);
+		((MockEDIInputDataSourceBL)mockEdiInputDataSourceBL).setReturnValue(false);
 
-        // then
-        assertThat(order.isEdiEnabled()).isTrue();
-    }
+		// when
+		validator.setEdiEnabledForNewOrder(order);
 
-    @Test
-    void setEdiEnabledForNewOrder_whenNoEdiCriteriaMet_shouldSetEdiDisabled()
-    {
-        // given
-        final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-        order.setAD_InputDataSource_ID(123);
+		// then
+		assertThat(order.isEdiEnabled()).isTrue();
+	}
 
-        // Create buyer partner that is NOT EDI recipient
-        final I_C_BPartner buyer = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-        buyer.setC_BPartner_ID(456);
-        buyer.setIsEdiInvoicRecipient(false);
-        InterfaceWrapperHelper.save(buyer);
+	@Test
+	void setEdiEnabledForNewOrder_whenInputDataSourceIsNotEDI_andBuyerIsEdiInvoicRecipient_shouldSetEdiEnabled()
+	{
+		// given
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setAD_InputDataSource_ID(123);
 
-        // Create delivery partner that is NOT EDI recipient
-        final I_C_BPartner deliveryPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-        deliveryPartner.setC_BPartner_ID(789);
-        deliveryPartner.setIsEdiDesadvRecipient(false);
-        InterfaceWrapperHelper.save(deliveryPartner);
+		// Create buyer partner that is EDI invoice recipient
+		final I_C_BPartner buyer = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		buyer.setC_BPartner_ID(456);
+		buyer.setIsEdiInvoicRecipient(true);
 
-        // Set up order with both partners
-        order.setC_BPartner_ID(456);
-        order.setBill_BPartner_ID(456);
-        order.setDropShip_BPartner_ID(789);
+		InterfaceWrapperHelper.save(buyer);
 
-        ((MockEDIInputDataSourceBL) mockEdiInputDataSourceBL).setReturnValue(false);
+		order.setC_BPartner_ID(456);
 
-        // when
-        validator.setEdiEnabledForNewOrder(order);
+		((MockEDIInputDataSourceBL)mockEdiInputDataSourceBL).setReturnValue(false);
 
-        // then
-        assertThat(order.isEdiEnabled()).isFalse();
-    }
+		// when
+		validator.setEdiEnabledForNewOrder(order);
 
-    @Test
-    void setEdiEnabledForNewOrder_whenNoInputDataSource_andNoBuyerPartner_shouldSetEdiDisabled()
-    {
-        // given
-        final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-        order.setAD_InputDataSource_ID(0); // No input data source
-        order.setBill_BPartner_ID(0); // No buyer partner
-        order.setDropShip_BPartner_ID(0); // No delivery partner
+		// then
+		assertThat(order.isEdiEnabled()).isTrue();
+	}
 
-        // when
-        validator.setEdiEnabledForNewOrder(order);
+	@Test
+	void setEdiEnabledForNewOrder_whenInputDataSourceIsNotEDI_andBuyerIsNotEdiRecipient_andDeliveryPartnerIsEdiDesadvRecipient_shouldSetEdiEnabled()
+	{
+		// given
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setAD_InputDataSource_ID(123);
 
-        // then
-        assertThat(order.isEdiEnabled()).isFalse();
-    }
+		// Create buyer partner that is NOT EDI recipient
+		final I_C_BPartner buyer = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		buyer.setC_BPartner_ID(456);
+		buyer.setIsEdiInvoicRecipient(false);
+		InterfaceWrapperHelper.save(buyer);
 
-    @Test
-    void setEdiEnabledForNewOrder_whenNegativeInputDataSourceId_shouldSetEdiDisabled()
-    {
-        // given
-        final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-        order.setAD_InputDataSource_ID(-1); // Negative input data source ID
-        order.setBill_BPartner_ID(0);
-        order.setDropShip_BPartner_ID(0);
+		// Create delivery partner that IS EDI DESADV recipient
+		final I_C_BPartner deliveryPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		deliveryPartner.setC_BPartner_ID(789);
+		deliveryPartner.setIsEdiDesadvRecipient(true);
+		InterfaceWrapperHelper.save(deliveryPartner);
 
-        // when
-        validator.setEdiEnabledForNewOrder(order);
+		// Set up order with both partners
+		order.setC_BPartner_ID(456);
+		order.setBill_BPartner_ID(456);
+		order.setIsDropShip(true);
+		order.setDropShip_BPartner_ID(789);
 
-        // then
-        assertThat(order.isEdiEnabled()).isFalse();
-    }
+		((MockEDIInputDataSourceBL)mockEdiInputDataSourceBL).setReturnValue(false);
 
-    @Test
-    void setEdiEnabledForNewOrder_whenBuyerPartnerIsNull_shouldCheckDeliveryPartner()
-    {
-        // given
-        final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-        order.setAD_InputDataSource_ID(123);
-        order.setBill_BPartner_ID(0); // No buyer partner
+		// when
+		validator.setEdiEnabledForNewOrder(order);
 
-        // Create delivery partner that IS EDI DESADV recipient
-        final I_C_BPartner deliveryPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-        deliveryPartner.setC_BPartner_ID(789);
-        deliveryPartner.setIsEdiDesadvRecipient(true);
-        InterfaceWrapperHelper.save(deliveryPartner);
+		// then
+		assertThat(order.isEdiEnabled()).isTrue();
+	}
 
-        order.setDropShip_BPartner_ID(789);
+	@Test
+	void setEdiEnabledForNewOrder_whenNoEdiCriteriaMet_shouldSetEdiDisabled()
+	{
+		// given
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setAD_InputDataSource_ID(123);
 
-        ((MockEDIInputDataSourceBL) mockEdiInputDataSourceBL).setReturnValue(false);
+		// Create buyer partner that is NOT EDI recipient
+		final I_C_BPartner buyer = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		buyer.setC_BPartner_ID(456);
+		buyer.setIsEdiInvoicRecipient(false);
+		InterfaceWrapperHelper.save(buyer);
 
-        // when
-        validator.setEdiEnabledForNewOrder(order);
+		// Create delivery partner that is NOT EDI recipient
+		final I_C_BPartner deliveryPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		deliveryPartner.setC_BPartner_ID(789);
+		deliveryPartner.setIsEdiDesadvRecipient(false);
+		InterfaceWrapperHelper.save(deliveryPartner);
 
-        // then
-        assertThat(order.isEdiEnabled()).isTrue();
-    }
+		// Set up order with both partners
+		order.setC_BPartner_ID(456);
+		order.setBill_BPartner_ID(456);
+		order.setIsDropShip(true);
+		order.setDropShip_BPartner_ID(789);
 
-    // // Inner class to help with mocking
-    @Setter
+		((MockEDIInputDataSourceBL)mockEdiInputDataSourceBL).setReturnValue(false);
+
+		// when
+		validator.setEdiEnabledForNewOrder(order);
+
+		// then
+		assertThat(order.isEdiEnabled()).isFalse();
+	}
+
+	@Test
+	void setEdiEnabledForNewOrder_whenNoInputDataSource_andNoBuyerPartner_shouldSetEdiDisabled()
+	{
+		// given
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setAD_InputDataSource_ID(0); // No input data source
+		order.setBill_BPartner_ID(0); // No buyer partner
+		order.setDropShip_BPartner_ID(0); // No delivery partner
+
+		// when
+		validator.setEdiEnabledForNewOrder(order);
+
+		// then
+		assertThat(order.isEdiEnabled()).isFalse();
+	}
+
+	@Test
+	void setEdiEnabledForNewOrder_whenNegativeInputDataSourceId_shouldSetEdiDisabled()
+	{
+		// given
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setAD_InputDataSource_ID(-1); // Negative input data source ID
+		order.setBill_BPartner_ID(0);
+		order.setDropShip_BPartner_ID(0);
+
+		// when
+		validator.setEdiEnabledForNewOrder(order);
+
+		// then
+		assertThat(order.isEdiEnabled()).isFalse();
+	}
+
+	@Test
+	void setEdiEnabledForNewOrder_whenBuyerPartnerIsNull_shouldCheckDeliveryPartner()
+	{
+		// given
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setAD_InputDataSource_ID(123);
+		order.setBill_BPartner_ID(0); // No buyer partner
+
+		// Create delivery partner that IS EDI DESADV recipient
+		final I_C_BPartner deliveryPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		deliveryPartner.setC_BPartner_ID(789);
+		deliveryPartner.setIsEdiDesadvRecipient(true);
+		InterfaceWrapperHelper.save(deliveryPartner);
+
+		order.setIsDropShip(true);
+		order.setDropShip_BPartner_ID(789);
+
+		((MockEDIInputDataSourceBL)mockEdiInputDataSourceBL).setReturnValue(false);
+
+		// when
+		validator.setEdiEnabledForNewOrder(order);
+
+		// then
+		assertThat(order.isEdiEnabled()).isTrue();
+	}
+
+	// // Inner class to help with mocking
+	@Setter
 	private static class MockEDIInputDataSourceBL implements IEDIInputDataSourceBL
-    {
-        private boolean returnValue = false;
+	{
+		private boolean returnValue = false;
 
-        @Override
-        public boolean isEDIInputDataSource(final int inputDataSourceId)
-        {
-            return returnValue;
-        }
+		@Override
+		public boolean isEDIInputDataSource(final int inputDataSourceId)
+		{
+			return returnValue;
+		}
 
 	}
 }
