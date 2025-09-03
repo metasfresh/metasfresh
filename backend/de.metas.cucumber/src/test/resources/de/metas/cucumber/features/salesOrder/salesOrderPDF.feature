@@ -46,18 +46,18 @@ Feature: PDF Export Tests
   Scenario: PDF retriever for Sales Orders and Shipments
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
-      | so1        | true    | customer      | 2025-04-01  | wh             |
+      | so        | true    | customer      | 2025-04-01  | wh             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so1_l1     | so1        | product      | 10         |
-    And the order identified by so1 is completed
+      | so_l1     | so        | product      | 10         |
+    And the order identified by so is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
-      | ss1        | so1_l1         | N             | wh             |
+      | ss1        | so_l1         | N             | wh             |
     And The jasper process is run
       | Value            | Record_ID  |
-      | Auftrag (Jasper) | so1        |
-    When store sales order endpointPath /api/v2/orders/sales/:so1/pdf in context
+      | Auftrag (Jasper) | so        |
+    When store sales order endpointPath /api/v2/orders/sales/:so/pdf in context
 
     Then a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     
@@ -66,12 +66,12 @@ Feature: PDF Export Tests
       | ss1                   | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss1                   | shipment1  |
+      | ss1                   | shipment  |
     And The jasper process is run
       | Value                 | Record_ID  |
-      | Lieferschein (Jasper) | shipment1  |
+      | Lieferschein (Jasper) | shipment  |
 
-    And store shipment endpointPath /api/v2/shipments/:shipment1/pdf in context
+    And store shipment endpointPath /api/v2/shipments/:shipment/pdf in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
