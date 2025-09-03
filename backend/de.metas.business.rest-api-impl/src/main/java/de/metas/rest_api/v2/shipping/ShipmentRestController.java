@@ -31,6 +31,7 @@ import de.metas.common.shipping.v2.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.common.shipping.v2.shipment.JsonProcessShipmentRequest;
 import de.metas.common.shipping.v2.shipment.mpackage.JsonCreateShippingPackagesRequest;
+import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
@@ -38,6 +39,9 @@ import de.metas.rest_api.v2.shipping.mpackage.ShippingPackageService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
@@ -45,11 +49,15 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/shipments" })
 @RestController
@@ -143,6 +151,22 @@ public class ShipmentRestController
 			log.warn("Got exception while processing {}", request, ex);
 			return ResponseEntity.badRequest().build();
 		}
+	}
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "PDF retrieved for shipment"),
+			@ApiResponse(code = 401, message = "You are not authorized to see the shipment PDF"),
+			@ApiResponse(code = 404, message = "No archive found for the shipment")
+	})
+	@GetMapping(path = "/{shipmentId}/pdf")
+	public ResponseEntity<byte[]> getOrderPDF(
+			@ApiParam(required = true, value = "metasfreshId of the shipment to get the PDF of") //
+			@PathVariable("shipmentId") final int shipmentRecordId)
+	{
+		return Optional.ofNullable(InOutId.ofRepoIdOrNull(shipmentRecordId))
+				.flatMap(jsonShipmentService::getShipmentPDF)
+				.map(ResponseEntity::ok)
+				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
 	private static ImmutableList<JsonMetasfreshId> wrapWorkPackageIds(@NonNull final ImmutableSet<QueueWorkPackageId> workPackageIds)
