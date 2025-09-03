@@ -22,13 +22,13 @@ $$
 select ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
-        COALESCE(replace(qr_iban, ' ', ''), replace(iban, ' ', ''), '') || E'\n' || -- Account
-        'K' || E'\n' || -- CR - AdressTyp = Combined address
-        (case when orgbp.IsCompany = 'Y' then orgbp.Companyname else orgbp.name end) || E'\n' || --CR – Name
-        coalesce(orgl.address1, '') || E'\n' || --CR –Street and building number of P.O. Box
-        coalesce(orgl.postal, '') || ' ' || coalesce(orgl.city, '') || E'\n' || -- CR Postal code and town
-        E'\n' || --Do not fill in
-        E'\n' || --Do not fill in
+        COALESCE(REPLACE(qr_iban, ' ', ''), REPLACE(iban, ' ', ''), '') || E'\n' || -- Account
+        'S' || E'\n' || -- CR - AdressTyp = Combined address
+        (CASE WHEN orgbp.IsCompany = 'Y' THEN orgbp.Companyname ELSE orgbp.name END) || E'\n' || --CR – Name
+        (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
+        (extract_street_and_number(COALESCE(orgl.address1, ''))).number || E'\n' || --CR –Street no
+        COALESCE(orgl.postal, '') || E'\n' || -- CR Postal code
+        COALESCE(orgl.city, '') || E'\n' || -- CR city
         orgc.countrycode || E'\n' || -- CR Country
         E'\n' || -- E'\n' || --UCR – AdressTyp
         E'\n' || -- E'\n' || --UCR – Name
@@ -39,15 +39,16 @@ select ('SPC' || E'\n' || --QRType
         E'\n' || -- E'\n' || --UCR – Country
         to_char((i.grandtotal - coalesce(y.zuordnung, 0)), 'FM99990.00') || E'\n' ||
         cur.iso_code || E'\n' ||
-        'K' || E'\n' || -- UD– AdressTyp = Combined address
-        (case
-             when bp.IsCompany = 'Y' then bp.companyname
-             else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end)
+        'S' || E'\n' || -- UD– AdressTyp = Combined address
+        (CASE
+             WHEN bp.IsCompany = 'Y' THEN bp.companyname
+                                     ELSE (COALESCE(u.FirstName, '') || ' ' || COALESCE(u.LastName, ''))
+         END)
             || E'\n' || --UD – Name
-        coalesce(l.address1, '') || E'\n' || --UD –Street and building number of P.O. Box
-        coalesce(l.postal, '') || ' ' || coalesce(l.city, '') || E'\n' || -- UD Postal code and town
-        E'\n' || --Do not fill in
-        E'\n' || --Do not fill in
+        (extract_street_and_number(COALESCE(l.address1, ''))).street || E'\n' || --UD –Street
+        (extract_street_and_number(COALESCE(l.address1, ''))).number || E'\n' || --UD –Street no
+        COALESCE(l.postal, '') || E'\n' || -- UD Postal code
+        COALESCE(l.city, '') || E'\n' || -- UD city
         c.countrycode || E'\n' || -- UD Country
         (case
              when nullif(trim(orgbpb.qr_iban), '') is not null and rn.referenceNo is not null then 'QRR'
