@@ -71,7 +71,7 @@ Feature: PDF Export Tests
       | Value                 | Record_ID  |
       | Lieferschein (Jasper) | shipment1  |
 
-    And store shipment endpointPath /api/v2/orders/sales/:so1/pdf in context
+    And store shipment endpointPath /api/v2/shipments/:shipment1/pdf in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
