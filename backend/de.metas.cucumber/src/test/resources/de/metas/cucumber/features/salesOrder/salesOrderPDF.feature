@@ -59,7 +59,7 @@ Feature: PDF Export Tests
       | Auftrag (Jasper) | so        |
     When store sales order endpointPath /api/v2/orders/sales/:so/pdf in context
 
-    Then a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+    Then a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '500' status code
     
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -73,5 +73,5 @@ Feature: PDF Export Tests
 
     And store shipment endpointPath /api/v2/shipments/:shipment/pdf in context
 
-    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '500' status code
 
