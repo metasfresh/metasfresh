@@ -814,13 +814,13 @@ public class M_InOut_StepDef
 
 		while (matcher.find())
 		{
-			final String orderIdentifierGroup = matcher.group(1);
-			final String shipmentIdentifier = orderIdentifierGroup.replace(":", "");
+			final String shipmentIdentifierGroup = matcher.group(1);
+			final String shipmentIdentifier = shipmentIdentifierGroup.replace(":", "");
 
 			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
 			assertThat(shipment).isNotNull();
 
-			endpointPath = endpointPath.replace(orderIdentifierGroup, String.valueOf(shipment.getM_InOut_ID()));
+			endpointPath = endpointPath.replace(shipmentIdentifierGroup, String.valueOf(shipment.getM_InOut_ID()));
 
 			restTestContext.setEndpointPath(endpointPath);
 		}

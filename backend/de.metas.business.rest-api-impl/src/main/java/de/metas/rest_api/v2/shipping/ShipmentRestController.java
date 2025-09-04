@@ -159,7 +159,7 @@ public class ShipmentRestController
 			@ApiResponse(code = 404, message = "No archive found for the shipment")
 	})
 	@GetMapping(path = "/{shipmentId}/pdf")
-	public ResponseEntity<byte[]> getOrderPDF(
+	public ResponseEntity<byte[]> getShipmentPDF(
 			@ApiParam(required = true, value = "metasfreshId of the shipment to get the PDF of") //
 			@PathVariable("shipmentId") final int shipmentRecordId)
 	{
