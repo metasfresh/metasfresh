@@ -244,7 +244,7 @@ public class ElementValueRepository
 				.addOnlyActiveRecordsFilter()
 				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, fromValue, toValue, rpad)
 				.create()
-				.listIds(ElementValueId::ofRepoId);
+				.idsAsSet(ElementValueId::ofRepoId);
 	}
 
 	private ImmutableSet<ElementValueId> getElementValueIdsBetween_NUMERIC(final String accountValueFrom, final String accountValueTo)
@@ -258,7 +258,7 @@ public class ElementValueRepository
 				.addOnlyActiveRecordsFilter()
 				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from, to, stringToNumericModifier)
 				.create()
-				.listIds(ElementValueId::ofRepoId);
+				.idsAsSet(ElementValueId::ofRepoId);
 	}
 
 	@VisibleForTesting

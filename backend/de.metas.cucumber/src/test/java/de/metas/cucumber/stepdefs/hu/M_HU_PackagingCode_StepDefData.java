@@ -23,12 +23,22 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.handlingunits.generichumodel.PackagingCodeId;
 import de.metas.handlingunits.model.I_M_HU_PackagingCode;
+import lombok.NonNull;
 
-public class M_HU_PackagingCode_StepDefData extends StepDefData<I_M_HU_PackagingCode>
+public class M_HU_PackagingCode_StepDefData extends StepDefData<I_M_HU_PackagingCode> implements StepDefDataGetIdAware<PackagingCodeId, I_M_HU_PackagingCode>
 {
 	public M_HU_PackagingCode_StepDefData()
 	{
 		super(I_M_HU_PackagingCode.class);
+	}
+
+	@Override
+	@NonNull
+	public PackagingCodeId extractIdFromRecord(@NonNull final I_M_HU_PackagingCode record)
+	{
+		return PackagingCodeId.ofRepoId(record.getM_HU_PackagingCode_ID());
 	}
 }

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 980521418L;
+	private static final long serialVersionUID = -1993977818L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final int MobileUI_UserProfile_Picking_Job_ID, @Nullable final String trxName)
@@ -78,7 +78,7 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
-	public boolean isAllowCompletingPartialPickingJob()
+	public boolean isAllowCompletingPartialPickingJob() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowCompletingPartialPickingJob);
 	}
@@ -132,6 +132,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setIsAnonymousHuPickedOnTheFly (final boolean IsAnonymousHuPickedOnTheFly)
+	{
+		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
+	public boolean isAnonymousHuPickedOnTheFly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
 	public void setIsCatchWeightTUPickingEnabled (final boolean IsCatchWeightTUPickingEnabled)
 	{
 		set_Value (COLUMNNAME_IsCatchWeightTUPickingEnabled, IsCatchWeightTUPickingEnabled);
@@ -155,6 +167,27 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 		return get_ValueAsBoolean(COLUMNNAME_IsConsiderSalesOrderCapacity);
 	}
 
+	/** 
+	 * IsDisplayPickingSlotSuggestions AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISDISPLAYPICKINGSLOTSUGGESTIONS_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISDISPLAYPICKINGSLOTSUGGESTIONS_Yes = "Y";
+	/** No = N */
+	public static final String ISDISPLAYPICKINGSLOTSUGGESTIONS_No = "N";
+	@Override
+	public void setIsDisplayPickingSlotSuggestions (final @Nullable java.lang.String IsDisplayPickingSlotSuggestions)
+	{
+		set_Value (COLUMNNAME_IsDisplayPickingSlotSuggestions, IsDisplayPickingSlotSuggestions);
+	}
+
+	@Override
+	public java.lang.String getIsDisplayPickingSlotSuggestions() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsDisplayPickingSlotSuggestions);
+	}
+
 	@Override
 	public void setIsPickingWithNewLU (final boolean IsPickingWithNewLU)
 	{
@@ -165,6 +198,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public boolean isPickingWithNewLU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
+	}
+
+	@Override
+	public void setIsShipOnCloseLU (final boolean IsShipOnCloseLU)
+	{
+		set_Value (COLUMNNAME_IsShipOnCloseLU, IsShipOnCloseLU);
+	}
+
+	@Override
+	public boolean isShipOnCloseLU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipOnCloseLU);
 	}
 
 	@Override
@@ -186,7 +231,7 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
-	public boolean isShowLastPickedBestBeforeDateForLines()
+	public boolean isShowLastPickedBestBeforeDateForLines() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
 	}
@@ -227,6 +272,8 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public static final String PICKINGJOBAGGREGATIONTYPE_Sales_order = "sales_order";
 	/** product = product */
 	public static final String PICKINGJOBAGGREGATIONTYPE_Product = "product";
+	/** delivery_location = delivery_location */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Delivery_location = "delivery_location";
 	@Override
 	public void setPickingJobAggregationType (final @Nullable java.lang.String PickingJobAggregationType)
 	{

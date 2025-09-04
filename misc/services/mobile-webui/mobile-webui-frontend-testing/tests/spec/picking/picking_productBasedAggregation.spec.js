@@ -7,9 +7,10 @@ import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
+import { generateEAN13 } from '../../utils/ean13';
 
-const createMasterdata = async () => {
-    const response = await Backend.createMasterdata({
+const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, displayPickingSlotSuggestions, P1_ean13ProductCode } = {}) => {
+    return await Backend.createMasterdata({
         language: "en_US",
         request: {
             login: {
@@ -23,6 +24,9 @@ const createMasterdata = async () => {
                     allowPickingAnyHU: true,
                     pickWithNewLU: true,
                     allowNewTU: true,
+                    filterByQRCode: filterByQRCode ?? false,
+                    anonymousPickHUsOnTheFly: anonymousPickHUsOnTheFly ?? false,
+                    displayPickingSlotSuggestions,
                     customers: [
                         { customer: "customer1" },
                         { customer: "customer2" },
@@ -31,9 +35,9 @@ const createMasterdata = async () => {
                 }
             },
             bpartners: {
-                "customer1": {},
-                "customer2": {},
-                "customer3": {},
+                "customer1": { gln: 'random' },
+                "customer2": { gln: 'random' },
+                "customer3": { gln: 'random' },
             },
             warehouses: {
                 "wh": {},
@@ -44,11 +48,11 @@ const createMasterdata = async () => {
                 slot3: {},
             },
             products: {
-                "P1": { prices: [{ price: 1 }] },
-                "P2": { prices: [{ price: 1 }] },
+                "P1": { price: 1, ean13ProductCode: P1_ean13ProductCode },
+                "P2": { price: 1, bpartners: [{ bpartner: "customer1", cu_ean: '7617027667203' }] },
             },
             packingInstructions: {
-                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4 },
+                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4, tu_ean: '7617027667210' },
                 "P2_7x3": { lu: "LU", qtyTUsPerLU: 7, tu: "P2_3CU", product: "P2", qtyCUsPerTU: 3 },
             },
             handlingUnits: {
@@ -87,14 +91,12 @@ const createMasterdata = async () => {
                 },
             },
         }
-    })
-
-    return { masterdata: response };
+    });
 }
 
 // noinspection JSUnusedLocalSymbols
 test('Product based aggregation', async ({ page }) => {
-    const { masterdata } = await createMasterdata();
+    const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -191,3 +193,91 @@ test('Product based aggregation', async ({ page }) => {
 
     await PickingJobsListScreen.waitForScreen();
 });
+
+// noinspection JSUnusedLocalSymbols
+test('Filter by EAN13', async ({ page }) => {
+    const P1_ean13 = generateEAN13();
+    const masterdata = await createMasterdata({ filterByQRCode: true, P1_ean13ProductCode: P1_ean13.productCode });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.expectJobButtons([
+        { qtyToDeliver: 72, productId: masterdata.products.P1.id },
+        { qtyToDeliver: 54, productId: masterdata.products.P2.id },
+    ]);
+
+    await test.step('Filter by TU EAN (associated to P1)', async () => {
+        await PickingJobsListScreen.filterByQRCode('7617027667210');
+        await PickingJobsListScreen.expectJobButtons([
+            { qtyToDeliver: 72, productId: masterdata.products.P1.id },
+        ])
+    });
+
+    await test.step('Clear filter', async () => {
+        await PickingJobsListScreen.clearQRCodeFilter();
+        await PickingJobsListScreen.expectJobButtons([
+            { qtyToDeliver: 72, productId: masterdata.products.P1.id },
+            { qtyToDeliver: 54, productId: masterdata.products.P2.id },
+        ]);
+    });
+
+    await test.step('Filter by CU EAN (associated to P2 and customer1)', async () => {
+        await PickingJobsListScreen.filterByQRCode('7617027667203');
+        await PickingJobsListScreen.expectJobButtons([
+            { qtyToDeliver: 21, productId: masterdata.products.P2.id },
+        ]);
+    });
+
+    await test.step('Filter by EAN13 Product Code', async () => {
+        await PickingJobsListScreen.filterByQRCode(P1_ean13.ean13);
+        await PickingJobsListScreen.expectJobButtons([
+            { qtyToDeliver: 72, productId: masterdata.products.P1.id },
+        ]);
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Anonymous pick HUs on the fly', async ({ page }) => {
+    const masterdata = await createMasterdata({ anonymousPickHUsOnTheFly: true });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.expectJobButtons([
+        { qtyToDeliver: 72, productId: masterdata.products.P1.id },
+        { qtyToDeliver: 54, productId: masterdata.products.P2.id },
+    ]);
+
+    await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 72 });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P1_20x4.luName });
+
+    // NOTE: we are not scanning the pick from HU, because we want to pick on the fly
+
+    await test.step('Line 1 - Pick entirely', async () => {
+        await PickingJobScreen.clickLineButton({ index: 1 })
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 5 /*TU*/ });
+        await PickingJobScreen.waitForScreen();
+    });
+    await test.step('Line 2 - Pick entirely', async () => {
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
+        await PickingJobScreen.clickLineButton({ index: 2 })
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 6 /*TU*/ });
+        await PickingJobScreen.waitForScreen();
+    });
+    await test.step('Line 3 - Pick entirely', async () => {
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot3.qrCode });
+        await PickingJobScreen.clickLineButton({ index: 3 })
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 7 /*TU*/ });
+    });
+
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.complete();
+});
+

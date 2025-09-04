@@ -83,6 +83,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -299,7 +300,8 @@ public final class AggregationEngine
 					.build();
 			headerAggregationKey = headerAggregationKeyUnparsed.parse(evalCtx);
 			icAggregationOrNull = Optional.of(icRecord.getHeaderAggregationKeyBuilder_ID())
-					.filter(aggregationId -> aggregationId > 0)
+					.map(AggregationId::ofRepoIdOrNull)
+					.filter(Objects::nonNull)
 					.map(aggregationId -> aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId))
 					.orElse(null);
 		}
@@ -743,8 +745,8 @@ public final class AggregationEngine
 		}
 
 		//
-		// NOTE: in credit memos, amount are positive but the invoice effect is reversed
-		if (totalAmt.signum() < 0)
+		// NOTE: in credit memos, amounts are positive but the invoice effect is reversed
+		if (docBaseType.isCreditMemo())
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}

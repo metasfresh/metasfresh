@@ -451,12 +451,17 @@ public class WebuiHUTransformParametersFiller
 		}
 	}
 
+	@Nullable
 	private HuId getParentHUIdOfSelectedRow()
 	{
 		final HUEditorRow huRow = getSelectedRow();
 		final I_M_HU hu = huRow.getM_HU();
-		final int parentIdOfSelectedHU = handlingUnitsDAO.retrieveParentId(hu);
-		return HuId.ofRepoIdOrNull(parentIdOfSelectedHU);
+		if (hu == null)
+		{
+			return null;
+		}
+
+		return handlingUnitsDAO.retrieveParentId(hu);
 	}
 
 	public LookupValuesList getM_HU_PI_Item_IDs()

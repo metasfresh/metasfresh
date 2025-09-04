@@ -65,7 +65,7 @@ public class PickingJobRepository
 	{
 		final Set<PickingJobId> pickingJobIds = queryBuilderDraftJobsByPickerId(pickerId)
 				.create()
-				.listIds(PickingJobId::ofRepoId);
+				.idsAsSet(PickingJobId::ofRepoId);
 
 		if (pickingJobIds.isEmpty())
 		{
@@ -120,6 +120,8 @@ public class PickingJobRepository
 		final DocumentNoFilter salesOrderDocumentNo = query.getSalesOrderDocumentNo();
 		if (warehouseId != null || salesOrderDocumentNo != null)
 		{
+			//
+			// filter on C_Order
 			final IQueryBuilder<I_C_Order> salesOrderQueryBuilder = queryBL.createQueryBuilder(I_C_Order.class).addOnlyActiveRecordsFilter();
 			if (warehouseId != null)
 			{
@@ -131,10 +133,12 @@ public class PickingJobRepository
 			}
 			final IQuery<I_C_Order> salesOrderQuery = salesOrderQueryBuilder.create();
 
-			final IQuery<I_M_Picking_Job_Line> linesQuery = queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
+			//
+			// filter on M_Picking_Job_Line
+			final IQueryBuilder<I_M_Picking_Job_Line> linesQueryBuilder = queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
 					.addOnlyActiveRecordsFilter()
-					.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery)
-					.create();
+					.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery);
+			final IQuery<I_M_Picking_Job_Line> linesQuery = linesQueryBuilder.create();
 
 			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
@@ -144,7 +148,7 @@ public class PickingJobRepository
 
 		final Set<PickingJobId> pickingJobIds = queryBuilder
 				.create()
-				.listIds(PickingJobId::ofRepoId);
+				.idsAsSet(PickingJobId::ofRepoId);
 
 		if (pickingJobIds.isEmpty())
 		{
@@ -207,7 +211,7 @@ public class PickingJobRepository
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_M_PickingSlot_ID, slotId)
 				.create()
-				.listIds(PickingJobId::ofRepoId);
+				.idsAsSet(PickingJobId::ofRepoId);
 
 		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
 				.loadByIds(pickingJobIds);

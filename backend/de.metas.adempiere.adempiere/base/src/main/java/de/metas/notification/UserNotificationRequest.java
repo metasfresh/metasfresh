@@ -63,17 +63,25 @@ public class UserNotificationRequest
 
 	boolean important;
 
-	/** Optional; takes precedence over {@link #subjectADMessage}, if set. */
+	/**
+	 * Optional; takes precedence over {@link #subjectADMessage}, if set.
+	 */
 	String subjectPlain;
 
-	/** Optional */
+	/**
+	 * Optional
+	 */
 	AdMessageKey subjectADMessage;
 	List<Object> subjectADMessageParams;
 
-	/** Optional; takes precedence over {@link #contentADMessage}, if set. */
+	/**
+	 * Optional; takes precedence over {@link #contentADMessage}, if set.
+	 */
 	String contentPlain;
 
-	/** Optional */
+	/**
+	 * Optional
+	 */
 	AdMessageKey contentADMessage;
 	List<Object> contentADMessageParams;
 
@@ -203,13 +211,21 @@ public class UserNotificationRequest
 	{
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	@lombok.Value
 	@lombok.Builder(toBuilder = true)
 	public static class TargetRecordAction implements TargetAction
 	{
+		@NonNull
 		public static TargetRecordAction of(@NonNull final TableRecordReference record)
 		{
 			return builder().record(record).build();
+		}
+
+		@Nullable
+		public static TargetRecordAction ofNullable(@Nullable final TableRecordReference record)
+		{
+			return record == null ? null : of(record);
 		}
 
 		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, final int adWindowId)
@@ -232,13 +248,9 @@ public class UserNotificationRequest
 			return (TargetRecordAction)targetAction;
 		}
 
-		@NonNull
-		@Builder.Default
-		Optional<AdWindowId> adWindowId = Optional.empty();
+		@NonNull @Builder.Default Optional<AdWindowId> adWindowId = Optional.empty();
 
-		@NonNull
-		TableRecordReference record;
-
+		@NonNull TableRecordReference record;
 		String recordDisplayText;
 	}
 

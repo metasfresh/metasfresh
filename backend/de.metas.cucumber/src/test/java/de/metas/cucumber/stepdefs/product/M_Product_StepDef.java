@@ -29,7 +29,9 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
@@ -40,7 +42,8 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -59,6 +62,8 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.DB;
@@ -66,9 +71,11 @@ import org.compiere.util.DB;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,6 +87,7 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 public class M_Product_StepDef
 {
 	private final M_Product_StepDefData productTable;
+	private final M_AttributeSet_StepDefData attributeSetTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final M_Product_Category_StepDefData productCategoryTable;
 	private final AD_Org_StepDefData orgTable;
@@ -89,16 +97,18 @@ public class M_Product_StepDef
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final ProductRestService productRestService = SpringContextHolder.instance.getBean(ProductRestService.class);
+	private final ExternalIdentifierProductLookupService productLookupService = SpringContextHolder.instance.getBean(ExternalIdentifierProductLookupService.class);
 
 	public M_Product_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_AttributeSet_StepDefData attributeSetTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final M_Product_Category_StepDefData productCategoryTable,
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final TestContext restTestContext)
 	{
 		this.productTable = productTable;
+		this.attributeSetTable = attributeSetTable;
 		this.bpartnerTable = bpartnerTable;
 		this.productCategoryTable = productCategoryTable;
 		this.orgTable = orgTable;
@@ -122,19 +132,24 @@ public class M_Product_StepDef
 	@And("no product with value {string} exists")
 	public void noProductWithCodeCodeExists(final String value)
 	{
-		final Optional<I_M_Product> product = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
+		final Optional<I_M_Product> product = queryBL.createQueryBuilder(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
 				.create()
 				.firstOnlyOptional(I_M_Product.class);
 
 		if (product.isPresent())
 		{
-			Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Product.class)
+			queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 					.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.get().getM_Product_ID())
 					.create()
 					.delete();
 
-			Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
+			queryBL.createQueryBuilder(I_C_UOM_Conversion.class)
+					.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, product.get().getM_Product_ID())
+					.create()
+					.delete();
+
+			queryBL.createQueryBuilder(I_M_Product.class)
 					.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
 					.create()
 					.delete();
@@ -147,8 +162,8 @@ public class M_Product_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, false);
 			final boolean isExcludedFromPurchase = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase, false);
@@ -227,6 +242,14 @@ public class M_Product_StepDef
 		InterfaceWrapperHelper.saveRecord(taxCategory);
 	}
 
+	@Given("load M_Product:")
+	public void load_product(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.forEach(this::loadProduct);
+	}
+
 	@And("load product by value:")
 	public void load_product_by_value(@NonNull final DataTable dataTable)
 	{
@@ -240,7 +263,7 @@ public class M_Product_StepDef
 					.create()
 					.firstOnlyNotNull(I_M_Product.class);
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			productTable.put(productIdentifier, loadedProduct);
 		}
@@ -254,7 +277,7 @@ public class M_Product_StepDef
 				.forEach(this::updateMProduct);
 	}
 
-	private void createM_Product(@NonNull DataTableRow tableRow)
+	private void createM_Product(@NonNull final DataTableRow tableRow)
 	{
 		final ValueAndName valueAndName = tableRow.suggestValueAndName();
 		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliersNotNull(
@@ -287,7 +310,16 @@ public class M_Product_StepDef
 
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_Description).ifPresent(productRecord::setDescription);
 
-		tableRow.getAsOptionalBigDecimal(I_M_Product.COLUMNNAME_Weight).ifPresent(productRecord::setWeight);
+		tableRow.getAsOptionalQuantity("WeightNet", uomDAO::getByX12DE355)
+				.ifPresent(netWeight -> {
+					assertThat(netWeight.getX12DE355()).as("NetWeight must be in Kilograms").isEqualTo(X12DE355.KILOGRAM);
+					productRecord.setWeight(netWeight.toBigDecimal());
+				});
+		tableRow.getAsOptionalQuantity("WeightGross", uomDAO::getByX12DE355)
+				.ifPresent(grossWeight -> {
+					productRecord.setGrossWeight(grossWeight.toBigDecimal());
+					productRecord.setGrossWeight_UOM_ID(grossWeight.getUomId().getRepoId());
+				});
 
 		final boolean isSold = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsSold).orElseTrue();
 		final boolean isPurchased = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsPurchased).orElseTrue();
@@ -295,30 +327,44 @@ public class M_Product_StepDef
 		productRecord.setIsSold(isSold);
 		productRecord.setIsPurchased(isPurchased);
 
+		final String asIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_M_AttributeSet_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(asIdentifier))
+		{
+			final I_M_AttributeSet asRecord = attributeSetTable.get(asIdentifier);
+			productRecord.setM_AttributeSet_ID(asRecord.getM_AttributeSet_ID());
+		}
+
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		productTable.putOrReplace(tableRow.getAsIdentifier(), productRecord);
 
 		restTestContext.setIntVariableFromRow(tableRow, productRecord::getM_Product_ID);
+
+		tableRow.getAsOptionalIdentifier("REST.Context.Value")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), productRecord.getValue()));
+		tableRow.getAsOptionalIdentifier("REST.Context.Name")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), productRecord.getName()));
 	}
 
 	private void locate_product_by_external_identifier(@NonNull final Map<String, String> tableRow)
 	{
 		final String externalIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "externalIdentifier");
 
-		final Optional<ProductId> productIdOptional = productRestService.resolveProductExternalIdentifier(ExternalIdentifier.of(externalIdentifier), ORG_ID);
+		final Optional<ProductId> productIdOptional = productLookupService
+				.resolveProductExternalIdentifier(ExternalIdentifier.of(externalIdentifier), ORG_ID)
+				.map(ProductAndHUPIItemProductId::getProductId);
 
 		assertThat(productIdOptional).isPresent();
 
 		final I_M_Product productRecord = productDAO.getById(productIdOptional.get());
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		productTable.putOrReplace(productIdentifier, productRecord);
 	}
 
 	private void verify_product_info(@NonNull final Map<String, String> row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final String value = DataTableUtil.extractStringOrNullForColumnName(row, I_M_Product.COLUMNNAME_Value);
 		final String name = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_Name);
@@ -362,16 +408,25 @@ public class M_Product_StepDef
 		return productType;
 	}
 
+	private void loadProduct(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsIdentifier();
+
+		final OptionalInt optionalProductId = row.getAsOptionalInt(I_M_Product.COLUMNNAME_M_Product_ID);
+		optionalProductId.ifPresent(id -> productTable.putOrReplace(identifier, productDAO.getById(id)));
+	}
+
 	private void updateMProduct(@NonNull final DataTableRow row)
 	{
-		;
 		final I_M_Product productRecord = row.getAsIdentifier().lookupIn(productTable);
 		assertThat(productRecord).isNotNull();
 
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(productRecord::setGTIN);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
+		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 
 		saveRecord(productRecord);
+		productTable.putOrReplace(row.getAsIdentifier(), productRecord);
 	}
 }

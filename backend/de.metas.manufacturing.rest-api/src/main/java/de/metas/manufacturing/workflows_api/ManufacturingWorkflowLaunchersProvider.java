@@ -10,6 +10,8 @@ import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobReferenceQuery;
 import de.metas.product.ResourceId;
 import de.metas.resource.qrcode.ResourceQRCode;
+import de.metas.scannable_code.PrintableScannedCode;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
@@ -38,23 +40,28 @@ public class ManufacturingWorkflowLaunchersProvider
 			@NonNull WorkflowLaunchersQuery query,
 			@Nullable final ResourceId workstationId)
 	{
-		final GlobalQRCode filterByQRCode = query.getFilterByQRCode();
+		final ScannedCode filterScannedCode = query.getFilterByQRCode();
 		final ResourceId plantOrWorkstationId;
 		final PrintableQRCode filterByPrintableQRCode;
-		if (filterByQRCode == null)
+		if (filterScannedCode == null)
 		{
 			plantOrWorkstationId = null;
+			
 			filterByPrintableQRCode = null;
-		}
-		else if (ResourceQRCode.isTypeMatching(filterByQRCode))
-		{
-			final ResourceQRCode resourceQRCode = ResourceQRCode.ofGlobalQRCode(filterByQRCode);
-			plantOrWorkstationId = resourceQRCode.getResourceId();
-			filterByPrintableQRCode = resourceQRCode.toPrintableQRCode();
 		}
 		else
 		{
-			throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+			final GlobalQRCode filterByQRCode = filterScannedCode.toGlobalQRCode();
+			if (ResourceQRCode.isTypeMatching(filterByQRCode))
+			{
+				final ResourceQRCode resourceQRCode = ResourceQRCode.ofGlobalQRCode(filterByQRCode);
+				plantOrWorkstationId = resourceQRCode.getResourceId();
+				filterByPrintableQRCode = resourceQRCode.toPrintableQRCode();
+			}
+			else
+			{
+				throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+			}
 		}
 
 		final Instant now = SystemTime.asInstant();
@@ -72,7 +79,7 @@ public class ManufacturingWorkflowLaunchersProvider
 				.collect(ImmutableList.toImmutableList());
 
 		return WorkflowLaunchersList.builder()
-				.filterByQRCode(filterByPrintableQRCode)
+				.filterByQRCode(PrintableScannedCode.ofNullable(filterByPrintableQRCode))
 				.launchers(launchers)
 				.timestamp(now)
 				.build();

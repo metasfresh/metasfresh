@@ -22,15 +22,14 @@ package org.adempiere.ad.trx.api.impl;
  * #L%
  */
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.junit.jupiter.api.Disabled;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.junit.Ignore;
-
-import javax.annotation.Nullable;
-
-@Ignore
+@Disabled
 public class MockedTrxManager extends PlainTrxManager
 {
 	private final List<ITrx> removedTransactions = new ArrayList<>();

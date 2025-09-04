@@ -15,6 +15,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
+import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IModelTranslationMap;
@@ -30,6 +31,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.Money;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -52,6 +54,7 @@ import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.api.RequestCandidate;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -131,6 +134,7 @@ public class InOutBL implements IInOutBL
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -709,7 +713,10 @@ public class InOutBL implements IInOutBL
 			return;
 		}
 
-		if (!docType.isCopyDescriptionToDocument())
+		@Nullable
+		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+
+		if (copyDescriptionAndDocumentNote == null)
 		{
 			return;
 		}
@@ -720,12 +727,25 @@ public class InOutBL implements IInOutBL
 				bPartner == null ? null : bPartner.getAD_Language(),
 				Env.getAD_Language());
 
-		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
-		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
-		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+		if (copyDescriptionAndDocumentNote.isCopyDescriptionAndDocumentNoteFromOrder() && inOut.getC_Order_ID() > 0)
+		{
+			final String orderDescription = orderBL.getDescriptionById(OrderId.ofRepoId(inOut.getC_Order_ID()));
+			final String orderDescriptionBottom = orderBL.getDescriptionBottomById(OrderId.ofRepoId(inOut.getC_Order_ID()));
+			inOut.setDescription(orderDescription);
+			inOut.setDescriptionBottom(orderDescriptionBottom);
+		}
+		else
+		{
+			final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 
-		inOut.setDescription(description.translate(adLanguage));
-		inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+			final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
+			inOut.setDescription(description.translate(adLanguage));
+
+			final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+			inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+
+		}
+
 	}
 
 	private I_C_BPartner getBPartnerOrNull(@NonNull final I_M_InOut inOut)
@@ -784,5 +804,31 @@ public class InOutBL implements IInOutBL
 				.excludeDocStatuses(ImmutableSet.of(DocStatus.Voided, DocStatus.Reversed))
 				.build();
 		return inOutDAO.retrieveByQuery(query).collect(ImmutableSet.toImmutableSet());
+	}
+
+
+	@Override
+	public void setShipperId(@NonNull final I_M_InOut inout)
+	{
+		inout.setM_Shipper_ID(ShipperId.toRepoId(findShipperId(inout)));
+	}
+
+	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
+	{
+
+		if (inout.getDropShip_BPartner_ID() > 0 && inout.getDropShip_Location_ID() > 0)
+		{
+			final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(BPartnerLocationId.ofRepoId(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()));
+			if (deliveryAddressShipperId.isPresent())
+			{
+				return deliveryAddressShipperId.get(); // we are done
+			}
+		}
+
+
+		return bpartnerDAO.getShipperId(CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),
+				() -> BPartnerId.ofRepoIdOrNull(inout.getC_BPartner_ID())));
+
 	}
 }

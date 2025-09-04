@@ -42,6 +42,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingSlotSuggestions;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
@@ -218,6 +219,7 @@ public class PickingJobRestService
 		return pickingJobService.closeTUPickingTarget(pickingJob, lineId);
 	}
 
+	@NonNull
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
 	@NonNull
@@ -244,5 +246,10 @@ public class PickingJobRestService
 				.map(HuId::ofRepoId)
 				.filter(huId -> !HuId.equals(huId, currentlyOpenedLUId))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public PickingSlotSuggestions getPickingSlotsSuggestions(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.getPickingSlotsSuggestions(pickingJob);
 	}
 }

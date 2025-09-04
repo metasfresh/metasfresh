@@ -20,7 +20,6 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -64,7 +63,6 @@ import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUQtyService;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -83,10 +81,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRep
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
@@ -102,11 +97,13 @@ import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.materialtransaction.MTransactionUtil;
-import de.metas.printing.DoNothingMassPrintingService;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
@@ -136,7 +133,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
-import org.assertj.core.api.Assertions;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
@@ -179,8 +175,7 @@ import static de.metas.business.BusinessTestHelper.createUomEach;
 import static de.metas.business.BusinessTestHelper.createUomKg;
 import static de.metas.business.BusinessTestHelper.createUomPCE;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -228,7 +223,7 @@ public class HUTestHelper
 	//
 	// Initialization flags
 	private boolean initialized = false;
-	private boolean initAdempiere = true;
+	private final boolean initAdempiere = true;
 
 	public I_AD_Client adClient;
 	public I_AD_Role adRole;
@@ -457,16 +452,13 @@ public class HUTestHelper
 		beforeRegisteringServices();
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
-		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
-		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(),
-																   new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-																   qrCodeConfigurationService));
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
+		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting());
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
-		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DocumentLocationBL(bpartnerBL));
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, DocumentLocationBL.newInstanceForUnitTesting());
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
@@ -478,7 +470,7 @@ public class HUTestHelper
 
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
-		
+
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxName = createAndStartTransaction();
@@ -501,7 +493,7 @@ public class HUTestHelper
 		// Setup context: #Date
 		today = LocalDate.of(2013, Month.NOVEMBER, 1).atStartOfDay(SystemTime.zoneId());
 		Env.setContext(ctx, Env.CTXNAME_Date, TimeUtil.asDate(today));
-		
+
 		//
 		// Setup module interceptors
 		setupModuleInterceptors_HU();
@@ -562,7 +554,7 @@ public class HUTestHelper
 
 	/**
 	 * Setup module interceptors: "de.metas.handlingunits" module - FULL (interceptors, factories, etc), like in production (used by some integration tests).
-	 *
+	 * <p>
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
 	 *
 	 * <pre>
@@ -583,19 +575,18 @@ public class HUTestHelper
 	{
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
-		final HUQRCodesService huqrCodesService = new HUQRCodesService(new HUQRCodesRepository(),
-																	   new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-																	   new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+		final HUQRCodesService huqrCodesService = HUQRCodesService.newInstanceForUnitTesting();
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				ADReferenceService.newMocked(),
 				huReservationService,
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
-										   new PPOrderIssueScheduleService(
-												   new PPOrderIssueScheduleRepository(),
-												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
-				)), huqrCodesService);
+						new PPOrderIssueScheduleService(
+								new PPOrderIssueScheduleRepository(),
+								new HUQtyService(InventoryService.newInstanceForUnitTesting())
+						)),
+				huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(
@@ -1553,7 +1544,7 @@ public class HUTestHelper
 		// Execute transfer => HUs will be generated
 		final HULoader loader = HULoader.of(allocationSource, allocationDestination);
 		final IAllocationResult result = loader.load(request);
-		Assertions.assertThat(result.isCompleted()).as("Result shall be completed: " + result).isTrue();
+		assertThat(result.isCompleted()).as("Result shall be completed: " + result).isTrue();
 
 		//
 		// Get generated HUs and set them to HUContext's transaction
@@ -1759,7 +1750,7 @@ public class HUTestHelper
 				.build());
 	}
 
-	public final void load(TestHelperLoadRequest r)
+	public final void load(final TestHelperLoadRequest r)
 	{
 		final IAllocationSource source = createDummySourceDestination(
 				r.getCuProductId(),
@@ -1828,7 +1819,8 @@ public class HUTestHelper
 		final List<I_M_HU_PI_Item> piItemsForChildHU = handlingUnitsDAO.retrievePIItems(currentPIVersion, null).stream()
 				.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, piItem.getItemType()))
 				.collect(Collectors.toList());
-		assertThat("This method only works if the given 'huPI' has exactly one child-HU item", piItemsForChildHU.size(), is(1));
+		
+		assertThat(piItemsForChildHU).as("This method only works if the given 'huPI' has exactly one child-HU item").hasSize(1);
 
 		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));
 		lutuProducer.setTUPI(handlingUnitsDAO.getIncludedPI(piItemsForChildHU.get(0)));

@@ -18,6 +18,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderRef;
@@ -30,6 +31,7 @@ import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -141,11 +143,18 @@ class DDOrderCandidateProcessCommand
 
 	public void execute()
 	{
-		request.getCandidates().forEach(this::addToAggregates);
-		aggregates.values().forEach(this::createDDOrder);
+		for (final DDOrderCandidate ddOrderCandidate : request.getCandidates())
+		{
+			addToAggregates(ddOrderCandidate);
+		}
+		
+		for (final HeaderAggregate headerAggregate : aggregates.values())
+		{
+			createDDOrder(headerAggregate, request.getUserId());
+		}
 	}
 
-	private void addToAggregates(final DDOrderCandidate ddOrderCandidate)
+	private void addToAggregates(@NonNull final DDOrderCandidate ddOrderCandidate)
 	{
 		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate);
 
@@ -153,7 +162,8 @@ class DDOrderCandidateProcessCommand
 				.add(ddOrderCandidate);
 	}
 
-	private void createDDOrder(@NonNull final HeaderAggregate headerAggregate)
+	private void createDDOrder(@NonNull final HeaderAggregate headerAggregate,
+							   @NonNull final UserId userId)
 	{
 		if (!headerAggregate.isEligibleToCreate())
 		{
@@ -183,7 +193,13 @@ class DDOrderCandidateProcessCommand
 		}
 
 		final DDOrderId ddOrderId = DDOrderId.ofRepoId(headerRecord.getDD_Order_ID());
-		fireDDOrderCreatedEvent(ddOrderId, headerAggregate.getKey().getTraceId());
+		
+		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgUserIdAndTraceId(
+				ClientAndOrgId.ofClientAndOrg(headerRecord.getAD_Client_ID(), headerRecord.getAD_Org_ID()),
+				userId,
+				headerAggregate.getKey().getTraceId());
+		
+		fireDDOrderCreatedEvent(ddOrderId, eventDescriptor);
 
 		documentBL.processEx(headerRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
@@ -331,10 +347,11 @@ class DDOrderCandidateProcessCommand
 		ddOrderCandidateService.saveAndUpdateCandidates(allocations);
 	}
 
-	private void fireDDOrderCreatedEvent(@NonNull final DDOrderId ddOrderId, @Nullable final String traceId)
+	private void fireDDOrderCreatedEvent(@NonNull final DDOrderId ddOrderId, 
+										 @NonNull final EventDescriptor eventDescriptor)
 	{
 		@NonNull final DDOrder ddOrder = getCreatedDDOrder(ddOrderId);
-		materialEventService.enqueueEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, traceId));
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, eventDescriptor));
 	}
 
 	private DDOrder getCreatedDDOrder(final DDOrderId ddOrderId)
@@ -461,7 +478,7 @@ class DDOrderCandidateProcessCommand
 					.productId(candidate.getProductId())
 					.hupiItemProductId(candidate.getHupiItemProductId())
 					.attributeSetInstanceId(candidate.getAttributeSetInstanceId())
-					.uomId(candidate.getQty().getUomId())
+					.uomId(candidate.getQtyEntered().getUomId())
 					.distributionNetworkAndLineId(candidate.getDistributionNetworkAndLineId())
 					.salesOrderLineId(candidate.getSalesOrderLineId())
 					.isAllowPush(candidate.isAllowPush())
@@ -469,6 +486,7 @@ class DDOrderCandidateProcessCommand
 					.build();
 		}
 
+		@Nullable
 		public OrderId getSalesOrderId() {return salesOrderLineId != null ? salesOrderLineId.getOrderId() : null;}
 	}
 

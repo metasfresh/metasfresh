@@ -164,4 +164,31 @@ public final class InSetPredicate<T> implements Predicate<T>
 
 		return only(Sets.intersection(this.toSet(), other.toSet()));
 	}
+
+	public interface CaseConsumer<T>
+	{
+		void anyValue();
+
+		void noValue();
+
+		void onlyValues(Set<T> onlyValues);
+	}
+
+	public void apply(@NonNull final CaseConsumer<T> caseConsumer)
+	{
+		switch (mode)
+		{
+			case ANY:
+				caseConsumer.anyValue();
+				break;
+			case NONE:
+				caseConsumer.noValue();
+				break;
+			case ONLY:
+				caseConsumer.onlyValues(onlyValues);
+				break;
+			default:
+				throw new IllegalStateException("Unknown mode: " + mode); // shall not happen
+		}
+	}
 }

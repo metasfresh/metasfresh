@@ -148,6 +148,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				HUPIItemProductId.VIRTUAL_HU);
 	}
 
+	@Nullable
 	@Override
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			final I_M_HU_PI_Item itemDef,
@@ -611,6 +612,20 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	@Override
+	public List<I_M_HU_PI_Item_Product> retrieveAllForProducts(@NonNull final Set<ProductId> productIdSet)
+	{
+		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
+		queryVO.setOnlyProductIds(productIdSet);
+		queryVO.setAllowVirtualPI(false);
+		queryVO.setAllowAnyPartner(true);
+
+		return createHU_PI_Item_Product_QueryBuilder(Env.getCtx(), queryVO, null)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_M_HU_PI_Item_Product.class);
+	}
+
+	@Override
 	public List<I_M_HU_PI_Item_Product> retrieveForProducts(@NonNull final Set<ProductId> productIdSet, @Nullable final BPartnerId partnerId)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
@@ -618,8 +633,22 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		queryVO.setAllowVirtualPI(false);
 		queryVO.setBPartnerId(partnerId);
 
-		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(Env.getCtx(), queryVO, null);
-		return queryBuilder
+		return createHU_PI_Item_Product_QueryBuilder(Env.getCtx(), queryVO, null)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_M_HU_PI_Item_Product.class);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item_Product> retrieveForBPartner(@NonNull final BPartnerId partnerId)
+	{
+		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
+		queryVO.setAllowVirtualPI(false);
+		queryVO.setBPartnerId(partnerId);
+		queryVO.setAllowAnyProduct(false); // i.e. don't filter be M_HU_PI_Item_Product.M_Product_ID IS NULL
+		queryVO.setOnlyProductIds(null); // i.e. don't filter be M_HU_PI_Item_Product.M_Product_ID IN (...)'
+
+		return createHU_PI_Item_Product_QueryBuilder(Env.getCtx(), queryVO, null)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_M_HU_PI_Item_Product.class);
@@ -764,7 +793,6 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return retrieveDefaultForProduct(productId, bpartnerId, date)
 				.map(huPiItemProduct -> HUPIItemProductId.ofRepoIdOrNull(huPiItemProduct.getM_HU_PI_Item_Product_ID()));
 	}
-
 
 	@Override
 	@Nullable

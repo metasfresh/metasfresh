@@ -29,6 +29,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Transaction;
@@ -53,6 +54,7 @@ public final class TransactionDescriptorFactory
 				.transactionId(record.getM_Transaction_ID())
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.warehouseId(warehouseId)
+				.locatorId(LocatorId.ofRepoIdOrNull(warehouseId, record.getM_Locator_ID()))
 				.transactionDate(extractTransactionDate(record))
 				.movementQty(record.getMovementQty())
 				.costCollectorId(PPCostCollectorId.ofRepoIdOrNull(record.getPP_Cost_Collector_ID()))

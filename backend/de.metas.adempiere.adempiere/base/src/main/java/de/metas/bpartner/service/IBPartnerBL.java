@@ -10,6 +10,7 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -262,4 +263,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	@NonNull
 	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
+
+	@NonNull
+	Optional<VATIdentifier> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
 }

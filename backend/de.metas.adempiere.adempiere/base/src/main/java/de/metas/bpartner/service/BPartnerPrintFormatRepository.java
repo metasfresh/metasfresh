@@ -13,6 +13,7 @@ import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.AdTableId;
 import org.compiere.model.I_C_BP_PrintFormat;
@@ -60,18 +61,29 @@ public class BPartnerPrintFormatRepository
 	{
 		final IQueryBuilder<I_C_BP_PrintFormat> query = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_PrintFormat.class)
-				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpPrintFormatQuery.getBpartnerId().getRepoId())
-				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, bpPrintFormatQuery.getAdTableId(), null)
-				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, bpPrintFormatQuery.getDocTypeId(), null)
-				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, bpPrintFormatQuery.getBPartnerLocationId(), null)
-				.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormatQuery.getPrintFormatId(), null)
-				.addOnlyActiveRecordsFilter();
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpPrintFormatQuery.getBpartnerId().getRepoId());
 
+		if (bpPrintFormatQuery.isExactMatch())
+		{
+			query.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, bpPrintFormatQuery.getAdTableId());
+			query.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, bpPrintFormatQuery.getDocTypeId());
+			query.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, bpPrintFormatQuery.getBPartnerLocationId());
+			query.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormatQuery.getPrintFormatId());
+		}
+		else
+		{
+			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, bpPrintFormatQuery.getAdTableId(), null);
+			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, bpPrintFormatQuery.getDocTypeId(), null);
+			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, bpPrintFormatQuery.getBPartnerLocationId(), null);
+			query.addInArrayFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_PrintFormat_ID, bpPrintFormatQuery.getPrintFormatId(), null);
+		}
 
 		if(bpPrintFormatQuery.isOnlyCopiesGreaterZero())
 		{
 			query.addCompareFilter(I_C_BP_PrintFormat.COLUMNNAME_DocumentCopies_Override, CompareQueryFilter.Operator.GREATER, 0);
 		}
+		query.orderBy().addColumn(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_Location_ID, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last);
         query.orderBy(I_C_BP_PrintFormat.COLUMNNAME_SeqNo);
 		final I_C_BP_PrintFormat bpPrintFormatRecord = query.create().first(I_C_BP_PrintFormat.class);
 

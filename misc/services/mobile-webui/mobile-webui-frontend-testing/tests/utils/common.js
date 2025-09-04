@@ -4,6 +4,7 @@ import { ErrorToast } from './dialogs/ErrorToast';
 
 export const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localhost:3001/mobile';
 
+export const VERY_FAST_ACTION_TIMEOUT = 1000; // 1sec
 export const FAST_ACTION_TIMEOUT = 5000; // 5sec
 export const SLOW_ACTION_TIMEOUT = 20000; // 20sec
 export const VERY_SLOW_ACTION_TIMEOUT = 40000; //40sec
@@ -53,6 +54,14 @@ const runAndWatchForErrors = async (func) => {
         // console.log(`Stop watching for errors (watcherId=${watcherId}), set back previous watcher id (0)`);
     }
 }
+
+export const expectErrorToastIf = async (condition, title, func) => {
+    if (condition) {
+        return await expectErrorToast(title, func);
+    } else {
+        return await func();
+    }
+};
 
 export const expectErrorToast = async (title, func) => {
     const watcherId = ++nextErrorWatcherId;

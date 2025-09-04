@@ -23,8 +23,8 @@
 package de.metas.banking.service.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IPostingRequestBuilder;
 import de.metas.acct.api.IPostingService;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -145,14 +145,11 @@ public class BankStatementBL implements IBankStatementBL
 
 	private void postIt(final I_C_BankStatement bankStatement)
 	{
-		postingService.newPostingRequest()
-				.setClientId(ClientId.ofRepoId(bankStatement.getAD_Client_ID()))
-				.setDocumentRef(TableRecordReference.of(bankStatement))
-				.setFailOnError(false)
-				.onErrorNotifyUser(UserId.ofRepoId(bankStatement.getUpdatedBy()))
-				.setPostImmediate(IPostingRequestBuilder.PostImmediate.No)
-				.postIt();
-
+		postingService.schedule(DocumentPostRequest.builder()
+				.record(TableRecordReference.of(bankStatement))
+				.clientId(ClientId.ofRepoId(bankStatement.getAD_Client_ID()))
+				.onErrorNotifyUserId(UserId.ofRepoId(bankStatement.getUpdatedBy()))
+				.build());
 	}
 
 	@Override

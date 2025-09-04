@@ -11,6 +11,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
@@ -18,15 +19,21 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.report.PrintCopies;
+import de.metas.scannable_code.ScannedCode;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -38,6 +45,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class HUQRCodesService
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -48,18 +56,23 @@ public class HUQRCodesService
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
 	@NonNull private final GlobalQRCodeService globalQRCodeService;
 	@NonNull private final QRCodeConfigurationService qrCodeConfigurationService;
+	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
 	@VisibleForTesting
 	static final String SYSCONFIG_GenerateQRCodeIfMissing = "de.metas.handlingunits.qrcodes.GenerateQRCodeIfMissing";
 
-	public HUQRCodesService(
-			final @NonNull HUQRCodesRepository huQRCodesRepository,
-			final @NonNull GlobalQRCodeService globalQRCodeService,
-			final @NonNull QRCodeConfigurationService qrCodeConfigurationService)
+	public static HUQRCodesService newInstanceForUnitTesting()
 	{
-		this.huQRCodesRepository = huQRCodesRepository;
-		this.globalQRCodeService = globalQRCodeService;
-		this.qrCodeConfigurationService = qrCodeConfigurationService;
+		SpringContextHolder.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(
+				HUQRCodesService.class,
+				() -> new HUQRCodesService(
+						new HUQRCodesRepository(),
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+						QRCodeConfigurationService.newInstanceForUnitTesting(),
+						ScannableCodeFormatService.newInstanceForUnitTesting()
+				)
+		);
 	}
 
 	public List<HUQRCode> generate(final HUQRCodeGenerateRequest request)
@@ -353,9 +366,20 @@ public class HUQRCodesService
 				.collect(ImmutableMap.toImmutableMap(HUQRCodeAssignment::getId, HUQRCodeAssignment::getSingleHUId));
 	}
 
-	public static IHUQRCode toHUQRCode(@NonNull final String jsonString)
+	public IHUQRCode parse(@NonNull final String jsonString)
 	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.parse(jsonString).orNullIfError();
+		return parse(ScannedCode.ofString(jsonString));
+	}
+
+	public IHUQRCode parse(@NonNull final ScannedCode scannedCode)
+	{
+		final PickOnTheFlyQRCode pickOnTheFlyQRCode = PickOnTheFlyQRCode.fromScannedCodeOrNullIfNotHandled(scannedCode);
+		if (pickOnTheFlyQRCode != null)
+		{
+			return pickOnTheFlyQRCode;
+		}
+
+		final GlobalQRCode globalQRCode = scannedCode.toGlobalQRCodeIfMatching().orNullIfError();
 		if (globalQRCode != null)
 		{
 			if (HUQRCode.isHandled(globalQRCode))
@@ -368,18 +392,26 @@ public class HUQRCodesService
 			}
 		}
 
-		final GS1HUQRCode gs1HUQRCode = GS1HUQRCode.fromStringOrNullIfNotHandled(jsonString);
+		final CustomHUQRCode customHUQRCode = scannableCodeFormatService.parse(scannedCode)
+				.map(CustomHUQRCode::ofParsedScannedCode)
+				.orElse(null);
+		if (customHUQRCode != null)
+		{
+			return customHUQRCode;
+		}
+
+		final GS1HUQRCode gs1HUQRCode = GS1HUQRCode.fromScannedCodeOrNullIfNotHandled(scannedCode);
 		if (gs1HUQRCode != null)
 		{
 			return gs1HUQRCode;
 		}
 
-		final EAN13HUQRCode ean13HUQRCode = EAN13HUQRCode.fromStringOrNullIfNotHandled(jsonString);
+		final EAN13HUQRCode ean13HUQRCode = EAN13HUQRCode.fromScannedCodeOrNullIfNotHandled(scannedCode);
 		if (ean13HUQRCode != null)
 		{
 			return ean13HUQRCode;
 		}
 
-		throw new AdempiereException("QR code is not handled: " + jsonString);
+		throw new AdempiereException("QR code is not handled: " + scannedCode);
 	}
 }

@@ -103,7 +103,7 @@ public class RequestDAO implements IRequestDAO
 				.createQueryBuilder(I_R_Request.class)
 				.addEqualsFilter(I_R_Request.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(RequestId::ofRepoId)
+				.idsAsSet(RequestId::ofRepoId)
 				.stream();
 	}
 }

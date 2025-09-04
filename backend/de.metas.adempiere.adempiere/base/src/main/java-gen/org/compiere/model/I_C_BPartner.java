@@ -518,6 +518,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_City = "City";
 
 	/**
+	 * Set Commercial Register Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCommercialRegisterNumber (@Nullable java.lang.String CommercialRegisterNumber);
+
+	/**
+	 * Get Commercial Register Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCommercialRegisterNumber();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_CommercialRegisterNumber = new ModelColumn<>(I_C_BPartner.class, "CommercialRegisterNumber", null);
+	String COLUMNNAME_CommercialRegisterNumber = "CommercialRegisterNumber";
+
+	/**
 	 * Set Company Name.
 	 *
 	 * <br>Type: String
@@ -722,7 +743,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_C_TaxGroup_ID = "C_TaxGroup_ID";
 
 	/**
-	 * Set Eigene-Kd. Nr. .
+	 * Set Customer No At Vendor.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -731,7 +752,7 @@ public interface I_C_BPartner
 	void setCustomerNoAtVendor (@Nullable java.lang.String CustomerNoAtVendor);
 
 	/**
-	 * Get Eigene-Kd. Nr. .
+	 * Get Customer No At Vendor.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1549,7 +1570,30 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsEmployee = "IsEmployee";
 
 	/**
-	 * Set Haddex Prüfung erforderlich.
+	 * Set Full LU Required.
+	 * This flag indicates whether the partner requires the loading unit (LU) to be full when adding product quantities to an order line. If the flag is set to 'Y', it means the order line must contain a full loading unit. If it is set to 'N', partial loading units are allowed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFullLURequired (boolean IsFullLURequired);
+
+	/**
+	 * Get Full LU Required.
+	 * This flag indicates whether the partner requires the loading unit (LU) to be full when adding product quantities to an order line. If the flag is set to 'Y', it means the order line must contain a full loading unit. If it is set to 'N', partial loading units are allowed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFullLURequired();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsFullLURequired = new ModelColumn<>(I_C_BPartner.class, "IsFullLURequired", null);
+	String COLUMNNAME_IsFullLURequired = "IsFullLURequired";
+
+	/**
+	 * Set Haddex Check.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1558,7 +1602,7 @@ public interface I_C_BPartner
 	void setIsHaddexCheck (boolean IsHaddexCheck);
 
 	/**
-	 * Get Haddex Prüfung erforderlich.
+	 * Get Haddex Check.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1723,6 +1767,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsSEPASigned = new ModelColumn<>(I_C_BPartner.class, "IsSEPASigned", null);
 	String COLUMNNAME_IsSEPASigned = "IsSEPASigned";
+
+	/**
+	 * Set Price on Delivery Note.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShipmentPricePrinted (boolean IsShipmentPricePrinted);
+
+	/**
+	 * Get Price on Delivery Note.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShipmentPricePrinted();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsShipmentPricePrinted = new ModelColumn<>(I_C_BPartner.class, "IsShipmentPricePrinted", null);
+	String COLUMNNAME_IsShipmentPricePrinted = "IsShipmentPricePrinted";
 
 	/**
 	 * Set Shipping Notification Email.
@@ -1926,6 +1991,50 @@ public interface I_C_BPartner
 	String COLUMNNAME_Logo_ID = "Logo_ID";
 
 	/**
+	 * Set Lookup Label.
+	 * Can be used to differentiate when different data records otherwise have the same lookup characteristics.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLookup_Label (@Nullable java.lang.String Lookup_Label);
+
+	/**
+	 * Get Lookup Label.
+	 * Can be used to differentiate when different data records otherwise have the same lookup characteristics.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLookup_Label();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Lookup_Label = new ModelColumn<>(I_C_BPartner.class, "Lookup_Label", null);
+	String COLUMNNAME_Lookup_Label = "Lookup_Label";
+
+	/**
+	 * Set Material Receipt Info.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaterialReceiptInfo (@Nullable java.lang.String MaterialReceiptInfo);
+
+	/**
+	 * Get Material Receipt Info.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMaterialReceiptInfo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_MaterialReceiptInfo = new ModelColumn<>(I_C_BPartner.class, "MaterialReceiptInfo", null);
+	String COLUMNNAME_MaterialReceiptInfo = "MaterialReceiptInfo";
+
+	/**
 	 * Set Discount Schema.
 	 * Schema to calculate the trade discount percentage
 	 *
@@ -2103,7 +2212,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Exclude from MRP.
-	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2113,7 +2221,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Exclude from MRP.
-	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2375,6 +2482,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
+	 * Set Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRuleInfo (@Nullable java.lang.String PaymentRuleInfo);
+
+	/**
+	 * Get Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRuleInfo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PaymentRuleInfo = new ModelColumn<>(I_C_BPartner.class, "PaymentRuleInfo", null);
+	String COLUMNNAME_PaymentRuleInfo = "PaymentRuleInfo";
+
+	/**
 	 * Set Payment Rule.
 	 * Purchase payment option
 	 *
@@ -2396,6 +2524,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_PaymentRulePO = new ModelColumn<>(I_C_BPartner.class, "PaymentRulePO", null);
 	String COLUMNNAME_PaymentRulePO = "PaymentRulePO";
+
+	/**
+	 * Set Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRulePOInfo (@Nullable java.lang.String PaymentRulePOInfo);
+
+	/**
+	 * Get Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRulePOInfo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PaymentRulePOInfo = new ModelColumn<>(I_C_BPartner.class, "PaymentRulePOInfo", null);
+	String COLUMNNAME_PaymentRulePOInfo = "PaymentRulePOInfo";
 
 	/**
 	 * Set Phone (alternative).
@@ -3148,7 +3297,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SO_DocTypeTarget_ID = "SO_DocTypeTarget_ID";
 
 	/**
-	 * Set SO_TargetDocTypeReason.
+	 * Set Notiz Auftragsart.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3157,7 +3306,7 @@ public interface I_C_BPartner
 	void setSO_TargetDocTypeReason (@Nullable java.lang.String SO_TargetDocTypeReason);
 
 	/**
-	 * Get SO_TargetDocTypeReason.
+	 * Get Notiz Auftragsart.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.eevolution.api.BOMComponentType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -18,18 +19,32 @@ import java.util.List;
 public class JsonCreateProductRequest
 {
 	@Nullable String valuePrefix;
+	@Nullable RandomValueSpec randomValue;
 	@Nullable String gtin;
 	@Nullable String ean13ProductCode;
 	@Nullable X12DE355 uom;
 	@Nullable List<UOMConversion> uomConversions;
 
+	@Nullable BigDecimal price;
 	@Nullable List<Price> prices;
+
+	@Nullable List<BPartner> bpartners;
 
 	@Nullable BOM bom;
 
 	//
 	//
 	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class RandomValueSpec
+	{
+		int size;
+		boolean isIncludeDigits;
+		boolean isIncludeLetters;
+	}
 
 	@Value
 	@Builder
@@ -55,6 +70,15 @@ public class JsonCreateProductRequest
 	@Value
 	@Builder
 	@Jacksonized
+	public static class BPartner
+	{
+		@NonNull Identifier bpartner;
+		@Nullable String cu_ean;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
 	public static class BOM
 	{
 		@NonNull List<BOMLine> lines;
@@ -69,5 +93,6 @@ public class JsonCreateProductRequest
 		@NonNull BigDecimal qty;
 		boolean percentage;
 		@Nullable X12DE355 uom;
+		@Nullable BOMComponentType componentType;
 	}
 }

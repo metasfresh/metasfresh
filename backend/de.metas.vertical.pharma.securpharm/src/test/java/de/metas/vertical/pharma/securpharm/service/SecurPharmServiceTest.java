@@ -28,8 +28,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import de.metas.handlingunits.HuId;
@@ -63,7 +64,7 @@ public class SecurPharmServiceTest
 
 	private final UserId supportUserId = UserId.ofRepoId(12345);
 
-	@Before
+	@BeforeEach
 	public void beforeEachTest()
 	{
 		AdempiereTestHelper.get().init();

@@ -9,8 +9,7 @@ $BODY$
 DECLARE
     v_rowcount numeric;
 BEGIN
-
-    PERFORM backup_table('Fact_Acct_EndingBalance');
+    PERFORM backup_table('Fact_Acct_EndingBalance', '_before_rebuildall');
 
     DROP TABLE IF EXISTS TMP_Fact_Acct;
     CREATE TEMPORARY TABLE TMP_Fact_Acct AS
@@ -65,6 +64,10 @@ BEGIN
     INSERT INTO Fact_Acct_EndingBalance SELECT * FROM TMP_Fact_Acct_EndingBalance;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'Inserted % rows from Fact_Acct_EndingBalance', v_rowcount;
+
+    --
+    -- Perform a backup after rebuild, in case we want to compare the before/after changes
+    PERFORM backup_table('Fact_Acct_EndingBalance', '_after_rebuildall');
 
     RETURN '' || v_rowcount || ' rows inserted into Fact_Acct_EndingBalance';
 END;

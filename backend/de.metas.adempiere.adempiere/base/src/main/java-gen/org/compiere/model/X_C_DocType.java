@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_DocType
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -983742743L;
+	private static final long serialVersionUID = 832799830L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -77,6 +77,21 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
+	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
+	{
+		if (C_DocTypeDifference_ID < 1)
+			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
+		else
+			set_Value (COLUMNNAME_C_DocTypeDifference_ID, C_DocTypeDifference_ID);
+	}
+
+	@Override
+	public int getC_DocTypeDifference_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_DocTypeDifference_ID);
+	}
+
+	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0)
@@ -89,6 +104,21 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public int getC_DocType_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public void setC_DocTypeInvoice_ID (final int C_DocTypeInvoice_ID)
+	{
+		if (C_DocTypeInvoice_ID < 1) 
+			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, C_DocTypeInvoice_ID);
+	}
+
+	@Override
+	public int getC_DocTypeInvoice_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_DocTypeInvoice_ID);
 	}
 
 	@Override
@@ -119,36 +149,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
-	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
-	{
-		if (C_DocTypeDifference_ID < 1)
-			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
-		else
-			set_Value (COLUMNNAME_C_DocTypeDifference_ID, C_DocTypeDifference_ID);
-	}
-
-	@Override
-	public int getC_DocTypeDifference_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_DocTypeDifference_ID);
-	}
-
-	@Override
-	public void setC_DocTypeInvoice_ID (final int C_DocTypeInvoice_ID)
-	{
-		if (C_DocTypeInvoice_ID < 1) 
-			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, C_DocTypeInvoice_ID);
-	}
-
-	@Override
-	public int getC_DocTypeInvoice_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_DocTypeInvoice_ID);
-	}
-
-	@Override
 	public void setC_DocTypeProforma_ID (final int C_DocTypeProforma_ID)
 	{
 		if (C_DocTypeProforma_ID < 1) 
@@ -176,6 +176,27 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public int getC_DocTypeShipment_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeShipment_ID);
+	}
+
+	/**
+	 * CopyDescriptionAndDocumentNote AD_Reference_ID=541893
+	 * Reference name: CopyDocumentNote
+	 */
+	public static final int COPYDESCRIPTIONANDDOCUMENTNOTE_AD_Reference_ID=541893;
+	/** CopyDescriptionAndDocumentNote = CD */
+	public static final String COPYDESCRIPTIONANDDOCUMENTNOTE_CopyDescriptionAndDocumentNote = "CD";
+	/** CopyDescriptionAndDocumentNotefromOrder = CO */
+	public static final String COPYDESCRIPTIONANDDOCUMENTNOTE_CopyDescriptionAndDocumentNotefromOrder = "CO";
+	@Override
+	public void setCopyDescriptionAndDocumentNote (final @Nullable java.lang.String CopyDescriptionAndDocumentNote)
+	{
+		set_Value (COLUMNNAME_CopyDescriptionAndDocumentNote, CopyDescriptionAndDocumentNote);
+	}
+
+	@Override
+	public java.lang.String getCopyDescriptionAndDocumentNote()
+	{
+		return get_ValueAsString(COLUMNNAME_CopyDescriptionAndDocumentNote);
 	}
 
 	@Override
@@ -302,7 +323,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	/** Cost Revaluation = CRD */
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
-
+	/** AnalysisReport = QMA */
+	public static final String DOCBASETYPE_AnalysisReport = "QMA";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
@@ -515,16 +537,18 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		if (GL_Category_ID < 1) 
-			set_Value (COLUMNNAME_GL_Category_ID, null);
-		else 
-			set_Value (COLUMNNAME_GL_Category_ID, GL_Category_ID);
+		set_ValueNoCheck("GL_Category_ID", GL_Category_ID);
 	}
 
 	@Override
 	public int getGL_Category_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_GL_Category_ID);
+		final Integer ii = (Integer)get_Value("GL_Category_ID");
+		if (ii == null)
+		{
+			return 0;
+		}
+		return ii;
 	}
 
 	@Override
@@ -549,18 +573,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public boolean isHasProforma() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_HasProforma);
-	}
-
-	@Override
-	public void setIsCopyDescriptionToDocument (final boolean IsCopyDescriptionToDocument)
-	{
-		set_Value (COLUMNNAME_IsCopyDescriptionToDocument, IsCopyDescriptionToDocument);
-	}
-
-	@Override
-	public boolean isCopyDescriptionToDocument() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsCopyDescriptionToDocument);
 	}
 
 	@Override
@@ -618,7 +630,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
-	public boolean isExcludeFromCommision()
+	public boolean isExcludeFromCommision() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromCommision);
 	}

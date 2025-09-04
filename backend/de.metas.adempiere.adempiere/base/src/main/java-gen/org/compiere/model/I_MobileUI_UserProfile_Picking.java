@@ -254,6 +254,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAlwaysSplitHUsEnabled = "IsAlwaysSplitHUsEnabled";
 
 	/**
+	 * Set Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly);
+
+	/**
+	 * Get Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAnonymousHuPickedOnTheFly();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAnonymousHuPickedOnTheFly = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAnonymousHuPickedOnTheFly", null);
+	String COLUMNNAME_IsAnonymousHuPickedOnTheFly = "IsAnonymousHuPickedOnTheFly";
+
+	/**
 	 * Set Allow picking TU with catch weight.
 	 * If activated and a packing instruction is included in the order line, it is assumed that it is a TU when Catch Weight is picked. Otherwise metasfresh assumes that it is a CU
 	 *
@@ -300,6 +321,48 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
 
 	/**
+	 * Set Show Picking Tray Suggestions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDisplayPickingSlotSuggestions (boolean IsDisplayPickingSlotSuggestions);
+
+	/**
+	 * Get Show Picking Tray Suggestions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDisplayPickingSlotSuggestions();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsDisplayPickingSlotSuggestions = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsDisplayPickingSlotSuggestions", null);
+	String COLUMNNAME_IsDisplayPickingSlotSuggestions = "IsDisplayPickingSlotSuggestions";
+
+	/**
+	 * Set Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFilterByBarcode (boolean IsFilterByBarcode);
+
+	/**
+	 * Get Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFilterByBarcode();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsFilterByBarcode = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsFilterByBarcode", null);
+	String COLUMNNAME_IsFilterByBarcode = "IsFilterByBarcode";
+
+	/**
 	 * Set Pick with LU.
 	 *
 	 * <br>Type: YesNo
@@ -319,6 +382,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsPickingWithNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsPickingWithNewLU", null);
 	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
+
+	/**
+	 * Set Ship after closing LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShipOnCloseLU (boolean IsShipOnCloseLU);
+
+	/**
+	 * Get Ship after closing LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShipOnCloseLU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShipOnCloseLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShipOnCloseLU", null);
+	String COLUMNNAME_IsShipOnCloseLU = "IsShipOnCloseLU";
 
 	/**
 	 * Set Ask User when Over Picking.
@@ -343,6 +427,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Set Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -352,6 +437,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	/**
 	 * Get Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

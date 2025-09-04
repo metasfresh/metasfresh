@@ -159,7 +159,7 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 	}
 
 	@Override
-	public WFProcess setScannedBarcode(final SetScannedBarcodeRequest request)
+	public WFProcess setScannedBarcode(final @NonNull SetScannedBarcodeRequest request)
 	{
 		final GlobalQRCode scannedQRCode = GlobalQRCode.ofString(request.getScannedBarcode());
 		final IExternalSystemChildConfigId childConfigId = getExternalSystemChildConfigId(scannedQRCode);

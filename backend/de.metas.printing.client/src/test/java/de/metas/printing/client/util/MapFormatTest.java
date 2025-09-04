@@ -22,11 +22,11 @@ package de.metas.printing.client.util;
  * #L%
  */
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class MapFormatTest
 {
@@ -41,7 +41,7 @@ public class MapFormatTest
 		final String strExpected = "getNextPrintPackage/1/2";
 		final String strActual = MapFormat.format(pattern, args);
 
-		Assert.assertEquals(strExpected, strActual);
+		Assertions.assertEquals(strExpected, strActual);
 	}
 
 	@Test
@@ -55,7 +55,7 @@ public class MapFormatTest
 		final String strExpected = "getNextPrintPackage/1/2/and_again_session/1/end";
 		final String strActual = MapFormat.format(pattern, args);
 
-		Assert.assertEquals(strExpected, strActual);
+		Assertions.assertEquals(strExpected, strActual);
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class MapFormatTest
 		final String strExpected = "getNextPrintPackage/1/2/and_a_missing_arg/{MissingArgID}/end";
 		final String strActual = MapFormat.format(pattern, args);
 
-		Assert.assertEquals(strExpected, strActual);
+		Assertions.assertEquals(strExpected, strActual);
 	}
 
 	@Test
@@ -80,10 +80,10 @@ public class MapFormatTest
 		final String strExpected = pattern;
 		final String strActual = MapFormat.format(pattern, null);
 
-		Assert.assertEquals(strExpected, strActual);
+		Assertions.assertEquals(strExpected, strActual);
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void test_format_null_pattern() throws Exception
 	{
 		final String pattern = null;
@@ -91,9 +91,7 @@ public class MapFormatTest
 		args.put("SessionID", "1");
 		args.put("TransactionID", "2");
 
-		final String strExpected = pattern;
-		final String strActual = MapFormat.format(pattern, args); // shall throw NPE
+		Assertions.assertThrows(NullPointerException.class, () -> MapFormat.format(pattern, args)); // shall throw NPE
 
-		Assert.assertEquals(strExpected, strActual);
 	}
 }

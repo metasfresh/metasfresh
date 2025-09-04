@@ -29,8 +29,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
+import de.metas.common.product.v2.response.JsonMHUPIItemProduct;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
+import de.metas.common.product.v2.response.JsonProductUOMConversion;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaPackagingUnit;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaProductInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -40,14 +42,18 @@ import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
 import de.metas.rest_api.v2.product.ProductsServicesFacade;
+import de.metas.uom.UOMConversionRate;
+import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -73,6 +79,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -90,7 +97,7 @@ public class GetProductsCommand
 	@NonNull
 	private final ExternalSystemService externalSystemService;
 	@NonNull
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierProductLookupService productLookupService;
 
 	@NonNull
 	private final String adLanguage;
@@ -106,6 +113,10 @@ public class GetProductsCommand
 
 	private ImmutableListMultimap<ProductId, JsonProductBPartner> productBPartners;
 
+	private ImmutableListMultimap<ProductId, JsonProductUOMConversion> productUOMConversions;
+
+	private ImmutableListMultimap<ProductId, JsonMHUPIItemProduct> mHUPIItemProducts;
+
 	private ImmutableMap<JsonMetasfreshId, String> bpartnerId2Name;
 
 	@Nullable
@@ -116,7 +127,7 @@ public class GetProductsCommand
 			@NonNull final ProductsServicesFacade servicesFacade,
 			@NonNull final AlbertaProductService albertaProductService,
 			@NonNull final ExternalSystemService externalSystemService,
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierProductLookupService productLookupService,
 			@NonNull final String adLanguage,
 			@Nullable final Instant since,
 			@Nullable final String orgCode,
@@ -127,7 +138,7 @@ public class GetProductsCommand
 		this.servicesFacade = servicesFacade;
 		this.albertaProductService = albertaProductService;
 		this.externalSystemService = externalSystemService;
-		this.productRestService = productRestService;
+		this.productLookupService = productLookupService;
 		this.adLanguage = adLanguage;
 		this.since = CoalesceUtil.coalesceNotNull(since, DEFAULT_SINCE);
 		this.orgCode = orgCode;
@@ -151,6 +162,10 @@ public class GetProductsCommand
 		final ImmutableSet<ProductId> productIds = extractProductIds(productsToExport);
 
 		productBPartners = retrieveJsonProductVendors(productIds);
+
+		productUOMConversions = retrieveJsonProductUOMConversions(productIds);
+
+		mHUPIItemProducts = retrieveJsonMHUPIItemProducts(productIds);
 
 		final ImmutableSet<BPartnerId> manufacturerIds = productsToExport.stream()
 				.map(I_M_Product::getManufacturer_ID)
@@ -222,9 +237,12 @@ public class GetProductsCommand
 				.description(trls.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()).translate(adLanguage))
 				.ean(productRecord.getUPC())
 				.uom(servicesFacade.getUOMSymbol(uomId))
+				.uomX12DE355(servicesFacade.getX12DE355(uomId))
 				.discontinuedFrom(discontinuedFrom)
 				.bpartners(productBPartners.get(productId))
 				.albertaProductInfo(getJsonAlbertaProductInfoFor(productId))
+				.uomConversions(productUOMConversions.get(productId))
+				.mhupiItemProducts(mHUPIItemProducts.get(productId))
 				.build();
 	}
 
@@ -263,6 +281,64 @@ public class GetProductsCommand
 				.exclusionFromSaleReason(record.getExclusionFromSaleReason())
 				.excludedFromPurchase(record.isExcludedFromPurchase())
 				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
+				//
+				.build();
+	}
+
+	@NonNull
+	private ImmutableListMultimap<ProductId, JsonProductUOMConversion> retrieveJsonProductUOMConversions(final Set<ProductId> productIds)
+	{
+		final List<UOMConversionsMap> productUOMConversions = servicesFacade.getProductUOMConversions(productIds);
+		if (productUOMConversions.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		return productUOMConversions.stream()
+				.flatMap(productUOMConversion -> {
+					final ProductId productId = productUOMConversion.getProductId();
+					return productUOMConversion.getRates().values().stream().filter(value -> value.getFromUomId() != value.getToUomId())
+							.map(rate -> ImmutableListMultimap.of(productId, toJsonProductUOMConversion(rate)));
+				})
+				.flatMap(multimap -> multimap.entries().stream())
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						Map.Entry::getKey,
+						Map.Entry::getValue));
+	}
+
+	@NonNull
+	private JsonProductUOMConversion toJsonProductUOMConversion(final UOMConversionRate record)
+	{
+		return JsonProductUOMConversion.builder()
+				.uomX12DE355From(servicesFacade.getX12DE355(record.getFromUomId()))
+				.uomX12DE355To(servicesFacade.getX12DE355(record.getToUomId()))
+				.fromToMultiplier(record.getFromToMultiplier())
+				.catchUOMForProduct(record.isCatchUOMForProduct())
+				.build();
+	}
+
+	@NonNull
+	private ImmutableListMultimap<ProductId, JsonMHUPIItemProduct> retrieveJsonMHUPIItemProducts(final Set<ProductId> productIds)
+	{
+		return servicesFacade.getMHUPIItemProductRecords(productIds)
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						record -> ProductId.ofRepoId(record.getM_Product_ID()),
+						this::toJsonProductBPartner));
+	}
+
+	@NonNull
+	private JsonMHUPIItemProduct toJsonProductBPartner(final I_M_HU_PI_Item_Product record)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
+		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
+
+		return JsonMHUPIItemProduct.builder()
+				.mHUPIItemProductId(JsonMetasfreshId.of(record.getM_HU_PI_Item_Product_ID()))
+				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartnerId)))
+				.name(record.getName())
+				.qty(record.getQty())
+				.uom(uomId != null ? servicesFacade.getX12DE355(uomId) : null)
 				//
 				.build();
 	}
@@ -423,7 +499,8 @@ public class GetProductsCommand
 		{
 			Check.assumeNotNull(productIdentifier, "ProductIdentifier must be set in case of single export!");
 
-			final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, RestUtils.retrieveOrgIdOrDefault(orgCode))
+			final ProductId productId = productLookupService.resolveProductExternalIdentifier(productIdentifier, RestUtils.retrieveOrgIdOrDefault(orgCode))
+					.map(ProductAndHUPIItemProductId::getProductId)
 					.orElseThrow(() -> new AdempiereException("Fail to resolve product external identifier")
 							.appendParametersToMessage()
 							.setParameter("ExternalIdentifier", productIdentifier));

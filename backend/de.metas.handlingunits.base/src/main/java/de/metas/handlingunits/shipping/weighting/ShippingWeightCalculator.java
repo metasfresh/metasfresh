@@ -76,7 +76,7 @@ public class ShippingWeightCalculator
 			case CatchWeight:
 				return calculateWeight_usingCatchWeight(line);
 			case ProductWeight:
-				return calculateWeight_usingNominalWeight(line);
+				return calculateWeight_usingNominalGrossWeight(line);
 			case HUWeightGross:
 				return Optional.empty();
 			default:
@@ -100,7 +100,7 @@ public class ShippingWeightCalculator
 		return uomConversionBL.convertToKilogram(weight, productId);
 	}
 
-	private Optional<Quantity> calculateWeight_usingNominalWeight(final I_M_InOutLine line)
+	private Optional<Quantity> calculateWeight_usingNominalGrossWeight(final I_M_InOutLine line)
 	{
 		final ProductId productId = extractProductId(line).orElse(null);
 		if (productId == null)
@@ -109,20 +109,20 @@ public class ShippingWeightCalculator
 			return Optional.empty();
 		}
 
-		final Quantity productWeight = getProductWeight(productId).orElse(null);
-		if (productWeight == null)
+		final Quantity productGrossWeight = getProductGrossWeight(productId).orElse(null);
+		if (productGrossWeight == null)
 		{
 			return Optional.empty();
 		}
 
-		final Quantity qty = inOutBL.getMovementQty(line);
-		final Quantity lineWeight = productWeight.multiply(qty.toBigDecimal());
+		final Quantity qtyInStockingUOM = inOutBL.getMovementQty(line);
+		final Quantity lineWeight = productGrossWeight.multiply(qtyInStockingUOM.toBigDecimal());
 		return Optional.of(lineWeight);
 	}
 
-	private Optional<Quantity> getProductWeight(@NonNull final ProductId productId)
+	private Optional<Quantity> getProductGrossWeight(@NonNull final ProductId productId)
 	{
-		return productWeights.computeIfAbsent(productId, productBL::getWeight);
+		return productWeights.computeIfAbsent(productId, productBL::getGrossWeight);
 	}
 
 	public Optional<Quantity> calculateWeightInKg(@NonNull final I_M_HU hu)
@@ -137,7 +137,7 @@ public class ShippingWeightCalculator
 			case CatchWeight:
 				return Optional.empty();
 			case ProductWeight:
-				return calculateWeight_usingNominalWeight(hu);
+				return calculateWeight_usingNominalGrossWeight(hu);
 			case HUWeightGross:
 				return calculateWeight_usingWeightGrossAttribute(hu);
 			default:
@@ -145,12 +145,12 @@ public class ShippingWeightCalculator
 		}
 	}
 
-	private Optional<Quantity> calculateWeight_usingNominalWeight(final I_M_HU hu)
+	private Optional<Quantity> calculateWeight_usingNominalGrossWeight(final I_M_HU hu)
 	{
 		Quantity result = null;
 		for (final IHUProductStorage huProductStorage : handlingUnitsBL.getStorageFactory().getStorage(hu).getProductStorages())
 		{
-			final Quantity huProductStorageWeight = calculateWeight_usingNominalWeight(huProductStorage).orElse(null);
+			final Quantity huProductStorageWeight = calculateWeight_usingNominalGrossWeight(huProductStorage).orElse(null);
 			if (huProductStorageWeight == null)
 			{
 				return Optional.empty();
@@ -162,10 +162,10 @@ public class ShippingWeightCalculator
 		return Optional.ofNullable(result);
 	}
 
-	private Optional<Quantity> calculateWeight_usingNominalWeight(final IHUProductStorage huProductStorage)
+	private Optional<Quantity> calculateWeight_usingNominalGrossWeight(final IHUProductStorage huProductStorage)
 	{
 		final ProductId productId = huProductStorage.getProductId();
-		final Quantity productWeight = getProductWeight(productId).orElse(null);
+		final Quantity productWeight = getProductGrossWeight(productId).orElse(null);
 		if (productWeight == null)
 		{
 			return Optional.empty();

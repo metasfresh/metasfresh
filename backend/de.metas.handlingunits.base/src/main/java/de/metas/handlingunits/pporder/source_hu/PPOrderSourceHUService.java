@@ -37,6 +37,8 @@ public class PPOrderSourceHUService
 
 	private static final AdMessageKey MSG_HUProductsNotMatchingIssuingProducts = AdMessageKey.of("de.metas.handlingunits.HUProductsNotMatchingIssuingProducts");
 	private static final AdMessageKey MSG_HUIsEmpty = AdMessageKey.of("de.metas.handlingunits.HUIsEmpty");
+	private static final AdMessageKey MSG_ManufacturingOrderNotCompleted = AdMessageKey.of("de.metas.handlingunits.MSG_ManufacturingOrderNotCompleted");
+	private static final AdMessageKey MSG_ManufacturingJobAlreadyStarted = AdMessageKey.of("de.metas.handlingunits.MSG_ManufacturingJobAlreadyStarted");
 
 	public PPOrderSourceHUService(
 			@NonNull final PPOrderSourceHURepository ppOrderSourceHURepository,
@@ -137,12 +139,12 @@ public class PPOrderSourceHUService
 		final DocStatus ppOrderDocStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
 		if (!ppOrderDocStatus.isCompleted())
 		{
-			return BooleanWithReason.falseBecause("Order is not completed");
+			return BooleanWithReason.falseBecause(MSG_ManufacturingOrderNotCompleted, ppOrder.getDocumentNo());
 		}
 
 		if (ppOrderIssueScheduleService.matchesByOrderId(ppOrderId))
 		{
-			return BooleanWithReason.falseBecause("Manufacturing Job already started");
+			return BooleanWithReason.falseBecause(MSG_ManufacturingJobAlreadyStarted, ppOrder.getDocumentNo());
 		}
 
 		return BooleanWithReason.TRUE;

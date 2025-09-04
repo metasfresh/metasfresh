@@ -6,11 +6,12 @@ import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
-import { toastError } from '../utils/toast';
+import { toastError, toastErrorFromObj } from '../utils/toast';
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
-import { toastErrorFromObj } from '../utils/toast';
+import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
+import { ATTR_isUnique } from '../utils/qrCode/common';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
@@ -42,6 +43,7 @@ const ScanHUAndGetQtyComponent = ({
   scaleTolerance,
   catchWeight,
   catchWeightUom,
+  customQRCodeFormats,
   isShowBestBeforeDate = false,
   isShowLotNo = false,
   isShowCloseTargetButton = false,
@@ -75,7 +77,7 @@ const ScanHUAndGetQtyComponent = ({
   });
 
   //
-  // Init/reset resolvedBarcodeData on parameters changed (usually first time or when we get here from history.replace)
+  // Init/reset resolvedBarcodeData on parameters changed (usually the first time or when we get here from history.replace)
   useEffect(() => {
     setResolvedBarcodeData((prevState) => ({
       lineId: prevState?.lineId,
@@ -119,7 +121,7 @@ const ScanHUAndGetQtyComponent = ({
 
   //
   // Simulate barcode scanning when we get "qrCode" url param
-  // IMPORTANT: this shall be called after "Init/reset resolvedBarcodeData" effect
+  // IMPORTANT: this shall be called after the "Init / reset resolvedBarcodeData" effect
   useEffect(() => {
     if (scannedBarcodeParam) {
       onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: scannedBarcodeParam }));
@@ -131,21 +133,26 @@ const ScanHUAndGetQtyComponent = ({
   const handleResolveScannedBarcode = ({ scannedBarcode, huId }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
 
-    // If an eligible barcode was provided, make sure scanned barcode is matching it
+    // If an eligible barcode was provided, make sure the scanned barcode is matching it
     if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
       return {
         error: trl(invalidBarcodeMessageKey ?? DEFAULT_MSG_notEligibleHUBarcode),
       };
     }
 
+    let resolveScannedBarcodeFuncResult = {};
+    if (resolveScannedBarcode && scannedBarcode !== PICK_ON_THE_FLY_QRCODE) {
+      resolveScannedBarcodeFuncResult = resolveScannedBarcode(scannedBarcode, huId);
+    }
+
     // noinspection UnnecessaryLocalVariableJS
-    const resolvedBarcodeDataNew = {
+    let resolvedBarcodeDataNew = {
       ...resolvedBarcodeData,
-      ...resolveScannedBarcode?.(scannedBarcode, huId),
+      ...resolveScannedBarcodeFuncResult,
       scannedBarcode,
     };
 
-    //console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
+    console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
 
     return resolvedBarcodeDataNew;
   };
@@ -169,7 +176,15 @@ const ScanHUAndGetQtyComponent = ({
 
   const onBarcodeScanned = (resolvedBarcodeDataNew) => {
     setResolvedBarcodeData(resolvedBarcodeDataNew);
-    const askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
+
+    let askForQty;
+    const qrCode = resolvedBarcodeDataNew?.qrCode;
+    if (qrCode && qrCode[ATTR_isUnique] === false) {
+      // user just scanned a non-unique QR code (e.g. EAN13, custom)
+      askForQty = false;
+    } else {
+      askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
+    }
 
     console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, askForQty });
 
@@ -180,7 +195,7 @@ const ScanHUAndGetQtyComponent = ({
         qty: 0,
         reason: null,
         scannedBarcode: resolvedBarcodeDataNew.scannedBarcode,
-        resolvedBarcodeData,
+        resolvedBarcodeData: resolvedBarcodeDataNew,
       })?.catch?.((error) => toastErrorFromObj(error));
     }
   };
@@ -215,6 +230,7 @@ const ScanHUAndGetQtyComponent = ({
     catchWeight,
     catchWeightUom,
     bestBeforeDate,
+    productionDate,
     lotNo,
     productNo,
     barcodeType,
@@ -232,6 +248,7 @@ const ScanHUAndGetQtyComponent = ({
       catchWeightUom,
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
       bestBeforeDate,
+      productionDate,
       lotNo,
       productNo,
       isCloseTarget,
@@ -283,6 +300,7 @@ const ScanHUAndGetQtyComponent = ({
           scaleTolerance={resolvedBarcodeData.scaleTolerance}
           catchWeight={resolvedBarcodeData.catchWeight}
           catchWeightUom={resolvedBarcodeData.catchWeightUom}
+          customQRCodeFormats={customQRCodeFormats}
           readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           isShowBestBeforeDate={isShowBestBeforeDate}
@@ -329,6 +347,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   scaleTolerance: PropTypes.object,
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
+  customQRCodeFormats: PropTypes.array,
   isShowBestBeforeDate: PropTypes.bool,
   isShowLotNo: PropTypes.bool,
   isShowCloseTargetButton: PropTypes.bool,

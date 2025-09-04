@@ -26,8 +26,10 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -245,40 +247,63 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 	protected int performLockSQLInsert(final ILockCommand lockCommand, final List<Object> sqlParams, final String sql)
 	{
-		try
+		final int maxTrials = 1 + Math.max(lockCommand.getRetryOnFailure(), 0);
+		final boolean isFailIfAlreadyLocked = lockCommand.isFailIfAlreadyLocked();
+		for (int tryIndex = 1; tryIndex <= maxTrials; tryIndex++)
 		{
-			final int countLocked = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
-			if (countLocked <= 0 && lockCommand.isFailIfNothingLocked())
+			try
 			{
-				throw new LockFailedException("Nothing locked for selection");
+				final int countLocked = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
+				if (countLocked <= 0 && lockCommand.isFailIfNothingLocked())
+				{
+					throw new LockFailedException("Nothing locked for selection");
+				}
+
+				return countLocked;
 			}
+			catch (final DBUniqueConstraintException e)
+			{
+				if (tryIndex >= maxTrials)
+				{
+					// TODO: implement for lockCommand.isFailIfAlreadyLocked() == false to allow partial locking
+					throw new LockFailedException("Some of the records were already locked", e)
+							.setLockCommand(lockCommand)
+							.setSql(sql, sqlParams.toArray());
+				}
+				else
+				{
+					sleepBeforeRetry();
+				}
+			}
+			catch (final Exception e)
+			{
+				throw LockFailedException.wrapIfNeeded(e)
+						.setLockCommand(lockCommand)
+						.setSql(sql, sqlParams.toArray());
+			}
+		}
 
-			return countLocked;
-		}
-		catch (final DBUniqueConstraintException e)
-		{
-			// TODO: implement for lockCommand.isFailIfAlreadyLocked() == false to allow partial locking
-			throw new LockFailedException("Some of the records were already locked", e)
-					.setLockCommand(lockCommand)
-					.setSql(sql, sqlParams.toArray());
-
-		}
-		catch (final Exception e)
-		{
-			throw LockFailedException.wrapIfNeeded(e)
-					.setLockCommand(lockCommand)
-					.setSql(sql, sqlParams.toArray());
-		}
+		//
+		// TODO: implement for lockCommand.isFailIfAlreadyLocked() == false to allow partial locking
+		throw new LockFailedException("Some of the records were already locked")
+				.setLockCommand(lockCommand)
+				.setSql(sql, sqlParams.toArray());
 	}
 
 	private ImmutableList<ExistingLockInfo> retrieveExistingLocksForFilter(
 			@NonNull final AdTableId adTableId,
 			@NonNull final ISqlQueryFilter filter)
 	{
+		final String tableName = TableIdsCache.instance.getTableName(adTableId);
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+
+		final String sqlWhere = I_T_Lock.COLUMNNAME_Record_ID + " IN (SELECT " + keyColumnName + " FROM " + tableName + " WHERE " + filter.getSql() + ")";
+		final List<Object> sqlWhereParams = filter.getSqlParams(null);
+
 		return retrieveExistingLocksForWhereClause(
 				adTableId,
-				filter.getSql(),
-				filter.getSqlParams(null));
+				sqlWhere,
+				sqlWhereParams);
 	}
 
 	private ImmutableList<ExistingLockInfo> retrieveExistingLocksForSelection(
@@ -334,7 +359,6 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	{
 		final AdTableId adTableId = record.getAdTableId();
 		final int recordId = record.getRecord_ID();
-
 		if (recordId < 0)
 		{
 			return false;
@@ -360,34 +384,74 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				+ ", " + toSqlParam(isAllowMultipleOwners(lockCommand.getAllowAdditionalLocks()), sqlParams) // IsAllowMultipleOwners
 				+ ")";
 
-		try
+		final int maxTrials = 1 + Math.max(lockCommand.getRetryOnFailure(), 0);
+		final boolean isFailIfAlreadyLocked = lockCommand.isFailIfAlreadyLocked();
+		for (int tryIndex = 1; tryIndex <= maxTrials; tryIndex++)
 		{
-			DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
-			return true;
-		}
-		catch (final DBUniqueConstraintException e)
-		{
-			// we are in a concurrent situation where another DB client acquired the lock for a record since our select
-			// => fail if we were asked to fail, else return false
-
-			if (lockCommand.isFailIfAlreadyLocked())
+			try
 			{
-				final String whereSql = I_T_Lock.COLUMNNAME_Record_ID + "=" + DB.TO_SQL(recordId); // note that AD_Table_ID=... will be added to the where-clause anyway
+				DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_None);
+				return true;
+			}
+			catch (final DBUniqueConstraintException e)
+			{
+				// we are in a concurrent situation where another DB client acquired the lock for a record since our select
+				// => fail if we were asked to fail, else return false
 
-				throw new LockFailedException("Record was already locked: " + record, e)
+				if (tryIndex >= maxTrials)
+				{
+					if (isFailIfAlreadyLocked)
+					{
+						final String whereSql = I_T_Lock.COLUMNNAME_Record_ID + "=" + DB.TO_SQL(recordId); // note that AD_Table_ID=... will be added to the where-clause anyway				if (lockCommand.isFailIfAlreadyLocked())
+						throw new LockFailedException("Record was already locked: " + record, e)
+								.setLockCommand(lockCommand)
+								.setSql(sql, sqlParams.toArray())
+								.setRecordToLock(record)
+								.setExistingLocks(retrieveExistingLocksForWhereClause(adTableId, whereSql, null));
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					sleepBeforeRetry();
+				}
+			}
+			catch (final Exception e)
+			{
+				throw new LockFailedException("Failed locking AD_Table_ID=" + adTableId + ", Record_ID=" + recordId, e)
 						.setLockCommand(lockCommand)
 						.setSql(sql, sqlParams.toArray())
-						.setRecordToLock(record)
-						.setExistingLocks(retrieveExistingLocksForWhereClause(adTableId, whereSql, null));
+						.setRecordToLock(record);
 			}
-			return false;
 		}
-		catch (final Exception e)
+
+		if (isFailIfAlreadyLocked)
 		{
-			throw new LockFailedException("Failed locking AD_Table_ID=" + adTableId + ", Record_ID=" + recordId, e)
+			final String whereSql = I_T_Lock.COLUMNNAME_Record_ID + "=" + DB.TO_SQL(recordId); // note that AD_Table_ID=... will be added to the where-clause anyway
+			throw new LockFailedException("Record was already locked: " + record)
 					.setLockCommand(lockCommand)
 					.setSql(sql, sqlParams.toArray())
-					.setRecordToLock(record);
+					.setRecordToLock(record)
+					.setExistingLocks(retrieveExistingLocksForWhereClause(adTableId, whereSql, null));
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	private static void sleepBeforeRetry()
+	{
+		try
+		{
+			Thread.sleep(200);
+		}
+		catch (InterruptedException ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
 
@@ -635,7 +699,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final boolean autoCleanup = DisplayType.toBoolean(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup));
+				final boolean autoCleanup = DisplayType.toBooleanNonNull(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup), false);
 				final int countLocked = rs.getInt("CountLocked");
 				final ILock lock = newLock(lockOwner, autoCleanup, countLocked);
 

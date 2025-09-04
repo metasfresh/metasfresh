@@ -22,23 +22,21 @@ package org.adempiere.ui.notifications;
  * #L%
  */
 
-
+import de.metas.event.Event;
+import de.metas.inout.model.I_M_InOut;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.event.Event;
-import de.metas.inout.model.I_M_InOut;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class EventHtmlMessageFormatTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -60,7 +58,7 @@ public class EventHtmlMessageFormatTest
 				.format(event.getDetailADMessage());
 
 		final int adTableId = inoutRecord.getAD_Table_ID();
-		Assert.assertEquals("Lieferung <a href=\"http://adempiere/ShowWindow?AD_Table_ID=" + adTableId + "%26WhereClause=M_InOut_ID%3D12345\">doc12345</a> für Partner 12345&amp;PartnerName wurde erstellt.",
+		Assertions.assertEquals("Lieferung <a href=\"http://adempiere/ShowWindow?AD_Table_ID=" + adTableId + "%26WhereClause=M_InOut_ID%3D12345\">doc12345</a> für Partner 12345&amp;PartnerName wurde erstellt.",
 				summaryFormatted);
 	}
 

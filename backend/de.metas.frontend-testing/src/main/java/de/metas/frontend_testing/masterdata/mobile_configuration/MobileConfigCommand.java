@@ -12,12 +12,18 @@ import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig.MobileUIManufacturingConfigBuilder;
+import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfigService;
+import de.metas.user.UserId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -28,6 +34,7 @@ public class MobileConfigCommand
 	@NonNull private final MobileConfigService mobileConfigService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
 	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
+	@NonNull private final MobileUIManufacturingConfigRepository mobileManufacturingConfigRepository;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonMobileConfigRequest request;
@@ -37,11 +44,13 @@ public class MobileConfigCommand
 		final MobileConfig config = updateMobileConfig();
 		final JsonMobileConfigResponse.Picking picking = updatePickingConfig();
 		final JsonMobileConfigResponse.Distribution distribution = updateDistributionConfig();
+		final JsonMobileConfigResponse.Manufacturing manufacturing = updateManufacturingConfig();
 
 		return JsonMobileConfigResponse.builder()
 				.defaultAuthMethod(config.getDefaultAuthMethod())
 				.picking(picking)
 				.distribution(distribution)
+				.manufacturing(manufacturing)
 				.build();
 	}
 
@@ -73,16 +82,18 @@ public class MobileConfigCommand
 		final MobileUIPickingUserProfile profile = mobilePickingConfigRepository.getProfile();
 		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
 				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
-				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()));
+				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
+				.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode());
 
 		if (picking.getAllowPickingAnyCustomer() != null)
 		{
 			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
 		}
 
-		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
+		MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
 		mobilePickingConfigRepository.save(newProfile);
 
+		newProfile = mobilePickingConfigRepository.getProfile(); // reload to make sure we are returning exactly what's in DB
 		return toJson(newProfile);
 	}
 
@@ -95,8 +106,12 @@ public class MobileConfigCommand
 				.createShipmentPolicy(profile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
+				.shipOnCloseLU(profile.getDefaultPickingJobOptions().isShipOnCloseLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
+				.filterByQRCode(profile.isFilterByBarcode())
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
+				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
+				.displayPickingSlotSuggestions(profile.getDefaultPickingJobOptions().getDisplayPickingSlotSuggestions().toBooleanOrNull())
 				.build();
 	}
 
@@ -123,6 +138,7 @@ public class MobileConfigCommand
 		{
 			builder.isPickWithNewLU(from.getPickWithNewLU());
 		}
+		builder.isShipOnCloseLU(from.getShipOnCloseLU() != null ? from.getShipOnCloseLU() : false);
 		if (from.getAllowNewTU() != null)
 		{
 			builder.isAllowNewTU(from.getAllowNewTU());
@@ -139,6 +155,12 @@ public class MobileConfigCommand
 		{
 			builder.isShowLastPickedBestBeforeDateForLines(from.getShowLastPickedBestBeforeDateForLines());
 		}
+		if (from.getAnonymousPickHUsOnTheFly() != null)
+		{
+			builder.isAnonymousPickHUsOnTheFly(from.getAnonymousPickHUsOnTheFly());
+		}
+
+		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
 
 		return builder.build();
 	}
@@ -196,6 +218,34 @@ public class MobileConfigCommand
 
 		return JsonMobileConfigResponse.Distribution.builder()
 				.allowPickingAnyHU(newConfig.isAllowPickingAnyHU())
+				.build();
+	}
+
+	private JsonMobileConfigResponse.Manufacturing updateManufacturingConfig()
+	{
+		final JsonMobileConfigRequest.Manufacturing manufacturing = request.getManufacturing();
+		if (manufacturing == null)
+		{
+			return null;
+		}
+
+		final UserId loginUserId = context.getIdOfType(UserId.class);
+		final MobileUIManufacturingConfigBuilder newConfigBuilder = mobileManufacturingConfigRepository.getConfig(loginUserId, ClientId.METASFRESH).toBuilder();
+		if (manufacturing.getIsScanResourceRequired() != null)
+		{
+			newConfigBuilder.isScanResourceRequired(OptionalBoolean.ofBoolean(manufacturing.getIsScanResourceRequired()));
+		}
+		if (manufacturing.getIsAllowIssuingAnyHU() != null)
+		{
+			newConfigBuilder.isAllowIssuingAnyHU(OptionalBoolean.ofBoolean(manufacturing.getIsAllowIssuingAnyHU()));
+		}
+
+		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
+		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
+
+		return JsonMobileConfigResponse.Manufacturing.builder()
+				.isScanResourceRequired(newConfig.getIsScanResourceRequired().toBooleanOrNull())
+				.isAllowIssuingAnyHU(newConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
 				.build();
 	}
 }

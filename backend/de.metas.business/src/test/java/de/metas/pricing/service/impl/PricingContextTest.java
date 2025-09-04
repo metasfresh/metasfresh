@@ -31,9 +31,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
@@ -45,10 +43,13 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PricingContextTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -95,6 +96,6 @@ public class PricingContextTest
 		//
 		// Assert string representations are equal
 		// NOTE: we assume PricingContext.toString() is using our generic to string method which is introspecting and printing all fields.
-		Assert.assertEquals(pricingCtx.toString(), pricingCtxCopy.toString());
+		Assertions.assertEquals(pricingCtx.toString(), pricingCtxCopy.toString());
 	}
 }

@@ -2,7 +2,6 @@ package de.metas.common.product.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -49,13 +48,11 @@ import java.util.List;
 public class JsonProduct
 {
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
 			dataType = "java.lang.Integer", //
 			value = "This translates to `M_Product.M_Product_ID`.")
 	@NonNull
 	@JsonProperty("id")
 	JsonMetasfreshId id;
-
 	@ApiModelProperty("This translates to `M_Product.M_Product_Category_ID`.")
 	@NonNull
 	@JsonProperty("productCategoryId")
@@ -90,6 +87,11 @@ public class JsonProduct
 	@NonNull
 	@JsonProperty("uom")
 	String uom;
+
+	@ApiModelProperty("This is the `C_UOM.X12DE355` of the product's unit of measurement.")
+	@NonNull
+	@JsonProperty("uomX12DE355")
+	String uomX12DE355;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -132,4 +134,14 @@ public class JsonProduct
 	@JsonInclude(Include.NON_NULL)
 	@JsonProperty("albertaProductInfo")
 	JsonAlbertaProductInfo albertaProductInfo;
+
+	@Nullable
+	@Singular
+	@JsonProperty("uomConversions")
+	List<JsonProductUOMConversion> uomConversions;
+
+	@Nullable
+	@Singular
+	@JsonProperty("mHUPIItemProducts")
+	List<JsonMHUPIItemProduct> mhupiItemProducts;
 }

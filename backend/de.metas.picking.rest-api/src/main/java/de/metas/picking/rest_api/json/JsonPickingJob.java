@@ -55,6 +55,7 @@ public class JsonPickingJob
 	boolean pickWithNewLU;
 	boolean allowNewTU;
 	boolean showPromptWhenOverPicking;
+	boolean anonymousPickHUsOnTheFly;
 
 	public static JsonPickingJobBuilder builderFrom(@NonNull final PickingJob pickingJob)
 	{

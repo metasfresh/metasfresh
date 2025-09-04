@@ -47,7 +47,6 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -182,7 +181,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param ic  the candidate whose values shall be updated. It is assumed that the candidate has <code>IsManual='Y'</code>.
 	 */
-	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic);
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
@@ -239,6 +238,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
+
+	void handleVoidingForInvoice(@NonNull org.compiere.model.I_C_Invoice invoice);
 
 	/**
 	 * Updates/Creates {@link I_C_Invoice_Line_Alloc}s for the case of an invoice (including credit memo) completion. Also makes sure that ICs are created on the fly if they are still missing.
@@ -408,7 +409,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 
-	int createSelectionForInvoiceCandidates(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceId);
+	int createSelectionForInvoiceCandidates(@NonNull InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
 
 	List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(InvoiceCandidateId invoiceCandidateId);
 

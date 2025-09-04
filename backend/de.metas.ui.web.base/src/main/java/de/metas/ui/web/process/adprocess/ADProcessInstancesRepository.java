@@ -10,6 +10,7 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfo.ProcessInfoBuilder;
@@ -307,6 +308,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 		final ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(request.getProcessIdAsInt())
 				.setAdWindowId(adWindowId)
@@ -376,6 +378,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		// Load process info
 		final PInstanceId pinstanceId = PInstanceId.ofRepoId(adPInstanceDocumentId.toInt());
 		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
 				.setPInstanceId(pinstanceId)

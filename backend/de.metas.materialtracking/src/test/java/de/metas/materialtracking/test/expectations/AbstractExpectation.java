@@ -22,11 +22,9 @@ package de.metas.materialtracking.test.expectations;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
-import org.hamcrest.Matchers;
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Defines the common methods used in expectation classes.
@@ -50,13 +48,11 @@ public abstract class AbstractExpectation
 			actualToUse = BigDecimal.ZERO;
 		}
 
-		Assert.assertThat(message,
-				actualToUse,
-				Matchers.comparesEqualTo(expectedToUse));
+		assertThat(actualToUse).as(message).isEqualByComparingTo(expectedToUse);
 	}
 
 	protected void assertModelEquals(final String message, final Object expected, final Object actual)
 	{
-		Assert.assertEquals(message, expected, actual);
+		assertThat(actual).as(message).isEqualTo(expected);
 	}
 }

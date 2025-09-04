@@ -22,20 +22,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import de.metas.product.ProductId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.pricing.IPricingResult;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -43,6 +35,13 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Takes {@link IQualityInvoiceLine}s and converts them to {@link I_C_Invoice_Detail}s.
@@ -65,11 +64,8 @@ public class InvoiceDetailWriter
 	private int _seqNoNext = 10;
 	private final List<I_C_Invoice_Detail> _createdLines = new ArrayList<>();
 
-	public InvoiceDetailWriter(final I_C_Invoice_Candidate invoiceCandidate)
+	public InvoiceDetailWriter(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		super();
-
-		Check.assumeNotNull(invoiceCandidate, "invoiceCandidate not null");
 		_invoiceCandidate = invoiceCandidate;
 		_context = InterfaceWrapperHelper.getContextAware(invoiceCandidate);
 	}
@@ -90,10 +86,6 @@ public class InvoiceDetailWriter
 		return _printBefore;
 	}
 
-	/**
-	 *
-	 * @param printBefore
-	 */
 	public void setPrintBefore(final boolean printBefore)
 	{
 		_printBefore = printBefore;

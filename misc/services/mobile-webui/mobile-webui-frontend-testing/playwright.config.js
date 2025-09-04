@@ -29,6 +29,8 @@ export default defineConfig({
         react: true,  // Enables React component detection
 
         // actionTimeout: 60000, // per action timeout
+
+        video: 'on',
     },
 
     /* Configure projects for major browsers */
@@ -90,9 +92,13 @@ export default defineConfig({
     // },
 });
 
+export const testContext = {};
+
 export const test = testOrig.extend({
     page: async ({ page }, use) => {
         setCurrentPage(page);
+        Object.keys(testContext).forEach(key => delete testContext[key]);
+
         await use(page);
     },
 });

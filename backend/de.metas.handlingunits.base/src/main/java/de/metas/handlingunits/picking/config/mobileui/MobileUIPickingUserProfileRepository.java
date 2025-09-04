@@ -30,6 +30,7 @@ import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -96,6 +97,7 @@ public class MobileUIPickingUserProfileRepository
 		return MobileUIPickingUserProfile.builder()
 				.name(profileRecord.getName())
 				.isAllowPickingAnyCustomer(profileRecord.isAllowAnyCustomer())
+				.isFilterByBarcode(profileRecord.isFilterByBarcode())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -110,6 +112,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.isPickWithNewLU(profileRecord.isPickingWithNewLU())
+				.isShipOnCloseLU(profileRecord.isShipOnCloseLU())
 				.isAllowNewTU(profileRecord.isAllowNewTU())
 				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
@@ -117,6 +120,8 @@ public class MobileUIPickingUserProfileRepository
 				.isShowConfirmationPromptWhenOverPick(profileRecord.isShowConfirmationPromptWhenOverPick())
 				.isAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob())
 				.isShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines())
+				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
+				.displayPickingSlotSuggestions(OptionalBoolean.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()))
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
@@ -175,6 +180,7 @@ public class MobileUIPickingUserProfileRepository
 			profileRecord.setIsActive(true);
 			profileRecord.setName(profile.getName());
 			profileRecord.setIsAllowAnyCustomer(profile.isAllowPickingAnyCustomer());
+			profileRecord.setIsFilterByBarcode(profile.isFilterByBarcode());
 			updateRecord(profileRecord, profile.getDefaultPickingJobOptions());
 			InterfaceWrapperHelper.saveRecord(profileRecord);
 			profileId = MobileUIPickingUserProfileId.ofRepoId(profileRecord.getMobileUI_UserProfile_Picking_ID());
@@ -217,6 +223,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
 		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
 		record.setIsPickingWithNewLU(from.isPickWithNewLU());
+		record.setIsShipOnCloseLU(from.isShipOnCloseLU());
 		record.setIsAllowNewTU(from.isAllowNewTU());
 		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
@@ -224,6 +231,8 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());
 		record.setIsShowConfirmationPromptWhenOverPick(from.isShowConfirmationPromptWhenOverPick());
 		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
+		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
+		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().orElse(false));
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
@@ -285,6 +294,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(record.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
 				.isPickWithNewLU(record.isPickingWithNewLU())
+				.isShipOnCloseLU(record.isShipOnCloseLU())
 				.isAllowNewTU(record.isAllowNewTU())
 				.considerSalesOrderCapacity(record.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(record.isCatchWeightTUPickingEnabled())
@@ -293,6 +303,8 @@ public class MobileUIPickingUserProfileRepository
 				.isShowLastPickedBestBeforeDateForLines(record.isShowLastPickedBestBeforeDateForLines())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(record.getCreateShipmentPolicy()))
 				.isAllowCompletingPartialPickingJob(record.isAllowCompletingPartialPickingJob())
+				.isAnonymousPickHUsOnTheFly(record.isAnonymousHuPickedOnTheFly())
+				.displayPickingSlotSuggestions(OptionalBoolean.ofNullableString(record.getIsDisplayPickingSlotSuggestions()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))
 				.build();

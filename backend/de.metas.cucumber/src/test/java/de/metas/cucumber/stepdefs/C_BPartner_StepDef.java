@@ -33,6 +33,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -114,6 +115,7 @@ public class C_BPartner_StepDef
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
 	private final AD_Org_StepDefData orgTable;
 	private final C_Aggregation_StepDefData aggregationTable;
+	private final @NonNull TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -333,13 +335,27 @@ public class C_BPartner_StepDef
 			}
 
 			InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
-
-			row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
-					.ifPresent(locationIdentifier -> bPartnerLocationTable.put(locationIdentifier, bPartnerLocationRecord));
+			
+			// if a location was cretaed "on-they-fly", add it to bPartnerLocationTable.
+			// if no C_BPartner_Location_ID-identifer was given, use the C_BPartner_ID identifier
+			final StepDefDataIdentifier locationIdentifier =
+					CoalesceUtil.coalesceSuppliers(
+							() -> row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID).orElse(null),
+							() -> row.getAsOptionalIdentifier().orElse(null));
+			if (locationIdentifier != null)
+			{
+				bPartnerLocationTable.put(locationIdentifier, bPartnerLocationRecord);
+			}
 		}
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(recordIdentifier -> bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord));
+		restTestContext.setIntVariableFromRow(row, bPartnerRecord::getC_BPartner_ID);
+
+		row.getAsOptionalIdentifier("REST.Context.Value")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getValue()));
+		row.getAsOptionalIdentifier("REST.Context.Name")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getName()));
 	}
 
 	private void changeBPartner(@NonNull final DataTableRow row)

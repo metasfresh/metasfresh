@@ -3,6 +3,7 @@ package de.metas.product.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.bpartner.BPartnerId;
@@ -27,6 +28,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
@@ -61,10 +63,11 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -161,67 +164,105 @@ public final class ProductBL implements IProductBL
 		return Check.assumeNotNull(getStockUOM(product), "The uom for productId={} may not be null", productId);
 	}
 
-	/**
-	 * @return UOM used for Product's Weight; never return null
-	 */
-	@Override
-	public I_C_UOM getWeightUOM(final I_M_Product product)
-	{
-		return getWeightUOM();
-	}
-
 	@NotNull
-	private I_C_UOM getWeightUOM()
+	private I_C_UOM getNetWeightUOM()
 	{
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram
 		return uomsRepo.getByX12DE355(X12DE355.KILOGRAM);
 	}
 
 	@Override
-	public Optional<Quantity> getWeight(final ProductId productId)
+	public Optional<Quantity> computeGrossWeight(@NonNull final ProductId productId, @NonNull final Quantity qty)
 	{
-		final I_M_Product product = getById(productId);
-		if (InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_Weight))
+		final Quantity unitWeight = getGrossWeight(productId, qty.getUOM()).orElse(null);
+		if (unitWeight == null)
 		{
 			return Optional.empty();
 		}
 
-		final BigDecimal weightBD = product.getWeight();
-		if (weightBD.signum() <= 0)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(Quantity.of(weightBD, getWeightUOM()));
+		final Quantity totalWeight = unitWeight.multiply(qty.toBigDecimal());
+		return Optional.of(totalWeight);
 	}
 
 	@Override
-	public BigDecimal getWeight(
-			@NonNull final I_M_Product product,
-			@NonNull final I_C_UOM uomTo)
+	public Optional<Quantity> getGrossWeight(final ProductId productId, final I_C_UOM targetProductUOM)
 	{
-		final BigDecimal weightPerStockingUOM = product.getWeight();
-		if (weightPerStockingUOM.signum() == 0)
+		final I_M_Product product = getById(productId);
+		return getGrossWeight(product, targetProductUOM);
+	}
+
+	@Override
+	public Optional<Quantity> getGrossWeight(final I_M_Product product, final I_C_UOM targetProductUOM)
+	{
+		return getGrossWeight(product)
+				.map(weightForOneStockingUOM -> convertWeightFromStockingUOMToTargetUOM(weightForOneStockingUOM, product, targetProductUOM));
+	}
+
+	@Override
+	public Optional<Quantity> getGrossWeight(final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return getGrossWeight(product);
+	}
+
+	private Optional<Quantity> getGrossWeight(final I_M_Product product)
+	{
+		final UomId weightUomId = UomId.ofRepoIdOrNull(product.getGrossWeight_UOM_ID());
+		if (weightUomId == null || InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_GrossWeight))
 		{
-			return BigDecimal.ZERO;
+			return getNetWeight(product);
 		}
 
+		final BigDecimal weightBD = product.getGrossWeight();
+		if (weightBD.signum() <= 0)
+		{
+			return getNetWeight(product);
+		}
+
+		return Optional.of(Quantitys.of(weightBD, weightUomId));
+	}
+
+	@Override
+	public Optional<Quantity> getNetWeight(@NonNull final I_M_Product product)
+	{
+		final BigDecimal weightPerStockingUOM = product.getWeight();
+		if (weightPerStockingUOM.signum() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(Quantity.of(weightPerStockingUOM, getNetWeightUOM()));
+	}
+
+	@Override
+	public Optional<Quantity> getNetWeight(
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM targetProductUOM)
+	{
+		return getNetWeight(product)
+				.map(weightPerOneStockingUOM -> convertWeightFromStockingUOMToTargetUOM(weightPerOneStockingUOM, product, targetProductUOM));
+	}
+
+	private Quantity convertWeightFromStockingUOMToTargetUOM(
+			@NonNull final Quantity weightPerOneStockingUOM,
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM targetProductUOM)
+	{
 		final I_C_UOM stockingUom = getStockUOM(product);
 
 		//
 		// Calculate the rate to convert from stocking UOM to "uomTo"
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(product.getM_Product_ID());
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class); // don't extract it to field because IUOMConversionBL already has IProductBL as a field
-		final BigDecimal stocking2uomToRate = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, stockingUom, uomTo);
+		final BigDecimal stocking2uomToRate = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, stockingUom, targetProductUOM);
 
 		//
 		// Calculate the Weight for one "uomTo"
-		final int weightPerUomToPrecision = getWeightUOM(product).getStdPrecision();
-		final BigDecimal weightPerUomTo = weightPerStockingUOM
-				.multiply(stocking2uomToRate)
-				.setScale(weightPerUomToPrecision, RoundingMode.HALF_UP);
+		final UOMPrecision weightPerUomToPrecision = UOMPrecision.ofInt(getNetWeightUOM().getStdPrecision());
 
-		return weightPerUomTo;
+		return weightPerOneStockingUOM
+				.multiply(stocking2uomToRate)
+				.setScale(weightPerUomToPrecision);
 	}
 
 	@Override
@@ -521,18 +562,44 @@ public final class ProductBL implements IProductBL
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						product -> ProductId.ofRepoId(product.getM_Product_ID()),
-						product -> product.getValue()));
+						I_M_Product::getValue));
 	}
 
 	@Override
 	public String getProductName(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
+		return buildProductName(product, productId);
+	}
+
+	private static String buildProductName(@Nullable final I_M_Product product, @NonNull final ProductId productId)
+	{
 		if (product == null)
 		{
 			return "<" + productId + ">";
 		}
 		return product.getName();
+	}
+
+	@Override
+	public Map<ProductId, String> getProductNames(@NonNull final Set<ProductId> productIds)
+	{
+		final List<I_M_Product> products = getByIds(productIds);
+		if (products.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap<ProductId, I_M_Product> productsById = Maps.uniqueIndex(products, product -> ProductId.ofRepoId(product.getM_Product_ID()));
+
+		final HashMap<ProductId, String> result = new HashMap<>();
+		for (final ProductId productId : productIds)
+		{
+			final I_M_Product product = productsById.get(productId);
+			result.put(productId, buildProductName(product, productId));
+		}
+
+		return result;
 	}
 
 	@Override
@@ -590,19 +657,26 @@ public final class ProductBL implements IProductBL
 
 	@Nullable
 	@Override
-	public I_M_AttributeSet getProductMasterDataSchemaOrNull(final ProductId productId)
+	public I_M_AttributeSet getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = productsRepo.getById(productId);
-
-		final int attributeSetRepoId = product.getM_AttributeSet_ID();
-
-		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
+		final AttributeSetId attributeSetId = getMasterDataSchemaAttributeSetId(productId);
 		if (attributeSetId.isNone())
 		{
 			return null;
 		}
 
 		return attributesRepo.getAttributeSetById(attributeSetId);
+	}
+
+	@NonNull
+	@Override
+	public AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+
+		final int attributeSetRepoId = product.getM_AttributeSet_ID();
+
+		return AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
 	}
 
 	@Override
@@ -648,7 +722,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId)
+	public Optional<ProductId> getProductIdByBarcode(@NonNull final String barcode, @NonNull final ClientId clientId)
 	{
 		return productsRepo.getProductIdByBarcode(barcode, clientId);
 	}
@@ -673,6 +747,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13)
+	{
+		return getProductIdByEAN13(ean13, null, ClientId.METASFRESH);
+	}
+
+	@Override
 	public Optional<ProductId> getProductIdByEAN13(
 			@NonNull final EAN13 ean13,
 			@Nullable final BPartnerId bpartnerId,
@@ -692,7 +772,7 @@ public final class ProductBL implements IProductBL
 		}
 		else
 		{
-			throw new AdempiereException("Unsupported EAN13 prefix: " + ean13Prefix);
+			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
 		}
 	}
 
@@ -726,7 +806,7 @@ public final class ProductBL implements IProductBL
 	public Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull final String queryString,
 			@NonNull final ClientId clientId,
-			@NonNull QueryLimit limit)
+			@NonNull final QueryLimit limit)
 	{
 		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
 	}
@@ -737,4 +817,11 @@ public final class ProductBL implements IProductBL
 	{
 		return productsRepo.getByIds(productIds);
 	}
+
+	@Override
+	public boolean isExistingValue(@NonNull final String value, @NonNull final ClientId clientId)
+	{
+		return productsRepo.isExistingValue(value, clientId);
+	}
+
 }

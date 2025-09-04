@@ -25,6 +25,7 @@ import java.util.Set;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface IPPOrderReceiptHUProducer
 {
 	/**
@@ -57,6 +58,8 @@ public interface IPPOrderReceiptHUProducer
 	IPPOrderReceiptHUProducer lotNumber(String lotNumber);
 
 	IPPOrderReceiptHUProducer bestBeforeDate(@Nullable LocalDate bestBeforeDate);
+
+	IPPOrderReceiptHUProducer productionDate(@Nullable LocalDate productionDate);
 
 	Set<PPCostCollectorId> getCreatedCostCollectorIds();
 }

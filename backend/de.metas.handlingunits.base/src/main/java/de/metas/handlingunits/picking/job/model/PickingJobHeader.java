@@ -23,10 +23,11 @@ public class PickingJobHeader
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable String deliveryRenderedAddress;
 	boolean isAllowPickingAnyHU;
+	boolean isAnonymousPickHUsOnTheFly;
+	boolean isDisplayPickingSlotSuggestions;
 	@Nullable UserId lockedBy;
 	@Nullable BPartnerLocationId handoverLocationId;
 
 	@Nullable
 	public BPartnerId getCustomerId() {return this.deliveryBPLocationId != null ? this.deliveryBPLocationId.getBpartnerId() : null;}
-
 }

@@ -6,7 +6,12 @@ import { toastError } from '../../../../utils/toast';
 import { updateManufacturingReceiptQty } from '../../../../actions/ManufacturingActions';
 import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
-import { getActivityByIdFromWFProcess, getLineByIdFromActivity, getWfProcess } from '../../../../reducers/wfProcesses';
+import {
+  getActivityByIdFromWFProcess,
+  getCustomQRCodeFormats,
+  getLineByIdFromActivity,
+  getWfProcess,
+} from '../../../../reducers/wfProcesses';
 
 import PickQuantityButton from './PickQuantityButton';
 import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
@@ -36,6 +41,7 @@ const MaterialReceiptLineScreen = () => {
       qtyToReceive,
     },
     pickTo,
+    customQRCodeFormats,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
   const [showSpinner, setShowSpinner] = useState(false);
 
@@ -77,7 +83,9 @@ const MaterialReceiptLineScreen = () => {
     catchWeight,
     catchWeightUom,
     bestBeforeDate,
+    productionDate,
     lotNo,
+    barcode, // i.e. the catch weight QR code
     isDone = true,
   }) => {
     // shall not happen
@@ -97,7 +105,9 @@ const MaterialReceiptLineScreen = () => {
         catchWeight,
         catchWeightUom,
         bestBeforeDate,
+        productionDate,
         lotNo,
+        barcode,
       })
     )
       .then(() => {
@@ -150,6 +160,7 @@ const MaterialReceiptLineScreen = () => {
           onClick={handleQuantityChange}
           uom={uom}
           caption={trl('activities.mfg.receipts.btnReceiveProducts')}
+          customQRCodeFormats={customQRCodeFormats}
         />
       </div>
     </>
@@ -160,12 +171,15 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const wfProcess = getWfProcess(state, wfProcessId);
   const activity = getActivityByIdFromWFProcess(wfProcess, activityId);
   const lineProps = getLineByIdFromActivity(activity, lineId);
+  const customQRCodeFormats = getCustomQRCodeFormats({ activity });
+  // console.log('getPropsFromState', { customQRCodeFormats, activity });
 
   return {
     activityCaption: activity.caption,
     userInstructions: activity.userInstructions,
     lineProps,
     pickTo: getPickTo({ wfProcess }),
+    customQRCodeFormats,
   };
 };
 

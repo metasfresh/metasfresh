@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocumentNoFilter;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.user.UserId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -42,9 +43,12 @@ import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+
+import static de.metas.common.util.time.SystemTime.asZonedDateTime;
 
 @Value
 @Builder
@@ -56,6 +60,8 @@ public class PickingJobQuery
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyCustomerIds = ImmutableSet.of();
 	@Nullable WarehouseId warehouseId;
 	@Nullable DocumentNoFilter salesOrderDocumentNo;
+	@Nullable ResolvedScannedProductCodes scannedProductCodes;
+	ZonedDateTime currentTime = asZonedDateTime();
 
 	@NonNull
 	public Set<BPartnerId> getOnlyCustomerIdsEffective()
@@ -98,6 +104,9 @@ public class PickingJobQuery
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(this.getExcludeShipmentScheduleIds())
+				.scannedProductCodes(this.getScannedProductCodes())
+				.maximumFixedPreparationDate(currentTime)
+				.maximumFixedPreparationDate(currentTime)
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,
 						PackageableQuery.OrderBy.PreparationDate,
@@ -133,7 +142,6 @@ public class PickingJobQuery
 		return builder.build();
 	}
 
-
 	//
 	//
 	//
@@ -150,7 +158,7 @@ public class PickingJobQuery
 		@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
 		@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
 
-		public static Facets of(@NonNull PickingJobFacets.PickingJobFacet facet)
+		public static Facets of(@NonNull final PickingJobFacets.PickingJobFacet facet)
 		{
 			final PickingJobFacetGroup group = facet.getGroup();
 			switch (group)
@@ -223,7 +231,11 @@ public class PickingJobQuery
 
 		private boolean isCustomerMatching(final BPartnerId customerId) {return customerIds.isEmpty() || customerIds.contains(customerId);}
 
-		private boolean isDeliveryDateMatching(final PickingJobReference pickingJobReference) {return isDeliveryDateMatching(pickingJobReference.getDeliveryDate().toLocalDate());}
+		private boolean isDeliveryDateMatching(final PickingJobReference pickingJobReference)
+		{
+			final ZonedDateTime deliveryDate = pickingJobReference.getDeliveryDate();
+			return deliveryDate != null && isDeliveryDateMatching(deliveryDate.toLocalDate());
+		}
 
 		private boolean isDeliveryDateMatching(final LocalDate deliveryDay) {return deliveryDays.isEmpty() || deliveryDays.contains(deliveryDay);}
 

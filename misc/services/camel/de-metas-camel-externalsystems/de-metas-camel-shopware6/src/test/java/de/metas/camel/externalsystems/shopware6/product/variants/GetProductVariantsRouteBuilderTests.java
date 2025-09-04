@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -49,6 +49,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -76,7 +77,7 @@ import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteB
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.PROCESS_PRODUCT_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.UPSERT_PRODUCT_PRICE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -107,18 +108,21 @@ public class GetProductVariantsRouteBuilderTests extends CamelTestSupport
 	private final static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
 		final var properties = new Properties();
 		try
 		{
 			properties.load(GetProductVariantsRouteBuilderTests.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Override
@@ -127,12 +131,6 @@ public class GetProductVariantsRouteBuilderTests extends CamelTestSupport
 		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
 		final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
 		return new GetProductsRouteBuilder(processLogger, producerTemplate);
-	}
-
-	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
 	}
 
 	@Test
@@ -175,7 +173,7 @@ public class GetProductVariantsRouteBuilderTests extends CamelTestSupport
 		template.sendBody("direct:" + GetProductsRouteBuilder.GET_PRODUCTS_ROUTE_ID, invokeExternalSystemRequest);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockUpsertProductProcessor.called).isEqualTo(2);
 		assertThat(mockUpsertPriceProcessor.called).isEqualTo(2);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);

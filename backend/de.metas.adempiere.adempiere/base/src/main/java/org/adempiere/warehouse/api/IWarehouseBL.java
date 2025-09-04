@@ -24,6 +24,7 @@ package org.adempiere.warehouse.api;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.location.DocumentLocation;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.organization.ClientAndOrgId;
@@ -44,6 +45,10 @@ import java.util.Set;
 public interface IWarehouseBL extends ISingletonService
 {
 	I_M_Warehouse getById(WarehouseId warehouseId);
+
+	I_M_Locator getLocatorById(@NonNull LocatorId locatorId);
+
+	<T extends I_M_Locator> T getLocatorById(@NonNull LocatorId locatorId, @NonNull Class<T> modelClass);
 
 	/**
 	 * @deprecated please use {@link #getOrCreateDefaultLocatorId(WarehouseId)} instead.
@@ -100,10 +105,24 @@ public interface IWarehouseBL extends ISingletonService
 	OrgId getOrgIdByLocatorRepoId(int locatorId);
 
 	@NonNull
+	Optional<WarehouseId> getOptionalIdByValue(@NonNull String value);
+
+	@NonNull
+	Warehouse getByIdNotNull(@NonNull WarehouseId id);
+
+	void save(@NonNull Warehouse warehouse);
+
+	@NonNull
+	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
+	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull WarehouseId warehouseId);
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull Collection<Integer> locatorIds);
 
 	LocatorQRCode getLocatorQRCode(@NonNull LocatorId locatorId);
+
+	@NonNull
+	ExplainedOptional<LocatorQRCode> getLocatorQRCodeByValue(@NonNull String locatorValue);
 }

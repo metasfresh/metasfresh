@@ -92,6 +92,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -230,7 +231,7 @@ public class JsonPersisterService
 				effectiveSyncAdvise);
 
 		final JsonResponseBPartnerCompositeUpsertItem result = resultBuilder.build();
-		handleExternalReferenceRecords(requestItem, result, orgCode);
+		handleExternalReferenceRecords(requestItem, result, bpartnerComposite.getOrgId());
 
 		handleAlbertaInfo(bpartnerComposite.getOrgId(), effectiveSyncAdvise, requestItem, result);
 
@@ -335,11 +336,11 @@ public class JsonPersisterService
 			bpartnerComposite.getContacts().add(contact);
 			syncOutcome = SyncOutcome.CREATED;
 		}
-		
+
 		contact.addHandle(contactIdentifier.getRawValue()); // always add the handle; we'll need it later, even if the contact existed and was not updated
-		
+
 		syncJsonToContact(jsonContact, contact);
-		
+
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContactByHandle(contactIdentifier.getRawValue());
@@ -721,7 +722,7 @@ public class JsonPersisterService
 		final SyncAdvise syncAdvise = coalesceNotNull(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 		final boolean hasOrgId = bpartnerComposite.getOrgId() != null;
 
-		if (hasOrgId && !syncAdvise.getIfExists().isUpdate())
+		if (hasOrgId && (!syncAdvise.getIfExists().isUpdate() || Check.isBlank(jsonBPartnerComposite.getOrgCode())))
 		{
 			return;
 		}
@@ -1749,6 +1750,12 @@ public class JsonPersisterService
 			location.setPhone(jsonBPartnerLocation.getPhone());
 		}
 
+		// VAT ID
+		if (jsonBPartnerLocation.isVatIdSet())
+		{
+			location.setVatTaxId(VATIdentifier.ofNullable(jsonBPartnerLocation.getVatId()));
+		}
+
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
 		location.setLocationType(locationType);
 	}
@@ -1859,7 +1866,7 @@ public class JsonPersisterService
 	private void handleExternalReferenceRecords(
 			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem result,
-			@Nullable final String orgCode)
+			@NonNull final OrgId orgId)
 	{
 		final Set<JsonRequestExternalReferenceUpsert> externalReferenceCreateReqs = new HashSet<>();
 
@@ -1911,7 +1918,7 @@ public class JsonPersisterService
 
 		for (final JsonRequestExternalReferenceUpsert request : externalReferenceCreateReqs)
 		{
-			externalReferenceRestControllerService.performUpsert(request, orgCode);
+			externalReferenceRestControllerService.performUpsert(request, orgId);
 		}
 	}
 

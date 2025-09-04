@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -41,9 +40,26 @@ import org.compiere.model.I_M_Product;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_CustomerLabelName;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_Description;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_EAN_CU;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_GTIN;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_Ingredients;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsActive;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_ProductNo;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_SeqNo;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_UPC;
+import static org.compiere.model.I_C_BPartner_Product.COLUMNNAME_UsedForVendor;
 
 public class C_BPartner_Product_StepDef
 {
@@ -86,11 +102,7 @@ public class C_BPartner_Product_StepDef
 	@Given("metasfresh contains C_BPartner_Product")
 	public void create_C_BPartner_Product(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			createBPartnerProduct(dataTableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createBPartnerProduct);
 	}
 
 	private void locateBPartnerProductByProductAndBPartner(@NonNull final Map<String, String> tableRow)
@@ -104,27 +116,27 @@ public class C_BPartner_Product_StepDef
 		final BPartnerProduct bPartnerProduct = productRepository.getByIdOrNull(ProductId.ofRepoId(productRecord.getM_Product_ID()), BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID()));
 		assertThat(bPartnerProduct).isNotNull();
 
-		final String bpartnerProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String bpartnerProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		bpartnerProductTable.put(bpartnerProductIdentifier, bPartnerProduct);
 	}
 
 	private void verifyBPartnerProductInfo(@NonNull final Map<String, String> row)
 	{
-		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, I_C_BPartner_Product.COLUMNNAME_IsActive);
-		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(row, I_C_BPartner_Product.COLUMNNAME_SeqNo);
-		final String productNo = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Product.COLUMNNAME_ProductNo);
-		final String description = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Product.COLUMNNAME_Description);
-		final String ean = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Product.COLUMNNAME_EAN_CU);
-		final String gtin = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Product.COLUMNNAME_GTIN);
-		final String customerLabelName = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Product.COLUMNNAME_CustomerLabelName);
-		final String ingredients = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Product.COLUMNNAME_Ingredients);
-		final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnName(row, I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale);
-		final String exclusionFromSaleReason = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason);
-		final boolean isExcludedFromPurchase = DataTableUtil.extractBooleanForColumnName(row, I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase);
-		final String exclusionFromPurchaseReason = DataTableUtil.extractStringOrNullForColumnName(row, I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason);
+		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
+		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(row, COLUMNNAME_SeqNo);
+		final String productNo = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ProductNo);
+		final String description = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Description);
+		final String ean = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_EAN_CU);
+		final String gtin = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_GTIN);
+		final String customerLabelName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_CustomerLabelName);
+		final String ingredients = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Ingredients);
+		final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsExcludedFromSale);
+		final String exclusionFromSaleReason = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_ExclusionFromSaleReason);
+		final boolean isExcludedFromPurchase = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsExcludedFromPurchase);
+		final String exclusionFromPurchaseReason = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_ExclusionFromPurchaseReason);
 
-		final String bpartnerProductIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String bpartnerProductIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		final BPartnerProduct bPartnerProduct = bpartnerProductTable.get(bpartnerProductIdentifier);
 
@@ -142,45 +154,38 @@ public class C_BPartner_Product_StepDef
 		assertThat(bPartnerProduct.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
 	}
 
-	private void createBPartnerProduct(@NonNull final Map<String, String> tableRow)
+	private void createBPartnerProduct(@NonNull final DataTableRow tableRow)
 	{
-		final String bPartnerProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer bPartnerId = bPartnerTable.getOptional(bPartnerIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
-
 		final I_C_BPartner_Product bPartnerProductRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
-
-		bPartnerProductRecord.setM_Product_ID(productId);
-		bPartnerProductRecord.setC_BPartner_ID(bPartnerId);
-
-		final String gtin = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_GTIN);
-
-		if (Check.isNotBlank(gtin))
-		{
-			bPartnerProductRecord.setGTIN(gtin);
-		}
-
-		final String eanCu = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_EAN_CU);
-
-		if (Check.isNotBlank(eanCu))
-		{
-			bPartnerProductRecord.setEAN_CU(eanCu);
-		}
-
+		bPartnerProductRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		bPartnerProductRecord.setUsedForCustomer(true);
 		bPartnerProductRecord.setShelfLifeMinDays(0);
 		bPartnerProductRecord.setShelfLifeMinPct(0);
 
+		final ProductId productId = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
+		bPartnerProductRecord.setM_Product_ID(productId.getRepoId());
+
+		final StepDefDataIdentifier bpartnerIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
+		final BPartnerId bpartnerId = bPartnerTable.getIdOptional(bpartnerIdentifier)
+				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
+		
+		bPartnerProductRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+		
+		bPartnerProductRecord.setUsedForVendor(tableRow.getAsOptionalBoolean(COLUMNNAME_UsedForVendor).orElse(true));
+		bPartnerProductRecord.setIsExcludedFromSale(tableRow.getAsOptionalBoolean(COLUMNNAME_IsExcludedFromSale).orElse(false));
+		tableRow.getAsOptionalString(COLUMNNAME_ExclusionFromSaleReason).ifPresent(bPartnerProductRecord::setExclusionFromSaleReason);
+		bPartnerProductRecord.setIsExcludedFromPurchase(tableRow.getAsOptionalBoolean(COLUMNNAME_IsExcludedFromPurchase).orElse(false));
+		tableRow.getAsOptionalString(COLUMNNAME_ExclusionFromPurchaseReason).ifPresent(bPartnerProductRecord::setExclusionFromPurchaseReason);
+		tableRow.getAsOptionalString(COLUMNNAME_ProductNo).ifPresent(bPartnerProductRecord::setProductNo);
+		tableRow.getAsOptionalString(COLUMNNAME_UPC).ifPresent(bPartnerProductRecord::setUPC);
+
+		bPartnerProductRecord.setIsCurrentVendor(tableRow.getAsOptionalBoolean(COLUMNNAME_IsCurrentVendor).orElse(true));
+		tableRow.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(bPartnerProductRecord::setGTIN);
+		tableRow.getAsOptionalString(COLUMNNAME_EAN_CU).ifPresent(bPartnerProductRecord::setEAN_CU);
+
 		saveRecord(bPartnerProductRecord);
 
-		bpartnerProductTable.put(bPartnerProductIdentifier, ProductRepository.ofBPartnerProductRecord(bPartnerProductRecord));
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Product_ID)
+				.ifPresent(i -> bpartnerProductTable.putOrReplace(i, ProductRepository.fromRecord(bPartnerProductRecord)));
 	}
 }

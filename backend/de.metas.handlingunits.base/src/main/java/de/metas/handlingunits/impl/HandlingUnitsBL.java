@@ -53,6 +53,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -250,6 +251,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean destroyIfEmptyStorage(@NonNull final HuId huIdToDestroy)
+	{
+		final I_M_HU huToDestroy = handlingUnitsRepo.getById(huIdToDestroy);
+		return destroyIfEmptyStorage(huToDestroy);
+	}
+
+	@Override
 	public boolean destroyIfEmptyStorage(@NonNull final I_M_HU huToDestroy)
 	{
 		//
@@ -269,7 +277,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					return null;
 				});
 
-		return destroyed.getValue();
+		return destroyed.getValueNotNull();
 	}
 
 	@Override
@@ -811,28 +819,27 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final I_M_HU_Item parentItem = hu.getM_HU_Item_Parent();
-		if (parentItem == null)
-		{
-			return false;
-		}
+		return isAggregatedTUHolder(parentItem);
+	}
 
-		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
+	public static boolean isAggregatedTUHolder(@Nullable final I_M_HU_Item luItem)
+	{
+		return luItem != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(luItem.getItemType());
 	}
 
 	@Override
 	public QtyTU getTUsCount(@NonNull final I_M_HU tuOrAggregatedTU)
 	{
-		// NOTE: we assume the HU is an TU
+		// NOTE: we assume the HU is a TU
+		final I_M_HU_Item luItem = handlingUnitsRepo.retrieveParentItem(tuOrAggregatedTU);
+		return getTUsCount(luItem);
+	}
 
-		final I_M_HU_Item parentItem = handlingUnitsRepo.retrieveParentItem(tuOrAggregatedTU);
-		if (parentItem != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType()))
-		{
-			return QtyTU.ofBigDecimal(parentItem.getQty());
-		}
-		else
-		{
-			return QtyTU.ONE;
-		}
+	public static QtyTU getTUsCount(@Nullable final I_M_HU_Item luItem)
+	{
+		return isAggregatedTUHolder(luItem)
+				? QtyTU.ofBigDecimal(luItem.getQty())
+				: QtyTU.ONE;
 	}
 
 	@Override
@@ -889,6 +896,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final I_M_HU_PI_Version piVersion = getPIVersion(hu);
 		return piVersion != null ? getPI(piVersion) : null;
+	}
+
+	@NonNull
+	@Override
+	public HuPackingInstructionsId getPIId(final I_M_HU hu)
+	{
+		final I_M_HU_PI_Version piVersion = Check.assumeNotNull(getPIVersion(hu), "PI Version not null for {}", hu);
+		return HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID());
 	}
 
 	@Override
@@ -1111,10 +1126,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return handlingUnitsRepo.createHUQueryBuilder();
 	}
 
+	private IAttributeStorageFactory newHUAttributeStorageFactory()
+	{
+		return attributeStorageFactoryService.createHUAttributeStorageFactory(getStorageFactory(), HUAttributesDAO.instance);
+	}
+
 	@Override
 	public AttributesKey getAttributesKeyForInventory(@NonNull final I_M_HU hu)
 	{
-		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+		final IAttributeStorageFactory attributeStorageFactory = newHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 		return getAttributesKeyForInventory(attributeStorage);
 	}
@@ -1234,9 +1254,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public IAttributeStorage getAttributeStorage(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = getById(huId);
+		return getAttributeStorage(hu);
+	}
+
+	@Override
+	public IAttributeStorage getAttributeStorage(@NonNull final I_M_HU hu)
+	{
+		return newHUAttributeStorageFactory().getAttributeStorage(hu);
+	}
+
+	@Override
 	public ImmutableAttributeSet getImmutableAttributeSet(@NonNull final I_M_HU hu)
 	{
-		return attributeStorageFactoryService.createHUAttributeStorageFactory().getImmutableAttributeSet(hu);
+		return newHUAttributeStorageFactory().getImmutableAttributeSet(hu);
 	}
 
 	@Override

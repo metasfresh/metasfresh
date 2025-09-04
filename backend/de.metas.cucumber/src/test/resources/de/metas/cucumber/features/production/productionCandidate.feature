@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor6
+@ghActions:run_on_executor3
 Feature: Production dispo scenarios
 
   Background:
@@ -11,15 +11,10 @@ Feature: Production dispo scenarios
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
-
-  @Id:S0129.2_140
-  @from:cucumber
-  Scenario: Try to re-open production candidate after it has been closed (S0129.2_140)
-    Given metasfresh contains M_Products:
-      | Identifier | Name                                |
-      | p_1        | trackedProduct_04052022_1           |
-      | p_2        | trackedProduct_component_04052022_1 |
-
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p_1        |
+      | p_2        |
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
       | bom_1      | p_1                     | 2021-04-01 | bomVersions_1                        |
@@ -27,7 +22,11 @@ Feature: Production dispo scenarios
       | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
       | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
-    And metasfresh contains PP_Product_Plannings
+
+  @Id:S0129.2_140
+  @from:cucumber
+  Scenario: Try to re-open production candidate after it has been closed (S0129.2_140)
+    When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_1     | p_1                     | bomVersions_1                            | false        |
 
@@ -45,19 +44,7 @@ Feature: Production dispo scenarios
   @Id:S0129.2_160
   @from:cucumber
   Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed (S0129.2_160)
-    Given metasfresh contains M_Products:
-      | Identifier | Name                                |
-      | p_1        | trackedProduct_04052022_2           |
-      | p_2        | trackedProduct_component_04052022_2 |
-
-    And metasfresh contains PP_Product_BOM
-      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | bom_1      | p_1                     | 2021-04-01 | bomVersions_1                        |
-    And metasfresh contains PP_Product_BOMLines
-      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
-      | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
-    And the PP_Product_BOM identified by bom_1 is completed
-    And metasfresh contains PP_Product_Plannings
+    When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_1     | p_1                     | bomVersions_1                            | false        |
 
@@ -72,19 +59,7 @@ Feature: Production dispo scenarios
   @Id:S0129.2_180
   @from:cucumber
   Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed after the production candidate has been previously processed (S0129.2_180)
-    Given metasfresh contains M_Products:
-      | Identifier | Name                                |
-      | p_1        | trackedProduct_04052022_3           |
-      | p_2        | trackedProduct_component_04052022_3 |
-
-    And metasfresh contains PP_Product_BOM
-      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | bom_1      | p_1                     | 2021-04-01 | bomVersions_1                        |
-    And metasfresh contains PP_Product_BOMLines
-      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
-      | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
-    And the PP_Product_BOM identified by bom_1 is completed
-    And metasfresh contains PP_Product_Plannings
+    When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_1     | p_1                     | bomVersions_1                            | false        |
 
@@ -111,19 +86,7 @@ Feature: Production dispo scenarios
   @Id:S0129.2_190
   @from:cucumber
   Scenario: Production candidate's QtyEntered is lower than QtyProcessed after the production candidate has been previously processed (S0129.2_190)
-    Given metasfresh contains M_Products:
-      | Identifier | Name                                |
-      | p_1        | trackedProduct_04052022_4           |
-      | p_2        | trackedProduct_component_04052022_4 |
-
-    And metasfresh contains PP_Product_BOM
-      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | bom_1      | p_1                     | 2021-04-01 | bomVersions_1                        |
-    And metasfresh contains PP_Product_BOMLines
-      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
-      | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
-    And the PP_Product_BOM identified by bom_1 is completed
-    And metasfresh contains PP_Product_Plannings
+    When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_1     | p_1                     | bomVersions_1                            | false        |
 
@@ -146,5 +109,96 @@ Feature: Production dispo scenarios
     Then update PP_Order_Candidate's qty entered to less than processed expecting exception
       | PP_Order_Candidate_ID.Identifier | QtyEntered |
       | oc_1                             | 2          |
-    
-    
+
+  @flaky
+  @Id:S0129.2_190
+  @from:cucumber
+  Scenario: Reactivate and reduce QTY for order with negative ATP and PreparationDate in the past. Ensure correct qty is used on new PP_Order_Candidate.
+    When metasfresh has date and time 2025-02-25T07:00:00+01:00[Europe/Berlin]
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_1       |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | pl_1       | ps_1               | DE           | EUR           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_1                  | p_1          | 10.0     | PCE      |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | customer   | N        | Y          | ps_1               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | location_1 | customer      | Y               | Y               |
+    #past order
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | o_1        | true    | customer      | 2024-08-01  | 2024-08-01T21:00:00Z | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | o_1        | p_1          | 200        |
+    And the order identified by o_1 is completed
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP  | M_Warehouse_ID |
+      | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200 | -200 | warehouseStd   |
+
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | o_2        | true    | customer      | 2024-09-20  | 2024-08-22T21:00:00Z | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_2       | o_2        | p_1          | 50         |
+    And the order identified by o_2 is completed
+
+    And after not more than 60s, PP_Order_Candidates are found
+      | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
+      | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 250 PCE    | 250 PCE      | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
+
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP   | M_Warehouse_ID | PP_Order_Candidate_ID |
+      | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200  | -200  | warehouseStd   |                       |
+      | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-22T21:00:00Z | 50   | -250  | warehouseStd   |                       |
+      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 250  | 0     | warehouseStd   | oc_1                  |
+      | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2500 | -2500 | warehouseStd   | oc_1                  |
+
+    And the order identified by o_2 is reactivated
+
+    Then after not more than 60s, PP_Order_Candidates are found
+      | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
+      | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 200 PCE    | 200 PCE      | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
+
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP   | M_Warehouse_ID | PP_Order_Candidate_ID |
+      | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200  | -200  | warehouseStd   |                       |
+      | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-22T21:00:00Z | 0    | -200  | warehouseStd   |                       |
+      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 200  | 0     | warehouseStd   | oc_1                  |
+      | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2000 | -2000 | warehouseStd   | oc_1                  |
+
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | ol_2                      | 30             |
+
+    When metasfresh has date and time 2025-02-25T08:00:00+01:00[Europe/Berlin]
+
+    And the order identified by o_2 is completed
+
+    And after not more than 60s, PP_Order_Candidates are found
+      | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
+      | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 200 PCE    | 200 PCE      | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
+      | oc_2       | p_1          | bom_1             | ppln_1                 | 540006        | 30 PCE     | 30 PCE       | 0 PCE        | 2025-02-25T07:00:00Z | 2025-02-25T07:00:00Z | false        | false         |
+
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP   | M_Warehouse_ID | PP_Order_Candidate_ID |
+      | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200  | -200  | warehouseStd   |                       |
+      | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-22T21:00:00Z | 30   | -230  | warehouseStd   |                       |
+      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 200  | -30   | warehouseStd   | oc_1                  |
+      | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2000 | -2000 | warehouseStd   | oc_1                  |
+      | 05/s_1_2   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T07:00:00Z | 30   | -0    | warehouseStd   | oc_2                  |
+      | 06/d_2_2   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T07:00:00Z | 300  | -2300 | warehouseStd   | oc_2                  |

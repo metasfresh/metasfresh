@@ -33,10 +33,10 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 	private boolean showIfDestroyed = false; // legacy-default=false
 
 	// Formatting
-	private final String STR_NewLine = "<br>";
+	private static final String STR_NewLine = "<br>";
 
 	/** HU */
-	private I_M_HU _hu;
+	private final I_M_HU _hu;
 
 	public HUDisplayNameBuilder(final I_M_HU hu)
 	{
@@ -109,8 +109,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 			displayNameBuilder.append(STR_NewLine).append("(").append(escape(destroyedStr)).append(")");
 		}
 
-		final String displayName = displayNameBuilder.toString();
-		return displayName;
+		return displayNameBuilder.toString();
 	}
 
 	private Properties getCtx()
@@ -200,8 +199,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 			piNameRaw = pi != null ? pi.getName() : "?";
 		}
 
-		final String piName = escape(piNameRaw);
-		return piName;
+		return escape(piNameRaw);
 	}
 
 	private static String getAggregateHuPiName(final I_M_HU hu)
@@ -211,6 +209,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 
 		if (parentPIItem == null)
 		{
+			//noinspection ThrowableNotThrown
 			new HUException("Aggregate HU's parent item has no M_HU_PI_Item; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
 			return "?";
 		}
@@ -218,6 +217,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoIdOrNull(parentPIItem.getIncluded_HU_PI_ID());
 		if (includedPIId == null)
 		{
+			//noinspection ThrowableNotThrown
 			new HUException("Aggregate HU's parent item has M_HU_PI_Item without an Included_HU_PI; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
 			return "?";
 		}

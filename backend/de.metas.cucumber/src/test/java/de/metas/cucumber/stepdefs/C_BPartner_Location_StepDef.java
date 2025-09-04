@@ -32,10 +32,13 @@ import de.metas.location.ILocationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -50,6 +53,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
+@RequiredArgsConstructor
 public class C_BPartner_Location_StepDef
 {
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -60,16 +64,6 @@ public class C_BPartner_Location_StepDef
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-	public C_BPartner_Location_StepDef(
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final C_Location_StepDefData locationTable)
-	{
-		this.bPartnerTable = bPartnerTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.locationTable = locationTable;
-	}
 
 	@Given("metasfresh contains C_BPartner_Locations:")
 	public void createC_BPartner_Location(@NonNull final DataTable dataTable)
@@ -145,7 +139,7 @@ public class C_BPartner_Location_StepDef
 			final CountryId countryId = tableRow.getAsOptionalString("C_Country_ID")
 					.map(countryDAO::getCountryIdByCountryCode)
 					.orElse(StepDefConstants.COUNTRY_ID);
-			
+
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(countryId.getRepoId());
 			saveRecord(locationRecord);
@@ -185,8 +179,7 @@ public class C_BPartner_Location_StepDef
 
 		saveRecord(bPartnerLocationRecord);
 
-		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
-		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
+		bPartnerLocationTable.putOrReplace(tableRow.getAsIdentifier(), bPartnerLocationRecord);
 	}
 
 	private void load_bpartner_location(@NonNull final DataTableRow tableRow)
@@ -275,5 +268,35 @@ public class C_BPartner_Location_StepDef
 		}
 
 		saveRecord(locationRecord);
+	}
+
+	@And("validate C_BPartner_Location:")
+	public void validate_C_BPartner_Location(@NonNull final DataTable dataTable)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner_Location bpLocation = bPartnerLocationTable.get(bpLocationIdentifier);
+
+			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
+			softly.assertThat(bpLocation.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(bPartnerRecord.getC_BPartner_ID());
+
+			final String address = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Location.COLUMNNAME_Address);
+			if (Check.isNotBlank(address))
+			{
+				softly.assertThat(bpLocation.getAddress()).as("Address").isEqualTo(address);
+			}
+
+			final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Location.COLUMNNAME_Name);
+			if (Check.isNotBlank(name))
+			{
+				softly.assertThat(bpLocation.getName()).as("Name").isEqualTo(name);
+			}
+		}
+
+		softly.assertAll();
 	}
 }

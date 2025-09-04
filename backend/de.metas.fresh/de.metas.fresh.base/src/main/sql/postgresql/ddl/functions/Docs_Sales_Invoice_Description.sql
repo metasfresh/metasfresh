@@ -10,7 +10,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice
                 documentno         character varying,
                 reference          character varying,
                 dateinvoiced       timestamp WITHOUT TIME ZONE,
-                duedate          timestamp WITH TIME ZONE,
+                duedate            timestamp WITH TIME ZONE,
                 vataxid            character varying,
                 bp_value           character varying,
                 eori               character varying,
@@ -25,10 +25,15 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice
                 sr_email           character varying,
                 printname          character varying,
                 order_docno        text,
+                order_date         text,
                 inout_docno        text,
                 io_movementdate    date,
                 iscreditmemo       character,
-                creditmemo_docno   character varying
+                creditmemo_docno   character varying,
+                offer_documentno   character varying,
+                offer_date         text,
+                warehouse          character varying,
+                projectno          character varying
             )
     STABLE
     LANGUAGE sql
@@ -59,6 +64,7 @@ SELECT i.description                                                            
        srep.email                                                                       AS sr_email,
        COALESCE(dtt.PrintName, dt.PrintName)                                            AS PrintName,
        o.docno                                                                          AS order_docno,
+       o.dateordered                                                                    AS order_date,
        io.docno                                                                         AS inout_docno,
        io.DateFrom                                                                      AS io_movementdate,
        CASE
@@ -66,7 +72,11 @@ SELECT i.description                                                            
                THEN 'Y'
                ELSE 'N'
        END                                                                              AS isCreditMemo,
-       cm.documentno                                                                    AS creditmemo_docNo
+       cm.documentno                                                                    AS creditmemo_docNo,
+       o.offer_documentno                                                               AS offer_documentno,
+       o.offer_date                                                                     AS offer_date,
+       wh.name                                                                          AS warehouse,
+       pr.value                                                                         AS projectno
 FROM C_Invoice i
          JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
          LEFT JOIN AD_User srep ON i.SalesRep_ID = srep.AD_User_ID
@@ -79,10 +89,22 @@ FROM C_Invoice i
          LEFT JOIN LATERAL
     (
     SELECT First_Agg(o.DocumentNo ORDER BY o.DocumentNo) ||
-           CASE WHEN COUNT(o.documentNo) > 1 THEN ' ff.' ELSE '' END AS DocNo
+           CASE WHEN COUNT(o.documentNo) > 1 THEN ' ff.' ELSE '' END      AS DocNo,
+
+           First_Agg(o.dateordered::text ORDER BY o.dateordered) ||
+           CASE WHEN COUNT(o.dateordered) > 1 THEN ' ff.' ELSE '' END     AS dateordered,
+
+           First_Agg(offer.DocumentNo ORDER BY offer.DocumentNo) ||
+           CASE WHEN COUNT(offer.DocumentNo) > 1 THEN ' ff.' ELSE '' END  AS offer_documentno,
+
+           First_Agg(offer.dateordered::text ORDER BY offer.dateordered) ||
+           CASE WHEN COUNT(offer.dateordered) > 1 THEN ' ff.' ELSE '' END AS offer_date
     FROM C_InvoiceLine il
              JOIN C_OrderLine ol ON il.C_OrderLine_ID = ol.C_OrderLine_ID
              JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+
+        -- proposal order
+             LEFT JOIN C_Order offer ON offer.C_Order_ID = o.ref_proposal_id
 
     WHERE il.C_Invoice_ID = record_id
     ) o ON TRUE
@@ -99,7 +121,10 @@ FROM C_Invoice i
     WHERE il.C_Invoice_ID = record_id
     ) io ON TRUE
 
-
+    -- warehouse
+         LEFT JOIN m_warehouse wh ON i.m_warehouse_id = wh.m_warehouse_id
+    -- project
+         LEFT JOIN c_project pr ON i.c_project_id = pr.c_project_id
 WHERE i.C_Invoice_ID = record_id
 
 $$

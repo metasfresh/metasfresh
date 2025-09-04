@@ -44,9 +44,9 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -145,18 +145,24 @@ public interface IProductBL extends ISingletonService
 		return UomId.ofRepoId(getStockUOM(productId).getC_UOM_ID());
 	}
 
+	Map<ProductId, String> getProductNames(@NonNull Set<ProductId> productIds);
+
 	Optional<UomId> getCatchUOMId(ProductId productId);
 
-	I_C_UOM getWeightUOM(I_M_Product product);
+	Optional<Quantity> computeGrossWeight(@NonNull ProductId productId, @NonNull Quantity qty);
 
-	Optional<Quantity> getWeight(ProductId productId);
+	Optional<Quantity> getGrossWeight(ProductId productId, I_C_UOM targetProductUOM);
+
+	Optional<Quantity> getGrossWeight(I_M_Product product, I_C_UOM targetProductUOM);
+
+	Optional<Quantity> getGrossWeight(ProductId productId);
+
+	Optional<Quantity> getNetWeight(@NonNull I_M_Product product);
 
 	/**
-	 * Gets product standard Weight in <code>uomTo</code>.
-	 *
-	 * @return product's standard weight in <code>uomTo</code>
+	 * @return Net Weight for one unit of product in <code>targetProductUOM</code>.
 	 */
-	BigDecimal getWeight(I_M_Product product, I_C_UOM uomTo);
+	Optional<Quantity> getNetWeight(I_M_Product product, I_C_UOM targetProductUOM);
 
 	/**
 	 * Checks if given product is a Trading Product.
@@ -215,7 +221,16 @@ public interface IProductBL extends ISingletonService
 
 	boolean isHaddexProduct(ProductId productId);
 
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
 	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
+	@NonNull
+	AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull ProductId productId);
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
@@ -234,6 +249,8 @@ public interface IProductBL extends ISingletonService
 
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
 
+	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13);
+
 	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
 
 	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId, @Nullable BPartnerId bpartnerId);
@@ -243,5 +260,8 @@ public interface IProductBL extends ISingletonService
 			@NonNull ClientId clientId,
 			@NonNull QueryLimit limit);
 
-	@NonNull List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
+	@NonNull
+	List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
+
+	boolean isExistingValue(@NonNull String value, @NonNull ClientId clientId);
 }

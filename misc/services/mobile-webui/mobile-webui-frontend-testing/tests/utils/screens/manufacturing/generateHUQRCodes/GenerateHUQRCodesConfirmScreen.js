@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, page } from '../../../common';
+import { FAST_ACTION_TIMEOUT, page, VERY_SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { ManufacturingJobScreen } from '../ManufacturingJobScreen';
@@ -12,7 +12,7 @@ export const GenerateHUQRCodesConfirmScreen = {
         await containerElement().waitFor({ timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    confirm: async ({ expectNumberOfHUs, expectNumberOfCopies }) => await test.step(`${NAME} - Confirm print`, async () => {
+    confirm: async ({ expectNumberOfHUs, numberOfHUs, expectNumberOfCopies }) => await test.step(`${NAME} - Confirm print`, async () => {
         if (expectNumberOfHUs != null) {
             await expect(page.getByTestId('numberOfHUs-field')).toHaveValue(`${expectNumberOfHUs}`);
         }
@@ -20,9 +20,14 @@ export const GenerateHUQRCodesConfirmScreen = {
             await expect(page.getByTestId('numberOfCopies-field')).toHaveValue(`${expectNumberOfCopies}`);
         }
 
-        const generatedQRCodesPromise = waitForApiResponse({ urlContains: '/manufacturing/generateHUQRCodes' });
+        if (numberOfHUs != null) {
+            await page.getByTestId('numberOfHUs-field').type(`${numberOfHUs}`);
+        }
+
+        const generatedQRCodesPromise = waitForApiResponse({ urlContains: '/manufacturing/generateHUQRCodes', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
         await page.getByTestId('print-button').tap();
+        await page.getByTestId('print-button').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
         await ManufacturingJobScreen.waitForScreen();
 

@@ -5,6 +5,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "header": {
       "aggregationType": "sales_order",
       "allowPickingAnyHU": false,
+      "anonymousPickHUsOnTheFly": false,
       "customerName": "bpname-3",
       "deliveryBPLocationId": {
         "bpartnerId": 3,
@@ -12,11 +13,14 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       },
       "deliveryDate": "2021-11-02T07:39:16Z",
       "deliveryRenderedAddress": "deliveryRenderedAddress",
+      "displayPickingSlotSuggestions": false,
       "handoverLocationId": {
         "bpartnerId": 3,
         "repoId": 4
       },
       "isAllowPickingAnyHU": false,
+      "isAnonymousPickHUsOnTheFly": false,
+      "isDisplayPickingSlotSuggestions": false,
       "lockedBy": 5,
       "preparationDate": "2021-11-02T07:39:16Z",
       "salesOrderDocumentNo": "docno-2"

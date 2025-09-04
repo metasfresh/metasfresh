@@ -2,6 +2,8 @@
 package de.metas.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.accounts.BPartnerAccountsRepository;
 import de.metas.acct.accounts.BPartnerGroupAccountsRepository;
@@ -68,47 +70,57 @@ import org.compiere.acct.Doc_AllocationHdr;
 import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@Disabled
+@Disabled // COMMENT IT OUT IF YOU WANT TO RUN THIS TEST MANUALLY
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = {
+		StartupListener.class,
+		ShutdownListener.class,
+		ADReferenceService.class, AdRefListRepositoryOverJdbc.class, AdRefTableRepositoryOverJdbc.class,
+})
 public class PostDocumentNow_ManualTest
 {
-	void run()
-	{
-		postC_Invoice(1314888, 1322609);
-		postC_AllocationHdr(
-				1229729
-				, 1234857
-				, 1235398
-				, 1237478
-				, 1238514
-				, 1240544
-				, 1241800
-				, 1242015
-				, 1243294
-		);
-	}
+	private IQueryBL queryBL;
+	private AcctDocRequiredServicesFacade acctDocRequiredServicesFacade;
+	private List<AcctSchema> acctSchemas;
 
-	private final IQueryBL queryBL;
-	private final AcctDocRequiredServicesFacade acctDocRequiredServicesFacade;
-	private final List<AcctSchema> acctSchemas;
-
-	public static void main(String[] args)
-	{
-		new PostDocumentNow_ManualTest().run();
-	}
-
-	PostDocumentNow_ManualTest()
+	@Test
+	public void run()
 	{
 		AdempiereToolsHelper.getInstance().startupMinimal();
-
 		this.queryBL = Services.get(IQueryBL.class);
 		this.acctDocRequiredServicesFacade = newAcctDocRequiredServicesFacade();
 		this.acctSchemas = Services.get(IAcctSchemaDAO.class).getAllByClient(ClientId.METASFRESH);
+
+		postC_Invoice(
+				// 1314888
+				// , 1322609
+				1789039 // generated vendor CM with negative qty invoiced
+				, 1788984 // manually created vendor CM with positive qty invoiced
+				, 1789018 // regular vendor invoice
+
+		);
+		postC_AllocationHdr(
+				// 1229729
+				// , 1234857
+				// , 1235398
+				// , 1237478
+				// , 1238514
+				// , 1240544
+				// , 1241800
+				// , 1242015
+				// , 1243294
+		);
 	}
 
 	private static AcctDocRequiredServicesFacade newAcctDocRequiredServicesFacade()
@@ -176,8 +188,10 @@ public class PostDocumentNow_ManualTest
 				)
 		);
 
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.newInstanceForUnitTesting();
+
 		return new AcctDocRequiredServicesFacade(
-				ModelCacheInvalidationService.newInstanceForUnitTesting(),
+				modelCacheInvalidationService,
 				elementValueService,
 				new GLCategoryRepository(),
 				bankAccountService,
@@ -221,6 +235,9 @@ public class PostDocumentNow_ManualTest
 		for (final I_C_Invoice documentModel : records)
 		{
 			final AcctDocContext context = contextTemplate.documentModel(toAcctDocModel(documentModel)).build();
+			Env.setClientId(Env.getCtx(), context.getDocumentModel().getClientId());
+			Env.setOrgId(Env.getCtx(), context.getDocumentModel().getOrgId());
+
 			final Doc_Invoice doc = new Doc_Invoice(context, orderGroupRepository);
 			doc.post(true, true);
 			System.out.println("Posted: " + documentModel);

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 232226665L;
+	private static final long serialVersionUID = -1314340582L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -371,6 +371,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setGuaranteeDaysMin (final int GuaranteeDaysMin)
+	{
+		set_Value (COLUMNNAME_GuaranteeDaysMin, GuaranteeDaysMin);
+	}
+
+	@Override
+	public int getGuaranteeDaysMin() 
+	{
+		return get_ValueAsInt(COLUMNNAME_GuaranteeDaysMin);
+	}
+
+	@Override
 	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
@@ -515,6 +527,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setIsPurchased (final boolean IsPurchased)
+	{
+		set_Value (COLUMNNAME_IsPurchased, IsPurchased);
+	}
+
+	@Override
+	public boolean isPurchased() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPurchased);
+	}
+
+	@Override
 	public void setIsScalePrice (final boolean IsScalePrice)
 	{
 		set_Value (COLUMNNAME_IsScalePrice, IsScalePrice);
@@ -548,6 +572,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public boolean isStocked() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsStocked);
+	}
+
+	@Override
+	public void setIsUpdateName (final boolean IsUpdateName)
+	{
+		set_Value (COLUMNNAME_IsUpdateName, IsUpdateName);
+	}
+
+	@Override
+	public boolean isUpdateName() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateName);
 	}
 
 	@Override
@@ -986,6 +1022,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setQtyCU_UOM_Code (final @Nullable java.lang.String QtyCU_UOM_Code)
+	{
+		set_Value (COLUMNNAME_QtyCU_UOM_Code, QtyCU_UOM_Code);
+	}
+
+	@Override
+	public java.lang.String getQtyCU_UOM_Code() 
+	{
+		return get_ValueAsString(COLUMNNAME_QtyCU_UOM_Code);
+	}
+
+	@Override
 	public void setQtyCU_UOM_ID (final int QtyCU_UOM_ID)
 	{
 		if (QtyCU_UOM_ID < 1) 
@@ -1224,6 +1272,21 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public java.lang.String getWeightUOM() 
 	{
 		return get_ValueAsString(COLUMNNAME_WeightUOM);
+	}
+
+	@Override
+	public void setWeight_UOM_ID (final int Weight_UOM_ID)
+	{
+		if (Weight_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Weight_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Weight_UOM_ID, Weight_UOM_ID);
+	}
+
+	@Override
+	public int getWeight_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Weight_UOM_ID);
 	}
 
 	@Override

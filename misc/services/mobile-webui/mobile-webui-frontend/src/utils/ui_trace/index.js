@@ -51,9 +51,9 @@ export const traceFunction = (func, properties) => {
     const id = uuidv4();
     let propertiesEffective;
     if (typeof properties === 'function') {
-      propertiesEffective = { id, ...properties(...args) };
+      propertiesEffective = { ...properties(...args), id };
     } else {
-      propertiesEffective = { id, ...properties };
+      propertiesEffective = { ...properties, id };
     }
 
     const prevId = setCurrentEventId(id);

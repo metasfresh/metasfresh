@@ -68,9 +68,10 @@ public class ChangeEDI_ExportStatusHelper
 			case SendingStarted:
 				return ImmutableList.of(EDIExportStatus.Pending);
 			case Pending:
-			case Error:
 				return ImmutableList.of(EDIExportStatus.DontSend);
+			case Error:
 			case Sent:
+			case Invalid:
 				return ImmutableList.of(EDIExportStatus.Pending, EDIExportStatus.DontSend);
 			default:
 				return ImmutableList.of();
@@ -101,7 +102,7 @@ public class ChangeEDI_ExportStatusHelper
 			inOut.setEDI_ExportStatus(targetExportStatus.getCode());
 			inOutDAO.save(inOut);
 		}
-		
+
 		edi.setEDI_ExportStatus(targetExportStatus.getCode());
 		edi.setProcessed(isProcessed);
 		desadvDAO.save(edi);

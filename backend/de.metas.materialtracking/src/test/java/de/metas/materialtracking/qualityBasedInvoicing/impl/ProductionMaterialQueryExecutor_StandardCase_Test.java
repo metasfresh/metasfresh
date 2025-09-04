@@ -35,13 +35,14 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.materialtracking.WaschprobeStandardMasterData;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterialQuery;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test the standard use case:
@@ -73,7 +74,7 @@ public class ProductionMaterialQueryExecutor_StandardCase_Test
 	private IProductionMaterial expectedMaterial_WashedCarrot;
 	private IProductionMaterial expectedMaterial_BigCarrot;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

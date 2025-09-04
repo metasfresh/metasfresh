@@ -43,7 +43,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -87,7 +87,7 @@ public class Helper
 		if (!lockDatabase.getLocks().isEmpty())
 		{
 			lockDatabase.dump();
-			Assert.fail("No locks were expected but we found some."
+			Assertions.fail("No locks were expected but we found some."
 					+ "\n Locked objects info: " + lockDatabase.getLockedObjectsInfo());
 		}
 	}

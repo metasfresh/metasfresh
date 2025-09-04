@@ -1,13 +1,12 @@
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -159,6 +158,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(@NonNull final Set<ShipmentScheduleId> ids)
 	{
+		if (ids.isEmpty()) {return ImmutableMap.of();}
 		final List<I_M_ShipmentSchedule> shipmentSchedules = loadByRepoIdAwares(ids, I_M_ShipmentSchedule.class);
 		return Maps.uniqueIndex(shipmentSchedules, ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()));
 	}
@@ -211,7 +211,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
 				.create()
-				.listIds(ShipmentScheduleId::ofRepoId);
+				.idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
 
 	@Override
@@ -421,7 +421,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 					.setOnlySelection(selectionId)
 					.create()
-					.listIds(ShipmentScheduleId::ofRepoId);
+					.idsAsSet(ShipmentScheduleId::ofRepoId);
 			if (!shipmentScheduleIds.isEmpty())
 			{
 				request = CacheInvalidateMultiRequest.rootRecords(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
@@ -623,7 +623,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
 				.create()
-				.listIds(ShipmentScheduleId::ofRepoId);
+				.idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
 
 	@Override

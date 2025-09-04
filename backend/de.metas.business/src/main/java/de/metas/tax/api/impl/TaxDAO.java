@@ -3,6 +3,7 @@ package de.metas.tax.api.impl;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.annotation.CacheCtx;
@@ -25,8 +26,8 @@ import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.TaxUtils;
 import de.metas.tax.api.TypeOfDestCountry;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
-import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -44,7 +45,6 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -79,6 +79,8 @@ public class TaxDAO implements ITaxDAO
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
+	private final IBPartnerBL bpartnerBL  = Services.get(IBPartnerBL.class);
+
 
 	@Override
 	public Tax getTaxById(final int taxRepoId)
@@ -137,28 +139,22 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
-	public TaxId getDefaultTaxId(final I_C_TaxCategory taxCategory)
+	public Tax getDefaultTax(@NonNull final TaxCategoryId taxCategoryId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(taxCategory);
-		final String trxName = InterfaceWrapperHelper.getTrxName(taxCategory);
-		final I_C_Tax tax;
-
-		final List<I_C_Tax> list = queryBL.createQueryBuilder(I_C_Tax.class, ctx, trxName)
-				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategory.getC_TaxCategory_ID())
+		final List<I_C_Tax> list = queryBL.createQueryBuilderOutOfTrx(I_C_Tax.class)
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategoryId)
 				.addEqualsFilter(I_C_Tax.COLUMNNAME_IsDefault, true)
 				.create()
 				.list();
 		if (list.size() == 1)
 		{
-			tax = list.get(0);
+			return TaxUtils.from(list.get(0));
 		}
 		else
 		{
 			// Error - should only be one default
 			throw new AdempiereException("TooManyDefaults");
 		}
-
-		return TaxId.ofRepoId(tax.getC_Tax_ID());
 	}
 
 	@Override
@@ -391,9 +387,12 @@ public class TaxDAO implements ITaxDAO
 
 		final BPartnerId bpartnerId = taxQuery.getBPartnerId();
 
-		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
+		final VATIdentifier bpVATaxID = Optional.ofNullable( taxQuery.getBPartnerLocationId())
+				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId)
+				.flatMap(bpartnerBL::getVATTaxId)
+				.orElse(null);
 
-		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpartner.getVATaxID());
+		final boolean bPartnerHasTaxCertificate = bpVATaxID != null;
 		loggable.addLog("BPartner has tax certificate={}", bPartnerHasTaxCertificate);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, StringUtils.ofBoolean(bPartnerHasTaxCertificate), null);
 

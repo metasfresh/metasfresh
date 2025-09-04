@@ -36,6 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 
 @EqualsAndHashCode
@@ -113,6 +114,8 @@ public final class QtyTU implements Comparable<QtyTU>
 		return String.valueOf(intValue);
 	}
 
+	public static boolean equals(@Nullable final QtyTU qtyTU1, @Nullable final QtyTU qtyTU2) {return Objects.equals(qtyTU1, qtyTU2);}
+
 	@JsonValue
 	public int toInt()
 	{
@@ -143,14 +146,6 @@ public final class QtyTU implements Comparable<QtyTU>
 
 	public boolean isOne() {return intValue == 1;}
 
-	public QtyTU assertPositive() {return assertPositive("qtyTU");}
-
-	public QtyTU assertPositive(@NonNull String variableName)
-	{
-		Check.assumeGreaterThanZero(intValue, variableName);
-		return this;
-	}
-
 	public QtyTU add(@NonNull final QtyTU toAdd)
 	{
 		if (this.intValue == 0)
@@ -164,18 +159,6 @@ public final class QtyTU implements Comparable<QtyTU>
 		else
 		{
 			return ofInt(this.intValue + toAdd.intValue);
-		}
-	}
-
-	public QtyTU subtractOrZero(final int toSubtract)
-	{
-		if (toSubtract <= 0)
-		{
-			return this;
-		}
-		else
-		{
-			return ofInt(Math.max(this.intValue - toSubtract, 0));
 		}
 	}
 

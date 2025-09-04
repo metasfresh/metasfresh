@@ -174,6 +174,8 @@ const normalizePickingSteps = (steps) => {
 };
 
 const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
+  draftActivityDataStored.customQRCodeFormats = fromActivity.componentProps.customQRCodeFormats;
+
   const fromPickingJob = fromActivity.componentProps.pickingJob;
   draftActivityDataStored.aggregationType = fromPickingJob.aggregationType;
   draftActivityDataStored.pickFromHU = fromPickingJob.pickFromHU;
@@ -184,6 +186,7 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.isAllowNewTU = fromPickingJob.allowNewTU;
   draftActivityDataStored.isAllowSkippingRejectedReason = fromPickingJob.allowSkippingRejectedReason;
   draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.showPromptWhenOverPicking;
+  draftActivityDataStored.isAnonymousPickHUsOnTheFly = fromPickingJob.anonymousPickHUsOnTheFly;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
   //

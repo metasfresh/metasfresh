@@ -125,6 +125,11 @@
             <version>${metasfresh.version}</version>
         </dependency>
         <dependency>
+            <groupId>de.metas.hu_consolidation</groupId>
+            <artifactId>de.metas.hu_consolidation.mobile</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
             <groupId>de.metas.distribution</groupId>
             <artifactId>de.metas.distribution.rest-api</artifactId>
             <version>${metasfresh.version}</version>

@@ -4,55 +4,52 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.impexp.ActualImportRecordsResult;
-import de.metas.impexp.DataImportRunId;
-import de.metas.impexp.config.DataImportConfigId;
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.ImportRecordsRequest;
 import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.ImportProcessResult.ImportProcessResultCollector;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemChunkProcessorAdapter;
-import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
+import org.adempiere.util.api.Params;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReferenceSelection;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Base implementation of {@link IImportProcess}.
@@ -63,31 +60,38 @@ import java.util.Set;
  * @author tsa
  */
 public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
-		implements IImportProcess<ImportRecordType>
+		implements IImportProcess<ImportRecordType>, ImportRecordLoader<ImportRecordType>
 {
 	// services
-	private final transient Logger logger = LogManager.getLogger(getClass());
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final DBFunctionsRepository dbFunctionsRepo = SpringContextHolder.instance.getBean(DBFunctionsRepository.class);
-	private final ImportTableDescriptorRepository importTableDescriptorRepo = SpringContextHolder.instance.getBean(ImportTableDescriptorRepository.class);
+	@NonNull private final transient Logger logger = LogManager.getLogger(getClass());
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
+	@NonNull private final DBFunctionsRepository dbFunctionsRepo = SpringContextHolder.instance.getBean(DBFunctionsRepository.class);
+	@NonNull private final ImportTableDescriptorRepository importTableDescriptorRepo = SpringContextHolder.instance.getBean(ImportTableDescriptorRepository.class);
+	@NonNull private final ImportRecordsAsyncExecutor asyncImportScheduler = SpringContextHolder.instance.getBean(ImportRecordsAsyncExecutor.class);
+
+	private static final int LOG_PROGRESS_EACH_N_ROWS = 100;
 
 	//
 	// Parameters
-	private Properties _ctx;
-	private ClientId clientId;
+	@NonNull private Properties _ctx = Env.getCtx();
+	@Nullable private ClientId clientId;
 	private Boolean validateOnly;
 	private boolean completeDocuments;
-	private IParams _parameters = IParams.NULL;
-	private ILoggable loggable = Loggables.getLoggableOrLogger(logger, Level.INFO);
-	private TableRecordReferenceSet selectedRecordRefs;
+	@NonNull private Params _parameters = Params.EMPTY;
+	@NonNull private ILoggable loggable = Loggables.getLoggableOrLogger(logger, Level.INFO);
+	@Nullable private TableRecordReferenceSelection selectedRecordRefs;
+	private boolean async;
+	@NonNull private QueryLimit limit = QueryLimit.NO_LIMIT;
+	@Nullable private UserId notifyUserId;
 
+	//
+	// State
 	private ImportProcessResultCollector resultCollector;
-
-	private ImportTableDescriptor _importTableDescriptor; // lazy
-	private DBFunctions dbFunctions; // lazy
-	private PInstanceId selectionId; // lazy
-	private ImportRecordsSelection importRecordsSelection; // lazy
+	private ImportSource<ImportRecordType> _importSource; // lazy
+	private int countImportRecordsConsideredLastLogged = 0;
 
 	private void assertNotStarted()
 	{
@@ -106,11 +110,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		return this;
 	}
 
-	public final Properties getCtx()
-	{
-		Check.assumeNotNull(_ctx, "_ctx not null");
-		return _ctx;
-	}
+	public final Properties getCtx() {return Check.assumeNotNull(_ctx, "_ctx not null");}
 
 	@Override
 	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> clientId(@NonNull final ClientId clientId)
@@ -136,11 +136,11 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 	{
 		assertNotStarted();
 
-		this._parameters = params;
+		this._parameters = Params.copyOf(params);
 		return this;
 	}
 
-	protected final IParams getParameters()
+	protected final Params getParameters()
 	{
 		return _parameters;
 	}
@@ -163,16 +163,6 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		return this;
 	}
 
-	private DBFunctions getDbFunctions()
-	{
-		DBFunctions dbFunctions = this.dbFunctions;
-		if (dbFunctions == null)
-		{
-			dbFunctions = this.dbFunctions = dbFunctionsRepo.retrieveByTableName(getImportTableName());
-		}
-		return dbFunctions;
-	}
-
 	@Override
 	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> setLoggable(@NonNull final ILoggable loggable)
 	{
@@ -182,6 +172,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		return this;
 	}
 
+	@NotNull
 	protected final ILoggable getLoggable()
 	{
 		return loggable;
@@ -196,6 +187,11 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		}
 
 		return getParameters().getParameterAsBool(PARAM_IsValidateOnly);
+	}
+
+	private boolean isImportData()
+	{
+		return !isValidateOnly();
 	}
 
 	protected final boolean isCompleteDocuments()
@@ -217,35 +213,40 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 			throw new AdempiereException("No import records: " + selectedRecordRefs);
 		}
 
-		this.selectionId = null;
-		this.selectedRecordRefs = selectedRecordRefs;
+		this.selectedRecordRefs = TableRecordReferenceSelection.ofRecordRefs(selectedRecordRefs);
 		return this;
 	}
 
 	@Override
-	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> selectedRecords(@NonNull final PInstanceId selectionId)
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> selectedRecords(@Nullable final PInstanceId selectionId)
 	{
 		assertNotStarted();
-
-		this.selectionId = selectionId;
-		this.selectedRecordRefs = null;
+		this.selectedRecordRefs = selectionId != null ? TableRecordReferenceSelection.ofSelectionId(selectionId) : null;
 		return this;
 	}
 
-	private PInstanceId getOrCreateSelectionId()
+	@Override
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> async(final boolean async)
 	{
-		if (selectionId != null)
-		{
-			return selectionId;
-		}
+		assertNotStarted();
+		this.async = async;
+		return this;
+	}
 
-		if (selectedRecordRefs != null)
-		{
-			selectionId = DB.createT_Selection(selectedRecordRefs, ITrx.TRXNAME_None);
-			return selectionId;
-		}
+	@Override
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> limit(@NonNull QueryLimit limit)
+	{
+		assertNotStarted();
+		this.limit = limit;
+		return this;
+	}
 
-		return getParameters().getParameterAsId(PARAM_Selection_ID, PInstanceId.class);
+	@Override
+	public final ImportProcessTemplate<ImportRecordType, ImportGroupKey> notifyUserId(@Nullable UserId notifyUserId)
+	{
+		assertNotStarted();
+		this.notifyUserId = notifyUserId;
+		return this;
 	}
 
 	protected final boolean isInsertOnly()
@@ -258,46 +259,58 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		return getParameters().getParameterAsBool(PARAM_DeleteOldImported);
 	}
 
-	private ImportTableDescriptor getImportTableDescriptor()
+	private ImportSource<ImportRecordType> getImportSource()
 	{
-		ImportTableDescriptor importTableDescriptor = this._importTableDescriptor;
-		if (importTableDescriptor == null)
+		ImportSource<ImportRecordType> importSource = this._importSource;
+		if (importSource == null)
 		{
-			importTableDescriptor = this._importTableDescriptor = importTableDescriptorRepo.getByTableName(getImportTableName());
+			importSource = this._importSource = createInputSource();
 		}
-		return importTableDescriptor;
+		return importSource;
 	}
 
-	protected final String getImportKeyColumnName()
+	@VisibleForTesting
+	protected ImportSource<ImportRecordType> createInputSource()
 	{
-		return getImportTableDescriptor().getKeyColumnName();
+		final PInstanceId mainSelectionId;
+		if (selectedRecordRefs != null)
+		{
+			mainSelectionId = selectedRecordRefs.map(new TableRecordReferenceSelection.CaseMapper<PInstanceId>()
+			{
+				@Override
+				public PInstanceId selectionId(@NonNull final PInstanceId selectionId) {return selectionId;}
+
+				@Override
+				public PInstanceId recordRefs(@NonNull final TableRecordReferenceSet recordRefs)
+				{
+					return DB.createT_Selection(recordRefs, ITrx.TRXNAME_None);
+				}
+			});
+		}
+		else
+		{
+			mainSelectionId = getParameters().getParameterAsId(PARAM_Selection_ID, PInstanceId.class);
+		}
+
+		final String importTableName = getImportTableName();
+		return SqlImportSource.<ImportRecordType>builder()
+				.queryBL(queryBL)
+				.errorManager(errorManager)
+				.loggable(loggable)
+				.tableDescriptor(importTableDescriptorRepo.getByTableName(importTableName))
+				.recordLoader(this)
+				.dbFunctions(dbFunctionsRepo.retrieveByTableName(importTableName))
+				.importRecordDefaultValues(getImportTableDefaultValues())
+				.importOrderBySql(getImportOrderBySql())
+				.clientId(getClientId())
+				.selectionId(mainSelectionId)
+				.limit(limit)
+				.build();
 	}
 
 	protected abstract String getTargetTableName();
 
-	/**
-	 * @return SQL WHERE clause to filter records that are candidates for import; <b>please prefix your where clause with " AND "</b>
-	 */
-	protected final ImportRecordsSelection getImportRecordsSelection()
-	{
-		ImportRecordsSelection importRecordsSelection = this.importRecordsSelection;
-		if (importRecordsSelection == null)
-		{
-			importRecordsSelection = this.importRecordsSelection = buildImportRecordsSelection();
-			logger.debug("Using selection: {}", importRecordsSelection);
-		}
-		return importRecordsSelection;
-	}
-
-	private ImportRecordsSelection buildImportRecordsSelection()
-	{
-		return ImportRecordsSelection.builder()
-				.importTableName(getImportTableName())
-				.importKeyColumnName(getImportKeyColumnName())
-				.clientId(getClientId())
-				.selectionId(getOrCreateSelectionId())
-				.build();
-	}
+	protected final ImportRecordsSelection getImportRecordsSelection() {return getImportSource().getSelection();}
 
 	protected final ImportProcessResultCollector getResultCollector()
 	{
@@ -308,6 +321,8 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		return resultCollector;
 	}
 
+	private boolean isRunningInAsyncWorkpackage() {return limit.isLimited();}
+
 	@Override
 	public final ImportProcessResult run()
 	{
@@ -315,101 +330,105 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		{
 			throw new AdempiereException("Process already started: " + this);
 		}
-		resultCollector = ImportProcessResult.newCollector(getTargetTableName())
-				.importTableName(getImportTableName());
+		resultCollector = ImportProcessResult.newCollector(getTargetTableName()).importTableName(getImportTableName());
 
 		// Assume we are not running in another transaction because that could introduce deadlocks,
 		// because we are creating the transactions here.
 		trxManager.assertThreadInheritedTrxNotExists();
 
+		loggable.addLog("AD_Client_ID: " + getClientId().getRepoId());
+		loggable.addLog("ValidateOnly: " + validateOnly);
+		loggable.addLog("CompleteDocuments: " + completeDocuments);
+		loggable.addLog("SelectedRecordRefs: " + selectedRecordRefs);
+		loggable.addLog("Async: " + async);
+		loggable.addLog("Limit: " + limit);
+		loggable.addLog("NotifyUserId: " + UserId.toRepoId(notifyUserId));
+
 		//
-		// Delete old imported records (out of trx)
-		if (isDeleteOldImported())
+		// Case: asked to enqueue the data to import for asynchronous processing
+		if (async)
 		{
-			final int countImportRecordsDeleted = deleteImportRecords(ImportDataDeleteRequest.builder()
-					.mode(ImportDataDeleteMode.ONLY_IMPORTED)
-					.importTableName(getImportTableName())
-					.build());
-			resultCollector.setCountImportRecordsDeleted(countImportRecordsDeleted);
-			loggable.addLog("Deleted Old Imported = {}", countImportRecordsDeleted);
+			prepareBeforeImporting();
+			scheduleAsync();
 		}
-
 		//
-		// Reset standard columns (out of trx)
-		resetStandardColumns();
-
-		//
-		// Update and validate
-		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_BEFORE_VALIDATE);
-		trxManager.runInNewTrx(this::updateAndValidateImportRecords);
-		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_AFTER_VALIDATE);
-		if (isValidateOnly())
+		// Case: called by asynchronous processor to import a batch of data
+		else if (isRunningInAsyncWorkpackage())
 		{
-			return resultCollector.toResult();
+			// NOTE: in this case we assume the data preparation was already performed for the main selection before enqueuing
+			runNow();
 		}
-
 		//
-		// Actual import (allow the method to manage the transaction)
-		importData();
-
-		//
-		// run whatever after import code
-		afterImport();
-
-		//
-		runSQLAfterAllImport();
+		// Case: called to directly import the data now
+		else
+		{
+			prepareBeforeImporting();
+			runNow();
+		}
 
 		final ImportProcessResult result = resultCollector.toResult();
-		loggable.addLog("" + resultCollector);
+		loggable.addLog(result.getSummary());
 		return result;
 	}
 
-	@Override
-	public int deleteImportRecords(@NonNull final ImportDataDeleteRequest request)
+	private void scheduleAsync()
 	{
-		final StringBuilder sql = new StringBuilder("DELETE FROM " + getImportTableName() + " WHERE 1=1");
+		final ImportSource<ImportRecordType> importSource = getImportSource();
+		importSource.clearErrorsForMainSelection();
 
-		//
-		sql.append("\n /* standard import filter */ ").append(getImportRecordsSelection().toSqlWhereClause());
+		asyncImportScheduler.schedule(ImportRecordsRequest.builder()
+				.importTableName(getImportTableName())
+				.clientId(getClientId())
+				.selectionId(getImportSource().getMainSelectionId())
+				.notifyUserId(notifyUserId)
+				.limit(limit)
+				.completeDocuments(isCompleteDocuments())
+				.additionalParameters(getParameters())
+				.build());
 
-		//
-		// Delete mode filters
-		final boolean appendViewSqlWhereClause;
-		final ImportDataDeleteMode mode = request.getMode();
-		if (ImportDataDeleteMode.ONLY_SELECTED.equals(mode))
+		loggable.addLog("Scheduled next workpackage");
+	}
+
+	private void prepareBeforeImporting()
+	{
+		final ImportSource<ImportRecordType> importSource = getImportSource();
+
+		if (isDeleteOldImported())
 		{
-			appendViewSqlWhereClause = false;
-			if (!Check.isEmpty(request.getSelectionSqlWhereClause(), true))
-			{
-				sql.append("\n /* selection */ AND ").append(request.getSelectionSqlWhereClause());
-			}
+			int countDeleted = importSource.deleteImportedRecordsOfMainSelection();
+			getResultCollector().setCountImportRecordsDeleted(countDeleted);
 		}
-		else if (ImportDataDeleteMode.ALL.equals(mode))
+
+		importSource.clearErrorsForMainSelection();
+	}
+
+	private void runNow()
+	{
+		final ImportSource<ImportRecordType> importSource = getImportSource();
+		if (importSource.isEmpty())
 		{
-			// allow to delete ALL for current selection
-			appendViewSqlWhereClause = true;
+			loggable.addLog("No more records no import");
+			return;
 		}
-		else if (ImportDataDeleteMode.ONLY_IMPORTED.equals(mode))
+
+		importSource.resetStandardColumns();
+		updateAndValidateImportRecords();
+		importDataIfNeeded();
+
+		if (limit.isLimited() && limit.isLessThanOrEqualTo(resultCollector.getCountImportRecordsConsidered()))
 		{
-			appendViewSqlWhereClause = true;
-			sql.append("\n /* only imported */ AND ").append(ImportTableDescriptor.COLUMNNAME_I_IsImported).append("='Y'");
+			scheduleAsync();
 		}
 		else
 		{
-			throw new AdempiereException("Unknown mode: " + mode);
+			loggable.addLog("Import done");
 		}
+	}
 
-		//
-		// View filter
-		if (appendViewSqlWhereClause
-				&& !Check.isEmpty(request.getViewSqlWhereClause(), true))
-		{
-			sql.append("\n /* view */ AND (").append(request.getViewSqlWhereClause()).append(")");
-		}
-
-		//
-		// Delete
-		return DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	@Override
+	public final int deleteImportRecords(@NonNull final ImportDataDeleteRequest request)
+	{
+		return getImportSource().deleteImportRecords(request);
 	}
 
 	/**
@@ -420,61 +439,52 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		return ImmutableMap.of();
 	}
 
-	/**
-	 * Reset standard columns (Client, Org, IsActive, Created/Updated).
-	 * <p>
-	 * Called before starting to validate.
-	 */
-	protected void resetStandardColumns()
+	private void updateAndValidateImportRecords()
 	{
-		final StringBuilder sql = new StringBuilder("UPDATE " + getImportTableName()
-				+ " SET AD_Client_ID = COALESCE (AD_Client_ID, ").append(getClientId().getRepoId()).append("),"
-				+ " AD_Org_ID = COALESCE (AD_Org_ID, 0),"
-				+ " IsActive = COALESCE (IsActive, 'Y'),"
-				+ " Created = COALESCE (Created, now()),"
-				+ " CreatedBy = COALESCE (CreatedBy, 0),"
-				+ " Updated = COALESCE (Updated, now()),"
-				+ " UpdatedBy = COALESCE (UpdatedBy, 0),"
-				+ ImportTableDescriptor.COLUMNNAME_I_ErrorMsg + " = ' ',"
-				+ ImportTableDescriptor.COLUMNNAME_I_IsImported + "= 'N' ");
-		final List<Object> sqlParams = new ArrayList<>();
-
-		for (final Map.Entry<String, Object> defaultValueEntry : getImportTableDefaultValues().entrySet())
-		{
-			final String columnName = defaultValueEntry.getKey();
-			final Object value = defaultValueEntry.getValue();
-
-			sql.append("\n, ").append(columnName).append("=COALESCE(").append(columnName).append(", ?)");
-			sqlParams.add(value);
-		}
-
-		sql.append("\n WHERE (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) ")
-				.append(" ").append(getImportRecordsSelection().toSqlWhereClause());
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(),
-															   sqlParams.toArray(),
-															   ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Reset={}", no);
-
+		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_BEFORE_VALIDATE);
+		trxManager.runInNewTrx(this::updateAndValidateImportRecordsImpl);
+		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_AFTER_VALIDATE);
+		loggable.addLog("Records were updated and validated - " + resultCollector.toResult().getSummary());
 	}
 
 	/**
 	 * Prepare data import: fill missing fields (if possible) and validate the records.
 	 */
-	protected abstract void updateAndValidateImportRecords();
+	protected abstract void updateAndValidateImportRecordsImpl();
 
 	protected abstract ImportGroupKey extractImportGroupKey(final ImportRecordType importRecord);
 
 	/**
 	 * Actual data import.
 	 */
-	private void importData()
+	private void importDataIfNeeded()
 	{
-		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
+		if (!isImportData())
+		{
+			loggable.addLog("Skip importing the data");
+			return;
+		}
 
+		//
+		// Actual import (allow the method to manage the transaction)
+		newImportRecordsExecutor().execute(retrieveRecordsToImport());
+		logCurrentProgress(true);
+
+		//
+		// run whatever after import code
+		afterImport();
+
+		//
+		getImportSource().runSQLAfterAllImport();
+
+	}
+
+	private ITrxItemProcessorExecutor<ImportRecordType, Void> newImportRecordsExecutor()
+	{
 		final IMutable<Object> stateHolder = new Mutable<>();
 		final Mutable<ImportGroup<ImportGroupKey, ImportRecordType>> currentImportGroupHolder = new Mutable<>();
 
-		trxItemProcessorExecutorService
+		return trxItemProcessorExecutorService
 				.<ImportRecordType, Void>createExecutor()
 				.setOnItemErrorPolicy(OnItemErrorPolicy.CancelChunkAndRollBack)
 				.setExceptionHandler(new FailTrxItemExceptionHandler()
@@ -483,14 +493,14 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 					public void onCompleteChunkError(final Throwable ex)
 					{
 						// do nothing.
-						// the error will be handled in "afterCompleteChunkError" method
+						// the error will be handled in the "afterCompleteChunkError" method
 					}
 
 					@Override
 					public void afterCompleteChunkError(final Throwable ex)
 					{
-						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
-						markAsError(currentGroup, ex);
+						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValueNotNull();
+						onImportError(currentGroup, ex);
 					}
 				})
 				.setProcessor(new TrxItemChunkProcessorAdapter<ImportRecordType, Void>()
@@ -505,7 +515,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 					@Override
 					public boolean isSameChunk(final ImportRecordType importRecord)
 					{
-						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValueNotNull();
 						final ImportGroupKey groupKey = extractImportGroupKey(importRecord);
 						return Objects.equals(currentGroup.getGroupKey(), groupKey);
 					}
@@ -513,48 +523,25 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 					@Override
 					public void process(final ImportRecordType importRecord)
 					{
-						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValueNotNull();
 						currentGroup.addImportRecord(importRecord);
 					}
 
 					@Override
 					public void completeChunk()
 					{
-						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValueNotNull();
 						importGroup(currentGroup, stateHolder);
 					}
-
-					@Override
-					public void cancelChunk()
-					{
-						// nothing
-					}
 				})
-				//
-				.process(retrieveRecordsToImport());
+				.build();
 	}
 
 	@VisibleForTesting
 	protected Iterator<ImportRecordType> retrieveRecordsToImport()
 	{
-		final Properties ctx = Env.getCtx();
-		final String sql = buildSqlSelectRecordsToImport();
-
-		return IteratorUtils.asIterator(new AbstractPreparedStatementBlindIterator<ImportRecordType>()
-		{
-
-			@Override
-			protected PreparedStatement createPreparedStatement()
-			{
-				return DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			}
-
-			@Override
-			protected ImportRecordType fetch(final ResultSet rs) throws SQLException
-			{
-				return retrieveImportRecord(ctx, rs);
-			}
-		});
+		final ImportSource<ImportRecordType> importSource = getImportSource();
+		return importSource.retrieveRecordsToImport();
 	}
 
 	private void importGroup(
@@ -571,19 +558,14 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		final ImportProcessResultCollector overallResultCollector = getResultCollector();
 		try
 		{
-			final ImmutableList<ImportRecordType> importRecordsList = importGroup.getImportRecords();
-			overallResultCollector.addCountImportRecordsConsidered(importRecordsList.size());
+			overallResultCollector.addCountImportRecordsConsidered(importGroup.size());
 
 			final ImportGroupResult importGroupResult = importRecords(
 					importGroup.getGroupKey(),
-					importRecordsList,
+					importGroup.getImportRecords(),
 					stateHolder);
 
-			for (final ImportRecordType importRecord : importRecordsList)
-			{
-				markImported(importRecord);
-				runSQLAfterRowImport(importRecord); // run after markImported because we need the recordId saved
-			}
+			onImportSuccess(importGroup);
 
 			overallResultCollector.addInsertsIntoTargetTable(importGroupResult.getCountInserted());
 			overallResultCollector.addUpdatesIntoTargetTable(importGroupResult.getCountUpdated());
@@ -592,106 +574,35 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
-	}
-
-	private String buildSqlSelectRecordsToImport()
-	{
-		final String whereClause = getImportRecordsSelection().toSqlWhereClause();
-		final StringBuilder sql = new StringBuilder("SELECT * FROM " + getImportTableName() + " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N' ").append(whereClause);
-
-		// ORDER BY
-		sql.append(" ORDER BY ");
-		final String sqlOrderBy = getImportOrderBySql();
-		if (!Check.isEmpty(sqlOrderBy, true))
+		finally
 		{
-			sql.append(sqlOrderBy);
+			logCurrentProgress(false);
 		}
-		else
-		{
-			sql.append(getImportKeyColumnName());
-		}
-
-		return sql.toString();
 	}
 
 	protected abstract String getImportOrderBySql();
-
-	protected abstract ImportRecordType retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException;
 
 	protected abstract ImportGroupResult importRecords(
 			final ImportGroupKey groupKey,
 			final List<ImportRecordType> importRecords,
 			final IMutable<Object> stateHolder) throws Exception;
 
-	@VisibleForTesting
-	protected void markAsError(
-			@NonNull final ImportGroup<ImportGroupKey, ImportRecordType> importGroup,
-			@NonNull final Throwable exception)
+	private void onImportSuccess(@NonNull final ImportGroup<ImportGroupKey, ImportRecordType> importGroup)
 	{
-		final ImportTableDescriptor importTableDescriptor = getImportTableDescriptor();
-		final String importTableName = importTableDescriptor.getTableName();
-		final String keyColumnName = importTableDescriptor.getKeyColumnName();
-		final Set<Integer> importRecordIds = importGroup.getImportRecordIds();
+		final ImportSource<ImportRecordType> importSource = getImportSource();
 
-		final ArrayList<Object> sqlParams = new ArrayList<>();
-		final StringBuilder sql = new StringBuilder("UPDATE " + importTableName + " SET ");
-
-		// I_IsImported
-		sql.append(ImportTableDescriptor.COLUMNNAME_I_IsImported + "=?");
-		sqlParams.add("E");
-
-		// I_ErrorMsg
-		final String errorMsg = AdempiereException.extractMessage(exception);
+		final ImmutableList<ImportRecordType> importRecords = importGroup.getImportRecords();
+		for (final ImportRecordType importRecord : importRecords)
 		{
-			sql.append(", " + ImportTableDescriptor.COLUMNNAME_I_ErrorMsg + "=I_ErrorMsg || ?");
-			sqlParams.add(Check.isEmpty(errorMsg, true) ? "" : errorMsg + ", ");
+			markImported(importRecord);
 		}
 
-		// AD_Issue_ID
-		final AdIssueId adIssueId = errorManager.createIssue(exception);
-		if (importTableDescriptor.getAdIssueIdColumnName() != null)
+		// run after markImported because we need the recordId saved
+		for (final ImportRecordType importRecord : importRecords)
 		{
-			sql.append(", ").append(importTableDescriptor.getAdIssueIdColumnName()).append("=?");
-			sqlParams.add(adIssueId);
+			importSource.runSQLAfterRowImport(importRecord);
 		}
-
-		//
-		// WHERE clause
-		sql.append(" WHERE ").append(DB.buildSqlList(keyColumnName, importRecordIds));
-
-		//
-		// Execute
-		DB.executeUpdateAndThrowExceptionOnFail(
-				sql.toString(),
-				sqlParams.toArray(),
-				ITrx.TRXNAME_ThreadInherited,
-				0, // no timeOut
-				null);
-
-		// just in case some BL wants to get values from it
-		importGroup.getImportRecords().forEach(InterfaceWrapperHelper::markStaled);
-
-		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
-				ITrx.TRXNAME_ThreadInherited,
-				CacheInvalidateMultiRequest.fromTableNameAndRecordIds(importTableName, importRecordIds));
-
-		getResultCollector().actualImportError(ActualImportRecordsResult.Error.builder()
-				.message(errorMsg)
-				.adIssueId(adIssueId)
-				.affectedImportRecordsCount(importRecordIds.size())
-				.build());
-
 	}
-
-	// protected final int markNotImportedAllWithErrors()
-	// {
-	// 	final String sql = "UPDATE " + getImportTableName()
-	// 			+ " SET " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N', Updated=now() "
-	// 			+ " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' "
-	// 			+ " " + getImportRecordsSelection().toSqlWhereClause();
-	// 	final int countNotImported = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
-	// 	return countNotImported >= 0 ? countNotImported : 0;
-	// }
 
 	protected void markImported(final ImportRecordType importRecord)
 	{
@@ -705,50 +616,27 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 	{
 	}
 
-	private void runSQLAfterAllImport()
+	private void onImportError(
+			@NonNull final ImportGroup<ImportGroupKey, ImportRecordType> importGroup,
+			@NonNull final Throwable exception)
 	{
+		final ImportSource<ImportRecordType> importSource = getImportSource();
+		final ActualImportRecordsResult.Error error = importSource.markAsError(importGroup.getImportRecordIds(), exception);
 
-		final ImportRecordType importRecord;
-		final List<DBFunction> functions = getDbFunctions().getAvailableAfterAllFunctions();
-		if (functions.isEmpty())
-		{
-			return;
-		}
+		importGroup.markImportRecordsAsStale(); // just in case some BL wants to get values from it
+		getResultCollector().actualImportError(error);
 
-		final DataImportRunId dataImportRunId = extractDataImporRunIdOrNull();
-		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportRunId));
 	}
 
-	private void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
+	private void logCurrentProgress(boolean force)
 	{
-		final List<DBFunction> functions = getDbFunctions().getAvailableAfterRowFunctions();
-		if (functions.isEmpty())
+		final int countImportRecordsConsidered = getResultCollector().getCountImportRecordsConsidered();
+		if (force
+				|| (countImportRecordsConsidered - countImportRecordsConsideredLastLogged) >= LOG_PROGRESS_EACH_N_ROWS)
 		{
-			return;
+			loggable.addLog("Progress: " + getResultCollector().toResult().getSummary());
+			loggable.flush();
+			countImportRecordsConsideredLastLogged = countImportRecordsConsidered;
 		}
-
-		final DataImportConfigId dataImportConfigId = extractDataImportConfigIdOrNull(importRecord);
-		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
-		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportConfigId, recordId.orElse(0)));
-	}
-
-	private DataImportConfigId extractDataImportConfigIdOrNull(@NonNull final ImportRecordType importRecord)
-	{
-		final ImportTableDescriptor importTableDescriptor = getImportTableDescriptor();
-		if (importTableDescriptor.getDataImportConfigIdColumnName() == null)
-		{
-			return null;
-		}
-
-		final Optional<Integer> value = InterfaceWrapperHelper.getValue(importRecord, importTableDescriptor.getDataImportConfigIdColumnName());
-		return value.map(DataImportConfigId::ofRepoIdOrNull).orElse(null);
-	}
-
-	private DataImportRunId extractDataImporRunIdOrNull()
-	{
-		final String whereClause = getImportRecordsSelection().toSqlWhereClause();
-		final StringBuilder sql = new StringBuilder("SELECT C_DataImport_Run_id FROM " + getImportTableName() + " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='Y' ").append(whereClause);
-
-		return DataImportRunId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql.toString()));
 	}
 }

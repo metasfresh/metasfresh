@@ -2,7 +2,7 @@ package de.metas.workflow.rest_api.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import de.metas.global_qrcodes.PrintableQRCode;
+import de.metas.scannable_code.PrintableScannedCode;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -25,22 +26,22 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 {
 	@NonNull private final ImmutableList<WorkflowLauncher> launchers;
 	@Getter @NonNull private final ImmutableList<OrderBy> orderByFields;
-	@Getter @Nullable private final PrintableQRCode filterByQRCode;
+	@Getter @Nullable private final PrintableScannedCode filterByQRCode;
 
 	@Getter
 	@NonNull private final Instant timestamp;
 
 	@Builder
 	private WorkflowLaunchersList(
-			@NonNull final ImmutableList<WorkflowLauncher> launchers,
+			@NonNull final List<WorkflowLauncher> launchers,
 			@NonNull @Singular final ImmutableList<OrderBy> orderByFields,
-			@Nullable final PrintableQRCode filterByQRCode,
-			@NonNull final Instant timestamp)
+			@Nullable final PrintableScannedCode filterByQRCode,
+			@Nullable final Instant timestamp)
 	{
-		this.launchers = launchers;
+		this.launchers = ImmutableList.copyOf(launchers);
 		this.orderByFields = orderByFields;
 		this.filterByQRCode = filterByQRCode;
-		this.timestamp = timestamp;
+		this.timestamp = timestamp != null ? timestamp : SystemTime.asInstant();
 	}
 
 	public int size() {return launchers.size();}

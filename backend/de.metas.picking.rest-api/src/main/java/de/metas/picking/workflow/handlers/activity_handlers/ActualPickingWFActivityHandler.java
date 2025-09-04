@@ -45,6 +45,8 @@ import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonRejectReasonsList;
 import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.scannable_code.format.json.JsonScannableCodeFormat;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -98,6 +100,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final PickingJobRestService pickingJobRestService;
+	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -116,6 +119,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
 				.properties(Params.builder()
 						.valueObj(PROP_pickingJob, toJsonPickingJob(pickingJob, jsonOpts))
+						.valueObj(PROP_customQRCodeFormats, JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
 	}
@@ -163,6 +167,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 				.pickWithNewLU(pickingJobOptions.isPickWithNewLU())
 				.allowNewTU(pickingJobOptions.isAllowNewTU())
 				.showPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
+				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
 				.build();
 	}
 
@@ -225,9 +230,9 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 				.orElse("");
 
 		return Optional.of(WFProcessHeaderProperty.builder()
-								   .caption(msgBL.getTranslatableMsgText(LAST_PICKED_HU_BEST_BEFORE_DATE))
-								   .value(lastPickedHUBestBeforeDate)
-								   .build());
+				.caption(msgBL.getTranslatableMsgText(LAST_PICKED_HU_BEST_BEFORE_DATE))
+				.value(lastPickedHUBestBeforeDate)
+				.build());
 	}
 
 	private void cacheLastPickedHUsForEachLineIfNeeded(

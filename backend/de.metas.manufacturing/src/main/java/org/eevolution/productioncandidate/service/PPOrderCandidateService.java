@@ -23,9 +23,15 @@
 package org.eevolution.productioncandidate.service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 import de.metas.logging.LogManager;
+import de.metas.manufacturing.event.PPOrderUserNotificationsProducer;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -41,7 +47,10 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -50,9 +59,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMLineId;
+import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -64,6 +76,7 @@ import org.eevolution.productioncandidate.model.dao.PPMaturingCandidatesViewRepo
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -79,12 +92,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.eevolution.productioncandidate.service.ResourcePlanningPrecision.MINUTE;
 
 @Service
+@RequiredArgsConstructor
 public class PPOrderCandidateService
 {
 	private static final String SYSCONFIG_ResourcePlanningPrecision = "resource.PlanningPrecision";
@@ -96,25 +113,16 @@ public class PPOrderCandidateService
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	private final ProductPlanningService productPlanningService;
 	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
 	private final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo;
+	private final PPOrderCandidatePojoConverter ppOrderCandidatePojoConverter;
+	private final PostMaterialEventService materialEventService;
 
 	private static final Logger logger = LogManager.getLogger(PPOrderCandidateService.class);
-
-	public PPOrderCandidateService(
-			@NonNull final ProductPlanningService productPlanningService,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
-			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService,
-			@NonNull final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo)
-	{
-		this.productPlanningService = productPlanningService;
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
-		this.ppMaturingCandidatesViewRepo = ppMaturingCandidatesViewRepo;
-		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
-	}
 
 	@NonNull
 	public I_PP_Order_Candidate createUpdateCandidate(@NonNull final PPOrderCandidateCreateUpdateRequest ppOrderCandidateCreateUpdateRequest)
@@ -157,9 +165,36 @@ public class PPOrderCandidateService
 		ppOrderCandidateDAO.save(ppOrderCandidate);
 	}
 
-	public void closeCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
+	public void closeCandidates(@NonNull final PInstanceId selectionId)
 	{
-		ppOrderCandidateDAO.closeCandidate(PPOrderCandidateId.ofRepoId(ppOrderCandidate.getPP_Order_Candidate_ID()));
+		retrieveOCForSelection(selectionId)
+				.forEachRemaining(this::closeCandidate);
+	}
+
+	public void closeCandidate(@NonNull final PPOrderCandidateId candidateId)
+	{
+		final I_PP_Order_Candidate candidate = ppOrderCandidateDAO.getById(candidateId);
+		closeCandidate(candidate);
+	}
+
+	private void closeCandidate(final I_PP_Order_Candidate ppOrderCandidate)
+	{
+		ppOrderCandidate.setIsClosed(true);
+		ppOrderCandidate.setProcessed(true);
+		ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyProcessed());
+		syncLines(ppOrderCandidate);
+		ppOrderCandidateDAO.save(ppOrderCandidate);
+		notifyMaterialDispo(ppOrderCandidate);
+
+	}
+
+	private void notifyMaterialDispo(final I_PP_Order_Candidate ppOrderCandidate)
+	{
+		final PPOrderCandidateUpdatedEvent ppOrderCandidateUpdatedEvent = PPOrderCandidateUpdatedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderCandidate.getAD_Client_ID(), ppOrderCandidate.getAD_Org_ID()))
+				.ppOrderCandidate(ppOrderCandidatePojoConverter.toPPOrderCandidate(ppOrderCandidate))
+				.build();
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCandidateUpdatedEvent);
 	}
 
 	public void syncLines(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -172,7 +207,7 @@ public class PPOrderCandidateService
 
 		final List<I_PP_Product_BOMLine> productBOMLines = productBOMsRepo.retrieveLines(productBOM);
 
-		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID());
+		final PPOrderCandidateId ppOrderCandidateId = extractPPOrderCandidateId(ppOrderCandidateRecord);
 
 		final Map<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> orderLineCandidate2BOMLine = getOrderLine2BOMLine(ppOrderCandidateId, productBOMLines);
 
@@ -261,19 +296,24 @@ public class PPOrderCandidateService
 	{
 		final Quantity finishedGoodQty = Quantitys.of(orderCandidateRecord.getQtyToProcess(), UomId.ofRepoId(orderCandidateRecord.getC_UOM_ID()));
 
+		final Quantity qtyRequired = orderCandidateRecord.isClosed() ? finishedGoodQty.toZero() : getQtyRequired(orderCandidateRecord, bomLine, finishedGoodQty);
+
+		orderLineCandidate.setQtyEntered(qtyRequired.toBigDecimal());
+		orderLineCandidate.setC_UOM_ID(qtyRequired.getUOM().getC_UOM_ID());
+	}
+
+	private Quantity getQtyRequired(final @NonNull I_PP_Order_Candidate orderCandidateRecord, final @NonNull I_PP_Product_BOMLine bomLine, final Quantity finishedGoodQty)
+	{
 		final ComputeQtyRequiredRequest request = ComputeQtyRequiredRequest.builder()
 				.finishedGoodQty(finishedGoodQty)
 				.productBOMLineId(ProductBOMLineId.ofRepoId(bomLine.getPP_Product_BOMLine_ID()))
 				.build();
 
-		final Quantity qtyRequired = Optional.ofNullable(orderBOMBL.getQtyRequired(request))
+		return Optional.ofNullable(orderBOMBL.getQtyRequired(request))
 				.orElseThrow(() -> new AdempiereException("Couldn't calculate qtyRequired for bom line!")
 						.appendParametersToMessage()
 						.setParameter("PP_Product_BOMLine_ID", bomLine.getPP_Product_BOMLine_ID())
 						.setParameter("PP_Order_Candidate_ID", orderCandidateRecord.getPP_Order_Candidate_ID()));
-
-		orderLineCandidate.setQtyEntered(qtyRequired.toBigDecimal());
-		orderLineCandidate.setC_UOM_ID(qtyRequired.getUOM().getC_UOM_ID());
 	}
 
 	@NonNull
@@ -349,11 +389,13 @@ public class PPOrderCandidateService
 	private PPOrderProducerFromCandidate createPPOrderProducerFromCandidate()
 	{
 		return PPOrderProducerFromCandidate.builder()
+				.ppOrderCandidateService(this)
 				.ppOrderAllocatorBuilderService(ppOrderAllocatorBuilderService)
 				.ppOrderService(ppOrderService)
 				.trxManager(trxManager)
 				.ppOrderCandidatesDAO(ppOrderCandidateDAO)
 				.productPlanningsRepo(productPlanningDAO)
+				.ppOrderUserNotificationsProducer(PPOrderUserNotificationsProducer.newInstance())
 				.createEachPPOrderInOwnTrx(true)
 				.build();
 	}
@@ -475,7 +517,7 @@ public class PPOrderCandidateService
 			ppOrderCandidateDAO.save(candidate);
 		}
 	}
-	
+
 	@NonNull
 	public ResourcePlanningPrecision getResourcePlanningPrecision()
 	{
@@ -497,5 +539,120 @@ public class PPOrderCandidateService
 			candidate.setDateStartSchedule(dateStartSchedule);
 			ppOrderCandidateDAO.save(candidate);
 		}
+	}
+
+	public void resetByPPOrderId(@NonNull final PPOrderId ppOrderId)
+	{
+		ppOrderDAO.getPPOrderAllocations(ppOrderId)
+				.forEach(this::revertAllocation);
+	}
+
+	private void revertAllocation(@NonNull final I_PP_OrderCandidate_PP_Order iPpOrderCandidatePpOrder)
+	{
+		final I_PP_OrderCandidate_PP_Order newAllocationRecord = copy()
+				.setFrom(iPpOrderCandidatePpOrder)
+				.setSkipCalculatedColumns(true)
+				.copyToNew(I_PP_OrderCandidate_PP_Order.class);
+		newAllocationRecord.setQtyEntered(newAllocationRecord.getQtyEntered().negate());
+		saveRecord(newAllocationRecord);
+	}
+
+	public void updateOrderCandidateAfterCommit(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	{
+		updateOrderCandidateAfterCommit(PPOrderCandidateUpdateFlagsRequest.builder().ppOrderCandidateId(ppOrderCandidateId).build());
+	}
+
+	public void updateOrderCandidateAfterCommit(@NonNull final PPOrderCandidateUpdateFlagsRequest request)
+	{
+		trxManager.accumulateAndProcessAfterCommit(
+				"PPOrderCandidateService.candidatesToUpdate",
+				ImmutableSet.of(request),
+				this::updateOrderCandidates
+		);
+	}
+
+	private void updateOrderCandidates(@NonNull final List<PPOrderCandidateUpdateFlagsRequest> requests)
+	{
+		// Index requests by candidateId, always keeping the last request for a given candidate
+		final HashMap<PPOrderCandidateId, PPOrderCandidateUpdateFlagsRequest> requestsByCandidateId = new HashMap<>();
+		requests.forEach(request -> requestsByCandidateId.put(request.getPpOrderCandidateId(), request));
+
+		final Set<PPOrderCandidateId> ppOrderCandidateIds = requestsByCandidateId.keySet();
+		final ImmutableList<I_PP_Order_Candidate> ppOrderCandidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
+		final ImmutableListMultimap<PPOrderCandidateId, I_PP_OrderCandidate_PP_Order> allocationsByCandidateId = Multimaps.index(
+				ppOrderCandidateDAO.getOrderAllocationsByCandidateIds(ppOrderCandidateIds),
+				PPOrderCandidateService::extractPPOrderCandidateId
+		);
+
+		for (final I_PP_Order_Candidate ppOrderCandidate : ppOrderCandidates)
+		{
+			final PPOrderCandidateId candidateId = extractPPOrderCandidateId(ppOrderCandidate);
+
+			final UomId ppOrderCandidateUomId = UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID());
+			final Quantity qtyProcessed = allocationsByCandidateId.get(candidateId)
+					.stream()
+					.map(PPOrderCandidateService::extractQtyEntered)
+					.reduce(Quantity::add)
+					.orElseGet(() -> Quantitys.zero(ppOrderCandidateUomId));
+
+			if (!UomId.equals(qtyProcessed.getUomId(), ppOrderCandidateUomId))
+			{
+				//dev-note: this should never happen... just a guard
+				throw new AdempiereException("QtyProcessed " + qtyProcessed + " from allocations has a different UOM than the PP_Order_Candidate's UOM: " + ppOrderCandidateUomId);
+			}
+
+			final Quantity qtyEntered = extractQtyEntered(ppOrderCandidate);
+			final Quantity qtyToProcess = qtyEntered.subtract(qtyProcessed).toZeroIfNegative();
+
+			final PPOrderCandidateUpdateFlagsRequest request = requestsByCandidateId.get(candidateId);
+			final boolean isFullyProcessed = request.isForceMarkProcessed() || qtyProcessed.compareTo(qtyEntered) >= 0;
+
+			ppOrderCandidate.setQtyToProcess(qtyToProcess.toBigDecimal());
+			ppOrderCandidate.setQtyProcessed(qtyProcessed.toBigDecimal());
+			ppOrderCandidate.setProcessed(isFullyProcessed);
+
+			if (request.isForceClose())
+			{
+				closeCandidate(ppOrderCandidate);
+			}
+
+			ppOrderCandidateDAO.save(ppOrderCandidate);
+		}
+	}
+
+	@NotNull
+	private static PPOrderCandidateId extractPPOrderCandidateId(final I_PP_OrderCandidate_PP_Order record)
+	{
+		return PPOrderCandidateId.ofRepoId(record.getPP_Order_Candidate_ID());
+	}
+
+	@NotNull
+	private static PPOrderCandidateId extractPPOrderCandidateId(final I_PP_Order_Candidate record)
+	{
+		return PPOrderCandidateId.ofRepoId(record.getPP_Order_Candidate_ID());
+	}
+
+	private static Quantity extractQtyEntered(@NonNull final I_PP_OrderCandidate_PP_Order record)
+	{
+		return Quantitys.of(record.getQtyEntered(), UomId.ofRepoId(record.getC_UOM_ID()));
+	}
+
+	private static Quantity extractQtyEntered(@NonNull final I_PP_Order_Candidate record)
+	{
+		return Quantitys.of(record.getQtyEntered(), UomId.ofRepoId(record.getC_UOM_ID()));
+	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	public static class PPOrderCandidateUpdateFlagsRequest
+	{
+		@NonNull PPOrderCandidateId ppOrderCandidateId;
+		boolean forceMarkProcessed;
+		boolean forceClose;
+
 	}
 }

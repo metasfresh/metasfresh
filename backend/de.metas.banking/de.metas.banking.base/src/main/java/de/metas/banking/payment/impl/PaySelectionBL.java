@@ -106,7 +106,6 @@ public class PaySelectionBL implements IPaySelectionBL
 			// OR it is a Credit memo with isSoTrx = 'N'
 			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDebit;
 		}
-
 		else
 		{
 			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
@@ -141,11 +140,6 @@ public class PaySelectionBL implements IPaySelectionBL
 							secondaryAcct = accountID;
 						}
 					}
-					else if (accteptedBankAccountUsage == null)
-					{
-						continue;
-					}
-
 					else if (account.getBPBankAcctUse().equals(accteptedBankAccountUsage))
 					{
 						primaryAcct = accountID;
@@ -448,7 +442,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public ImmutableSet<BPartnerId> getBPartnerIdsFromPaySelectionLineIds(@NonNull Collection<PaySelectionLineId> paySelectionLineIds)
+	public ImmutableSet<BPartnerId> getBPartnerIdsFromPaySelectionLineIds(@NonNull final Collection<PaySelectionLineId> paySelectionLineIds)
 	{
 		return paySelectionDAO.retrievePaySelectionLinesByIds(paySelectionLineIds)
 				.stream()

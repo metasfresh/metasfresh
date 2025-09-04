@@ -92,7 +92,7 @@ public class PPOrderChangedHandlerTest
 				.build();
 
 		final PPOrder ppOrder = createPPOrder();
-		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPpOrderId());
+		final PPOrderId ppOrderId = ppOrder.getPpOrderId();
 
 		when(candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId))
 				.thenReturn(ImmutableList.of(candidateToUpdate));
@@ -147,7 +147,7 @@ public class PPOrderChangedHandlerTest
 						.qtyDelivered(ONE)
 						.warehouseId(WarehouseId.ofRepoId(150))
 						.build())
-				.ppOrderId(123)
+				.ppOrderId(PPOrderId.ofRepoId(123))
 				.line(PPOrderLine.builder()
 						.ppOrderLineData(PPOrderLineData.builder()
 								.productDescriptor(createProductDescriptorWithOffSet(20))

@@ -29,11 +29,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderRequest;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderResponse;
 import de.metas.shipper.gateway.dhl.json.JsonDHLItem;
-import de.metas.shipper.gateway.dhl.json.JsonDhlAddress;
 import de.metas.shipper.gateway.dhl.json.JsonDhlAmount;
 import de.metas.shipper.gateway.dhl.json.JsonDhlCustomsDeclaration;
 import de.metas.shipper.gateway.dhl.json.JsonDhlDimension;
@@ -52,7 +51,6 @@ import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
-import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -87,6 +85,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static de.metas.shipper.gateway.dhl.DhlConstants.PARAM_RESPONSE_BODY_AS_STRING;
 
 public class DhlShipperGatewayClient implements ShipperGatewayClient
 {
@@ -200,7 +200,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		return AdempiereException.wrapIfNeeded(shipperGatewayException)
 				.appendParametersToMessage()
-				.setParameter("responseBodyAsString", responseBodyAsString)
+				.setParameter(PARAM_RESPONSE_BODY_AS_STRING, responseBodyAsString)
 				.setParameter("routingRequest", dhlOrderRequest);
 	}
 
@@ -218,8 +218,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					.billingNumber(config.getAccountNumber())
 					.product(deliveryOrder.getShipperProduct().getCode())
 					.shipDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
-					.shipper(getJsonDhlAddress(deliveryOrder.getPickupAddress(), null))
-					.consignee(getJsonDhlAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))
+					.shipper(DhlAddressMapper.getShipperAddress(deliveryOrder.getPickupAddress()))
+					.consignee(DhlAddressMapper.getConsigneeAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))
 					.details(getJsonDhlDetails(deliveryOrderLine))
 					.customs(getJsonCustomsDeclaration(deliveryOrder.getCustomDeliveryData(), deliveryOrderLine.getPackageId()));
 			if (customerReference != null)
@@ -321,27 +321,6 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 						.widthInCM(BigDecimal.valueOf(packageDimensions.getWidthInCM()))
 						.lengthInCM(BigDecimal.valueOf(packageDimensions.getLengthInCM()))
 						.weightInCM())
-				.build();
-	}
-
-	private JsonDhlAddress getJsonDhlAddress(final @NonNull Address address, @Nullable final ContactPerson deliveryContact)
-	{
-		final JsonDhlAddress.JsonDhlAddressBuilder addressBuilder = JsonDhlAddress.builder()
-				.name1(address.getCompanyName1())
-				.name2(address.getCompanyName2())
-				.addressStreet(address.getStreet1())
-				.addressHouse(address.getHouseNo())
-				.additionalAddressInformation1(address.getStreet2())
-				.postalCode(address.getZipCode())
-				.city(address.getCity())
-				.country(address.getCountry().getAlpha3());
-		if (deliveryContact != null)
-		{
-			addressBuilder.email(deliveryContact.getEmailAddress())
-					.phone(deliveryContact.getPhoneAsStringOrNull())
-			;
-		}
-		return addressBuilder
 				.build();
 	}
 

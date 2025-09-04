@@ -2,6 +2,9 @@ package de.metas.frontend_testing.masterdata.bpartner;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
+import de.metas.bpartner.RandomGLNGenerator;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -14,6 +17,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -27,14 +31,18 @@ import org.compiere.model.I_M_PricingSystem;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class CreateBPartnerCommand
 {
+	@NonNull private final RandomGLNGenerator randomGLNGenerator = new RandomGLNGenerator();
 	@NonNull private final CurrencyRepository currencyRepository;
 
 	@NonNull private final MasterdataContext context;
+	@NonNull final JsonCreateBPartnerRequest request;
 
 	@NonNull private final BPGroupId bpGroupId = MasterdataContext.BP_GROUP_ID;
 	@NonNull private final OrgId orgId = MasterdataContext.ORG_ID;
@@ -51,6 +59,7 @@ public class CreateBPartnerCommand
 	{
 		this.currencyRepository = currencyRepository;
 		this.context = context;
+		this.request = request;
 
 		final Identifier suggestedIdentifier = Identifier.ofNullableString(identifier);
 		if (suggestedIdentifier == null)
@@ -84,24 +93,96 @@ public class CreateBPartnerCommand
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		context.putIdentifier(bpIdentifier, bpartnerId);
 
-		createBPLocation(bpartnerId);
+		final BPartnerLocationId singleBPLocationId;
+		final GLN singleGLN;
+		final Map<String, JsonCreateBPartnerResponse.Location> responseLocations;
+		if (request.getLocations() == null || request.getLocations().isEmpty())
+		{
+			final I_C_BPartner_Location bpLocationRecord = createBPLocation(
+					JsonCreateBPartnerRequest.Location.builder()
+							.gln(request.getGln())
+							.build(),
+					bpartnerId,
+					true
+			);
+			singleBPLocationId = BPartnerLocationId.ofRepoId(bpLocationRecord.getC_BPartner_ID(), bpLocationRecord.getC_BPartner_Location_ID());
+			singleGLN = GLN.ofNullableString(bpLocationRecord.getGLN());
+			responseLocations = null;
+
+			context.putIdentifier(bpIdentifier, singleBPLocationId);
+		}
+		else
+		{
+			singleBPLocationId = null;
+			singleGLN = null;
+			responseLocations = new HashMap<>();
+
+			boolean isFirstLocation = true;
+			for (final String bpLocationIdentifierStr : request.getLocations().keySet())
+			{
+				final I_C_BPartner_Location bpLocationRecord = createBPLocation(
+						request.getLocations().get(bpLocationIdentifierStr),
+						bpartnerId,
+						isFirstLocation
+				);
+				isFirstLocation = false;
+
+				@NonNull final Identifier bpLocationIdentifier = Identifier.ofString(bpLocationIdentifierStr);
+				final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(bpLocationRecord.getC_BPartner_ID(), bpLocationRecord.getC_BPartner_Location_ID());
+				context.putIdentifier(bpLocationIdentifier, bpLocationId);
+
+				responseLocations.put(bpLocationIdentifierStr, JsonCreateBPartnerResponse.Location.builder()
+						.id(bpLocationId.getRepoId())
+						.gln(GLN.ofNullableString(bpLocationRecord.getGLN()))
+						.build());
+			}
+		}
 
 		return JsonCreateBPartnerResponse.builder()
+				.id(bpartnerId)
 				.bpartnerCode(bpartner.getValue())
+				.bpartnerLocationId(singleBPLocationId != null ? singleBPLocationId.getRepoId() : null)
+				.gln(singleGLN)
+				.locations(responseLocations)
 				.build();
 	}
 
-	private void createBPLocation(@NonNull final BPartnerId bpartnerId)
+	private I_C_BPartner_Location createBPLocation(
+			@NonNull JsonCreateBPartnerRequest.Location request,
+			@NonNull final BPartnerId bpartnerId,
+			boolean isDefault)
 	{
 		final LocationId locationId = createLocation();
+
+		final GLN gln = toGLN(request.getGln());
 
 		final I_C_BPartner_Location bPartnerLocationRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
 		bPartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bPartnerLocationRecord.setC_Location_ID(locationId.getRepoId());
-		bPartnerLocationRecord.setIsBillToDefault(true);
-		bPartnerLocationRecord.setIsShipToDefault(true);
+		bPartnerLocationRecord.setIsBillToDefault(isDefault);
+		bPartnerLocationRecord.setIsShipToDefault(isDefault);
 		bPartnerLocationRecord.setIsShipTo(true);
+		bPartnerLocationRecord.setGLN(gln != null ? gln.getCode() : null);
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
+
+		return bPartnerLocationRecord;
+	}
+
+	private GLN toGLN(final String glnStr)
+	{
+		final String glnStrNorm = StringUtils.trimBlankToNull(glnStr);
+		if (glnStrNorm == null)
+		{
+			return null;
+		}
+		else if (glnStrNorm.equalsIgnoreCase("random"))
+		{
+			return randomGLNGenerator.next();
+		}
+		else
+		{
+			return GLN.ofString(glnStrNorm);
+		}
 	}
 
 	private LocationId createLocation()

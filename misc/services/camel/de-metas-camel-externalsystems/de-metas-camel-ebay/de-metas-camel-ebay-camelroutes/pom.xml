@@ -1,3 +1,25 @@
+<!--
+  ~ #%L
+  ~ de-metas-camel-externalsystems
+  ~ %%
+  ~ Copyright (C) 2025 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -15,9 +37,9 @@
 	<artifactId>de-metas-camel-ebay-camelroutes</artifactId>
 
 	<properties>
-		<java.version>14</java.version>
-		<spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-		<camel.version>3.7.3</camel.version>
+		<java.version>17</java.version>
+		<spring-boot.version>2.7.11</spring-boot.version>
+		<camel.version>3.14.7</camel.version>
 		<guava.version>30.1.1-jre</guava.version>
 		<smooks.version>1.7.1</smooks.version>
 		<!-- 3.8.0 is currently the latest and greatest. Spring boot declares some 
@@ -136,11 +158,6 @@
 			<groupId>org.apache.camel.springboot</groupId>
 			<artifactId>camel-servlet-starter</artifactId>
 			<version>${camel.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-spring-javaconfig</artifactId>
 		</dependency>
 
 		<dependency>

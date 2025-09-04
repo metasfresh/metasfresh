@@ -13,6 +13,8 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -55,6 +57,12 @@ public class X12DE355
 	{
 		final String codeNorm = StringUtils.trimBlankToNull(code);
 		return codeNorm != null ? ofCode(codeNorm) : null;
+	}
+
+	@NonNull
+	public static Optional<X12DE355> ofCodeOrOptional(@Nullable final String code)
+	{
+		return Optional.ofNullable(ofNullableCode(code));
 	}
 
 	@NonNull
@@ -159,4 +167,6 @@ public class X12DE355
 
 		return temporalUnit;
 	}
+
+	public static boolean equals(@Nullable final X12DE355 uom1, @Nullable final X12DE355 uom2) {return Objects.equals(uom1, uom2);}
 }

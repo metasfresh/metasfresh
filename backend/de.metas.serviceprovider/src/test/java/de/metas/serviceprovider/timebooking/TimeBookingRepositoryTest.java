@@ -25,8 +25,8 @@ package de.metas.serviceprovider.timebooking;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_BOOKED_SECONDS;
 import static de.metas.serviceprovider.TestConstants.MOCK_HOURS_AND_MINUTES;
@@ -34,14 +34,14 @@ import static de.metas.serviceprovider.TestConstants.MOCK_INSTANT_FROM_DATE;
 import static de.metas.serviceprovider.TestConstants.MOCK_ISSUE_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_USER_ID;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TimeBookingRepositoryTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final TimeBookingRepository timeBookingRepository = new TimeBookingRepository(queryBL);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -98,7 +98,7 @@ class POSProductsSearchCommand
 			return null;
 		}
 
-		final ProductId productId = productBL.getProductIdByEAN13(ean13, null, ClientId.METASFRESH).orElse(null);
+		final ProductId productId = productBL.getProductIdByEAN13(ean13).orElse(null);
 		final POSProduct product = getPOSProduct(productId);
 		if (product == null)
 		{

@@ -19,7 +19,7 @@ Feature: Dhl Shipment
 
     #Karton
     And load M_Product:
-      | M_Product_ID.Identifier | OPT.M_Product_ID |
+      | Identifier | OPT.M_Product_ID |
       | packing_product_1       | 2003135          |
     #Configure dimensions of packing product
     And metasfresh contains M_HU_PackingMaterial:
@@ -28,8 +28,8 @@ Feature: Dhl Shipment
 
     # Create product
     And metasfresh contains M_Products:
-      | Identifier          | Name                | IsStocked | Weight |
-      | test_product_dhl_01 | test_product_dhl_01 | true      | 0.250  |
+      | Identifier          | Name                | IsStocked | WeightGross |
+      | test_product_dhl_01 | test_product_dhl_01 | true      | 0.250 KGM   |
     And metasfresh contains M_PricingSystems
       | Identifier | Name           | Value          |
       | ps_dhl_1   | pricing_system | pricing_system |
@@ -84,8 +84,8 @@ Feature: Dhl Shipment
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.M_HU_PackingMaterial_ID.Identifier |
       | dhl_huPiItemTU             | dhl_packingVersionTU          | 0   | PM       | dhl_pm                                 |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.M_HU_PI_Item_Product_ID |
-      | dhl_huProductTU_X                  | dhl_huPiItemTU             | test_product_dhl_01     | 5   | 2022-01-10 | 55667                       |
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | REST.Context      | IsOrderInTuUomWhenMatched |
+      | dhl_huProductTU_X                  | dhl_huPiItemTU             | test_product_dhl_01     | 5   | 2022-01-10 | dhl_huProductTU_X | false                     |
 
   @Id:S0335.1_100
   Scenario: Auto-processing of olcand and shipped via DHL
@@ -114,7 +114,7 @@ Feature: Dhl Shipment
       "deliveryViaRule": "S",
       "deliveryRule": "F",
       "bpartnerName": "olCandBPartnerName",
-      "packingMaterialId": 55667,
+      "packingMaterialId": @dhl_huProductTU_X@,
       "shipper": "val-Dhl"
     }
   ]
@@ -181,4 +181,3 @@ Feature: Dhl Shipment
     And validate DHL_ShipmentOrder:
       | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
       | package1     | dhl_customer  | 30             | 20            | 10             | 1              |
-    

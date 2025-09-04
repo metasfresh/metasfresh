@@ -22,6 +22,7 @@ package de.metas.acct.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.document.engine.IDocument;
@@ -35,6 +36,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 public interface IFactAcctDAO extends ISingletonService
 {
@@ -89,6 +91,10 @@ public interface IFactAcctDAO extends ISingletonService
 	List<I_Fact_Acct> list(@NonNull List<FactAcctQuery> queries);
 
 	List<I_Fact_Acct> list(@NonNull FactAcctQuery query);
+
+	ImmutableSet<FactAcctId> listIds(@NonNull FactAcctQuery query);
+
+	Stream<I_Fact_Acct> stream(@NonNull FactAcctQuery query);
 
 	void setOpenItemTrxInfo(@NonNull FAOpenItemTrxInfo openItemTrxInfo, @NonNull FactAcctQuery query);
 }

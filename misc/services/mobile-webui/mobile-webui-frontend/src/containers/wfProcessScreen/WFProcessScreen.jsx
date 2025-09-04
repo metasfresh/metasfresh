@@ -21,6 +21,8 @@ import ScanAndValidateActivity, {
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { appLaunchersLocation } from '../../routes/launchers';
 import { useMobileLocation } from '../../hooks/useMobileLocation';
+import { COMPONENT_TYPE_huConsolidation_consolidate } from '../../apps/huConsolidation';
+import HUConsolidationActivity from '../../apps/huConsolidation/activities/HUConsolidationActivity';
 
 const WFProcessScreen = () => {
   const { wfProcessId } = useMobileLocation();
@@ -163,6 +165,19 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           activityState={activityItem}
         />
       );
+    case COMPONENT_TYPE_huConsolidation_consolidate:
+      return (
+        <HUConsolidationActivity
+          key={activityItem.activityId}
+          applicationId={applicationId}
+          wfProcessId={wfProcessId}
+          activityId={activityItem.activityId}
+        />
+      );
+    default: {
+      console.warn(`Unknown activity type: ${activityItem.componentType}`, { activityItem });
+      return null;
+    }
   }
 };
 

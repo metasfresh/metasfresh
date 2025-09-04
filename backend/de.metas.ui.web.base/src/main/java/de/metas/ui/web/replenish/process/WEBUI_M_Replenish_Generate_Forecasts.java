@@ -24,6 +24,7 @@ package de.metas.ui.web.replenish.process;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.Check;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import de.metas.mforecast.ForecastRequest;
@@ -43,6 +44,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Forecast;
@@ -78,7 +80,7 @@ public class WEBUI_M_Replenish_Generate_Forecasts extends ViewBasedProcessTempla
 		}
 
 		final boolean allRowsHaveDemand = streamSelectedRows()
-				.map(MaterialNeedsPlannerRow::ofRow)
+				.map(MaterialNeedsPlannerRow::ofViewRow)
 				.allMatch(MaterialNeedsPlannerRow::isDemandFilled);
 
 		if (!allRowsHaveDemand)
@@ -93,24 +95,29 @@ public class WEBUI_M_Replenish_Generate_Forecasts extends ViewBasedProcessTempla
 	protected String doIt() throws Exception
 	{
 		final List<ForecastRequest> forecastRequests = streamSelectedRows()
-				.map(MaterialNeedsPlannerRow::ofRow)
+				.map(MaterialNeedsPlannerRow::ofViewRow)
 				.filter(MaterialNeedsPlannerRow::isDemandFilled)
 				.collect(Collectors.groupingBy(MaterialNeedsPlannerRow::getWarehouseId))
 				.entrySet()
 				.stream()
-				.map(entry -> ForecastRequest.builder()
-						.name(warehouseBL.getWarehouseName(entry.getKey()) + "_" + p_DatePromised)
-						.warehouseId(entry.getKey())
-						.datePromised(p_DatePromised)
-						.forecastLineRequests(entry.getValue().stream()
-								.map(this::toForecastLineRequest)
-								.collect(ImmutableList.toImmutableList()))
-						.build())
+				.map(entry -> {
+
+					final ImmutableList<ForecastRequest.ForecastLineRequest> lines = entry.getValue().stream()
+							.map(this::toForecastLineRequest)
+							.collect(ImmutableList.toImmutableList());
+
+					return ForecastRequest.builder()
+							.name(provideName(entry.getKey(), lines))
+							.warehouseId(entry.getKey())
+							.datePromised(p_DatePromised)
+							.forecastLineRequests(lines)
+							.build();
+				})
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableSet<ForecastId> createdForecastIds = forecastService.createForecasts(forecastRequests);
 
-		forecastService.completeForecasts(createdForecastIds);
+		forecastService.completeAndNotifyUser(createdForecastIds, Env.getLoggedUserId());
 
 		return "@Created@: " + createdForecastIds.size();
 	}
@@ -149,5 +156,19 @@ public class WEBUI_M_Replenish_Generate_Forecasts extends ViewBasedProcessTempla
 				.with(TemporalAdjusters.next(DayOfWeek.MONDAY))
 				.atStartOfDay(timeZone)
 				.toInstant();
+	}
+
+	private String provideName(@NonNull final WarehouseId warehouseId, @NonNull final List<ForecastRequest.ForecastLineRequest> lineRequests)
+	{
+		if (lineRequests.size() != 1)
+		{
+			return warehouseBL.getWarehouseName(warehouseId) + "_" + p_DatePromised;
+		}
+
+		final ForecastRequest.ForecastLineRequest singleRequest = Check.singleElement(lineRequests);
+
+		return productBL.getProductValueAndName(singleRequest.getProductId())
+				+ " | " + singleRequest.getQuantity()
+				+ " | " + warehouseBL.getWarehouseName(warehouseId);
 	}
 }

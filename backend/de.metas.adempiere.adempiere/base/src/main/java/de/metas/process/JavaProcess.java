@@ -1061,9 +1061,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return addLog(null, msg, msgParameters);
 	}
 
-	public final ILoggable addLog(final List<String> warningMessages, final String msg, final Object... msgParameters)
+	public final ILoggable addLog(@Nullable final List<String> warningMessages, @Nullable final String msg, final Object... msgParameters)
 	{
-		if (msg != null)
+		if (Check.isNotBlank(msg))
 		{
 			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters), warningMessages);
 		}

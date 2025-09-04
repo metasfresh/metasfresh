@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 126875419L;
+	private static final long serialVersionUID = -533417777L;
 
     /** Standard Constructor */
     public X_M_InOutLine (final Properties ctx, final int M_InOutLine_ID, @Nullable final String trxName)
@@ -781,6 +781,18 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	public int getC_Flatrate_Term_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 }

@@ -186,9 +186,10 @@ public class XmlToOLCandsService
 		if (billToLocation != null)
 		{
 			locations.requestItem(JsonRequestLocationUpsertItem.builder()
-					.locationIdentifier("ext-" + JsonExternalId.of(billToLocation.getExternalId().getValue() + "_GUARANTOR"))
+					.locationIdentifier("ext-" + billToLocation.getExternalId().getValue())
 					.location(billToLocation)
 					.build());
+			
 		}
 
 		final String orgCode = context.getBillerOrgCode().getValue();
@@ -203,7 +204,7 @@ public class XmlToOLCandsService
 								.build())
 						.build())
 				.build();
-		
+
 		bpartnerRestController.createOrUpdateBPartner(orgCode, partnerUpsert);
 	}
 
@@ -502,7 +503,7 @@ public class XmlToOLCandsService
 				.toBuilder()
 				.syncAdvise(SyncAdvise.READ_ONLY).build();
 		requestBuilder.bpartner(bpartner);
-		
+
 		if (patientBPartnerRequests.getRight() != null)
 		{
 			// add an additional bill-location for the guarantor
@@ -559,9 +560,9 @@ public class XmlToOLCandsService
 				null/* gln */,
 				nameAndPostal.getPostal());
 
-		final boolean differentBillLocation = Objects.equals(patientLocation, guarantorLocation);
+		final boolean sameBillAndShipLocation = Objects.equals(patientLocation, guarantorLocation);
 
-		if (differentBillLocation)
+		if (sameBillAndShipLocation)
 		{
 			patientLocation.setName(patientName);
 			patientLocation.setShipTo(true);
@@ -589,9 +590,9 @@ public class XmlToOLCandsService
 		}
 		bPartnerInfo.location(patientLocation);
 
-		return differentBillLocation
-				? ImmutablePair.of(bPartnerInfo.build(), guarantorLocation)
-				: ImmutablePair.of(bPartnerInfo.build(), null);
+		return sameBillAndShipLocation
+				? ImmutablePair.of(bPartnerInfo.build(), null)
+				: ImmutablePair.of(bPartnerInfo.build(), guarantorLocation);
 	}
 
 	private JsonRequestBPartnerLocationAndContact addMunicipalityInvoiceRecipient(
@@ -688,8 +689,7 @@ public class XmlToOLCandsService
 			throw new MissingPropertyException("guarantor/company or guarantor/person", guarantor);
 		}
 
-		final NameAndPostal nameAndPostal = new NameAndPostal(guarantorName, guarantorPostal);
-		return nameAndPostal;
+		return new NameAndPostal(guarantorName, guarantorPostal);
 	}
 
 	@Value

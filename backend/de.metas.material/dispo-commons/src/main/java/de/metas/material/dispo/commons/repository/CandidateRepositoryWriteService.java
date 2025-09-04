@@ -24,14 +24,19 @@ package de.metas.material.dispo.commons.repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.IdConstants;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateQtyDetailsPersistMultiRequest;
+import de.metas.material.dispo.commons.candidate.CandidateQtyDetailsPersistRequest;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -41,6 +46,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
@@ -49,11 +55,13 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_QtyDetails;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderRef;
@@ -77,6 +85,7 @@ import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -107,6 +116,7 @@ public class CandidateRepositoryWriteService
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	@NonNull private final CandidateQtyDetailsRepository candidateQtyDetailsRepository;
 
 	/**
 	 * Stores the given {@code candidate}.
@@ -126,14 +136,6 @@ public class CandidateRepositoryWriteService
 	public CandidateSaveResult addOrUpdateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
 	{
 		return addOrUpdate(candidate, false/* preserveExistingSeqNoAndParentId */);
-	}
-
-	/**
-	 * Similar to {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)}, but the given {@code candidate}'s {@code seqNo} (if specified at all!) will only be persisted if none is stored yet.
-	 */
-	public CandidateSaveResult addOrUpdatePreserveExistingSeqNo(@NonNull final Candidate candidate)
-	{
-		return addOrUpdate(candidate, true);
 	}
 
 	/**
@@ -283,8 +285,10 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setQty(stripZerosAfterTheDigit(quantity));
 		candidateRecord.setDateProjected(TimeUtil.asTimestamp(materialDescriptor.getDate()));
 
-		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
-		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
+		final MinMaxDescriptor minMaxDescriptor = candidate.getMinMaxDescriptor();
+		candidateRecord.setReplenish_MinQty(minMaxDescriptor.getMin());
+		candidateRecord.setReplenish_MaxQty(minMaxDescriptor.getMax());
+		candidateRecord.setReplenish_IsHighPriority(minMaxDescriptor.isHighPriority());
 
 		final DemandDetail demandDetail = candidate.getDemandDetail();
 
@@ -445,7 +449,7 @@ public class CandidateRepositoryWriteService
 		productionDetailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		productionDetailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
 
-		productionDetailRecordToUpdate.setPP_Order_Candidate_ID(productionDetail.getPpOrderCandidateId());
+		productionDetailRecordToUpdate.setPP_Order_Candidate_ID(PPOrderCandidateId.toRepoId(productionDetail.getPpOrderCandidateId()));
 		productionDetailRecordToUpdate.setPP_OrderLine_Candidate_ID(productionDetail.getPpOrderLineCandidateId());
 		productionDetailRecordToUpdate.setPP_Order_ID(PPOrderId.toRepoId(productionDetail.getPpOrderId()));
 		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(productionDetail.getPpOrderBOMLineId()));
@@ -501,7 +505,7 @@ public class CandidateRepositoryWriteService
 		save(detailRecordToUpdate);
 	}
 
-	private static void updateRecord(@NonNull final I_MD_Candidate_Dist_Detail record, @Nullable DDOrderRef from)
+	private static void updateRecord(@NonNull final I_MD_Candidate_Dist_Detail record, @Nullable final DDOrderRef from)
 	{
 		record.setDD_Order_Candidate_ID(from != null ? from.getDdOrderCandidateId() : -1);
 		record.setDD_Order_ID(from != null ? from.getDdOrderId() : -1);
@@ -512,7 +516,7 @@ public class CandidateRepositoryWriteService
 	{
 		record.setPP_Order_ID(from != null ? PPOrderId.toRepoId(from.getPpOrderId()) : -1);
 		record.setPP_Order_BOMLine_ID(from != null ? PPOrderBOMLineId.toRepoId(from.getPpOrderBOMLineId()) : -1);
-		record.setPP_Order_Candidate_ID(from != null ? from.getPpOrderCandidateId() : -1);
+		record.setPP_Order_Candidate_ID(from != null ? PPOrderCandidateId.toRepoId(from.getPpOrderCandidateId()) : -1);
 		record.setPP_OrderLine_Candidate_ID(from != null ? from.getPpOrderLineCandidateId() : -1);
 	}
 
@@ -626,8 +630,6 @@ public class CandidateRepositoryWriteService
 				.build();
 	}
 
-
-
 	/**
 	 * @return DeleteResult for STOCK candidate
 	 */
@@ -699,14 +701,14 @@ public class CandidateRepositoryWriteService
 		if (candidateRecord.getMD_Candidate_Parent_ID() <= 0)
 		{
 			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
-													  .candidateId(candidateId)
-													  .build());
+					.candidateId(candidateId)
+					.build());
 		}
 		else
 		{
 			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
-													  .candidateId(stockCandidateId)
-													  .build());
+					.candidateId(stockCandidateId)
+					.build());
 		}
 
 		return deleteResult;
@@ -740,8 +742,8 @@ public class CandidateRepositoryWriteService
 		final DeleteResult deleteResult = buildDeleteResultForCandidate(candidateRecord);
 
 		deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
-												  .candidateId(candidateId)
-												  .build());
+				.candidateId(candidateId)
+				.build());
 
 		return deleteResult;
 	}
@@ -793,7 +795,7 @@ public class CandidateRepositoryWriteService
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
-														   DateAndSeqNo
+				DateAndSeqNo
 						.builder()
 						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
 						.seqNo(candidateRecord.getSeqNo())
@@ -832,6 +834,15 @@ public class CandidateRepositoryWriteService
 		deletePurchaseDetailsRecords(candidateId);
 		deleteStockChangeDetailsRecords(candidateId);
 		deleteTransactionDetailsRecords(candidateId);
+		deleteQtyDetails(candidateId);
+	}
+
+	private void deleteQtyDetails(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_QtyDetails.class)
+				.addEqualsFilter(I_MD_Candidate_QtyDetails.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
 	}
 
 	private void deleteDemandDetailsRecords(@NonNull final CandidateId candidateId)
@@ -931,12 +942,22 @@ public class CandidateRepositoryWriteService
 	private DeleteResult buildDeleteResultForCandidate(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		return new DeleteResult(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()),
-																 DateAndSeqNo
-																		 .builder()
+				DateAndSeqNo
+						.builder()
 						.date(candidateRecord.getDateProjected().toInstant())
-																		 .seqNo(candidateRecord.getSeqNo())
-																		 .build(),
-																 candidateRecord.getQty());
+						.seqNo(candidateRecord.getSeqNo())
+						.build(),
+				candidateRecord.getQty());
+	}
+
+	public List<Candidate> getSupplyCandidatesForDemand(@NonNull final Candidate demandCandidate, @NonNull final CandidateBusinessCase businessCase)
+	{
+		Check.assume(demandCandidate.getType().isDemand(), "The given candidate needs to be of type demand {}", demandCandidate);
+		final MaterialDescriptor materialDescriptor = demandCandidate.getMaterialDescriptor().withCustomerId(null);//SUPPLY candidates don't have a customer assigned
+		final CandidatesQuery candidatesQuery = CandidatesQuery.ofMaterialDescriptorAndDemandDetails(materialDescriptor, demandCandidate.getDemandDetail())
+				.withType(CandidateType.SUPPLY)
+				.withBusinessCase(businessCase);
+		return candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
 	}
 
 	public void updateCandidatesByQuery(@NonNull final CandidatesQuery query, @NonNull final UnaryOperator<Candidate> updater)
@@ -964,5 +985,54 @@ public class CandidateRepositoryWriteService
 
 		@NonNull
 		BigDecimal previousQty;
+	}
+
+	public BigDecimal getCurrentAtpAndUpdateQtyDetails(@NonNull final Candidate candidate, @NonNull final Candidate stockCandidate, @Nullable final Candidate previousStockCandidate)
+	{
+		final Candidate actualPreviousStockCandidate = CoalesceUtil.coalesceSuppliers(() -> previousStockCandidate,
+				() -> getPreviousStockCandidateOrNull(stockCandidate));
+		final BigDecimal previousQty = actualPreviousStockCandidate == null ? BigDecimal.ZERO : actualPreviousStockCandidate.getQuantity();
+		final CandidateId actualPreviousStockCandidateId = actualPreviousStockCandidate == null ? null : actualPreviousStockCandidate.getId();
+		final CandidateId currentCandidateId = candidate.getId();
+
+		final CandidateQtyDetailsPersistMultiRequest request = CandidateQtyDetailsPersistMultiRequest.builder()
+				.candidateId(currentCandidateId)
+				.stockCandidateId(stockCandidate.getId())
+				.details(ImmutableList.of(CandidateQtyDetailsPersistRequest.builder()
+								.detailCandidateId(actualPreviousStockCandidateId)
+								.qtyInStockUom(previousQty)
+								.build(),
+						CandidateQtyDetailsPersistRequest.builder()
+								.detailCandidateId(currentCandidateId)
+								.qtyInStockUom(candidate.getStockImpactPlannedQuantity())
+								.build()
+				))
+				.build();
+		candidateQtyDetailsRepository.save(request);
+		return candidate.getStockImpactPlannedQuantity().add(previousQty);
+	}
+
+	@Nullable
+	private Candidate getPreviousStockCandidateOrNull(final @NonNull Candidate stockCandidate)
+	{
+		final MaterialDescriptor materialDescriptor = stockCandidate.getMaterialDescriptor();
+
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.customer(BPartnerClassifier.specificOrAny(materialDescriptor.getCustomerId()))
+				.customerIdOperator(MaterialDescriptorQuery.CustomerIdOperator.GIVEN_ID_ONLY)
+				.timeRangeEnd(DateAndSeqNo.atTimeNoSeqNo(stockCandidate.getMaterialDescriptor().getDate())
+						.withOperator(DateAndSeqNo.Operator.EXCLUSIVE))
+				.build();
+
+		final CandidatesQuery findPreviousStockQuery = CandidatesQuery.builder()
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.type(CandidateType.STOCK)
+				.matchExactStorageAttributesKey(true)
+				.build();
+
+		return candidateRepositoryRetrieval.retrievePreviousMatchForCandidateIdOrNull(findPreviousStockQuery, stockCandidate.getId());
 	}
 }

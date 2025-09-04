@@ -24,7 +24,12 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import React, { useCallback } from 'react';
 import { trl } from '../../../utils/translations';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { getActivityById, getLineById, getQtyRejectedReasonsFromActivity } from '../../../reducers/wfProcesses';
+import {
+  getActivityById,
+  getCustomQRCodeFormats,
+  getLineById,
+  getQtyRejectedReasonsFromActivity,
+} from '../../../reducers/wfProcesses';
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
@@ -51,6 +56,7 @@ export const NEXT_NextPickingLine = 'nextPickingLine';
 
 const PickLineScanScreen = () => {
   const { url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'PickLineScanScreen',
     back: pickingLineScreenLocation,
   });
 
@@ -73,6 +79,7 @@ const PickLineScanScreen = () => {
     qtyRejectedReasons,
     catchWeightUom,
     isShowPromptWhenOverPicking,
+    customQRCodeFormats,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId });
@@ -84,6 +91,7 @@ const PickLineScanScreen = () => {
       convertScannedBarcodeToResolvedResult({
         scannedBarcode,
         expectedProductId: productId,
+        customQRCodeFormats,
       }),
     [productId]
   );
@@ -122,6 +130,7 @@ const PickLineScanScreen = () => {
       qtyRejectedReasons={qtyRejectedReasons}
       catchWeight={0}
       catchWeightUom={catchWeightUom}
+      customQRCodeFormats={customQRCodeFormats}
       isShowBestBeforeDate={isShowBestBeforeDate}
       isShowLotNo={isShowLotNo}
       isShowCloseTargetButton={!!luPickingTarget}
@@ -137,6 +146,7 @@ const PickLineScanScreen = () => {
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
+  const customQRCodeFormats = getCustomQRCodeFormats({ activity });
 
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
@@ -155,22 +165,25 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyRejectedReasons,
     catchWeightUom: line.catchWeightUOM,
     isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
+    customQRCodeFormats,
   };
 };
 
 // @VisibleForTesting
-export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
-  const parsedHUQRCode = parseQRCodeString(scannedBarcode);
+export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId, customQRCodeFormats }) => {
+  const parsedQRCode = parseQRCodeString({ string: scannedBarcode, customQRCodeFormats });
 
-  if (expectedProductId != null && parsedHUQRCode.productId != null && parsedHUQRCode.productId !== expectedProductId) {
+  if (expectedProductId != null && parsedQRCode.productId != null && parsedQRCode.productId !== expectedProductId) {
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  return convertQRCodeObjectToResolvedResult(parsedHUQRCode);
+  return convertQRCodeObjectToResolvedResult(parsedQRCode);
 };
 
 const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
-  const result = {};
+  const result = {
+    qrCode: qrCodeObj,
+  };
 
   if (qrCodeObj.weightNet != null) {
     result['catchWeight'] = qrCodeObj.weightNet;
@@ -181,9 +194,10 @@ const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   }
 
   result['bestBeforeDate'] = qrCodeObj.bestBeforeDate;
+  result['productionDate'] = qrCodeObj.productionDate;
   result['lotNo'] = qrCodeObj.lotNo;
 
-  console.log('resolveScannedBarcode', { result, qrCodeObj });
+  console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj });
   return result;
 };
 
@@ -245,9 +259,9 @@ const usePostQtyPicked = ({
     scannedBarcode = null,
     catchWeight = null,
     catchWeightUom = null,
-    isTUToBePickedAsWhole = false,
-    bestBeforeDate = null,
-    lotNo = null,
+    bestBeforeDate,
+    productionDate = null,
+    lotNo,
     productNo,
     ean13ProductCode,
     isCloseTarget = false,
@@ -258,6 +272,7 @@ const usePostQtyPicked = ({
   }) => {
     const lineIdEffective = resolvedBarcodeData?.lineId ?? lineIdParam;
     console.log('usePostQtyPicked.onResult', {
+      resolvedBarcodeData,
       lineIdEffective,
       lineId,
       lineIdParam,
@@ -268,6 +283,7 @@ const usePostQtyPicked = ({
       catchWeightUom,
       isShowBestBeforeDate,
       bestBeforeDate,
+      productionDate,
       isShowLotNo,
       lotNo,
       productNo,
@@ -300,11 +316,11 @@ const usePostQtyPicked = ({
       qtyRejectedReasonCode: reason,
       qtyRejected,
       catchWeight,
-      pickWholeTU: isTUToBePickedAsWhole,
+      pickWholeTU: resolvedBarcodeData.isTUToBePickedAsWhole,
       checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
-      setBestBeforeDate: isShowBestBeforeDate,
+      setBestBeforeDate: isShowBestBeforeDate && bestBeforeDate !== undefined,
       bestBeforeDate,
-      setLotNo: isShowLotNo,
+      setLotNo: isShowLotNo && lotNo !== undefined,
       lotNo,
       isCloseTarget,
     })

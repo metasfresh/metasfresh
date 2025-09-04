@@ -22,15 +22,6 @@
 
 package de.metas.handlingunits.material.interceptor.transactionevent;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-
-import org.adempiere.mmovement.MovementLineId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Transaction;
-import org.eevolution.api.PPCostCollectorId;
-
 import de.metas.inout.InOutLineId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.EventDescriptor;
@@ -39,6 +30,15 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Transaction;
+import org.eevolution.api.PPCostCollectorId;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 
 /**
  * This pojo contains properties needed to create events for {@link I_M_Transaction}s.
@@ -53,6 +53,7 @@ public final class TransactionDescriptor
 
 	ProductId productId;
 	WarehouseId warehouseId;
+	LocatorId locatorId;
 
 	PPCostCollectorId costCollectorId;
 	InOutLineId inoutLineId;
@@ -71,6 +72,7 @@ public final class TransactionDescriptor
 			final int transactionId,
 			final ProductId productId,
 			final WarehouseId warehouseId,
+			final LocatorId locatorId,
 			final Instant transactionDate,
 			final BigDecimal movementQty,
 			//
@@ -86,6 +88,7 @@ public final class TransactionDescriptor
 		this.transactionId = transactionId;
 		this.productId = productId;
 		this.warehouseId = warehouseId;
+		this.locatorId = locatorId;
 		this.transactionDate = transactionDate;
 		this.movementQty = movementQty;
 		this.costCollectorId = costCollectorId;

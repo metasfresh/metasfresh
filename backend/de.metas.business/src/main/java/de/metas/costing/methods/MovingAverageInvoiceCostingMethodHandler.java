@@ -27,14 +27,17 @@ import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostAmountAndQty;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
@@ -95,10 +98,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
-	{
-		return createCostDetailAndAdjustCurrentCosts(request);
-	}
+	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request) {return null;}
 
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
@@ -170,9 +170,17 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			amtConv = utils.convertToAcctSchemaCurrency(amt, request);
 		}
 
-		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amtConv),
-				CostDetailPreviousAmounts.of(currentCost));
+		final CostDetailCreateRequest requestEffective = request.withAmount(amtConv);
+
+		currentCost.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
+		if (requestEffective.isReversal() && currentCost.getCurrentQty().isZero())
+		{
+			currentCost.clearOwnCostPrice();
+		}
+
+		utils.saveCurrentCost(currentCost);
+
+		return utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCost));
 	}
 
 	@Override
@@ -216,7 +224,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		{
 			final CostDetailCreateRequest requestEffective;
 
-			// In case the amount was not provided but there is a positive qty incoming
+			// In case the amount was not provided, but there is a positive qty incoming
 			// use the current cost price to calculate the amount.
 			if (request.getAmt().isZero())
 			{
@@ -248,27 +256,21 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCosts)
 	{
-		return new ShipmentCosts.CostAmountAndQtyAndTypeMapper()
-		{
-			@Override
-			public CostDetailCreateResult shippedButNotNotified(final CostAmountAndQty amtAndQty, final CostAmountType type)
+		return (amtAndQty, type) -> {
+			final CostDetailCreateResult shippedButNotNotifiedResult = utils.createCostDetailRecordWithChangedCosts(
+					request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
+					CostDetailPreviousAmounts.of(currentCosts));
+
+			if (!request.isReversal())
 			{
-				final CostDetailCreateResult shippedButNotNotifiedResult = utils.createCostDetailRecordWithChangedCosts(
-						request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
-						CostDetailPreviousAmounts.of(currentCosts));
-
-				if (!request.isReversal())
-				{
-					currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
-				}
-				else
-				{
-					currentCosts.addWeightedAverage(shippedButNotNotifiedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
-				}
-
-				return shippedButNotNotifiedResult;
+				currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
+			}
+			else
+			{
+				currentCosts.addWeightedAverage(shippedButNotNotifiedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
 			}
 
+			return shippedButNotNotifiedResult;
 		};
 	}
 
@@ -329,6 +331,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 				requestEffective = request.withAmount(effectiveAmt);
 
+				//noinspection StatementWithEmptyBody
 				if (explicitCostPrice != null && currentCosts.getCurrentQty().isZero())
 				{
 					currentCosts.setOwnCostPrice(explicitCostPrice);
@@ -550,9 +553,28 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
 					.map(orderLineBL::getOrderLineById)
-					.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
+					.orElse(null);
+			if (orderLine != null)
+			{
+				return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+			}
+			else
+			{
+				final CostDetail receiptCostDetail = utils.getSingleCostDetail(CostDetailQuery.builder()
+						.acctSchemaId(acctSchemaId)
+						.costElementId(costElement.getId())
+						.documentRef(CostingDocumentRef.ofReceiptLineId(matchInv.getInoutLineId().getInOutLineId()))
+						.amtType(CostAmountType.MAIN)
+						.productId(matchInv.getProductId())
+						.build());
 
-			return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+				final CostAmount receiptAmount = receiptCostDetail.computePartialCostAmount(receiptQty, precision);
+
+				return utils.convertToAcctSchemaCurrency(
+						receiptAmount,
+						() -> currencyConversionContext,
+						acctSchemaId);
+			}
 		}
 		else if (type.isCost())
 		{

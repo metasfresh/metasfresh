@@ -20,6 +20,8 @@ SELECT i.C_Invoice_ID                                                           
                 THEN COALESCE(i.DateOrdered, o.DateOrdered, ol.dateordered)
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END)                                                                                                AS DateOrdered
+     , dt.docbasetype
+     , dt.docsubtype
      , (CASE dt.DocBaseType
             WHEN 'ARI'::BPChar THEN (CASE
                                          WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType) = ''   THEN '380'::TEXT
@@ -37,6 +39,12 @@ SELECT i.C_Invoice_ID                                                           
         END)                                                                                                AS EANCOM_DocType
      , i.GrandTotal
      , i.TotalLines
+     , i.DocStatus
+     , i.ExternalId
+     , (CASE
+            WHEN dsource.internalname IS NOT NULL
+                THEN 'int-' || dsource.internalname
+        END)                                                                                                AS DataSource
     /* IF docSubType is CS, the we don't reference the original shipment*/
      , CASE WHEN dt.DocSubType = 'CS' THEN NULL ELSE COALESCE(shipment.MovementDate, iomd.movementdate) END AS MovementDate
      , CASE WHEN dt.DocSubType = 'CS' THEN NULL ELSE COALESCE(shipment.DocumentNo, iodn.documentno) END     AS Shipment_DocumentNo
@@ -94,10 +102,10 @@ FROM C_Invoice i
          LEFT JOIN LATERAL ( SELECT io.DocumentNo,
                                     io.MovementDate
                              FROM M_InOut io
-                             left join c_invoice inv on io.m_inout_id = inv.m_inout_id and inv.c_invoice_id=i.c_invoice_id 
+                                      LEFT JOIN c_invoice inv ON io.m_inout_id = inv.m_inout_id AND inv.c_invoice_id = i.c_invoice_id
                              WHERE io.C_Order_ID = o.C_Order_ID
                                AND io.DocStatus IN ('CO', 'CL')
-                             ORDER BY inv.c_invoice_id NULLS last,io.Created
+                             ORDER BY inv.c_invoice_id NULLS LAST, io.Created
                              LIMIT 1 ) shipment ON TRUE -- for the case of missing EDI_Desadv, we still get the first M_InOut; DESADV can be switched off for individual C_BPartners
          LEFT JOIN C_BPartner rbp ON rbp.C_BPartner_ID = i.C_BPartner_ID
          LEFT JOIN C_BPartner_Location rl ON rl.C_BPartner_Location_ID = i.C_BPartner_Location_ID
@@ -105,6 +113,7 @@ FROM C_Invoice i
          LEFT JOIN C_Currency c ON c.C_Currency_ID = i.C_Currency_ID
          LEFT JOIN C_Country cc ON cc.C_Country_ID = l.C_Country_ID
          LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
+         LEFT JOIN AD_InputDataSource dsource ON dsource.AD_InputDataSource_ID = i.AD_InputDataSource_ID
          LEFT JOIN LATERAL ( SELECT i.c_invoice_id, MIN(o.dateordered) AS dateordered --only add values if there is only one unique value
                              FROM c_invoice i
                                       INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id

@@ -3,7 +3,8 @@ package de.metas.workflow.rest_api.controller.v2.ws;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocumentNoFilter;
-import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.security.UserAuthToken;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -11,7 +12,6 @@ import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.websocket.producers.WebSocketProducerFactory;
-import de.metas.mobile.application.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
@@ -67,9 +67,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 			final MobileApplicationId applicationId = StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_applicationId))
 					.map(MobileApplicationId::ofString)
 					.orElseThrow(() -> new AdempiereException("Parameter " + TOPIC_PARAM_applicationId + " is mandatory"));
-			final GlobalQRCode filterByQRCode = StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_qrCode))
-					.map(GlobalQRCode::ofString)
-					.orElse(null);
+			final ScannedCode filterByQRCode = ScannedCode.ofNullableString(queryParams.getFirst(TOPIC_PARAM_qrCode));
 			final DocumentNoFilter filterByDocumentNo = DocumentNoFilter.ofNullableString(queryParams.getFirst(TOPIC_PARAM_documentNo));
 			final ImmutableSet<WorkflowLaunchersFacetId> facetIds = extractFacetIdsFromQueryParams(queryParams);
 

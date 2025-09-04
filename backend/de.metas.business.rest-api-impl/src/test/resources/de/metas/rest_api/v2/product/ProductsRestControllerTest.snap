@@ -34,21 +34,27 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
         ],
         "description": "description1",
         "ean": "ean1",
-        "id": 100003,
+        "id": 100008,
+        "mHUPIItemProducts": [ ],
         "name": "name1",
         "productCategoryId": 3,
         "productNo": "value1",
-        "uom": "Ea"
+        "uom": "Ea",
+        "uomConversions": [ ],
+        "uomX12DE355": "PCE"
       },
       {
         "bpartners": [ ],
         "description": "description2",
         "ean": "ean2",
-        "id": 100006,
+        "id": 100011,
+        "mHUPIItemProducts": [ ],
         "name": "name2",
         "productCategoryId": 4,
         "productNo": "value2",
-        "uom": "Kg"
+        "uom": "Kg",
+        "uomConversions": [ ],
+        "uomX12DE355": "KGM"
       }
     ]
   }

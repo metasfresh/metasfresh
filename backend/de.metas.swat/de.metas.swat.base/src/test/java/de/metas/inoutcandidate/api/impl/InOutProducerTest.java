@@ -1,12 +1,11 @@
 package de.metas.inoutcandidate.api.impl;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class InOutProducerTest extends ReceiptScheduleTestBase
 {
@@ -31,7 +30,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		final I_M_ReceiptSchedule previousReceiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10);
 		final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertFalse(isNewRequired);
+		Assertions.assertFalse(isNewRequired);
 	}
 
 	/**
@@ -43,7 +42,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		final I_M_ReceiptSchedule previousReceiptSchedule = createReceiptSchedule(bpartner1, warehouse2, date, product1_wh1, 10);
 		final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -55,7 +54,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		final I_M_ReceiptSchedule previousReceiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10);
 		final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule(bpartner2, warehouse1, date, product1_wh1, 10);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -67,7 +66,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		final I_M_ReceiptSchedule previousReceiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10);
 		final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date2, product1_wh1, 10);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -79,7 +78,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		final I_M_ReceiptSchedule previousReceiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10);
 		final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product2_wh1, 10);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertFalse(isNewRequired);
+		Assertions.assertFalse(isNewRequired);
 	}
 
 	/**
@@ -91,7 +90,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		final I_M_ReceiptSchedule previousReceiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10);
 		final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 20);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertFalse(isNewRequired);
+		Assertions.assertFalse(isNewRequired);
 	}
 
 	/**
@@ -105,7 +104,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		previousReceiptSchedule.setC_DocType_ID(123);
 		receiptSchedule.setC_DocType_ID(100);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -119,7 +118,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		previousReceiptSchedule.setC_BPartner_Location_ID(12);
 		receiptSchedule.setC_BPartner_Location_ID(13);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -133,7 +132,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		previousReceiptSchedule.setC_BPartner_Override_ID(111);
 		receiptSchedule.setC_BPartner_Override_ID(123);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -147,7 +146,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		previousReceiptSchedule.setM_Warehouse_Override_ID(12);
 		receiptSchedule.setM_Warehouse_Override_ID(14);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -161,7 +160,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		previousReceiptSchedule.setAD_User_ID(12);
 		receiptSchedule.setAD_User_ID(14);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -179,7 +178,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		receiptSchedule.setAD_User_Override_ID(10);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
 
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -193,7 +192,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		previousReceiptSchedule.setAD_Org_ID(12);
 		receiptSchedule.setAD_Org_ID(13);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertTrue(isNewRequired);
+		Assertions.assertTrue(isNewRequired);
 	}
 
 	/**
@@ -207,7 +206,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 		previousReceiptSchedule.setAD_Org_ID(10);
 		receiptSchedule.setAD_Org_ID(10);
 		final boolean isNewRequired = inOutProducer.isNewReceiptRequired(previousReceiptSchedule, receiptSchedule);
-		Assert.assertFalse(isNewRequired);
+		Assertions.assertFalse(isNewRequired);
 	}
 
 }

@@ -17,6 +17,7 @@ public class JsonPackingInstructionsRequest
 	@NonNull Identifier tu;
 	@NonNull Identifier product;
 	@NonNull BigDecimal qtyCUsPerTU;
+	@Nullable String tu_ean;
 	
 	@Nullable Identifier lu;
 	int qtyTUsPerLU;

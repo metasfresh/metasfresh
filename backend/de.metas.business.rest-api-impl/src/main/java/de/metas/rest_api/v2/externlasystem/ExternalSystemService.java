@@ -55,6 +55,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
@@ -129,7 +130,8 @@ public class ExternalSystemService
 		// note: when the AD_PInstance is created by the schedule, it's also stored as string
 		final String configIdAsString = Integer.toString(externalSystemParentConfig.getChildConfig().getId().getRepoId());
 
-		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
+		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
+				.setProcessCalledFrom(ProcessCalledFrom.API);
 		processInfoBuilder.setAD_Process_ID(processId.getRepoId());
 		processInfoBuilder.addParameter(PARAM_EXTERNAL_REQUEST, invokeExternalSystemProcessRequest.getRequest());
 		processInfoBuilder.addParameter(PARAM_CHILD_CONFIG_ID, configIdAsString);

@@ -26,14 +26,14 @@ public class HUQRCodeGenerateRequest
 {
 	int count;
 	@NonNull HuPackingInstructionsId huPackingInstructionsId;
-	@NonNull ProductId productId;
+	@Nullable ProductId productId;
 	@NonNull ImmutableList<Attribute> attributes;
 
 	@Builder
 	private HUQRCodeGenerateRequest(
 			final int count,
 			@Nullable final HuPackingInstructionsId huPackingInstructionsId,
-			@NonNull final ProductId productId,
+			@Nullable final ProductId productId,
 			@NonNull @Singular("_attribute") final List<Attribute> attributes)
 	{
 		Check.assumeGreaterThanZero(count, "count");

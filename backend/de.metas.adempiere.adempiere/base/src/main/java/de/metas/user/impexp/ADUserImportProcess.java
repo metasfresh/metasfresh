@@ -90,7 +90,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -172,7 +172,8 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 		log.debug("Set R_RequestType_ID for {} records", no);
 	}
 
-	private final void markAsError(final String errorMsg, final String sqlWhereClause)
+	@SuppressWarnings("SameParameterValue")
+	private void markAsError(final String errorMsg, final String sqlWhereClause)
 	{
 		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
@@ -183,7 +184,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	}
 
 	@Override
-	protected I_I_User retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_User retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		final PO po = TableModelLoader.instance.getPO(ctx, I_I_User.Table_Name, rs, ITrx.TRXNAME_ThreadInherited);
 		return InterfaceWrapperHelper.create(po, I_I_User.class);

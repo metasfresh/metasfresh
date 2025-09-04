@@ -22,6 +22,7 @@
 
  package de.metas.cucumber.stepdefs.attribute;
 
+ import de.metas.common.util.CoalesceUtil;
  import de.metas.cucumber.stepdefs.DataTableUtil;
  import de.metas.cucumber.stepdefs.StepDefConstants;
  import de.metas.util.Services;
@@ -29,11 +30,13 @@
  import io.cucumber.java.en.And;
  import lombok.NonNull;
  import org.adempiere.ad.dao.IQueryBL;
+ import org.adempiere.model.InterfaceWrapperHelper;
  import org.compiere.model.I_M_Attribute;
 
  import java.util.List;
  import java.util.Map;
 
+ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
  import static org.assertj.core.api.Assertions.*;
 
  public class M_Attribute_StepDef
@@ -65,6 +68,35 @@
 
 			 final String attributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			 attributeTable.putOrReplace(attributeIdentifier, attributeRecord);
+		 }
+	 }
+
+	 @And("metasfresh contains M_Attributes:")
+	 public void metasfresh_contains_M_Attributes(@NonNull final DataTable dataTable)
+	 {
+		 for (final Map<String, String> row : dataTable.asMaps())
+		 {
+			 final String attrIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
+
+			 final String value = DataTableUtil.extractStringForColumnName(row, I_M_Attribute.COLUMNNAME_Value);
+			 final String name = DataTableUtil.extractStringForColumnName(row, I_M_Attribute.COLUMNNAME_Name);
+			 final String type = DataTableUtil.extractStringForColumnName(row, I_M_Attribute.COLUMNNAME_AttributeValueType);
+
+			 
+			 final I_M_Attribute attributeRecord = CoalesceUtil.coalesceSuppliersNotNull(
+					 () -> queryBL.createQueryBuilder(I_M_Attribute.class)
+							 .addOnlyActiveRecordsFilter()
+							 .addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value)
+							 .create()
+							 .firstOnly(I_M_Attribute.class),
+					 () -> InterfaceWrapperHelper.newInstance(I_M_Attribute.class));
+
+			 attributeRecord.setValue(value);
+			 attributeRecord.setName(name);
+			 attributeRecord.setAttributeValueType(type);
+			 InterfaceWrapperHelper.saveRecord(attributeRecord);
+
+			 attributeTable.putOrReplace(attrIdentifier, attributeRecord);
 		 }
 	 }
  }

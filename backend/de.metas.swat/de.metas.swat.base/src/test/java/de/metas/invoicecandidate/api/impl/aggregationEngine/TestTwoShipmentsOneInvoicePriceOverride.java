@@ -22,15 +22,14 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
-
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestTwoShipmentsOneInvoicePriceOverride extends AbstractTwoInOutsOneInvoiceSalesTests
 {
@@ -38,11 +37,11 @@ public class TestTwoShipmentsOneInvoicePriceOverride extends AbstractTwoInOutsOn
 	 * Makes sure that our <code>priceEntered_Override</code> is actually different from the "normal" price, to make sure that the tests actually matter.
 	 */
 	@Override
-	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> inOutLines)
 	{
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
-			assertThat(invoiceCandidate.getPriceEntered(), not(comparesEqualTo(config_GetPriceEntered_Override())));
+			assertThat(invoiceCandidate.getPriceEntered()).isNotEqualByComparingTo(config_GetPriceEntered_Override());
 		}
 
 		super.step_validate_before_aggregation(invoiceCandidates, inOutLines);

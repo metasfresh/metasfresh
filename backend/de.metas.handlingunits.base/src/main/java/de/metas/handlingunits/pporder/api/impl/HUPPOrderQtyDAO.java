@@ -141,6 +141,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		return retrieveOrderQtys(Env.getCtx(), ppOrderId, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	@Cached(cacheName = I_PP_Order_Qty.Table_Name + "#by#PP_Order_ID", expireMinutes = 10)
 	ImmutableList<I_PP_Order_Qty> retrieveOrderQtys(@CacheCtx final Properties ctx, @NonNull final PPOrderId ppOrderId, @CacheTrx final String trxName)
 	{
@@ -148,6 +149,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 				.createQueryBuilder(I_PP_Order_Qty.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Qty.COLUMN_PP_Order_ID, ppOrderId)
+				.orderBy(I_PP_Order_Qty.COLUMNNAME_PP_Order_Qty_ID)
 				.create()
 				.listImmutable(I_PP_Order_Qty.class);
 	}

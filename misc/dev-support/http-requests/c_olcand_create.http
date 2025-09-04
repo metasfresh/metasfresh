@@ -1,0 +1,24 @@
+POST {{baseURL}}/api/v2/orders/sales/candidates
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+accept: application/json;charset=UTF-8
+
+{
+  "orgCode": "001",
+  "externalLineId": "1", 
+  "externalHeaderId": "1",
+  "dataSource": "int-DEST.de.metas.ordercandidate",
+  "bpartner": {
+    "bpartnerIdentifier": "gln-987654321",
+    "bpartnerLocationIdentifier": "gln-987654321"
+  },
+  "dateRequired": "2021-08-20",
+  "dateOrdered": "2021-07-20",
+  "orderDocType": "SalesOrder",
+  "productIdentifier": "gtin-12345678",
+  "qty": 10,
+  "price": 5,
+  "currencyCode": "EUR",
+  "discount": 0,
+  "poReference": "po_ref_mock"
+}

@@ -61,6 +61,7 @@ import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -157,6 +158,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// Parameters
 	private Properties _ctx;
 	private String _trxName;
+	@Setter
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
@@ -201,6 +203,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private IInvoiceHeader header;
 		private Properties ctx;
 
+		@Nullable
 		private I_C_Invoice createdInvoice = null;
 		private final List<I_AD_Note> notifications = new ArrayList<>();
 
@@ -266,9 +269,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
 			}
 
-			//
-			// Complete the invoice and assume it's status is COmpleted.
-			docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			if (getInvoicingParams().isCompleteInvoices())
+			{
+				// Complete the invoice and assume its status is COmpleted.
+				docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			}
+			else
+			{
+				docActionBL.processEx(invoice, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);
+			}
 
 			//
 			// Set the created invoice which will be retrieved by the caller.
@@ -405,7 +414,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(salesRepId));
 			}
-			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
 			invoice.setIsSOTrx(header.isSOTrx());
 
@@ -431,6 +439,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
+			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;
@@ -800,7 +809,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoiceCandDAO.save(icRecord);
 		}
 
-		private I_M_AttributeSetInstance createASI(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+		@Nullable
+		private I_M_AttributeSetInstance createASI(@Nullable final List<IInvoiceLineAttribute> invoiceLineAttributes)
 		{
 			// If there are no attributes, return a null ASI
 			if (Check.isEmpty(invoiceLineAttributes))
@@ -1134,14 +1144,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		return candidates;
 	}
 
-	/**
-	 * Set the invoice generator to use in invoicing.
-	 */
-	public void setInvoiceGeneratorClass(final Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass)
-	{
-		this.invoiceGeneratorClass = invoiceGeneratorClass;
-	}
-
 	@Override
 	public InvoiceCandBLCreateInvoices setContext(final Properties ctx, final String trxName)
 	{
@@ -1202,7 +1204,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
-	public IInvoiceGenerator setInvoicingParams(final IInvoicingParams invoicingParams)
+	public IInvoiceGenerator setInvoicingParams(final @NonNull IInvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;

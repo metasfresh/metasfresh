@@ -54,7 +54,7 @@ public class CurrentPickingTarget
 	public boolean isPickingSlotSet() {return pickingSlot != null;}
 
 	public Optional<PickingSlotIdAndCaption> getPickingSlot() {return Optional.ofNullable(pickingSlot);}
-	
+
 	public Optional<PickingSlotId> getPickingSlotId() {return Optional.ofNullable(pickingSlot).map(PickingSlotIdAndCaption::getPickingSlotId);}
 
 	public Optional<String> getPickingSlotCaption() {return Optional.ofNullable(pickingSlot).map(PickingSlotIdAndCaption::getCaption);}
@@ -113,5 +113,10 @@ public class CurrentPickingTarget
 		return TUPickingTarget.equals(this.tuPickingTarget, tuPickingTarget)
 				? this
 				: toBuilder().tuPickingTarget(tuPickingTarget).build();
+	}
+
+	public boolean matches(@NonNull final HuId huId)
+	{
+		return luPickingTarget != null && HuId.equals(luPickingTarget.getLuId(), huId);
 	}
 }

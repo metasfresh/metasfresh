@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.quickinput.orderline;
 
 import de.metas.adempiere.callout.OrderFastInput;
@@ -10,6 +32,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.contracts.ConditionsId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -29,11 +54,13 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.ui.web.order.BOMExploderCommand;
 import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
+import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
@@ -45,6 +72,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -57,31 +85,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 {
@@ -90,13 +97,15 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
 	private final Collection<IOrderLineInputValidator> validators = SpringContextHolder.instance.getBeansOfType(IOrderLineInputValidator.class);
 
 	@Override
-	public Set<DocumentId> process(final QuickInput quickInput)
+	public Set<DocumentId> process(@NonNull final QuickInput quickInput)
 	{
 		final Set<OrderLineId> newOrderLineIds;
 		if (extractGroupTemplateId(quickInput).isPresent())
@@ -117,6 +126,10 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		if (QuickInputConstants.isLUFieldsEnabled(SOTrx.ofBoolean(order.isSOTrx())))
+		{
+			throw new AdempiereException("Generating order lines from group template is not supported when LU fields are enabled");
+		}
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
 		final ConditionsId contractConditionsId = extractContractConditionsId(quickInput).orElse(null);
@@ -204,35 +217,62 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		}
 	}
 
-	private OrderLineCandidate toOrderLineCandidate(final QuickInput quickInput)
+	private OrderLineCandidate toOrderLineCandidate(@NonNull final QuickInput quickInput)
 	{
 		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 
 		// Validate quick input:
-		final BigDecimal quickInputQty = orderLineQuickInput.getQty();
-		if (quickInputQty == null || quickInputQty.signum() <= 0)
-		{
-			logger.warn("Invalid Qty={} for {}", quickInputQty, orderLineQuickInput);
-			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
-		}
+		final BigDecimal quickInputTUQty;
+		final BigDecimal quickInputLUQty = orderLineQuickInput.getQtyLU();
+		huPackingAwareBL.validateLUQty(quickInputLUQty);
+
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(orderLineQuickInput.getM_LU_HU_PI_ID());
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID());
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+
+		final boolean isLUFieldsUsed = QuickInputConstants.isLUFieldsEnabled(soTrx);
+		if (isLUFieldsUsed)
+		{
+			checkValidQty(IOrderLineQuickInput.COLUMNNAME_QtyLU, quickInputLUQty, orderLineQuickInput);
+			final Optional<I_M_HU_PI_Item> tuPIItem = handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, Objects.requireNonNull(luPIId), Objects.requireNonNull(piItemProductId));
+			final BigDecimal tuPiItemCapacity = tuPIItem.map(I_M_HU_PI_Item::getQty).orElse(BigDecimal.ONE);
+			quickInputTUQty = Objects.requireNonNull(quickInputLUQty).multiply(tuPiItemCapacity);
+		}
+		else
+		{
+			quickInputTUQty = orderLineQuickInput.getQty();
+			checkValidQty(IOrderLineQuickInput.COLUMNNAME_Qty, quickInputTUQty, orderLineQuickInput);
+		}
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(orderLineQuickInput.getM_Product_ID());
 		final UomId uomId = productBL.getStockUOMId(productAndAttributes.getProductId());
+		final Quantity luQty = quickInputLUQty == null ? null : Quantitys.of(quickInputLUQty, uomId);
 
 		return OrderLineCandidate.builder()
 				.orderId(orderId)
 				.productId(productAndAttributes.getProductId())
 				.attributes(productAndAttributes.getAttributes())
-				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
-				.qty(Quantitys.of(quickInputQty, uomId))
+				.piItemProductId(piItemProductId)
+				.qty(Quantitys.of(quickInputTUQty, uomId))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(bpartnerId)
-				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.luId(luPIId)
+				.luQty(luQty)
+				.soTrx(soTrx)
 				.build();
+	}
+
+	private static void checkValidQty(final String columnName, final @Nullable BigDecimal quickInputTUQty, final IOrderLineQuickInput orderLineQuickInput)
+	{
+		if (quickInputTUQty == null || quickInputTUQty.signum() <= 0)
+		{
+			logger.warn("Invalid {}={} for {}", columnName, quickInputTUQty, orderLineQuickInput);
+			throw new AdempiereException(columnName + " shall be greater than zero"); // TODO trl
+		}
 	}
 
 	private List<OrderLineCandidate> explodePhantomBOM(final OrderLineCandidate initialCandidate)
@@ -285,6 +325,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		huPackingAware.setUomId(candidate.getQty().getUomId());
 		huPackingAware.setAsiId(createASI(candidate.getProductId(), candidate.getAttributes()));
 		huPackingAware.setPiItemProductId(candidate.getPiItemProductId());
+		huPackingAware.setLuId(candidate.getLuId());
+		huPackingAware.setQtyLU(Quantitys.toBigDecimalOrNull(candidate.getLuQty()));
 
 		//
 		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, candidate.getQty().toBigDecimal());

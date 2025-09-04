@@ -167,7 +167,7 @@ public class MobileUI_Picking_StepDef
 		}
 
 		//
-		final IHUQRCode itemQRCode = row.getAsOptionalString("QRCode").map(HUQRCodesService::toHUQRCode).orElse(null);
+		final IHUQRCode itemQRCode = row.getAsOptionalString("QRCode").map(huQRCodesService::parse).orElse(null);
 		if (itemQRCode != null)
 		{
 			requestBuilder

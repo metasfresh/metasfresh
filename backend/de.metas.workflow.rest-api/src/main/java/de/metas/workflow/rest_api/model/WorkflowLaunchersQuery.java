@@ -24,8 +24,8 @@ package de.metas.workflow.rest_api.model;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocumentNoFilter;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.mobile.application.MobileApplicationId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.Builder;
@@ -33,6 +33,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -40,12 +41,12 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class WorkflowLaunchersQuery
 {
 	@NonNull MobileApplicationId applicationId;
 	@NonNull UserId userId;
-	@Nullable GlobalQRCode filterByQRCode;
+	@Nullable ScannedCode filterByQRCode;
 	@Nullable DocumentNoFilter filterByDocumentNo;
 	@Nullable ImmutableSet<WorkflowLaunchersFacetId> facetIds;
 
@@ -57,5 +58,29 @@ public class WorkflowLaunchersQuery
 	public WorkflowLaunchersQuery withLimitIfNotSet(@NonNull final Supplier<QueryLimit> supplier)
 	{
 		return limit != null ? this : withLimit(supplier.get());
+	}
+
+	public void assertNoFilterByDocumentNo()
+	{
+		if (filterByDocumentNo != null)
+		{
+			throw new AdempiereException("Filtering by DocumentNo is not supported");
+		}
+	}
+
+	public void assertNoFilterByQRCode()
+	{
+		if (filterByQRCode != null)
+		{
+			throw new AdempiereException("Filtering by QR Code is not supported");
+		}
+	}
+
+	public void assertNoFacetIds()
+	{
+		if (facetIds != null && !facetIds.isEmpty())
+		{
+			throw new AdempiereException("Filtering by facets is not supported");
+		}
 	}
 }

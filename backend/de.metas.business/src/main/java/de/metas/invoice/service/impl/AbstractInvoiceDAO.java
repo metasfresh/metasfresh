@@ -191,7 +191,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Deprecated
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
-		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, true);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
 	}
 
 	@Override
@@ -277,7 +277,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId)
+	public List<InvoiceTax> retrieveTaxes(@NonNull final InvoiceId invoiceId)
 	{
 		return retrieveTaxRecords(invoiceId)
 				.stream()
@@ -286,7 +286,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId)
+	public List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull final InvoiceId invoiceId)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceTax.class)
 				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoiceId)
@@ -462,7 +462,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.createQueryBuilder(I_C_Invoice.class)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(InvoiceId::ofRepoId)
+				.idsAsSet(InvoiceId::ofRepoId)
 				.stream();
 	}
 
@@ -480,6 +480,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceLineId invoiceLineId)
 	{
 		return loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_C_Invoice> T getByIdOutOfTrx(@NonNull final InvoiceId invoiceId, @NonNull final Class<T> clazz)
+	{
+		return loadOutOfTrx(invoiceId, clazz);
 	}
 
 	@Override
@@ -654,7 +660,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, id)
 				.create()
-				.listIds(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
+				.idsAsSet(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
 	}
 
 	private boolean matchesDocType(@NonNull final I_C_Invoice serviceFeeInvoiceCandidate, @Nullable final DocBaseAndSubType targetDocType)

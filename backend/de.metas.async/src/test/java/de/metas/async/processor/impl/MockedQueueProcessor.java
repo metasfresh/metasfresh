@@ -32,7 +32,7 @@ import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 import java.util.Set;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * @author tsa
  * 
  */
-@Ignore
+@Disabled
 public class MockedQueueProcessor implements IQueueProcessor
 {
 

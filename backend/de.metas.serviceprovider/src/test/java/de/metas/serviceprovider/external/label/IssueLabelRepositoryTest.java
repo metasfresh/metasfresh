@@ -31,21 +31,21 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_BUD_6_LABEL;
 import static de.metas.serviceprovider.TestConstants.MOCK_EST_4_25_LABEL;
 import static de.metas.serviceprovider.TestConstants.MOCK_ISSUE_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_VALUE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class IssueLabelRepositoryTest
 {
 	private final IssueLabelRepository issueLabelRepository = new IssueLabelRepository(Services.get(IQueryBL.class));
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

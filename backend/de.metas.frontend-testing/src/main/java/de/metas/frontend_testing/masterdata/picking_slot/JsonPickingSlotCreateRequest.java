@@ -13,4 +13,5 @@ import javax.annotation.Nullable;
 public class JsonPickingSlotCreateRequest
 {
 	@Nullable Identifier locator;
+	@Nullable Identifier bpartnerLocation;
 }

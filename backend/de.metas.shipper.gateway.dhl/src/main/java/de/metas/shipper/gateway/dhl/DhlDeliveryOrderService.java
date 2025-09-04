@@ -27,12 +27,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
-import de.metas.mpackage.Package;
-import de.metas.mpackage.PackageId;
-import de.metas.mpackage.PackageItem;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -49,6 +45,10 @@ import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
+import de.metas.shipping.mpackage.Package;
+import de.metas.shipping.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -67,6 +67,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.getAllShipmentOrdersForRequest;
 
@@ -81,7 +82,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-	private final InOutPackageRepository inOutPackageRepository;
+	private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository;
 	private final CurrencyRepository currencyRepository;
 	private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository;
 
@@ -139,7 +140,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 					}
 
 					return DhlCustomDeliveryDataDetail.builder()
-							.packageId(PackageId.ofRepoId(po.getPackageId()))
+							.packageId(PackageId.ofRepoId(po.getM_Package_ID()))
 							.awb(po.getawb())
 							.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
 							.pdfLabelData(po.getPdfLabelData())
@@ -158,7 +159,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private DhlCustomsDocument getCustomsDocument(@NonNull final I_DHL_ShipmentOrder firstOrder, @NonNull final I_DHL_ShipmentOrder po, @Nullable final String orgBpEORI)
 	{
 		final I_C_BPartner consigneeBpartner = bpartnerDAO.getById(firstOrder.getC_BPartner_ID());
-		final Package mPackage = inOutPackageRepository.getPackageById(PackageId.ofRepoId(po.getPackageId()));
+		final Package mPackage = purchaseOrderToShipperTransportationRepository.getPackageById(PackageId.ofRepoId(po.getM_Package_ID()));
 
 		final ImmutableList<DhlCustomsItem> dhlCustomsItems = mPackage.getPackageContents()
 				.stream()
@@ -176,7 +177,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	{
 		final ProductId productId = packageItem.getProductId();
 		final I_M_Product product = productDAO.getById(productId);
-		final BigDecimal weightInKg = productBL.getWeight(product, productBL.getWeightUOM(product));
+		final BigDecimal weightInKg = computeNominalGrossWeightInKg(packageItem).orElse(BigDecimal.ZERO);
 		Quantity packagedQuantity;
 		try
 		{
@@ -197,5 +198,14 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 				.packagedQuantity(packagedQuantity.intValueExact())
 				.itemValue(Amount.of(orderLine.getPriceEntered(), currencyCode))
 				.build();
+	}
+
+	private Optional<BigDecimal> computeNominalGrossWeightInKg(final PackageItem packageItem)
+	{
+		final ProductId productId = packageItem.getProductId();
+		final Quantity quantity = packageItem.getQuantity();
+		return productBL.computeGrossWeight(productId, quantity)
+				.map(weight -> uomConversionBL.convertToKilogram(weight, productId))
+				.map(Quantity::getAsBigDecimal);
 	}
 }
