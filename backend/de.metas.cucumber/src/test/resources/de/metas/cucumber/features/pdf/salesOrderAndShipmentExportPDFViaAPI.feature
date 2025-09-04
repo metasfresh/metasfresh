@@ -84,3 +84,16 @@ Feature: PDF Export Tests via API
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
+    And add HTTP headers
+      | Key          | Value                    |
+      | Content-Type | application/octet-stream |
+      | accept       | application/octet-stream |
+
+    And the metasfresh REST-API endpoint path '/api/v2/orders/sales/01/pdf' receives a 'GET' request with the headers from context, expecting status='404'
+
+    And add HTTP headers
+      | Key          | Value                    |
+      | Content-Type | application/octet-stream |
+      | accept       | application/octet-stream |
+
+    And the metasfresh REST-API endpoint path '/api/v2/shipments/01/pdf' receives a 'GET' request with the headers from context, expecting status='404'
