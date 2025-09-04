@@ -804,7 +804,7 @@ public class M_InOut_StepDef
 		AccountingCucumberHelper.waitUtilPosted(inoutRefs);
 	}
 
-	@And("^store shipment endpointPath (.*) in context$")
+	@And("^store shipment PDF endpointPath (.*) in context$")
 	public void store_shipment_endpointPath_in_context(@NonNull String endpointPath)
 	{
 		final String regex = ".*(:[a-zA-Z]+)/?.*";

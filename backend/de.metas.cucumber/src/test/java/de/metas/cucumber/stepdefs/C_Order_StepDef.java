@@ -883,7 +883,7 @@ public class C_Order_StepDef
 				);
 	}
 
-	@And("^store sales order endpointPath (.*) in context$")
+	@And("^store sales order PDF endpointPath (.*) in context$")
 	public void store_salesOrder_endpointPath_in_context(@NonNull String endpointPath)
 	{
 		final String regex = ".*(:[a-zA-Z]+)/?.*";
