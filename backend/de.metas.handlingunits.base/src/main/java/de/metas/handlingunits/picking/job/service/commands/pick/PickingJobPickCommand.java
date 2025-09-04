@@ -202,6 +202,7 @@ public class PickingJobPickCommand
 				.productBL(Services.get(IProductBL.class))
 				.handlingUnitsBL(handlingUnitsBL)
 				.huQRCodesService(huQRCodesService)
+				.warehouseBL(warehouseBL)
 				.build();
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(uomConversionBL)
@@ -603,8 +604,10 @@ public class PickingJobPickCommand
 		else
 		{
 			final ProductId productId = getProductId();
-			final BPartnerId customerId = getShipmentScheduleInfo().getBpartnerId();
-			return pickFromHUQRCodeResolver.resolve(pickFromHUQRCode, productId, customerId);
+			final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
+			final BPartnerId customerId = shipmentScheduleInfo.getBpartnerId();
+			final WarehouseId warehouseId = shipmentScheduleInfo.getWarehouseId();
+			return pickFromHUQRCodeResolver.resolve(pickFromHUQRCode, productId, customerId, warehouseId);
 		}
 	}
 

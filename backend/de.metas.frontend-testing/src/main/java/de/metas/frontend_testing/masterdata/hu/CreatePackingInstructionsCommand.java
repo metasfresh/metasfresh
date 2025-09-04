@@ -51,7 +51,7 @@ public class CreatePackingInstructionsCommand
 
 		final PIResult tu = createPI(request.getTu(), HuUnitType.TU);
 		final HuPackingInstructionsItemId tuPIItemId = createPIItem_Material(tu);
-		final JsonTestId tuPIItemProductTestId = createPIItemProduct(request.getTu(), tuPIItemId);
+		final JsonTestId tuPIItemProductTestId = createPIItemProduct(request.getTu(), request.getProduct(), tuPIItemId);
 
 		final PIResult lu;
 		final I_M_HU_PI_Item luPIItem;
@@ -160,7 +160,10 @@ public class CreatePackingInstructionsCommand
 		return HuPackingInstructionsItemId.ofRepoId(huPiItemRecord.getM_HU_PI_Item_ID());
 	}
 
-	private JsonTestId createPIItemProduct(Identifier tuIdentifier, HuPackingInstructionsItemId tuPIItemId)
+	private JsonTestId createPIItemProduct(
+			@NonNull final Identifier tuIdentifier,
+			@NonNull final Identifier productIdentifier,
+			@NonNull final HuPackingInstructionsItemId tuPIItemId)
 	{
 		final ProductId productId = context.getId(request.getProduct(), ProductId.class);
 		final UomId uomId = productBL.getStockUOMId(productId);
@@ -175,7 +178,9 @@ public class CreatePackingInstructionsCommand
 		record.setEAN_TU(StringUtils.trimBlankToNull(request.getTu_ean()));
 		saveRecord(record);
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID());
-		context.putIdentifier(tuIdentifier, piItemProductId);
+
+		context.putIdentifierIfAbsent(tuIdentifier, piItemProductId);
+		context.putIdentifier(Identifier.ofString(tuIdentifier.getAsString() + "_" + productIdentifier.getAsString()), piItemProductId);
 
 		return MaterialReceiptActivityHandler.extractNewTUTargetTestId(record);
 	}

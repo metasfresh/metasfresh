@@ -23,6 +23,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 
 import java.util.Objects;
 
@@ -37,12 +39,14 @@ class PickFromHUQRCodeResolver
 	@NonNull private final IProductBL productBL;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final IWarehouseBL warehouseBL;
 
 	@NonNull
 	public HUInfo resolve(
 			@NonNull final IHUQRCode pickFromHUQRCode,
 			@NonNull final ProductId productId,
-			@NonNull final BPartnerId customerId)
+			@NonNull final BPartnerId customerId,
+			@NonNull final WarehouseId warehouseId)
 	{
 		if (pickFromHUQRCode instanceof HUQRCode)
 		{
@@ -65,7 +69,7 @@ class PickFromHUQRCodeResolver
 		{
 			final EAN13HUQRCode ean13QRCode = (EAN13HUQRCode)pickFromHUQRCode;
 			validateQRCode_EAN13ProductNo(ean13QRCode, productId, customerId);
-			return findHUByExternalLotNo(ean13QRCode);
+			return findFirstByWarehouseAndProduct(warehouseId, productId);
 		}
 		else if (pickFromHUQRCode instanceof CustomHUQRCode)
 		{
@@ -88,6 +92,11 @@ class PickFromHUQRCodeResolver
 				.orElseThrow(() -> new AdempiereException(ERR_NoLotNoFoundForQRCode)
 						.appendParametersToMessage()
 						.setParameter("LotNumber", lotNumber));
+		return getHUInfoById(huId);
+	}
+
+	private HUInfo getHUInfoById(final HuId huId)
+	{
 		final HUQRCode huQRCode = huQRCodesService.getQRCodeByHuId(huId);
 		return HUInfo.ofHuIdAndQRCode(huId, huQRCode);
 	}
@@ -106,8 +115,22 @@ class PickFromHUQRCodeResolver
 				.orElseThrow(() -> new AdempiereException(ERR_NotEnoughTUsFound) // TODO introduce a better AD_Message
 						.setParameter("QRCode", scannedQRCode));
 
-		final HUQRCode huQRCode = huQRCodesService.getQRCodeByHuId(huId);
-		return HUInfo.ofHuIdAndQRCode(huId, huQRCode);
+		return getHUInfoById(huId);
+	}
+
+	private HUInfo findFirstByWarehouseAndProduct(@NonNull final WarehouseId warehouseId, @NonNull final ProductId productId)
+	{
+		final HuId huId = handlingUnitsBL.createHUQueryBuilder()
+				.setHUStatus(X_M_HU.HUSTATUS_Active)
+				.setOnlyTopLevelHUs()
+				.addOnlyWithProductId(productId)
+				.addOnlyInLocatorIds(warehouseBL.getLocatorIdsOfTheSamePickingGroup(warehouseId))
+				.setExcludeReserved()
+				.firstId()
+				.orElseThrow(() -> new AdempiereException(ERR_NotEnoughTUsFound)) // TODO introduce a better AD_Message
+				;
+
+		return getHUInfoById(huId);
 	}
 
 	private void validateQRCode_GTIN(
