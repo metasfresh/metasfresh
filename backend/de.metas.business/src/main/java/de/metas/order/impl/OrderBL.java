@@ -907,6 +907,17 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	@Nullable
+	public BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_C_Order orderRecord)
+	{
+		if (orderRecord.isDropShip() && orderRecord.getDropShip_BPartner_ID() > 0)
+		{
+			return BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID());
+		}
+		return BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
+	}
+
+	@Override
 	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
 	{

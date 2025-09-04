@@ -237,6 +237,7 @@ public class GetProductsCommand
 				.description(trls.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()).translate(adLanguage))
 				.ean(productRecord.getUPC())
 				.uom(servicesFacade.getUOMSymbol(uomId))
+				.uomX12DE355(servicesFacade.getX12DE355(uomId))
 				.discontinuedFrom(discontinuedFrom)
 				.bpartners(productBPartners.get(productId))
 				.albertaProductInfo(getJsonAlbertaProductInfoFor(productId))
@@ -309,8 +310,8 @@ public class GetProductsCommand
 	private JsonProductUOMConversion toJsonProductUOMConversion(final UOMConversionRate record)
 	{
 		return JsonProductUOMConversion.builder()
-				.fromUomCode(servicesFacade.getX12DE355(record.getFromUomId()))
-				.toUomCode(servicesFacade.getX12DE355(record.getToUomId()))
+				.uomX12DE355From(servicesFacade.getX12DE355(record.getFromUomId()))
+				.uomX12DE355To(servicesFacade.getX12DE355(record.getToUomId()))
 				.fromToMultiplier(record.getFromToMultiplier())
 				.catchUOMForProduct(record.isCatchUOMForProduct())
 				.build();
