@@ -171,7 +171,7 @@ public class DB
 		try
 		{
 			// If we are trying to set exactly the same connection then do nothing
-			if (s_connection != null && s_connection.equals(cc))
+			if (cc.equals(s_connection))
 			{
 				return;
 			}
@@ -784,7 +784,7 @@ public class DB
 		//
 		int no = -1;
 		SQLWarning warning = null;
-		CPreparedStatement cs = statementsFactory.newCPreparedStatement(
+		final CPreparedStatement cs = statementsFactory.newCPreparedStatement(
 				ResultSet.TYPE_FORWARD_ONLY,
 				ResultSet.CONCUR_UPDATABLE,
 				request.getSql(),
@@ -2474,6 +2474,32 @@ public class DB
 		return result;
 	}
 
+	/**
+	 * Counts the maximum number of inheritance levels in a hierarchical relationship
+	 * for the given table and parent column. This is determined using a recursive query.
+	 * Assumes the primary key is tableName + "_ID"
+	 *
+	 * @param trxName the transaction name, which can be null to use the default transaction
+	 * @param tableName the name of the database table where the hierarchical data resides; must not be null
+	 * @param parentColumn the name of the column representing the parent-child relationship; must not be null
+	 * @return the maximum number of inheritance levels in the hierarchy; returns 1 if there are no child records with a parent defined
+	 * @throws IllegalArgumentException if tableName or parentColumn is null
+	 */
+	public int countMaxInheritanceLevels(@Nullable final String trxName, @NonNull final String tableName, @NonNull final String parentColumn)
+	{
+		final String query = "WITH RECURSIVE GroupHierarchy AS (" +
+				"    SELECT " + tableName + "_ID, " + parentColumn + ", 1 AS Level " +
+				"    FROM " + tableName +
+				"    WHERE " + parentColumn + " IS NOT NULL " +
+				"    UNION ALL " +
+				"    SELECT t1." + tableName + "_ID, t1." + parentColumn + ", t2.Level + 1 AS Level " +
+				"    FROM " + tableName + " t1 " +
+				"    INNER JOIN GroupHierarchy t2 ON t1." + parentColumn + " = t2." + tableName + "_ID" +
+				") " +
+				"SELECT COALESCE(max(Level) + 1, 1) FROM GroupHierarchy ";
+		return DB.getSQLValueEx(trxName, query);
+	}
+
 	public boolean isUseNativeSequences(final int AD_Client_ID, final String TableName)
 	{
 		log.debug("Checking if we shall use native sequences for {} (AD_Client_ID={})", TableName, AD_Client_ID);
@@ -2936,14 +2962,7 @@ public class DB
 
 			//
 			rs = md.getColumns(catalog, schema, tableNameNorm, columnNameNorm);
-			if (rs.next())
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return rs.next();
 		}
 		catch (final SQLException ex)
 		{

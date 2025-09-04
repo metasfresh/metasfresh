@@ -25,9 +25,11 @@ package de.metas.order.model.interceptor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
@@ -70,6 +72,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
@@ -99,6 +102,7 @@ public class C_Order
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPGroupDAO groupDAO = Services.get(IBPGroupDAO.class);
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
@@ -588,6 +592,32 @@ public class C_Order
 			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 			partnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	public void setBillBPartnerIDIfAssociation(final I_C_Order order)
+	{
+		final I_C_BP_Group bpartnerGroup = groupDAO.getByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
+		if (bpartnerGroup.isAssociation())
+		{
+			order.setBill_BPartner_ID(bpartnerGroup.getC_BPartner_ID());
+			order.setBill_Location_ID(bpartnerGroup.getC_BPartner_Location_ID());
+			order.setBill_User_ID(bpartnerGroup.getAD_User_ID());
+		}
+		else
+		{
+			final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpartnerGroup.getParent_BP_Group_ID());
+			if (parentGroupId != null)
+			{
+				final I_C_BP_Group parentGroup = groupDAO.getById(parentGroupId);
+				if (parentGroup.isAssociation())
+				{
+					order.setBill_BPartner_ID(parentGroup.getC_BPartner_ID());
+					order.setBill_Location_ID(parentGroup.getC_BPartner_Location_ID());
+					order.setBill_User_ID(parentGroup.getAD_User_ID());
+				}
+			}
 		}
 	}
 }
