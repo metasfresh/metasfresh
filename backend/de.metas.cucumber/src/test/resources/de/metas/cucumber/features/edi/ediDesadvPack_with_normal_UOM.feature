@@ -86,6 +86,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
       | shipmentLine_1_S0316_010  | s_1_S0316_010         | p_1_S0316_010           | 10          | true      | ol_1_S0316_010                |
 
+    # note: sometimes a custom migration-script sets a M_HU_PackagingCode_LU_Fallback_ID for the M_HU_PI_Item_Product with = 101 (No Packing Item)
+    # if such a script was applied, then this step fails
     And after not more than 30s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_ID.Identifier | OPT.GTIN_PackingMaterial | OPT.SeqNo |
       | p_1_S0316_010                 | true                | null                   | null                                 | null                     | 1         |
@@ -176,6 +178,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
       | shipmentLine_1_11212023_4 | s_1_11212023_4        | p_1_11212023_4          | 10          | true      | ol_1_11212023_4               |
 
+        # note: sometimes a custom migration-script sets a M_HU_PackagingCode_LU_Fallback_ID for the M_HU_PI_Item_Product with = 101 (No Packing Item)
+    # if such a script was applied, then this step fails
     And after not more than 30s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID | M_HU_PackagingCode_ID | GTIN_PackingMaterial | SeqNo |
       | p_1_11212023_4     | true                | null    | null                  | null                 | 1     |
@@ -272,6 +276,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
       | shipmentLine_1_11212023_1 | s_1_11212023_1        | p_1_11212023_1          | 10          | true      | ol_1_11212023_1               |
 
+    # note: sometimes a custom migration-script sets a M_HU_PackagingCode_LU_Fallback_ID for the M_HU_PI_Item_Product with = 101 (No Packing Item)
+    # if such a script was applied, then this step fails
     And after not more than 30s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID | M_HU_PackagingCode_ID | GTIN_PackingMaterial | SeqNo |
       | p_1_11212023_1     | true                | null    | null                  | null                 | 1     |
