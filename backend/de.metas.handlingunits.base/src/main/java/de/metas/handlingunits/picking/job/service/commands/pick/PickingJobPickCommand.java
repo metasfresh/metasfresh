@@ -359,7 +359,7 @@ public class PickingJobPickCommand
 
 		if (isCloseTarget)
 		{
-			closePickingLUTarget();
+			closeLUAndTUPickingTargets();
 		}
 
 		pickingJobRepository.save(_pickingJob);
@@ -511,15 +511,15 @@ public class PickingJobPickCommand
 		}
 	}
 
-	private void closePickingLUTarget()
+	private void closeLUAndTUPickingTargets()
 	{
 		if (isLineLevelPickTarget())
 		{
-			this._pickingJob = pickingJobService.closeLUPickingTarget(this._pickingJob, getLineId());
+			this._pickingJob = pickingJobService.closeLUAndTUPickingTargets(this._pickingJob, getLineId());
 		}
 		else
 		{
-			this._pickingJob = pickingJobService.closeLUPickingTarget(this._pickingJob, null);
+			this._pickingJob = pickingJobService.closeLUAndTUPickingTargets(this._pickingJob, null);
 		}
 	}
 

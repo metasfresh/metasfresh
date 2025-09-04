@@ -89,19 +89,34 @@ public class CurrentPickingTarget
 				.build();
 	}
 
-	public CurrentPickingTarget withClosedLuPickingTarget(@Nullable final Consumer<HuId> closedLuIdCollector)
+	public CurrentPickingTarget withClosedLUAndTUPickingTarget(@Nullable final LUIdsAndTopLevelTUIdsCollector closedHuIdCollector)
 	{
-		if (luPickingTarget == null)
+		// already closed
+		if (this.luPickingTarget == null && this.tuPickingTarget == null)
 		{
 			return this;
 		}
 
-		if (closedLuIdCollector != null && luPickingTarget.getLuId() != null)
+		if (closedHuIdCollector != null)
 		{
-			closedLuIdCollector.accept(luPickingTarget.getLuId());
+			if (luPickingTarget == null || luPickingTarget.isNewLU())
+			{
+				// collect only top level TUs i.e. no LUs
+				if (tuPickingTarget != null && tuPickingTarget.isExistingTU())
+				{
+					closedHuIdCollector.addTopLevelTUId(tuPickingTarget.getTuIdNotNull());
+				}
+			}
+			else if (luPickingTarget.isExistingLU())
+			{
+				closedHuIdCollector.addLUId(luPickingTarget.getLuIdNotNull());
+			}
 		}
 
-		return withLuPickingTarget((LUPickingTarget)null);
+		return toBuilder()
+				.luPickingTarget(null)
+				.tuPickingTarget(null)
+				.build();
 	}
 
 	@NonNull

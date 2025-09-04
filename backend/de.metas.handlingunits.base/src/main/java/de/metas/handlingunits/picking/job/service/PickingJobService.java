@@ -24,6 +24,7 @@ import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.picking.job.model.LUIdsAndTopLevelTUIdsCollector;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -45,9 +46,9 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCandidateRe
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
-import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.slot.PickingSlotListener;
@@ -79,7 +80,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -578,19 +578,19 @@ public class PickingJobService implements PickingSlotListener
 		return pickingJobChanged;
 	}
 
-	public PickingJob closeAllLUPickingTargets(@NonNull final PickingJob pickingJob)
+	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
-		return closeLUPickingTargets(pickingJob, true, true, null, false);
+		return closeLUAndTUPickingTargets(pickingJob, true, true, null, false);
 	}
 
-	public PickingJob closeLUPickingTarget(
+	public PickingJob closeLUAndTUPickingTargets(
 			@NonNull final PickingJob pickingJob,
 			@Nullable final PickingJobLineId lineId)
 	{
 		final boolean isCloseOnHeader = lineId == null;
 		final boolean isCloseOnLines = lineId != null;
 		final PickingJobOptions pickingJobOptions = mobileUIPickingUserProfileRepository.getPickingJobOptions(pickingJob.getCustomerId());
-		return closeLUPickingTargets(
+		return closeLUAndTUPickingTargets(
 				pickingJob,
 				isCloseOnHeader,
 				isCloseOnLines,
@@ -598,31 +598,40 @@ public class PickingJobService implements PickingSlotListener
 				pickingJobOptions.isShipOnCloseLU());
 	}
 
-	private PickingJob closeLUPickingTargets(
+	private PickingJob closeLUAndTUPickingTargets(
 			@NonNull final PickingJob pickingJob,
 			boolean isCloseOnHeader,
 			boolean isCloseOnLines,
 			@Nullable PickingJobLineId onlyLineId,
-			boolean isShipLUs)
+			boolean isShipClosedHUs)
 	{
-		final LinkedHashSet<HuId> closedLUIds = new LinkedHashSet<>();
-		final PickingJob pickingJobChanged = pickingJob.withClosedLuPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedLUIds::add);
+		final LUIdsAndTopLevelTUIdsCollector closedHUIdsCollector = new LUIdsAndTopLevelTUIdsCollector();
+		final PickingJob pickingJobChanged = pickingJob.withClosedLUAndTUPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedHUIdsCollector);
 
 		if (!Util.equals(pickingJob, pickingJobChanged))
 		{
 			pickingJobRepository.save(pickingJobChanged);
 		}
 
-		if (!closedLUIds.isEmpty())
+		if (!closedHUIdsCollector.isEmpty())
 		{
 			pickingJobChanged.getPickingSlotIdEffective(onlyLineId)
-					.ifPresent(pickingSlotId -> pickingSlotService.addToPickingSlotQueue(pickingSlotId, closedLUIds));
+					.ifPresent(pickingSlotId -> pickingSlotService.addToPickingSlotQueue(pickingSlotId, closedHUIdsCollector.getAllTopLevelHUIds()));
 
-			printLULabels(closedLUIds);
+			final ImmutableSet<HuId> closedLUIds = closedHUIdsCollector.getLUIds();
+			printLULabels(closedHUIdsCollector.getLUIds());
 
-			if (isShipLUs)
+			if (isShipClosedHUs)
 			{
-				shipmentService.createShipmentForLUs(pickingJobChanged, closedLUIds);
+				if (!closedHUIdsCollector.getTopLevelTUIds().isEmpty())
+				{
+					throw new AdempiereException("Shipping on close top level TUs is not supported yet. Found TUIds: " + closedHUIdsCollector.getTopLevelTUIds() + ". PickingJob: " + pickingJobChanged.getId() + ".");
+				}
+
+				if (!closedLUIds.isEmpty())
+				{
+					shipmentService.createShipmentForLUs(pickingJobChanged, closedLUIds);
+				}
 			}
 		}
 
