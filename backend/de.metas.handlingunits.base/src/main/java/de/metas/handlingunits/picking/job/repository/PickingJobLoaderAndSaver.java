@@ -343,7 +343,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getM_TU_HU_PI_ID());
 		final HuId tuId = HuId.ofRepoIdOrNull(record.getM_TU_HU_ID());
 
-		if(tuId != null)
+		if (tuId != null)
 		{
 			final HUQRCode qrCode = loadingSupportingServices.getQRCodeByHUId(tuId);
 			return TUPickingTarget.ofExistingHU(tuId, qrCode);
@@ -493,8 +493,16 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	private TUPickingTarget extractTUPickingTarget(final I_M_Picking_Job_Line record)
 	{
 		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getCurrent_PickTo_TU_PI_ID());
+		final HuId tuId = HuId.ofRepoIdOrNull(record.getCurrent_PickTo_TU_ID());
 
-		if (tuPIId != null)
+		if (tuId != null)
+		{
+			final HUQRCode qrCode = StringUtils.trimBlankToOptional(record.getCurrent_PickTo_TU_QRCode())
+					.map(HUQRCode::fromGlobalQRCodeJsonString)
+					.orElseGet(() -> loadingSupportingServices.getQRCodeByHUId(tuId));
+			return TUPickingTarget.ofExistingHU(tuId, qrCode);
+		}
+		else if (tuPIId != null)
 		{
 			final String caption = loadingSupportingServices.getPICaption(tuPIId);
 			return TUPickingTarget.ofPackingInstructions(tuPIId, caption);

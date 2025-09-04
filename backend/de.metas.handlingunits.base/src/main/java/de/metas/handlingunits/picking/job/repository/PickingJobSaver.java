@@ -392,7 +392,10 @@ public class PickingJobSaver
 		{
 			final TUPickingTarget currentTUPickingTarget = from.getTuPickingTarget().orElse(null);
 			record.setCurrent_PickTo_TU_PI_ID(HuPackingInstructionsId.toRepoId(currentTUPickingTarget != null ? currentTUPickingTarget.getTuPIId() : null));
-			// TODO introduce record.setCurrent_PickTo_TU_ID
+			record.setCurrent_PickTo_TU_ID(HuId.toRepoId(currentTUPickingTarget != null ? currentTUPickingTarget.getTuId() : null));
+			record.setCurrent_PickTo_TU_QRCode(currentTUPickingTarget != null && currentTUPickingTarget.getTuQRCode() != null
+					? currentTUPickingTarget.getTuQRCode().toGlobalQRCodeString()
+					: null);
 		}
 	}
 
