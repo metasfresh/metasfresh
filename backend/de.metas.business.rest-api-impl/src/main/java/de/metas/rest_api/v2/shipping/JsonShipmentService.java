@@ -92,8 +92,10 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -131,6 +133,7 @@ public class JsonShipmentService
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 	private final AttributeSetHelper attributeSetHelper;
 	private final JsonInvoiceService jsonInvoiceService;
@@ -235,6 +238,13 @@ public class JsonShipmentService
 		}
 
 		return responseBuilder.build();
+	}
+
+	@NonNull
+	public Optional<byte[]> getShipmentPDF(@NonNull final InOutId inOutId)
+	{
+		return archiveBL.getLastArchiveRecord(TableRecordReference.of(I_M_InOut.Table_Name, inOutId))
+				.map(archiveBL::getBinaryData);
 	}
 
 	private void updateShipmentSchedules(@NonNull final JsonCreateShipmentRequest request)

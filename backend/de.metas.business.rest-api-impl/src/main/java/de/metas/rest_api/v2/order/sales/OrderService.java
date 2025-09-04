@@ -51,7 +51,9 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -67,6 +69,7 @@ public class OrderService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 	private final CurrencyService currencyService;
 	private final JsonRetrieverService jsonRetrieverService;
@@ -82,6 +85,13 @@ public class OrderService
 		this.paymentService = paymentService;
 	}
 
+	@NonNull
+	public Optional<byte[]> getOrderPDF(@NonNull final OrderId orderId)
+	{
+		return archiveBL.getLastArchiveRecord(TableRecordReference.of(I_C_Order.Table_Name, orderId))
+				.map(archiveBL::getBinaryData);
+	}
+
 	public void createOrderPayment(@NonNull final JsonOrderPaymentCreateRequest request)
 	{
 		final LocalDate dateTrx = CoalesceUtil.coalesce(request.getTransactionDate(), SystemTime.asLocalDate());
@@ -94,7 +104,7 @@ public class OrderService
 		final ExternalId paymentExternalId = ExternalId.ofOrNull(request.getExternalPaymentId());
 		if (paymentExternalId != null && paymentDAO.getByExternalId(paymentExternalId, orgId).isPresent())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Payment with AD_Ord_ID={} and ExternalId={} already exists; -> ignoring this request.",orgId.getRepoId(), paymentExternalId.getValue());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Payment with AD_Ord_ID={} and ExternalId={} already exists; -> ignoring this request.", orgId.getRepoId(), paymentExternalId.getValue());
 			return; // nothing to do, external payment already registered
 		}
 
