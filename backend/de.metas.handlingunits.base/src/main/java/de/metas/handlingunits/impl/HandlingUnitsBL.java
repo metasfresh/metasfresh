@@ -120,6 +120,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -944,6 +945,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return piItemId != null
 				? handlingUnitsRepo.getPackingInstructionItemById(piItemId)
 				: null;
+	}
+
+	@NonNull
+	@Override
+	public List<I_M_HU_PI_Item> getPIItems(@NonNull final Collection<I_M_HU_Item> huItems)
+	{
+		final ImmutableSet<HuPackingInstructionsItemId> piItemIds = huItems.stream()
+				.map(huItem -> HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return !piItemIds.isEmpty()
+				? handlingUnitsRepo.getPackingInstructionItemsByIds(piItemIds)
+				: ImmutableList.of();
 	}
 
 	@Override

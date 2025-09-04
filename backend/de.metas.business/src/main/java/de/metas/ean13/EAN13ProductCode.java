@@ -50,5 +50,7 @@ public class EAN13ProductCode
 
 	public boolean isPrefixOf(@NonNull final String string) {return string.startsWith(code);}
 
+	public boolean endsWith(@NonNull final EAN13ProductCode productCode) {return code.endsWith(productCode.code);}
+
 	public static boolean equals(@Nullable EAN13ProductCode code1, @Nullable EAN13ProductCode code2) {return Objects.equals(code1, code2);}
 }

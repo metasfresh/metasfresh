@@ -202,6 +202,7 @@ public class PickingJobPickCommand
 				.productBL(Services.get(IProductBL.class))
 				.handlingUnitsBL(handlingUnitsBL)
 				.huQRCodesService(huQRCodesService)
+				.warehouseBL(warehouseBL)
 				.build();
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(uomConversionBL)
@@ -358,7 +359,7 @@ public class PickingJobPickCommand
 
 		if (isCloseTarget)
 		{
-			closePickingLUTarget();
+			closeLUAndTUPickingTargets();
 		}
 
 		pickingJobRepository.save(_pickingJob);
@@ -466,27 +467,59 @@ public class PickingJobPickCommand
 		setPickingLUTarget(LUPickingTarget.ofExistingHU(luId, qrCode));
 	}
 
+	private void setPickingTUTarget(@NonNull final TUPickingTarget tuPickingTarget)
+	{
+		if (isLineLevelPickTarget())
+		{
+			_pickingJob = _pickingJob.withTuPickingTarget(getLineId(), tuPickingTarget);
+		}
+		else
+		{
+			_pickingJob = _pickingJob.withTuPickingTarget(null, tuPickingTarget);
+		}
+	}
+
+	private void setPickingTUTarget(@NonNull final TU tu)
+	{
+		final HuId tuId = tu.getId();
+		final HUQRCode qrCode = getQRCode(tu);
+		setPickingTUTarget(TUPickingTarget.ofExistingHU(tuId, qrCode));
+	}
+
 	private void updatePickingTarget(@NonNull final LUTUResult result)
 	{
-		final LUPickingTarget pickingTarget = getLUPickingTarget().orElse(null);
-		if (pickingTarget != null && pickingTarget.isNewLU())
 		{
-			if (result.isSingleLU())
+			final LUPickingTarget luPickingTarget = getLUPickingTarget().orElse(null);
+			if (luPickingTarget != null && luPickingTarget.isNewLU())
 			{
-				setPickingLUTarget(result.getSingleLU());
+				if (result.isSingleLU())
+				{
+					setPickingLUTarget(result.getSingleLU());
+				}
+			}
+		}
+
+		{
+			final TUPickingTarget tuPickingTarget = getTUPickingTarget().orElse(null);
+			if (tuPickingTarget != null && tuPickingTarget.isNewTU())
+			{
+				if (result.isSingleTopLevelTUOnly())
+				{
+					setPickingTUTarget(result.getSingleTopLevelTU());
+				}
 			}
 		}
 	}
 
-	private void closePickingLUTarget()
+	private void closeLUAndTUPickingTargets()
 	{
 		if (isLineLevelPickTarget())
 		{
-			this._pickingJob = pickingJobService.closeLUPickingTarget(this._pickingJob, getLineId());
+			this._pickingJob = pickingJobService.closeLUAndTUPickingTargets(this._pickingJob, getLineId());
 		}
 		else
 		{
-			this._pickingJob = pickingJobService.closeLUPickingTarget(this._pickingJob, null);
+			this._pickingJob = pickingJobService.closeLUAndTUPickingTargets(this._pickingJob, null);
 		}
 	}
 
@@ -603,8 +636,10 @@ public class PickingJobPickCommand
 		else
 		{
 			final ProductId productId = getProductId();
-			final BPartnerId customerId = getShipmentScheduleInfo().getBpartnerId();
-			return pickFromHUQRCodeResolver.resolve(pickFromHUQRCode, productId, customerId);
+			final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
+			final BPartnerId customerId = shipmentScheduleInfo.getBpartnerId();
+			final WarehouseId warehouseId = shipmentScheduleInfo.getWarehouseId();
+			return pickFromHUQRCodeResolver.resolve(pickFromHUQRCode, productId, customerId, warehouseId);
 		}
 	}
 
@@ -1012,10 +1047,9 @@ public class PickingJobPickCommand
 		return huStorageFactory.getStorage(tu.toHU()).getQuantity(productId).orElseThrow(() -> new AdempiereException(NO_QTY_ERROR_MSG, tu, productId));
 	}
 
-	private HUQRCode getQRCode(@NonNull final LU lu)
-	{
-		return huQRCodesService.getQRCodeByHuId(lu.getId());
-	}
+	private HUQRCode getQRCode(@NonNull final LU lu) {return huQRCodesService.getQRCodeByHuId(lu.getId());}
+
+	private HUQRCode getQRCode(@NonNull final TU tu) {return huQRCodesService.getQRCodeByHuId(tu.getId());}
 
 	private void addToPickingSlotQueue(final LUTUResult packedHUs)
 	{

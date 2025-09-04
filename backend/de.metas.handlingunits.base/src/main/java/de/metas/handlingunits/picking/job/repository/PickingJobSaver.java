@@ -351,12 +351,17 @@ public class PickingJobSaver
 	{
 		record.setM_PickingSlot_ID(from.getPickingSlotId().map(PickingSlotId::getRepoId).orElse(-1));
 
-		final LUPickingTarget pickTarget = from.getLuPickingTarget().orElse(null);
-		record.setM_LU_HU_PI_ID(HuPackingInstructionsId.toRepoId(pickTarget != null ? pickTarget.getLuPIId() : null));
-		record.setM_LU_HU_ID(HuId.toRepoId(pickTarget != null ? pickTarget.getLuId() : null));
+		{
+			final LUPickingTarget luPickTarget = from.getLuPickingTarget().orElse(null);
+			record.setM_LU_HU_PI_ID(HuPackingInstructionsId.toRepoId(luPickTarget != null ? luPickTarget.getLuPIId() : null));
+			record.setM_LU_HU_ID(HuId.toRepoId(luPickTarget != null ? luPickTarget.getLuId() : null));
+		}
 
-		final TUPickingTarget tuPickingTarget = from.getTuPickingTarget().orElse(null);
-		record.setM_TU_HU_PI_ID(HuPackingInstructionsId.toRepoId(tuPickingTarget != null ? tuPickingTarget.getTuPIId() : null));
+		{
+			final TUPickingTarget tuPickingTarget = from.getTuPickingTarget().orElse(null);
+			record.setM_TU_HU_PI_ID(HuPackingInstructionsId.toRepoId(tuPickingTarget != null ? tuPickingTarget.getTuPIId() : null));
+			record.setM_TU_HU_ID(HuId.toRepoId(tuPickingTarget != null ? tuPickingTarget.getTuId() : null));
+		}
 	}
 
 	private static void updateRecord(
@@ -375,15 +380,23 @@ public class PickingJobSaver
 	{
 		record.setM_PickingSlot_ID(from.getPickingSlotId().map(PickingSlotId::getRepoId).orElse(-1));
 
-		final LUPickingTarget currentLUPickTarget = from.getLuPickingTarget().orElse(null);
-		record.setCurrent_PickTo_LU_PI_ID(HuPackingInstructionsId.toRepoId(currentLUPickTarget != null ? currentLUPickTarget.getLuPIId() : null));
-		record.setCurrent_PickTo_LU_ID(HuId.toRepoId(currentLUPickTarget != null ? currentLUPickTarget.getLuId() : null));
-		record.setCurrent_PickTo_LU_QRCode(currentLUPickTarget != null && currentLUPickTarget.getLuQRCode() != null
-				? currentLUPickTarget.getLuQRCode().toGlobalQRCodeString()
-				: null);
+		{
+			final LUPickingTarget currentLUPickTarget = from.getLuPickingTarget().orElse(null);
+			record.setCurrent_PickTo_LU_PI_ID(HuPackingInstructionsId.toRepoId(currentLUPickTarget != null ? currentLUPickTarget.getLuPIId() : null));
+			record.setCurrent_PickTo_LU_ID(HuId.toRepoId(currentLUPickTarget != null ? currentLUPickTarget.getLuId() : null));
+			record.setCurrent_PickTo_LU_QRCode(currentLUPickTarget != null && currentLUPickTarget.getLuQRCode() != null
+					? currentLUPickTarget.getLuQRCode().toGlobalQRCodeString()
+					: null);
+		}
 
-		final TUPickingTarget currentTUPickingTarget = from.getTuPickingTarget().orElse(null);
-		record.setCurrent_PickTo_TU_PI_ID(HuPackingInstructionsId.toRepoId(currentTUPickingTarget != null ? currentTUPickingTarget.getTuPIId() : null));
+		{
+			final TUPickingTarget currentTUPickingTarget = from.getTuPickingTarget().orElse(null);
+			record.setCurrent_PickTo_TU_PI_ID(HuPackingInstructionsId.toRepoId(currentTUPickingTarget != null ? currentTUPickingTarget.getTuPIId() : null));
+			record.setCurrent_PickTo_TU_ID(HuId.toRepoId(currentTUPickingTarget != null ? currentTUPickingTarget.getTuId() : null));
+			record.setCurrent_PickTo_TU_QRCode(currentTUPickingTarget != null && currentTUPickingTarget.getTuQRCode() != null
+					? currentTUPickingTarget.getTuQRCode().toGlobalQRCodeString()
+					: null);
+		}
 	}
 
 	private static void updateRecord(
