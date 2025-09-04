@@ -8,7 +8,6 @@ Feature: PDF Export Tests
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
-    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
     And set sys config boolean value false for sys config de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant
     And all periods are open
     And update AD_Client
