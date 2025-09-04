@@ -14,7 +14,6 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 @Builder(toBuilder = true)
