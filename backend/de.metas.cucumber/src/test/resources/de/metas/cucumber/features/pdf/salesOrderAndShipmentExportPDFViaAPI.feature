@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor5
-Feature: PDF Export Tests
+Feature: PDF Export Tests via API
 
   Background:
     Given infrastructure and metasfresh are running
