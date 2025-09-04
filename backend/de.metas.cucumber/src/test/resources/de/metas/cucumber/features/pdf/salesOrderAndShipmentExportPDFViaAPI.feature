@@ -40,6 +40,8 @@ Feature: PDF Export Tests via API
       | de_ch_tax  | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
 
   @from:cucumber
+  @Id:S0476_010
+  @Id:S0477_010
   Scenario: PDF retriever for Sales Orders and Shipments
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
