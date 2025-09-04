@@ -39,6 +39,7 @@ import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
+import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
@@ -160,9 +161,10 @@ public class PickingJobTestHelper
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(
 				PickingSlotService.newInstanceForUnitTesting(),
 				pickingJobRepository);
+		final PickingJobLockService pickingJobLockService = new PickingJobLockService(new InMemoryShipmentScheduleLockRepository());
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
-				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
+				pickingJobLockService,
 				pickingJobSlotService,
 				pickingCandidateService,
 				new PickingJobHUReservationService(huReservationService),
@@ -170,7 +172,8 @@ public class PickingJobTestHelper
 						pickingJobSlotService,
 						bpartnerBL,
 						huQRCodeService,
-						profileRepository
+						profileRepository,
+						pickingJobLockService
 				),
 				pickingConfigRepo,
 				PickingShipmentService.newInstanceForUnitTesting(),
@@ -183,7 +186,8 @@ public class PickingJobTestHelper
 				huReservationService,
 				workplaceService,
 				profileRepository,
-				DummyDocumentLocationBL.newInstanceForUnitTesting()
+				DummyDocumentLocationBL.newInstanceForUnitTesting(),
+				PickingJobScheduleService.newInstanceForUnitTesting()
 		);
 
 		huTracer = new HUTracerInstance()

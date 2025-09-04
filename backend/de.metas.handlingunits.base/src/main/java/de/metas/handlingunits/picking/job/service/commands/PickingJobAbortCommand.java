@@ -97,7 +97,7 @@ public class PickingJobAbortCommand
 				// Even more, imagine that those picked things are already phisically splitted out.
 				//.map(this::unpickAllStepsAndSave)
 				.peek(pickingJobHUReservationService::releaseAllReservations)
-				.peek(pickingJobLockService::unlockShipmentSchedules)
+				.peek(pickingJobLockService::unlockSchedules)
 				.map(this::markAsVoidedAndSave)
 				.findFirst()
 				.get();

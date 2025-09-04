@@ -98,6 +98,7 @@ public class MobileUIPickingUserProfileRepository
 				.name(profileRecord.getName())
 				.isAllowPickingAnyCustomer(profileRecord.isAllowAnyCustomer())
 				.isFilterByBarcode(profileRecord.isFilterByBarcode())
+				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
