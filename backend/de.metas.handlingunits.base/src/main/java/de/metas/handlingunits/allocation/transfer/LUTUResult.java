@@ -78,6 +78,8 @@ public class LUTUResult
 		}
 	}
 
+	public boolean isSingleTopLevelTUOnly() {return lus.isEmpty() && topLevelTUs.isSingleTU();}
+
 	public List<I_M_HU> getTopLevelTURecords() {return topLevelTUs.toHURecords();}
 
 	public TU getSingleTopLevelTU() {return topLevelTUs.getSingleTU();}
@@ -277,6 +279,8 @@ public class LUTUResult
 
 		public Stream<TU> stream() {return list.stream();}
 
+		public boolean isSingleTU() {return list.size() == 1;}
+
 		public TU getSingleTU() {return CollectionUtils.singleElement(list);}
 
 		public List<TU> toList() {return list;}
@@ -307,7 +311,7 @@ public class LUTUResult
 		public boolean containsAnyOfHUIds(final Collection<HuId> huIds)
 		{
 			if (huIds.isEmpty()) {return false;}
-			
+
 			return list.stream().anyMatch(tu -> tu.containsAnyOfHUIds(huIds));
 		}
 
