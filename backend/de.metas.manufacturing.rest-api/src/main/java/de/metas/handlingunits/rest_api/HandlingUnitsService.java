@@ -198,25 +198,26 @@ public class HandlingUnitsService
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
 		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu, adLanguage);
-		final JsonHUType huType = toJsonHUType(hu);
+		final JsonHUType unitType = toJsonHUType(hu);
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
 				.id(String.valueOf(huId.getRepoId()))
 				.huStatus(hu.getHUStatus())
 				.huStatusCaption(TranslatableStrings.adRefList(X_M_HU.HUSTATUS_AD_Reference_ID, hu.getHUStatus()).translate(adLanguage))
 				.displayName(handlingUnitsBL.getDisplayName(hu))
 				.qrCode(toJsonHUQRCode(huId, expectedQRCode))
-				.jsonHUType(toJsonHUType(hu))
+				.unitType(unitType)
 				.products(getProductStorage(huContext, hu))
 				.attributes2(jsonHUAttributes)
 				.clearanceNote(hu.getClearanceNote())
 				.clearanceStatus(getClearanceStatusInfo(hu))
 				.packingInstructionName(getEffectivePIName(hu));
 
+		jsonHUBuilder.aggregatedTU(isAggregatedTU);
 		if (isAggregatedTU)
 		{
 			jsonHUBuilder.numberOfAggregatedHUs(handlingUnitsBL.getTUsCount(hu).toInt());
 		}
-		if (huType != JsonHUType.LU)
+		if (unitType != JsonHUType.LU)
 		{
 			jsonHUBuilder.topLevelParentId(extractTopLevelParentHUIdValue(hu));
 		}

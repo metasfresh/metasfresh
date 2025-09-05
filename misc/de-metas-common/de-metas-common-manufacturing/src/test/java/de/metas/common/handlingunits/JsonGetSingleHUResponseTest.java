@@ -64,6 +64,7 @@ class JsonGetSingleHUResponseTest
 								.id("id")
 								.huStatus("huStatus")
 								.huStatusCaption("huStatusCaption")
+								.unitType(JsonHUType.TU)
 								.displayName("displayName")
 								.qrCode(JsonHUQRCode.builder()
 										.code("qrCode")

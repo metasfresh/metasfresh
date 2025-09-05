@@ -24,6 +24,7 @@ import {
   ATTR_barcodeType,
   ATTR_bestBeforeDate,
   ATTR_displayable,
+  ATTR_HUUnitType,
   ATTR_isTUToBePickedAsWhole,
   ATTR_isUnique,
   ATTR_lotNo,
@@ -274,6 +275,7 @@ const parseQRCodePayload_HU_v1 = (payload) => {
   const result = { displayable };
   result[ATTR_barcodeType] = BARCODE_TYPE_HU;
   result[ATTR_isUnique] = true;
+  result[ATTR_HUUnitType] = payload?.packingInfo?.huUnitType;
 
   if (payload?.product?.id) {
     // IMPORTANT: convert it to string because all over in our code we assume IDs are strings.

@@ -67,7 +67,7 @@ public class JsonTestHelper
 		}
 		catch (final JsonProcessingException ex)
 		{
-			throw new RuntimeException("Failed converting JSON to " + obj.getClass() + ": " + json);
+			throw new RuntimeException("Failed converting JSON to " + obj.getClass() + ": " + json, ex);
 		}
 		System.out.println("Object deserialized: " + objDeserialized);
 
