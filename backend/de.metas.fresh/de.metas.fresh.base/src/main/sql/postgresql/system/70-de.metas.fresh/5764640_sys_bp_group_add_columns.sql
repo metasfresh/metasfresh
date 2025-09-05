@@ -562,3 +562,288 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO t_alter_column values('c_bp_group','Parent_BP_Group_ID','NUMERIC(10)',null,null)
 ;
 
+-- Run mode: SWING_CLIENT
+
+-- UI Element: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> main -> 10 -> default.Geschäftspartner
+-- Column: C_BP_Group.C_BPartner_ID
+-- 2025-09-05T13:38:27.380Z
+DELETE FROM AD_UI_ElementField WHERE AD_UI_ElementField_ID=542112
+;
+
+-- 2025-09-05T13:38:27.388Z
+DELETE FROM AD_UI_ElementField WHERE AD_UI_ElementField_ID=542113
+;
+
+-- 2025-09-05T13:38:27.394Z
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=636569
+;
+
+-- 2025-09-05T13:38:27.397Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=752680
+;
+
+-- Field: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> Geschäftspartner
+-- Column: C_BP_Group.C_BPartner_ID
+-- 2025-09-05T13:38:27.400Z
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=752680
+;
+
+-- 2025-09-05T13:38:27.406Z
+DELETE FROM AD_Field WHERE AD_Field_ID=752680
+;
+
+-- 2025-09-05T13:38:27.408Z
+/* DDL */ SELECT public.db_alter_table('C_BP_Group','ALTER TABLE C_BP_Group DROP COLUMN IF EXISTS C_BPartner_ID')
+;
+
+-- Column: C_BP_Group.C_BPartner_ID
+-- 2025-09-05T13:38:27.618Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=590709
+;
+
+-- 2025-09-05T13:38:27.624Z
+DELETE FROM AD_Column WHERE AD_Column_ID=590709
+;
+
+-- 2025-09-05T13:38:33.199Z
+INSERT INTO t_alter_column values('c_bp_group','AD_User_ID','NUMERIC(10)',null,null)
+;
+
+-- 2025-09-05T13:38:39.341Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=752682
+;
+
+-- Field: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> Ansprechpartner
+-- Column: C_BP_Group.AD_User_ID
+-- 2025-09-05T13:38:39.345Z
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=752682
+;
+
+-- 2025-09-05T13:38:39.350Z
+DELETE FROM AD_Field WHERE AD_Field_ID=752682
+;
+
+-- 2025-09-05T13:38:39.353Z
+/* DDL */ SELECT public.db_alter_table('C_BP_Group','ALTER TABLE C_BP_Group DROP COLUMN IF EXISTS AD_User_ID')
+;
+
+-- Column: C_BP_Group.AD_User_ID
+-- 2025-09-05T13:38:39.536Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=590711
+;
+
+-- 2025-09-05T13:38:39.543Z
+DELETE FROM AD_Column WHERE AD_Column_ID=590711
+;
+
+-- 2025-09-05T13:38:47.634Z
+INSERT INTO t_alter_column values('c_bp_group','C_BPartner_Location_ID','NUMERIC(10)',null,null)
+;
+
+-- 2025-09-05T13:38:53.455Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=752681
+;
+
+-- Field: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> Standort
+-- Column: C_BP_Group.C_BPartner_Location_ID
+-- 2025-09-05T13:38:53.458Z
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=752681
+;
+
+-- 2025-09-05T13:38:53.462Z
+DELETE FROM AD_Field WHERE AD_Field_ID=752681
+;
+
+-- 2025-09-05T13:38:53.464Z
+/* DDL */ SELECT public.db_alter_table('C_BP_Group','ALTER TABLE C_BP_Group DROP COLUMN IF EXISTS C_BPartner_Location_ID')
+;
+
+-- Column: C_BP_Group.C_BPartner_Location_ID
+-- 2025-09-05T13:38:53.627Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=590710
+;
+
+-- 2025-09-05T13:38:53.631Z
+DELETE FROM AD_Column WHERE AD_Column_ID=590710
+;
+
+-- Column: C_BP_Group.Bill_BPartner_ID
+-- 2025-09-05T13:54:26.599Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,590812,2039,0,30,541045,394,'XX','Bill_BPartner_ID',TO_TIMESTAMP('2025-09-05 13:54:26.260000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Geschäftspartner für die Rechnungsstellung','D',0,10,'Wenn leer, wird die Rechnung an den Geschäftspartner der Lieferung gestellt','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Rechnungspartner',0,0,TO_TIMESTAMP('2025-09-05 13:54:26.260000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2025-09-05T13:54:26.602Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=590812 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2025-09-05T13:54:26.606Z
+/* DDL */  select update_Column_Translation_From_AD_Element(2039)
+;
+
+-- 2025-09-05T13:54:29.802Z
+/* DDL */ SELECT public.db_alter_table('C_BP_Group','ALTER TABLE public.C_BP_Group ADD COLUMN Bill_BPartner_ID NUMERIC(10)')
+;
+
+-- 2025-09-05T13:54:29.975Z
+ALTER TABLE C_BP_Group ADD CONSTRAINT BillBPartner_CBPGroup FOREIGN KEY (Bill_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2025-09-05T13:54:39.254Z
+INSERT INTO t_alter_column values('c_bp_group','Bill_BPartner_ID','NUMERIC(10)',null,null)
+;
+
+-- Column: C_BP_Group.Bill_Location_ID
+-- 2025-09-05T13:55:38.559Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AD_Val_Rule_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,590813,2040,0,30,159,394,540557,'XX','Bill_Location_ID',TO_TIMESTAMP('2025-09-05 13:55:38.178000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Standort des Geschäftspartners für die Rechnungsstellung','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Rechnungsstandort',0,0,TO_TIMESTAMP('2025-09-05 13:55:38.178000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2025-09-05T13:55:38.561Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=590813 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2025-09-05T13:55:38.563Z
+/* DDL */  select update_Column_Translation_From_AD_Element(2040)
+;
+
+-- 2025-09-05T13:55:40.375Z
+/* DDL */ SELECT public.db_alter_table('C_BP_Group','ALTER TABLE public.C_BP_Group ADD COLUMN Bill_Location_ID NUMERIC(10)')
+;
+
+-- 2025-09-05T13:55:40.541Z
+ALTER TABLE C_BP_Group ADD CONSTRAINT BillLocation_CBPGroup FOREIGN KEY (Bill_Location_ID) REFERENCES public.C_BPartner_Location DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: C_BP_Group.Bill_User_ID
+-- 2025-09-05T13:56:14.959Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AD_Val_Rule_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,590814,2041,0,30,110,394,123,'XX','Bill_User_ID',TO_TIMESTAMP('2025-09-05 13:56:14.723000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Ansprechpartner des Geschäftspartners für die Rechnungsstellung','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Rechnungskontakt',0,0,TO_TIMESTAMP('2025-09-05 13:56:14.723000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2025-09-05T13:56:14.961Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=590814 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2025-09-05T13:56:15.070Z
+/* DDL */  select update_Column_Translation_From_AD_Element(2041)
+;
+
+-- 2025-09-05T13:56:16.973Z
+/* DDL */ SELECT public.db_alter_table('C_BP_Group','ALTER TABLE public.C_BP_Group ADD COLUMN Bill_User_ID NUMERIC(10)')
+;
+
+-- 2025-09-05T13:56:17.170Z
+ALTER TABLE C_BP_Group ADD CONSTRAINT BillUser_CBPGroup FOREIGN KEY (Bill_User_ID) REFERENCES public.AD_User DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Field: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> Rechnungspartner
+-- Column: C_BP_Group.Bill_BPartner_ID
+-- 2025-09-05T14:06:27.679Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,590812,753508,0,322,0,TO_TIMESTAMP('2025-09-05 14:06:27.458000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Geschäftspartner für die Rechnungsstellung',0,'D',0,'Wenn leer, wird die Rechnung an den Geschäftspartner der Lieferung gestellt',0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Rechnungspartner',0,0,290,0,1,1,TO_TIMESTAMP('2025-09-05 14:06:27.458000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-09-05T14:06:27.681Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=753508 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-09-05T14:06:27.684Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2039)
+;
+
+-- 2025-09-05T14:06:27.701Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=753508
+;
+
+-- 2025-09-05T14:06:27.702Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(753508)
+;
+
+-- Field: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> Rechnungsstandort
+-- Column: C_BP_Group.Bill_Location_ID
+-- 2025-09-05T14:06:38.511Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,590813,753509,0,322,0,TO_TIMESTAMP('2025-09-05 14:06:38.243000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Standort des Geschäftspartners für die Rechnungsstellung',0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Rechnungsstandort',0,0,300,0,1,1,TO_TIMESTAMP('2025-09-05 14:06:38.243000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-09-05T14:06:38.514Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=753509 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-09-05T14:06:38.517Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2040)
+;
+
+-- 2025-09-05T14:06:38.532Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=753509
+;
+
+-- 2025-09-05T14:06:38.534Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(753509)
+;
+
+-- Field: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> Rechnungskontakt
+-- Column: C_BP_Group.Bill_User_ID
+-- 2025-09-05T14:06:59.373Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,590814,753510,0,322,0,TO_TIMESTAMP('2025-09-05 14:06:59.170000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Ansprechpartner des Geschäftspartners für die Rechnungsstellung',0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Rechnungskontakt',0,0,310,0,1,1,TO_TIMESTAMP('2025-09-05 14:06:59.170000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-09-05T14:06:59.375Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=753510 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-09-05T14:06:59.376Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2041)
+;
+
+-- 2025-09-05T14:06:59.382Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=753510
+;
+
+-- 2025-09-05T14:06:59.383Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(753510)
+;
+
+-- UI Element: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> main -> 10 -> default.Rechnungspartner
+-- Column: C_BP_Group.Bill_BPartner_ID
+-- 2025-09-05T14:07:30.956Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,753508,0,322,540480,636950,'F',TO_TIMESTAMP('2025-09-05 14:07:30.737000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Geschäftspartner für die Rechnungsstellung','Wenn leer, wird die Rechnung an den Geschäftspartner der Lieferung gestellt','Y','N','N','Y','N','N','N',0,'Rechnungspartner',30,0,0,TO_TIMESTAMP('2025-09-05 14:07:30.737000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-09-05T14:07:40.314Z
+INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_ElementField_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,SeqNo,Type,Updated,UpdatedBy) VALUES (0,753509,0,542140,636950,TO_TIMESTAMP('2025-09-05 14:07:40.120000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,'widget',TO_TIMESTAMP('2025-09-05 14:07:40.120000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-09-05T14:07:51.645Z
+INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_ElementField_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,SeqNo,Type,Updated,UpdatedBy) VALUES (0,753510,0,542141,636950,TO_TIMESTAMP('2025-09-05 14:07:51.446000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',20,'widget',TO_TIMESTAMP('2025-09-05 14:07:51.446000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Field: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> Rechnungsstandort
+-- Column: C_BP_Group.Bill_Location_ID
+-- 2025-09-05T14:08:11.780Z
+UPDATE AD_Field SET IsSameLine='Y',Updated=TO_TIMESTAMP('2025-09-05 14:08:11.780000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=753509
+;
+
+-- Field: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> Rechnungskontakt
+-- Column: C_BP_Group.Bill_User_ID
+-- 2025-09-05T14:08:15.213Z
+UPDATE AD_Field SET IsSameLine='Y',Updated=TO_TIMESTAMP('2025-09-05 14:08:15.213000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=753510
+;
+
+-- UI Element: Geschäftspartnergruppe(192,D) -> Geschäftspartnergruppe(322,D) -> main -> 10 -> default.Rechnungspartner
+-- Column: C_BP_Group.Bill_BPartner_ID
+-- 2025-09-05T14:08:31.500Z
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2025-09-05 14:08:31.500000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=636950
+;
+
+-- Column: C_BP_Group.Bill_Location_ID
+-- 2025-09-05T14:24:25.137Z
+UPDATE AD_Column SET AD_Reference_ID=30, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2025-09-05 14:24:25.137000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590813
+;
+
+-- Column: C_BP_Group.Bill_Location_ID
+-- 2025-09-05T14:30:43.945Z
+UPDATE AD_Column SET AD_Val_Rule_ID=119,Updated=TO_TIMESTAMP('2025-09-05 14:30:43.945000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590813
+;
+
+-- Column: C_BP_Group.Bill_User_ID
+-- 2025-09-05T14:31:26.851Z
+UPDATE AD_Column SET AD_Val_Rule_ID=191,Updated=TO_TIMESTAMP('2025-09-05 14:31:26.851000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590814
+;
+

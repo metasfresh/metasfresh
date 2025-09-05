@@ -45,7 +45,7 @@ public class C_BP_Group
 		{
 			throw new AdempiereException("@Invalid@ @Parent_BP_Group_ID@");
 		}
-		final int maxInheritanceLevels = DB.countMaxInheritanceLevels(Trx.TRXNAME_ThreadInherited, I_C_BP_Group.Table_Name, I_C_BP_Group.COLUMNNAME_Parent_BP_Group_ID);
+		final int maxInheritanceLevels = DB.getMaxDepth(Trx.TRXNAME_ThreadInherited, I_C_BP_Group.Table_Name, I_C_BP_Group.COLUMNNAME_Parent_BP_Group_ID);
 
 		if (maxInheritanceLevels > MAX_INHERITANCE_LEVELS)
 		{

@@ -80,26 +80,64 @@ public interface I_C_BP_Group
 	String COLUMNNAME_AD_PrintColor_ID = "AD_PrintColor_ID";
 
 	/**
-	 * Set Contact.
-	 * User within the system - Internal or Business Partner Contact
+	 * Set Bill Business Partner.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_User_ID (int AD_User_ID);
+	void setBill_BPartner_ID (int Bill_BPartner_ID);
 
 	/**
-	 * Get Contact.
-	 * User within the system - Internal or Business Partner Contact
+	 * Get Bill Business Partner.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_User_ID();
+	int getBill_BPartner_ID();
 
-	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+	String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
+
+	/**
+	 * Set Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_ID (int Bill_Location_ID);
+
+	/**
+	 * Get Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_ID();
+
+	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+
+	/**
+	 * Set Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_User_ID (int Bill_User_ID);
+
+	/**
+	 * Get Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_User_ID();
+
+	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
 	 * Set Individual business partner's name format.
@@ -123,48 +161,6 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_BPNameAndGreetingStrategy = new ModelColumn<>(I_C_BP_Group.class, "BPNameAndGreetingStrategy", null);
 	String COLUMNNAME_BPNameAndGreetingStrategy = "BPNameAndGreetingStrategy";
-
-	/**
-	 * Set Business Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Business Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_ID();
-
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
-	 * Set Location.
-	 * Identifies the address of the business partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
-
-	/**
-	 * Get Location.
-	 * Identifies the address of the business partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_Location_ID();
-
-	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
 	 * Set Business Partner Group.

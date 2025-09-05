@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 171660914L;
+	private static final long serialVersionUID = 225459265L;
 
     /** Standard Constructor */
     public X_C_BP_Group (final Properties ctx, final int C_BP_Group_ID, @Nullable final String trxName)
@@ -63,18 +63,48 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	}
 
 	@Override
-	public void setAD_User_ID (final int AD_User_ID)
+	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
 	{
-		if (AD_User_ID < 0) 
-			set_Value (COLUMNNAME_AD_User_ID, null);
+		if (Bill_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
+			set_Value (COLUMNNAME_Bill_BPartner_ID, Bill_BPartner_ID);
 	}
 
 	@Override
-	public int getAD_User_ID() 
+	public int getBill_BPartner_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+		return get_ValueAsInt(COLUMNNAME_Bill_BPartner_ID);
+	}
+
+	@Override
+	public void setBill_Location_ID (final int Bill_Location_ID)
+	{
+		if (Bill_Location_ID < 1) 
+			set_Value (COLUMNNAME_Bill_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_Location_ID, Bill_Location_ID);
+	}
+
+	@Override
+	public int getBill_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Bill_Location_ID);
+	}
+
+	@Override
+	public void setBill_User_ID (final int Bill_User_ID)
+	{
+		if (Bill_User_ID < 1) 
+			set_Value (COLUMNNAME_Bill_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_User_ID, Bill_User_ID);
+	}
+
+	@Override
+	public int getBill_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Bill_User_ID);
 	}
 
 	/** 
@@ -98,36 +128,6 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public java.lang.String getBPNameAndGreetingStrategy() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPNameAndGreetingStrategy);
-	}
-
-	@Override
-	public void setC_BPartner_ID (final int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
-	}
-
-	@Override
-	public int getC_BPartner_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
-	}
-
-	@Override
-	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
-	{
-		if (C_BPartner_Location_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
-	}
-
-	@Override
-	public int getC_BPartner_Location_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	@Override

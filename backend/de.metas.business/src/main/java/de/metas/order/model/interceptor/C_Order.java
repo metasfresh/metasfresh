@@ -601,9 +601,9 @@ public class C_Order
 		final I_C_BP_Group bpartnerGroup = groupDAO.getByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		if (bpartnerGroup.isAssociation())
 		{
-			order.setBill_BPartner_ID(bpartnerGroup.getC_BPartner_ID());
-			order.setBill_Location_ID(bpartnerGroup.getC_BPartner_Location_ID());
-			order.setBill_User_ID(bpartnerGroup.getAD_User_ID());
+			order.setBill_BPartner_ID(bpartnerGroup.getBill_BPartner_ID());
+			order.setBill_Location_ID(bpartnerGroup.getBill_Location_ID());
+			order.setBill_User_ID(bpartnerGroup.getBill_User_ID());
 		}
 		else
 		{
@@ -613,9 +613,9 @@ public class C_Order
 				final I_C_BP_Group parentGroup = groupDAO.getById(parentGroupId);
 				if (parentGroup.isAssociation())
 				{
-					order.setBill_BPartner_ID(parentGroup.getC_BPartner_ID());
-					order.setBill_Location_ID(parentGroup.getC_BPartner_Location_ID());
-					order.setBill_User_ID(parentGroup.getAD_User_ID());
+					order.setBill_BPartner_ID(parentGroup.getBill_BPartner_ID());
+					order.setBill_Location_ID(parentGroup.getBill_Location_ID());
+					order.setBill_User_ID(parentGroup.getBill_User_ID());
 				}
 			}
 		}

@@ -106,8 +106,10 @@ import java.util.stream.Collectors;
 public class DB
 {
 	public final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";
+	public static final int MAX_ALLOWED_DEPTH = 100;
 
 	private final IStatementsFactory statementsFactory = StatementsFactory.instance;
+
 
 	/**
 	 * Specifies what to do in case the SQL command fails.
@@ -2485,7 +2487,7 @@ public class DB
 	 * @return the maximum number of inheritance levels in the hierarchy; returns 1 if there are no child records with a parent defined
 	 * @throws IllegalArgumentException if tableName or parentColumn is null
 	 */
-	public int countMaxInheritanceLevels(@Nullable final String trxName, @NonNull final String tableName, @NonNull final String parentColumn)
+	public int getMaxDepth(@Nullable final String trxName, @NonNull final String tableName, @NonNull final String parentColumn)
 	{
 		final String query = "WITH RECURSIVE GroupHierarchy AS (" +
 				"    SELECT " + tableName + "_ID, " + parentColumn + ", 1 AS Level " +
@@ -2495,6 +2497,7 @@ public class DB
 				"    SELECT t1." + tableName + "_ID, t1." + parentColumn + ", t2.Level + 1 AS Level " +
 				"    FROM " + tableName + " t1 " +
 				"    INNER JOIN GroupHierarchy t2 ON t1." + parentColumn + " = t2." + tableName + "_ID" +
+				" WHERE t1.Level <= " + MAX_ALLOWED_DEPTH +
 				") " +
 				"SELECT COALESCE(max(Level) + 1, 1) FROM GroupHierarchy ";
 		return DB.getSQLValueEx(trxName, query);
