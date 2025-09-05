@@ -2495,7 +2495,7 @@ public class DB
 				"    SELECT t1." + tableName + "_ID, t1." + parentColumn + ", t2.Level + 1 AS Level " +
 				"    FROM " + tableName + " t1 " +
 				"    INNER JOIN GroupHierarchy t2 ON t1." + parentColumn + " = t2." + tableName + "_ID" +
-				" WHERE t1.Level <= " + maxDepth +
+				" WHERE t2.Level <= " + maxDepth +
 				") " +
 				"SELECT COALESCE(max(Level) + 1, 1) FROM GroupHierarchy ";
 		return DB.getSQLValueEx(trxName, query);
