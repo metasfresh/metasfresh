@@ -29,7 +29,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
@@ -66,10 +69,13 @@ public class OrderService
 {
 	private final static transient Logger logger = LogManager.getLogger(OrderService.class);
 
+	private static final AdMessageKey MSG_ERR_ORDER_HAS_DELIVERED_ITEMS = AdMessageKey.of("MSG_ERR_ORDER_HAS_DELIVERED_ITEMS");
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final CurrencyService currencyService;
 	private final JsonRetrieverService jsonRetrieverService;
@@ -158,6 +164,21 @@ public class OrderService
 
 			paymentBuilder.createAndProcess();
 		});
+	}
+
+	@NonNull
+	public I_C_Order reverseOrder(@NonNull final OrderId orderId)
+	{
+		if (orderDAO.hasDeliveredItems(orderId))
+		{
+			throw new AdempiereException(MSG_ERR_ORDER_HAS_DELIVERED_ITEMS, orderId);
+		}
+
+		final I_C_Order documentRecord = orderDAO.getById(orderId);
+
+		documentBL.processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		return documentRecord;
 	}
 
 	private Optional<OrderId> resolveOrderId(@NonNull final IdentifierString orderIdentifier, @NonNull final OrgId orgId)
