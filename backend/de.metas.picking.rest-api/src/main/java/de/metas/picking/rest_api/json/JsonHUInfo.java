@@ -2,7 +2,6 @@ package de.metas.picking.rest_api.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.common.handlingunits.JsonHUType;
-import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
