@@ -155,7 +155,7 @@ public class BPartnerBL implements IBPartnerBL
 		for (final BPartnerId bpartnerId : bpartnerIds)
 		{
 			final I_C_BPartner bpartner = bpartners.get(bpartnerId);
-			String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
+			final String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
 			result.put(bpartnerId, name);
 		}
 
@@ -530,6 +530,26 @@ public class BPartnerBL implements IBPartnerBL
 			if (groupDiscountSchemaId > 0)
 			{
 				return groupDiscountSchemaId; // we are done
+			}
+
+			// didn't get the schema yet; now we try to get the discount schema from the parent C_BP_Group
+			final BPGroupId parentBpGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
+			if (parentBpGroupId != null)
+			{
+				final I_C_BP_Group parentBpGroup = bpGroupDAO.getById(parentBpGroupId);
+				final int parentGroupDiscountSchemaId;
+				if (soTrx.isSales())
+				{
+					parentGroupDiscountSchemaId = parentBpGroup.getM_DiscountSchema_ID();
+				}
+				else
+				{
+					parentGroupDiscountSchemaId = parentBpGroup.getPO_DiscountSchema_ID();
+				}
+				if (parentGroupDiscountSchemaId > 0)
+				{
+					return parentGroupDiscountSchemaId; // we are done
+				}
 			}
 		}
 

@@ -21,6 +21,7 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -126,9 +127,14 @@ public class OrderTest
 	@SuppressWarnings("SameParameterValue")
 	private BPartnerLocationId createPartnerAndLocation(final String name, final String language)
 	{
+		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
+		group.setName("BPGroup");
+		save(group);
+
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setName(name);
 		partner.setAD_Language(language);
+		partner.setC_BP_Group(group);
 
 		save(partner);
 
