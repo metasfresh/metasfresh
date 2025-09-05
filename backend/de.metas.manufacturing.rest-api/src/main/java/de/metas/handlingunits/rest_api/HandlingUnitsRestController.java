@@ -383,7 +383,7 @@ public class HandlingUnitsRestController
 								.map(this::toJsonHUAttribute)
 								.collect(ImmutableList.toImmutableList()))
 						.build())
-				.jsonHUType(toJsonHUType(huQRCode.getPackingInfo().getHuUnitType()))
+				.unitType(toJsonHUType(huQRCode.getPackingInfo().getHuUnitType()))
 				.build();
 	}
 

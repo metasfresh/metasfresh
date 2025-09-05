@@ -31,6 +31,7 @@ const GetQuantityDialog = ({
   totalQty,
   qtyAlreadyOnScale,
   qtyCaption,
+  qtyInitial,
   packingItemName,
   uom,
   qtyRejectedReasons,
@@ -62,7 +63,9 @@ const GetQuantityDialog = ({
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
   const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
-  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : qtyTarget));
+  const [qtyInfo, setQtyInfo] = useState(
+    qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
+  );
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
