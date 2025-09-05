@@ -109,7 +109,6 @@ public class DB
 
 	private final IStatementsFactory statementsFactory = StatementsFactory.instance;
 
-
 	/**
 	 * Specifies what to do in case the SQL command fails.
 	 */
@@ -2480,13 +2479,13 @@ public class DB
 	 * for the given table and parent column. This is determined using a recursive query.
 	 * Assumes the primary key is tableName + "_ID"
 	 *
-	 * @param trxName the transaction name, which can be null to use the default transaction
-	 * @param tableName the name of the database table where the hierarchical data resides; must not be null
+	 * @param trxName      the transaction name, which can be null to use the default transaction
+	 * @param tableName    the name of the database table where the hierarchical data resides; must not be null
 	 * @param parentColumn the name of the column representing the parent-child relationship; must not be null
 	 * @return the maximum number of inheritance levels in the hierarchy; returns 1 if there are no child records with a parent defined
 	 * @throws IllegalArgumentException if tableName or parentColumn is null
 	 */
-	public int getMaxDepth(@Nullable final String trxName, @NonNull final String tableName, @NonNull final String parentColumn, @NonNull final Integer maxDepth)
+	public int getMaxDepth(@Nullable final String trxName, @NonNull final String tableName, @NonNull final String parentColumn, final int maxDepth)
 	{
 		final String query = "WITH RECURSIVE GroupHierarchy AS (" +
 				"    SELECT " + tableName + "_ID, " + parentColumn + ", 1 AS Level " +
