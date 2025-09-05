@@ -596,7 +596,7 @@ public class C_Order
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
-	public void setBillBPartnerIDIfAssociation(final I_C_Order order)
+	public void setBillBPartnerIdIfAssociation(final I_C_Order order)
 	{
 		final I_C_BP_Group bpartnerGroup = groupDAO.getByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		if (bpartnerGroup.isAssociation())
