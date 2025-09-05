@@ -30,6 +30,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -70,6 +71,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -175,6 +177,26 @@ public class SalesOrderRestController
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
+	@PutMapping(path = "/{orderId}/revert")
+	public ResponseEntity<?> revertOrder(
+			@PathVariable("orderId") @ApiParam(required = true, value = "metasfreshId of the order to revert") final int orderRecordId)
+	{
+		try
+		{
+			return Optional.ofNullable(OrderId.ofRepoIdOrNull(orderRecordId))
+					.map(orderService::reverseOrder)
+					.map(SalesOrderRestController::toSalesOrder)
+					.map(ResponseEntity::ok)
+					.orElseGet(() -> ResponseEntity.notFound().build());
+		}
+		catch (final Exception ex)
+		{
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(ex, Env.getADLanguageOrBaseLanguage()));
+
+			return ResponseEntity.unprocessableEntity().body(error);
+		}
+	}
+
 	private JsonSalesOrder createOrder0(@RequestBody final JsonSalesOrderCreateRequest request)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -235,7 +257,8 @@ public class SalesOrderRestController
 				.manualPrice(salesOrderLine.getPrice());
 	}
 
-	private JsonSalesOrder toSalesOrder(final I_C_Order salesOrderRecord)
+	@NonNull
+	private static JsonSalesOrder toSalesOrder(@NonNull final I_C_Order salesOrderRecord)
 	{
 		return JsonSalesOrder.builder()
 				.salesOrderId(String.valueOf(salesOrderRecord.getC_Order_ID()))

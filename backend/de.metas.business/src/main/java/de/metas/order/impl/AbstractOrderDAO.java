@@ -25,6 +25,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,6 +36,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.PPCostCollectorId;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -457,5 +459,15 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		final String sql = "SELECT " + org.compiere.model.I_C_OrderLine.COLUMNNAME_PP_Cost_Collector_ID
 				+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
 		return Optional.ofNullable(PPCostCollectorId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId)));
+	}
+	
+	public boolean hasDeliveredItems(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyDelivered, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+				.create()
+				.anyMatch();
 	}
 }
