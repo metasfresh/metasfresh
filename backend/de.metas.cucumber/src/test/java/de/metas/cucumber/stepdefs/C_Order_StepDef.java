@@ -92,6 +92,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -879,5 +881,27 @@ public class C_Order_StepDef
 							restTestContext.setStringVariableFromRow(row, () -> value == null ? null : value.toString());
 						}
 				);
+	}
+
+	@And("^store sales order PDF endpointPath (.*) in context$")
+	public void store_salesOrder_endpointPath_in_context(@NonNull String endpointPath)
+	{
+		final String regex = ".*(:[a-zA-Z]+)/?.*";
+
+		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(endpointPath);
+
+		while (matcher.find())
+		{
+			final String orderIdentifierGroup = matcher.group(1);
+			final String orderIdentifier = orderIdentifierGroup.replace(":", "");
+
+			final I_C_Order order = orderTable.get(orderIdentifier);
+			assertThat(order).isNotNull();
+
+			endpointPath = endpointPath.replace(orderIdentifierGroup, String.valueOf(order.getC_Order_ID()));
+
+			restTestContext.setEndpointPath(endpointPath);
+		}
 	}
 }

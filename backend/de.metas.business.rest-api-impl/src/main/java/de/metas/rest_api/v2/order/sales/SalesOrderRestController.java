@@ -36,6 +36,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -51,6 +52,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
@@ -76,6 +78,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales")
@@ -154,6 +157,22 @@ public class SalesOrderRestController
 
 		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(salesOrderRef, name, data);
 		return toSalesOrderAttachment(salesOrderId, entry);
+	}
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "PDF retrieved for order"),
+			@ApiResponse(code = 401, message = "You are not authorized to see the order PDF"),
+			@ApiResponse(code = 404, message = "No archive found for the order")
+	})
+	@GetMapping(path = "/{orderId}/pdf")
+	public ResponseEntity<byte[]> getOrderPDF(
+			@ApiParam(required = true, value = "metasfreshId of the order to get the PDF of") //
+			@PathVariable("orderId") final int orderRecordId)
+	{
+		return Optional.ofNullable(OrderId.ofRepoIdOrNull(orderRecordId))
+				.flatMap(orderService::getOrderPDF)
+				.map(ResponseEntity::ok)
+				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
 	private JsonSalesOrder createOrder0(@RequestBody final JsonSalesOrderCreateRequest request)

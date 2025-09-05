@@ -46,6 +46,7 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
@@ -117,6 +118,10 @@ public class PickingRestController
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
 		final TUPickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
+		if (target != null && !target.isNewTU())
+		{
+			throw new AdempiereException("Only New-TU targets are allowed");
+		}
 		final WFProcess wfProcess = pickingMobileApplication.setTUPickingTarget(wfProcessId, lineId, target, getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
