@@ -102,11 +102,11 @@ export const PickingJobScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
-    pickHU: async ({ qrCode, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
+    pickHU: async ({ qrCode, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
         await PickingJobScanHUScreen.waitForScreen();
         await PickingJobScanHUScreen.typeQRCode(qrCode);
-        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason });
+        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason });
         await PickingJobScreen.waitForScreen();
     }),
 

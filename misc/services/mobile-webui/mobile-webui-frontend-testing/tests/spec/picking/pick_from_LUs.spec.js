@@ -4,7 +4,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
+import { QTY_NOT_FOUND_REASON_IGNORE } from '../../utils/screens/picking/GetQuantityDialog';
 
 const createMasterdata = async ({
                                     salesOrdersQty,
@@ -25,6 +25,7 @@ const createMasterdata = async ({
                     shipOnCloseLU: false,
                     allowNewTU: false,
                     allowCompletingPartialPickingJob: true,
+                    allowSkippingRejectedReason: true,
                 }
             },
             bpartners: { "BP1": {} },
@@ -167,8 +168,6 @@ test('Pick entire LU which is exactly the qty that was ordered', async ({ page }
     });
 });
 
-
-
 // noinspection JSUnusedLocalSymbols
 test('Pick entire LU but less then ordered', async ({ page }) => {
     const masterdata = await createMasterdata({
@@ -190,7 +189,7 @@ test('Pick entire LU but less then ordered', async ({ page }) => {
 
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '40 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
-    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '20', qtyEntered: '20', qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '20', qtyEntered: '20', expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '40 TU', qtyPicked: '20 TU', qtyPickedCatchWeight: '' });
     await Backend.expect({
         pickings: {

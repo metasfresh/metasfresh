@@ -20,6 +20,7 @@ import DialogButton from './DialogButton';
 import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
+import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
@@ -66,7 +67,7 @@ const GetQuantityDialog = ({
   const [qtyInfo, setQtyInfo] = useState(
     qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
   );
-  const [rejectedReason, setRejectedReason] = useState(null);
+  const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
@@ -516,6 +517,15 @@ const computeCaptionFromUserInfoItem = ({ caption = null, captionKey = null }) =
     // shall not happen
     return '';
   }
+};
+
+const computeDefaultQtyRejectedReason = (qtyRejectedReasons) => {
+  if (!Array.isArray(qtyRejectedReasons) || qtyRejectedReasons.length <= 0) {
+    return null;
+  }
+
+  const defaultReason = qtyRejectedReasons.find((reason) => reason.key === QTY_REJECTED_REASON_TO_IGNORE_KEY);
+  return defaultReason?.key ?? null;
 };
 
 GetQuantityDialog.propTypes = {
