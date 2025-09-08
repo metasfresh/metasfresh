@@ -106,11 +106,6 @@ public class JsonHU
 			@Nullable @Deprecated Integer qtyTUs // ignored
 	)
 	{
-		if (jsonHUType != null && !Objects.equals(unitType, jsonHUType))
-		{
-			throw new IllegalArgumentException("jsonHUType and unitType are not equal!");
-		}
-
 		this.id = id;
 		this.huStatus = huStatus;
 		this.huStatusCaption = huStatusCaption;
