@@ -97,7 +97,7 @@ public class JsonHU
 			@Nullable final JsonHUAttributes attributes2,
 			@Nullable final JsonClearanceStatusInfo clearanceStatus,
 			@Nullable final String clearanceNote,
-			@NonNull JsonHUType unitType,
+			@Nullable JsonHUType unitType,
 			@Nullable @Deprecated JsonHUType jsonHUType,
 			@Nullable final List<JsonHU> includedHUs,
 			@Nullable final JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses,
@@ -114,19 +114,18 @@ public class JsonHU
 		this.id = id;
 		this.huStatus = huStatus;
 		this.huStatusCaption = huStatusCaption;
+		this.unitType = this.jsonHUType = singleNonNullValue("unitType", unitType, jsonHUType);
 		this.displayName = displayName;
 		this.qrCode = qrCode;
 		this.warehouseValue = warehouseValue;
 		this.locatorValue = locatorValue;
 		this.aggregatedTU = aggregatedTU;
 		this.numberOfAggregatedHUs = numberOfAggregatedHUs;
-		this.qtyTUs = computeQtyTUs(unitType, includedHUs);
+		this.qtyTUs = computeQtyTUs(this.unitType, includedHUs);
 		this.topLevelParentId = topLevelParentId;
 		this.products = products;
 		this.clearanceStatus = clearanceStatus;
 		this.clearanceNote = clearanceNote;
-		this.unitType = unitType;
-		this.jsonHUType = unitType;
 		this.includedHUs = includedHUs;
 		this.allowedHUClearanceStatuses = allowedHUClearanceStatuses;
 		this.isDisposalPending = isDisposalPending;
@@ -142,6 +141,23 @@ public class JsonHU
 			this.attributes2 = attributes2;
 		}
 		this.attributes = attributes != null ? attributes : this.attributes2.toJsonHUAttributeCodeAndValues();
+	}
+
+	@NonNull
+	private static <T> T singleNonNullValue(@NonNull final String name, @Nullable final T value1, @Nullable final T value2)
+	{
+		if (value1 == null && value2 == null)
+		{
+			throw new IllegalArgumentException("No value for " + name + " found");
+		}
+		if (value1 != null && value2 != null && !Objects.equals(value2, value1))
+		{
+			throw new IllegalArgumentException("More than one value for " + name + " found: " + value1 + ", " + value2);
+		}
+		else
+		{
+			return value1 != null ? value1 : value2;
+		}
 	}
 
 	private static Integer computeQtyTUs(@NonNull final JsonHUType unitType, final List<JsonHU> includedHUs)
