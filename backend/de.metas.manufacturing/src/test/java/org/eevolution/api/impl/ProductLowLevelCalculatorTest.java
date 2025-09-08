@@ -10,12 +10,12 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,9 +29,9 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
@@ -39,7 +39,7 @@ public class ProductLowLevelCalculatorTest
 {
 	private MRPTestHelper helper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		POJOWrapper.setDefaultStrictValues(false);
@@ -48,7 +48,7 @@ public class ProductLowLevelCalculatorTest
 
 	/**
 	 * Test Product LLC calculation for following hierarchy:
-	 * 
+	 *
 	 * <pre>
 	 * 		      A                    M
 	 *           / \                  / \
@@ -103,18 +103,18 @@ public class ProductLowLevelCalculatorTest
 
 	/**
 	 * Test BOM cycle detection for following hierarchy:
-	 * 
+	 *
 	 * <pre>
-	 * 		      A                   
-	 *           / \             
-	 *          B   C            
+	 * 		      A
+	 *           / \
+	 *          B   C
 	 *         / \
 	 *        D   E
 	 *           / \
 	 *          F  (A)
 	 * </pre>
 	 */
-	@Test(expected = BOMCycleException.class)
+	@Test
 	public void testBOMCycles()
 	{
 		final I_M_Product pA = helper.createProduct("A");
@@ -141,25 +141,28 @@ public class ProductLowLevelCalculatorTest
 				.build();
 
 		final I_PP_Product_BOMVersions bomVersionsE = helper.createBOMVersions(ProductId.ofRepoId(pE.getM_Product_ID()));
-		helper.newProductBOM()
-				.product(pE)
-				.newBOMLine().product(pF).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
-				.bomVersions(bomVersionsE)
-				//
-				// NOTE: this line shall throw BOMCycleException ... because model validator is called and it tries to update product's LLC
-				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
-				.build();
+
+		Assertions.assertThrows(BOMCycleException.class, () ->
+				helper.newProductBOM()
+						.product(pE)
+						.bomVersions(bomVersionsE)
+						.newBOMLine().product(pF).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
+						.bomVersions(bomVersionsE)
+						//
+						// NOTE: this line shall throw BOMCycleException ... because model validator is called and it tries to update product's LLC
+						.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
+						.build());
 	}
 
 	/**
 	 * Test rotated BOM with co-product.
-	 * 
+	 *
 	 * <pre>
-	 * 		        A                   B                   
+	 * 		        A                   B
 	 *           /     \              /    \
 	 *          B(CP)   C            A(CP)  C
 	 * </pre>
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/480
 	 */
 	@Test
@@ -194,6 +197,6 @@ public class ProductLowLevelCalculatorTest
 	{
 		final ProductLowLevelCalculator llcCalculator = ProductLowLevelCalculator.newInstance();
 		final int llcActual = llcCalculator.getLowLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-		Assert.assertEquals("Invalid LLC for product " + product.getValue(), llcExpected, llcActual);
+		Assertions.assertEquals(llcExpected, llcActual, "Invalid LLC for product " + product.getValue());
 	}
 }

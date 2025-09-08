@@ -22,39 +22,35 @@
 
 package de.metas.serviceprovider.issue;
 
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static de.metas.serviceprovider.issue.IssueServiceTest.prepareDataContext;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.assertEquals;
 
 public class IssueRepositoryTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
-
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+	private IQueryBL queryBL;
+	private IssueRepository issueRepository;
 
 	private IssueEntity MOCK_ISSUE_ENTITY;
-
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		queryBL = Services.get(IQueryBL.class);
+		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 		MOCK_ISSUE_ENTITY = IssueTestHelper.createMockIssueEntity();
 	}
-
-	
 
 	@Test
 	public void save()
@@ -64,12 +60,12 @@ public class IssueRepositoryTest
 
 		final IssueEntity storedEntity = issueRepository.getById(MOCK_ISSUE_ENTITY.getIssueId());
 
-		assertThat(storedEntity).isEqualTo(MOCK_ISSUE_ENTITY);
+		Assertions.assertEquals(MOCK_ISSUE_ENTITY, storedEntity);
 	}
 
 	/**
 	 * Given the following issue hierarchy:
-	 *
+	 * <p>
 	 * ----1----
 	 * ---/-\---
 	 * --2---3--
@@ -77,7 +73,7 @@ public class IssueRepositoryTest
 	 * --4---5--
 	 * /-|-\----
 	 * 6-7-8----
-	 *
+	 * <p>
 	 * When {@link IssueRepository#buildUpStreamIssueHierarchy(IssueId)} for 8
 	 * Then return: IssueHierarchy(root=1) with nodes: [1,2,4,8]
 	 */
@@ -93,11 +89,11 @@ public class IssueRepositoryTest
 		//then
 		final List<IssueEntity> nodeList = issueHierarchy.listIssues();
 
-		assertEquals(nodeList.size(), 4);
-		assertEquals(nodeList.get(0).getIssueId(), IssueId.ofRepoId(1));
-		assertEquals(nodeList.get(1).getIssueId(), IssueId.ofRepoId(2));
-		assertEquals(nodeList.get(2).getIssueId(), IssueId.ofRepoId(4));
-		assertEquals(nodeList.get(3).getIssueId(), IssueId.ofRepoId(8));
+		Assertions.assertEquals(nodeList.size(), 4);
+		Assertions.assertEquals(nodeList.get(0).getIssueId(), IssueId.ofRepoId(1));
+		Assertions.assertEquals(nodeList.get(1).getIssueId(), IssueId.ofRepoId(2));
+		Assertions.assertEquals(nodeList.get(2).getIssueId(), IssueId.ofRepoId(4));
+		Assertions.assertEquals(nodeList.get(3).getIssueId(), IssueId.ofRepoId(8));
 	}
 
 }

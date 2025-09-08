@@ -1,51 +1,25 @@
 package org.adempiere.test;
 
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.slf4j.Logger;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-
 /**
- * Watches current test and dumps the database to console in case of failure.
- *
+ * Watches current test and dumps the database to the console in case of failure.
+ * <p>
  * To include in your tests:
  * <ul>
  * <li>JUnit5: annotate your class with <b><code>@ExtendWith(AdempiereTestWatcher.class)</code></b>
- * <li>Legacy JUnit4: you need to declare a public field like this: <code>@Rule public final TestWatcher testWatcher = new AdempiereTestWatcher();</code>
  * </ul>
  */
-public class AdempiereTestWatcher extends TestWatcher implements AfterTestExecutionCallback
+public class AdempiereTestWatcher implements AfterTestExecutionCallback
 {
 	private static final Logger logger = LogManager.getLogger(AdempiereTestWatcher.class);
 
@@ -60,24 +34,7 @@ public class AdempiereTestWatcher extends TestWatcher implements AfterTestExecut
 			onTestFailed(context.getDisplayName(), context.getExecutionException().get());
 		}
 
-		onTestFinished(context.getDisplayName());
-	}
-
-	/**
-	 * Called after a test succeed.
-	 *
-	 * Does nothing at this level.
-	 */
-	@Override
-	protected final void succeeded(final Description description)
-	{
-		// nothing
-	}
-
-	@Override
-	protected final void failed(final Throwable exception, final Description description)
-	{
-		onTestFailed(description.getDisplayName(), exception);
+		onTestFinished();
 	}
 
 	/**
@@ -100,25 +57,16 @@ public class AdempiereTestWatcher extends TestWatcher implements AfterTestExecut
 		}
 	}
 
-	@Override
-	protected final void finished(final Description description)
-	{
-		onTestFinished(description.getDisplayName());
-	}
-
 	/**
 	 * Called after a test finished (successful or not). It:
 	 * <ul>
 	 * <li>clears database content
 	 * </ul>
 	 */
-	private void onTestFinished(final String name)
+	private void onTestFinished()
 	{
 		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
-		if (pojoLookupMap != null)
-		{
-			pojoLookupMap.clear();
-		}
+		pojoLookupMap.clear();
 
 		context.clear();
 	}

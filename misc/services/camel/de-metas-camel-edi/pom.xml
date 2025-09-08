@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-edi
+  ~ %%
+  ~ Copyright (C) 2025 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -15,29 +37,28 @@
     <version>10.0.0</version>
     <properties>
         <java.version>14</java.version>
-        <spring-boot.version>2.6.3</spring-boot.version>
-        <camel.version>3.14.1</camel.version>
+        <spring-boot.version>2.7.11</spring-boot.version>
+        <camel.version>3.14.7</camel.version>
         <guava.version>30.1.1-jre</guava.version>
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
         <jackson.version>2.13.1</jackson.version>
         <lombok.version>1.18.22</lombok.version>
-        <org.apache.poi.version>3.15</org.apache.poi.version>
-        <jaxb.packageName>de.metas.edi.esb.jaxb.metasfresh</jaxb.packageName>
+        <org.apache.poi.version>4.1.2</org.apache.poi.version>
+        <jaxb.inhouse.v2.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev2</jaxb.inhouse.v2.packageName>
         <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>
         <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
+        <jaxb.inhouse.v1.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev1</jaxb.inhouse.v1.packageName>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
         <!--
-            3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
+            3.27.2 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
         -->
-        <assertj.version>3.19.0</assertj.version>
+        <assertj.version>3.27.2</assertj.version>
+        <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
         <spring-boot-admin.version>2.1.5</spring-boot-admin.version>
-
-        <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
-        <junit-jupiter.version>5.8.2</junit-jupiter.version>
     </properties>
 
     <dependencyManagement>
@@ -70,6 +91,13 @@
                 <scope>test</scope>
                 <version>${assertj.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-assertj3</artifactId>
+                <version>${xmlunit-assertj3.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -86,6 +114,7 @@
             <version>${metasfresh-common.version}</version>
             <!-- Avoid startup failure
              org.springframework.context.ApplicationContextException: Failed to start bean 'documentationPluginsBootstrapper'; nested exception is java.lang.NullPointerException: Cannot invoke "org.springframework.web.servlet.mvc.condition.PatternsRequestCondition.getPatterns()" because "this.condition" is null
+             Please revise this exclusion when the rest of MF also runs with java-17 or later
             -->
             <exclusions>
                 <exclusion>
@@ -123,11 +152,6 @@
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-spring-boot-starter</artifactId>
             <version>${camel.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-spring-javaconfig</artifactId>
         </dependency>
 
         <dependency>
@@ -238,30 +262,24 @@
         </dependency>
 
         <dependency>
+            <!-- needed to run the tests with maven's surefire-plugin -->
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.8.2</version>
             <scope>test</scope>
         </dependency>
+        
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-assertj3</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -310,15 +328,15 @@
                 <artifactId>maven-jaxb2-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>xjc-schema-metasfresh</id>
+                        <id>xjc-schema-metasfresh-inhouse-v2</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/xsd/metasfresh</schemaDirectory>
-                            <generatePackage>${jaxb.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfresh</generateDirectory>
+                            <schemaDirectory>src/main/xsd/metasfreshinhousev2</schemaDirectory>
+                            <generatePackage>${jaxb.inhouse.v2.packageName}</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev2</generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -373,6 +391,18 @@
                             <generateDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</generateDirectory>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>xjc-schema-metasfresh-inhouse-v1</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/xsd/metasfreshinhousev1</schemaDirectory>
+                            <generatePackage>${jaxb.inhouse.v1.packageName}</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev1</generateDirectory>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>
@@ -403,7 +433,8 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>src/main/java-xjc_metasfresh</source>
+                                <source>src/main/java-xjc_metasfreshinhousev1</source>
+                                <source>src/main/java-xjc_metasfreshinhousev2</source>
                                 <source>src/main/java-xjc_stepcom_orders</source>
                                 <source>src/main/java-xjc_stepcom_desadv</source>
                                 <source>src/main/java-xjc_stepcom_invoic</source>
@@ -413,7 +444,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

@@ -31,7 +31,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class BPartnerProduct
 {
 	@NonNull
@@ -76,8 +76,8 @@ public class BPartnerProduct
 	@Nullable
 	Boolean dropShip;
 
-	@Nullable
-	Boolean usedForVendor;
+	@Nullable Boolean usedForVendor;
+	@Nullable Boolean usedForCustomer;
 
 	@Nullable
 	Boolean isExcludedFromPurchase;

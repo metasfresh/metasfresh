@@ -7,7 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.CurrencyId;
 import de.metas.order.model.I_M_Product_Category;
@@ -77,7 +77,7 @@ public class TestCommissionInstance
 	InvoiceCandidateId invoiceCandidateId;
 
 	@Nullable
-	InvoiceLineId invoiceLineId;
+	InvoiceAndLineId invoiceAndLineId;
 
 	@NonNull
 	CommissionTriggerType triggerType;
@@ -132,10 +132,10 @@ public class TestCommissionInstance
 		{
 			instanceRecord.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
 		}
-		if (invoiceLineId != null)
+		if (invoiceAndLineId != null)
 		{
-			instanceRecord.setC_Invoice_ID(invoiceLineId.getInvoiceId().getRepoId());
-			instanceRecord.setC_InvoiceLine_ID(invoiceLineId.getRepoId());
+			instanceRecord.setC_Invoice_ID(invoiceAndLineId.getInvoiceId().getRepoId());
+			instanceRecord.setC_InvoiceLine_ID(invoiceAndLineId.getRepoId());
 		}
 
 		instanceRecord.setAD_Org_ID(orgId.getRepoId());

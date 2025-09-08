@@ -24,13 +24,17 @@ package de.metas.document.references.related_documents.relation_type;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.service.IColumnBL;
+import de.metas.ad_reference.ADRefTable;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
-import de.metas.document.references.related_documents.POZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsQuerySuppliers;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
@@ -45,24 +49,19 @@ import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PORelationException;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MQuery;
-import org.compiere.model.PO;
+import org.compiere.model.POInfo;
 import org.compiere.model.Query;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Related documents provider for one single relation type
@@ -179,7 +178,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 												adWindowId,
 												getSource() != null ? getSource().getTableRefInfo().getKeyColumn() : null))
 								.priority(relatedDocumentsPriority)
-								.query(query)
+								.querySupplier(RelatedDocumentsQuerySuppliers.ofQuery(query))
 								.windowCaption(display)
 								.documentsCountSupplier(new RelationTypeRelatedDocumentsCountSupplier(query))
 								.build()));
@@ -229,7 +228,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 	{
 		final String queryWhereClause = createZoomOriginQueryWhereClause(fromDocument);
 
-		final TableRefInfo refTable = getTarget().getTableRefInfo();
+		final ADRefTable refTable = getTarget().getTableRefInfo();
 
 		final String tableName = refTable.getTableName();
 		final String columnName = refTable.getKeyColumn();
@@ -249,7 +248,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		final StringBuilder queryWhereClause = new StringBuilder();
 
-		final TableRefInfo refTable = getTarget().getTableRefInfo();
+		final ADRefTable refTable = getTarget().getTableRefInfo();
 
 		final String targetTableName = fromDocument.getTableName();
 		final String originTableName = refTable.getTableName();
@@ -273,7 +272,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 			if (originRecordIdName != null)
 			{
-				final String tableIdColumnName = Services.get(IColumnBL.class).getTableIdColumnName(originTableName, originRecordIdName).orElse(null);
+				final String tableIdColumnName = POInfo.getPOInfoNotNull(originTableName).getTableIdColumnName(originRecordIdName).orElse(null);
 				Check.assumeNotEmpty(tableIdColumnName, "The table {} must have an AD_Table_ID column", originTableName);
 
 				queryWhereClause
@@ -350,28 +349,11 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		return whereParsed;
 	}
 
-	/**
-	 * Retrieve destinations for the zoom origin given as parameter.
-	 * NOTE: This is not suitable for TableRecordIdTarget relation types, only for the default kind!
-	 */
-	public <T> List<T> retrieveDestinations(final Properties ctx, final PO fromDocumentPO, final Class<T> clazz, final String trxName)
-	{
-		final IZoomSource fromDocument = POZoomSource.of(fromDocumentPO);
-
-		final MQuery query = mkZoomOriginQuery(fromDocument);
-
-		return new Query(ctx, query.getZoomTableName(), query.getWhereClause(false), trxName)
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(query.getZoomColumnName())
-				.list(clazz);
-	}
-
 	@Value
 	private static class ZoomProviderDestination
 	{
-		int adReferenceId;
-		TableRefInfo tableRefInfo;
+		ReferenceId adReferenceId;
+		ADRefTable tableRefInfo;
 		ITranslatableString roleDisplayName;
 
 		/**
@@ -381,21 +363,15 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		@lombok.Builder
 		private ZoomProviderDestination(
-				final int adReferenceId,
-				@NonNull final TableRefInfo tableRefInfo,
+				@NonNull final ReferenceId adReferenceId,
+				@NonNull final ADRefTable tableRefInfo,
 				@Nullable final ITranslatableString roleDisplayName,
 				@NonNull final Boolean tableRecordIdTarget)
 		{
-			Check.assume(adReferenceId > 0, "adReferenceId > 0");
 			this.adReferenceId = adReferenceId;
 			this.tableRefInfo = tableRefInfo;
 			this.roleDisplayName = roleDisplayName;
 			this.tableRecordIdTarget = tableRecordIdTarget;
-		}
-
-		public String getTableName()
-		{
-			return tableRefInfo.getTableName();
 		}
 
 		public ITranslatableString getRoleDisplayName(final AdWindowId fallbackAD_Window_ID)
@@ -411,8 +387,14 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 			return windowName;
 		}
 
-		public boolean matchesAsSource(final IZoomSource zoomSource)
+		public boolean matchesAsSource(@NonNull final IZoomSource zoomSource)
 		{
+			if (!tableRefInfo.getTableName().equals(zoomSource.getTableName()))
+			{
+				logger.debug("matchesAsSource - return false because zoomSource.tableName={}; this={}", zoomSource.getTableName(), this);
+				return false;
+			}
+
 			if (tableRecordIdTarget)
 			{
 				// the source always matches if the target is ReferenceTarget
@@ -427,21 +409,21 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 			}
 
 			final String keyColumnName = zoomSource.getKeyColumnNameOrNull();
-			if (Check.isEmpty(keyColumnName, true))
+			if (Check.isBlank(keyColumnName))
 			{
 				logger.warn("matchesAsSource - return false because zoomSource.getKeyColumnNameOrNull()==null; this={}; zoomSource={}", this, zoomSource);
 				return false;
 			}
 
 			final String whereClause = tableRefInfo.getWhereClause();
-			if (Check.isEmpty(whereClause, true))
+			if (Check.isBlank(whereClause))
 			{
 				logger.debug("matchesAsSource - return true because tableRefInfo.whereClause is empty; this={}", this);
 				return true;
 			}
 
 			final String parsedWhere = parseWhereClause(zoomSource, whereClause, false);
-			if (Check.isEmpty(parsedWhere))
+			if (Check.isBlank(parsedWhere))
 			{
 				return false;
 			}
@@ -462,7 +444,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 	 * @return the <code>AD_Window_ID</code>
 	 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
 	 */
-	private AdWindowId getRefTableAD_Window_ID(final TableRefInfo tableRefInfo, final boolean isSOTrx)
+	private AdWindowId getRefTableAD_Window_ID(final ADRefTable tableRefInfo, final boolean isSOTrx)
 	{
 		AdWindowId windowId = tableRefInfo.getZoomAD_Window_ID_Override();
 		if (windowId != null)
@@ -486,10 +468,10 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		return windowId;
 	}
 
-	@ToString(exclude = "lookupDAO")
+	@ToString(exclude = "adReferenceService")
 	public static final class Builder
 	{
-		private final transient ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+		private ADReferenceService adReferenceService = null;
 
 		private CustomizedWindowInfoMap customizedWindowInfoMap = CustomizedWindowInfoMap.empty();
 
@@ -497,15 +479,15 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		private int adRelationTypeId;
 		private boolean isTableRecordIDTarget = false;
 
-		private int sourceReferenceId = -1;
+		private ReferenceId sourceReferenceId = null;
 		private ITranslatableString sourceRoleDisplayName;
 		@Nullable
-		private TableRefInfo sourceTableRefInfo = null; // lazy
+		private ADRefTable sourceTableRefInfo = null; // lazy
 
-		private int targetReferenceId = -1;
+		private ReferenceId targetReferenceId = null;
 		private ITranslatableString targetRoleDisplayName;
 		@Nullable
-		private TableRefInfo targetTableRefInfo = null; // lazy
+		private ADRefTable targetTableRefInfo = null; // lazy
 
 		private Builder()
 		{
@@ -528,6 +510,12 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 			}
 
 			return new SpecificRelationTypeRelatedDocumentsProvider(this);
+		}
+
+		public Builder setAdReferenceService(@NonNull final ADReferenceService adReferenceService)
+		{
+			this.adReferenceService = adReferenceService;
+			return this;
 		}
 
 		public Builder setCustomizedWindowInfoMap(final CustomizedWindowInfoMap customizedWindowInfoMap)
@@ -571,19 +559,18 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		public Builder setSource_Reference_ID(final int sourceReferenceId)
 		{
-			this.sourceReferenceId = sourceReferenceId;
+			this.sourceReferenceId = ReferenceId.ofRepoIdOrNull(sourceReferenceId);
 			sourceTableRefInfo = null; // reset
 			return this;
 		}
 
-		private int getSource_Reference_ID()
+		private ReferenceId getSource_Reference_ID()
 		{
-			Check.assume(sourceReferenceId > 0, "sourceReferenceId > 0");
-			return sourceReferenceId;
+			return Check.assumeNotNull(sourceReferenceId, "sourceReferenceId is set");
 		}
 
 		@Nullable
-		private TableRefInfo getSourceTableRefInfoOrNull()
+		private ADRefTable getSourceTableRefInfoOrNull()
 		{
 			if (sourceTableRefInfo == null)
 			{
@@ -593,9 +580,9 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		}
 
 		@Nullable
-		private TableRefInfo retrieveTableRefInfo(final int adReferenceId)
+		private ADRefTable retrieveTableRefInfo(final ReferenceId adReferenceId)
 		{
-			final TableRefInfo tableRefInfo = lookupDAO.retrieveTableRefInfo(adReferenceId);
+			final ADRefTable tableRefInfo = adReferenceService.retrieveTableRefInfo(adReferenceId);
 			if (tableRefInfo == null)
 			{
 				return null;
@@ -620,18 +607,17 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		public Builder setTarget_Reference_AD(final int targetReferenceId)
 		{
-			this.targetReferenceId = targetReferenceId;
+			this.targetReferenceId = ReferenceId.ofRepoIdOrNull(targetReferenceId);
 			targetTableRefInfo = null; // lazy
 			return this;
 		}
 
-		private int getTarget_Reference_ID()
+		private ReferenceId getTarget_Reference_ID()
 		{
-			Check.assume(targetReferenceId > 0, "targetReferenceId > 0");
-			return targetReferenceId;
+			return Check.assumeNotNull(targetReferenceId, "targetReferenceId is set");
 		}
 
-		private TableRefInfo getTargetTableRefInfoOrNull()
+		private ADRefTable getTargetTableRefInfoOrNull()
 		{
 			if (targetTableRefInfo == null)
 			{

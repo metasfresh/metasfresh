@@ -1,0 +1,80 @@
+.panel-letter {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.letter-headline {
+  display: flex;
+  flex-grow: 1;
+}
+
+.panel-letter-header-top {
+  background-color: $brand-color-primary;
+}
+
+.panel-letter-header {
+  display: flex;
+  flex-flow: row wrap;
+  min-height: 50px;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-bottom: 1px solid $brand-super-light-color;
+}
+
+.letter-templates, .letter-icon-print {
+  margin-right: 20px;
+}
+
+.letter-templates .input-dropdown {
+  background: $brand-bright-color;
+}
+
+.letter-templates .input-dropdown-list {
+  color: $brand-color-primary;
+}
+
+.panel-letter-header-wrapper {
+  box-shadow: 0 0 6px rgba(0, 0, 0, .1);
+}
+
+.letter-templates .input-dropdown-container {
+    min-width: 500px;
+}
+
+.panel-letter-body {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+}
+
+.panel-letter-body textarea {
+  height: 100%;
+  border: none;
+}
+
+.panel-letter-footer {
+  padding: 20px;
+  display: flex;
+  border-top: 1px solid $brand-super-light-color;
+  justify-content: space-between;
+  color: $brand-font-color;
+  align-items: center;
+  position: relative;
+}
+
+.panel-letter-footer button {
+  min-width: 100px;
+}
+
+.letter-icon-close, .letter-icon-print {
+  cursor: pointer;
+  color: $brand-super-light-color;
+}
+
+.letter-icon-print:hover {
+  color: $brand-super-light-color;
+  text-decoration: none;
+}

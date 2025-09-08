@@ -1,16 +1,6 @@
 package de.metas.quantity;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder;
@@ -23,6 +13,13 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Util.ArrayKey;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 /*
  * #%L
@@ -56,7 +53,7 @@ public class StockQtyAndUOMQtys
 	{
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.createZero(productId));
+				.stockQty(Quantitys.zero(productId));
 
 		if (uomId != null)
 		{
@@ -77,9 +74,19 @@ public class StockQtyAndUOMQtys
 		return create(qtyInStockUOM, productId, qtyInUOM, uomId);
 	}
 
+	public StockQtyAndUOMQty ofQtyInStockUOM(
+			@NonNull final Quantity qtyInStockUOM,
+			@NonNull final ProductId productId)
+	{
+		return validate(StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(qtyInStockUOM)
+				.build());
+	}
+
 	/**
 	 * @param qtyInUOM may be {@code null} only if {@code uomId} is {@code null}.
-	 * @param uomId may be {@code null} in which case the result will contain no {@code uomQty}.
+	 * @param uomId    may be {@code null} in which case the result will contain no {@code uomQty}.
 	 */
 	public StockQtyAndUOMQty create(
 			@NonNull final BigDecimal qtyInStockUOM,
@@ -87,7 +94,7 @@ public class StockQtyAndUOMQtys
 			@Nullable final BigDecimal qtyInUOM,
 			@Nullable final UomId uomId)
 	{
-		final Quantity stockQty = Quantitys.create(qtyInStockUOM, productId);
+		final Quantity stockQty = Quantitys.of(qtyInStockUOM, productId);
 
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
 				.productId(productId)
@@ -118,7 +125,7 @@ public class StockQtyAndUOMQtys
 			@NonNull final ProductId productId,
 			@NonNull final UomId otherUomId)
 	{
-		final Quantity stockQty = Quantitys.create(qtyInStockUOM, productId);
+		final Quantity stockQty = Quantitys.of(qtyInStockUOM, productId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity uomQty = uomConversionBL.convertQuantityTo(stockQty, UOMConversionContext.of(productId), otherUomId);
@@ -136,7 +143,7 @@ public class StockQtyAndUOMQtys
 			@NonNull final ProductId productId,
 			@NonNull final UomId uomId)
 	{
-		final Quantity stockQty = Quantitys.create(qtyInStockUom, productId);
+		final Quantity stockQty = Quantitys.of(qtyInStockUom, productId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity uomQty = uomConversionBL.convertQuantityTo(stockQty, UOMConversionContext.of(productId), uomId);
@@ -157,7 +164,7 @@ public class StockQtyAndUOMQtys
 			@NonNull final ProductId productId,
 			@NonNull final UomId uomId)
 	{
-		final Quantity stockQty = Quantitys.create(qtyInAnyUom.toBigDecimal(), qtyInAnyUom.getUomId(), productId);
+		final Quantity stockQty = Quantitys.of(qtyInAnyUom.toBigDecimal(), qtyInAnyUom.getUomId(), productId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity uomQty = uomConversionBL.convertQuantityTo(qtyInAnyUom, UOMConversionContext.of(productId), uomId);
@@ -172,14 +179,14 @@ public class StockQtyAndUOMQtys
 
 	/**
 	 * @param stockQtyInAnyUom converted to the product's stock UOM is needed
-	 * @param uomQty added to the new {@link StockQtyAndUOMQty} as-is. May be {@code null}.
+	 * @param uomQty           added to the new {@link StockQtyAndUOMQty} as-is. May be {@code null}.
 	 */
 	public StockQtyAndUOMQty createConvert(
 			@NonNull final Quantity stockQtyInAnyUom,
 			@NonNull final ProductId productId,
 			@Nullable final Quantity uomQty)
 	{
-		final Quantity stockQty = Quantitys.create(stockQtyInAnyUom.toBigDecimal(), stockQtyInAnyUom.getUomId(), productId);
+		final Quantity stockQty = Quantitys.of(stockQtyInAnyUom.toBigDecimal(), stockQtyInAnyUom.getUomId(), productId);
 
 		return validate(
 				StockQtyAndUOMQty.builder()
@@ -189,7 +196,9 @@ public class StockQtyAndUOMQtys
 						.build());
 	}
 
-	/** @return the sum of the given quantities; See {@link Quantitys#add(UOMConversionContext, Quantity, Quantity)} for the result's uomQty's UOM. */
+	/**
+	 * @return the sum of the given quantities; See {@link Quantitys#add(UOMConversionContext, Quantity, Quantity)} for the result's uomQty's UOM.
+	 */
 	public StockQtyAndUOMQty add(
 			@NonNull final StockQtyAndUOMQty firstAugent,
 			@NonNull final StockQtyAndUOMQty secondAugent)
@@ -302,6 +311,9 @@ public class StockQtyAndUOMQtys
 		}
 	}
 
+	/**
+	 * @return the argument with the smaller UOM-quantity. If both have the same size, then the <b>first</b> argument is returned.
+	 */
 	public StockQtyAndUOMQty minUomQty(
 			@NonNull final StockQtyAndUOMQty qtysToCompare1,
 			@NonNull final StockQtyAndUOMQty qtysToCompare2)
@@ -319,6 +331,9 @@ public class StockQtyAndUOMQtys
 		return uomQty1.compareTo(uomQty2) <= 0 ? qtysToCompare1 : qtysToCompare2;
 	}
 
+	/**
+	 * @return The argument with the bigger UOM-quantity. If both have the same size, then the <b>first</b> argument is returned.
+	 */
 	public StockQtyAndUOMQty maxUomQty(
 			@NonNull final StockQtyAndUOMQty qtysToCompare1,
 			@NonNull final StockQtyAndUOMQty qtysToCompare2)

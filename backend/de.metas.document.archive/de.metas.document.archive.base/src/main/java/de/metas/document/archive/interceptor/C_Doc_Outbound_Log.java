@@ -68,7 +68,7 @@ public class C_Doc_Outbound_Log
 
 	@CalloutMethod(columnNames = I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID)
 	@ModelChange( //
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			timings = {ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailRecipient_ID)
 	public void updateFromRecipientId(@NonNull final I_C_Doc_Outbound_Log docOutboundlogRecord)
 	{

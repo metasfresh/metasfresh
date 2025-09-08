@@ -7,9 +7,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -22,7 +19,10 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Product;
@@ -82,7 +82,8 @@ class HURepositoryTest
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx(); // we need to do this before registering our custom SSCC18CodeBL
 
 		sscc18SerialNo = 0;
-		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++sscc18SerialNo);
+		sscc18CodeBL = new SSCC18CodeBL();
+		sscc18CodeBL.setOverrideNextSerialNumberProvider(orgId -> ++sscc18SerialNo);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeBL);
 
 		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", ClientId.METASFRESH, OrgId.ANY);
@@ -119,7 +120,7 @@ class HURepositoryTest
 
 		final I_M_Attribute attrRecord = newInstance(I_M_Attribute.class);
 		attrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
-		attrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value.getCode());
+		attrRecord.setValue(AttributeConstants.ATTR_SSCC18_Value.getCode());
 		saveRecord(attrRecord);
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -135,7 +136,7 @@ class HURepositoryTest
 				huPIItemProductRecord,
 				new BigDecimal("49"));
 
-		final String sscc18String = sscc18CodeBL.generate(OrgId.ANY).toString();
+		final String sscc18String = sscc18CodeBL.generate(OrgId.ANY).asString();
 		final I_M_HU_Attribute huAttrRecord = newInstance(I_M_HU_Attribute.class);
 		huAttrRecord.setM_Attribute_ID(attrRecord.getM_Attribute_ID());
 		huAttrRecord.setM_HU_ID(lu.getM_HU_ID());
@@ -149,9 +150,9 @@ class HURepositoryTest
 		// then
 		assertThat(result.getProductQtysInStockUOM()).hasSize(1);
 		assertThat(result.getProductQtysInStockUOM().get(productId).toBigDecimal()).isEqualByComparingTo("49");
-		assertThat(result.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value)).isEqualTo(sscc18String);
+		assertThat(result.getAttributes().getValueAsString(AttributeConstants.ATTR_SSCC18_Value)).isEqualTo(sscc18String);
 
-		assertThat(result.getPackagingGTINs()).containsExactly(
+		assertThat(result.getAllPackaginGTINs()).containsExactly(
 				entry(BPartnerId.ofRepoId(10), "LU-GTIN1"),
 				entry(BPartnerId.ofRepoId(20), "LU-GTIN2"));
 
@@ -170,9 +171,7 @@ class HURepositoryTest
 						new Quantity(new BigDecimal("5"), uomRecord),
 						new Quantity(new BigDecimal("4"), uomRecord));
 
-		assertThat(result.getChildHUs()).allSatisfy(childHU -> {
-			assertThat(childHU.getPackagingGTINs()).containsExactly(entry(BPartnerId.ofRepoId(10), "TU-GTIN1"));
-		});
+		assertThat(result.getChildHUs()).allSatisfy(childHU -> assertThat(childHU.getAllPackaginGTINs()).containsExactly(entry(BPartnerId.ofRepoId(10), "TU-GTIN1")));
 	}
 
 	private void setupPackagingGTINs()

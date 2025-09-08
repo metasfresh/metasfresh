@@ -1,456 +1,314 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Field
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 244841217L;
+	private static final long serialVersionUID = 1867521920L;
 
     /** Standard Constructor */
-    public X_AD_Field (Properties ctx, int AD_Field_ID, String trxName)
+    public X_AD_Field (final Properties ctx, final int AD_Field_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Field_ID, trxName);
-      /** if (AD_Field_ID == 0)
-        {
-			setAD_Column_ID (0);
-			setAD_Field_ID (0);
-			setAD_Tab_ID (0);
-			setEntityType (null); // U
-			setIsDisplayed (true); // Y
-			setIsDisplayedGrid (true); // Y
-			setIsEncrypted (false);
-			setIsFieldOnly (false);
-			setIsHeading (false);
-			setIsReadOnly (false);
-			setIsSameLine (false);
-			setName (null);
-			setSpanX (0); // 1
-			setSpanY (0); // 1
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_Field (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Field (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_Column() throws RuntimeException
+	public org.compiere.model.I_AD_Column getAD_Column()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
 	}
 
 	@Override
-	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column)
+	public void setAD_Column(final org.compiere.model.I_AD_Column AD_Column)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class, AD_Column);
 	}
 
-	/** Set Spalte.
-		@param AD_Column_ID 
-		Column in the table
-	  */
 	@Override
-	public void setAD_Column_ID (int AD_Column_ID)
+	public void setAD_Column_ID (final int AD_Column_ID)
 	{
 		if (AD_Column_ID < 1) 
 			set_Value (COLUMNNAME_AD_Column_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Column_ID, Integer.valueOf(AD_Column_ID));
+			set_Value (COLUMNNAME_AD_Column_ID, AD_Column_ID);
 	}
 
-	/** Get Spalte.
-		@return Column in the table
-	  */
 	@Override
-	public int getAD_Column_ID () 
+	public int getAD_Column_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Column_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Feld.
-		@param AD_Field_ID 
-		Field on a database table
-	  */
-	@Override
-	public void setAD_Field_ID (int AD_Field_ID)
-	{
-		if (AD_Field_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, Integer.valueOf(AD_Field_ID));
-	}
-
-	/** Get Feld.
-		@return Field on a database table
-	  */
-	@Override
-	public int getAD_Field_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Field_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_FieldGroup getAD_FieldGroup() throws RuntimeException
+	public org.compiere.model.I_AD_FieldGroup getAD_FieldGroup()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_FieldGroup_ID, org.compiere.model.I_AD_FieldGroup.class);
 	}
 
 	@Override
-	public void setAD_FieldGroup(org.compiere.model.I_AD_FieldGroup AD_FieldGroup)
+	public void setAD_FieldGroup(final org.compiere.model.I_AD_FieldGroup AD_FieldGroup)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_FieldGroup_ID, org.compiere.model.I_AD_FieldGroup.class, AD_FieldGroup);
 	}
 
-	/** Set Feld-Gruppe.
-		@param AD_FieldGroup_ID 
-		Logical grouping of fields
-	  */
 	@Override
-	public void setAD_FieldGroup_ID (int AD_FieldGroup_ID)
+	public void setAD_FieldGroup_ID (final int AD_FieldGroup_ID)
 	{
 		if (AD_FieldGroup_ID < 1) 
 			set_Value (COLUMNNAME_AD_FieldGroup_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_FieldGroup_ID, Integer.valueOf(AD_FieldGroup_ID));
+			set_Value (COLUMNNAME_AD_FieldGroup_ID, AD_FieldGroup_ID);
 	}
 
-	/** Get Feld-Gruppe.
-		@return Logical grouping of fields
-	  */
 	@Override
-	public int getAD_FieldGroup_ID () 
+	public int getAD_FieldGroup_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_FieldGroup_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_FieldGroup_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Element getAD_Name() throws RuntimeException
+	public void setAD_Field_ID (final int AD_Field_ID)
+	{
+		if (AD_Field_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, AD_Field_ID);
+	}
+
+	@Override
+	public int getAD_Field_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Field_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Element getAD_Name()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Name_ID, org.compiere.model.I_AD_Element.class);
 	}
 
 	@Override
-	public void setAD_Name(org.compiere.model.I_AD_Element AD_Name)
+	public void setAD_Name(final org.compiere.model.I_AD_Element AD_Name)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Name_ID, org.compiere.model.I_AD_Element.class, AD_Name);
 	}
 
-	/** Set AD_Name_ID.
-		@param AD_Name_ID AD_Name_ID	  */
 	@Override
-	public void setAD_Name_ID (int AD_Name_ID)
+	public void setAD_Name_ID (final int AD_Name_ID)
 	{
 		if (AD_Name_ID < 1) 
 			set_Value (COLUMNNAME_AD_Name_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Name_ID, Integer.valueOf(AD_Name_ID));
+			set_Value (COLUMNNAME_AD_Name_ID, AD_Name_ID);
 	}
 
-	/** Get AD_Name_ID.
-		@return AD_Name_ID	  */
 	@Override
-	public int getAD_Name_ID () 
+	public int getAD_Name_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Name_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Name_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class);
 	}
 
 	@Override
-	public void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference)
+	public void setAD_Reference(final org.compiere.model.I_AD_Reference AD_Reference)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class, AD_Reference);
 	}
 
-	/** Set Referenz.
-		@param AD_Reference_ID 
-		System Reference and Validation
-	  */
 	@Override
-	public void setAD_Reference_ID (int AD_Reference_ID)
+	public void setAD_Reference_ID (final int AD_Reference_ID)
 	{
 		if (AD_Reference_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Reference_ID, Integer.valueOf(AD_Reference_ID));
+			set_Value (COLUMNNAME_AD_Reference_ID, AD_Reference_ID);
 	}
 
-	/** Get Referenz.
-		@return System Reference and Validation
-	  */
 	@Override
-	public int getAD_Reference_ID () 
+	public int getAD_Reference_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference_Value() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference_Value()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_Value_ID, org.compiere.model.I_AD_Reference.class);
 	}
 
 	@Override
-	public void setAD_Reference_Value(org.compiere.model.I_AD_Reference AD_Reference_Value)
+	public void setAD_Reference_Value(final org.compiere.model.I_AD_Reference AD_Reference_Value)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_Value_ID, org.compiere.model.I_AD_Reference.class, AD_Reference_Value);
 	}
 
-	/** Set Referenzschlüssel.
-		@param AD_Reference_Value_ID 
-		Required to specify, if data type is Table or List
-	  */
 	@Override
-	public void setAD_Reference_Value_ID (int AD_Reference_Value_ID)
+	public void setAD_Reference_Value_ID (final int AD_Reference_Value_ID)
 	{
 		if (AD_Reference_Value_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_Value_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Reference_Value_ID, Integer.valueOf(AD_Reference_Value_ID));
+			set_Value (COLUMNNAME_AD_Reference_Value_ID, AD_Reference_Value_ID);
 	}
 
-	/** Get Referenzschlüssel.
-		@return Required to specify, if data type is Table or List
-	  */
 	@Override
-	public int getAD_Reference_Value_ID () 
+	public int getAD_Reference_Value_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_Value_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_Value_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Tab getAD_Tab() throws RuntimeException
+	public org.compiere.model.I_AD_Tab getAD_Tab()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Tab_ID, org.compiere.model.I_AD_Tab.class);
 	}
 
 	@Override
-	public void setAD_Tab(org.compiere.model.I_AD_Tab AD_Tab)
+	public void setAD_Tab(final org.compiere.model.I_AD_Tab AD_Tab)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Tab_ID, org.compiere.model.I_AD_Tab.class, AD_Tab);
 	}
 
-	/** Set Register.
-		@param AD_Tab_ID 
-		Tab within a Window
-	  */
 	@Override
-	public void setAD_Tab_ID (int AD_Tab_ID)
+	public void setAD_Tab_ID (final int AD_Tab_ID)
 	{
 		if (AD_Tab_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Tab_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Tab_ID, Integer.valueOf(AD_Tab_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Tab_ID, AD_Tab_ID);
 	}
 
-	/** Get Register.
-		@return Tab within a Window
-	  */
 	@Override
-	public int getAD_Tab_ID () 
+	public int getAD_Tab_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Tab_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Tab_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule() throws RuntimeException
+	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
 	}
 
 	@Override
-	public void setAD_Val_Rule(org.compiere.model.I_AD_Val_Rule AD_Val_Rule)
+	public void setAD_Val_Rule(final org.compiere.model.I_AD_Val_Rule AD_Val_Rule)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class, AD_Val_Rule);
 	}
 
-	/** Set Dynamische Validierung.
-		@param AD_Val_Rule_ID 
-		Dynamic Validation Rule
-	  */
 	@Override
-	public void setAD_Val_Rule_ID (int AD_Val_Rule_ID)
+	public void setAD_Val_Rule_ID (final int AD_Val_Rule_ID)
 	{
 		if (AD_Val_Rule_ID < 1) 
 			set_Value (COLUMNNAME_AD_Val_Rule_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Val_Rule_ID, Integer.valueOf(AD_Val_Rule_ID));
+			set_Value (COLUMNNAME_AD_Val_Rule_ID, AD_Val_Rule_ID);
 	}
 
-	/** Get Dynamische Validierung.
-		@return Dynamic Validation Rule
-	  */
 	@Override
-	public int getAD_Val_Rule_ID () 
+	public int getAD_Val_Rule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Val_Rule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Val_Rule_ID);
 	}
 
-	/** Set Color Logic.
-		@param ColorLogic 
-		Color used for background
-	  */
 	@Override
-	public void setColorLogic (java.lang.String ColorLogic)
+	public void setColorLogic (final @Nullable java.lang.String ColorLogic)
 	{
 		set_Value (COLUMNNAME_ColorLogic, ColorLogic);
 	}
 
-	/** Get Color Logic.
-		@return Color used for background
-	  */
 	@Override
-	public java.lang.String getColorLogic () 
+	public java.lang.String getColorLogic() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ColorLogic);
+		return get_ValueAsString(COLUMNNAME_ColorLogic);
 	}
 
-	/** Set Column Display Length.
-		@param ColumnDisplayLength 
-		Column display length for grid mode
-	  */
 	@Override
-	public void setColumnDisplayLength (int ColumnDisplayLength)
+	public void setColumnDisplayLength (final int ColumnDisplayLength)
 	{
-		set_Value (COLUMNNAME_ColumnDisplayLength, Integer.valueOf(ColumnDisplayLength));
+		set_Value (COLUMNNAME_ColumnDisplayLength, ColumnDisplayLength);
 	}
 
-	/** Get Column Display Length.
-		@return Column display length for grid mode
-	  */
 	@Override
-	public int getColumnDisplayLength () 
+	public int getColumnDisplayLength() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_ColumnDisplayLength);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_ColumnDisplayLength);
 	}
 
-	/** Set Standardwert-Logik.
-		@param DefaultValue 
-		Default value hierarchy, separated by ;
-	  */
 	@Override
-	public void setDefaultValue (java.lang.String DefaultValue)
+	public void setDefaultValue (final @Nullable java.lang.String DefaultValue)
 	{
 		set_Value (COLUMNNAME_DefaultValue, DefaultValue);
 	}
 
-	/** Get Standardwert-Logik.
-		@return Default value hierarchy, separated by ;
-	  */
 	@Override
-	public java.lang.String getDefaultValue () 
+	public java.lang.String getDefaultValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DefaultValue);
+		return get_ValueAsString(COLUMNNAME_DefaultValue);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Anzeigelänge.
-		@param DisplayLength 
-		Length of the display in characters
-	  */
 	@Override
-	public void setDisplayLength (int DisplayLength)
+	public void setDisplayLength (final int DisplayLength)
 	{
-		set_Value (COLUMNNAME_DisplayLength, Integer.valueOf(DisplayLength));
+		set_Value (COLUMNNAME_DisplayLength, DisplayLength);
 	}
 
-	/** Get Anzeigelänge.
-		@return Length of the display in characters
-	  */
 	@Override
-	public int getDisplayLength () 
+	public int getDisplayLength() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DisplayLength);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DisplayLength);
 	}
 
-	/** Set Anzeigelogik.
-		@param DisplayLogic 
-		If the Field is displayed, the result determines if the field is actually displayed
-	  */
 	@Override
-	public void setDisplayLogic (java.lang.String DisplayLogic)
+	public void setDisplayLogic (final @Nullable java.lang.String DisplayLogic)
 	{
 		set_Value (COLUMNNAME_DisplayLogic, DisplayLogic);
 	}
 
-	/** Get Anzeigelogik.
-		@return If the Field is displayed, the result determines if the field is actually displayed
-	  */
 	@Override
-	public java.lang.String getDisplayLogic () 
+	public java.lang.String getDisplayLogic() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DisplayLogic);
+		return get_ValueAsString(COLUMNNAME_DisplayLogic);
 	}
 
 	/** 
@@ -458,248 +316,282 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Kommentar/Hilfe.
-		@param Help 
-		Comment or Hint
-	  */
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setFacetFilterSeqNo (final int FacetFilterSeqNo)
+	{
+		set_Value (COLUMNNAME_FacetFilterSeqNo, FacetFilterSeqNo);
+	}
+
+	@Override
+	public int getFacetFilterSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FacetFilterSeqNo);
+	}
+
+	@Override
+	public void setFilterDefaultValue (final @Nullable java.lang.String FilterDefaultValue)
+	{
+		set_Value (COLUMNNAME_FilterDefaultValue, FilterDefaultValue);
+	}
+
+	@Override
+	public java.lang.String getFilterDefaultValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_FilterDefaultValue);
+	}
+
+	/** 
+	 * FilterOperator AD_Reference_ID=541241
+	 * Reference name: FilterOperator
+	 */
+	public static final int FILTEROPERATOR_AD_Reference_ID=541241;
+	/** EqualsOrLike = E */
+	public static final String FILTEROPERATOR_EqualsOrLike = "E";
+	/** Between = B */
+	public static final String FILTEROPERATOR_Between = "B";
+	/** NotNull = N */
+	public static final String FILTEROPERATOR_NotNull = "N";
+	@Override
+	public void setFilterOperator (final @Nullable java.lang.String FilterOperator)
+	{
+		set_Value (COLUMNNAME_FilterOperator, FilterOperator);
+	}
+
+	@Override
+	public java.lang.String getFilterOperator() 
+	{
+		return get_ValueAsString(COLUMNNAME_FilterOperator);
+	}
+
+	@Override
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Kommentar/Hilfe.
-		@return Comment or Hint
-	  */
 	@Override
-	public java.lang.String getHelp () 
+	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Tab getIncluded_Tab() throws RuntimeException
+	public void setIncludedTabHeight (final int IncludedTabHeight)
+	{
+		set_Value (COLUMNNAME_IncludedTabHeight, IncludedTabHeight);
+	}
+
+	@Override
+	public int getIncludedTabHeight() 
+	{
+		return get_ValueAsInt(COLUMNNAME_IncludedTabHeight);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Tab getIncluded_Tab()
 	{
 		return get_ValueAsPO(COLUMNNAME_Included_Tab_ID, org.compiere.model.I_AD_Tab.class);
 	}
 
 	@Override
-	public void setIncluded_Tab(org.compiere.model.I_AD_Tab Included_Tab)
+	public void setIncluded_Tab(final org.compiere.model.I_AD_Tab Included_Tab)
 	{
 		set_ValueFromPO(COLUMNNAME_Included_Tab_ID, org.compiere.model.I_AD_Tab.class, Included_Tab);
 	}
 
-	/** Set Included Tab.
-		@param Included_Tab_ID 
-		Included Tab in this Tab (Master Dateail)
-	  */
 	@Override
-	public void setIncluded_Tab_ID (int Included_Tab_ID)
+	public void setIncluded_Tab_ID (final int Included_Tab_ID)
 	{
 		if (Included_Tab_ID < 1) 
 			set_Value (COLUMNNAME_Included_Tab_ID, null);
 		else 
-			set_Value (COLUMNNAME_Included_Tab_ID, Integer.valueOf(Included_Tab_ID));
+			set_Value (COLUMNNAME_Included_Tab_ID, Included_Tab_ID);
 	}
 
-	/** Get Included Tab.
-		@return Included Tab in this Tab (Master Dateail)
-	  */
 	@Override
-	public int getIncluded_Tab_ID () 
+	public int getIncluded_Tab_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Included_Tab_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Included_Tab_ID);
 	}
 
-	/** Set Included Tab Height.
-		@param IncludedTabHeight Included Tab Height	  */
 	@Override
-	public void setIncludedTabHeight (int IncludedTabHeight)
-	{
-		set_Value (COLUMNNAME_IncludedTabHeight, Integer.valueOf(IncludedTabHeight));
-	}
-
-	/** Get Included Tab Height.
-		@return Included Tab Height	  */
-	@Override
-	public int getIncludedTabHeight () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_IncludedTabHeight);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Info Factory Class.
-		@param InfoFactoryClass 
-		Fully qualified class name that implements the InfoFactory interface
-	  */
-	@Override
-	public void setInfoFactoryClass (java.lang.String InfoFactoryClass)
+	public void setInfoFactoryClass (final @Nullable java.lang.String InfoFactoryClass)
 	{
 		set_Value (COLUMNNAME_InfoFactoryClass, InfoFactoryClass);
 	}
 
-	/** Get Info Factory Class.
-		@return Fully qualified class name that implements the InfoFactory interface
-	  */
 	@Override
-	public java.lang.String getInfoFactoryClass () 
+	public java.lang.String getInfoFactoryClass() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InfoFactoryClass);
+		return get_ValueAsString(COLUMNNAME_InfoFactoryClass);
 	}
 
-	/** Set Displayed.
-		@param IsDisplayed 
-		Determines, if this field is displayed
-	  */
+	/** 
+	 * IsAlwaysUpdateable AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALWAYSUPDATEABLE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALWAYSUPDATEABLE_Yes = "Y";
+	/** No = N */
+	public static final String ISALWAYSUPDATEABLE_No = "N";
 	@Override
-	public void setIsDisplayed (boolean IsDisplayed)
+	public void setIsAlwaysUpdateable (final @Nullable java.lang.String IsAlwaysUpdateable)
 	{
-		set_Value (COLUMNNAME_IsDisplayed, Boolean.valueOf(IsDisplayed));
+		set_Value (COLUMNNAME_IsAlwaysUpdateable, IsAlwaysUpdateable);
 	}
 
-	/** Get Displayed.
-		@return Determines, if this field is displayed
-	  */
 	@Override
-	public boolean isDisplayed () 
+	public java.lang.String getIsAlwaysUpdateable() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDisplayed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsString(COLUMNNAME_IsAlwaysUpdateable);
 	}
 
-	/** Set Displayed in Grid.
-		@param IsDisplayedGrid 
-		Determines, if this field is displayed in grid mode
-	  */
 	@Override
-	public void setIsDisplayedGrid (boolean IsDisplayedGrid)
+	public void setIsDisplayed (final boolean IsDisplayed)
 	{
-		set_Value (COLUMNNAME_IsDisplayedGrid, Boolean.valueOf(IsDisplayedGrid));
+		set_Value (COLUMNNAME_IsDisplayed, IsDisplayed);
 	}
 
-	/** Get Displayed in Grid.
-		@return Determines, if this field is displayed in grid mode
-	  */
 	@Override
-	public boolean isDisplayedGrid () 
+	public boolean isDisplayed() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDisplayedGrid);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDisplayed);
 	}
 
-	/** Set Encrypted.
-		@param IsEncrypted 
-		Display or Storage is encrypted
-	  */
 	@Override
-	public void setIsEncrypted (boolean IsEncrypted)
+	public void setIsDisplayedGrid (final boolean IsDisplayedGrid)
 	{
-		set_Value (COLUMNNAME_IsEncrypted, Boolean.valueOf(IsEncrypted));
+		set_Value (COLUMNNAME_IsDisplayedGrid, IsDisplayedGrid);
 	}
 
-	/** Get Encrypted.
-		@return Display or Storage is encrypted
-	  */
 	@Override
-	public boolean isEncrypted () 
+	public boolean isDisplayedGrid() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsEncrypted);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDisplayedGrid);
 	}
 
-	/** Set Field Only.
-		@param IsFieldOnly 
-		Label is not displayed
-	  */
 	@Override
-	public void setIsFieldOnly (boolean IsFieldOnly)
+	public void setIsEncrypted (final boolean IsEncrypted)
 	{
-		set_Value (COLUMNNAME_IsFieldOnly, Boolean.valueOf(IsFieldOnly));
+		set_Value (COLUMNNAME_IsEncrypted, IsEncrypted);
 	}
 
-	/** Get Field Only.
-		@return Label is not displayed
-	  */
 	@Override
-	public boolean isFieldOnly () 
+	public boolean isEncrypted() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsFieldOnly);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsEncrypted);
 	}
 
-	/** Set Heading only.
-		@param IsHeading 
-		Field without Column - Only label is displayed
-	  */
+	/** 
+	 * IsExcludeFromZoomTargets AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISEXCLUDEFROMZOOMTARGETS_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISEXCLUDEFROMZOOMTARGETS_Yes = "Y";
+	/** No = N */
+	public static final String ISEXCLUDEFROMZOOMTARGETS_No = "N";
 	@Override
-	public void setIsHeading (boolean IsHeading)
+	public void setIsExcludeFromZoomTargets (final @Nullable java.lang.String IsExcludeFromZoomTargets)
 	{
-		set_Value (COLUMNNAME_IsHeading, Boolean.valueOf(IsHeading));
+		set_Value (COLUMNNAME_IsExcludeFromZoomTargets, IsExcludeFromZoomTargets);
 	}
 
-	/** Get Heading only.
-		@return Field without Column - Only label is displayed
-	  */
 	@Override
-	public boolean isHeading () 
+	public java.lang.String getIsExcludeFromZoomTargets() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsHeading);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsString(COLUMNNAME_IsExcludeFromZoomTargets);
+	}
+
+	/** 
+	 * IsFacetFilter AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISFACETFILTER_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISFACETFILTER_Yes = "Y";
+	/** No = N */
+	public static final String ISFACETFILTER_No = "N";
+	@Override
+	public void setIsFacetFilter (final @Nullable java.lang.String IsFacetFilter)
+	{
+		set_Value (COLUMNNAME_IsFacetFilter, IsFacetFilter);
+	}
+
+	@Override
+	public java.lang.String getIsFacetFilter() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsFacetFilter);
+	}
+
+	@Override
+	public void setIsFieldOnly (final boolean IsFieldOnly)
+	{
+		set_Value (COLUMNNAME_IsFieldOnly, IsFieldOnly);
+	}
+
+	@Override
+	public boolean isFieldOnly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFieldOnly);
+	}
+
+	/** 
+	 * IsFilterField AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISFILTERFIELD_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISFILTERFIELD_Yes = "Y";
+	/** No = N */
+	public static final String ISFILTERFIELD_No = "N";
+	@Override
+	public void setIsFilterField (final @Nullable java.lang.String IsFilterField)
+	{
+		set_Value (COLUMNNAME_IsFilterField, IsFilterField);
+	}
+
+	@Override
+	public java.lang.String getIsFilterField() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsFilterField);
+	}
+
+	@Override
+	public void setIsHeading (final boolean IsHeading)
+	{
+		set_Value (COLUMNNAME_IsHeading, IsHeading);
+	}
+
+	@Override
+	public boolean isHeading() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHeading);
+	}
+
+	@Override
+	public void setIsHideGridColumnIfEmpty (final boolean IsHideGridColumnIfEmpty)
+	{
+		set_Value (COLUMNNAME_IsHideGridColumnIfEmpty, IsHideGridColumnIfEmpty);
+	}
+
+	@Override
+	public boolean isHideGridColumnIfEmpty() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHideGridColumnIfEmpty);
 	}
 
 	/** 
@@ -711,95 +603,97 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public static final String ISMANDATORY_Yes = "Y";
 	/** No = N */
 	public static final String ISMANDATORY_No = "N";
-	/** Set Pflichtangabe.
-		@param IsMandatory 
-		Data entry is required in this column
-	  */
 	@Override
-	public void setIsMandatory (java.lang.String IsMandatory)
+	public void setIsMandatory (final @Nullable java.lang.String IsMandatory)
 	{
-
 		set_Value (COLUMNNAME_IsMandatory, IsMandatory);
 	}
 
-	/** Get Pflichtangabe.
-		@return Data entry is required in this column
-	  */
 	@Override
-	public java.lang.String getIsMandatory () 
+	public java.lang.String getIsMandatory() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_IsMandatory);
+		return get_ValueAsString(COLUMNNAME_IsMandatory);
 	}
 
-	/** Set Schreibgeschützt.
-		@param IsReadOnly 
-		Field is read only
-	  */
 	@Override
-	public void setIsReadOnly (boolean IsReadOnly)
+	public void setIsOverrideFilterDefaultValue (final boolean IsOverrideFilterDefaultValue)
 	{
-		set_Value (COLUMNNAME_IsReadOnly, Boolean.valueOf(IsReadOnly));
+		set_Value (COLUMNNAME_IsOverrideFilterDefaultValue, IsOverrideFilterDefaultValue);
 	}
 
-	/** Get Schreibgeschützt.
-		@return Field is read only
-	  */
 	@Override
-	public boolean isReadOnly () 
+	public boolean isOverrideFilterDefaultValue() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsReadOnly);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsOverrideFilterDefaultValue);
 	}
 
-	/** Set Same Line.
-		@param IsSameLine 
-		Displayed on same line as previous field
-	  */
 	@Override
-	public void setIsSameLine (boolean IsSameLine)
+	public void setIsReadOnly (final boolean IsReadOnly)
 	{
-		set_Value (COLUMNNAME_IsSameLine, Boolean.valueOf(IsSameLine));
+		set_Value (COLUMNNAME_IsReadOnly, IsReadOnly);
 	}
 
-	/** Get Same Line.
-		@return Displayed on same line as previous field
-	  */
 	@Override
-	public boolean isSameLine () 
+	public boolean isReadOnly() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSameLine);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsReadOnly);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setIsSameLine (final boolean IsSameLine)
+	{
+		set_Value (COLUMNNAME_IsSameLine, IsSameLine);
+	}
+
+	@Override
+	public boolean isSameLine() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSameLine);
+	}
+
+	/** 
+	 * IsShowFilterInline AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISSHOWFILTERINLINE_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISSHOWFILTERINLINE_Yes = "Y";
+	/** No = N */
+	public static final String ISSHOWFILTERINLINE_No = "N";
+	@Override
+	public void setIsShowFilterInline (final @Nullable java.lang.String IsShowFilterInline)
+	{
+		set_Value (COLUMNNAME_IsShowFilterInline, IsShowFilterInline);
+	}
+
+	@Override
+	public java.lang.String getIsShowFilterInline() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsShowFilterInline);
+	}
+
+	@Override
+	public void setMaxFacetsToFetch (final int MaxFacetsToFetch)
+	{
+		set_Value (COLUMNNAME_MaxFacetsToFetch, MaxFacetsToFetch);
+	}
+
+	@Override
+	public int getMaxFacetsToFetch() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MaxFacetsToFetch);
+	}
+
+	@Override
+	public void setName (final @Nullable java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	/** 
@@ -815,133 +709,89 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public static final String OBSCURETYPE_ObscureAlphaNumericButFirstLast4 = "A44";
 	/** Obscure AlphaNumeric but last 4 = A04 */
 	public static final String OBSCURETYPE_ObscureAlphaNumericButLast4 = "A04";
-	/** Set Obscure.
-		@param ObscureType 
-		Type of obscuring the data (limiting the display)
-	  */
 	@Override
-	public void setObscureType (java.lang.String ObscureType)
+	public void setObscureType (final @Nullable java.lang.String ObscureType)
 	{
-
 		set_Value (COLUMNNAME_ObscureType, ObscureType);
 	}
 
-	/** Get Obscure.
-		@return Type of obscuring the data (limiting the display)
-	  */
 	@Override
-	public java.lang.String getObscureType () 
+	public java.lang.String getObscureType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ObscureType);
+		return get_ValueAsString(COLUMNNAME_ObscureType);
 	}
 
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Method of ordering records; lowest number comes first
-	  */
 	@Override
-	public void setSeqNo (int SeqNo)
+	public void setSelectionColumnSeqNo (final @Nullable BigDecimal SelectionColumnSeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SelectionColumnSeqNo, SelectionColumnSeqNo);
 	}
 
-	/** Get Reihenfolge.
-		@return Method of ordering records; lowest number comes first
-	  */
 	@Override
-	public int getSeqNo () 
+	public BigDecimal getSelectionColumnSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SelectionColumnSeqNo);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Reihenfolge (grid).
-		@param SeqNoGrid 
-		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public void setSeqNoGrid (int SeqNoGrid)
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNoGrid, Integer.valueOf(SeqNoGrid));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Reihenfolge (grid).
-		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public int getSeqNoGrid () 
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNoGrid);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
-	/** Set Record Sort No.
-		@param SortNo 
-		Determines in what order the records are displayed
-	  */
 	@Override
-	public void setSortNo (java.math.BigDecimal SortNo)
+	public void setSeqNoGrid (final int SeqNoGrid)
+	{
+		set_Value (COLUMNNAME_SeqNoGrid, SeqNoGrid);
+	}
+
+	@Override
+	public int getSeqNoGrid() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNoGrid);
+	}
+
+	@Override
+	public void setSortNo (final @Nullable BigDecimal SortNo)
 	{
 		set_Value (COLUMNNAME_SortNo, SortNo);
 	}
 
-	/** Get Record Sort No.
-		@return Determines in what order the records are displayed
-	  */
 	@Override
-	public java.math.BigDecimal getSortNo () 
+	public BigDecimal getSortNo() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SortNo);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SortNo);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Column span.
-		@param SpanX 
-		Number of columns spanned
-	  */
 	@Override
-	public void setSpanX (int SpanX)
+	public void setSpanX (final int SpanX)
 	{
-		set_Value (COLUMNNAME_SpanX, Integer.valueOf(SpanX));
+		set_Value (COLUMNNAME_SpanX, SpanX);
 	}
 
-	/** Get Column span.
-		@return Number of columns spanned
-	  */
 	@Override
-	public int getSpanX () 
+	public int getSpanX() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SpanX);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SpanX);
 	}
 
-	/** Set Row Span.
-		@param SpanY 
-		Number of rows spanned
-	  */
 	@Override
-	public void setSpanY (int SpanY)
+	public void setSpanY (final int SpanY)
 	{
-		set_Value (COLUMNNAME_SpanY, Integer.valueOf(SpanY));
+		set_Value (COLUMNNAME_SpanY, SpanY);
 	}
 
-	/** Get Row Span.
-		@return Number of rows spanned
-	  */
 	@Override
-	public int getSpanY () 
+	public int getSpanY() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SpanY);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SpanY);
 	}
 }

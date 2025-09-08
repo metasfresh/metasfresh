@@ -27,8 +27,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.adempiere.ad.modelvalidator.DocTimingType;
-
 /**
  * Indicates that the annotated method shall be triggered on a particular document action model validator event.
  *

@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -105,6 +106,12 @@ public final class DeviceAccessorsList
 	public Stream<DeviceAccessor> stream(final WarehouseId warehouseId)
 	{
 		return stream().filter(deviceAccessor -> deviceAccessor.isAvailableForWarehouse(warehouseId));
+	}
+
+	@NonNull
+	public Stream<DeviceAccessor> streamForLocator(final LocatorId locatorId)
+	{
+		return stream().filter(deviceAccessor -> deviceAccessor.isAvailableForLocator(locatorId));
 	}
 
 	public DeviceAccessor getByIdOrNull(final DeviceId id)

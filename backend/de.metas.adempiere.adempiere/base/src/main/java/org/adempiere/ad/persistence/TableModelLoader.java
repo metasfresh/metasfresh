@@ -22,15 +22,13 @@ package org.adempiere.ad.persistence;
  * #L%
  */
 
-import java.lang.reflect.Constructor;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.interceptor.CacheInterceptor;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.logging.LogManager;
+import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,22 +42,20 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.cache.interceptor.CacheInterceptor;
-import de.metas.cache.model.IModelCacheService;
-import de.metas.logging.LogManager;
-import de.metas.logging.MetasfreshLastError;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Class responsible for loading {@link PO}.
  *
  * @author tsa
- *
  */
 public final class TableModelLoader
 {
@@ -257,15 +253,15 @@ public final class TableModelLoader
 		}
 
 		return null;
-	}	// getPO
+	}    // getPO
 
 	/**
 	 * Get PO Class Instance
 	 *
 	 * @param ctx
 	 * @param tableName
-	 * @param rs result set
-	 * @param trxName transaction
+	 * @param rs        result set
+	 * @param trxName   transaction
 	 * @return PO for Record; never return null
 	 */
 	public PO getPO(final Properties ctx, final String tableName, final ResultSet rs, final String trxName)
@@ -310,20 +306,20 @@ public final class TableModelLoader
 					+ "\n@TableName@: " + tableName
 					+ "\nClass: " + clazz, e);
 		}
-	}	// getPO
+	}    // getPO
 
 	/**
 	 * Get PO Class Instance
 	 *
 	 * @param whereClause where clause
-	 * @param trxName transaction
+	 * @param trxName     transaction
 	 * @return PO for Record or null
 	 */
 	public PO getPO(final Properties ctx, final String tableName, final String whereClause, final String trxName)
 	{
 		final Object[] params = null;
 		return getPO(ctx, tableName, whereClause, params, trxName);
-	}	// getPO
+	}    // getPO
 
 	/**
 	 * Get PO class instance
@@ -401,14 +397,12 @@ public final class TableModelLoader
 			final Class<? extends PO> poClass = po.getClass();
 			if (poClass.isAssignableFrom(modelClass))
 			{
-				@SuppressWarnings("unchecked")
-				final ModelType model = (ModelType)po;
+				@SuppressWarnings("unchecked") final ModelType model = (ModelType)po;
 				return model;
 			}
 			else
 			{
-				@SuppressWarnings("unchecked")
-				final ModelType model = (ModelType)InterfaceWrapperHelper.create(po, modelClass);
+				@SuppressWarnings("unchecked") final ModelType model = (ModelType)InterfaceWrapperHelper.create(po, modelClass);
 				return model;
 			}
 		}
@@ -425,8 +419,7 @@ public final class TableModelLoader
 				log.debug(ex.getLocalizedMessage(), ex);
 			}
 
-			@SuppressWarnings("unchecked")
-			final ModelType model = (ModelType)po;
+			@SuppressWarnings("unchecked") final ModelType model = (ModelType)po;
 			return model;
 		}
 	}

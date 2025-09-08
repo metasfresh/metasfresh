@@ -52,7 +52,7 @@ public class BoilerPlate
 
 	public String evaluateSubject(@NonNull final Evaluatee evalCtx)
 	{
-		return subject.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
+		return subject.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Empty);
 	}
 
 	public String evaluateTextSnippet(@NonNull final Evaluatee evalCtx)

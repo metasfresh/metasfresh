@@ -1,28 +1,11 @@
 package de.metas.shipper.gateway.derkurier;
 
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.printing.IMassPrintingService;
-import de.metas.report.PrintCopies;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.util.Env;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.ProcessInfo;
+import de.metas.report.PrintCopies;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
@@ -42,6 +25,20 @@ import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.util.Env;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -199,7 +196,7 @@ public class DerKurierClient implements ShipperGatewayClient
 		final int adProcessId = retrievePackageLableAdProcessId();
 
 		final ITableRecordReference deliveryOrderTableRecordReference = //
-				derKurierDeliveryOrderRepository.toTableRecordReference(deliveryOrder);
+				derKurierDeliveryOrderService.toTableRecordReference(deliveryOrder);
 
 		final ImmutableList<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
 		for (final DeliveryPosition deliveryPosition : deliveryPositions)

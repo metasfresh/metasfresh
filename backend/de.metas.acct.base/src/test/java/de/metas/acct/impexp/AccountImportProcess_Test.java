@@ -2,12 +2,15 @@ package de.metas.acct.impexp;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.model.validator.C_ElementValue;
+import de.metas.acct.interceptor.C_ElementValue;
 import de.metas.elementvalue.ChartOfAccountsRepository;
 import de.metas.elementvalue.ChartOfAccountsService;
 import de.metas.elementvalue.ElementValueRepository;
 import de.metas.elementvalue.ElementValueService;
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.MockedImportRecordsAsyncExecutor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.treenode.TreeNodeRepository;
@@ -67,6 +70,7 @@ public class AccountImportProcess_Test
 
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
 
 		this.chartOfAccountsService = new ChartOfAccountsService(new ChartOfAccountsRepository());
 		final TreeNodeRepository treeNodeRepository = new TreeNodeRepository();
@@ -75,7 +79,7 @@ public class AccountImportProcess_Test
 		this.elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
 		this.testHelper = new AccountImportTestHelper(chartOfAccountsService, elementValueService, elementValueRepository, treeNodeService, treeNodeRepository);
 
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(Services.get(IAcctSchemaDAO.class), treeNodeService)
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(Services.get(IAcctSchemaDAO.class), Services.get(IAccountDAO.class), treeNodeService)
 		{
 			@Override
 			protected void createValidCombinationIfNeeded(final I_C_ElementValue elementValue)
@@ -96,6 +100,8 @@ public class AccountImportProcess_Test
 	@Test
 	public void simpleTreeStructure()
 	{
+		AccountImportTestHelper.createAcctSchemaInfos();
+
 		final AccountImportTestHelper.ImportRecordBuilder importRecordTemplate = AccountImportTestHelper.importRecord()
 				.chartOfAccountsName("Import Account")
 				.accountType("A")

@@ -25,13 +25,15 @@ package de.metas.currency.exceptions;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 
 /**
  * Exception thrown when there was no currency rate found.
@@ -45,22 +47,22 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	public NoCurrencyRateFoundException(
 			@NonNull final CurrencyCode currencyFrom,
 			@NonNull final CurrencyCode currencyTo,
-			@Nullable final LocalDate conversionDate,
+			@Nullable final Instant conversionDate,
 			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
-		super(buildMsg(currencyFrom, currencyTo, conversionDate, conversionTypeMethod));
+		super(buildMsg(currencyFrom, currencyTo, conversionDate, conversionTypeMethod), Services.get(IMsgBL.class).getErrorCode(MSG));
 	}
 
 	private static ITranslatableString buildMsg(
 			@NonNull final CurrencyCode currencyFrom,
 			@NonNull final CurrencyCode currencyTo,
-			@Nullable final LocalDate conversionDate,
+			@Nullable final Instant conversionDate,
 			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
 		return TranslatableStrings.builder()
 				.appendADMessage(MSG).append(" ")
 				.appendObj(currencyFrom).appendObj("->").appendObj(currencyTo)
-				.append(", ").appendADElement("ConversionDate").append(": ").appendDate(conversionDate, "?")
+				.append(", ").appendADElement("ConversionDate").append(": ").appendTemporal(conversionDate, "?")
 				.append(", ").appendADElement("C_ConversionType_ID").append(": ").append(conversionTypeMethod != null ? conversionTypeMethod.name() : "?")
 				.build();
 	}

@@ -22,16 +22,8 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
-import org.slf4j.Logger;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningCandidateProducer;
@@ -46,8 +38,18 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Default implementation.
@@ -56,16 +58,15 @@ import de.metas.util.Services;
  * Currently, this implementation is supposed to handle <b>all</b> <code>sourceDoc</code>'s, so its {@link #isHandled(IDunnableDoc)} method always returns <code>true</code>. This means, that
  * currently, no other implementation may be registered in the {@link IDunningCandidateProducerFactory}.
  *
- *
- *
  * @author ts
- *
  */
 public class DefaultDunningCandidateProducer implements IDunningCandidateProducer
 {
 	private final Logger logger = LogManager.getLogger(getClass());
 
 	protected static final int DAYS_NotAvailable = Integer.MIN_VALUE;
+
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public boolean isHandled(final IDunnableDoc sourceDoc)
@@ -145,7 +146,9 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		candidate.setDunningDate(TimeUtil.asTimestamp(context.getDunningDate()));
 		candidate.setC_BPartner_ID(sourceDoc.getC_BPartner_ID());
 		candidate.setC_BPartner_Location_ID(sourceDoc.getC_BPartner_Location_ID());
-		candidate.setC_Dunning_Contact_ID(sourceDoc.getContact_ID());
+		candidate.setC_Dunning_Contact_ID(bPartnerBL.getDefaultDunningContact(BPartnerId.ofRepoId(sourceDoc.getC_BPartner_ID()))
+												  .map(UserId::getRepoId)
+												  .orElse(sourceDoc.getContact_ID()));
 		candidate.setDueDate(TimeUtil.asTimestamp(sourceDoc.getDueDate()));
 		candidate.setDunningGrace(TimeUtil.asTimestamp(sourceDoc.getGraceDate()));
 		candidate.setDaysDue(sourceDoc.getDaysDue());
@@ -189,8 +192,6 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 				candidate.getAD_Client_ID(), candidate.getAD_Org_ID());
 		candidate.setDunningInterestAmt(interestAmt);
 		candidate.setFeeAmt(dunningLevel.getFeeAmt());
-
-		// candidate.setIsStaled(false); Removed. IsStaled is a virtual column.
 
 		Services.get(IDunningEventDispatcher.class).fireDunningCandidateEvent(IDunningBL.EVENT_NewDunningCandidate, candidate);
 

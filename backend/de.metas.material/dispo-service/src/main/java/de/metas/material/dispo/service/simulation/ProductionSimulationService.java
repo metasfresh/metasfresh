@@ -35,6 +35,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
 import de.metas.material.event.simulation.SimulatedDemandCreatedEvent;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
@@ -92,9 +93,10 @@ public class ProductionSimulationService
 				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
 				.documentLineDescriptor(orderLineDescriptor)
 				.materialDescriptor(materialDescriptor)
+				.orderId(OrderId.ofRepoId(salesOrder.getC_Order_ID()))
 				.build();
 
-		postMaterialEventService.postEventAsync(simulatedDemandCreatedEvent);
+		postMaterialEventService.enqueueEventNow(simulatedDemandCreatedEvent);
 
 		try
 		{
@@ -104,9 +106,9 @@ public class ProductionSimulationService
 		{
 			log.error("Error encountered while awaiting processing for traceId:" + traceId, exception);
 
-			postMaterialEventService.postEventAsync(DeactivateAllSimulatedCandidatesEvent.builder()
-														  .eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
-														  .build());
+			postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientAndOrgId()))
+					.build());
 		}
 	}
 

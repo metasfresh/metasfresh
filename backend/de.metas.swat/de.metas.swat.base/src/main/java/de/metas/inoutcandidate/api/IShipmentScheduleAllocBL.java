@@ -24,9 +24,11 @@ package de.metas.inoutcandidate.api;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 import java.util.List;
 
@@ -47,4 +49,8 @@ public interface IShipmentScheduleAllocBL extends ISingletonService
 	Quantity retrieveQtyPickedAndUnconfirmed(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	void deleteRecords(List<? extends I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords);
+
+	StockQtyAndUOMQty extractQtyPicked(
+			@NonNull I_M_ShipmentSchedule_QtyPicked alloc,
+			@NonNull ProductId productId);
 }

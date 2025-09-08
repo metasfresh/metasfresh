@@ -3,7 +3,6 @@ package de.metas.ui.web.window.model;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -11,6 +10,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -144,7 +144,7 @@ import java.util.Properties;
 			valueObj = getDefaultValue(variableName).orElse(null);
 		}
 
-		return valueObj == null ? null : convertToString(variableName, valueObj);
+		return valueObj == null ? null : convertToString(valueObj);
 	}
 
 	@Override
@@ -156,7 +156,7 @@ import java.util.Properties;
 			valueObj = getDefaultValue(variableName).orElse(null);
 		}
 
-		return valueObj == null ? defaultValue : convertToInteger(variableName, valueObj);
+		return valueObj == null ? defaultValue : convertToInteger(valueObj);
 	}
 
 	@Override
@@ -180,10 +180,10 @@ import java.util.Properties;
 			valueObj = getDefaultValue(variableName).orElse(null);
 		}
 
-		return valueObj == null ? defaultValue : convertToDate(variableName, valueObj);
+		return valueObj == null ? defaultValue : convertToDate(valueObj);
 	}
 
-	private Date convertToDate(final String variableName, final Object valueObj)
+	private Date convertToDate(final Object valueObj)
 	{
 		if (valueObj == null)
 		{
@@ -208,17 +208,12 @@ import java.util.Properties;
 			valueObj = getDefaultValue(variableName).orElse(null);
 		}
 
-		return valueObj == null ? defaultValue : convertToBigDecimal(variableName, valueObj);
+		return valueObj == null ? defaultValue : convertToBigDecimal(valueObj);
 	}
 
 	@Override
 	public Optional<Object> get_ValueIfExists(final @NonNull String variableName, final @NonNull Class<?> targetType)
 	{
-		if (variableName == null)
-		{
-			return Optional.empty();
-		}
-		
 		if(isExcludedField(variableName))
 		{
 			return Optional.empty();
@@ -362,13 +357,12 @@ import java.util.Properties;
 	/**
 	 * Gets variable's value from global context.
 	 *
-	 * @param variableName
-	 * @param targetType
 	 * @return value or <code>null</code> if does not apply
 	 */
 	private Object getGlobalContext(final String variableName, final Class<?> targetType)
 	{
-		if (Integer.class.equals(targetType))
+		if (Integer.class.equals(targetType)
+				|| int.class.equals(targetType))
 		{
 			return Env.getContextAsInt(getCtx(), variableName);
 		}
@@ -376,11 +370,6 @@ import java.util.Properties;
 				|| Timestamp.class.equals(targetType))
 		{
 			return Env.getContextAsDate(getCtx(), variableName);
-		}
-		else if (Integer.class.equals(targetType)
-				|| int.class.equals(targetType))
-		{
-			return Env.getContextAsInt(getCtx(), variableName);
 		}
 		else if (Boolean.class.equals(targetType))
 		{
@@ -405,7 +394,7 @@ import java.util.Properties;
 	}
 
 	/** Converts field value to {@link Evaluatee2} friendly string */
-	private static String convertToString(final String variableName, final Object value)
+	private static String convertToString(final Object value)
 	{
 		if (value == null)
 		{
@@ -434,7 +423,7 @@ import java.util.Properties;
 		}
 	}
 
-	private static Integer convertToInteger(final String variableName, final Object valueObj)
+	private static Integer convertToInteger(final Object valueObj)
 	{
 		if (valueObj == null)
 		{
@@ -463,7 +452,7 @@ import java.util.Properties;
 		}
 	}
 
-	private static BigDecimal convertToBigDecimal(final String variableName, final Object valueObj)
+	private static BigDecimal convertToBigDecimal(final Object valueObj)
 	{
 		if (valueObj == null)
 		{
@@ -483,5 +472,4 @@ import java.util.Properties;
 			return new BigDecimal(valueStr);
 		}
 	}
-
 }

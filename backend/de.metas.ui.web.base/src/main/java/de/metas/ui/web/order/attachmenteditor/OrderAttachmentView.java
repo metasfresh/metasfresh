@@ -30,8 +30,6 @@ import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -51,18 +49,6 @@ public class OrderAttachmentView extends AbstractCustomView<OrderAttachmentRow> 
 		super(viewId, description, rows, NullDocumentFilterDescriptorsProvider.instance);
 
 		this.attachmentEntryService = attachmentEntryService;
-	}
-
-	@Override
-	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Nullable

@@ -5,8 +5,8 @@ import { findKey } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
-  dropdownRequest,
   dropdownModalRequest,
+  dropdownRequest,
 } from '../../../actions/GenericActions';
 import { getViewAttributeDropdown } from '../../../api';
 import RawList from './RawList';
@@ -74,6 +74,27 @@ class ListWidget extends Component {
     }
   }
 
+  requestListDataIfNotLoaded = (autoSelectIfSingleOption = null) => {
+    const { list, loading } = this.state;
+
+    // Do nothing if loading in progress...
+    if (loading) {
+      return;
+    }
+
+    // Already loaded
+    if (list && list.length > 0) {
+      return;
+    }
+
+    const autoSelectIfSingleOptionEffective =
+      autoSelectIfSingleOption != null
+        ? !!autoSelectIfSingleOption
+        : this.props.mandatory;
+
+    this.requestListData(autoSelectIfSingleOptionEffective, true);
+  };
+
   requestListData = (forceSelection = false, ignoreFocus = false) => {
     const {
       properties,
@@ -90,7 +111,15 @@ class ListWidget extends Component {
       lastProperty,
       disableAutofocus,
       doNotOpenOnFocus,
+      dropdownValuesSupplier,
     } = this.props;
+
+    // console.trace('requestListData', {
+    //   forceSelection,
+    //   ignoreFocus,
+    //   state: this.state,
+    //   props: this.props,
+    // });
 
     this.setState(
       {
@@ -104,7 +133,20 @@ class ListWidget extends Component {
 
         let request;
 
-        if (viewId && entity === 'window' && !filterWidget) {
+        if (dropdownValuesSupplier) {
+          request = dropdownValuesSupplier({
+            attribute,
+            docId: dataId,
+            docType: windowType,
+            entity,
+            subentity,
+            subentityId,
+            tabId,
+            viewId,
+            propertyName,
+            rowId,
+          });
+        } else if (viewId && entity === 'window' && !filterWidget) {
           request = dropdownModalRequest({
             windowId: windowType,
             fieldName: propertyName,
@@ -112,26 +154,32 @@ class ListWidget extends Component {
             viewId,
             rowId,
           });
+        } else if (attribute) {
+          request = getViewAttributeDropdown(
+            windowType,
+            viewId,
+            dataId,
+            propertyName
+          );
         } else {
-          request = attribute
-            ? getViewAttributeDropdown(windowType, viewId, dataId, propertyName)
-            : dropdownRequest({
-                attribute,
-                docId: dataId,
-                docType: windowType,
-                entity,
-                subentity,
-                subentityId,
-                tabId,
-                viewId,
-                propertyName,
-                rowId,
-              });
+          request = dropdownRequest({
+            attribute,
+            docId: dataId,
+            docType: windowType,
+            entity,
+            subentity,
+            subentityId,
+            tabId,
+            viewId,
+            propertyName,
+            rowId,
+          });
         }
 
         request.then((res) => {
-          let values = res.data.values || [];
-          let singleOption = values && values.length === 1;
+          const hasMoreResults = !!res.data.hasMoreResults;
+          const values = res.data.values || [];
+          const singleOption = values && values.length === 1;
 
           if (forceSelection && singleOption) {
             this.previousValue = '';
@@ -139,6 +187,7 @@ class ListWidget extends Component {
             this.setState({
               list: values,
               listHash: uuidv4(),
+              hasMoreResults,
               loading: false,
             });
 
@@ -150,6 +199,7 @@ class ListWidget extends Component {
             this.setState({
               list: values,
               listHash: uuidv4(),
+              hasMoreResults,
               loading: false,
             });
           }
@@ -170,40 +220,44 @@ class ListWidget extends Component {
   };
 
   handleFocus = () => {
-    const { mandatory } = this.props;
-    const { list, loading } = this.state;
-
     this.focus();
-
-    if (!list.length && !loading) {
-      this.requestListData(mandatory, true);
-    }
+    this.requestListDataIfNotLoaded();
   };
 
   focus = () => {
-    this.setState({
-      listFocused: true,
-    });
+    this.setState({ listFocused: true });
   };
 
   handleBlur = () => {
-    const { field, onBlur } = this.props;
+    const { isMultiselect, field, onBlur } = this.props;
 
-    this.setState(
-      {
-        autoFocus: false,
-        listFocused: false,
-        list: [],
-        listHash: null,
-        listToggled: false,
-      },
-      () => {
-        onBlur && onBlur(field);
-      }
-    );
+    if (isMultiselect) {
+      // Avoid clearing the list if is a multiselect component,
+      // because that component is always displaying all options on the screen,
+      // so blur won't hide the dropdown list.
+      onBlur?.(field);
+    } else {
+      this.setState(
+        {
+          autoFocus: false,
+          listFocused: false,
+          list: [],
+          listHash: null,
+          listToggled: false,
+        },
+        () => {
+          onBlur?.(field);
+        }
+      );
+    }
   };
 
-  closeDropdownList = () => {
+  handleOpenDropdownRequest = () => {
+    this.requestListDataIfNotLoaded();
+    this.activate();
+  };
+
+  handleCloseDropdownRequest = () => {
     this.setState({ listToggled: false });
   };
 
@@ -292,6 +346,7 @@ class ListWidget extends Component {
     const {
       list,
       listHash,
+      hasMoreResults,
       loading,
       selectedItem,
       autoFocus,
@@ -306,11 +361,12 @@ class ListWidget extends Component {
         loading={loading}
         list={list}
         listHash={listHash}
+        hasMoreResults={hasMoreResults}
         selected={lookupList ? selectedItem : selected}
         isToggled={listToggled}
         isFocused={listFocused}
-        onOpenDropdown={this.activate}
-        onCloseDropdown={this.closeDropdownList}
+        onOpenDropdown={this.handleOpenDropdownRequest}
+        onCloseDropdown={this.handleCloseDropdownRequest}
         onFocus={this.handleFocus}
         onBlur={this.handleBlur}
         onSelect={this.handleSelect}
@@ -328,9 +384,8 @@ ListWidget.defaultProps = {
 };
 
 ListWidget.propTypes = {
-  filter: PropTypes.object.isRequired,
-  dispatch: PropTypes.func.isRequired,
   properties: PropTypes.object,
+  isMultiselect: PropTypes.bool,
   isInputEmpty: PropTypes.bool,
   defaultValue: PropTypes.any,
   dataId: PropTypes.any,
@@ -341,7 +396,7 @@ ListWidget.propTypes = {
   entity: PropTypes.string,
   subentity: PropTypes.string,
   subentityId: PropTypes.string,
-  viewId: PropTypes.any,
+  viewId: PropTypes.string,
   attribute: PropTypes.any,
   lookupList: PropTypes.bool,
   mainProperty: PropTypes.object,
@@ -350,17 +405,31 @@ ListWidget.propTypes = {
   selected: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   initialFocus: PropTypes.any,
   doNotOpenOnFocus: PropTypes.bool,
+  widgetField: PropTypes.string,
+  field: PropTypes.string,
+  mandatory: PropTypes.bool,
+  lastProperty: PropTypes.string,
+  compositeWidgetData: PropTypes.array,
+  //
+  // Callbacks and other functions
   setNextProperty: PropTypes.func,
   disableAutofocus: PropTypes.func,
   enableAutofocus: PropTypes.func,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
-  widgetField: PropTypes.string,
-  field: PropTypes.string,
-  mandatory: PropTypes.bool,
-  lastProperty: PropTypes.string,
-  compositeWidgetData: PropTypes.array,
+  dropdownValuesSupplier: PropTypes.func,
+
+  //
+  // mapStateToProps:
+  filter: PropTypes.shape({
+    visible: PropTypes.bool,
+    boundingRect: PropTypes.object,
+  }),
+
+  //
+  // mapDispatchToProps
+  dispatch: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({

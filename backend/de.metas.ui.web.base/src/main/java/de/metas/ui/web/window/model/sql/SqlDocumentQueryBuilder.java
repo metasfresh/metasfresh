@@ -26,6 +26,7 @@ import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -97,7 +98,7 @@ public class SqlDocumentQueryBuilder
 
 	@Getter
 	private boolean noSorting = false;
-	@Getter
+	@Getter(AccessLevel.PRIVATE)
 	private DocumentQueryOrderByList orderBys = DocumentQueryOrderByList.EMPTY;
 
 	private int firstRow;
@@ -512,7 +513,7 @@ public class SqlDocumentQueryBuilder
 		return sqlWhereClauseBuilder.build();
 	}
 
-	private DocumentQueryOrderByList getOrderBysEffective()
+	public DocumentQueryOrderByList getOrderBysEffective()
 	{
 		if (noSorting)
 		{

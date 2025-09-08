@@ -1,6 +1,5 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -16,6 +15,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -23,12 +23,11 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -197,7 +196,11 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	@Override
 	protected void closeGroup(final I_C_OrderLine purchaseOrderLine)
 	{
+		final List<I_C_OrderLine> salesOrderLines = purchaseOrderLine2saleOrderLines.get(purchaseOrderLine);
+
 		final Set<OrderId> salesOrdersToBeClosed = new HashSet<>();
+		final OrderId singleSalesOrderId = extractSingleOrderIdOrNull(salesOrderLines);
+		purchaseOrderLine.setC_OrderSO_ID(OrderId.toRepoId(singleSalesOrderId));
 		InterfaceWrapperHelper.save(purchaseOrderLine);
 
 		for (final I_C_OrderLine salesOrderLine : purchaseOrderLine2saleOrderLines.get(purchaseOrderLine))
@@ -255,5 +258,15 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	public String toString()
 	{
 		return ObjectUtils.toString(this);
+	}
+
+
+	@Nullable
+	private static OrderId extractSingleOrderIdOrNull(final List<I_C_OrderLine> orderLines)
+	{
+		return CollectionUtils.extractSingleElementOrDefault(
+				orderLines,
+				orderLine -> OrderId.ofRepoId(orderLine.getC_Order_ID()),
+				null);
 	}
 }

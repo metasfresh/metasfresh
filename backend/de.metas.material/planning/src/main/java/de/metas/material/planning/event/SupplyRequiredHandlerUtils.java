@@ -1,19 +1,24 @@
 package de.metas.material.planning.event;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.organization.IOrgDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import java.time.ZoneId;
 
 /*
  * #%L
@@ -40,31 +45,55 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 @UtilityClass
 public class SupplyRequiredHandlerUtils
 {
+	private final MainDataRequestHandler mainDataRequestHandler = new MainDataRequestHandler();
 
 	@NonNull
-	public MaterialRequest mkRequest(
+	public static MaterialRequest mkRequest(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMaterialPlanningContext mrpContext)
+			@NonNull final MaterialPlanningContext context)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		final BPartnerId descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getCustomerId();
-
-		final int productId = supplyRequiredDescriptor.getMaterialDescriptor().getProductId();
-		final I_M_Product product = load(productId, I_M_Product.class);
-
-		final BigDecimal qtyToSupply = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
-
-		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
 
 		return MaterialRequest.builder()
-				.qtyToSupply(Quantity.of(qtyToSupply, uom))
-				.mrpContext(mrpContext)
-				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(descriptorBPartnerId, -1))
+				.qtyToSupply(getQuantity(supplyRequiredDescriptor))
+				.context(context)
+				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(supplyRequiredDescriptor.getCustomerId(), -1))
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
 				.mrpDemandShipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
-				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
+				.demandDate(supplyRequiredDescriptor.getDemandDate())
 				.isSimulated(supplyRequiredDescriptor.isSimulated())
 				.build();
 	}
+
+	private static @NonNull Quantity getQuantity(final @NonNull SupplyRequiredDescriptor supplyRequiredDescriptor)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
+		final BigDecimal qtyToSupplyBD = supplyRequiredDescriptor.getQtyToSupplyBD();
+		final I_C_UOM uom = productBL.getStockUOM(productId);
+		return Quantity.of(qtyToSupplyBD, uom);
+	}
+
+	public void updateQtySupplyRequired(
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final EventDescriptor eventDescriptor,
+			@NonNull final BigDecimal qtySupplyRequiredDelta)
+	{
+		if (qtySupplyRequiredDelta.signum() == 0)
+		{
+			return;
+		}
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId orgTimezone = orgDAO.getTimeZone(eventDescriptor.getOrgId());
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor, orgTimezone);
+
+		mainDataRequestHandler.handleDataUpdateRequest(
+				UpdateMainDataRequest.builder()
+						.identifier(mainDataRecordIdentifier)
+						.qtySupplyRequired(qtySupplyRequiredDelta)
+						.build()
+		);
+	}
+
 }

@@ -24,17 +24,13 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.jgoodies.common.base.Objects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.ASIAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -43,8 +39,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -81,8 +79,10 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -91,17 +91,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/** Note that contrary to the class name, this might as well be a shipment schedule *without* HU. See {@link #ofShipmentScheduleWithoutHu(IHUContext, I_M_ShipmentSchedule, StockQtyAndUOMQty, M_ShipmentSchedule_QuantityTypeToUse)}. */
+/**
+ * Note that contrary to the class name, this might as well be a shipment schedule *without* HU. See {@link #ofShipmentScheduleWithoutHu(IHUContext, I_M_ShipmentSchedule, StockQtyAndUOMQty, M_ShipmentSchedule_QuantityTypeToUse)}.
+ */
 public class ShipmentScheduleWithHU
 {
-	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
-			@Nullable final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
-	{
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		return ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext, qtyTypeToUse);
-	}
-
 	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext)
@@ -287,12 +281,14 @@ public class ShipmentScheduleWithHU
 				new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		final I_M_HU hu = getTopLevelHU();
-		if (hu != null)
-		{
+		streamHUHierarchyBottomUp().forEach(hu -> {
 			final IAttributeStorage huAttributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-			allAttributeValues.addAll(huAttributeStorage.getAttributeValues());
-		}
+			final List<IAttributeValue> nonEmptyAttributeValues = huAttributeStorage.getAttributeValues()
+					.stream()
+					.filter(attributeValue -> !attributeValue.isEmpty())
+					.collect(ImmutableList.toImmutableList());
+			allAttributeValues.addAll(nonEmptyAttributeValues);
+		});
 
 		if (getM_AttributeSetInstance_ID() > 0)
 		{
@@ -371,6 +367,11 @@ public class ShipmentScheduleWithHU
 	private I_M_HU getTopLevelHU()
 	{
 		return CoalesceUtil.coalesce(luHU, tuHU, vhu);
+	}
+
+	private Stream<I_M_HU> streamHUHierarchyBottomUp()
+	{
+		return Stream.of(vhu, tuHU, luHU).filter(java.util.Objects::nonNull);
 	}
 
 	/**
@@ -508,53 +509,63 @@ public class ShipmentScheduleWithHU
 			return retrievePiipForReferencedRecord();
 		}
 
-		final I_M_HU topLevelHU = getTopLevelHU();
-		if (topLevelHU == null)
+		final I_M_HU tuOrVhu = CoalesceUtil.coalesce(getM_TU_HU(), getVHU());
+		if (tuOrVhu == null)
 		{
 			return retrievePiipForReferencedRecord();
 		}
 
-		if (topLevelHU.getM_HU_PI_Item_Product_ID() > 0)
+		if (tuOrVhu.getM_HU_PI_Item_Product_ID() > 0)
 		{
-			return IHandlingUnitsBL.extractPIItemProductOrNull(topLevelHU);
+			return IHandlingUnitsBL.extractPIItemProductOrNull(tuOrVhu);
 		}
 
-		final ImmutableList<I_M_HU_Item> huMaterialItems = Services.get(IHandlingUnitsDAO.class).retrieveItems(topLevelHU).stream()
-				.filter(item -> X_M_HU_Item.ITEMTYPE_Material.equals(item.getItemType()))
-				.collect(ImmutableList.toImmutableList());
-		if (huMaterialItems.isEmpty())
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final List<I_M_HU_PI_Item> materialPIItems;
+		if (handlingUnitsBL.isAggregateHU(tuOrVhu))
 		{
-			return retrievePiipForReferencedRecord();
+			final I_M_HU_PI_Version tuPIVersion = handlingUnitsBL.getEffectivePIVersion(tuOrVhu);
+			materialPIItems = ImmutableList.of(handlingUnitsDAO.retrievePIItemMaterial(tuPIVersion));
+		}
+		else
+		{
+			final ImmutableList<I_M_HU_Item> huMaterialItems = handlingUnitsDAO.retrieveItems(tuOrVhu).stream()
+					.filter(item -> X_M_HU_Item.ITEMTYPE_Material.equals(item.getItemType()))
+					.collect(ImmutableList.toImmutableList());
+			if (huMaterialItems.isEmpty())
+			{
+				return retrievePiipForReferencedRecord();
+			}
+
+			materialPIItems = handlingUnitsBL.getPIItems(huMaterialItems);
 		}
 
-		Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, topLevelHU, huMaterialItems);
-		final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
-
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
-		final ZonedDateTime preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
-
-		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-
-		final I_M_HU_PI_Item huPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(huMaterialItem);
-		if (huPIItem == null)
+		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+		if (!materialPIItems.isEmpty())
 		{
-			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
-		}
+			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final I_M_HU_PI_Item_Product matchingPiip = hupiItemProductDAO.retrievePIMaterialItemProduct(
-				huPIItem,
-				bpartnerId,
-				getProductId(),
-				preparationDate);
-		if (matchingPiip != null)
-		{
-			return matchingPiip;
+			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
+			final ZonedDateTime preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
+			final I_M_HU_PI_Item_Product matchingPiip = materialPIItems.stream()
+					.map(materialPIItem -> piItemProductDAO.retrievePIMaterialItemProduct(
+							materialPIItem,
+							bpartnerId,
+							getProductId(),
+							preparationDate))
+					.filter(Objects::nonNull)
+					.findFirst()
+					.orElse(null);
+			if (matchingPiip != null)
+			{
+				return matchingPiip;
+			}
 		}
 
 		// could not find a packing instruction; return "No Packing Item"
-		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+		return piItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
 
 	private I_M_HU_PI_Item_Product retrievePiipForReferencedRecord()

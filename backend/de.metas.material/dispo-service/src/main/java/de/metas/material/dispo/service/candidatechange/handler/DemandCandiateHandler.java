@@ -9,8 +9,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.DeleteResult;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static java.math.BigDecimal.ZERO;
 
@@ -94,7 +94,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	 * Persists (updates or creates) the given demand candidate and also its <b>child</b> stock candidate.
 	 */
 	@Override
-	public Candidate onCandidateNewOrChange(
+	public CandidateSaveResult onCandidateNewOrChange(
 			@NonNull final Candidate candidate,
 			@NonNull final OnNewOrChangeAdvise advise)
 	{
@@ -107,11 +107,12 @@ public class DemandCandiateHandler implements CandidateHandler
 
 		assertCorrectCandidateType(candidate);
 
-		final SaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
-
+		CandidateSaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
 		if (!candidateSaveResult.isDateChanged() && !candidateSaveResult.isQtyChanged())
 		{
-			return candidateSaveResult.toCandidateWithQtyDelta(); // nothing to do
+			// nothing to do
+			//return candidateSaveResult.toCandidateWithQtyDelta();
+			return candidateSaveResult;
 		}
 
 		final Candidate savedCandidate = candidateSaveResult.getCandidate();
@@ -119,37 +120,43 @@ public class DemandCandiateHandler implements CandidateHandler
 		final Optional<Candidate> preExistingChildStockCandidate = candidateRepository.retrieveSingleChild(savedCandidate.getId());
 		final CandidateId preExistingChildStockId = preExistingChildStockCandidate.map(Candidate::getId).orElse(null);
 
-		final SaveResult stockCandidate = stockCandidateService
+		final CandidateSaveResult stockCandidate = stockCandidateService
 				.createStockCandidate(savedCandidate.withNegatedQuantity())
 				.withCandidateId(preExistingChildStockId);
 
-		final Candidate savedStockCandidate;
+		final CandidateSaveResult savedStockCandidate;
 		if (preExistingChildStockCandidate.isPresent())
 		{
 			savedStockCandidate = candidateRepositoryWriteService
-					.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
-					.getCandidate();
+					.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate().withParentId(savedCandidate.getId()));
 		}
 		else
 		{
 			savedStockCandidate = candidateRepositoryWriteService
-					.add(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
-					.getCandidate();
+					.add(stockCandidate.getCandidate().withParentId(savedCandidate.getId()));
 		}
 
-		final SaveResult deltaToApplyToLaterStockCandiates = candidateSaveResult.withNegatedQuantity();
+		candidateRepositoryWriteService.getCurrentAtpAndUpdateQtyDetails(savedCandidate, savedStockCandidate.getCandidate(), null);
 
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandiates);
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(savedStockCandidate);
 
-		final Candidate candidateToReturn = candidateSaveResult
-				.toCandidateWithQtyDelta()
-				.withParentId(savedStockCandidate.getId());
-
-		if (savedCandidate.getType() == CandidateType.DEMAND)
+		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
+		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
 		{
-			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
+			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate());
 		}
-		return candidateToReturn;
+
+		if (candidateSaveResult.getQtyDelta().signum() < 0)
+		{
+			fireSupplyRequiredDecreasedEventIfNeeded(savedCandidate, candidateSaveResult.getQtyDelta().negate());
+		}
+
+		return candidateSaveResult;
+	}
+
+	private void fireSupplyRequiredDecreasedEventIfNeeded(final Candidate savedCandidate, final BigDecimal decreasedQty)
+	{
+		materialEventService.enqueueEventAfterNextCommit(SupplyRequiredEventCreator.createSupplyRequiredDecreasedEvent(savedCandidate, decreasedQty));
 	}
 
 	@Override
@@ -157,24 +164,19 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
 
-		final Optional<Candidate> childStockCandidate = candidateRepository.retrieveSingleChild(candidate.getId());
-		if (!childStockCandidate.isPresent())
-		{
-			return; // nothing to do
-		}
-		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidatebyId(childStockCandidate.get().getId());
+		final CandidateRepositoryWriteService.DeleteResult stockDeleteResult = deleteCandidateFunc.apply(candidate.getId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
 
 		final BigDecimal previousQty = candidate.getQuantity().negate();
 
-		final SaveResult applyDeltaRequest = SaveResult.builder()
+		final CandidateSaveResult applyDeltaRequest = CandidateSaveResult.builder()
 				.candidate(candidate
-								   .withQuantity(ZERO)
-								   .withDate(timeOfDeletedStock.getDate())
-								   .withSeqNo(timeOfDeletedStock.getSeqNo()))
+						.withQuantity(ZERO)
+						.withDate(timeOfDeletedStock.getDate())
+						.withSeqNo(timeOfDeletedStock.getSeqNo()))
 				.previousQty(previousQty)
 				.build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(applyDeltaRequest);
@@ -253,13 +255,12 @@ public class DemandCandiateHandler implements CandidateHandler
 				.simulated(demandCandidateWithId.isSimulated())
 				.build();
 
-		final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DONT_UPDATE);
+		final CandidateId supplyCandidateId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DONT_UPDATE).getId();
 
 		final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator
-				.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());
+				.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateId);
 
-		materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
-
+		materialEventService.enqueueEventAfterNextCommit(supplyRequiredEvent);
 		Loggables.addLog("Fire supplyRequiredEvent after next commit; event={}", supplyRequiredEvent);
 	}
 }

@@ -1,26 +1,25 @@
 package org.adempiere.ad.modelvalidator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableSet;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
-import org.junit.Assert;
+import org.compiere.Adempiere;
+import org.junit.jupiter.api.Assertions;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableSet;
-
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Checks all {@link Interceptor} or {@link Validator} annotated classes if they are correctly defined.
@@ -39,24 +38,19 @@ public class ClasspathAnnotatedModelInterceptorTester
 	{
 	}
 
-	public void testAll() throws Exception
-	{
-		final List<Class<?>> classes = getAllClasses();
-		for (final Class<?> clazz : classes)
-		{
-			testClass(clazz);
-		}
-
-		assertNoExceptions();
-	}
-
 	public List<Class<?>> getAllClasses()
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final Reflections reflections = new Reflections(new ConfigurationBuilder()
 				.addUrls(ClasspathHelper.forClassLoader())
+				//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+				.forPackages("de")
 				.setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
+
+		// IMPORTANT: make sure JUnit test is enabled because we are about to load all classes,
+		// and some of them have static fields which assume there is a database connection
+		Adempiere.enableUnitTestMode();
 
 		final Set<Class<?>> classes_withValidator = reflections.getTypesAnnotatedWith(Validator.class);
 		System.out.println("Found " + classes_withValidator.size() + " classes annotated with " + Validator.class);
@@ -131,7 +125,7 @@ public class ClasspathAnnotatedModelInterceptorTester
 	{
 		if (exceptionsCount > 0)
 		{
-			Assert.fail(exceptionsCount + " exceptions found while checking all classes. Check console");
+			Assertions.fail(exceptionsCount + " exceptions found while checking all classes. Check console");
 		}
 	}
 }

@@ -7,12 +7,13 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.NoUOMConversionException;
 import org.compiere.Adempiere;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UomId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -42,7 +43,7 @@ public class UOMConversionsMapTest
 	private final UomId uomId2 = UomId.ofRepoId(2);
 	private final UomId uomId3 = UomId.ofRepoId(3);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		Adempiere.enableUnitTestMode();

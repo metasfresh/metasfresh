@@ -113,4 +113,32 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSharedPrinterConfig);
 	}
+
+	@Override
+	public org.compiere.model.I_C_Workplace getC_Workplace()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class);
+	}
+
+	@Override
+	public void setC_Workplace(final org.compiere.model.I_C_Workplace C_Workplace)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class, C_Workplace);
+	}
+
+	@Override
+	public void setC_Workplace_ID (final int C_Workplace_ID)
+	{
+		if (C_Workplace_ID < 1)
+			set_Value (COLUMNNAME_C_Workplace_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Workplace_ID, C_Workplace_ID);
+	}
+
+	@Override
+	public int getC_Workplace_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Workplace_ID);
+	}
+
 }

@@ -22,26 +22,24 @@ package org.adempiere.ad.trx.processor.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.PlainTrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
-import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A mocked processor for testing.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-@Ignore
+@Disabled
 public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemProcessorResult>
 {
 	//
@@ -87,8 +85,8 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 	{
 		item.setProcessed();
 
-		Assert.assertNotNull("item shall not be null", item);
-		Assert.assertNotNull("currentAggregatedItem shall be initialized", currentAggregatedItem);
+		Assertions.assertNotNull(item, "item shall not be null");
+		Assertions.assertNotNull(currentAggregatedItem, "currentAggregatedItem shall be initialized");
 
 		assertThreadInheritedTrxSet();
 
@@ -126,9 +124,9 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 	@Override
 	public void newChunk(final Item item)
 	{
-		Assert.assertNull("currentAggregatedItem shall be null at this point", currentAggregatedItem);
-		Assert.assertNotNull("processorCtx shall be set at this point", processorCtx);
-		Assert.assertNotNull("processorCtx transaction shall be set at this point", processorCtx.getTrx());
+		Assertions.assertNull(currentAggregatedItem, "currentAggregatedItem shall be null at this point");
+		Assertions.assertNotNull(processorCtx, "processorCtx shall be set at this point");
+		Assertions.assertNotNull(processorCtx.getTrx(), "processorCtx transaction shall be set at this point");
 		assertThreadInheritedTrxSet();
 
 		final String groupKey = item.getGroupKey();
@@ -142,7 +140,7 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 	@Override
 	public void completeChunk()
 	{
-		Assert.assertNotNull("currentAggregatedItem shall not be null at this point", currentAggregatedItem);
+		Assertions.assertNotNull(currentAggregatedItem, "currentAggregatedItem shall not be null at this point");
 		assertThreadInheritedTrxSet();
 
 		final String groupKey = currentAggregatedItem.getGroupKey();
@@ -158,7 +156,7 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 	@Override
 	public void cancelChunk()
 	{
-		Assert.assertNotNull("currentAggregatedItem shall not be null at this point", currentAggregatedItem);
+		Assertions.assertNotNull(currentAggregatedItem, "currentAggregatedItem shall not be null at this point");
 		assertThreadInheritedTrxSet();
 
 		final String groupKey = currentAggregatedItem.getGroupKey();
@@ -207,21 +205,20 @@ public class MockedItemProcessor implements ITrxItemChunkProcessor<Item, ItemPro
 	private void assertThreadInheritedTrxSet()
 	{
 		final String trxName = trxManager.getThreadInheritedTrxName();
-		Assert.assertTrue("Thread inherited transaction shall be set at this point", !trxManager.isNull(trxName));
+		Assertions.assertTrue(!trxManager.isNull(trxName), "Thread inherited transaction shall be set at this point");
 
-		Assert.assertEquals("Thread inherited transaction shall match context transaction", processorCtx.getTrxName(), trxName);
+		Assertions.assertEquals(processorCtx.getTrxName(), trxName, "Thread inherited transaction shall match context transaction");
 
 		if (expectTrxSavepoints != null)
 		{
 			final PlainTrx trx = getTrx(PlainTrx.class);
-			Assert.assertEquals("Active savepoints for " + trx, expectTrxSavepoints, trx.hasActiveSavepoints());
+			Assertions.assertEquals(expectTrxSavepoints, trx.hasActiveSavepoints(), "Active savepoints for " + trx);
 		}
 	}
-	
+
 	public final <T extends PlainTrx> T getTrx(final Class<T> trxClass)
 	{
-		@SuppressWarnings("unchecked")
-		final T trx = (T)processorCtx.getTrx();
+		@SuppressWarnings("unchecked") final T trx = (T)processorCtx.getTrx();
 		return trx;
 	}
 }

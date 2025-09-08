@@ -22,14 +22,17 @@ package de.metas.lock.spi;
  * #L%
  */
 
+import com.google.common.collect.SetMultimap;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 
 import java.util.List;
@@ -51,6 +54,8 @@ public interface ILockDatabase
 
 	<T> T retrieveAndLock(IQuery<T> query, Class<T> clazz);
 
+	<T> IQueryFilter<T> getNotLockedFilter(@NonNull String modelTableName, @NonNull String joinColumnNameFQ);
+
 	<T> IQueryFilter<T> getLockedByFilter(Class<T> modelClass, LockOwner lockOwner);
 
 	<T> IQueryFilter<T> getNotLockedFilter(Class<T> modelClass);
@@ -60,13 +65,10 @@ public interface ILockDatabase
 	/**
 	 * See {@link ILockManager#getLockedWhereClause(Class, String, LockOwner)}.
 	 */
-	String getLockedWhereClause(Class<?> modelClass, String joinColumnNameFQ, LockOwner lockOwner);
+	String getLockedWhereClause(@NonNull Class<?> modelClass, @NonNull String joinColumnNameFQ, @NonNull LockOwner lockOwner);
 
 	ILock retrieveLockForOwner(LockOwner lockOwner);
 
-	/**
-	 * See {@link ILockManager#getLockedRecordsQueryBuilder(Class)}.
-	 */
 	<T> IQueryBuilder<T> getLockedRecordsQueryBuilder(Class<T> modelClass, Object contextProvider);
 
 	<T> List<T> retrieveAndLockMultipleRecords(IQuery<T> query, Class<T> clazz);
@@ -76,4 +78,6 @@ public interface ILockDatabase
 	int removeAutoCleanupLocks();
 
 	ExistingLockInfo getLockInfo(TableRecordReference tableRecordReference, LockOwner lockOwner);
+
+	SetMultimap<TableRecordReference, ExistingLockInfo> getLockInfosByRecordIds(@NonNull TableRecordReferenceSet recordRefs);
 }

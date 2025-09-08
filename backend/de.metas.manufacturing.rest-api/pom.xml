@@ -69,6 +69,12 @@
 			<artifactId>de.metas.device.webui</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>de.metas.externalsystem</groupId>
+			<artifactId>de.metas.externalsystem</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.projectlombok</groupId>

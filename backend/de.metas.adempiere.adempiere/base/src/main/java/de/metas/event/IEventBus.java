@@ -1,5 +1,8 @@
 package de.metas.event;
 
+import lombok.NonNull;
+
+import java.util.Collection;
 import java.util.function.Consumer;
 
 /*
@@ -37,14 +40,9 @@ import java.util.function.Consumer;
 public interface IEventBus
 {
 	/**
-	 * @return the (topic-) name of this event bus.
+	 * @return the topic of this event bus. If the event bus is "distributed" then subscriber on other hosts will be notified about events on this host.
 	 */
-	String getTopicName();
-
-	/**
-	 * @return the type (remote or local) of this event bus. If the event bus is "remote" then subscriber on other hosts will be notified about events on this host.
-	 */
-	Type getType();
+	Topic getTopic();
 
 	/**
 	 * Subscribe to this bus.
@@ -60,24 +58,30 @@ public interface IEventBus
 
 	/**
 	 * Subscribe and expect events with to have bodys of a particular type.
-	 * Also see {@link #postObject(Object)}.
+	 * Also see {@link #enqueueObject(Object)}.
 	 *
 	 * @param type the class of the object the consumer is subscribed to.
 	 *             The event-bus will attempt to deserialize the event's body to an instance of this class.
-	 *             
-	 * @return the newly created event-listener, in case the caller wants to unsubscribe later           
+	 * @return the newly created event-listener, in case the caller wants to unsubscribe later
 	 */
 	<T> IEventListener subscribeOn(Class<T> type, Consumer<T> eventConsumer);
 
 	/**
-	 * Post given event on this bus.
+	 * Post given event in the underlying bus.
 	 */
-	void postEvent(Event event);
+	void processEvent(Event event);
+
+	/**
+	 * Enqueue given event in RabbitMQ.
+	 */
+	void enqueueEvent(Event event);
 
 	/**
 	 * Create an event and serialize the given {@code obj} to be the event's body (payload).
 	 */
-	void postObject(Object obj);
+	void enqueueObject(Object obj);
+
+	void enqueueObjectsCollection(@NonNull final Collection<?> objs);
 
 	/**
 	 * @return {@code true} if the bus was destroyed and it no longer accepts events.
@@ -95,7 +99,7 @@ public interface IEventBus
 	 * <li>analog to the PROD and CONs of async</li>
 	 * <li>note that only one thread per eventbus is allowed to process its event (analog to the one worker thread that we have at async=true)</li>
 	 *
-	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #postEvent(Event)} doesn't have to wait for the listeners to be invoked.
+	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #processEvent(Event)} doesn't have to wait for the listeners to be invoked.
 	 */
 	boolean isAsync();
 

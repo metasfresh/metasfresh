@@ -60,14 +60,15 @@ public class PackageableRowsRepository
 	private final Supplier<LookupDataSource> productLookup;
 	private final Supplier<LookupDataSource> bpartnerLookup;
 
-	public PackageableRowsRepository()
+	public PackageableRowsRepository(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		// creating those LookupDataSources requires DB access. So, to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
 
-		orderLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_C_Order.Table_Name));
-		productLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name));
-		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name));
+		orderLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_C_Order.Table_Name));
+		productLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name));
+		bpartnerLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name));
 	}
 
 	private List<PackageableRow> retrieveRowsByShipmentScheduleIds(final ViewId viewId, final Set<ShipmentScheduleId> shipmentScheduleIds)

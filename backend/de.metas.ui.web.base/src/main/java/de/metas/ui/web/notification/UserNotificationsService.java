@@ -10,15 +10,15 @@ import de.metas.notification.UserNotificationUtils;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
 import de.metas.ui.web.session.json.WebuiSessionId;
-import de.metas.websocket.sender.WebsocketSender;
-import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -48,15 +48,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 
 @Service
+@RequiredArgsConstructor
 public class UserNotificationsService
 {
 	private static final Logger logger = LogManager.getLogger(UserNotificationsService.class);
 
-	@Autowired
-	private WebsocketSender websocketSender;
+	@NonNull private final WebsocketSender websocketSender;
+	@NonNull private final IEventBusFactory eventBusFactory;
 
 	private final ConcurrentHashMap<UserId, UserNotificationsQueue> adUserId2notifications = new ConcurrentHashMap<>();
-
 	private final AtomicBoolean subscribedToEventBus = new AtomicBoolean(false);
 
 	@EventListener
@@ -73,7 +73,6 @@ public class UserNotificationsService
 	{
 		if (!subscribedToEventBus.getAndSet(true))
 		{
-			final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 			eventBusFactory.registerUserNotificationsListener(this::forwardEventToNotificationsQueues);
 		}
 	}
@@ -86,13 +85,12 @@ public class UserNotificationsService
 		logger.trace("Enabling for sessionId={}, adUserId={}, jsonOptions={}", sessionId, adUserId, jsonOptions);
 
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId, k -> UserNotificationsQueue.builder()
-
 				.userId(adUserId)
 				.jsonOptions(jsonOptions)
 				.notificationsRepo(Services.get(INotificationRepository.class))
 				.websocketSender(websocketSender)
 				.build());
-
+		notificationsQueue.setLanguage(jsonOptions.getAdLanguage()); // just to make sure in case user changed his language, we use his/her last option
 		notificationsQueue.addActiveSessionId(sessionId);
 
 		subscribeToEventTopicsIfNeeded();

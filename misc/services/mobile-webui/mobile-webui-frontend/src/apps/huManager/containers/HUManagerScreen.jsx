@@ -1,54 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
-
-import { trl } from '../../../utils/translations';
 import * as api from '../api';
-import { clearLoadedData, handlingUnitLoaded, changeClearanceStatus } from '../actions';
+import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
+import {
+  huManagerBulkActionsLocation,
+  huManagerDisposeLocation,
+  huManagerHuLabelsLocation,
+  huManagerMoveLocation,
+} from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
-import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
+import { toastError } from '../../../utils/toast';
+import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
+import HUScanner from '../../../components/huSelector/HUScanner';
+import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
+import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
+import * as scanAnythingRoutes from '../../scanAnything/routes';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { trl } from '../../../utils/translations';
+
+const MODALS = {
+  CHANGE_QTY: 'CHANGE_QTY',
+  CLEARANCE_STATUS: 'CLEARANCE_STATUS',
+  SCAN_CURRENT_LOCATOR: 'SCAN_CURRENT_LOCATOR',
+};
 
 const HUManagerScreen = () => {
+  const { history } = useScreenDefinition({
+    screenId: 'HUManagerScreen',
+    back: '/',
+  });
+
   const dispatch = useDispatch();
-  const history = useHistory();
-  const [clearanceModalDisplayed, toggleClearanceModal] = useState(false);
-  const [clearanceStatuses, setClearanceStatuses] = useState([]);
-
-  const { url } = useRouteMatch();
-  useEffect(() => {
-    // IMPORTANT, else it won't restore the title when we move back to this screen
-    dispatch(pushHeaderEntry({ location: url }));
-  }, []);
-
-  const mergeClearanceStatuses = (statuses) => {
-    const mergedStatuses = [...statuses];
-
-    if (handlingUnitInfo.clearanceStatus) {
-      mergedStatuses.push(handlingUnitInfo.clearanceStatus);
-    }
-    setClearanceStatuses(mergedStatuses);
-  };
-
-  const resolveScannedBarcode = ({ scannedBarcode }) => {
-    return api.getHUByQRCode(scannedBarcode).then((handlingUnitInfo) => ({ handlingUnitInfo }));
-    // .catch((axiosError) => ({
-    //   error: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
-    // }));
-  };
-
-  const onResolvedResult = (result) => {
-    console.log('onResolvedResult', { result });
-    const { handlingUnitInfo } = result;
-    dispatch(handlingUnitLoaded({ handlingUnitInfo }));
-  };
+  const [modalToDisplay, setModalToDisplay] = useState('');
+  const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
+  const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
 
   const onDisposeClick = () => {
     history.push(huManagerDisposeLocation());
@@ -56,56 +46,204 @@ const HUManagerScreen = () => {
   const onMoveClick = () => {
     history.push(huManagerMoveLocation());
   };
+  const onBulkActionsClick = () => {
+    history.push(huManagerBulkActionsLocation());
+  };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
+    history.push(scanAnythingRoutes.appLocation());
   };
-  const onSetClearanceClick = () => {
-    toggleClearanceModal(true);
+  const onPrintLabelsClicked = () => {
+    history.push(huManagerHuLabelsLocation());
   };
   const onClearanceChange = ({ clearanceNote, clearanceStatus }) => {
-    dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })).finally(() => {
-      toggleClearanceModal(false);
-    });
+    dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })) //
+      .finally(() => setModalToDisplay(''));
+  };
+  const onChangeQtySubmit = ({ qty, setBestBeforeDate, bestBeforeDate, setLotNo, lotNo, description }) => {
+    api
+      .changeQty({
+        huId: handlingUnitInfo.id,
+        huQRCode: handlingUnitInfo.qrCode,
+        description: description,
+        qty: qty,
+        locatorQRCode: currentLocatorQRCode,
+        setBestBeforeDate,
+        bestBeforeDate,
+        setLotNo,
+        lotNo,
+      })
+      .then(() => {
+        dispatch(clearLoadedData());
+      })
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => setModalToDisplay(''));
   };
 
-  const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
+  const clearanceStatuses = useClearanceStatuses({
+    huId: handlingUnitInfo?.id,
+    huClearanceStatus: handlingUnitInfo?.clearanceStatus,
+  });
 
-  useEffect(() => {
-    if (handlingUnitInfo && !clearanceStatuses.length) {
-      api
-        .getAllowedClearanceStatusesRequest({ huId: handlingUnitInfo.id })
-        .then((statuses) => mergeClearanceStatuses(statuses));
-    }
-  }, [handlingUnitInfo]);
+  const {
+    isSingleStorage,
+    qty: singleStorageQty,
+    uom: singleStorageUom,
+  } = computeSingleStorageQtyAndUOM(handlingUnitInfo);
 
-  if (handlingUnitInfo && handlingUnitInfo.id) {
+  const isExistingHU = !!handlingUnitInfo?.id;
+
+  const isAllowQtyChange =
+    isSingleStorage && //
+    (isExistingHU || !!currentLocatorQRCode?.locatorId); // either we have an huId or we scanned the locator where the new HU will be created
+
+  if (handlingUnitInfo) {
     return (
       <>
-        {clearanceModalDisplayed ? (
+        {modalToDisplay === MODALS.CLEARANCE_STATUS && (
           <ClearanceDialog
-            onCloseDialog={() => toggleClearanceModal(false)}
-            onClearanceChange={onClearanceChange}
-            clearanceStatuses={clearanceStatuses}
             handlingUnitInfo={handlingUnitInfo}
+            clearanceStatuses={clearanceStatuses}
+            onClearanceChange={onClearanceChange}
+            onCloseDialog={() => setModalToDisplay('')}
           />
-        ) : null}
-        <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
+        )}
+        {modalToDisplay === MODALS.CHANGE_QTY && (
+          <ChangeHUQtyDialog
+            currentQty={singleStorageQty}
+            uom={singleStorageUom}
+            isShowBestBeforeDate={!isExistingHU}
+            bestBeforeDate={getBestBeforeDate(handlingUnitInfo)}
+            isShowLotNo={!isExistingHU}
+            lotNo={getLotNo(handlingUnitInfo)}
+            onSubmit={onChangeQtySubmit}
+            onCloseDialog={() => setModalToDisplay('')}
+          />
+        )}
+        {modalToDisplay === MODALS.SCAN_CURRENT_LOCATOR && (
+          <ChangeCurrentLocatorDialog
+            onOK={(locatorQRCode) => {
+              setCurrentLocatorQRCode(locatorQRCode);
+              setModalToDisplay('');
+            }}
+            onClose={() => setModalToDisplay('')}
+          />
+        )}
+        <HUInfoComponent handlingUnitInfo={handlingUnitInfo} currentLocatorQRCode={currentLocatorQRCode} />
         <div className="pt-3 section">
-          <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
-          <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
+          {isExistingHU && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.dispose.buttonCaption"
+              onClick={onDisposeClick}
+              testId="dispose-button"
+            />
+          )}
           <ButtonWithIndicator
-            caption={trl('huManager.action.setClearance.buttonCaption')}
-            onClick={onSetClearanceClick}
+            captionKey="huManager.action.move.buttonCaption"
+            onClick={onMoveClick}
+            testId="move-button"
           />
-          <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
+          {isExistingHU && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.setClearance.buttonCaption"
+              onClick={() => setModalToDisplay(MODALS.CLEARANCE_STATUS)}
+              testId="set-clearance-button"
+            />
+          )}
+          {!isExistingHU && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.setCurrentLocator.buttonCaption"
+              onClick={() => setModalToDisplay(MODALS.SCAN_CURRENT_LOCATOR)}
+              testId="set-current-locator-button"
+            />
+          )}
+          <ButtonWithIndicator
+            caption={trl('huManager.action.bulkActions.buttonCaption')}
+            onClick={onBulkActionsClick}
+          />
+          {isAllowQtyChange && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.changeQty.buttonCaption"
+              onClick={() => setModalToDisplay(MODALS.CHANGE_QTY)}
+              testId="change-qty-button"
+            />
+          )}
+          <ButtonWithIndicator
+            captionKey="huManager.action.printLabels.buttonCaption"
+            onClick={onPrintLabelsClicked}
+            testId="print-labels-button"
+          />
+          <ButtonWithIndicator
+            captionKey="huManager.action.scanAgain.buttonCaption"
+            onClick={onScanAgainClick}
+            testId="scan-again-button"
+          />
         </div>
       </>
     );
   } else {
-    return (
-      <BarcodeScannerComponent resolveScannedBarcode={resolveScannedBarcode} onResolvedResult={onResolvedResult} />
-    );
+    return <HUScanner onResolvedBarcode={(handlingUnitInfo) => setHandlingUnitInfo(handlingUnitInfo)} />;
   }
+};
+
+const useHandlingUnitInfo = () => {
+  const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
+
+  const dispatch = useDispatch();
+  const setHandlingUnitInfo = (handlingUnitInfo) => dispatch(handlingUnitLoaded({ handlingUnitInfo }));
+
+  return [handlingUnitInfo, setHandlingUnitInfo];
+};
+
+const useClearanceStatuses = ({ huId, huClearanceStatus }) => {
+  const [clearanceStatuses, setClearanceStatuses] = useState([]);
+
+  useEffect(() => {
+    if (huId && !clearanceStatuses.length) {
+      api.getAllowedClearanceStatusesRequest({ huId }).then((statuses) => {
+        const mergedStatuses = [...statuses];
+
+        if (huClearanceStatus) {
+          mergedStatuses.push(huClearanceStatus);
+        }
+
+        setClearanceStatuses(mergedStatuses);
+      });
+    }
+  }, [huId, huClearanceStatus, clearanceStatuses]);
+
+  return clearanceStatuses;
+};
+
+const computeSingleStorageQtyAndUOM = (handlingUnitInfo) => {
+  const isSingleStorage = handlingUnitInfo && handlingUnitInfo.products && handlingUnitInfo.products.length === 1;
+  if (!isSingleStorage) {
+    return { isSingleStorage: false, qty: null, uom: null };
+  }
+
+  let qty = Number(handlingUnitInfo.products[0].qty);
+  if (handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1) {
+    qty = qty / handlingUnitInfo.numberOfAggregatedHUs;
+  }
+
+  return {
+    isSingleStorage: true,
+    qty,
+    uom: handlingUnitInfo.products[0].uom,
+  };
+};
+
+const getBestBeforeDate = (handlingUnitInfo) => {
+  return getAttributeValue(handlingUnitInfo, HU_ATTRIBUTE_BestBeforeDate);
+};
+const getLotNo = (handlingUnitInfo) => {
+  return getAttributeValue(handlingUnitInfo, HU_ATTRIBUTE_LotNo);
+};
+
+const getAttributeValue = (handlingUnitInfo, attributeCode) => {
+  const attributesList = handlingUnitInfo?.attributes2?.list ?? [];
+  const attribute = attributesList.find((attribute) => attribute.code === attributeCode);
+  return attribute?.value;
 };
 
 export default HUManagerScreen;

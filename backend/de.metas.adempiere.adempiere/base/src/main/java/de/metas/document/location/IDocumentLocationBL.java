@@ -22,22 +22,29 @@
 
 package de.metas.document.location;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
-import de.metas.util.ISingletonService;
+import de.metas.location.AddressDisplaySequence;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author tsa
- * task http://dewiki908/mediawiki/index.php/03120:_Error_in_DocumentLocation_callout_%282012080910000142%29
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/03120:_Error_in_DocumentLocation_callout_%282012080910000142%29">task</a>
  */
 public interface IDocumentLocationBL
 {
+	RenderedAddressProvider newRenderedAddressProvider();
+	
 	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location);
+
+	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location, @Nullable AddressDisplaySequence displaySequence);
 
 	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentLocationAdapter locationAdapter);
 
@@ -49,17 +56,21 @@ public interface IDocumentLocationBL
 
 	void updateRenderedAddressAndCapturedLocation(IDocumentLocationAdapter locationAdapter);
 
-	void updateCapturedLocation(IDocumentLocationAdapter locationAdapter);
-
-	void updateCapturedLocation(IDocumentBillLocationAdapter locationAdapter);
+	void updateRenderedAddress(IDocumentLocationAdapter locationAdapter);
 
 	void updateRenderedAddressAndCapturedLocation(IDocumentBillLocationAdapter locationAdapter);
 
+	void updateRenderedAddress(IDocumentBillLocationAdapter locationAdapter);
+
 	void updateRenderedAddressAndCapturedLocation(IDocumentDeliveryLocationAdapter locationAdapter);
 
-	void updateCapturedLocation(IDocumentDeliveryLocationAdapter locationAdapter);
+	void updateRenderedAddress(IDocumentDeliveryLocationAdapter locationAdapter);
 
 	void updateRenderedAddressAndCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
 
-	void updateCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
+	void updateRenderedAddress(IDocumentHandOverLocationAdapter locationAdapter);
+
+	Set<DocumentLocation> getDocumentLocations(@NonNull Set<BPartnerLocationId> bpartnerLocationIds);
+
+	DocumentLocation getDocumentLocation(@NonNull BPartnerLocationId bpartnerLocationId);
 }

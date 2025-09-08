@@ -86,6 +86,7 @@ public final class MimeType
 	 */
 	public static final String TYPE_BINARY = "application/octet-stream";
 	public static final String TYPE_PDF = "application/pdf";
+	public static final String TYPE_PDF_APPENDIX = "x-application/pdfappendix";
 	public static final String TYPE_TextPlain = "text/plain";
 	public static final String TYPE_XML = "text/xml";
 	public static final String TYPE_IMAGE_PNG = "image/png";

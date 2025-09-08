@@ -1,6 +1,8 @@
 package de.metas.bpartner.service.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -17,6 +19,7 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.StringUtils;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
@@ -30,6 +33,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -53,6 +57,7 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -66,11 +71,13 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
+	private final static String SYS_CONFIG_IgnorePartnerVATID = "de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID";
 
 	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
 	private final IBPGroupDAO bpGroupDAO;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public BPartnerBL()
 	{
@@ -122,10 +129,37 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BPartner bpartner = getById(bpartnerId);
 		if (bpartner == null)
 		{
-			return "<" + bpartnerId + ">";
+			return unknownBPName(bpartnerId);
 		}
 
 		return toString.apply(bpartner);
+	}
+
+	@NonNull
+	private static String unknownBPName(final @NonNull BPartnerId bpartnerId)
+	{
+		return "<" + bpartnerId.getRepoId() + ">";
+	}
+
+	@Override
+	public Map<BPartnerId, String> getBPartnerNames(@NonNull final Set<BPartnerId> bpartnerIds)
+	{
+		if (bpartnerIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap<BPartnerId, I_C_BPartner> bpartners = Maps.uniqueIndex(bpartnersRepo.getByIds(bpartnerIds), bpartner -> BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()));
+
+		final ImmutableMap.Builder<BPartnerId, String> result = ImmutableMap.builder();
+		for (final BPartnerId bpartnerId : bpartnerIds)
+		{
+			final I_C_BPartner bpartner = bpartners.get(bpartnerId);
+			final String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
+			result.put(bpartnerId, name);
+		}
+
+		return result.build();
 	}
 
 	@Override
@@ -191,6 +225,14 @@ public class BPartnerBL implements IBPartnerBL
 		for (final I_AD_User contactRecord : contactRecords)
 		{
 			if (onlyActiveContacts && !contactRecord.isActive())
+			{
+				continue;
+			}
+
+			final boolean isInvoiceEmailEnabled = Optional.ofNullable(contactRecord.getIsInvoiceEmailEnabled())
+					.map(StringUtils::toBoolean)
+					.orElse(false);
+			if (request.isOnlyIfInvoiceEmailEnabled() && !isInvoiceEmailEnabled)
 			{
 				continue;
 			}
@@ -347,6 +389,14 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	public void updateMemo(final @NonNull BPartnerId bpartnerId, final String memo)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		bpartner.setMemo(memo);
+		bpartnersRepo.save(bpartner);
+	}
+
+	@Override
 	public void setAddress(@NonNull final I_C_BPartner_Location bpLocation)
 	{
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpLocation.getC_BPartner_ID());
@@ -391,7 +441,7 @@ public class BPartnerBL implements IBPartnerBL
 		if (soTrx.isSales())
 		{
 			final boolean allowConsolidateInOutOverrideDefault = false; // default=false (preserve existing logic)
-			return Services.get(ISysConfigBL.class).getBooleanValue(
+			return sysConfigBL.getBooleanValue(
 					SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override,
 					allowConsolidateInOutOverrideDefault);
 		}
@@ -480,6 +530,26 @@ public class BPartnerBL implements IBPartnerBL
 			if (groupDiscountSchemaId > 0)
 			{
 				return groupDiscountSchemaId; // we are done
+			}
+
+			// didn't get the schema yet; now we try to get the discount schema from the parent C_BP_Group
+			final BPGroupId parentBpGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
+			if (parentBpGroupId != null)
+			{
+				final I_C_BP_Group parentBpGroup = bpGroupDAO.getById(parentBpGroupId);
+				final int parentGroupDiscountSchemaId;
+				if (soTrx.isSales())
+				{
+					parentGroupDiscountSchemaId = parentBpGroup.getM_DiscountSchema_ID();
+				}
+				else
+				{
+					parentGroupDiscountSchemaId = parentBpGroup.getPO_DiscountSchema_ID();
+				}
+				if (parentGroupDiscountSchemaId > 0)
+				{
+					return parentGroupDiscountSchemaId; // we are done
+				}
 			}
 		}
 
@@ -758,7 +828,6 @@ public class BPartnerBL implements IBPartnerBL
 		bpLocation.setIsShipTo(previousLocation.isShipTo());
 	}
 
-
 	@Override
 	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
 	{
@@ -800,5 +869,41 @@ public class BPartnerBL implements IBPartnerBL
 		}
 
 		return bPartnerLocation;
+	}
+
+	@NonNull
+	@Override
+	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
+	{
+		return userRepository.getDefaultDunningContact(bPartnerId);
+	}
+
+	@NonNull
+	@Override
+	public Optional<VATIdentifier> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
+		{
+			return Optional.of(VATIdentifier.of(bpartnerLocation.getVATaxID()));
+		}
+
+		// if is set on Y, we will not use the vatid from partner
+		final boolean ignorePartnerVATID = sysConfigBL.getBooleanValue(SYS_CONFIG_IgnorePartnerVATID, false);
+
+		if (ignorePartnerVATID)
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
+			if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
+			{
+				return Optional.of(VATIdentifier.of(bPartner.getVATaxID()));
+			}
+
+		}
+		return Optional.empty();
 	}
 }

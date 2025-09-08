@@ -1,5 +1,7 @@
 package de.metas.printing.api.impl;
 
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintJobLinesAggregator;
 import de.metas.printing.api.IPrintPackageCtx;
@@ -26,8 +28,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;

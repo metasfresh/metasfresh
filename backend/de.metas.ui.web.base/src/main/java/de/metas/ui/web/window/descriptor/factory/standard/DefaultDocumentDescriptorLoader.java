@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.attributes_included_tab.AttributesIncludedTabLoader;
 import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntrySubTabBindingDescriptorBuilder;
 import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoader;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -11,12 +12,11 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
-import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -43,27 +43,22 @@ import java.util.List;
  * #L%
  */
 
-/* package */ class DefaultDocumentDescriptorLoader
+@Builder
+class DefaultDocumentDescriptorLoader
 {
-	private static final Logger logger = LogManager.getLogger(DefaultDocumentDescriptorLoader.class);
+	//
+	// Services
+	@NonNull private static final Logger logger = LogManager.getLogger(DefaultDocumentDescriptorLoader.class);
+	@NonNull private final LayoutFactoryProvider layoutFactoryProvider;
+	@NonNull private final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder;
 
 	//
 	// Parameters
-	private final AdWindowId adWindowId;
-
-	private final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder;
+	@NonNull private final AdWindowId adWindowId;
 
 	//
 	// Status
-	private boolean _executed = false;
-
-	/* package */ DefaultDocumentDescriptorLoader(
-			final AdWindowId adWindowId,
-			@NonNull final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder)
-	{
-		this.adWindowId = adWindowId;
-		this.dataEntrySubTabBindingDescriptorBuilder = dataEntrySubTabBindingDescriptorBuilder;
-	}
+	private boolean _executed;
 
 	public DocumentDescriptor load()
 	{
@@ -74,15 +69,16 @@ import java.util.List;
 		}
 		_executed = true;
 
-		if (adWindowId == null)
-		{
-			throw new DocumentLayoutBuildException("No window found for AD_Window_ID=" + adWindowId);
-		}
-
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		final GridWindowVO gridWindowVO = DocumentLoaderUtil.createGridWindoVO(adWindowId);
-		Check.assumeNotNull(gridWindowVO, "Parameter gridWindowVO is not null"); // shall never happen
+		final GridWindowVO gridWindowVO = GridWindowVO.builder()
+				.ctx(Env.getCtx())
+				.windowNo(0) // TODO: get rid of WindowNo from GridWindowVO
+				.adWindowId(adWindowId)
+				.adMenuId(-1) // N/A
+				.loadAllLanguages(true)
+				.applyRolePermissions(false) // must be false, unless we know that we do have #AD_User_ID in the context (which oftentimes we don't)
+				.build();
 
 		final DocumentDescriptor.Builder documentBuilder = DocumentDescriptor.builder();
 
@@ -93,8 +89,7 @@ import java.util.List;
 
 		//
 		// Layout: Create UI sections from main tab
-		final GridTabVO mainTabVO = gridWindowVO.getTab(GridTabVO.MAIN_TabNo);
-		final LayoutFactory rootLayoutFactory = LayoutFactory.ofMainTab(gridWindowVO, mainTabVO);
+		final LayoutFactory rootLayoutFactory = layoutFactoryProvider.ofMainTab(gridWindowVO);
 		{
 			final ITranslatableString windowCaption = TranslatableStrings.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
 			layoutBuilder.setCaption(windowCaption);
@@ -110,29 +105,48 @@ import java.util.List;
 					.setDocActionElement(rootLayoutFactory.createSpecialElement_DocStatusAndDocAction());
 		}
 
-		ADTabLoader.builder()
-				.adWindowId(adWindowId)
-				.rootLayoutFactory(rootLayoutFactory)
-				.layoutBuilder(layoutBuilder)
-				.build()
-				.load();
-
-		final DataEntryTabLoader dataEntryTabLoader = DataEntryTabLoader
-				.builder()
-				.adWindowId(adWindowId)
-				.windowId(rootLayoutFactory.documentEntity().getWindowId())
-				.dataEntrySubTabBindingDescriptorBuilder(dataEntrySubTabBindingDescriptorBuilder)
-				.build();
-		final List<DocumentLayoutDetailDescriptor> layoutDescriptors = dataEntryTabLoader.loadDocumentLayout();
-		for (final DocumentLayoutDetailDescriptor descriptor : layoutDescriptors)
+		//
+		// Standard tabs loader
+		for (final LayoutFactory detailLayoutFactory : rootLayoutFactory.getIncludedTabLayouts())
 		{
-			layoutBuilder.addDetail(descriptor);
+			detailLayoutFactory.layoutDetail()
+					.map(DocumentLayoutDetailDescriptor.Builder::build)
+					.ifPresent(layoutBuilder::addDetail);
+
+			final DocumentEntityDescriptor.Builder detailEntityBuilder = detailLayoutFactory.documentEntity();
+			rootLayoutFactory.documentEntity().addIncludedEntity(detailEntityBuilder.build());
 		}
 
-		final List<DocumentEntityDescriptor> entityDescriptors = dataEntryTabLoader.loadDocumentEntity();
-		for (final DocumentEntityDescriptor descriptor : entityDescriptors)
+		//
+		// DataEntry tabs loader
 		{
-			rootLayoutFactory.documentEntity().addIncludedEntity(descriptor);
+			final DataEntryTabLoader dataEntryTabLoader = DataEntryTabLoader.builder()
+					.adWindowId(adWindowId)
+					.windowId(rootLayoutFactory.documentEntity().getWindowId())
+					.dataEntrySubTabBindingDescriptorBuilder(dataEntrySubTabBindingDescriptorBuilder)
+					.build();
+			final List<DocumentLayoutDetailDescriptor> layoutDescriptors = dataEntryTabLoader.loadDocumentLayout();
+			for (final DocumentLayoutDetailDescriptor descriptor : layoutDescriptors)
+			{
+				layoutBuilder.addDetail(descriptor);
+			}
+
+			final List<DocumentEntityDescriptor> entityDescriptors = dataEntryTabLoader.loadDocumentEntity();
+			for (final DocumentEntityDescriptor descriptor : entityDescriptors)
+			{
+				rootLayoutFactory.documentEntity().addIncludedEntity(descriptor);
+			}
+		}
+
+		//
+		// Attributes tabs loader
+		{
+			AttributesIncludedTabLoader.builder()
+					.adWindowId(adWindowId)
+					.rootEntityDescriptor(rootLayoutFactory.documentEntity())
+					.layoutBuilder(layoutBuilder)
+					.build()
+					.load();
 		}
 
 		//

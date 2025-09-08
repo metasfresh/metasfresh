@@ -23,17 +23,20 @@ package de.metas.security.impl;
  */
 
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.service.ClientId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
-
+import de.metas.event.log.EventLogService;
+import de.metas.event.log.EventLogsRepository;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.security.model.interceptor.SecurityMainInterceptor;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UserRolePermissionsDAOTest
 {
@@ -41,11 +44,12 @@ public class UserRolePermissionsDAOTest
 
 	private SecurityMainInterceptor securityMainInterceptor;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		SpringContextHolder.registerJUnitBean(new EventLogService(new EventLogsRepository()));
 		securityMainInterceptor = new SecurityMainInterceptor();
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(securityMainInterceptor);
@@ -53,13 +57,13 @@ public class UserRolePermissionsDAOTest
 		dao = (UserRolePermissionsDAO)Services.get(IUserRolePermissionsDAO.class);
 	}
 
-	@Test(expected = RolePermissionsNotFoundException.class)
+	@Test
 	public void test_retrieveUserRolePermissions_NotExistingRole()
 	{
-		dao.getUserRolePermissions(
+		Assertions.assertThrows(RolePermissionsNotFoundException.class, () -> dao.getUserRolePermissions(
 				RoleId.ofRepoId(1),
 				UserId.ofRepoId(2),
 				ClientId.ofRepoId(3),
-				SystemTime.asLocalDate());
+				SystemTime.asLocalDate()));
 	}
 }

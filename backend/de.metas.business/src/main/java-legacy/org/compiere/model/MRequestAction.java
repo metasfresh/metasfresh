@@ -16,12 +16,11 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import de.metas.i18n.Msg;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /**
  *	Request History Model
@@ -96,96 +95,6 @@ public class MRequestAction extends X_R_RequestAction
 		return user.getName();
 	}	//	getCreatedByName
 
-	/**
-	 * 	Get Changes as HTML string
-	 *	@return changes
-	 */
-	public String getChangesHTML()
-	{
-		StringBuffer sb = new StringBuffer();
-		getChangeHTML(sb, "Priority");
-		getChangeHTML(sb, "PriorityUser");
-		getChangeHTML(sb, "R_Category_ID");
-		getChangeHTML(sb, "R_Group_ID");
-		getChangeHTML(sb, "R_RequestType_ID");
-		getChangeHTML(sb, "R_Resolution_ID");
-		getChangeHTML(sb, "R_Status_ID");
-		getChangeHTML(sb, "SalesRep_ID");
-		getChangeHTML(sb, "Summary");
-		//
-	//	getChangeHTML(sb, "AD_Org_ID");		//	always stored
-		getChangeHTML(sb, "AD_Role_ID");
-		getChangeHTML(sb, "AD_User_ID");
-		getChangeHTML(sb, "C_Activity_ID");
-		getChangeHTML(sb, "C_BPartner_ID");
-		getChangeHTML(sb, "C_Invoice_ID");
-		getChangeHTML(sb, "C_Order_ID");
-		getChangeHTML(sb, "C_Payment_ID");
-		getChangeHTML(sb, "C_Project_ID");
-		getChangeHTML(sb, "DateNextAction");
-		getChangeHTML(sb, "IsEscalated");
-		getChangeHTML(sb, "IsInvoiced");
-		getChangeHTML(sb, "IsSelfService");
-		getChangeHTML(sb, "M_InOut_ID");
-		getChangeHTML(sb, "M_Product_ID");
-		getChangeHTML(sb, "M_RMA_ID");
-		getChangeHTML(sb, "A_Asset_ID");
-		
-		if (sb.length() == 0)
-		{
-			sb.append("./.");
-		}
-		//	Unicode check
-		char[] chars = sb.toString().toCharArray();
-		sb = new StringBuffer(chars.length);
-		for (char c : chars)
-		{
-			int ii = c;
-			if (ii > 255)
-			{
-				sb.append("&#").append(ii).append(";");
-			}
-			else
-			{
-				sb.append(c);
-			}
-		}
-		return sb.toString();
-	}	//	getChangesHTML
-	
-	/**
-	 * 	Get individual Change HTML
-	 *	@param sb string to append to
-	 *	@param columnName column name
-	 */
-	private void getChangeHTML (StringBuffer sb, String columnName)
-	{
-		if (get_Value(columnName) != null)
-		{
-			if (sb.length() > 0)
-			{
-				sb.append("<br>");
-			}
-			sb.append(Msg.getElement(getCtx(), columnName))
-				.append(": ").append(get_DisplayValue(columnName, true));
-		}
-		else
-		{
-			String nc = getNullColumns();
-			if (nc != null && nc.indexOf(columnName) != -1)
-			{
-				if (sb.length() > 0)
-				{
-					sb.append("<br>");
-				}
-				sb.append("(")
-					.append(Msg.getElement(getCtx(), columnName))
-					.append(")");
-			}
-		}
-	}	//	getChangeHTML
-	
-	
 	/**
 	 * 	Before Save
 	 *	@param newRecord new

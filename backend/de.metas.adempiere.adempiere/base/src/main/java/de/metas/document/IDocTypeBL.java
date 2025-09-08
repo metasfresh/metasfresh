@@ -1,15 +1,30 @@
 package de.metas.document;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeBL extends ISingletonService
 {
-	I_C_DocType getById(DocTypeId docTypeId);
+	@NonNull
+	I_C_DocType getById(@NonNull DocTypeId docTypeId);
+
+	@NonNull
+	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
 
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
+
+	@NonNull
+	DocTypeId getDocTypeId(DocTypeQuery docTypeQuery);
+
+	@NonNull
+	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 
 	ITranslatableString getNameById(DocTypeId docTypeId);
 
@@ -27,6 +42,7 @@ public interface IDocTypeBL extends ISingletonService
 	 * @return true if it's a sales cost estimate
 	 */
 	boolean isSalesCostEstimate(I_C_DocType dt);
+
 	/**
 	 * @return true if it's a sales proposal (Not binding)
 	 */
@@ -62,4 +78,11 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isCallOrder(DocTypeId docTypeId);
 
 	boolean isStandardOrder(@NonNull DocTypeId docTypeId);
+
+	void save(I_C_DocType dt);
+
+	@NonNull
+	ImmutableList<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
+
+	DocTypeId cloneToOrg(@NonNull I_C_DocType dt, @NonNull OrgId toOrgId);
 }

@@ -57,14 +57,14 @@ public class StockEstimateCreatedEvent extends AbstractStockEstimateEvent
 			@NonNull @JsonProperty("eventDate") final Instant eventDate
 	)
 	{
-		super(eventDescriptor, 
-			  materialDescriptor, 
-			  date, 
-			  plantId, 
-			  freshQtyOnHandId, 
-			  freshQtyOnHandLineId, 
-			  qtyStockEstimateSeqNo, 
-			  eventDate);
+		super(eventDescriptor,
+				materialDescriptor,
+				date,
+				plantId,
+				freshQtyOnHandId,
+				freshQtyOnHandLineId,
+				qtyStockEstimateSeqNo,
+				eventDate);
 	}
 
 	@Override
@@ -72,4 +72,7 @@ public class StockEstimateCreatedEvent extends AbstractStockEstimateEvent
 	{
 		return getMaterialDescriptor().getQuantity();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

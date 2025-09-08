@@ -22,6 +22,8 @@
 
 package de.metas.rest_api.v1.bpartner.bpartnercomposite;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -38,16 +40,14 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.rest_api.v1.bpartner.JsonRequestConsolidateService;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserRepository;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.util.Optional;
@@ -58,29 +58,16 @@ import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_EXTER
 import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_VALUE;
 import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BP_GROUP_ID;
 import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.createBPartnerData;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(SnapshotExtension.class)
 class JsonRetrieverServiceTest
 {
 	private final OrgId orgId = OrgId.ofRepoId(10);
 	private JsonRetrieverService jsonRetrieverService;
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
+	private Expect expect;
 
 	@BeforeEach
 	void init()
@@ -123,7 +110,7 @@ class JsonRetrieverServiceTest
 		final Optional<BPartnerComposite> result = jsonRetrieverService.getBPartnerComposite(bpartnerLookupKeys);
 
 		assertThat(result).isNotEmpty();
-		expect(result.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
 	}
 
 	/**

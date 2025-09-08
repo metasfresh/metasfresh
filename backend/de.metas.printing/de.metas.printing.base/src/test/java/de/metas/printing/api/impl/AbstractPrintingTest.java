@@ -1,48 +1,44 @@
 package de.metas.printing.api.impl;
 
 import de.metas.document.archive.api.ArchiveFileNameService;
-import de.metas.printing.HardwarePrinterRepository;
-import de.metas.printing.api.IPrintPackageBL;
-import de.metas.printing.printingdata.PrintingDataFactory;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestName;
-import org.junit.rules.TestWatcher;
-
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.impl.PlainInvoiceDAO;
+import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.api.IPrintJobBL;
+import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public abstract class AbstractPrintingTest
 {
-	@Rule
-	public TestName testName = new TestName();
-	/**
-	 * Watches current test and dumps the database to console in case of failure
-	 */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
+	@RegisterExtension
+	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
 	public Helper helper;
 
 	protected PrintJobBL printJobBL;
 
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		Helper.staticInit();
 	}
 
-	@Before
-	public final void setup()
+	@BeforeEach
+	public final void setup(TestInfo testInfo)
 	{
-		helper = new Helper(testName);
+		helper = new Helper(testInfo);
 		helper.setup();
 
 		printJobBL = new PrintJobBL();
@@ -59,11 +55,14 @@ public abstract class AbstractPrintingTest
 		Services.registerService(IPrintPackageBL.class, new PrintPackageBL(new PrintingDataFactory(new HardwarePrinterRepository(), archiveFileNameService)));
 		SpringContextHolder.registerJUnitBean(new PrintingDataFactory(new HardwarePrinterRepository(), archiveFileNameService));
 
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+		SpringContextHolder.registerJUnitBean(workplaceService);
+
 		afterSetup();
 	}
 
 	/**
-	 * Called after {@link #setup()}.
+	 * Called after {@link #setup(TestInfo)}.
 	 * <p>
 	 * To be implemented by extending classes.
 	 */

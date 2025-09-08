@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoicecandidate;
 
 import de.metas.aggregation.api.IAggregationFactory;
@@ -17,6 +39,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
@@ -59,6 +82,7 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -86,6 +110,7 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -95,14 +120,14 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -143,6 +168,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	@Getter
 	protected ProductId productId;
 	@Getter
+	protected PaymentTermId paymentTermId;
+	@Getter
 	protected UomId uomId;
 	protected ActivityId activityId;
 	protected WarehouseId warehouseId;
@@ -158,13 +185,13 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	private C_Invoice_Candidate invoiceCandidateValidator = null;
 	private boolean modelInterceptorsRegistered = false;
 
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public final void initStuff()
 	{
 		AdempiereTestHelper.get().init();
@@ -250,6 +277,14 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final I_M_Product product = BusinessTestHelper.createProduct("product", stockUomRecord);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+		final I_C_PaymentTerm paymentTerm = InterfaceWrapperHelper.create(ctx, I_C_PaymentTerm.class, trxName);
+		paymentTerm.setValue("paymentTerm");
+		paymentTerm.setName("paymentTerm");
+		paymentTerm.setNetDays(10);
+		paymentTerm.setAD_Org_ID(0);
+		InterfaceWrapperHelper.save(paymentTerm);
+		paymentTermId = PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
 
 		final I_C_UOM uomRecord = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, trxName);
 		InterfaceWrapperHelper.save(uomRecord);
@@ -352,7 +387,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * Configures {@link DefaultAggregator} to be the aggregator that is returned by invocations of {@link IAggregationDAO#retrieveAggregate(I_C_Invoice_Candidate)} throughout tests. <br>
 	 * Override this method to test different {@link IAggregator}s.
 	 */
-	protected void config_InvoiceCand_LineAggregation(final Properties ctx, final String trxName)
+	protected void config_InvoiceCand_LineAggregation(final Properties ctx, @Nullable final String trxName)
 	{
 		//
 		// Create Default Invoice Candidate Aggregator Definition
@@ -382,6 +417,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_NotFound.setC_TaxCategory_ID(taxCategory_None.getC_TaxCategory_ID());
 		tax_NotFound.setValidFrom(plvDate);
 		tax_NotFound.setC_Country_ID(100);
+		tax_NotFound.setName("TaxNotFound");
 		InterfaceWrapperHelper.save(tax_NotFound);
 
 		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
@@ -394,6 +430,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_Default.setC_TaxCategory_ID(taxCategory_Default.getC_TaxCategory_ID());
 		tax_Default.setValidFrom(plvDate);
 		tax_Default.setC_Country_ID(100);
+		tax_Default.setName("Default Tax");
 		InterfaceWrapperHelper.save(tax_Default);
 	}
 
@@ -401,14 +438,14 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	{
 		final I_C_DocType docType_ARI = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_ARI.setName("ARI");
-		docType_ARI.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
+		docType_ARI.setDocBaseType(DocBaseType.SalesInvoice.getCode());
 		docType_ARI.setIsSOTrx(true);
 		docType_ARI.setIsDefault(true);
 		InterfaceWrapperHelper.save(docType_ARI);
 
 		final I_C_DocType docType_API = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_API.setName("API");
-		docType_API.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
+		docType_API.setDocBaseType(DocBaseType.PurchaseInvoice.getCode());
 		docType_API.setIsSOTrx(false);
 		docType_API.setIsDefault(true);
 		InterfaceWrapperHelper.save(docType_API);
@@ -481,6 +518,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				.setProductId(productId)
 				.setUomId(uomId)
 				.setDiscount(0)
+				.setPaymentTermId(paymentTermId)
 				.setC_Tax(tax_Default);
 	}
 
@@ -490,10 +528,10 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * @see #createInvoiceCandidate()
 	 */
 	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
-			final int priceEntered,
-			final int qty,
-			final boolean isManual,
-			final boolean isSOTrx)
+															  final int priceEntered,
+															  final int qty,
+															  final boolean isManual,
+															  final boolean isSOTrx)
 	{
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
@@ -510,11 +548,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * @see #createInvoiceCandidate()
 	 */
 	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
-			final int priceEntered,
-			final int qty,
-			final int discount,
-			final boolean isManual,
-			final boolean isSOTrx)
+															  final int priceEntered,
+															  final int qty,
+															  final int discount,
+															  final boolean isManual,
+															  final boolean isSOTrx)
 	{
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
@@ -654,7 +692,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
 					.anyMatch();
-			Assert.assertFalse("Existing invalid invoice candidates", existingInvalidCandidates);
+			Assertions.assertFalse(existingInvalidCandidates,"Existing invalid invoice candidates");
 		}
 	}
 
@@ -709,7 +747,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					new InvoiceCandidateRecordService(),
 					groupsRepo,
 					attachmentEntryService,
-					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
+					DocumentLocationBL.newInstanceForUnitTesting());
 		}
 		return invoiceCandidateValidator;
 	}

@@ -22,6 +22,8 @@
 
 package de.metas.rest_api.v2.bpartner;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -60,6 +62,7 @@ import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.time.SystemTime;
+import de.metas.common.util.time.TimeSource;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalBusinessKey;
@@ -73,7 +76,6 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -99,8 +101,6 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -109,7 +109,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.InputStream;
+import java.time.ZoneId;
 import java.util.Optional;
+import java.util.TimeZone;
 
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
@@ -127,16 +129,14 @@ import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.EXTERNAL_SYSTEM_
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.createBPartnerData;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.createExternalReference;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.getExternalReference;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith(AdempiereTestWatcher.class)
+@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
 class BpartnerRestControllerTest
 {
 	private BpartnerRestController bpartnerRestController;
@@ -145,17 +145,7 @@ class BpartnerRestControllerTest
 	private CurrencyRepository currencyRepository;
 	private ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
-	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
+	private Expect expect;
 
 	@BeforeEach
 	void init()
@@ -219,7 +209,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -231,7 +221,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -245,7 +235,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -262,7 +252,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -279,7 +269,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -296,7 +286,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseLocation resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -313,7 +303,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseLocation resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -330,7 +320,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseLocation resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -364,7 +354,21 @@ class BpartnerRestControllerTest
 				.requestItem(requestItem)
 				.build();
 
-		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		SystemTime.setTimeSource( new TimeSource()
+		{
+			@Override
+			public long millis()
+			{
+				return 1561134560;
+			}
+
+			@Override
+			public ZoneId zoneId()
+			{
+				return TimeZone.getTimeZone("GMT").toZoneId();
+			}
+		});
+
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
@@ -374,7 +378,7 @@ class BpartnerRestControllerTest
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(bpartnerId);
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(initialBPartnerRecordCount + 1);
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount + 2);
@@ -487,7 +491,7 @@ class BpartnerRestControllerTest
 		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("12345");
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 
 		// finally, also make sure that if we repeat the same invocation, no new location record is created
 		final RecordCounts countsBefore2ndInvocation = new RecordCounts();
@@ -691,21 +695,21 @@ class BpartnerRestControllerTest
 		assertThat(resultContactId.getRepoId()).isEqualTo(metasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = optContactIdAndBPartner.get().getBpartnerComposite();
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	@Test
 	void createOrUpdateContact_update_extContactIdentifier()
 	{
 		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update("ext-" + EXTERNAL_SYSTEM_NAME + "-" + AD_USER_EXTERNAL_ID);
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	@Test
 	void createOrUpdateContact_update_idContactIdentifier()
 	{
 		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update(Integer.toString(AD_USER_ID));
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	private BPartnerComposite perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)
@@ -781,7 +785,7 @@ class BpartnerRestControllerTest
 
 		assertThat(persistedLocation.get().getId().getRepoId()).isEqualTo(metasfreshId.getValue());
 
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	@Test
@@ -858,7 +862,9 @@ class BpartnerRestControllerTest
 
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
 
-		expect(page1Body, page2Body, page3Body).toMatchSnapshot();
+		expect.scenario("page1").serializer("orderedJson").toMatchSnapshot(page1Body);
+		expect.scenario("page2").serializer("orderedJson").toMatchSnapshot(page2Body);
+		expect.scenario("page3").serializer("orderedJson").toMatchSnapshot(page3Body);
 	}
 
 	@Test
@@ -878,6 +884,6 @@ class BpartnerRestControllerTest
 		assertThat(responseProductBPartner).isNotNull();
 		assertThat(responseProductBPartner.getBPartnerProducts()).hasSize(1);
 
-		expect(responseProductBPartner).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(responseProductBPartner);
 	}
 }

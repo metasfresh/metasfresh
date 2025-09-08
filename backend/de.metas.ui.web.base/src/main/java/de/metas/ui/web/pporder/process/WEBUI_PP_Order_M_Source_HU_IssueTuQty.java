@@ -1,22 +1,14 @@
 package de.metas.ui.web.pporder.process;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
-import org.eevolution.api.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -25,6 +17,13 @@ import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderId;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -36,12 +35,12 @@ import de.metas.util.StringUtils;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -105,7 +104,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 					}
 				}, "Create snapshot of source-HU before it is destroyed");
 
-		final List<I_M_HU> extractedTUs = HUTransformService.builder()
+		final LUTUResult.TUsList extractedTUs = HUTransformService.builder()
 				.emptyHUListener(emptyHUListener)
 				.build()
 				.husToNewTUs(request);
@@ -115,7 +114,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
 		Services.get(IHUPPOrderBL.class)
 				.createIssueProducer(ppOrderId)
-				.createIssues(extractedTUs);
+				.createIssues(extractedTUs.toHURecords());
 
 		getView().invalidateAll();
 		ppOrderView.invalidateAll();

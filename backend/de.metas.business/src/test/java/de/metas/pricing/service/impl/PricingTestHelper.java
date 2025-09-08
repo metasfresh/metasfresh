@@ -9,6 +9,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.IProductPA;
@@ -124,12 +125,14 @@ public class PricingTestHelper
 	{
 		return ImmutableList.of(
 				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
-				de.metas.pricing.rules.PriceListVersion.class.getName(),
+				de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName());
 	}
 
 	private void createPricingRules()
 	{
+		PriceListVersionConfiguration.reset();
+
 		final List<String> classnames = getPricingRuleClassnamesToRegister();
 
 		int nextSeqNo = 10;
@@ -221,7 +224,7 @@ public class PricingTestHelper
 	public final I_M_PriceList_Version createPriceListVersion(final I_M_PriceList priceList)
 	{
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class, priceList);
-		plv.setM_PriceList(priceList);
+		plv.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		plv.setValidFrom(TimeUtil.getDay(1970, 1, 1));
 		InterfaceWrapperHelper.save(plv);
 		return plv;

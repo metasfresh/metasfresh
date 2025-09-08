@@ -1,11 +1,13 @@
 package de.metas.order;
 
-import java.util.List;
-
-import org.compiere.model.I_M_MatchPO;
-
+import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_M_MatchPO;
+
+import java.util.List;
 
 /*
  * #%L
@@ -31,11 +33,11 @@ import de.metas.util.ISingletonService;
 
 public interface IMatchPODAO extends ISingletonService
 {
-	List<I_M_MatchPO> getByOrderLineAndInvoiceLine(final OrderLineId orderLineId, final int C_InvoiceLine_ID);
+	List<I_M_MatchPO> getByOrderLineAndInvoiceLine(final OrderLineId orderLineId, @NonNull InvoiceAndLineId invoiceAndLineId);
 
 	List<I_M_MatchPO> getByOrderLineId(OrderLineId orderLineId);
 
 	List<I_M_MatchPO> getByInvoiceId(final InvoiceId invoiceId);
 
-	List<I_M_MatchPO> getByReceiptId(final int inOutId);
+	List<I_M_MatchPO> getByReceiptId(final InOutId inOutId);
 }

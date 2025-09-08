@@ -63,6 +63,9 @@ public class UpdateMainDataRequest
 	BigDecimal offeredQty = BigDecimal.ZERO;
 
 	@Default
+	BigDecimal offeredQtyNextDay = BigDecimal.ZERO;
+
+	@Default
 	BigDecimal qtyDemandPPOrder = BigDecimal.ZERO;
 	@Default
 	BigDecimal qtyDemandSalesOrder = BigDecimal.ZERO;

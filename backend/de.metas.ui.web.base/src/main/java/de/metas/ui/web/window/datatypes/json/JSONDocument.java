@@ -39,6 +39,7 @@ import de.metas.ui.web.window.model.DocumentStandardAction;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -103,7 +104,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final DocumentValidStatus documentValidStatus = document.getValidStatus();
 		if (documentValidStatus != null)
 		{
-			jsonDocument.setValidStatus(documentValidStatus);
+			jsonDocument.setValidStatus(JSONDocumentValidStatus.of(documentValidStatus, options.getJsonOpts()));
 		}
 
 		//
@@ -111,7 +112,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final DocumentSaveStatus documentSaveStatus = document.getSaveStatus();
 		if (documentSaveStatus != null)
 		{
-			jsonDocument.setSaveStatus(documentSaveStatus);
+			jsonDocument.setSaveStatus(JSONDocumentSaveStatus.of(documentSaveStatus, options.getJsonOpts()));
 		}
 
 		//
@@ -204,7 +205,7 @@ public final class JSONDocument extends JSONDocumentBase
 				.collect(ImmutableList.toImmutableList());
 
 		//
-		// Prevent sending more then MAX_SIZE events because that will freeze the frontend application.
+		// Prevent sending more than MAX_SIZE events because that will freeze the frontend application.
 		if (jsonChanges.size() > MAX_SIZE)
 		{
 			throw new AdempiereException("Events count exceeded")
@@ -261,7 +262,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final DocumentValidStatus documentValidStatus = documentChangedEvents.getDocumentValidStatus();
 		if (documentValidStatus != null)
 		{
-			jsonDocument.setValidStatus(documentValidStatus);
+			jsonDocument.setValidStatus(JSONDocumentValidStatus.of(documentValidStatus, options.getJsonOpts()));
 		}
 
 		//
@@ -269,7 +270,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final DocumentSaveStatus documentSaveStatus = documentChangedEvents.getDocumentSaveStatus();
 		if (documentSaveStatus != null)
 		{
-			jsonDocument.setSaveStatus(documentSaveStatus);
+			jsonDocument.setSaveStatus(JSONDocumentSaveStatus.of(documentSaveStatus, options.getJsonOpts()));
 		}
 
 		//
@@ -308,11 +309,12 @@ public final class JSONDocument extends JSONDocumentBase
 
 	@JsonProperty("validStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private DocumentValidStatus validStatus;
+	@Getter
+	private JSONDocumentValidStatus validStatus;
 
 	@JsonProperty("saveStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private DocumentSaveStatus saveStatus;
+	private JSONDocumentSaveStatus saveStatus;
 
 	/**
 	 * {@link JSONIncludedTabInfo}s indexed by tabId
@@ -356,24 +358,14 @@ public final class JSONDocument extends JSONDocumentBase
 		}
 	}
 
-	private void setValidStatus(final DocumentValidStatus validStatus)
+	private void setValidStatus(final JSONDocumentValidStatus validStatus)
 	{
 		this.validStatus = validStatus;
 	}
 
-	public DocumentValidStatus getValidStatus()
+	private void setSaveStatus(final JSONDocumentSaveStatus saveStatus)
 	{
-		return validStatus;
-	}
-
-	private void setSaveStatus(final DocumentSaveStatus documentSaveStatus)
-	{
-		saveStatus = documentSaveStatus;
-	}
-
-	public DocumentSaveStatus getSaveStatus()
-	{
-		return saveStatus;
+		this.saveStatus = saveStatus;
 	}
 
 	public void addIncludedTabInfo(final JSONIncludedTabInfo tabInfo)

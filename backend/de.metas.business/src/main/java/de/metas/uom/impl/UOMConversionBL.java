@@ -19,6 +19,7 @@ import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -422,7 +423,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final I_C_UOM fromUom = uomDAO.getById(quantity.getUomId());
 		final I_C_UOM toUom = uomDAO.getById(toUomId);
 
-		return convert(fromUom, toUom, quantity.toBigDecimal()).map(bigDecimal -> Quantitys.create(bigDecimal, toUomId));
+		return convert(fromUom, toUom, quantity.toBigDecimal()).map(bigDecimal -> Quantitys.of(bigDecimal, toUomId));
 	}
 
 	@Override
@@ -789,6 +790,14 @@ public class UOMConversionBL implements IUOMConversionBL
 	public void createUOMConversion(@NonNull final CreateUOMConversionRequest request)
 	{
 		uomConversionsDAO.createUOMConversion(request);
+	}
+
+	@Override
+	public @NonNull Quantity convertToKilogram(@NonNull final Quantity weight, @NonNull final ProductId productId)
+	{
+		final UomId kilogramUomId = uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM);
+		return convertQuantityTo(weight, UOMConversionContext.of(productId), kilogramUomId)
+				.roundToUOMPrecision();
 	}
 
 }

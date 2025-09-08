@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -37,25 +38,31 @@ import java.util.List;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class PPOrderCandidate
 {
-	int ppOrderCandidateId;
-
+	PPOrderCandidateId ppOrderCandidateId;
 	boolean simulated;
 
+	/**
+	 * USed if this candidate is about a sub-BOM
+	 */
+	@With
+	PPOrderCandidateId parentPPOrderCandidateId;
+	
 	@With
 	PPOrderData ppOrderData;
-
 	List<PPOrderLineCandidate> lines;
-
+	
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderCandidate(
-			@JsonProperty("ppOrderCandidateId") final int ppOrderCandidateId,
+			@JsonProperty("ppOrderCandidateId") final PPOrderCandidateId ppOrderCandidateId,
 			@JsonProperty("simulated") final boolean simulated,
+			@JsonProperty("parentPPOrderCandidateId") final PPOrderCandidateId parentPPOrderCandidateId,
 			@JsonProperty("ppOrderData") @NonNull final PPOrderData ppOrderData,
 			@JsonProperty("lines") @Nullable final List<PPOrderLineCandidate> lines)
 	{
 		this.ppOrderCandidateId = ppOrderCandidateId;
 		this.simulated = simulated;
+		this.parentPPOrderCandidateId = parentPPOrderCandidateId;
 		this.ppOrderData = ppOrderData;
 		this.lines = lines;
 	}

@@ -23,40 +23,132 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ean13.EAN13ProductCode;
+import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.PickingUnit;
+import de.metas.i18n.ITranslatableString;
+import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.uom.UomId;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessHeaderProperties;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 @Value
 @Builder
 @Jacksonized
 public class JsonPickingJobLine
 {
+	@NonNull String pickingLineId;
+	@NonNull String productId;
+	@NonNull String productNo;
+	@Nullable EAN13ProductCode ean13ProductCode;
 	@NonNull String caption;
+
+	@Nullable JsonQRCode pickingSlot;
+	@Nullable JsonLUPickingTarget luPickingTarget;
+	@Nullable JsonTUPickingTarget tuPickingTarget;
+
+	@NonNull PickingUnit pickingUnit;
+	@NonNull String packingItemName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
+	@NonNull BigDecimal qtyPicked;
+	@NonNull BigDecimal qtyRejected;
+	@NonNull BigDecimal qtyPickedOrRejected;
+	@NonNull BigDecimal qtyRemainingToPick;
+	@Nullable String catchWeightUOM;
+	@Nullable JsonPickFromManufacturingOrder pickFromManufacturingOrder;
 	@NonNull List<JsonPickingJobStep> steps;
+	boolean allowPickingAnyHU;
+	@NonNull JsonCompleteStatus completeStatus;
+	boolean manuallyClosed;
+	@NonNull String displayGroupKey;
+	@Nullable String salesOrderDocumentNo;
+	int orderLineSeqNo;
+	@Nullable JsonWFProcessHeaderProperties additionalHeaderProperties;
 
-	public static JsonPickingJobLine of(
+	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
+			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
+		final String uom;
+		final BigDecimal qtyToPick;
+		final BigDecimal qtyPicked;
+		final BigDecimal qtyRejected;
+		final BigDecimal qtyRemainingToPick;
+		final PickingUnit pickingUnit = line.getPickingUnit();
+		if (pickingUnit.isTU())
+		{
+			uom = "TU";
+			qtyRemainingToPick = Objects.requireNonNull(line.getQtyRemainingToPickTUs()).toBigDecimal();
+			qtyToPick = Objects.requireNonNull(line.getQtyToPickTUs()).toBigDecimal();
+			qtyPicked = Objects.requireNonNull(line.getQtyPickedTUs()).toBigDecimal();
+			qtyRejected = Objects.requireNonNull(line.getQtyRejectedTUs()).toBigDecimal();
+		}
+		else
+		{
+			uom = line.getQtyToPick().getUOMSymbol();
+			qtyToPick = line.getQtyToPick().toBigDecimal();
+			qtyPicked = line.getQtyPicked().toBigDecimal();
+			qtyRejected = line.getQtyRejected().toBigDecimal();
+			qtyRemainingToPick = line.getQtyRemainingToPick().toBigDecimal();
+		}
+
+		final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
+
 		return builder()
-				.caption(line.getProductName().translate(adLanguage))
-				.uom(line.getQtyToPick().getUOMSymbol())
-				.qtyToPick(line.getQtyToPick().toBigDecimal())
+				.pickingLineId(line.getId().getAsString())
+				.productId(line.getProductId().getAsString())
+				.productNo(line.getProductNo())
+				.ean13ProductCode(line.getEan13ProductCode())
+				.caption(line.getCaption().translate(adLanguage))
+				.pickingSlot(currentPickingTarget.getPickingSlot().map(JsonPickingJobLine::toJsonQRCode).orElse(null))
+				.luPickingTarget(currentPickingTarget.getLuPickingTarget().map(JsonLUPickingTarget::of).orElse(null))
+				.tuPickingTarget(currentPickingTarget.getTuPickingTarget().map(JsonTUPickingTarget::of).orElse(null))
+				.pickingUnit(pickingUnit)
+				.packingItemName(line.getPackingInfo().getName().translate(adLanguage))
+				.uom(uom)
+				.qtyToPick(qtyToPick)
+				.qtyPicked(qtyPicked)
+				.qtyRejected(qtyRejected)
+				.qtyPickedOrRejected(qtyPicked.add(qtyRejected))
+				.qtyRemainingToPick(qtyRemainingToPick)
+				.catchWeightUOM(line.getCatchUomId() != null ? getUOMSymbolById.apply(line.getCatchUomId()).translate(adLanguage) : null)
+				.pickFromManufacturingOrder(line.getPickFromManufacturingOrderId() != null
+						? JsonPickFromManufacturingOrder.ofPPOrderId(line.getPickFromManufacturingOrderId())
+						: null)
 				.steps(line.getSteps()
 						.stream()
-						.map(step -> JsonPickingJobStep.of(step, jsonOpts))
+						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
 						.collect(ImmutableList.toImmutableList()))
+				.completeStatus(JsonCompleteStatus.of(line.getProgress()))
+				.manuallyClosed(line.isManuallyClosed())
+				.salesOrderDocumentNo(line.getSalesOrderDocumentNo())
+				.orderLineSeqNo(line.getOrderLineSeqNo())
+				;
+	}
+
+	public static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
+	{
+		return JsonQRCode.builder()
+				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toGlobalQRCodeJsonString())
+				.caption(pickingSlotIdAndCaption.getCaption())
 				.build();
 	}
+
 }

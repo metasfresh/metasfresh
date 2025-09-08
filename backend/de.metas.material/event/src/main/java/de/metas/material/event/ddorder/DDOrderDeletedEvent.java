@@ -25,11 +25,11 @@ package de.metas.material.event.ddorder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.warehouse.WarehouseId;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -41,15 +41,24 @@ public class DDOrderDeletedEvent extends AbstractDDOrderEvent
 	@Builder
 	public DDOrderDeletedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("ddOrder") @NonNull final DDOrder ddOrder,
-			@JsonProperty("fromWarehouseId") @NonNull final WarehouseId fromWarehouseId,
-			@JsonProperty("toWarehouseId") @NonNull final WarehouseId toWarehouseId)
+			@JsonProperty("ddOrder") @NonNull final DDOrder ddOrder)
 	{
 		super(
 				eventDescriptor,
 				ddOrder,
-				fromWarehouseId,
-				toWarehouseId,
 				null);
 	}
+
+	public static DDOrderDeletedEvent of(@NonNull final DDOrder ddOrder,
+										 @NonNull final UserId userId)
+	{
+		return builder()
+				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(ddOrder.getClientAndOrgId(), userId))
+				.ddOrder(ddOrder)
+				.build();
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
+
 }

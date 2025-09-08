@@ -22,7 +22,9 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,32 +44,29 @@ import java.util.Properties;
  * Business Partner Model
  *
  * @author Jorg Janke
- * @version $Id: MBPartner.java,v 1.5 2006/09/23 19:38:07 comdivision Exp $
- *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <li>BF [ 1568774 ] Walk-In BP:
- *         invalid created/updated values
- *         <li>BF [ 1817752 ]
- *         MBPartner.getLocations should return only active one
+ * <li>BF [ 1568774 ] Walk-In BP:
+ * invalid created/updated values
+ * <li>BF [ 1817752 ]
+ * MBPartner.getLocations should return only active one
  * @author Armen Rizal, GOODWILL CONSULT
- *         <LI>BF [ 2041226 ] BP Open Balance
- *         should count only Completed Invoice
- *         <LI>BF [ 2498949 ] BP Get Not
- *         Invoiced Shipment Value return null
+ * <LI>BF [ 2041226 ] BP Open Balance
+ * should count only Completed Invoice
+ * <LI>BF [ 2498949 ] BP Get Not
+ * Invoiced Shipment Value return null
+ * @version $Id: MBPartner.java,v 1.5 2006/09/23 19:38:07 comdivision Exp $
  */
 // metas: synched with rev 10155
 public class MBPartner extends X_C_BPartner
 {
 	private static final long serialVersionUID = -3669895599574182217L;
-
+	final IBPGroupDAO bpGroupsRepo = Services.get(IBPGroupDAO.class);
 
 	/**
 	 * Get BPartner with Value
 	 *
-	 * @param ctx
-	 *            context
-	 * @param Value
-	 *            value
+	 * @param ctx   context
+	 * @param Value value
 	 * @return BPartner or null
 	 */
 	public static MBPartner get(final Properties ctx, final String Value)
@@ -78,7 +77,7 @@ public class MBPartner extends X_C_BPartner
 		}
 		final String whereClause = "Value=? AND AD_Client_ID=?";
 		final MBPartner retValue = new Query(ctx, MBPartner.Table_Name, whereClause, null).setParameters(
-				new Object[] { Value, Env.getAD_Client_ID(ctx) }).firstOnly();
+				Value, Env.getAD_Client_ID(ctx)).firstOnly(MBPartner.class);
 		return retValue;
 	} // get
 
@@ -86,7 +85,7 @@ public class MBPartner extends X_C_BPartner
 	{
 		super(ctx, rs, trxName);
 	}
-	
+
 	public static MBPartner newFromTemplate()
 	{
 		return new MBPartner(Env.getCtx(), -1, ITrx.TRXNAME_ThreadInherited);
@@ -134,21 +133,28 @@ public class MBPartner extends X_C_BPartner
 		// log.debug(toString());
 	} // MBPartner
 
-	/** Addressed */
+	/**
+	 * Addressed
+	 */
 	private MBPartnerLocation[] m_locations = null;
-	/** BP Bank Accounts */
+	/**
+	 * BP Bank Accounts
+	 */
 	private MBPBankAccount[] m_accounts = null;
-	/** Prim Address */
+	/**
+	 * Prim Address
+	 */
 	private Integer m_primaryC_BPartner_Location_ID = null;
 
-	/** BP Group */
+	/**
+	 * BP Group
+	 */
 	private I_C_BP_Group m_group = null;
 
 	/**
 	 * Load Default BPartner
 	 *
-	 * @param AD_Client_ID
-	 *            client
+	 * @param AD_Client_ID client
 	 * @return true if loaded
 	 */
 	private boolean initTemplate(final int AD_Client_ID)
@@ -219,8 +225,7 @@ public class MBPartner extends X_C_BPartner
 	/**
 	 * Get specified or first Contact
 	 *
-	 * @param AD_User_ID
-	 *            optional user
+	 * @param AD_User_ID optional user
 	 * @return contact or null
 	 */
 	public I_AD_User getContact(final int AD_User_ID)
@@ -243,10 +248,8 @@ public class MBPartner extends X_C_BPartner
 	/**
 	 * Get All Locations (only active)
 	 *
-	 * @param reload
-	 *            if true locations will be requeried
+	 * @param reload if true locations will be requeried
 	 * @return locations
-	 *
 	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerLocations(I_C_BPartner)}
 	 */
 	@Deprecated
@@ -254,7 +257,6 @@ public class MBPartner extends X_C_BPartner
 	{
 		if (reload || m_locations == null || m_locations.length == 0)
 		{
-			;
 		}
 		else
 		{
@@ -271,8 +273,7 @@ public class MBPartner extends X_C_BPartner
 	/**
 	 * Get explicit or first bill Location
 	 *
-	 * @param C_BPartner_Location_ID
-	 *            optional explicit location
+	 * @param C_BPartner_Location_ID optional explicit location
 	 * @return location or null
 	 */
 	public MBPartnerLocation getLocation(final int C_BPartner_Location_ID)
@@ -304,8 +305,7 @@ public class MBPartner extends X_C_BPartner
 	/**
 	 * Get Bank Accounts
 	 *
-	 * @param requery
-	 *            requery
+	 * @param requery requery
 	 * @return Bank Accounts
 	 */
 	public MBPBankAccount[] getBankAccounts(final boolean requery)
@@ -367,20 +367,18 @@ public class MBPartner extends X_C_BPartner
 		// final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 		// final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
-		final StringBuilder sb = new StringBuilder("MBPartner[ID=").append(get_ID())
-				.append(",Value=").append(getValue()).append(",Name=").append(getName())
+		final String sb = "MBPartner[ID=" + get_ID()
+				+ ",Value=" + getValue() + ",Name=" + getName()
 				// .append(",Open=").append(stats.getTotalOpenBalance())
-				.append("]");
-		return sb.toString();
+				+ "]";
+		return sb;
 	} // toString
 
 	/**
 	 * Set Client/Org
 	 *
-	 * @param AD_Client_ID
-	 *            client
-	 * @param AD_Org_ID
-	 *            org
+	 * @param AD_Client_ID client
+	 * @param AD_Org_ID    org
 	 */
 	@Override
 	public void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
@@ -500,8 +498,7 @@ public class MBPartner extends X_C_BPartner
 	/**
 	 * Set Primary C_BPartner_Location_ID
 	 *
-	 * @param C_BPartner_Location_ID
-	 *            id
+	 * @param C_BPartner_Location_ID id
 	 */
 	public void setPrimaryC_BPartner_Location_ID(final int C_BPartner_Location_ID)
 	{
@@ -531,8 +528,6 @@ public class MBPartner extends X_C_BPartner
 			return m_group;
 		}
 
-		final IBPGroupDAO bpGroupsRepo = Services.get(IBPGroupDAO.class);
-
 		final BPGroupId bpGroupId = BPGroupId.ofRepoIdOrNull(getC_BP_Group_ID());
 		if (bpGroupId == null)
 		{
@@ -549,36 +544,47 @@ public class MBPartner extends X_C_BPartner
 	/**
 	 * Get BP Group
 	 *
-	 * @param group
-	 *            group
+	 * @param group group
 	 */
-	private void setBPGroup(final I_C_BP_Group group)
+	private void setBPGroup(@NonNull final I_C_BP_Group group)
 	{
 		m_group = group;
-		if (m_group == null)
-		{
-			return;
-		}
 		setC_BP_Group_ID(m_group.getC_BP_Group_ID());
-		if (m_group.getC_Dunning_ID() != 0)
+		if (m_group.getC_Dunning_ID() > 0)
 		{
 			setC_Dunning_ID(m_group.getC_Dunning_ID());
 		}
-		if (m_group.getM_PriceList_ID() != 0)
+		if (m_group.getM_PriceList_ID() > 0)
 		{
 			setM_PriceList_ID(m_group.getM_PriceList_ID());
 		}
-		if (m_group.getPO_PriceList_ID() != 0)
+		if (m_group.getPO_PriceList_ID() > 0)
 		{
 			setPO_PriceList_ID(m_group.getPO_PriceList_ID());
 		}
-		if (m_group.getM_DiscountSchema_ID() != 0)
+		if (m_group.getM_DiscountSchema_ID() > 0)
 		{
 			setM_DiscountSchema_ID(m_group.getM_DiscountSchema_ID());
 		}
-		if (m_group.getPO_DiscountSchema_ID() != 0)
+		if (m_group.getPO_DiscountSchema_ID() > 0)
 		{
 			setPO_DiscountSchema_ID(m_group.getPO_DiscountSchema_ID());
+		}
+		if (Check.isNotBlank(m_group.getFreightCostRule()))
+		{
+			setFreightCostRule(m_group.getFreightCostRule());
+		}
+		if (m_group.getM_FreightCost_ID() > 0)
+		{
+			setM_FreightCost_ID(m_group.getM_FreightCost_ID());
+		}
+		if (m_group.getC_PaymentTerm_ID() > 0)
+		{
+			setC_PaymentTerm_ID(m_group.getC_PaymentTerm_ID());
+		}
+		if (m_group.getPO_PaymentTerm_ID() > 0)
+		{
+			setPO_PaymentTerm_ID(m_group.getPO_PaymentTerm_ID());
 		}
 	} // setBPGroup
 
@@ -666,8 +672,7 @@ public class MBPartner extends X_C_BPartner
 	/**
 	 * Before Save
 	 *
-	 * @param newRecord
-	 *            new
+	 * @param newRecord new
 	 * @return true
 	 */
 	@Override
@@ -679,6 +684,12 @@ public class MBPartner extends X_C_BPartner
 			if (grp == null)
 			{
 				throw new AdempiereException("@NotFound@:  @C_BP_Group_ID@");
+			}
+			final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(grp.getParent_BP_Group_ID());
+			if (parentGroupId != null)
+			{
+				final I_C_BP_Group parentGroup = bpGroupsRepo.getById(parentGroupId);
+				setBPGroup(parentGroup); // attempt to set from parent group first
 			}
 			setBPGroup(grp); // setDefaults
 		}

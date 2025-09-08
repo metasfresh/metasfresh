@@ -1,19 +1,7 @@
 package de.metas.uom.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-
-import de.metas.uom.UpdateUOMConversionRequest;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_UOM_Conversion;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
@@ -23,16 +11,25 @@ import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UomId;
+import de.metas.uom.UpdateUOMConversionRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_UOM_Conversion;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class UOMConversionDAO implements IUOMConversionDAO
 {
 	private static final Logger logger = LogManager.getLogger(UOMConversionDAO.class);
 
-	private final CCache<ProductId, UOMConversionsMap> productConversionsCache = CCache.<ProductId, UOMConversionsMap> builder()
+	private final CCache<ProductId, UOMConversionsMap> productConversionsCache = CCache.<ProductId, UOMConversionsMap>builder()
 			.tableName(I_C_UOM_Conversion.Table_Name)
 			.build();
 
@@ -41,32 +38,6 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	public UOMConversionsMap getProductConversions(@NonNull final ProductId productId)
 	{
 		return productConversionsCache.getOrLoad(productId, this::retrieveProductConversions);
-	}
-
-	private UOMConversionsMap retrieveProductConversions(@NonNull final ProductId productId)
-	{
-		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
-
-		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
-				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.map(UOMConversionDAO::toUOMConversionOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-
-		final boolean hasRatesForNonStockingUOMs = !rates.isEmpty();
-		
-		return UOMConversionsMap.builder()
-				.productId(productId)
-				.hasRatesForNonStockingUOMs(hasRatesForNonStockingUOMs)
-				.rates(ImmutableList.<UOMConversionRate> builder()
-						.add(UOMConversionRate.one(productStockingUomId)) // default conversion
-						.addAll(rates)
-						.build())
-				.build();
 	}
 
 	@Override
@@ -141,11 +112,47 @@ public class UOMConversionDAO implements IUOMConversionDAO
 
 		final BigDecimal fromToMultiplier = request.getFromToMultiplier();
 		final BigDecimal toFromMultiplier = UOMConversionRate.computeInvertedMultiplier(fromToMultiplier);
-		
+
 		record.setMultiplyRate(fromToMultiplier);
 		record.setDivideRate(toFromMultiplier);
 		record.setIsCatchUOMForProduct(request.isCatchUOMForProduct());
 
 		saveRecord(record);
+	}
+
+	@NonNull
+	private UOMConversionsMap retrieveProductConversions(@NonNull final ProductId productId)
+	{
+		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+
+		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(UOMConversionDAO::toUOMConversionOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+
+		return buildUOMConversionsMap(productId,
+									  productStockingUomId,
+									  rates);
+	}
+
+	@NonNull
+	private static UOMConversionsMap buildUOMConversionsMap(
+			@NonNull final ProductId productId,
+			@NonNull final UomId productStockingUomId,
+			@NonNull final ImmutableList<UOMConversionRate> rates)
+	{
+		return UOMConversionsMap.builder()
+				.productId(productId)
+				.hasRatesForNonStockingUOMs(!rates.isEmpty())
+				.rates(ImmutableList.<UOMConversionRate>builder()
+							   .add(UOMConversionRate.one(productStockingUomId)) // default conversion
+							   .addAll(rates)
+							   .build())
+				.build();
 	}
 }

@@ -2,22 +2,22 @@ package de.metas.security;
 
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.ElementPermission;
-import de.metas.security.permissions.InfoWindowPermission;
 import de.metas.security.permissions.OrgResource;
 import de.metas.security.permissions.Permission;
 import de.metas.security.permissions.ResourceAsPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -48,20 +48,6 @@ public interface IUserRolePermissions
 	@Deprecated
 	Permission PERMISSION_MigrationScripts = ResourceAsPermission.ofName("MigrationScripts");
 
-	Permission PERMISSION_InfoWindow_Product = InfoWindowPermission.ofInfoWindowKey("InfoProduct");
-	Permission PERMISSION_InfoWindow_BPartner = InfoWindowPermission.ofInfoWindowKey("InfoBPartner");
-	Permission PERMISSION_InfoWindow_Account = InfoWindowPermission.ofInfoWindowKey("InfoAccount");
-	Permission PERMISSION_InfoWindow_Schedule = InfoWindowPermission.ofInfoWindowKey("InfoSchedule");
-	Permission PERMISSION_InfoWindow_MRP = InfoWindowPermission.ofInfoWindowKey("InfoMRP");
-	Permission PERMISSION_InfoWindow_CRP = InfoWindowPermission.ofInfoWindowKey("InfoCRP");
-	Permission PERMISSION_InfoWindow_Order = InfoWindowPermission.ofInfoWindowKey("InfoOrder");
-	Permission PERMISSION_InfoWindow_Invoice = InfoWindowPermission.ofInfoWindowKey("InfoInvoice");
-	Permission PERMISSION_InfoWindow_InOut = InfoWindowPermission.ofInfoWindowKey("InfoInOut");
-	Permission PERMISSION_InfoWindow_Payment = InfoWindowPermission.ofInfoWindowKey("InfoPayment");
-	Permission PERMISSION_InfoWindow_CashJournal = InfoWindowPermission.ofInfoWindowKey("InfoCashLine");
-	Permission PERMISSION_InfoWindow_Resource = InfoWindowPermission.ofInfoWindowKey("InfoAssignment");
-	Permission PERMISSION_InfoWindow_Asset = InfoWindowPermission.ofInfoWindowKey("InfoAsset");
-
 	/** Access SQL Not Fully Qualified */
 	boolean SQL_NOTQUALIFIED = false;
 
@@ -75,6 +61,8 @@ public interface IUserRolePermissions
 
 	/** @return role name */
 	String getName();
+
+	RoleGroup getRoleGroup();
 
 	RoleId getRoleId();
 
@@ -99,6 +87,8 @@ public interface IUserRolePermissions
 	boolean hasPermission(Permission permission);
 
 	<T extends Constraint> Optional<T> getConstraint(Class<T> constraintType);
+
+	ElementPermission checkMobileApplicationPermission(@NonNull MobileApplicationRepoId applicationId);
 
 	/*************************************************************************
 	 * Appends where clause to SQL statement for Table

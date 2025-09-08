@@ -21,27 +21,8 @@ package de.metas.handlingunits.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static de.metas.business.BusinessTestHelper.createLocator;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-
-import java.math.BigDecimal;
-import java.util.Date;
 
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnableAdapter;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.expectations.HUExpectation;
@@ -57,7 +38,25 @@ import de.metas.handlingunits.snapshot.impl.HUSnapshotDAO;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
+import org.compiere.util.TrxRunnableAdapter;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUSnapshotDAOTest extends AbstractHUTest
 {
@@ -190,8 +189,8 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 		luExpectation.createHU();
 		TraceUtils.dumpAllHUs("After create");
 		// Make sure HUStatus was correctly propagated to all children
-		Assert.assertEquals("Invalid VHU1's HUStatus", X_M_HU.HUSTATUS_Active, vhu1Ref.getValue().getHUStatus());
-		Assert.assertEquals("Invalid VHU2's HUStatus", X_M_HU.HUSTATUS_Active, vhu2Ref.getValue().getHUStatus());
+		assertThat(vhu1Ref.getValue().getHUStatus()).as("Invalid VHU1's HUStatus").isEqualTo(X_M_HU.HUSTATUS_Active);
+		assertThat(vhu2Ref.getValue().getHUStatus()).as("Invalid VHU2's HUStatus").isEqualTo(X_M_HU.HUSTATUS_Active);
 
 		//
 		// Create snapshot
@@ -222,7 +221,7 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 		TraceUtils.dumpAllHUs("After changed");
 		// Make sure it's changed
 		InterfaceWrapperHelper.refresh(vhu1_itemStorageRef.getValue(), ITrx.TRXNAME_None);
-		Assert.assertThat(vhu1_itemStorageRef.getValue().getQty(), Matchers.comparesEqualTo(new BigDecimal("1")));
+		assertThat(vhu1_itemStorageRef.getValue().getQty()).isEqualByComparingTo(new BigDecimal("1"));
 
 		//
 		// Restore the HU

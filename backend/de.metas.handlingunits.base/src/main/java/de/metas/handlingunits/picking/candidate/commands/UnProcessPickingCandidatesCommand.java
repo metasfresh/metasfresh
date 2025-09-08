@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -29,7 +28,6 @@ import java.util.Set;
 public class UnProcessPickingCandidatesCommand
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final PickingCandidateRepository pickingCandidateRepository;

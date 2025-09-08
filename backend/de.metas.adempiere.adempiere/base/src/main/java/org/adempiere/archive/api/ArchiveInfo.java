@@ -47,6 +47,7 @@ public class ArchiveInfo
 	private AdProcessId processId;
 	private TableRecordReference recordRef;
 	private BPartnerId bpartnerId;
+	private String poReference;
 
 	//FRESH-349: AD_PInstance is also needed
 	private PInstanceId pInstanceId;
@@ -79,6 +80,7 @@ public class ArchiveInfo
 		this.recordRef = printInfo.recordRef;
 		this.bpartnerId = printInfo.bpartnerId;
 		this.pInstanceId = printInfo.pInstanceId;
+		this.poReference = printInfo.poReference;
 	}
 
 	private static String normalizeName(@Nullable final String name)

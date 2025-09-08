@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
-import currentDevice from 'current-device';
 import counterpart from 'counterpart';
 import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
 import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
@@ -14,10 +13,6 @@ import TableContextMenu from './TableContextMenu';
 import TableFilter from './TableFilter';
 import Table from './Table';
 import TablePagination from './TablePagination';
-
-const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
-const isMobileOrTablet =
-  currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
 class TableWrapper extends PureComponent {
   constructor(props) {
@@ -296,7 +291,7 @@ class TableWrapper extends PureComponent {
    * @method fwdUpdateHeight
    * @summary - Forward the update height to the child component Table.
    *            This is needed to call the table height update from within TableContextMenu
-   * @param {integer} height
+   * @param {number} height
    */
   fwdUpdateHeight = (height) => {
     this.table.updateHeight(height);
@@ -341,10 +336,8 @@ class TableWrapper extends PureComponent {
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
 
-    let showPagination = !!(page && pageLength);
-    if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
-      showPagination = false;
-    }
+    const showPagination = !!(page && pageLength);
+    const isAllowDeleteRow = !isModal && tabInfo?.allowDelete;
 
     this.rowRefs = {};
 
@@ -378,11 +371,7 @@ class TableWrapper extends PureComponent {
               handleFieldEdit={this.handleFieldEdit}
               handleAdvancedEdit={onHandleAdvancedEdit}
               onOpenNewTab={handleOpenNewTab}
-              handleDelete={
-                !isModal && tabInfo && tabInfo.allowDelete
-                  ? this.handleDelete
-                  : null
-              }
+              handleDelete={isAllowDeleteRow ? this.handleDelete : null}
               handleZoomInto={onHandleZoomInto}
               updateTableHeight={this.fwdUpdateHeight}
               supportOpenRecord={supportOpenRecord}
@@ -425,7 +414,10 @@ class TableWrapper extends PureComponent {
           }
         </div>
         {showPagination ? (
-          <div onClick={this.handleClickOutside}>
+          <div
+            className="table-padding-bottom"
+            onClick={this.handleClickOutside}
+          >
             <TablePagination
               {...{
                 handleChangePage,
@@ -476,7 +468,7 @@ class TableWrapper extends PureComponent {
                 : null
             }
             onDelete={
-              selected && selected.length > 0 && selected[0]
+              isAllowDeleteRow && selected && selected.length > 0 && selected[0]
                 ? this.handleDelete
                 : null
             }
@@ -491,14 +483,6 @@ class TableWrapper extends PureComponent {
             handleToggleQuickInput={this.handleBatchEntryToggle}
             handleToggleExpand={toggleFullScreen}
           />
-        )}
-        {isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT && (
-          <span className="text-danger">
-            {counterpart.translate('view.limitTo', {
-              limit: MOBILE_TABLE_SIZE_LIMIT,
-              total: rows.length,
-            })}
-          </span>
         )}
       </div>
     );

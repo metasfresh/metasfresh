@@ -2,9 +2,16 @@ package de.metas.bpartner.impexp;
 
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
+import static org.compiere.model.I_I_BPartner.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId;
+import static org.compiere.model.I_I_BPartner.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_I_BPartner.COLUMNNAME_EMail;
+import static org.compiere.model.I_I_BPartner.COLUMNNAME_AD_Client_ID;
+import static org.compiere.model.I_I_BPartner.COLUMNNAME_AD_Org_ID;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -52,7 +59,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class BPartnerImportTableSqlUpdater
 {
-	private static final transient Logger logger = LogManager.getLogger(BPartnerImportTableSqlUpdater.class);
+	private static final Logger logger = LogManager.getLogger(BPartnerImportTableSqlUpdater.class);
 
 	public void updateBPartnerImportTable(@NonNull final ImportRecordsSelection selection)
 	{
@@ -77,13 +84,15 @@ public class BPartnerImportTableSqlUpdater
 		updateNames(selection);
 
 		dbUpdateAdUserIdsFromAD_User_ExternalIds(selection);
-		dbUpdateAdUserIdsFromExisting(selection);
+		dbUpdateAdUserIdsFromContactEMail(selection);
 		dbUpdateAdUserIdsFromContactNames(selection);
 
 		dbUpdateCBPartnerLocationsFromC_BPartner_Location_ExternalIds(selection);
 		dbUpdateCBPartnerLocationsFromGLN(selection);
 
 		dbUpdateLocations(selection);
+
+		dbUpdateBpBankAccountsFromIBAN(selection);
 
 		dbUpdateInterestAreas(selection);
 
@@ -97,6 +106,10 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateM_Shippers(selection);
 
+		dbUpdateLocationM_Shippers(selection);
+
+		dbUpdateLocationM_Shipper_Routing_Codes(selection);
+
 		dbUpdateAD_PrintFormats(selection);
 
 		dbUpdateM_PricingSystems(selection);
@@ -107,10 +120,10 @@ public class BPartnerImportTableSqlUpdater
 		logger.info("Took {} to update I_BPartner records ({})", stopwatch, selection);
 	}
 
-	private final void executeUpdate(@NonNull final String description, @NonNull final CharSequence sql)
+	private void executeUpdate(@NonNull final String description, @NonNull final CharSequence sql)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		stopwatch.stop();
 
 		logger.info("{}: Updated {} records in {}", description, no, stopwatch);
@@ -308,13 +321,19 @@ public class BPartnerImportTableSqlUpdater
 		}
 	}
 
-	private void dbUpdateAdUserIdsFromExisting(final ImportRecordsSelection selection)
+	private void dbUpdateAdUserIdsFromContactEMail(final ImportRecordsSelection selection)
 	{
-		final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET (C_BPartner_ID,AD_User_ID)="
-				+ "(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u "
-				+ "WHERE i.EMail=u.EMail AND u.AD_Client_ID=i.AD_Client_ID AND u.AD_Org_ID=i.AD_Org_ID) "
-				+ "WHERE i.EMail IS NOT NULL AND " + COLUMNNAME_I_IsImported + "='N'")
+		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i "
+				+ " SET " + COLUMNNAME_AD_User_ID + " = u." + I_AD_User.COLUMNNAME_AD_User_ID
+				+ " FROM " + I_AD_User.Table_Name + " u "
+				+ " WHERE i." + COLUMNNAME_EMail + " = u." + I_AD_User.COLUMNNAME_EMail
+				+ " AND i." + COLUMNNAME_C_BPartner_ID + " = u." + I_AD_User.COLUMNNAME_C_BPartner_ID
+				+ " AND i." + COLUMNNAME_AD_Client_ID + " = u." + I_AD_User.COLUMNNAME_AD_Client_ID
+				+ " AND i." + COLUMNNAME_AD_Org_ID + " = u." + I_AD_User.COLUMNNAME_AD_Org_ID
+				+ " AND i." + COLUMNNAME_C_BPartner_ID + " IS NOT NULL"
+				+ " AND i." + COLUMNNAME_EMail + " IS NOT NULL "
+				+ " AND i." + COLUMNNAME_AD_User_ID + " IS NULL "
+				+ " AND i." + COLUMNNAME_I_IsImported + " <> 'Y'")
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set BPartner/User by EMail", DB.convertSqlToNative(sql.toString()));
@@ -324,15 +343,15 @@ public class BPartnerImportTableSqlUpdater
 	{
 
 		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
-				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID + "=bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ COLUMNNAME_C_BPartner_ID + " = bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
 				+ " FROM " + I_C_BPartner.Table_Name + " bp"
-				+ " WHERE i." + I_I_BPartner.COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
 				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Org_ID
-				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " ='Y' "
-				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " = 'N'")
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " = 'Y'"
+				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " <> 'Y'")
 
 						.append(selection.toSqlWhereClause("i"));
 
@@ -342,15 +361,14 @@ public class BPartnerImportTableSqlUpdater
 	private void dbUpdateCbPartnerIdsFromC_BPartner_ExternalId(final ImportRecordsSelection selection)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i "
-				+ "SET " + I_I_BPartner.COLUMNNAME_C_BPartner_ID + "=(SELECT " + I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " FROM " + I_C_BPartner.Table_Name
-				+ " p WHERE i." + I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId + "=p." + I_C_BPartner.COLUMNNAME_ExternalId
-				+ " AND p." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
-				+ ") "
-				+ "WHERE "
-				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID + " IS NULL AND "
-				+ I_I_BPartner.COLUMNNAME_C_BPartner_ExternalId + " IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+				+ " SET " + COLUMNNAME_C_BPartner_ID + " = bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " FROM " + I_C_BPartner.Table_Name + " bp "
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ExternalId + " = bp." + I_C_BPartner.COLUMNNAME_ExternalId
+				+ " AND i." + COLUMNNAME_AD_Org_ID + " = bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID
+				+ " AND i." + COLUMNNAME_AD_Client_ID + " = bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID
+				+ " AND i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " AND i." + COLUMNNAME_C_BPartner_ExternalId + " IS NOT NULL"
+				+ " AND i." + COLUMNNAME_I_IsImported + " <> 'Y'")
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set BPartner by ExternalId", sql);
@@ -367,7 +385,7 @@ public class BPartnerImportTableSqlUpdater
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_GlobalId + " = i." + I_I_BPartner.COLUMNNAME_GlobalId
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " ='Y' "
-				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " = 'N'")
+				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " <> 'Y'")
 
 						.append(selection.toSqlWhereClause("i"));
 
@@ -383,7 +401,7 @@ public class BPartnerImportTableSqlUpdater
 				+ " = i." + I_I_BPartner.COLUMNNAME_Companyname
 				+ " WHERE i." + I_I_BPartner.COLUMNNAME_Name
 				+ " IS NULL "
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+				+ " AND " + COLUMNNAME_I_IsImported + "<> 'Y'")
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set Name by CompanyName", sql);
@@ -394,7 +412,7 @@ public class BPartnerImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE "
 				+ I_I_BPartner.Table_Name
 				+ " i SET "
-				+ I_I_BPartner.COLUMNNAME_AD_User_ID
+				+ COLUMNNAME_AD_User_ID
 				+ "=(SELECT "
 				+ I_AD_User.COLUMNNAME_AD_User_ID
 				+ " FROM "
@@ -415,11 +433,11 @@ public class BPartnerImportTableSqlUpdater
 				+ "WHERE "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
 				+ " IS NOT NULL AND "
-				+ I_I_BPartner.COLUMNNAME_AD_User_ID
+				+ COLUMNNAME_AD_User_ID
 				+ " IS NULL AND "
 				+ I_I_BPartner.COLUMNNAME_ContactName
 				+ " IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+				+ " AND " + COLUMNNAME_I_IsImported + "<> 'Y'")
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set User by ContactName", sql);
@@ -430,7 +448,7 @@ public class BPartnerImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE "
 				+ I_I_BPartner.Table_Name
 				+ " i SET "
-				+ I_I_BPartner.COLUMNNAME_AD_User_ID
+				+ COLUMNNAME_AD_User_ID
 				+ "=(SELECT "
 				+ I_AD_User.COLUMNNAME_AD_User_ID
 				+ " FROM "
@@ -451,11 +469,11 @@ public class BPartnerImportTableSqlUpdater
 				+ "WHERE "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_ID
 				+ " IS NOT NULL AND "
-				+ I_I_BPartner.COLUMNNAME_AD_User_ID
+				+ COLUMNNAME_AD_User_ID
 				+ " IS NULL AND "
 				+ I_I_BPartner.COLUMNNAME_AD_User_ExternalId
 				+ " IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+				+ " AND " + COLUMNNAME_I_IsImported + "<> 'Y'")
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set User by ExternalId", sql);
@@ -491,7 +509,7 @@ public class BPartnerImportTableSqlUpdater
 				+ " IS NULL AND "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ExternalId
 				+ " IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'")
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set Location by ExternalId", sql);
@@ -527,7 +545,7 @@ public class BPartnerImportTableSqlUpdater
 				+ " IS NULL AND "
 				+ I_I_BPartner.COLUMNNAME_GLN
 				+ " IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'")
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set Location by GLN", sql);
@@ -591,10 +609,27 @@ public class BPartnerImportTableSqlUpdater
 				+ " IS NOT NULL AND "
 				+ I_I_BPartner.COLUMNNAME_C_BPartner_Location_ID
 				+ " IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'")
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set Location by Address matching", sql);
+	}
+
+	private void dbUpdateBpBankAccountsFromIBAN(final ImportRecordsSelection selection)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i "
+				+ " SET " + I_I_BPartner.COLUMNNAME_C_BP_BankAccount_ID + " = bpa." + I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID
+				+ " FROM " + I_C_BP_BankAccount.Table_Name + " bpa "
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " = bpa." + I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID
+				+ " AND TRIM(i." + I_I_BPartner.COLUMNNAME_IBAN + ") = TRIM(bpa." + I_C_BP_BankAccount.COLUMNNAME_IBAN + ")"
+				+ " AND i." + COLUMNNAME_AD_Org_ID + " = bpa." + I_C_BP_BankAccount.COLUMNNAME_AD_Org_ID
+				+ " AND i." + COLUMNNAME_AD_Client_ID + " = bpa." + I_C_BP_BankAccount.COLUMNNAME_AD_Client_ID
+				+ " AND i." + I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID + " IS NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_IBAN + " IS NOT NULL"
+				+ " AND i." + COLUMNNAME_I_IsImported + " <> 'Y'")
+				.append(selection.toSqlWhereClause("i"));
+
+		executeUpdate("Set BPartner by ExternalId", sql);
 	}
 
 	private void dbUpdateInterestAreas(final ImportRecordsSelection selection)
@@ -603,7 +638,7 @@ public class BPartnerImportTableSqlUpdater
 				+ "SET R_InterestArea_ID=(SELECT R_InterestArea_ID FROM R_InterestArea ia "
 				+ "WHERE i.InterestAreaName=ia.Name AND ia.AD_Client_ID=i.AD_Client_ID AND ia.AD_Org_ID = i.AD_Org_ID) "
 				+ "WHERE R_InterestArea_ID IS NULL AND InterestAreaName IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'")
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set Interest Area", sql);
@@ -639,8 +674,8 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 					+ "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
-					+ " WHERE i.PaymentTermValue=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
-					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+					+ " WHERE i.PaymentTermValue=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID) AND pt.IsActive='Y') "
+					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
 
@@ -664,7 +699,7 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 					+ "SET PO_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
-					+ " WHERE i.PaymentTerm=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ " WHERE i.PaymentTerm=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID) AND pt.IsActive='Y') "
 					+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
@@ -743,6 +778,58 @@ public class BPartnerImportTableSqlUpdater
 							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid Invalid Shipper or DeliveryViaRule", sql);
+		}
+	}
+
+	private void dbUpdateLocationM_Shippers(final ImportRecordsSelection selection)
+	{
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET Location_M_Shipper_ID=(SELECT M_Shipper_ID FROM M_Shipper s"
+					+ " WHERE i.LocationShipperName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID)), "
+					+ " DeliveryViaRule = 'S' "
+					+ "WHERE Location_M_Shipper_ID IS NULL AND LocationShipperName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Set M_Shipper_ID", sql);
+		}
+
+		//
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Location Shipper or DeliveryViaRule, ' "
+					+ "WHERE Location_M_Shipper_ID IS NULL AND DeliveryViaRule IS NULL AND LocationShipperName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Flag records with invalid location Shipper or DeliveryViaRule", sql);
+		}
+	}
+
+	private void dbUpdateLocationM_Shipper_Routing_Codes(final ImportRecordsSelection selection)
+	{
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET M_Shipper_RoutingCode_ID=(SELECT M_Shipper_RoutingCode_ID FROM M_Shipper_RoutingCode s"
+					+ " WHERE i.ShipperRouteCodeName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID) "
+					+ " AND i.Location_M_Shipper_ID = s.M_Shipper_ID) "
+					+ "WHERE M_Shipper_RoutingCode_ID IS NULL AND ShipperRouteCodeName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Set M_Shipper_RoutingCode_ID", sql);
+		}
+
+		//
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ShipperRouteCodeName for Location Shipper, ' "
+					+ "WHERE M_Shipper_RoutingCode_ID IS NULL AND ShipperRouteCodeName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Flag records with invalid ShipperRouteCodeName for Location Shipper", sql);
 		}
 	}
 

@@ -1,15 +1,15 @@
 package de.metas.tax.api;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
 public class TaxId implements RepoIdAware
 {
 	@JsonCreator
+	@NonNull
 	public static TaxId ofRepoId(final int repoId)
 	{
 		return new TaxId(repoId);
@@ -58,8 +59,10 @@ public class TaxId implements RepoIdAware
 		return id != null ? id.getRepoId() : -1;
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static int toRepoId(@Nullable final Optional<TaxId> optional)
 	{
+		//noinspection OptionalAssignedToNull
 		final TaxId id = optional != null ? optional.orElse(null) : null;
 		return toRepoId(id);
 	}
@@ -68,7 +71,7 @@ public class TaxId implements RepoIdAware
 	{
 		return id != null ? id.getRepoId() : Tax.C_TAX_ID_NO_TAX_FOUND;
 	}
-	
+
 	int repoId;
 
 	private TaxId(final int repoId)
@@ -87,4 +90,6 @@ public class TaxId implements RepoIdAware
 	{
 		return repoId == Tax.C_TAX_ID_NO_TAX_FOUND;
 	}
+
+	public static boolean equals(@Nullable TaxId id1, @Nullable TaxId id2) {return Objects.equals(id1, id2);}
 }

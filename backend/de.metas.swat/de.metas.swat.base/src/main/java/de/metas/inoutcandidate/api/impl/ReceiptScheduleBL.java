@@ -30,6 +30,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
@@ -45,6 +46,7 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -81,6 +83,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -91,7 +94,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
 
-	private final static transient Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
+	private final static Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
 
 	private final CompositeReceiptScheduleListener listeners = new CompositeReceiptScheduleListener();
 	private final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = new ReceiptScheduleHeaderAggregationKeyBuilder();
@@ -102,7 +105,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public void addReceiptScheduleListener(IReceiptScheduleListener listener)
+	public void addReceiptScheduleListener(final IReceiptScheduleListener listener)
 	{
 		listeners.addReceiptScheduleListener(listener);
 	}
@@ -136,7 +139,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	public LocatorId getLocatorEffectiveId(final I_M_ReceiptSchedule rs)
 	{
 		final WarehouseId warehouseId = getWarehouseEffectiveId(rs);
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 	}
 
 	@Override
@@ -362,6 +365,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		//
 		// Iterate receipt schedules and try to allocate on them as much as possible
 		final List<I_M_ReceiptSchedule_Alloc> allocs = new ArrayList<>();
+		final HashSet<OrderId> orderIds = new HashSet<>();
 		final List<Integer> orderLineIds = new ArrayList<>();
 		I_M_ReceiptSchedule lastReceiptSchedule = null;
 		for (final I_M_ReceiptSchedule rs : receiptSchedules)
@@ -399,6 +403,12 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 			//
 			// Remember receipt schedule's order line
+			final OrderId orderId = OrderId.ofRepoIdOrNull(rs.getC_Order_ID());
+			if (orderId != null)
+			{
+				orderIds.add(orderId);
+			}
+
 			final int orderLineId = rs.getC_OrderLine_ID();
 			if (orderLineId > 0 && !orderLineIds.contains(orderLineId))
 			{
@@ -422,6 +432,10 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		//
 		// Update Receipt Line's link to Order Line
 		// (only if there was one and only one order line involved)
+		if(orderIds.size() == 1)
+		{
+			receiptLine.setC_Order_ID(orderIds.iterator().next().getRepoId());
+		}
 		if (orderLineIds.size() == 1)
 		{
 			receiptLine.setC_OrderLine_ID(orderLineIds.get(0));
@@ -433,7 +447,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void updatePreparationTime(I_M_ReceiptSchedule receiptSchedule)
+	public void updatePreparationTime(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(receiptSchedule.getC_Order(), I_C_Order.class);
 		if (order != null)
@@ -593,6 +607,12 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
 			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
 		}
+	}
+
+	@Override
+	public List<ReceiptScheduleId> retainLUQtySchedules(final List<ReceiptScheduleId> receiptSchedules)
+	{
+		return receiptScheduleDAO.retainLUQtySchedules(receiptSchedules);
 	}
 
 	private static class ReceiptScheduleDocumentLocationAdapter implements IDocumentLocationAdapter

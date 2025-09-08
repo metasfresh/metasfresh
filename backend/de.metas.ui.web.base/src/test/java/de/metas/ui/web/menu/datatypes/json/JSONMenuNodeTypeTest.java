@@ -1,9 +1,9 @@
 package de.metas.ui.web.menu.datatypes.json;
 
-import org.junit.jupiter.api.Test;
-
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.test.util.EnumTestUtils;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -30,9 +30,10 @@ import de.metas.ui.web.test.util.EnumTestUtils;
 public class JSONMenuNodeTypeTest
 {
 	@Test
-	public void test_fromNullable_fullyCovered()
+	public void test_ofNullable_fullyCovered()
 	{
-		EnumTestUtils.assertMappingFullyCovered(MenuNodeType.values(), JSONMenuNodeType::fromNullable);
+		Assertions.assertThat(JSONMenuNodeType.ofNullable(null)).isNull();
+		EnumTestUtils.assertMappingFullyCovered(MenuNodeType.values(), JSONMenuNodeType::ofNullable);
 	}
 
 }

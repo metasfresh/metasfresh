@@ -3,6 +3,7 @@ package de.metas.distribution.ddorder.movement.schedule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.Check;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.HuId;
@@ -120,7 +121,7 @@ public class DDOrderMoveScheduleRepository
 				.pickFromLocatorId(LocatorId.ofRepoId(record.getPickFrom_Warehouse_ID(), record.getPickFrom_Locator_ID()))
 				.pickFromHUId(HuId.ofRepoId(record.getPickFrom_HU_ID()))
 				//				.actualHUIdPicked(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
-				.qtyToPick(Quantitys.create(record.getQtyToPick(), uomId))
+				.qtyToPick(Quantitys.of(record.getQtyToPick(), uomId))
 				.isPickWholeHU(record.isPickWholeHU())
 				//
 				// Drop To
@@ -154,7 +155,7 @@ public class DDOrderMoveScheduleRepository
 				//
 				// Pick From
 				.actualHUIdPicked(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
-				.qtyPicked(Quantitys.create(record.getQtyPicked(), uomId))
+				.qtyPicked(Quantitys.of(record.getQtyPicked(), uomId))
 				.pickFromMovementId(MovementId.ofRepoId(record.getPickFrom_Movement_ID()))
 				.inTransitLocatorId(LocatorId.ofRepoIdOrNull(record.getInTransit_Warehouse_ID(), record.getInTransit_Locator_ID()))
 				//
@@ -248,7 +249,7 @@ public class DDOrderMoveScheduleRepository
 				.addNotNull(I_DD_OrderLine_HU_Candidate.COLUMNNAME_M_HU_ID)
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMNNAME_DD_OrderLine_ID, ddOrderLineId)
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMNNAME_Status, DDOrderMoveScheduleStatus.NOT_STARTED)
-				.orderBy(I_DD_OrderLine_HU_Candidate.COLUMNNAME_DD_OrderLine_HU_Candidate_ID)
+				.orderBy(I_DD_OrderLine_HU_Candidate.COLUMNNAME_M_HU_ID)
 				.create()
 				.listDistinct(I_DD_OrderLine_HU_Candidate.COLUMNNAME_M_HU_ID, HuId.class);
 	}
@@ -259,9 +260,18 @@ public class DDOrderMoveScheduleRepository
 				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID, ddOrderLineId)
 				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_Status, DDOrderMoveScheduleStatus.NOT_STARTED)
 				.create()
-				.listIds(DDOrderMoveScheduleId::ofRepoId);
+				.idsAsSet(DDOrderMoveScheduleId::ofRepoId);
 
 		deleteByScheduleIds(scheduleIds);
+	}
+
+	public void deleteNotStarted(@NonNull final DDOrderMoveScheduleId scheduleId)
+	{
+		final DDOrderMoveSchedule schedule = getById(scheduleId);
+
+		Check.assume(schedule.getStatus() == DDOrderMoveScheduleStatus.NOT_STARTED, "Already started schedules cannot be deleted!");
+
+		deleteByScheduleIds(ImmutableSet.of(scheduleId));
 	}
 
 	public void removeNotStarted(@NonNull final DDOrderId ddOrderId)
@@ -270,7 +280,7 @@ public class DDOrderMoveScheduleRepository
 				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_ID, ddOrderId)
 				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_Status, DDOrderMoveScheduleStatus.NOT_STARTED)
 				.create()
-				.listIds(DDOrderMoveScheduleId::ofRepoId);
+				.idsAsSet(DDOrderMoveScheduleId::ofRepoId);
 
 		deleteByScheduleIds(scheduleIds);
 	}

@@ -1,35 +1,5 @@
 package de.metas.dlm.impl;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.process.AD_Table_CreatePK;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Element;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
@@ -51,6 +21,36 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.process.AD_Table_CreatePK;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Element;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -76,7 +76,7 @@ import de.metas.util.Services;
 
 public abstract class AbstractDLMService implements IDLMService
 {
-
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// gh #1411
@@ -500,14 +500,10 @@ public abstract class AbstractDLMService implements IDLMService
 			for (final I_DLM_Partition_Config_Reference ref : refs)
 			{
 				final RefBuilder refBuilder = lineBuilder.ref()
-						.setReferencedTableName(ref.getDLM_Referenced_Table().getTableName())
-						.setReferencingColumnName(ref.getDLM_Referencing_Column().getColumnName())
+						.setReferencedTableName(adTableDAO.retrieveTableName(ref.getDLM_Referenced_Table_ID()))
+						.setReferencingColumnName(adTableDAO.retrieveColumnName(ref.getDLM_Referencing_Column_ID()))
 						.setDLM_Partition_Config_Reference_ID(ref.getDLM_Partition_Config_Reference_ID())
-
-						// IsPartitionBoundary is loaded from AD_Column
-						.setIsPartitionBoundary(
-								InterfaceWrapperHelper.create(ref.getDLM_Referencing_Column(), de.metas.dlm.model.I_AD_Column.class)
-										.isDLMPartitionBoundary());
+						.setIsPartitionBoundary(adTableDAO.getMinimalColumnInfo(AdColumnId.ofRepoId(ref.getDLM_Referencing_Column_ID())).isDLMPartitionBoundary());
 
 				refBuilder.endRef();
 			}
@@ -589,8 +585,8 @@ public abstract class AbstractDLMService implements IDLMService
 				final int referencedTableID = adTableDAO.retrieveTableId(ref.getReferencedTableName());
 				configRefDB.setDLM_Referenced_Table_ID(referencedTableID);
 
-				final I_AD_Column referencingColumn = InterfaceWrapperHelper.create(adTableDAO.retrieveColumn(line.getTableName(), ref.getReferencingColumnName()), I_AD_Column.class);
-				configRefDB.setDLM_Referencing_Column(referencingColumn);
+				final AdColumnId referencingColumnId = adTableDAO.retrieveColumnId(line.getTableName(), ref.getReferencingColumnName());
+				configRefDB.setDLM_Referencing_Column_ID(referencingColumnId.getRepoId());
 
 				InterfaceWrapperHelper.save(configRefDB);
 				ref.setDLM_Partition_Config_Reference_ID(configRefDB.getDLM_Partition_Config_Reference_ID());

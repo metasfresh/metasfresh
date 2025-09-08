@@ -1,18 +1,20 @@
 package de.metas.esb.edi.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for EDI_C_BPartner_Lookup_BPL_GLN_v
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v 
 {
 
-    /** TableName=EDI_C_BPartner_Lookup_BPL_GLN_v */
-    public static final String Table_Name = "EDI_C_BPartner_Lookup_BPL_GLN_v";
+	String Table_Name = "EDI_C_BPartner_Lookup_BPL_GLN_v";
 
-    /** AD_Table_ID=540552 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540552 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -22,7 +24,7 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
 	 * Get Business Partner.
@@ -31,10 +33,9 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set GLN.
@@ -43,7 +44,7 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setGLN (java.lang.String GLN);
+	void setGLN (@Nullable java.lang.String GLN);
 
 	/**
 	 * Get GLN.
@@ -52,12 +53,10 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getGLN();
+	@Nullable java.lang.String getGLN();
 
-    /** Column definition for GLN */
-    public static final org.adempiere.model.ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object> COLUMN_GLN = new org.adempiere.model.ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object>(I_EDI_C_BPartner_Lookup_BPL_GLN_v.class, "GLN", null);
-    /** Column name GLN */
-    public static final String COLUMNNAME_GLN = "GLN";
+	ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object> COLUMN_GLN = new ModelColumn<>(I_EDI_C_BPartner_Lookup_BPL_GLN_v.class, "GLN", null);
+	String COLUMNNAME_GLN = "GLN";
 
 	/**
 	 * Set Active.
@@ -67,7 +66,7 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -77,12 +76,33 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object>(I_EDI_C_BPartner_Lookup_BPL_GLN_v.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object> COLUMN_IsActive = new ModelColumn<>(I_EDI_C_BPartner_Lookup_BPL_GLN_v.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Lookup Label.
+	 * Can be used to differentiate when different data records otherwise have the same lookup characteristics.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLookup_Label (@Nullable java.lang.String Lookup_Label);
+
+	/**
+	 * Get Lookup Label.
+	 * Can be used to differentiate when different data records otherwise have the same lookup characteristics.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLookup_Label();
+
+	ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object> COLUMN_Lookup_Label = new ModelColumn<>(I_EDI_C_BPartner_Lookup_BPL_GLN_v.class, "Lookup_Label", null);
+	String COLUMNNAME_Lookup_Label = "Lookup_Label";
 
 	/**
 	 * Set StoreGLN.
@@ -91,7 +111,7 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setStoreGLN (java.lang.String StoreGLN);
+	void setStoreGLN (@Nullable java.lang.String StoreGLN);
 
 	/**
 	 * Get StoreGLN.
@@ -100,10 +120,8 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getStoreGLN();
+	@Nullable java.lang.String getStoreGLN();
 
-    /** Column definition for StoreGLN */
-    public static final org.adempiere.model.ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object> COLUMN_StoreGLN = new org.adempiere.model.ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object>(I_EDI_C_BPartner_Lookup_BPL_GLN_v.class, "StoreGLN", null);
-    /** Column name StoreGLN */
-    public static final String COLUMNNAME_StoreGLN = "StoreGLN";
+	ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, Object> COLUMN_StoreGLN = new ModelColumn<>(I_EDI_C_BPartner_Lookup_BPL_GLN_v.class, "StoreGLN", null);
+	String COLUMNNAME_StoreGLN = "StoreGLN";
 }

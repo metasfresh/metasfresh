@@ -14,6 +14,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -30,8 +31,6 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-
-import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -169,8 +168,9 @@ public class BPartnerCompositeRepository
 		final QueryResultPage<I_C_BPartner_Recent_V> page;
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		if (isEmpty(nextPageId, true))
+		if (Check.isBlank(nextPageId))
 		{
+			Check.assumeNotNull(sinceQuery, "if nextPageId is blank, then sinceQuery shall not be null");
 			final Timestamp timestamp = Timestamp.from(sinceQuery.getSinceInstant());
 			page = queryBL.createQueryBuilder(I_C_BPartner_Recent_V.class)
 					.addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp)
@@ -196,8 +196,9 @@ public class BPartnerCompositeRepository
 	{
 		final QueryResultPage<I_AD_User> page;
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		if (isEmpty(nextPageId, true))
+		if (Check.isBlank(nextPageId))
 		{
+			Check.assumeNotNull(sinceQuery, "if nextPageId is blank, then sinceQuery shall not be null");
 			final Timestamp timestamp = Timestamp.from(sinceQuery.getSinceInstant());
 			page = queryBL
 					.createQueryBuilder(I_AD_User.class)

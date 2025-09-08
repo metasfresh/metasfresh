@@ -80,6 +80,8 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 			values.add(sched.getC_Async_Batch_ID());
 		}
 
+		values.add(sched.getExternalHeaderId());
+
 		return values;
 	}
 

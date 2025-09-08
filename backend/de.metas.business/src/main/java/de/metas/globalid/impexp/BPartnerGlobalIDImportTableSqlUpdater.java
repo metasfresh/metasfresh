@@ -67,7 +67,7 @@ public class BPartnerGlobalIDImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL AND " + I_I_BPartner_GlobalID.COLUMNNAME_GlobalId + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Found BPartner={}", no);
 	}
 
@@ -81,7 +81,7 @@ public class BPartnerGlobalIDImportTableSqlUpdater
 				.append("WHERE " + I_I_BPartner_GlobalID.COLUMNNAME_C_BPartner_ID + " IS NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Value is mandatory={}", no);
 	}
 }

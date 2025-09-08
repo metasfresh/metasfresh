@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -192,7 +193,8 @@ public class UserQueryRepository
 	{
 		return getAD_UserQueries()
 				.stream()
-				.map(adUserQuery -> createUserQuery(adUserQuery))
+				.map(this::createUserQuery)
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

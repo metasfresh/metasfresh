@@ -2,7 +2,6 @@ package de.metas.material.event.purchase;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -10,6 +9,9 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import static de.metas.material.event.MaterialEventConstants.MD_CANDIDATE_TABLE_NAME;
 
 /*
  * #%L
@@ -63,4 +65,13 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 		this.vendorId = vendorId;
 		this.directlyCreatePurchaseCandidate = directlyCreatePurchaseCandidate;
 	}
+
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.of(MD_CANDIDATE_TABLE_NAME, supplyRequiredDescriptor.getDemandCandidateId());
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

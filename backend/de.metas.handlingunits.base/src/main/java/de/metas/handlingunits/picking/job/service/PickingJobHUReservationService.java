@@ -5,7 +5,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
-import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -23,13 +22,11 @@ public class PickingJobHUReservationService
 
 	public void reservePickFromHUs(final PickingJob pickingJob)
 	{
-		final BPartnerId customerId = pickingJob.getDeliveryBPLocationId().getBpartnerId();
-
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
 			for (final PickingJobStep step : line.getSteps())
 			{
-				reservePickFromHU(step, customerId);
+				reservePickFromHU(step, pickingJob.getCustomerId());
 			}
 		}
 	}
@@ -42,23 +39,9 @@ public class PickingJobHUReservationService
 								.documentRef(HUReservationDocRef.ofPickingJobStepId(step.getId()))
 								.productId(step.getProductId())
 								.qtyToReserve(step.getQtyToPick())
-								.huId(step.getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getId())
+								.huId(step.getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHUId())
 								.build())
 				.orElseThrow(() -> new AdempiereException("Cannot reserve HU for " + step)); // shall not happen
-	}
-
-	public void reservePickFromHU(final PickingJob pickingJob, final PickingJobStepId stepId)
-	{
-		final PickingJobStep step = pickingJob.getStepById(stepId);
-		final BPartnerId customerId = pickingJob.getDeliveryBPLocationId().getBpartnerId();
-		reservePickFromHU(step, customerId);
-	}
-
-	public void releaseReservations(@NonNull final PickingJobStep step)
-	{
-		final HUReservationDocRef reservationDocRef = HUReservationDocRef.ofPickingJobStepId(step.getId());
-
-		huReservationService.deleteReservationsByDocumentRefs(ImmutableSet.of(reservationDocRef));
 	}
 
 	public void releaseAllReservations(@NonNull final PickingJob pickingJob)

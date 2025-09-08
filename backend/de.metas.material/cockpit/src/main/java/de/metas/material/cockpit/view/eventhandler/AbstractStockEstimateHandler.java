@@ -73,7 +73,7 @@ public class AbstractStockEstimateHandler
 	private UpdateMainDataRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractStockEstimateEvent stockEstimateEvent)
 	{
-		final OrgId orgId = stockEstimateEvent.getEventDescriptor().getOrgId();
+		final OrgId orgId = stockEstimateEvent.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
@@ -85,10 +85,14 @@ public class AbstractStockEstimateHandler
 		final BigDecimal qtyStockEstimate = stockEstimateEvent instanceof StockEstimateDeletedEvent
 				? BigDecimal.ZERO
 				: stockEstimateEvent.getQuantityDelta();
+
+		final Integer qtyStockSeqNo = stockEstimateEvent instanceof StockEstimateDeletedEvent
+				? 0
+				: stockEstimateEvent.getQtyStockEstimateSeqNo();
 		
 		return UpdateMainDataRequest.builder()
 				.identifier(identifier)
-				.qtyStockEstimateSeqNo(stockEstimateEvent.getQtyStockEstimateSeqNo())
+				.qtyStockEstimateSeqNo(qtyStockSeqNo)
 				.qtyStockEstimateCount(qtyStockEstimate)
 				.qtyStockEstimateTime(stockEstimateEvent.getDate())
 				.build();

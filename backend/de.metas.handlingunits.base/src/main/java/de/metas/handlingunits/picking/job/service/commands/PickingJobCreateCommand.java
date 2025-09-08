@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -11,7 +10,6 @@ import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
-import de.metas.handlingunits.picking.config.PickingConfigV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.repository.PickingJobCreateRepoRequest;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
@@ -31,24 +29,30 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.util.Collection;
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Objects;
+
+import static de.metas.common.util.time.SystemTime.asZonedDateTime;
 
 public class PickingJobCreateCommand
 {
 	private static final AdMessageKey MSG_NotAllItemsAreAvailableToBePicked = AdMessageKey.of("PickingJobCreateCommand.notAllItemsAreAvailableToBePicked");
+	private static final AdMessageKey MORE_THAN_ONE_JOB_ERROR_MSG = AdMessageKey.of("PickingJobCreateCommand.MORE_THAN_ONE_JOB_ERROR_MSG");
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
@@ -58,6 +62,8 @@ public class PickingJobCreateCommand
 	private final PickingCandidateService pickingCandidateService;
 	private final PickingJobHUReservationService pickingJobHUReservationService;
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
+	private final PickingJobSlotService pickingJobSlotService;
+	private final WorkplaceService workplaceService;
 
 	private final PickingJobCreateRequest request;
 
@@ -72,15 +78,18 @@ public class PickingJobCreateCommand
 			@NonNull final PickingJobHUReservationService pickingJobHUReservationService,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
+			@NonNull final WorkplaceService workplaceService,
 			//
-			@NonNull PickingJobCreateRequest request)
+			@NonNull final PickingJobCreateRequest request)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
+		this.pickingJobSlotService = pickingJobSlotService;
 		this.pickingCandidateService = pickingCandidateService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.loadingSupportServices = loadingSupportServices;
 		this.pickingConfigRepo = pickingConfigRepo;
+		this.workplaceService = workplaceService;
 
 		this.request = request;
 	}
@@ -94,32 +103,33 @@ public class PickingJobCreateCommand
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
-		final ImmutableList<Packageable> items = getItemsToPick();
+		final PackageableList items = getItemsToPick();
 
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = Packageable.extractShipmentScheduleIds(items);
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = items.getShipmentScheduleIds();
 		pickingJobLockService.lockShipmentSchedules(shipmentScheduleIds, request.getPickerId());
 		try
 		{
-			final PickingJobHeaderKey headerKey = items.stream()
-					.map(PickingJobCreateCommand::extractPickingJobHeaderKey)
-					.distinct()
-					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one job found")));
+			final PickingJobHeaderKey headerKey = extractPickingJobHeaderKey(items);
 
 			final PickingJob pickingJob = pickingJobRepository.createNewAndGet(
 					PickingJobCreateRepoRequest.builder()
+							.aggregationType(request.getAggregationType())
 							.orgId(headerKey.getOrgId())
 							.salesOrderId(headerKey.getSalesOrderId())
 							.preparationDate(headerKey.getPreparationDate())
+							.deliveryDate(headerKey.getDeliveryDate())
 							.deliveryBPLocationId(headerKey.getDeliveryBPLocationId())
 							.deliveryRenderedAddress(headerKey.getDeliveryRenderedAddress())
 							.pickerId(request.getPickerId())
-							.lines(createLinesRequest(items))
+							.isAllowPickingAnyHU(request.isAllowPickingAnyHU())
+							.lines(createLinesRequests(items))
+							.handoverLocationId(headerKey.getHandoverLocationId())
 							.build(),
 					loadingSupportServices);
 
 			pickingJobHUReservationService.reservePickFromHUs(pickingJob);
 
-			return pickingJob;
+			return allocatePickingSlotIfPossible(pickingJob);
 		}
 		catch (final Exception createJobException)
 		{
@@ -136,14 +146,33 @@ public class PickingJobCreateCommand
 		}
 	}
 
-	private ImmutableList<Packageable> getItemsToPick()
+	@NonNull
+	private PickingJob allocatePickingSlotIfPossible(@NonNull final PickingJob pickingJob)
+	{
+		final PickingSlotId pickingSlotId = workplaceService.getWorkplaceByUserId(request.getPickerId())
+				.map(Workplace::getPickingSlotId)
+				.orElse(null);
+
+		if (pickingSlotId == null)
+		{
+			return pickingJob;
+		}
+
+		return PickingJobAllocatePickingSlotCommand.builder()
+				.pickingJobRepository(pickingJobRepository)
+				.pickingSlotService(pickingJobSlotService)
+				//
+				.pickingJob(pickingJob)
+				.pickingSlotId(pickingSlotId)
+				.failIfNotAllocated(false)
+				//
+				.build().execute();
+	}
+
+	private PackageableList getItemsToPick()
 	{
 		final PackageableQuery query = toPackageableQuery(request);
-
-		final ImmutableList<Packageable> items = packagingDAO
-				.stream(query)
-				.collect(ImmutableList.toImmutableList());
-
+		final PackageableList items = packagingDAO.stream(query).collect(PackageableList.collect());
 		if (items.isEmpty())
 		{
 			throw new AdempiereException(MSG_NotAllItemsAreAvailableToBePicked)
@@ -157,11 +186,16 @@ public class PickingJobCreateCommand
 
 	private static PackageableQuery toPackageableQuery(@NonNull final PickingJobCreateRequest request)
 	{
+		final ZonedDateTime zonedDateTime = asZonedDateTime();
+
 		return PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
 				.salesOrderId(request.getSalesOrderId())
 				.deliveryBPLocationId(request.getDeliveryBPLocationId())
 				.warehouseTypeId(request.getWarehouseTypeId())
+				.onlyShipmentScheduleIds(request.getShipmentScheduleIds())
+				.maximumFixedPreparationDate(zonedDateTime)
+				.maximumFixedPromisedDate(zonedDateTime)
 				.build();
 	}
 
@@ -170,31 +204,32 @@ public class PickingJobCreateCommand
 	private static class PickingJobHeaderKey
 	{
 		@NonNull OrgId orgId;
-		@NonNull OrderId salesOrderId;
-		@NonNull InstantAndOrgId preparationDate;
-		@NonNull BPartnerLocationId deliveryBPLocationId;
-		@NonNull String deliveryRenderedAddress;
+		@Nullable OrderId salesOrderId;
+		@Nullable InstantAndOrgId preparationDate;
+		@Nullable InstantAndOrgId deliveryDate;
+		@Nullable BPartnerLocationId deliveryBPLocationId;
+		@Nullable String deliveryRenderedAddress;
+		@Nullable BPartnerLocationId handoverLocationId;
 	}
 
-	private static PickingJobHeaderKey extractPickingJobHeaderKey(@NonNull final Packageable item)
+	private PickingJobHeaderKey extractPickingJobHeaderKey(@NonNull final PackageableList items)
 	{
 		return PickingJobHeaderKey.builder()
-				.orgId(item.getOrgId())
-				.salesOrderId(Objects.requireNonNull(item.getSalesOrderId()))
-				.preparationDate(item.getPreparationDate())
-				.deliveryBPLocationId(item.getCustomerLocationId())
-				.deliveryRenderedAddress(item.getCustomerAddress())
+				.orgId(items.getSingleOrgId())
+				.salesOrderId(items.getSingleSalesOrderId().orElse(null))
+				.preparationDate(items.getSinglePreparationDate().orElse(null))
+				.deliveryDate(items.getSingleDeliveryDate().orElse(null))
+				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElse(null))
+				.deliveryRenderedAddress(items.getSingleCustomerAddress().orElse(null))
+				.handoverLocationId(items.getSingleHandoverLocationId().orElse(null))
 				.build();
 	}
 
-	private ImmutableList<PickingJobCreateRepoRequest.Line> createLinesRequest(final ImmutableList<Packageable> items)
+	private ImmutableList<PickingJobCreateRepoRequest.Line> createLinesRequests(final PackageableList items)
 	{
 		loadingSupportServices.warmUpCachesFrom(items);
 
-		return Multimaps.index(items, PickingJobCreateCommand::extractPickingJobLineKey)
-				.asMap()
-				.values()
-				.stream()
+		return items.groupBy(PickingJobCreateCommand::extractPickingJobLineKey)
 				.map(this::createLineRequest)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -203,24 +238,34 @@ public class PickingJobCreateCommand
 	@Builder
 	private static class PickingJobLineKey
 	{
-		ProductId productId;
+		@NonNull ShipmentScheduleId shipmentScheduleId;
 	}
 
 	private static PickingJobLineKey extractPickingJobLineKey(@NonNull final Packageable item)
 	{
-		return PickingJobLineKey.builder().productId(item.getProductId()).build();
+		return PickingJobLineKey.builder()
+				.shipmentScheduleId(item.getShipmentScheduleId())
+				.build();
 	}
 
-	private PickingJobCreateRepoRequest.Line createLineRequest(@NonNull final Collection<Packageable> itemsForProduct)
+	private PickingJobCreateRepoRequest.Line createLineRequest(@NonNull final PackageableList items)
 	{
-		Check.assumeNotEmpty(itemsForProduct, "itemsForProduct");
+		if (request.isAllowPickingAnyHU())
+		{
+			return createLineRequest_NoPickingPlan(items);
+		}
+		else
+		{
+			return createLineRequest_WithPickingPlan(items);
+		}
+	}
 
-		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
-
+	private PickingJobCreateRepoRequest.Line createLineRequest_WithPickingPlan(final @NonNull PackageableList items)
+	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-																			.packageables(itemsForProduct)
-																			.considerAttributes(pickingConfig.isConsiderAttributes())
-																			.build());
+				.packageables(items)
+				.considerAttributes(pickingConfigRepo.getPickingConfig().isConsiderAttributes())
+				.build());
 
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();
 		if (lines.isEmpty())
@@ -228,19 +273,39 @@ public class PickingJobCreateCommand
 			throw new AdempiereException(MSG_NotAllItemsAreAvailableToBePicked)
 					.markAsUserValidationError()
 					.setParameter("detail", "Not all materials are available")
-					.setParameter("itemsForProduct", itemsForProduct)
+					.setParameter("items", items)
 					.setParameter("plan", plan);
 		}
 
 		return PickingJobCreateRepoRequest.Line.builder()
-				.productId(plan.getSingleProductId())
+				.productId(items.getSingleProductId())
+				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
+				.qtyToPick(plan.getQtyToPick())
+				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
+				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
+				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElse(null))
+				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.steps(lines.stream()
-							   .map(this::createStepRequest)
-							   .collect(ImmutableList.toImmutableList()))
+						.map(this::createStepRequest)
+						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(plan.getAlternatives()
-											  .stream()
-											  .map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
-											  .collect(ImmutableSet.toImmutableSet()))
+						.stream()
+						.map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
+						.collect(ImmutableSet.toImmutableSet()))
+				.build();
+	}
+
+	private static PickingJobCreateRepoRequest.Line createLineRequest_NoPickingPlan(final @NonNull PackageableList items)
+	{
+		return PickingJobCreateRepoRequest.Line.builder()
+				.productId(items.getSingleProductId())
+				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
+				.qtyToPick(items.getQtyToPick())
+				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
+				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
+				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No shipment schedule found for " + items)))
+				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
+				.pickFromManufacturingOrderId(items.getSingleManufacturingOrderId().orElse(null))
 				.build();
 	}
 
@@ -334,12 +399,12 @@ public class PickingJobCreateCommand
 
 		final I_M_HU extractedCU = HUTransformService.newInstance()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
-										 .sourceHU(pickFromHU)
-										 .productId(productId)
-										 .qtyCU(qtyToPick)
-										 //.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-										 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-										 .build());
+						.sourceHU(pickFromHU)
+						.productId(productId)
+						.qtyCU(qtyToPick)
+						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
+						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+						.build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
 	}

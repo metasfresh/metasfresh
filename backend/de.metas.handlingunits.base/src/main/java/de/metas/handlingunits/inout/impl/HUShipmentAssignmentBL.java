@@ -22,6 +22,7 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -142,9 +143,8 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	}
 
 	@Override
-	public void removeHUAssignments(final I_M_InOutLine shipmentLine)
+	public void removeHUAssignments(@NonNull final I_M_InOutLine shipmentLine)
 	{
-		Check.assumeNotNull(shipmentLine, "shipmentLine not null");
 		Check.assume(shipmentLine.getM_InOutLine_ID() > 0, "shipment line is saved");
 		//
 		// Remove HU Assignments and update HU Status
@@ -228,10 +228,21 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 				final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
 
 				// Restore default locator
-				hu.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
+				hu.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
 			}
 		}
 
 		handlingUnitsDAO.saveHU(hu);
+	}
+
+	@NonNull
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveAssignedQuantities(@NonNull final I_M_InOut shipment)
+	{
+		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
+		return lines
+				.stream()
+				.map(line -> shipmentScheduleAllocDAO.retrieveAllForInOutLine(line, I_M_ShipmentSchedule_QtyPicked.class))
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

@@ -121,16 +121,15 @@ public class VMerge extends Merge implements FormPanel, ActionListener
 		String what = Msg.translate(Env.getCtx(), ColumnName);
 		m_label[index] = new CLabel(what);
 		m_from[index] = new VLookup (ColumnName, false, false, true,
-			MLookupFactory.get (Env.getCtx(), m_WindowNo, 0, AD_Column_ID, displayType));
+			MLookupFactory.newInstance().get (Env.getCtx(), m_WindowNo, 0, AD_Column_ID, displayType));
 		m_to[index] = new VLookup (ColumnName, false, false, true,
-			MLookupFactory.get (Env.getCtx(), m_WindowNo, 0, AD_Column_ID, displayType));
+			MLookupFactory.newInstance().get (Env.getCtx(), m_WindowNo, 0, AD_Column_ID, displayType));
 	}	//	preInit
 
 	/**
 	 * 	Static init
-	 * 	@throws java.lang.Exception
 	 */
-	void jbInit () throws Exception
+	void jbInit ()
 	{
 		panel.setLayout (mainLayout);
 		mainLayout.setHgap (5);

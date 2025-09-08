@@ -22,6 +22,7 @@ package de.metas.report.client;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -37,6 +38,7 @@ import de.metas.report.jasper.client.RemoteServletInvoker;
 import de.metas.report.server.IReportServer;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -113,12 +115,17 @@ public final class ReportsClient
 			final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 			adPInstanceDAO.saveProcessInfoOnly(pi);
 		}
-
-		return getServer().report(
-				pi.getAdProcessId().getRepoId(),
+		final int adProcessId = pi.getAdProcessId().getRepoId();
+		
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Start invoking IReportServer with AD_Process_ID={}", adProcessId);
+		final ReportResult result = getServer().report(
+				adProcessId,
 				PInstanceId.toRepoId(pi.getPinstanceId()),
 				extractLanguage(pi).getAD_Language(),
-				CoalesceUtil.coalesce(outputType, pi.getJRDesiredOutputType()));
+				CoalesceUtil.coalesceNotNull(outputType, pi.getJRDesiredOutputType(), OutputType.PDF));
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Done invoking IReportServer");
+
+		return result;
 	}
 
 	private IReportServer getServer()

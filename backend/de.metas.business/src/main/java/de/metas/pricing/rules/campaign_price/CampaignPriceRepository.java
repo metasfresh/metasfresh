@@ -1,23 +1,8 @@
 package de.metas.pricing.rules.campaign_price;
 
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-
-import de.metas.pricing.PricingSystemId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.compiere.model.I_C_Campaign_Price;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Range;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
@@ -26,6 +11,7 @@ import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
@@ -35,6 +21,18 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.compiere.model.I_C_Campaign_Price;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -125,11 +123,14 @@ public class CampaignPriceRepository
 				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(record.getM_PricingSystem_ID()))
 				.countryId(CountryId.ofRepoId(record.getC_Country_ID()))
 				.validRange(Range.closed(validFrom, validTo))
+				.priceList(Optional.ofNullable(record.getPriceList())
+								   .map(priceList -> Money.of(priceList, currencyId))
+								   .orElse(null))
 				//
 				.priceStd(Money.of(record.getPriceStd(), currencyId))
 				.priceUomId(extractProductPriceUomId(record))
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
-				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(record.getInvoicableQtyBasedOn()))
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.ofNullableCodeOrNominal(record.getInvoicableQtyBasedOn()))
 				//
 				.build();
 	}

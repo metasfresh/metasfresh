@@ -22,7 +22,7 @@
 
 package org.adempiere.ad.dao.impl;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -75,7 +75,6 @@ class RPadQueryFilterModifierTest
 		final Object model = null; // N/A
 		@SuppressWarnings("ConstantConditions")
 		final String resultActual = (String)modifier.convertValue(columnName, value, model);
-		Assert.assertEquals("Invalid result for: " + value, resultExpected, resultActual);
-
+		Assertions.assertEquals(resultExpected, resultActual, "Invalid result for: " + value);
 	}
 }

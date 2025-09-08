@@ -60,7 +60,7 @@ public class ZebraConfigRepository
 
 		if (defaultZebraConfigId == null)
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_NO_ZEBRA_CONFIG));
+			throw new AdempiereException(MSG_NO_ZEBRA_CONFIG);
 		}
 
 		return defaultZebraConfigId;
@@ -68,14 +68,14 @@ public class ZebraConfigRepository
 
 	public ZebraConfigId retrieveZebraConfigId(final BPartnerId partnerId, final ZebraConfigId defaultZebraConfigId)
 	{
-		I_C_BP_PrintFormat printFormat =  queryBL
+		final I_C_BP_PrintFormat printFormat = queryBL
 				.createQueryBuilder(I_C_BP_PrintFormat.class)
 				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, partnerId)
 				.addNotNull(I_C_BP_PrintFormat.COLUMN_AD_Zebra_Config_ID)
 				.create()
 				.firstOnly(I_C_BP_PrintFormat.class);
 
-		if (printFormat != null) 
+		if (printFormat != null)
 		{
 			return ZebraConfigId.ofRepoIdOrNull(printFormat.getAD_Zebra_Config_ID());
 		}

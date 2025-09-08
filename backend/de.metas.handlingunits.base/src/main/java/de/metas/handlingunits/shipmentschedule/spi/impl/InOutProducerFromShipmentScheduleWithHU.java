@@ -25,14 +25,12 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -40,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
@@ -73,7 +72,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
@@ -377,6 +375,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			{
 				shipment.setDateOrdered(order.getDateOrdered());
 				shipment.setC_Order_ID(order.getC_Order_ID()); // TODO change if partner allow consolidation too
+				shipment.setExternalId(order.getExternalId());
 				shipment.setPOReference(order.getPOReference());
 				shipment.setC_Incoterms_ID(order.getC_Incoterms_ID());
 				shipment.setIncotermLocation(order.getIncotermLocation());

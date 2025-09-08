@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 457753025L;
+	private static final long serialVersionUID = 171076542L;
 
     /** Standard Constructor */
     public X_AD_Archive (final Properties ctx, final int AD_Archive_ID, @Nullable final String trxName)
@@ -302,6 +302,18 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference() 
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
 	@Override

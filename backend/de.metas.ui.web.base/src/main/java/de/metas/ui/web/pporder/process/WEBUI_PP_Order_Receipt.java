@@ -31,7 +31,6 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -44,6 +43,7 @@ import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -73,7 +73,7 @@ public class WEBUI_PP_Order_Receipt
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID)
 	private I_M_HU_PI_Item p_M_HU_PI_Item;
 
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCU, mandatory = true)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCUsPerTU, mandatory = true)
 	private BigDecimal p_QtyCU;
 
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTU, mandatory = true)
@@ -114,7 +114,7 @@ public class WEBUI_PP_Order_Receipt
 
 		_packingInfoParams.setQtyLU(p_QtyLU);
 		_packingInfoParams.setQtyTU(p_QtyTU);
-		_packingInfoParams.setQtyCU(p_QtyCU);
+		_packingInfoParams.setQtyCUsPerTU(p_QtyCU);
 
 		return _packingInfoParams;
 	}

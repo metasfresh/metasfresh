@@ -26,15 +26,15 @@ import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.InvoicSettings;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.metasfresh.CCreditMemoReasonEnum;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop000VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop111VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop140VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop901991VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoic500VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.CCreditMemoReasonEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop000VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop111VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop119VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop120VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop140VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop901991VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoic500VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoicVType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -125,8 +125,8 @@ public class CompuDataInvoicBean
 		invoice.setShipmentDocumentno(xmlCctopInvoice.getShipmentDocumentno());
 		invoice.setVataxID(xmlCctopInvoice.getVATaxID());
 		// invoice.setTotalLines(formatNumber(xmlCctopInvoice.getTotalLines(), decimalFormat)); // not used
-		invoice.setTotaltaxbaseamt(formatNumber(xmlCctopInvoice.getTotaltaxbaseamt(), decimalFormat));
-		invoice.setTotalvat(formatNumber(xmlCctopInvoice.getTotalvat(), decimalFormat));
+		invoice.setTotaltaxbaseamt(formatNumber(xmlCctopInvoice.getTotalTaxBaseAmt(), decimalFormat));
+		invoice.setTotalvat(formatNumber(xmlCctopInvoice.getTotalVat(), decimalFormat));
 		invoice.setCountryCode(xmlCctopInvoice.getCountryCode());
 		invoice.setCountryCode3Digit(xmlCctopInvoice.getCountryCode3Digit());
 

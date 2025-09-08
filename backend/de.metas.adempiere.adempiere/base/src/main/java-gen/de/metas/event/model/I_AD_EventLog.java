@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,7 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 package de.metas.event.model;
 
 import org.adempiere.model.ModelColumn;
@@ -27,16 +26,16 @@ import org.adempiere.model.ModelColumn;
 import javax.annotation.Nullable;
 
 /** Generated Interface for AD_EventLog
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_AD_EventLog 
+public interface I_AD_EventLog
 {
 
 	String Table_Name = "AD_EventLog";
 
-//	/** AD_Table_ID=540888 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=540888 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -95,25 +94,26 @@ public interface I_AD_EventLog
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Asynchronous WorkPackage Queue.
+	 * Set Table.
+	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Queue_WorkPackage_ID (int C_Queue_WorkPackage_ID);
+	void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get Asynchronous WorkPackage Queue.
+	 * Get Table.
+	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Queue_WorkPackage_ID();
+	int getAD_Table_ID();
 
-	ModelColumn<I_AD_EventLog, Object> COLUMN_C_Queue_WorkPackage_ID = new ModelColumn<>(I_AD_EventLog.class, "C_Queue_WorkPackage_ID", null);
-	String COLUMNNAME_C_Queue_WorkPackage_ID = "C_Queue_WorkPackage_ID";
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
 	 * Get Created.
@@ -162,7 +162,28 @@ public interface I_AD_EventLog
 	String COLUMNNAME_EventData = "EventData";
 
 	/**
-	 * Set Zeitpunkt.
+	 * Set Event Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEventName (@Nullable java.lang.String EventName);
+
+	/**
+	 * Get Event Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEventName();
+
+	ModelColumn<I_AD_EventLog, Object> COLUMN_EventName = new ModelColumn<>(I_AD_EventLog.class, "EventName", null);
+	String COLUMNNAME_EventName = "EventName";
+
+	/**
+	 * Set Date/Time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -171,7 +192,7 @@ public interface I_AD_EventLog
 	void setEventTime (@Nullable java.sql.Timestamp EventTime);
 
 	/**
-	 * Get Zeitpunkt.
+	 * Get Date/Time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -311,6 +332,29 @@ public interface I_AD_EventLog
 
 	ModelColumn<I_AD_EventLog, Object> COLUMN_IsErrorAcknowledged = new ModelColumn<>(I_AD_EventLog.class, "IsErrorAcknowledged", null);
 	String COLUMNNAME_IsErrorAcknowledged = "IsErrorAcknowledged";
+
+	/**
+	 * Set Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRecord_ID();
+
+	ModelColumn<I_AD_EventLog, Object> COLUMN_Record_ID = new ModelColumn<>(I_AD_EventLog.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Get Updated.

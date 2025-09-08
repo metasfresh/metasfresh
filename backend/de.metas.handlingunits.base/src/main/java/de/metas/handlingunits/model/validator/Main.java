@@ -31,7 +31,6 @@ import de.metas.cache.model.ITableCacheConfigBuilder;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.hu_spis.DDOrderLineHUDocumentHandler;
 import de.metas.distribution.ddorder.hu_spis.ForecastLineHUDocumentHandler;
-import de.metas.distribution.ddorder.interceptor.DD_Order;
 import de.metas.distribution.ddorder.interceptor.DD_OrderLine;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
@@ -64,6 +63,7 @@ import de.metas.handlingunits.picking.interceptor.M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.pricing.spi.impl.HUPricing;
 import de.metas.handlingunits.pricing.spi.impl.OrderLinePricingHUDocumentHandler;
 import de.metas.handlingunits.pricing.spi.impl.OrderPricingHUDocumentHandler;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.receiptschedule.impl.HUReceiptScheduleListener;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentFactory;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUTrxListener;
@@ -89,8 +89,7 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
-import de.metas.pricing.attributebased.impl.AttributePricing;
-import de.metas.pricing.service.ProductPrices;
+import de.metas.product.impexp.interceptor.ImportProductInterceptor;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
@@ -108,6 +107,7 @@ import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_I_Inventory;
+import org.compiere.model.I_I_Product;
 import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
 
@@ -119,15 +119,18 @@ public final class Main extends AbstractModuleInterceptor
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final DDOrderService ddOrderService;
 	private final PickingBOMService pickingBOMService;
+	private final HUQRCodesService huqrCodesService;
 
 	public Main(
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final DDOrderService ddOrderService,
-			@NonNull final PickingBOMService pickingBOMService)
+			@NonNull final PickingBOMService pickingBOMService,
+			@NonNull final HUQRCodesService huqrCodesService)
 	{
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.ddOrderService = ddOrderService;
 		this.pickingBOMService = pickingBOMService;
+		this.huqrCodesService = huqrCodesService;
 	}
 
 	@Override
@@ -137,7 +140,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Version());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_OrderLine());
-		engine.addModelValidator(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
+		//engine.addModelValidator(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
 		engine.addModelValidator(new DD_OrderLine(ddOrderMoveScheduleService));
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order());
@@ -188,7 +191,9 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new PP_Cost_Collector());
 
 		// https://github.com/metasfresh/metasfresh/issues/2298
-		engine.addModelValidator(de.metas.handlingunits.picking.interceptor.M_HU.INSTANCE);
+		engine.addModelValidator(new de.metas.handlingunits.picking.interceptor.M_HU());
+
+		engine.addImportInterceptor(I_I_Product.Table_Name, new ImportProductInterceptor());
 	}
 
 	@Override
@@ -233,28 +238,7 @@ public final class Main extends AbstractModuleInterceptor
 
 	public static void setupPricing()
 	{
-		ProductPrices.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
-
-		// Registers a default matcher to make sure that the AttributePricing ignores all product prices that have an M_HU_PI_Item_Product_ID set.
-		//
-		// From skype chat:
-		// <pre>
-		// [Dienstag, 4. Februar 2014 15:33] Cis:
-		//
-		// if the HU pricing rule (that runs first) doesn't find a match, the attribute pricing rule runs next and can find a wrong match, because it can't "see" the M_HU_PI_Item_Product
-		// more concretely: we have two rules:
-		// IFCO A, with Red
-		// IFCO B with Blue
-		//
-		// And we put a product in IFCO A with Blue
-		//
-		// HU pricing rule won't find a match,
-		// Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
-		//
-		// <pre>
-		// ..and that's why we register the filter here.
-		//
-		AttributePricing.registerDefaultMatcher(HUPricing.HUPIItemProductMatcher_None);
+		HUPricing.install();
 	}
 
 	public void setupTourPlanning()
@@ -335,7 +319,7 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// aggregate material items
 		{
-			huTrxBL.addListener(de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener.INSTANCE);
+			huTrxBL.addListener(new de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener(huqrCodesService));
 		}
 		//
 		// Weights Attributes

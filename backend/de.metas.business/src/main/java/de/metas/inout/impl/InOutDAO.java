@@ -10,9 +10,11 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.InOutQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -35,6 +37,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +46,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -90,19 +92,40 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	public <T extends I_M_InOut> T getByIdOutOfTrx(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutId.getRepoId(), modelClass);
+	}
+	
+	@Override
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
 	}
 
 	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
+	}
+
+	@Override
 	public <T extends I_M_InOutLine> List<T> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds, final Class<T> returnType)
 	{
-		final Set<Integer> ids = inoutLineIds.stream().map(InOutLineId::getRepoId).collect(Collectors.toSet());
+		if (inoutLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
 		return queryBL.createQueryBuilder(returnType)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, ids)
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, inoutLineIds)
 				.create()
 				.list(returnType);
 	}
@@ -116,15 +139,8 @@ public class InOutDAO implements IInOutDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, shipperTransportationId)
 				.create()
-				.listIds(InOutId::ofRepoId)
+				.idsAsSet(InOutId::ofRepoId)
 				.asList();
-	}
-
-	@Override
-	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
-	{
-		@SuppressWarnings("UnnecessaryLocalVariable") final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
-		return inoutLine;
 	}
 
 	@Override
@@ -146,6 +162,22 @@ public class InOutDAO implements IInOutDAO
 	{
 		final boolean retrieveAll = false;
 		return retrieveLines(inOut, retrieveAll, inoutLineClass);
+	}
+
+	@Override
+	public ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(final Set<InOutId> inoutIds)
+	{
+		if (inoutIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inoutIds)
+				.create()
+				.idsAsSet(InOutLineId::ofRepoId);
+
 	}
 
 	private <T extends I_M_InOutLine> List<T> retrieveLines(
@@ -215,6 +247,22 @@ public class InOutDAO implements IInOutDAO
 
 		return queryBuilder.create()
 				.list(clazz);
+	}
+
+	@Override
+	public Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addInArrayFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineIds)
+				.addOnlyActiveRecordsFilter()
+				.stream()
+				.map(inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -319,7 +367,7 @@ public class InOutDAO implements IInOutDAO
 		return queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(InOutId::ofRepoId)
+				.idsAsSet(InOutId::ofRepoId)
 				.stream();
 	}
 
@@ -473,5 +521,55 @@ public class InOutDAO implements IInOutDAO
 		}
 
 		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
+	}
+
+	@Override
+	public ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull final Timestamp date)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_MovementDate, date)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
+				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, null)
+				.create()
+				.idsAsSet(InOutId::ofRepoId)
+				.asList();
+	}
+
+	@Override
+	public Stream<I_M_InOut> retrieveByQuery(@NonNull final InOutQuery query)
+	{
+		return toSqlQuery(query).create().stream();
+	}
+
+	private IQueryBuilder<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
+	{
+		final IQueryBuilder<I_M_InOut> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
+				.setLimit(query.getLimit())
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getMovementDateFrom() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, Operator.GREATER_OR_EQUAL, query.getMovementDateFrom());
+		}
+		if (query.getMovementDateTo() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, Operator.LESS_OR_EQUAL, query.getMovementDateTo());
+		}
+		if (query.getDocStatus() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+		if (query.getExcludeDocStatuses() != null && !query.getExcludeDocStatuses().isEmpty())
+		{
+			sqlQueryBuilder.addNotInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getExcludeDocStatuses());
+		}
+		if (!query.getOrderIds().isEmpty())
+		{
+			sqlQueryBuilder.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, query.getOrderIds());
+		}
+
+		return sqlQueryBuilder;
 	}
 }

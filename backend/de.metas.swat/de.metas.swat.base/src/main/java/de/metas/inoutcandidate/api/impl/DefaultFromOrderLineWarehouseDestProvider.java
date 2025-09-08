@@ -1,26 +1,28 @@
 package de.metas.inoutcandidate.api.impl;
 
-import java.util.List;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.eevolution.model.I_DD_NetworkDistribution;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
-
 import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ddorder.DistributionNetwork;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -48,11 +50,10 @@ import de.metas.util.Services;
  * Default destination warehouse provider.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */final class DefaultFromOrderLineWarehouseDestProvider implements IReceiptScheduleWarehouseDestProvider
 {
-	public static final transient DefaultFromOrderLineWarehouseDestProvider instance = new DefaultFromOrderLineWarehouseDestProvider();
+	public static final DefaultFromOrderLineWarehouseDestProvider instance = new DefaultFromOrderLineWarehouseDestProvider();
 
 	private DefaultFromOrderLineWarehouseDestProvider()
 	{
@@ -60,16 +61,16 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public I_M_Warehouse getWarehouseDest(final IContext context)
+	public Optional<WarehouseId> getWarehouseDest(final IContext context)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 		//
 		// Try to retrieve destination warehouse from planning
 		// see: http://dewiki908/mediawiki/index.php/07058_Destination_Warehouse_Wareneingang_%28102083181965%29#Development_infrastructure
-		final I_M_Warehouse distributionNetworkWarehouseDestination = getDistributionNetworkWarehouseDestination(context);
+		final WarehouseId distributionNetworkWarehouseDestination = getDistributionNetworkWarehouseDestination(context);
 		if (distributionNetworkWarehouseDestination != null)
 		{
-			return distributionNetworkWarehouseDestination;
+			return Optional.of(distributionNetworkWarehouseDestination);
 		}
 
 		//
@@ -77,22 +78,22 @@ import de.metas.util.Services;
 		// see: http://dewiki908/mediawiki/index.php/05940_Wareneingang_Lagerumbuchung
 		final I_M_Product product = Services.get(IProductDAO.class).getById(context.getM_Product_ID());
 		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(product.getM_Locator_ID());
-		final I_M_Locator locator = locatorId == null? null : warehouseDAO.getLocatorById(locatorId);
+		final I_M_Locator locator = locatorId == null ? null : warehouseDAO.getLocatorById(locatorId);
 		if (locator != null && locator.getM_Locator_ID() > 0)
 		{
-			return locator.getM_Warehouse();
+			return WarehouseId.optionalOfRepoId(locator.getM_Warehouse_ID());
 		}
 
 		//
 		// We don't have anything to match
-		return null;
+		return Optional.empty();
 	}
 
 	/**
-	 * @param context
 	 * @return first planning-distribution (i.e. with lowest <code>PriorityNo</code>) network-warehouse destination found for product (no warehouse / source filter).
 	 */
-	private I_M_Warehouse getDistributionNetworkWarehouseDestination(final IContext context)
+	@Nullable
+	private WarehouseId getDistributionNetworkWarehouseDestination(final IContext context)
 	{
 		final int attributeSetInstanceId = context.getM_AttributeSetInstance() == null
 				? AttributeConstants.M_AttributeSetInstance_ID_None
@@ -106,21 +107,20 @@ import de.metas.util.Services;
 				// no warehouse, no plant
 				.build();
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query).orElse(null);
+		final ProductPlanning productPlanning = productPlanningDAO.find(query).orElse(null);
 		if (productPlanning == null)
 		{
 			return null;
 		}
 
-		final I_DD_NetworkDistribution distributionNetwork = productPlanning.getDD_NetworkDistribution();
-		if (distributionNetwork == null)
+		if (productPlanning.getDistributionNetworkId() == null)
 		{
 			return null;
 		}
 
-		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
-		final List<I_DD_NetworkDistributionLine> distributionNetworkLines = distributionNetworkDAO
-				.retrieveNetworkLinesBySourceWarehouse(distributionNetwork, context.getM_Warehouse_ID());
+		final DistributionNetworkRepository distributionNetworkRepository = SpringContextHolder.instance.getBean(DistributionNetworkRepository.class);
+		final DistributionNetwork distributionNetwork = distributionNetworkRepository.getById(productPlanning.getDistributionNetworkId());
+		final List<DistributionNetworkLine> distributionNetworkLines = distributionNetwork.getLinesBySourceWarehouse(WarehouseId.ofRepoId(context.getM_Warehouse_ID()));
 
 		if (distributionNetworkLines.isEmpty())
 		{
@@ -128,8 +128,8 @@ import de.metas.util.Services;
 		}
 
 		// the lines are ordered by PriorityNo, M_Shipper_ID
-		final I_DD_NetworkDistributionLine firstFoundDistributionNetworkLine = distributionNetworkLines.get(0);
-		return firstFoundDistributionNetworkLine.getM_Warehouse();
+		final DistributionNetworkLine firstFoundDistributionNetworkLine = distributionNetworkLines.get(0);
+		return firstFoundDistributionNetworkLine.getTargetWarehouseId();
 	}
 
 }

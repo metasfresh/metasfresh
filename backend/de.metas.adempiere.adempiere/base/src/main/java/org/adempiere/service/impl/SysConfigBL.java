@@ -1,7 +1,9 @@
 package org.adempiere.service.impl;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -14,9 +16,12 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
+import org.jetbrains.annotations.Contract;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -26,18 +31,19 @@ import java.util.Set;
  */
 public class SysConfigBL implements ISysConfigBL
 {
+	private static final Logger logger = LogManager.getLogger(SysConfigBL.class);
 	private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
 
 	@Nullable
 	@Override
-	public String getValue(final String name, @Nullable final String defaultValue)
+	public String getValue(final @NonNull String name, @Nullable final String defaultValue)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM).orElse(defaultValue);
 	}
 
 	@Nullable
 	@Override
-	public String getValue(final String name)
+	public String getValue(final @NonNull String name)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM).orElse(null);
 	}
@@ -47,6 +53,15 @@ public class SysConfigBL implements ISysConfigBL
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM)
 				.map(valueStr -> NumberUtils.asInt(valueStr, defaultValue))
+				.orElse(defaultValue);
+	}
+
+	@Override
+	public int getPositiveIntValue(final String name, final int defaultValue)
+	{
+		return sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM)
+				.map(valueStr -> NumberUtils.asInt(valueStr, defaultValue))
+				.filter(valueInt -> valueInt > 0) // positive
 				.orElse(defaultValue);
 	}
 
@@ -99,7 +114,7 @@ public class SysConfigBL implements ISysConfigBL
 
 	@Nullable
 	@Override
-	public String getValue(final String name, final int AD_Client_ID, final int AD_Org_ID)
+	public String getValue(@NonNull final String name, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID))
 				.orElse(null);
@@ -114,9 +129,15 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
-	public int getIntValue(final String name, final int defaultValue, final int AD_Client_ID, final int AD_Org_ID)
+	public int getIntValue(@NonNull final String name, final int defaultValue, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID))
+		return getIntValue(name, defaultValue, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID));
+	}
+
+	@Override
+	public int getIntValue(@NonNull final String name, final int defaultValue, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return sysConfigDAO.getValue(name, clientAndOrgId)
 				.map(valueStr -> NumberUtils.asInt(valueStr, defaultValue))
 				.orElse(defaultValue);
 	}
@@ -125,6 +146,14 @@ public class SysConfigBL implements ISysConfigBL
 	public boolean getBooleanValue(final String name, final boolean defaultValue, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID))
+				.map(valueStr -> StringUtils.toBoolean(valueStr, defaultValue))
+				.orElse(defaultValue);
+	}
+
+	@Override
+	public boolean getBooleanValue(final String name, final boolean defaultValue, final ClientAndOrgId clientAndOrgId)
+	{
+		return sysConfigDAO.getValue(name, clientAndOrgId)
 				.map(valueStr -> StringUtils.toBoolean(valueStr, defaultValue))
 				.orElse(defaultValue);
 	}
@@ -246,6 +275,8 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
+	@Nullable
+	@Contract("_, !null, _ -> !null")
 	public String getValue(@NonNull final String name, @Nullable final String defaultValue, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return sysConfigDAO.getValue(name, clientAndOrgId).orElse(defaultValue);
@@ -258,6 +289,35 @@ public class SysConfigBL implements ISysConfigBL
 		return code != null && !Check.isBlank(code)
 				? ReferenceListAwareEnums.ofCode(code, type)
 				: defaultValue;
+	}
+
+	@Override
+	public <T extends Enum<T>> ImmutableSet<T> getCommaSeparatedEnums(@NonNull final String sysconfigName, @NonNull final Class<T> enumType)
+	{
+		final String string = StringUtils.trimBlankToNull(sysConfigDAO.getValue(sysconfigName, ClientAndOrgId.SYSTEM).orElse(null));
+		if (string == null || string.equals("-"))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(string)
+				.stream()
+				.map(name -> {
+					try
+					{
+						return Enum.valueOf(enumType, name);
+					}
+					catch (final Exception ex)
+					{
+						logger.warn("Failed converting `{}` to enum {}. Ignoring it.", name, enumType, ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }

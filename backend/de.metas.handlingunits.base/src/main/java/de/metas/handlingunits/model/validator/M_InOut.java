@@ -22,10 +22,13 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -39,26 +42,34 @@ import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -70,6 +81,8 @@ import java.util.TreeSet;
 @Component
 public class M_InOut
 {
+	private static final Logger logger = LogManager.getLogger(M_InOut.class);
+
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
@@ -80,15 +93,17 @@ public class M_InOut
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
+	private final PickingJobService pickingJobService;
 
 	public M_InOut(
-			@NonNull final ReturnsServiceFacade returnsServiceFacade)
+			@NonNull final ReturnsServiceFacade returnsServiceFacade,
+			@NonNull final PickingJobService pickingJobService)
 	{
 		this.returnsServiceFacade = returnsServiceFacade;
+		this.pickingJobService = pickingJobService;
 	}
 
 	@Init
@@ -102,17 +117,18 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
-	public void destroyHandlingUnitsForReceipt(final I_M_InOut inout)
+	public void destroyHandlingUnitsForReversedInboundMovements(final I_M_InOut inout)
 	{
-		if (inout.isSOTrx())
+		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
+		if (movementType.isOutboundTransaction())
 		{
-			// TODO: change HUStatus from Shipped back to Picked
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we are dealing with an outbound transaction!");
+			return;
 		}
-		else
-		{
-			huInOutBL.copyAssignmentsToReversal(inout);
-			huInOutBL.destroyHUs(inout);
-		}
+
+		// the incoming HU created from this M_InOut needs to be destroyed
+		huInOutBL.copyAssignmentsToReversal(inout);
+		huInOutBL.destroyHUs(inout);
 	}
 
 	/**
@@ -123,7 +139,8 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void addPackingMaterialLinesForShipment(final I_M_InOut shipment)
 	{
-		if (shipment.isSOTrx())
+		final MovementType movementType = MovementType.ofCode(shipment.getMovementType());
+		if (movementType.isOutboundTransaction() && shipment.isSOTrx())
 		{
 			huInOutBL.createPackingMaterialLines(shipment);
 		}
@@ -213,7 +230,7 @@ public class M_InOut
 			return;
 		}
 
-		// task #1306: Do not genertate empties movements for customer returns
+		// task #1306: Do not generate empties movements for customer returns
 		if (returnsServiceFacade.isCustomerReturn(inout))
 		{
 			return;
@@ -232,12 +249,17 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSECORRECT })
 	public void removeHUAssignmentsForShipment(final I_M_InOut shipment)
 	{
-		// Make sure we deal with a shipment
-		if (!shipment.isSOTrx())
+		final MovementType movementType = MovementType.ofCode(shipment.getMovementType());
+		
+		// Make sure we deal with a shipment (and not a customer-return)
+		final boolean isShipment = shipment.isSOTrx() && movementType.isOutboundTransaction();
+		if (!isShipment)
 		{
 			return;
 		}
 
+		final List<I_M_ShipmentSchedule_QtyPicked> assignedQuantities =
+				huShipmentAssignmentBL.retrieveAssignedQuantities(shipment);
 		//
 		// Remove all HU Assignments
 		huShipmentAssignmentBL.removeHUAssignments(shipment);
@@ -245,6 +267,26 @@ public class M_InOut
 		//
 		// Unassign shipment from M_Packages (if any)
 		huPackageBL.unassignShipmentFromPackages(shipment);
+
+		final Set<ShipmentScheduleId> allShipmentSchedulesInvolved = assignedQuantities.stream()
+				.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0)
+				.map(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_ID)
+				.map(ShipmentScheduleId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		final List<HUWithPickOnTheFlyStatus> allHusInvolved = assignedQuantities.stream()
+				.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0)
+				.map(qtyPicked -> HUWithPickOnTheFlyStatus.builder()
+						.anonymousHuPickedOnTheFly(qtyPicked.isAnonymousHuPickedOnTheFly())
+						.huId(HuId.ofRepoId(qtyPicked.getVHU_ID()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		final ReopenPickingJobRequest request = ReopenPickingJobRequest.builder()
+				.shipmentScheduleIds(allShipmentSchedulesInvolved)
+				.huInfoList(allHusInvolved)
+				.build();
+
+		pickingJobService.reopenPickingJobs(request);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
@@ -290,7 +332,7 @@ public class M_InOut
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
 	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29
+	 * @implSpec  <a href="http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29">issue</a>
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void updateReversedQtys(final I_M_InOut inout)
@@ -335,28 +377,20 @@ public class M_InOut
 			return; // no HUs to generate if the whole InOut is about HUs
 		}
 
-		final List<I_M_HU> existingHandlingUnits = inOutDAO.retrieveHandlingUnits(customerReturn);
-
-		// the handling units are already created
-		if (!existingHandlingUnits.isEmpty())
+		final List<I_M_HU> assignedHUs = inOutDAO.retrieveHandlingUnits(customerReturn);
+		if (assignedHUs.isEmpty())
 		{
-			final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(customerReturn);
-
-			//make sure they all have status active
-			existingHandlingUnits.forEach(hu -> handlingUnitsBL.setHUStatus(hu, contextProvider, X_M_HU.HUSTATUS_Active));
-		}
-		else
-		{
-			// create HUs based on the lines in the customer return inout
-			returnsServiceFacade.createHUsForCustomerReturn(InterfaceWrapperHelper.create(customerReturn, de.metas.handlingunits.model.I_M_InOut.class));
+			throw new AdempiereException("No HUs to return assigned");
 		}
 
+		// make sure all assigned HUs are active
+		handlingUnitsBL.setHUStatus(assignedHUs, X_M_HU.HUSTATUS_Active);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
-		if (!(returnsServiceFacade.isVendorReturn(returnInOut) || returnsServiceFacade.isCustomerReturn(returnInOut)))
+		if (!returnsServiceFacade.isVendorReturn(returnInOut))
 		{
 			return; // nothing to do
 		}
@@ -375,11 +409,6 @@ public class M_InOut
 			return;
 		}
 
-		if (returnsServiceFacade.isCustomerReturn(returnInOut))
-		{
-			huMovementBL.moveHUsToWarehouse(hus, WarehouseId.ofRepoId(returnInOut.getM_Warehouse_ID()));
-		}
-
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
 		snapshotDAO.restoreHUs()
 				.setContext(context)
@@ -388,7 +417,6 @@ public class M_InOut
 				.setReferencedModel(returnInOut)
 				.addModels(hus)
 				.restoreFromSnapshot();
-
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })

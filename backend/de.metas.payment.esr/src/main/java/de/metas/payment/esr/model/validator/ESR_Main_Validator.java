@@ -1,5 +1,6 @@
 package de.metas.payment.esr.model.validator;
 
+import de.metas.payment.esr.actionhandler.impl.UnknownInvoiceESRActionHandler;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
@@ -54,6 +55,7 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Discount, new DiscountESRActionHandler());
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment, new DuplicatePaymentESRActionHandler());
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unknown_Invoice, new UnknownInvoiceESRActionHandler());
 		
 		//
 		// Register ESR Payment Parsers

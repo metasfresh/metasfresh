@@ -27,10 +27,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
@@ -38,6 +40,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -55,6 +58,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -81,7 +85,6 @@ import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
@@ -93,15 +96,16 @@ import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Order;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -120,6 +124,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -128,6 +133,18 @@ public class PPOrderBL implements IPPOrderBL
 	public I_PP_Order getById(@NonNull final PPOrderId id)
 	{
 		return ppOrdersRepo.getById(id);
+	}
+
+	@Override
+	public List<I_PP_Order> getByIds(@NonNull final Set<PPOrderId> ids)
+	{
+		return ppOrdersRepo.getByIds(ids);
+	}
+
+	@Override
+	public String getDocumentNoById(@NonNull final PPOrderId ppOrderId)
+	{
+		return getById(ppOrderId).getDocumentNo();
 	}
 
 	@Override
@@ -167,7 +184,7 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setProcessed(false);
 		ppOrder.setProcessing(false);
 		ppOrder.setPosted(false);
-		setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, /* docSubType */null);
+		setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, DocSubType.NONE);
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
@@ -315,10 +332,10 @@ public class PPOrderBL implements IPPOrderBL
 	public void setDocType(
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final PPOrderDocBaseType docBaseType,
-			@Nullable final String docSubType)
+			@NonNull final DocSubType docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType.getCode())
+				.docBaseType(docBaseType.toDocBaseType())
 				.docSubType(docSubType)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())
@@ -333,10 +350,29 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 
-		ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
-		ppOrdersRepo.save(ppOrder);
+		closeOrder(ppOrder);
+	}
+
+	@Override
+	public void closeOrder(final I_PP_Order ppOrder)
+	{
+		// NOTE: on before complete we expect to get the PlanningStatus set to COMPLETE + process
+		// ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
+		// ppOrdersRepo.save(ppOrder);
 
 		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
+	}
+
+	@Override
+	public void closeOrdersByIds(@NonNull final Set<PPOrderId> ppOrderIds)
+	{
+		if (ppOrderIds.isEmpty())
+		{
+			return;
+		}
+
+		final List<I_PP_Order> ppOrders = ppOrdersRepo.getByIds(ppOrderIds);
+		ppOrders.forEach(this::closeOrder);
 	}
 
 	@Override
@@ -435,7 +471,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
 		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(orderRecord.getDocBaseType());
-		if(docBaseType.isRepairOrder())
+		if (docBaseType.isRepairOrder())
 		{
 			return;
 		}
@@ -618,6 +654,28 @@ public class PPOrderBL implements IPPOrderBL
 				.directlyPickIfFeasible(PPOrderUtil.pickIfFeasible(ppOrderPojo.getPpOrderData()))
 				.build();
 
-		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCreatedEvent);
+	}
+
+	@Override
+	public void completeDocument(@NonNull final I_PP_Order ppOrder)
+	{
+		documentBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		Loggables.addLog(
+				"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
+				ppOrder.getPP_Order_ID(), ppOrder.getDocumentNo());
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsToIssue(@NonNull final PPOrderId ppOrderId)
+	{
+		return orderBOMService.getProductIdsToIssue(ppOrderId);
+	}
+
+	@NonNull
+	public String getResourceName(@NonNull final ResourceId resourceId)
+	{
+		return resourceDAO.getById(resourceId).getName();
 	}
 }

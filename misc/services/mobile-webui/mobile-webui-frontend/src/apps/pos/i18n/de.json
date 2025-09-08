@@ -1,0 +1,116 @@
+{
+  "header": {
+    "closeCashJournal": "Kasse schließen",
+    "orders": "Aufträge"
+  },
+  "openCashJournal": {
+    "title": "Kasse öffnen",
+    "openingBalance": "Eröffnungssaldo",
+    "openingNote": "Eröffnungsvermerk",
+    "actions": {
+      "open": "Eröffnen"
+    }
+  },
+  "closeCashJournal": {
+    "title": "Kasse schließen",
+    "paymentMethod": "Zahlungsart",
+    "bookedAmt": "Gebucht",
+    "countedAmt": "Gezählt",
+    "differenceAmt": "Differenz",
+    "closingNote": "Abschlussvermerk",
+    "details": {
+      "type": {
+        "OPENING_BALANCE": "Eröffnungssaldo",
+        "CLOSING_DIFFERENCE": "Schlussdifferenz",
+        "CASH_PAYMENTS": "Barzahlungen",
+        "CASH_IN": "Bargeld einlösen",
+        "CASH_OUT": "Bargeld auszahlen"
+      }
+    },
+    "actions": {
+      "close": "Schließen",
+      "cancel": "Abbrechen"
+    }
+  },
+  "selectTerminal": {
+    "title": "Terminal auswählen"
+  },
+  "selectOrder": {
+    "title": "Auftrag auswählen"
+  },
+  "products": {
+    "searchBar": {
+      "placeholder": "Produkte durchsuchen..."
+    }
+  },
+  "currentOrder": {
+    "line": {
+      "at": "à"
+    },
+    "getWeightModal": {
+      "title": "Gewicht (%(uom)s)",
+      "weightPlaceholder": "Gewicht...",
+      "actions": {
+        "ok": "OK"
+      }
+    },
+    "totalAmt": "Summe",
+    "taxAmt": "MwSt.",
+    "actions": {
+      "pay": "Bezahlen",
+      "new": "Neu",
+      "void": "Annullieren",
+      "deleteLine": "Position löschen"
+    }
+  },
+  "payment": {
+    "totalAmt": "Summe",
+    "remainingAmt": "Restbetrag",
+    "method": {
+      "cash": "Bar",
+      "card": "Karte"
+    },
+    "status": {
+      "SUCCESSFUL": "Erfolgreich",
+      "FAILED": "Fehlgeschlagen",
+      "PENDING": "Ausstehend",
+      "NEW": "Neu"
+    },
+    "actions": {
+      "back": "Zurück",
+      "validate": "Überprüfen"
+    },
+    "modal": {
+      "cash": {
+        "title": "Barzahlung",
+        "payAmt": "Betrag ",
+        "tenderedAmt": "Bar erhalten",
+        "changeBackAmt": "Rückgeld",
+        "actions": {
+          "ok": "Bestätigen",
+          "cancel": "Abbrechen"
+        }
+      },
+      "card": {
+        "title": "Karte",
+        "orderOpenAmt": "Betrag (offen)",
+        "payAmt": "Zahlungsbetrag",
+        "cardReader": "Kartenleser",
+        "actions": {
+          "checkout": "Zur Kasse",
+          "cancel": "Abbrechen"
+        }
+      }
+    }
+  },
+  "summary": {
+    "title": "Zahlung erfolgreich",
+    "totalAmt": "Summe",
+    "tenderedAmt": "Bar erhalten",
+    "changeBackAmt": "Rückgeld",
+    "actions": {
+      "close": "Schließen",
+      "print": "Kassenbon drucken"
+    }
+  }
+}

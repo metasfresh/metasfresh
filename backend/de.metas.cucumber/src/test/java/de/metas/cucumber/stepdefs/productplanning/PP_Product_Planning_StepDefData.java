@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.productplanning;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.eevolution.model.I_PP_Product_Planning;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.ProductPlanningId;
 
-public class PP_Product_Planning_StepDefData extends StepDefData<I_PP_Product_Planning>
+public class PP_Product_Planning_StepDefData extends StepDefData<ProductPlanning>
+		implements StepDefDataGetIdAware<ProductPlanningId, ProductPlanning>
 {
 	public PP_Product_Planning_StepDefData()
 	{
-		super(I_PP_Product_Planning.class);
+		super(ProductPlanning.class);
+	}
+
+	@Override
+	public ProductPlanningId extractIdFromRecord(final ProductPlanning record)
+	{
+		return record.getId();
 	}
 }

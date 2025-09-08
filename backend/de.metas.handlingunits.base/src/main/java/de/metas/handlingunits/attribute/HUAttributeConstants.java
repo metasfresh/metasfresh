@@ -22,7 +22,6 @@ public final class HUAttributeConstants
 
 	public static final String ATTR_QualityDiscountPercent_Value = "QualityDiscountPercent";
 	public static final String ATTR_QualityNotice_Value = "QualityNotice";
-	public static final AttributeCode ATTR_SSCC18_Value = AttributeCode.ofString("SSCC18");
 	public static final AttributeCode ATTR_SubProducerBPartner_Value = AttributeConstants.ATTR_SubProducerBPartner_Value;
 
 	public static final AttributeCode ATTR_CostPrice = AttributeCode.ofString("HU_CostPrice");
@@ -44,10 +43,14 @@ public final class HUAttributeConstants
 	public static final String ATTR_Expired_Value_Expired = "expired";
 
 	public static final AttributeCode ATTR_Age = AttributeCode.ofString("Age");
+
+	public static final AttributeCode ATTR_AgeOffset = AttributeCode.ofString("AgeOffset");
 	public static final AttributeCode ATTR_ProductionDate = AttributeCode.ofString("ProductionDate");
 
 	public static final AttributeCode ATTR_Quarantine = AttributeCode.ofString("HU_Quarantine");
 	public static final String ATTR_Quarantine_Value_Quarantine = "quarantine";
+	
+	public static final AttributeCode ATTR_QRCode = AttributeCode.ofString("HU_QRCode");
 
 	public static String sqlBestBeforeDate(final String huIdColumnName)
 	{

@@ -329,8 +329,7 @@ public class MRMA extends X_M_RMA implements IDocument
 		MRMALine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		for (MRMALine line : lines)
@@ -763,9 +762,9 @@ public class MRMA extends X_M_RMA implements IDocument
         super.setProcessed (processed);
         if (get_ID() <= 0)
             return;
-        int noLine = DB.executeUpdateEx("UPDATE M_RMALine SET Processed=? WHERE M_RMA_ID=?",
-        		new Object[]{processed, get_ID()},
-        		get_TrxName());
+        int noLine = DB.executeUpdateAndThrowExceptionOnFail("UPDATE M_RMALine SET Processed=? WHERE M_RMA_ID=?",
+															 new Object[]{processed, get_ID()},
+															 get_TrxName());
         m_lines = null;
         log.debug("setProcessed - " + processed + " - Lines=" + noLine);
     }   //  setProcessed

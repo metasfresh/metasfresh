@@ -52,7 +52,7 @@ public interface IAttributeValuesProvider
 	/**
 	 * Checks if any value is allowed.
 	 *
-	 * In case any value is allowed, system won't try to check if a given value is found in {@link #getAvailableValues(IAttributeSet, I_M_Attribute)}.
+	 * In case any value is allowed, system won't try to check if a given value is found in {@link #getAvailableValues(Evaluatee)}.
 	 *
 	 * @return true if any value is allowed
 	 */

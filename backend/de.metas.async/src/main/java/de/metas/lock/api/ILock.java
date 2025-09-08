@@ -26,16 +26,17 @@ import de.metas.lock.exceptions.LockAlreadyClosedException;
 
 /**
  * Lock model.<br>
- *
+ * <p>
  * A lock instance could be used to lock/unlock one or more models.<br>
  * Use {@link ILockManager} to obaint an instance.
  *
  * @author tsa
- *
  */
 public interface ILock
 {
-	/** Null lock marker */
+	/**
+	 * Null lock marker
+	 */
 	ILock NULL = null;
 
 	/**
@@ -67,6 +68,8 @@ public interface ILock
 	 */
 	void unlockAll() throws LockAlreadyClosedException;
 
+	void unlockAllAfterTrxRollback();
+
 	/**
 	 * @return true if lock is closed
 	 */
@@ -76,11 +79,6 @@ public interface ILock
 	 * Same as {@link #unlockAll()}. If this method was already called, then it does nothing.
 	 */
 	void close();
-
-	/**
-	 * This method is to {@link #close()} what {@link #asAutocloseableOnTrxClose(String)} is to {@link #asAutoCloseable()}.
-	 */
-	void closeOnTrxClose(String localTrxName);
 
 	/**
 	 * Gets a lock auto-closeable.

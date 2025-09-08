@@ -1,15 +1,19 @@
 package de.metas.inventory.impexp;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.MockedImportRecordsAsyncExecutor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
-import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.impexp.InventoryImportProcess.InventoryGroupKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -32,7 +36,6 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -49,7 +52,7 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -94,6 +97,7 @@ public class InventoryImportProcessTest
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
 		SpringContextHolder.registerJUnitBean(new InventoryRepository());
 		SpringContextHolder.registerJUnitBean(new HuForInventoryLineFactory());
+		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
 
 		inventoryImportProcess = new InventoryImportProcess();
 
@@ -103,7 +107,7 @@ public class InventoryImportProcessTest
 
 		uomEach = BusinessTestHelper.createUomEach();
 		final I_M_AttributeSet attributeSet = attributesTestHelper.createM_AttributeSet();
-		final I_M_Product_Category productCategory  = BusinessTestHelper.createM_Product_Cagetory("ProductCategory", attributeSet);
+		final I_M_Product_Category productCategory = BusinessTestHelper.createM_Product_Cagetory("ProductCategory", attributeSet);
 		final I_M_Product product = BusinessTestHelper.createProduct("product", uomEach, productCategory);
 		product.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
 		saveRecord(product);
@@ -259,9 +263,10 @@ public class InventoryImportProcessTest
 			return docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 					.ctx(Env.getCtx())
 					.name("Inventory DocType for " + orgId)
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-					.docSubType(InventoryDocSubType.AggregatedHUInventory.getCode())
+					.docBaseType(DocBaseType.MaterialPhysicalInventory)
+					.docSubType(DocSubType.AggregatedHUInventory)
 					.adOrgId(orgId.getRepoId())
+					.glCategoryId(GLCategoryId.ofRepoId(123))
 					.build());
 		}
 

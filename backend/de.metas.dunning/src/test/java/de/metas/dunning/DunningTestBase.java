@@ -22,15 +22,14 @@ package de.metas.dunning;
  * #L%
  */
 
-import de.metas.acct.api.IPostingService;
-import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.acct.api.impl.PostingService;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
@@ -50,9 +49,9 @@ import de.metas.dunning.spi.impl.MockedCloseableIterator;
 import de.metas.dunning.spi.impl.MockedDunnableSource;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.impl.PlainInvoiceBL;
+import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -61,18 +60,16 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import de.metas.location.impl.DummyDocumentLocationBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -82,15 +79,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class DunningTestBase
 {
-	/**
-	 * Watches current test and dumps the database to console in case of failure
-	 */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -107,7 +100,7 @@ public class DunningTestBase
 	protected CurrencyId currencyCHF;
 	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);
 
-	@Before
+	@BeforeEach
 	public final void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
@@ -115,14 +108,14 @@ public class DunningTestBase
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
-		Services.get(ISysConfigBL.class).setValue(IPostingService.SYSCONFIG_Enabled, false, ClientId.SYSTEM, OrgId.ANY);
+		Services.get(ISysConfigBL.class).setValue(PostingService.SYSCONFIG_Enabled, false, ClientId.SYSTEM, OrgId.ANY);
 
 		dao = new PlainDunningDAO();
 		Services.registerService(IDunningDAO.class, dao);
 
 		db = dao.getDB();
 
-		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, DummyDocumentLocationBL.newInstanceForUnitTesting());
 
 		//
 		invoiceBL = new PlainInvoiceBL();
@@ -157,7 +150,7 @@ public class DunningTestBase
 		// nothing; to be implemented by particular test classes
 	}
 
-	@After
+	@AfterEach
 	public final void assumeAllIteratorsClosed()
 	{
 		MockedCloseableIterator.assertAllClosed();
@@ -206,6 +199,9 @@ public class DunningTestBase
 	protected PlainDunningContext createPlainDunningContext()
 	{
 		final Properties ctx = getCtx();
+		ctx.setProperty("#AD_Client_ID", "1");
+		ctx.setProperty("#AD_Org_ID", "1");
+
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
 		final PlainDunningContext dunningContext = new PlainDunningContext(ctx, trxRunConfig);
 		final DunningConfig config = dunningContext.getDunningConfig();

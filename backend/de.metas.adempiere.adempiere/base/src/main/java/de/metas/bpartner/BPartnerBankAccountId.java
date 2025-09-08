@@ -1,13 +1,12 @@
 package de.metas.bpartner;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -72,12 +71,12 @@ public class BPartnerBankAccountId implements RepoIdAware
 		this.bpartnerId = bpartnerId;
 	}
 
-	public static int toRepoId(final BPartnerBankAccountId id)
+	public static int toRepoId(@Nullable final BPartnerBankAccountId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
 
-	public static boolean equals(final BPartnerBankAccountId id1, final BPartnerBankAccountId id2)
+	public static boolean equals(@Nullable final BPartnerBankAccountId id1, @Nullable final BPartnerBankAccountId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

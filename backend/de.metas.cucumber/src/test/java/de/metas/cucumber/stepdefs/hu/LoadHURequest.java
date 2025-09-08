@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,17 +33,10 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class LoadHURequest
+class LoadHURequest
 {
-	@NonNull
-	HuId huId;
-
-	@NonNull
-	String huIdentifier;
-
-	@Nullable
-	String huStatus;
-
-	@Nullable
-	HuId piItemProductId;
+	@NonNull HuId huId;
+	@NonNull StepDefDataIdentifier huIdentifier;
+	@Nullable String huStatus;
+	@Nullable HUPIItemProductId piItemProductId;
 }

@@ -53,11 +53,11 @@ import java.nio.file.Paths;
 @Service
 public class PrintingDataToPDFFileStorer
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintingDataToPDFFileStorer.class);
+	private final static Logger logger = LogManager.getLogger(PrintingDataToPDFFileStorer.class);
 
 	@VisibleForTesting
 	final static String SYSCONFIG_STORE_PDF_BASE_DIRECTORY = "de.metas.printing.StorePDFBaseDirectory";
-	final static String SYSCONFIG_STORE_PDF_INCLUDE_SYSTEMTIME_MS_IN_FILENAME = "de.metas.printing.IncludeSystemTimeMSInFileName";
+	final static String SYSCONFIG_STORE_PDF_INCLUDE_SYSTEM_TIME_MS_IN_FILENAME = "de.metas.printing.IncludeSystemTimeMSInFileName";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -75,7 +75,7 @@ public class PrintingDataToPDFFileStorer
 		}
 	}
 
-	public void storeInFileSystem0(@NonNull final PrintingData printingData)
+	private void storeInFileSystem0(@NonNull final PrintingData printingData)
 	{
 		final String baseDirectory = getBaseDirectory(printingData);
 
@@ -107,7 +107,7 @@ public class PrintingDataToPDFFileStorer
 	private String extractFileName(final @NonNull PrintingData printingData)
 	{
 		final boolean includeSystemTimeMS = sysConfigBL.getBooleanValue(
-				SYSCONFIG_STORE_PDF_INCLUDE_SYSTEMTIME_MS_IN_FILENAME,
+				SYSCONFIG_STORE_PDF_INCLUDE_SYSTEM_TIME_MS_IN_FILENAME,
 				true /*defaultValue*/,
 				ClientId.METASFRESH.getRepoId(),
 				printingData.getOrgId().getRepoId());

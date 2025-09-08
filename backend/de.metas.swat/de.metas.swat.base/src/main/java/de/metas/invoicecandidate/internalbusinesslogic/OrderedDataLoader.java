@@ -1,11 +1,5 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
@@ -22,6 +16,11 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -73,13 +72,13 @@ public class OrderedDataLoader
 
 		if (hasInvalidOrder)
 		{
-			result.qty(Quantitys.createZero(icUomId));
-			result.qtyInStockUom(Quantitys.createZero(stockUomId));
+			result.qty(Quantitys.zero(icUomId));
+			result.qtyInStockUom(Quantitys.zero(stockUomId));
 		}
 		else
 		{
-			result.qty(Quantitys.create(invoiceCandidateRecord.getQtyEntered(), icUomId));
-			result.qtyInStockUom(Quantitys.create(invoiceCandidateRecord.getQtyOrdered(), stockUomId));
+			result.qty(Quantitys.of(invoiceCandidateRecord.getQtyEntered(), icUomId));
+			result.qtyInStockUom(Quantitys.of(invoiceCandidateRecord.getQtyOrdered(), stockUomId));
 		}
 
 		return result.build();

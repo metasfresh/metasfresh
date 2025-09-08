@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.TableRecordMDC;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -21,6 +22,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -40,6 +42,8 @@ import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 @Component
 public class C_OLCand
 {
+	private static final AdMessageKey MSG_INVALID_QUANTITY = AdMessageKey.of("de.metas.ordercandidate.modelvalidator.C_OLCand.InvalidQuantity");
+	
 	private final OLCandValidatorService olCandValidatorService;
 	private final OLCandLocationsUpdaterService olCandLocationsUpdaterService;
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
@@ -225,5 +229,17 @@ public class C_OLCand
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(CoalesceUtil.firstGreaterThanZero(cand.getBill_BPartner_ID(), cand.getC_BPartner_ID()));
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(cand.getC_BPartner_SalesRep_ID());
 		bpartnerBL.validateSalesRep(bPartnerId, salesRepId);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_C_OLCand.COLUMNNAME_QtyEntered_Override)
+	public void validateQtyEnteredOverride(@NonNull final I_C_OLCand cand)
+	{
+		if (cand.getQtyEntered_Override().signum() >= 0)
+		{
+			return;
+		}
+
+		throw new AdempiereException(MSG_INVALID_QUANTITY);
 	}
 }

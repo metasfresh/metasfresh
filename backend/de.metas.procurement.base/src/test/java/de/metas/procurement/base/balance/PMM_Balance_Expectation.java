@@ -1,21 +1,8 @@
-package de.metas.procurement.base.balance;
-
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
-import org.compiere.util.TimeUtil;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-
-import de.metas.procurement.base.model.I_PMM_Balance;
-
 /*
  * #%L
  * de.metas.procurement.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,14 +11,27 @@ import de.metas.procurement.base.model.I_PMM_Balance;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.procurement.base.balance;
+
+import de.metas.procurement.base.model.I_PMM_Balance;
+import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.Assertions;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class PMM_Balance_Expectation
 {
@@ -58,30 +58,30 @@ public class PMM_Balance_Expectation
 
 	public PMM_Balance_Expectation assertExpected(final String msg, final I_PMM_Balance actualBalance)
 	{
-		final String msgToUse = "" + msg 
+		final String msgToUse = "" + msg
 				+ "\n Actual: " + actualBalance
 				+ "\n Expectation: " + this;
 
-		Assert.assertNotNull("exists - " + msgToUse, actualBalance);
-		Assert.assertEquals("C_BPartner_ID - " + msgToUse, C_BPartner_ID, (Integer)actualBalance.getC_BPartner_ID());
-		Assert.assertEquals("M_Product_ID - " + msgToUse, M_Product_ID, (Integer)actualBalance.getM_Product_ID());
-		Assert.assertEquals("M_AttributeSetInstance_ID - " + msgToUse, M_AttributeSetInstance_ID, (Integer)actualBalance.getM_AttributeSetInstance_ID());
-		
+		Assertions.assertNotNull(actualBalance, "exists - " + msgToUse);
+		Assertions.assertEquals(C_BPartner_ID, (Integer)actualBalance.getC_BPartner_ID(), "C_BPartner_ID - " + msgToUse);
+		Assertions.assertEquals(M_Product_ID, (Integer)actualBalance.getM_Product_ID(), "M_Product_ID - " + msgToUse);
+		Assertions.assertEquals(M_AttributeSetInstance_ID, (Integer)actualBalance.getM_AttributeSetInstance_ID(), "M_AttributeSetInstance_ID - " + msgToUse);
+
 		final Integer actualM_HU_PI_Item_Product_ID = actualBalance.getM_HU_PI_Item_Product_ID() > 0 ? actualBalance.getM_HU_PI_Item_Product_ID() : null;
-		Assert.assertEquals("M_HU_PI_Item_Product_ID - " + msgToUse, M_HU_PI_Item_Product_ID, actualM_HU_PI_Item_Product_ID);
+		Assertions.assertEquals(M_HU_PI_Item_Product_ID, actualM_HU_PI_Item_Product_ID, "M_HU_PI_Item_Product_ID - " + msgToUse);
 
 		final Integer actual_C_Flatrate_DataEntry_ID = actualBalance.getC_Flatrate_DataEntry_ID() > 0 ? actualBalance.getC_Flatrate_DataEntry_ID() : null;
-		Assert.assertEquals("C_Flatrate_DataEntry_ID - " + msgToUse, C_Flatrate_DataEntry_ID, actual_C_Flatrate_DataEntry_ID);
+		Assertions.assertEquals(C_Flatrate_DataEntry_ID, actual_C_Flatrate_DataEntry_ID, "C_Flatrate_DataEntry_ID - " + msgToUse);
 
 		//
-		Assert.assertEquals("DateMonth - " + msgToUse, dateMonth, actualBalance.getMonthDate());
-		Assert.assertEquals("DateWeek - " + msgToUse, dateWeek, actualBalance.getWeekDate());
+		Assertions.assertEquals(dateMonth, actualBalance.getMonthDate(), "DateMonth - " + msgToUse);
+		Assertions.assertEquals(dateWeek, actualBalance.getWeekDate(), "DateWeek - " + msgToUse);
 
 		//
-		Assert.assertThat("QtyPromised - " + msgToUse, actualBalance.getQtyPromised(), Matchers.comparesEqualTo(qtyPromised));
-		Assert.assertThat("QtyPromised_TU - " + msgToUse, actualBalance.getQtyPromised_TU(), Matchers.comparesEqualTo(qtyPromised_TU));
-		Assert.assertThat("QtyOrdered - " + msgToUse, actualBalance.getQtyOrdered(), Matchers.comparesEqualTo(qtyOrdered));
-		Assert.assertThat("QtyOrdered_TU - " + msgToUse, actualBalance.getQtyOrdered_TU(), Matchers.comparesEqualTo(qtyOrdered_TU));
+		assertThat(actualBalance.getQtyPromised()).as("QtyPromised - " + msgToUse).isEqualByComparingTo(qtyPromised);
+		assertThat(actualBalance.getQtyPromised_TU()).as("QtyPromised_TU - " + msgToUse).isEqualByComparingTo(qtyPromised_TU);
+		assertThat(actualBalance.getQtyOrdered()).as("QtyOrdered - " + msgToUse).isEqualByComparingTo(qtyOrdered);
+		assertThat(actualBalance.getQtyOrdered_TU()).as("QtyOrdered_TU - " + msgToUse).isEqualByComparingTo(qtyOrdered_TU);
 
 		return this;
 	}
@@ -119,7 +119,7 @@ public class PMM_Balance_Expectation
 		this.M_Product_ID = M_Product_ID;
 		return this;
 	}
-	
+
 	public PMM_Balance_Expectation setM_AttributeSetInstance_ID(final int M_AttributeSetInstance_ID)
 	{
 		this.M_AttributeSetInstance_ID = M_AttributeSetInstance_ID;

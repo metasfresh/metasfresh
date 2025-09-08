@@ -321,7 +321,7 @@ public class ChangeLogProcess extends JavaProcess
 			m_sqlInsert.append(m_sqlInsertValue).append(")");
 			log.info(m_sqlInsert.toString());
 			//
-			no = DB.executeUpdate(m_sqlInsert.toString(), get_TrxName());
+			no = DB.executeUpdateAndSaveErrorOnFail(m_sqlInsert.toString(), get_TrxName());
 			if (no == -1)
 			{
 			//	log.warn("Insert failed - " + m_sqlInsert);
@@ -340,7 +340,7 @@ public class ChangeLogProcess extends JavaProcess
 			m_sqlUpdate.append(m_sqlUpdateWhere);
 			log.info(m_sqlUpdate.toString());
 			//
-			no = DB.executeUpdate(m_sqlUpdate.toString(), get_TrxName());
+			no = DB.executeUpdateAndSaveErrorOnFail(m_sqlUpdate.toString(), get_TrxName());
 			if (no == -1)
 			{
 			//	log.warn("Failed - " + m_sqlUpdate);
@@ -371,7 +371,7 @@ public class ChangeLogProcess extends JavaProcess
 	{
 		log.info("");
 		String sql = "UPDATE AD_ChangeLog SET IsCustomization='N' WHERE IsCustomization='Y'";
-		int resetNo = DB.executeUpdate(sql, get_TrxName());
+		int resetNo = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		
 		int updateNo = 0;
 		//	Get Tables
@@ -403,7 +403,7 @@ public class ChangeLogProcess extends JavaProcess
 					.append (columnName)
 					.append (" FROM ").append(tableName)
 					.append (" WHERE EntityType IN ('D','C'))");
-				int no = DB.executeUpdate(update.toString(), get_TrxName());
+				int no = DB.executeUpdateAndSaveErrorOnFail(update.toString(), get_TrxName());
 				log.info(table.getTableName() + " = " + no);
 				updateNo += no;
 				

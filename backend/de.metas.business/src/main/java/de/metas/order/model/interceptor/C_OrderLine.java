@@ -46,6 +46,7 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -227,6 +228,7 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
 			I_C_OrderLine.COLUMNNAME_QtyDelivered,
+			I_C_OrderLine.COLUMNNAME_IsDeliveryClosed,
 			I_C_OrderLine.COLUMNNAME_C_Order_ID })
 	public void updateReserved(final I_C_OrderLine orderLine)
 	{
@@ -253,7 +255,7 @@ public class C_OrderLine
 		if (developerModeBL.isEnabled())
 		{
 			final AdempiereException ex = new AdempiereException("@" + ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
-																		 + "\nStorage: " + ol);
+					+ "\nStorage: " + ol);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 	}
@@ -269,8 +271,8 @@ public class C_OrderLine
 		final boolean qtyOrderedLessThanZero = ol.getQtyOrdered().signum() < 0;
 
 		Check.errorIf(qtyOrderedLessThanZero,
-					  "QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
-					  ol.getQtyOrdered(), ol, ol.getC_Order_ID());
+				"QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
+				ol.getQtyOrdered(), ol, ol.getC_Order_ID());
 	}
 
 	// task 06727
@@ -375,11 +377,11 @@ public class C_OrderLine
 		orderLine.setM_DiscountSchemaBreak(null);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-										 .orderLine(orderLine)
-										 .resultUOM(ResultUOM.PRICE_UOM)
-										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
-										 .updateLineNetAmt(true)
-										 .build());
+				.orderLine(orderLine)
+				.resultUOM(ResultUOM.PRICE_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
+				.updateLineNetAmt(true)
+				.build());
 
 		logger.debug("Setting TaxAmtInfo for {}", orderLine);
 		orderLineBL.setTaxAmtInfo(orderLine);
@@ -419,5 +421,30 @@ public class C_OrderLine
 		}
 
 		groupChangesHandler.renumberOrderLinesForOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID, I_C_OrderLine.COLUMNNAME_QtyOrdered })
+	public void updateWeight(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		orderBL.setWeightFromLines(order);
+
+		saveRecord(order);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge, I_C_OrderLine.COLUMNNAME_PriceActual, I_C_OrderLine.COLUMNNAME_PriceEntered })
+	public void updatePriceToZero(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.isWithoutCharge())
+		{
+			orderLine.setPriceActual(BigDecimal.ZERO);
+			orderLine.setPriceEntered(BigDecimal.ZERO);
+			orderLine.setIsManualPrice(true);
+
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+		}
 	}
 }

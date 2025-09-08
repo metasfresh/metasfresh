@@ -1,0 +1,95 @@
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { test } from '../../../../playwright.config';
+import { expect } from '@playwright/test';
+import { RawMaterialIssueLineScreen } from './issue/RawMaterialIssueLineScreen';
+import { MaterialReceiptLineScreen } from './receipt/MaterialReceiptLineScreen';
+import { YesNoDialog } from '../../dialogs/YesNoDialog';
+import { ManufacturingJobsListScreen } from './ManufacturingJobsListScreen';
+import { PickingJobLineScreen } from '../picking/PickingJobLineScreen';
+import { GenerateHUQRCodesScreen } from './generateHUQRCodes/GenerateHUQRCodesScreen';
+
+const NAME = 'ManufacturingJobScreen';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('#WFProcessScreen');
+
+export const ManufacturingJobScreen = {
+    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
+        await expect(containerElement()).toBeVisible();
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await ManufacturingJobScreen.expectVisible();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await ManufacturingJobsListScreen.waitForScreen();
+    }),
+
+    goBackToPickingJobLine: async () => await test.step(`${NAME} - Go back to picking job line`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+        await PickingJobLineScreen.waitForScreen();
+    }),
+
+    generateSingleHUQRCode: async ({ piTestId, expectNumberOfHUs, numberOfHUs, expectNumberOfCopies = 1 }) => await test.step(`${NAME} - Generate ${numberOfHUs ?? expectNumberOfHUs ?? '?'} x HU QR codes (${expectNumberOfCopies} copies)`, async () => {
+        await page.getByTestId(`generateHUQRCodes-button`).tap();
+        await GenerateHUQRCodesScreen.waitForScreen();
+        const generatedQRCodesResult = await GenerateHUQRCodesScreen.print({ piTestId, expectNumberOfHUs, numberOfHUs, expectNumberOfCopies });
+        console.log('Got result:\n' + JSON.stringify(generatedQRCodesResult, null, 2));
+        expect(generatedQRCodesResult?.qrCodes).toHaveLength(1);
+        const generatedQRCode = generatedQRCodesResult.qrCodes[0].code;
+        console.log('Generated QR codes:\n' + generatedQRCode);
+        return generatedQRCode;
+    }),
+
+    issueRawProduct: async ({ index, qrCode, expectQtyEntered }) => await test.step(`${NAME} - Issue line ${index}`, async () => {
+        await ManufacturingJobScreen.clickIssueButton({ index });
+        await RawMaterialIssueLineScreen.scanQRCode({ qrCode, expectQtyEntered });
+        await RawMaterialIssueLineScreen.goBack();
+
+    }),
+
+    clickIssueButton: async ({ index }) => await test.step(`${NAME} - Click issue button ${index}`, async () => {
+        await ManufacturingJobScreen.expectVisible();
+        await page.getByTestId(`issue-${index}-button`).tap();
+        await RawMaterialIssueLineScreen.waitForScreen();
+    }),
+
+    clickReceiveButton: async ({ index }) => await test.step(`${NAME} - Click receive button ${index}`, async () => {
+        await ManufacturingJobScreen.expectVisible();
+        await locateReceiveButton({ index }).tap();
+        await MaterialReceiptLineScreen.waitForScreen();
+    }),
+
+    expectReceiveButton: async ({ index, qtyToReceive, qtyReceived, catchWeight }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
+        const lineButton = locateReceiveButton({ index });
+
+        if (qtyReceived !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtycurrent', value: qtyReceived });
+        }
+        if (catchWeight !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtycurrentcatchweight', value: catchWeight });
+        }
+        if (qtyToReceive !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtytarget', value: qtyToReceive });
+        }
+    }),
+
+    complete: async () => await test.step(`${NAME} - Complete`, async () => {
+        await ManufacturingJobScreen.expectVisible();
+        await page.locator('#last-confirm-button').tap();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await ManufacturingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+};
+
+const locateReceiveButton = ({ index }) => {
+    return page.getByTestId(`receipt-${index}-button`);
+};
+
+const expectButtonAttribute = async ({ lineButton, attribute, value }) => await step(`${NAME} - Expect button attribute ${attribute}='${value}'`, async () => {
+    const lineButtonInfo = lineButton.locator('.picking-row-info');
+    await expect(lineButtonInfo).toHaveAttribute(attribute, value);
+});

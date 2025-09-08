@@ -22,13 +22,10 @@ package de.metas.materialtracking.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
+import de.metas.materialtracking.IMaterialTrackingDAO;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
@@ -43,21 +40,22 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.materialtracking.IMaterialTrackingDAO;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class MaterialTrackingDAOTest
 {
 	private IContextAware context;
 	private MaterialTrackingDAO materialTrackingDAO;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -76,17 +74,17 @@ public class MaterialTrackingDAOTest
 		final I_C_OrderLine doc = createDocument(I_C_OrderLine.class);
 
 		final I_M_Material_Tracking_Ref ref = materialTrackingDAO.createMaterialTrackingRefNoSave(materialTracking, doc);
-		Assert.assertEquals("Invalid M_Material_Tracking_ID", materialTracking.getM_Material_Tracking_ID(), ref.getM_Material_Tracking_ID());
-		Assert.assertEquals("Invalid AD_Table_ID", InterfaceWrapperHelper.getModelTableId(doc), ref.getAD_Table_ID());
-		Assert.assertEquals("Invalid Record_ID", doc.getC_OrderLine_ID(), ref.getRecord_ID());
-		Assert.assertEquals("Invalid IsActive", true, ref.isActive());
-		Assert.assertEquals("Invalid IsQualityInspectionDoc (shall be false by default)", false, ref.isQualityInspectionDoc());
+		Assertions.assertEquals( materialTracking.getM_Material_Tracking_ID(),  ref.getM_Material_Tracking_ID(), "Invalid M_Material_Tracking_ID");
+		Assertions.assertEquals( InterfaceWrapperHelper.getModelTableId(doc),  ref.getAD_Table_ID(), "Invalid AD_Table_ID");
+		Assertions.assertEquals( doc.getC_OrderLine_ID(),  ref.getRecord_ID(), "Invalid Record_ID");
+		Assertions.assertEquals( true,  ref.isActive(), "Invalid IsActive");
+		Assertions.assertEquals( false,  ref.isQualityInspectionDoc(), "Invalid IsQualityInspectionDoc (shall be false by default)");
 
 		final I_C_OrderLine docRetrieved = materialTrackingDAO.retrieveReference(ref, I_C_OrderLine.class);
-		Assert.assertEquals("Invalid retrieved document", doc, docRetrieved);
+		Assertions.assertEquals( doc,  docRetrieved, "Invalid retrieved document");
 
 		// Validate that the caching is working correctly
-		Assert.assertSame("Invalid retrieved document", doc, docRetrieved); // shall be exactly the same because it's cached
+		Assertions.assertSame(doc, docRetrieved, "Invalid retrieved document"); // shall be exactly the same because it's cached
 	}
 
 	@Test
@@ -97,7 +95,7 @@ public class MaterialTrackingDAOTest
 		createMaterialTrackingRef(materialTracking, orderLine, false);
 
 		final I_M_Material_Tracking materialTrackingActual = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(orderLine);
-		Assert.assertEquals("Invalid material tracking retrieved", materialTracking, materialTrackingActual);
+		Assertions.assertEquals( materialTracking,  materialTrackingActual, "Invalid material tracking retrieved");
 
 		test_retrieveMaterialTrackingForModels_UsingQueryBuilder(materialTracking, orderLine);
 	}
@@ -108,7 +106,7 @@ public class MaterialTrackingDAOTest
 		final I_C_OrderLine orderLine = createDocument(I_C_OrderLine.class);
 
 		final I_M_Material_Tracking materialTrackingActual = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(orderLine);
-		Assert.assertEquals("Invalid material tracking retrieved", null, materialTrackingActual);
+		Assertions.assertEquals( null,  materialTrackingActual, "Invalid material tracking retrieved");
 
 		test_retrieveMaterialTrackingForModels_UsingQueryBuilder(null, orderLine);
 	}
@@ -142,8 +140,8 @@ public class MaterialTrackingDAOTest
 				.addEqualsFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
 		final List<I_M_Material_Tracking> materialTrackingsActual = materialTrackingDAO.retrieveMaterialTrackingForModels(orderLineQuery);
 
-		Assert.assertEquals("Invalid material tracking list fetched for " + orderLine,
-				materialTrackingsExpected, materialTrackingsActual);
+		Assertions.assertEquals(
+				materialTrackingsExpected,  materialTrackingsActual, "Invalid material tracking list fetched for " + orderLine);
 	}
 
 	@Test
@@ -163,7 +161,7 @@ public class MaterialTrackingDAOTest
 		try
 		{
 			materialTrackingDAO.retrieveSingleMaterialTrackingForModel(orderLine);
-			Assert.fail("Retrieval in case document is assigned to multiple material trackings shall fail");
+			Assertions.fail("Retrieval in case document is assigned to multiple material trackings shall fail");
 		}
 		catch (Exception e)
 		{
@@ -203,9 +201,9 @@ public class MaterialTrackingDAOTest
 		// Add some regular orders in between
 		createMaterialTrackingRef(materialTracking, createDocument(I_PP_Order.class), false);
 
-		Assert.assertEquals("Invalid Inspection number", 1, materialTrackingDAO.retrieveNumberOfInspection(ppOrder_QI1));
-		Assert.assertEquals("Invalid Inspection number", 2, materialTrackingDAO.retrieveNumberOfInspection(ppOrder_QI2));
-		Assert.assertEquals("Invalid Inspection number", 3, materialTrackingDAO.retrieveNumberOfInspection(ppOrder_QI3));
+		Assertions.assertEquals( 1,  materialTrackingDAO.retrieveNumberOfInspection(ppOrder_QI1), "Invalid Inspection number");
+		Assertions.assertEquals( 2,  materialTrackingDAO.retrieveNumberOfInspection(ppOrder_QI2), "Invalid Inspection number");
+		Assertions.assertEquals( 3,  materialTrackingDAO.retrieveNumberOfInspection(ppOrder_QI3), "Invalid Inspection number");
 	}
 
 	@Test
@@ -217,7 +215,7 @@ public class MaterialTrackingDAOTest
 		try
 		{
 			materialTrackingDAO.retrieveNumberOfInspection(ppOrder_QI1);
-			Assert.fail("Shall fail because there is no material tracking for our Quality Inspection order");
+			Assertions.fail("Shall fail because there is no material tracking for our Quality Inspection order");
 		}
 		catch (AdempiereException e)
 		{
@@ -284,11 +282,11 @@ public class MaterialTrackingDAOTest
 		// Make sure retrieved references are correctly sorted
 		final List<I_M_Material_Tracking_Ref> refsActualSorted = new ArrayList<>(refsActual);
 		Collections.sort(refsActualSorted, getMaterialTrackingRefStandardComparator());
-		Assert.assertEquals("material tracking references are not correctly sorted", refsActualSorted, refsActual);
+		Assertions.assertEquals( refsActualSorted,  refsActual, "material tracking references are not correctly sorted");
 
 		//
 		// Make sure actual references are as expected
-		Assert.assertEquals("Invalid retrieved material tracking references for " + documentType, refsExpected, refsActual);
+		Assertions.assertEquals( refsExpected,  refsActual, "Invalid retrieved material tracking references for " + documentType);
 	}
 
 	protected I_M_Material_Tracking createMaterialTracking()

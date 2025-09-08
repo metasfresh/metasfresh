@@ -4,13 +4,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
-import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -170,7 +171,10 @@ public class HUShippingFacade
 		{
 			final List<I_M_Package> result = trxManager
 					//dev-note: call in new trx so they are available in ServerBoot when generating the shipments
-					.callInNewTrx(() -> huShipperTransportationBL.addHUsToShipperTransportation(ShipperTransportationId.ofRepoId(addToShipperTransportationId), hus));
+					.callInNewTrx(() -> huShipperTransportationBL.addHUsToShipperTransportation(
+							ShipperTransportationId.ofRepoId(addToShipperTransportationId),
+							CreatePackageForHURequest.ofHUsList(hus)
+					));
 
 			mPackagesCreated.addAll(result);
 
@@ -225,7 +229,7 @@ public class HUShippingFacade
 		}
 
 		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments)
-				.listIds(InvoiceCandidateId::ofRepoId);
+				.idsAsSet(InvoiceCandidateId::ofRepoId);
 		if (invoiceCandidateIds.isEmpty())
 		{
 			throw new AdempiereException("@NotFound@ @C_Invoice_Candidate_ID@")

@@ -1,14 +1,14 @@
 package de.metas.notification;
 
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.slf4j.Logger;
-
 import de.metas.document.engine.IDocumentBL;
 import de.metas.event.EventMessageFormatTemplate;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -20,12 +20,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,14 +34,12 @@ import de.metas.util.Services;
 
 /**
  * {@link UserNotification}'s message formatter.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
-@SuppressWarnings("serial")
 final class UserNotificationDetailMessageFormat extends EventMessageFormatTemplate
 {
-	public static final UserNotificationDetailMessageFormat newInstance()
+	public static UserNotificationDetailMessageFormat newInstance()
 	{
 		return new UserNotificationDetailMessageFormat();
 	}
@@ -54,10 +52,10 @@ final class UserNotificationDetailMessageFormat extends EventMessageFormatTempla
 	}
 
 	@Override
-	protected String formatTableRecordReference(final ITableRecordReference recordRef)
+	protected String formatTableRecordReference(@NonNull final ITableRecordReference recordRef)
 	{
 		// Retrieve the record
-		Object record;
+		final Object record;
 		try
 		{
 			final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
@@ -69,7 +67,19 @@ final class UserNotificationDetailMessageFormat extends EventMessageFormatTempla
 			return "<" + recordRef.getRecord_ID() + ">";
 		}
 
+		if (record == null)
+		{
+			logger.info("Failed retrieving record for " + recordRef);
+			return "<" + recordRef.getRecord_ID() + ">";
+		}
+
 		final String documentNo = Services.get(IDocumentBL.class).getDocumentNo(record);
 		return documentNo;
+	}
+
+	@Override
+	protected String formatText(final String text)
+	{
+		return text == null ? "" : text;
 	}
 }

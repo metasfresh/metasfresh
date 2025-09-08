@@ -2,6 +2,7 @@ package de.metas.order;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.ColorId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -43,6 +44,6 @@ public interface IOrderLinePricingConditions extends ISingletonService
 	 */
 	void failForMissingPricingConditions(I_C_Order order);
 
-	int getTemporaryPriceConditionsColorId();
+	ColorId getTemporaryPriceConditionsColorId();
 
 }

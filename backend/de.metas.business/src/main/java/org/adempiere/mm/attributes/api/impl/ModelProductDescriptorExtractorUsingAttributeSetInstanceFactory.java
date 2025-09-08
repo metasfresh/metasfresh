@@ -1,18 +1,16 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Preconditions;
-
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -55,11 +53,17 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory
 				.createAttributesKeyFromASIStorageAttributes(asiId)
 				.orElse(defaultAttributesKey);
 
-		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
+		return ProductDescriptor.forProductAndAttributes(
 				asiAware.getM_Product_ID(),
 				storageAttributesKey,
 				asiId.getRepoId());
-
-		return productDescriptor;
 	}
+
+	@Override
+	public final ProductDescriptor createProductDescriptor(final int productId, @NonNull final AttributeSetInstanceId asiId)
+	{
+		final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
+		return ProductDescriptor.forProductAndAttributes(productId, storageAttributesKey, asiId.getRepoId());
+	}
+
 }

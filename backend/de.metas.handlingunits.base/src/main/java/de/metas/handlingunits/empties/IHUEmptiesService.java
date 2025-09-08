@@ -4,7 +4,6 @@ import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.ISingletonService;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
@@ -35,29 +34,15 @@ import java.util.Properties;
 public interface IHUEmptiesService extends ISingletonService
 {
 	/**
-	 * Gets the warehouse to be used for empties (Gebinde).
-	 * 
-	 * The empties warehouse is taken from a special distribution network that has isHUDestroyed = true, from the (first) line that has the warehouse source the one given as parameter
-	 *
-	 * @param warehouse counter part warehouse, i.e. on which warehouse the empties are currently on
-	 *
-	 * @return the empties warehouse which shall be used for given counterpart warehouse
-	 * @throws AdempiereException if empties warehouse was not found
-	 */
-	I_M_Warehouse getEmptiesWarehouse(I_M_Warehouse warehouse);
-
-	/**
 	 * Gets the warehouse locator to be used for empties.
 	 * 
 	 * @return empties locator
-	 * @see #getEmptiesWarehouse(I_M_Warehouse)
 	 */
 	I_M_Locator getEmptiesLocator(I_M_Warehouse warehouse);
 
 	/**
 	 * Generate movements for the empties (Leergut) inOut. If the given <code>inout</code> is a receipt, the movement will be from inOut's warehouse to the empties-warehouse (Gebindelager). If the
 	 * inOut is a shipment, the movement will be in the opposite direction.
-	 *
 	 * task 08070
 	 */
 	void generateMovementFromEmptiesInout(I_M_InOut emptiesInOut);

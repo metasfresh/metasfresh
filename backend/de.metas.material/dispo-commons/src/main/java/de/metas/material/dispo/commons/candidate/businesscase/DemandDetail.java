@@ -51,8 +51,6 @@ public class DemandDetail implements BusinessCaseDetail
 		final int orderId;
 		final int orderLineId;
 		final int subscriptionProgressId;
-		final int forecastId = UNSPECIFIED_REPO_ID;
-		final int forecastLineId = UNSPECIFIED_REPO_ID;
 		if (documentDescriptor instanceof OrderLineDescriptor)
 		{
 			final OrderLineDescriptor orderLineDescriptor = (OrderLineDescriptor)documentDescriptor;
@@ -77,12 +75,13 @@ public class DemandDetail implements BusinessCaseDetail
 				.shipmentScheduleId(shipmentScheduleId)
 				.orderLineId(orderLineId)
 				.orderId(orderId)
-				.forecastLineId(forecastLineId)
-				.forecastId(forecastId)
+				.forecastLineId(UNSPECIFIED_REPO_ID)
+				.forecastId(UNSPECIFIED_REPO_ID)
 				.subscriptionProgressId(subscriptionProgressId)
 				.qty(plannedQty).build();
 	}
 
+	@Nullable
 	public static DemandDetail forSupplyRequiredDescriptorOrNull(@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		return supplyRequiredDescriptor != null
@@ -90,6 +89,7 @@ public class DemandDetail implements BusinessCaseDetail
 				: null;
 	}
 
+	@NonNull
 	public static DemandDetail forSupplyRequiredDescriptor(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		return DemandDetail.builder()
@@ -100,7 +100,7 @@ public class DemandDetail implements BusinessCaseDetail
 				.orderLineId(toUnspecifiedIfZero(supplyRequiredDescriptor.getOrderLineId()))
 				.shipmentScheduleId(toUnspecifiedIfZero(supplyRequiredDescriptor.getShipmentScheduleId()))
 				.subscriptionProgressId(toUnspecifiedIfZero(supplyRequiredDescriptor.getSubscriptionProgressId()))
-				.qty(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.qty(supplyRequiredDescriptor.getQtyToSupplyBD())
 				.build();
 	}
 
@@ -162,7 +162,7 @@ public class DemandDetail implements BusinessCaseDetail
 	int demandCandidateId;
 
 	/**
-	 *  dev-note: it's about an {@link de.metas.material.event.MaterialEvent} traceId, currently used when posting SupplyRequiredEvents
+	 * dev-note: it's about an {@link de.metas.material.event.MaterialEvent} traceId, currently used when posting SupplyRequiredEvents
 	 */
 	@With
 	@Nullable
@@ -176,12 +176,7 @@ public class DemandDetail implements BusinessCaseDetail
 
 	public static DemandDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
 	{
-		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof DemandDetail;
-		if (canBeCast)
-		{
-			return cast(businessCaseDetail);
-		}
-		return null;
+		return businessCaseDetail instanceof DemandDetail ? cast(businessCaseDetail) : null;
 	}
 
 	public static DemandDetail cast(@NonNull final BusinessCaseDetail businessCaseDetail)

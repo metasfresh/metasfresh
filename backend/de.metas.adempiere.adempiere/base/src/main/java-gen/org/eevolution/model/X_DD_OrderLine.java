@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -125206032L;
+	private static final long serialVersionUID = 950213308L;
 
     /** Standard Constructor */
     public X_DD_OrderLine (final Properties ctx, final int DD_OrderLine_ID, @Nullable final String trxName)
@@ -123,6 +123,19 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	}
 
 	@Override
+	public void setConfirmedQty (final @Nullable BigDecimal ConfirmedQty)
+	{
+		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
+	}
+
+	@Override
+	public BigDecimal getConfirmedQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ConfirmedQty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_C_OrderLine getC_OrderLineSO()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class);
@@ -180,19 +193,6 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	}
 
 	@Override
-	public void setConfirmedQty (final @Nullable BigDecimal ConfirmedQty)
-	{
-		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
-	}
-
-	@Override
-	public BigDecimal getConfirmedQty() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ConfirmedQty);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setDateDelivered (final @Nullable java.sql.Timestamp DateDelivered)
 	{
 		set_Value (COLUMNNAME_DateDelivered, DateDelivered);
@@ -238,6 +238,33 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	public boolean isDD_AllowPush() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_DD_AllowPush);
+	}
+
+	@Override
+	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution()
+	{
+		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class);
+	}
+
+	@Override
+	public void setDD_NetworkDistribution(final org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution)
+	{
+		set_ValueFromPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class, DD_NetworkDistribution);
+	}
+
+	@Override
+	public void setDD_NetworkDistribution_ID (final int DD_NetworkDistribution_ID)
+	{
+		if (DD_NetworkDistribution_ID < 1) 
+			set_Value (COLUMNNAME_DD_NetworkDistribution_ID, null);
+		else 
+			set_Value (COLUMNNAME_DD_NetworkDistribution_ID, DD_NetworkDistribution_ID);
+	}
+
+	@Override
+	public int getDD_NetworkDistribution_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DD_NetworkDistribution_ID);
 	}
 
 	@Override

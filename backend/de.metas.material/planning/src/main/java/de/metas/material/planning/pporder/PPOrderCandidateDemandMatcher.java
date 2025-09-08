@@ -23,30 +23,33 @@
 package de.metas.material.planning.pporder;
 
 import de.metas.material.planning.IMaterialDemandMatcher;
-import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.product.IProductBL;
 import de.metas.util.Loggables;
-import de.metas.util.StringUtils;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PPOrderCandidateDemandMatcher implements IMaterialDemandMatcher
 {
-	@Override
-	public boolean matches(@NonNull final IMaterialPlanningContext mrpContext)
-	{
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
-		final boolean manufactured = StringUtils.toBoolean(productPlanning.getIsManufactured());
+	@Override
+	public boolean matches(@NonNull final MaterialPlanningContext context)
+	{
+		final ProductPlanning productPlanning = context.getProductPlanning();
+
+		final boolean manufactured = productPlanning.isManufactured();
 		final boolean pickingOrder = productPlanning.isPickingOrder(); // basically, picking orders are different beast.
 		if (manufactured && !pickingOrder)
 		{
 			return true;
 		}
 
-		final I_M_Product product = mrpContext.getM_Product();
+		final I_M_Product product = productBL.getById(context.getProductId());
 		Loggables.addLog(
 				"Product {}_{} is not set to be manufactured; PPOrderCandidateDemandMatcher returns false; productPlanning={}; product={}",
 				product.getValue(), product.getName(), productPlanning, product);

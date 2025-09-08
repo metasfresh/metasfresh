@@ -193,7 +193,7 @@ public class PP_Order_RecordWork
 				.order(order)
 				.orderActivity(orderRoutingActivity)
 				.movementDate(SystemTime.asZonedDateTime())
-				.qtyMoved(Quantitys.createZero(finishedGoodsUomId))
+				.qtyMoved(Quantitys.zero(finishedGoodsUomId))
 				.durationSetup(Duration.ZERO)
 				.duration(duration)
 				.build());

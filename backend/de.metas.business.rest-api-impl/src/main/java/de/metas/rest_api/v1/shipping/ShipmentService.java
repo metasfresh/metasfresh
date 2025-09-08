@@ -23,6 +23,7 @@
 package de.metas.rest_api.v1.shipping;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -35,11 +36,13 @@ import de.metas.common.shipping.v1.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipping.v1.shipment.JsonCreateShipmentRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
-import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
+import de.metas.handlingunits.shipping.PackageInfo;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -109,7 +112,7 @@ public class ShipmentService
 	private final AttributeSetHelper attributeSetHelper;
 
 	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService,
-			final AttributeSetHelper attributeSetHelper)
+						   final AttributeSetHelper attributeSetHelper)
 	{
 		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
 		this.attributeSetHelper = attributeSetHelper;
@@ -343,11 +346,15 @@ public class ShipmentService
 	{
 		final ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = ImmutableList.copyOf(shipmentScheduleBL.getByIds(request.getScheduleIds()).values());
 
-		final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
-				shipmentSchedules,
-				request.getQuantityTypeToUse(),
-				false /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */,
-				ImmutableMap.of());
+		final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				PrepareForShipmentSchedulesRequest.builder()
+						.shipmentSchedules(shipmentSchedules)
+						.quantityTypeToUse(request.getQuantityTypeToUse())
+						.onTheFlyPickToPackingInstructions(false) // backwards compatibility: on-the-fly-pick to (anonymous) CUs
+						.qtyToDeliverOverrides(QtyToDeliverMap.EMPTY)
+						.isFailIfNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found
+						.build()
+		);
 
 		return huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
@@ -423,10 +430,9 @@ public class ShipmentService
 	{
 		final Set<ShipmentScheduleId> scheduleIds = shippedCandidateKeys.stream().map(ShippedCandidateKey::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> scheduleId2qtyPickedRecords = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(scheduleIds);
+		final ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> scheduleId2qtyPickedRecords = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(scheduleIds);
 
 		final Set<InOutLineId> inOutLineIds = scheduleId2qtyPickedRecords.values().stream()
-				.flatMap(List::stream)
 				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 				.map(InOutLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());

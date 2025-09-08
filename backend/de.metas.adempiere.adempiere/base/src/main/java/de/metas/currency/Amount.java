@@ -1,23 +1,14 @@
 package de.metas.currency;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import org.adempiere.exceptions.AdempiereException;
-
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -26,6 +17,17 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -55,6 +57,7 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Amount implements Comparable<Amount>
 {
 	public static Amount of(@NonNull final BigDecimal value, @NonNull final CurrencyCode currencyCode)
@@ -85,6 +88,30 @@ public class Amount implements Comparable<Amount>
 	{
 		this.value = NumberUtils.stripTrailingDecimalZeros(value);
 		this.currencyCode = currencyCode;
+	}
+
+	@Override
+	public String toString() {return toJson();}
+
+	@JsonValue
+	public String toJson() {return value + " " + currencyCode;}
+
+	@JsonCreator
+	public static Amount fromJson(@NonNull final String json)
+	{
+		try
+		{
+			final List<String> parts = Splitter.on(" ")
+					.trimResults()
+					.omitEmptyStrings()
+					.splitToList(json);
+
+			return Amount.of(parts.get(0), CurrencyCode.ofThreeLetterCode(parts.get(1)));
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Cannot convert json to Amount: " + json, e);
+		}
 	}
 
 	public BigDecimal getAsBigDecimal()

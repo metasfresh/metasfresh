@@ -2,16 +2,20 @@ import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 import { updateUserEditable } from './utils';
-import { current, isDraft } from 'immer';
+import { current, isDraft, original } from 'immer';
 import { getLineByIdFromWFProcess } from './index';
-import { toQRCodeObject } from '../../utils/huQRCodes';
+import { toQRCodeObject } from '../../utils/qrCode/hu';
+import { deepEqual } from '../../utils/deepEqual';
 
 const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
 export const manufacturingReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_MANUFACTURING_RECEIPT_TARGET: {
-      return reduceOnUpdateReceiptTarget(draftState, action.payload);
+    case types.UPDATE_MANUFACTURING_LU_RECEIPT_TARGET: {
+      return reduceOnUpdateLUReceiptTarget(draftState, action.payload);
+    }
+    case types.UPDATE_MANUFACTURING_TU_RECEIPT_TARGET: {
+      return reduceOnUpdateTUReceiptTarget(draftState, action.payload);
     }
     case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
       return reduceOnUpdateQtyReceived(draftState, action.payload);
@@ -22,24 +26,39 @@ export const manufacturingReducer = ({ draftState, action }) => {
   }
 };
 
-const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, lineId, target }) => {
+const reduceOnUpdateLUReceiptTarget = (draftState, { wfProcessId, activityId, lineId, target }) => {
+  return reduceOnUpdateReceiptTarget(draftState, { wfProcessId, activityId, lineId, luTarget: target });
+};
+
+const reduceOnUpdateTUReceiptTarget = (draftState, { wfProcessId, activityId, lineId, target }) => {
+  return reduceOnUpdateReceiptTarget(draftState, { wfProcessId, activityId, lineId, tuTarget: target });
+};
+
+const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, lineId, luTarget, tuTarget }) => {
   const draftWFProcess = draftState[wfProcessId];
   const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
 
-  if (!target) {
+  if (luTarget) {
+    const aggregateToLU = getAggregateToLU({ draftActivityLine, luTarget });
+    const aggregateToLU_prev =
+      draftActivityLine.aggregateToLU != null ? original(draftActivityLine.aggregateToLU) : null;
+    let isLUChanging = !deepEqual(aggregateToLU_prev, aggregateToLU);
+    if (!isLUChanging) {
+      draftActivityLine.aggregateToTU = null;
+    }
+
+    draftActivityLine.aggregateToLU = aggregateToLU;
+  } else if (tuTarget) {
     draftActivityLine.aggregateToLU = null;
-  } else if (target.huQRCode) {
-    const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
-    draftActivityLine.aggregateToLU = {
-      existingLU: {
-        huQRCode: toQRCodeObject(target.huQRCode),
-        tuPIItemProductId,
-      },
-    };
+    draftActivityLine.aggregateToTU = getAggregateToTU({ tuTarget });
   } else {
-    draftActivityLine.aggregateToLU = {
-      newLU: { ...target },
-    };
+    const aggregateToLU_prev = draftActivityLine.aggregateToLU;
+    const isLUChanging = aggregateToLU_prev != null;
+    if (isLUChanging) {
+      draftActivityLine.aggregateToTU = null;
+    }
+
+    draftActivityLine.aggregateToLU = null;
   }
 
   updateLineStatusAndRollup({
@@ -51,12 +70,34 @@ const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, line
   return draftState;
 };
 
+const getAggregateToLU = ({ draftActivityLine, luTarget }) => {
+  if (luTarget.huQRCode) {
+    const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0]?.tuPIItemProductId;
+    return {
+      existingLU: {
+        huQRCode: toQRCodeObject(luTarget.huQRCode),
+        tuPIItemProductId,
+      },
+    };
+  } else {
+    return {
+      newLU: { ...luTarget },
+    };
+  }
+};
+
+const getAggregateToTU = ({ tuTarget }) => {
+  return {
+    newTU: { ...tuTarget },
+  };
+};
+
 const reduceOnUpdateQtyReceived = (draftState, { wfProcessId, activityId, lineId, qtyReceived }) => {
   if (qtyReceived > 0) {
     const draftWFProcess = draftState[wfProcessId];
     const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
 
-    draftActivityLine.qtyReceived += qtyReceived;
+    draftActivityLine.qtyReceived = qtyReceived;
 
     updateLineStatusAndRollup({
       draftWFProcess,
@@ -151,7 +192,8 @@ registerHandler({
   computeActivityStatus,
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
-    draftActivityDataStored.isAlwaysAvailableToUser = true;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
+    draftActivityDataStored.customQRCodeFormats = fromActivity.componentProps.customQRCodeFormats;
     return draftActivityDataStored;
   },
 });

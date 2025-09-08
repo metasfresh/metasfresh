@@ -22,12 +22,13 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.shipping.mpackage.PackageId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -35,19 +36,20 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
-import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Package_HU;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 public class HUPackageDAO implements IHUPackageDAO
 {
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public List<I_M_Package_HU> retrievePackageHUs(final org.compiere.model.I_M_Package mpackage)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class, mpackage)
 				.filter(new EqualsQueryFilter<>(I_M_Package_HU.COLUMN_M_Package_ID, mpackage.getM_Package_ID()))
 				.create()
@@ -59,7 +61,6 @@ public class HUPackageDAO implements IHUPackageDAO
 	{
 		Check.assumeNotNull(mpackage, "mpackage not null");
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Package_HU.class, mpackage)
 				.addEqualsFilter(I_M_Package_HU.COLUMN_M_Package_ID, mpackage.getM_Package_ID())
 				.addOnlyActiveRecordsFilter()
@@ -70,15 +71,15 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
-	public List<I_M_Package> retrievePackages(final Properties ctx, final Collection<Integer> packageIds)
+	public List<I_M_Package> retrievePackages(final Collection<PackageId> packageIds)
 	{
 		if (packageIds == null || packageIds.isEmpty())
 		{
 			return Collections.emptyList();
 		}
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Package.class, ctx, ITrx.TRXNAME_None)
+		return queryBL
+				.createQueryBuilder(I_M_Package.class)
 				.addInArrayOrAllFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_Package_ID, packageIds)
 				.create()
 				.list(I_M_Package.class);
@@ -87,7 +88,7 @@ public class HUPackageDAO implements IHUPackageDAO
 	@Override
 	public boolean isHUAssignedToPackage(final I_M_HU hu)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class, hu)
 				.addEqualsFilter(I_M_Package_HU.COLUMN_M_HU_ID, hu.getM_HU_ID())
 				.create()
@@ -99,7 +100,6 @@ public class HUPackageDAO implements IHUPackageDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Package_HU.class, ctx, trxName)
 				.addEqualsFilter(I_M_Package_HU.COLUMN_M_HU_ID, hu.getM_HU_ID())
 				.addOnlyActiveRecordsFilter()
@@ -114,11 +114,23 @@ public class HUPackageDAO implements IHUPackageDAO
 	{
 		Check.assumeNotNull(shipment, "shipment not null");
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Package.class, shipment)
 				.addEqualsFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
 				.create()
 				.list(I_M_Package.class);
+	}
+
+	@Override
+	public Collection<PackageId> retainPackageIdsWithHUs(final Collection<PackageId> packageIds)
+	{
+		if (Check.isEmpty(packageIds))
+		{
+			return Collections.emptyList();
+		}
+		return queryBL.createQueryBuilder(I_M_Package_HU.class)
+				.addInArrayFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, packageIds)
+				.create()
+				.listDistinct(I_M_Package_HU.COLUMNNAME_M_Package_ID, PackageId.class);
 
 	}
 

@@ -10,22 +10,19 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 /**
  * Declare business logic to create different {@link IHUTransactionCandidate}s for different purposes.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public interface IHUTransactionBL extends ISingletonService
 {
 	/**
 	 * Current use: creates a IHUTransaction for a LU, which is created from a receipt schedule.<br>
 	 * Just so that HULoader.load0() will later on transfer the source's attributes also to the LU and not just to the TUs (task 06748).
-	 *
-	 * @param luHU
-	 * @param luItemPI
-	 * @param request
-	 * @return
 	 */
-	IHUTransactionCandidate createLUTransactionForAttributeTransfer(I_M_HU luHU, I_M_HU_PI_Item luItemPI, IAllocationRequest request);
+	IHUTransactionCandidate createLUTransactionForAttributeTransfer(
+			@NonNull I_M_HU luHU,
+			@NonNull I_M_HU_PI_Item luItemPI,
+			@NonNull IAllocationRequest request);
 
 	/**
 	 * This method is used to find out for a given document, an HU was changed another time after having been affected by a particular document.

@@ -4,7 +4,7 @@ import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -58,7 +58,7 @@ public class CandidatesQueryTest
 		final Candidate cand = Candidate.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(CandidateType.STOCK)
-				.materialDescriptor(createMaterialDescriptor().withDate(NOW))
+				.materialDescriptor(newMaterialDescriptor().withDate(NOW))
 				.build();
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(cand, false);
 		assertThat(query.getMaterialDescriptorQuery().getProductId()).isEqualTo(PRODUCT_ID);

@@ -25,18 +25,23 @@ package de.metas.picking.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocumentNoFilter;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 @Value
@@ -45,12 +50,16 @@ public class PackageableQuery
 {
 	public static final PackageableQuery ALL = PackageableQuery.builder().build();
 
-	@Nullable BPartnerId customerId;
+	@Nullable ProductId productId;
+	@NonNull @Singular ImmutableSet<BPartnerId> customerIds;
+	@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	@Nullable WarehouseId warehouseId;
-	@Nullable LocalDate deliveryDate;
+	@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
 	@Nullable LocalDate preparationDate;
+	@Nullable ZonedDateTime maximumFixedPreparationDate;
+	@Nullable ZonedDateTime maximumFixedPromisedDate;
 	@Nullable ShipperId shipperId;
 
 	/**
@@ -58,15 +67,29 @@ public class PackageableQuery
 	 */
 	boolean onlyFromSalesOrder;
 	@Nullable OrderId salesOrderId;
+	@Nullable DocumentNoFilter salesOrderDocumentNo;
 
+	/**
+	 * Consider records which were locked via M_ShipmentSchedule_Lock table.
+	 */
 	@Nullable UserId lockedBy;
-	@Builder.Default
-	boolean includeNotLocked = true;
+	/**
+	 * Considers records which were not locked via M_ShipmentSchedule_Lock table. Applies when {@link #lockedBy} is set.
+	 */
+	@Builder.Default boolean includeNotLocked = true;
 
+	/**
+	 * Excludes records which were locked via T_Lock table.
+	 */
+	@Builder.Default boolean excludeLockedForProcessing = false; // false by default to be backward-compatibile
+
+	@Nullable Set<ShipmentScheduleId> onlyShipmentScheduleIds;
 	@Nullable Set<ShipmentScheduleId> excludeShipmentScheduleIds;
 
 	@Builder.Default
 	@NonNull ImmutableSet<OrderBy> orderBys = ImmutableSet.of(OrderBy.ProductName, OrderBy.PriorityRule, OrderBy.DateOrdered);
+
+	@Nullable ResolvedScannedProductCodes scannedProductCodes;
 
 	public enum OrderBy
 	{
@@ -77,5 +100,6 @@ public class PackageableQuery
 		SalesOrderId,
 		DeliveryBPLocationId,
 		WarehouseTypeId,
+		SetupPlaceNo_Descending,
 	}
 }

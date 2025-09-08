@@ -1,13 +1,14 @@
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -82,7 +83,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
 			//
-			// manufacture-to-order - look at scheds for whose order lines actual HUs were created 
+			// manufacture-to-order - look at scheds for whose order lines actual HUs were created
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM PP_Order ppo"
 			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID"
@@ -95,7 +96,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// Reservation 1 - look at scheds for which there is a reservation
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM M_HU_Reservation res"
-			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"			
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"
 			+ "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID"
 			+ "\n                        AND res.IsActive = 'Y'"
 			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
@@ -157,6 +158,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(@NonNull final Set<ShipmentScheduleId> ids)
 	{
+		if (ids.isEmpty()) {return ImmutableMap.of();}
 		final List<I_M_ShipmentSchedule> shipmentSchedules = loadByRepoIdAwares(ids, I_M_ShipmentSchedule.class);
 		return Maps.uniqueIndex(shipmentSchedules, ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()));
 	}
@@ -209,7 +211,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
 				.create()
-				.listIds(ShipmentScheduleId::ofRepoId);
+				.idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
 
 	@Override
@@ -419,7 +421,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 					.setOnlySelection(selectionId)
 					.create()
-					.listIds(ShipmentScheduleId::ofRepoId);
+					.idsAsSet(ShipmentScheduleId::ofRepoId);
 			if (!shipmentScheduleIds.isEmpty())
 			{
 				request = CacheInvalidateMultiRequest.rootRecords(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
@@ -621,7 +623,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
 				.create()
-				.listIds(ShipmentScheduleId::ofRepoId);
+				.idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
 
 	@Override

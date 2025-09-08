@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,7 +28,7 @@ import de.metas.common.rest_api.v2.bom.JsonBOMCreateRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
@@ -44,7 +44,7 @@ public class CreateBOMProductsRouteBuilder extends RouteBuilder
 	{
 		from(direct(MF_UPSERT_BOM_V2_CAMEL_URI))
 				.routeId(MF_UPSERT_BOM_V2_CAMEL_URI)
-				.streamCaching()
+				.streamCache("true")
 				.process(exchange -> {
 					final Object request = exchange.getIn().getBody();
 					if (!(request instanceof BOMUpsertCamelRequest))
@@ -63,7 +63,7 @@ public class CreateBOMProductsRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonBOMCreateRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-bom-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));

@@ -7,11 +7,11 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
 
@@ -40,56 +40,33 @@ import javax.annotation.Nullable;
 /**
  * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_BUSINESSCASE_AD_Reference_ID}
  */
- public enum CandidateBusinessCase implements ReferenceListAwareEnum
+@Getter
+@RequiredArgsConstructor
+public enum CandidateBusinessCase implements ReferenceListAwareEnum
 {
 	DISTRIBUTION(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION, DistributionDetail.class),
-
 	PRODUCTION(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION, ProductionDetail.class),
-
 	SHIPMENT(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_SHIPMENT, DemandDetail.class),
-
 	FORECAST(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_FORECAST, DemandDetail.class),
-
 	PURCHASE(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE, PurchaseDetail.class),
-
-	STOCK_CHANGE(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_STOCK_CHANGE, StockChangeDetail.class);
-
-	@Getter
-	private String code;
-
-	@Getter
-	private Class<? extends BusinessCaseDetail> detailClass;
-
-	CandidateBusinessCase(
-			final String code,
-			final Class<? extends BusinessCaseDetail> detailClass)
-	{
-		this.code = code;
-		this.detailClass = detailClass;
-	}
-
-	public static CandidateBusinessCase ofCode(@NonNull final String code)
-	{
-		return index.ofCode(code);
-	}
-
-	public static CandidateBusinessCase ofCodeOrNull(@Nullable final String code)
-	{
-		if (Check.isBlank(code))
-		{
-			return null;
-		}
-		return CandidateBusinessCase.ofCode(code);
-	}
+	STOCK_CHANGE(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_STOCK_CHANGE, StockChangeDetail.class),
+	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<CandidateBusinessCase> index = ReferenceListAwareEnums.index(values());
 
-	public static String toCode(@Nullable final CandidateBusinessCase businessCase)
-	{
-		if (businessCase == null)
-		{
-			return null;
-		}
-		return businessCase.getCode();
-	}
+	@NonNull private final String code;
+	@NonNull private final Class<? extends BusinessCaseDetail> detailClass;
+
+	public static CandidateBusinessCase ofCode(@NonNull final String code) {return index.ofCode(code);}
+
+	@Nullable
+	public static CandidateBusinessCase ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+
+	public static String toCode(@Nullable final CandidateBusinessCase businessCase) {return businessCase == null ? null : businessCase.getCode();}
+
+	@Deprecated
+	@Override
+	public String toString() {return super.toString();}
+
+	public boolean isMatching(@Nullable final BusinessCaseDetail detail) {return this.detailClass.isInstance(detail);}
 }

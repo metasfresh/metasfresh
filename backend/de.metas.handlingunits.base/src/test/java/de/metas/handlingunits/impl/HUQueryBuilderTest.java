@@ -2,6 +2,7 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
@@ -18,16 +19,15 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.text.ExtendedReflectionToStringBuilder;
 import org.adempiere.util.text.RecursiveIndentedMultilineToStringStyle;
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUQueryBuilderTest
 {
@@ -38,7 +38,7 @@ public class HUQueryBuilderTest
 
 	private HUQueryBuilder huQueryBuilder;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -70,7 +70,10 @@ public class HUQueryBuilderTest
 				createHU("otherLocator-product", otherLocator, product),
 				createHU("otherLocator-otherProduct", otherLocator, otherProduct));
 
-		huQueryBuilder = new HUQueryBuilder(new HUReservationRepository(), new AgeAttributesService());
+		huQueryBuilder = new HUQueryBuilder(
+				new HUReservationRepository(),
+				new AgeAttributesService(),
+				new DDOrderMoveScheduleRepository());
 	}
 
 	private static I_M_HU createHU(
@@ -99,9 +102,8 @@ public class HUQueryBuilderTest
 	public void copy_NotFails()
 	{
 		final HUQueryBuilder husQueryCopy = huQueryBuilder.copy();
-
-		Assert.assertNotNull("copy shall not be null", husQueryCopy);
-		Assert.assertNotSame("original and copy shall not be the same", husQueryCopy, huQueryBuilder);
+		assertThat(husQueryCopy).as("copy shall not be null").isNotNull();
+		assertThat(husQueryCopy).as("original and copy shall not be the same").isNotSameAs(huQueryBuilder);
 		assertSameStringRepresentation(huQueryBuilder, husQueryCopy);
 	}
 
@@ -113,7 +115,7 @@ public class HUQueryBuilderTest
 		final String message = "String representations shall be the same"
 				+ "\nExpected: " + expectedStr
 				+ "\nActual: " + actualStr;
-		Assert.assertEquals(message, expectedStr, actualStr);
+		assertThat(actualStr).as(message).isEqualTo(expectedStr);
 	}
 
 	private String toString(final Object obj)

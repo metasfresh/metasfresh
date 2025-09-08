@@ -1,41 +1,8 @@
-package de.metas.handlingunits.allocation.transfer;
-
-import static de.metas.handlingunits.HUAssertions.assertThat;
-import static java.math.BigDecimal.ONE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.w3c.dom.Node;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.HUXmlConverter;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
-import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -53,6 +20,36 @@ import de.metas.util.collections.CollectionUtils;
  * #L%
  */
 
+package de.metas.handlingunits.allocation.transfer;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.util.HUTracerInstance;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Node;
+import org.xmlunit.assertj3.XmlAssert;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.handlingunits.HUAssertions.assertThat;
+import static java.math.BigDecimal.ONE;
+
 /**
  * Tests for {@link HUTransformService} that are especially geared at the sort of use which {@link HUReservationService} makes of it.
  */
@@ -68,7 +65,7 @@ public class HUTransformServiceReservationTests
 
 	private HUTransformService huTransformService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -77,6 +74,8 @@ public class HUTransformServiceReservationTests
 
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
 		huTransformService = HUTransformService.newInstance(data.helper.getHUContext());
+
+		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 	}
 
 	/**
@@ -99,18 +98,18 @@ public class HUTransformServiceReservationTests
 		// data.helper.commitAndDumpHU(handlingUnitsBL.getTopLevelParent(cuToSplit));
 
 		// the cu we split from is *not* destroyed but was attached to the parent TU
-		Assert.assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(existingTU.getM_HU_ID()));
+		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_ID()).isEqualTo(existingTU.getM_HU_ID());
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
-		Assert.assertThat(cuToSplitXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
-		Assert.assertThat(cuToSplitXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("35.000")));
+		XmlAssert.assertThat(cuToSplitXML).valueByXPath("string(HU-VirtualPI/@HUStatus)").isEqualTo("A");
+		XmlAssert.assertThat(cuToSplitXML).valueByXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("35.000");
 
 		final Node existingTUXML = HUXmlConverter.toXml(existingTU);
-		Assert.assertThat(existingTUXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is still no parent HU
-		Assert.assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='A'])", is("1")));
-		Assert.assertThat(existingTUXML, hasXPath("HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("40.000")));
+		XmlAssert.assertThat(existingTUXML).doesNotHaveXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"); // verify that there is still no parent HU
+		XmlAssert.assertThat(existingTUXML).valueByXPath("count(HU-TU_IFCO[@HUStatus='A'])").isEqualTo("1");
+		XmlAssert.assertThat(existingTUXML).valueByXPath("HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("40.000");
 
-		Assert.assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
-		Assert.assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and  @Qty='5.000' and @C_UOM_Name='Kg'])", is("1")));
+		XmlAssert.assertThat(existingTUXML).valueByXPath("count(HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(existingTUXML).valueByXPath("count(HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and  @Qty='5.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 	}
 
 	@Test
@@ -132,16 +131,16 @@ public class HUTransformServiceReservationTests
 		// data.helper.commitAndDumpHU(topLevelParent);
 
 		final Node existingTUXML = HUXmlConverter.toXml(topLevelParent);
-		Assert.assertThat(existingTUXML, hasXPath("count(HU-LU_Palet[@HUStatus='A'])", is("1")));
+		XmlAssert.assertThat(existingTUXML).valueByXPath("count(HU-LU_Palet[@HUStatus='A'])").isEqualTo("1");
 
 		// the LU now has an aggregate (ItemType='HA'), representing 99 TUs with 5 CUs each and a "real" (ItemType='HU') TU with 4
-		Assert.assertThat(existingTUXML, hasXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("499.000")));
-		Assert.assertThat(existingTUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("495.000")));
-		Assert.assertThat(existingTUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("4.000")));
+		XmlAssert.assertThat(existingTUXML).valueByXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("499.000");
+		XmlAssert.assertThat(existingTUXML).valueByXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("495.000");
+		XmlAssert.assertThat(existingTUXML).valueByXPath("HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("4.000");
 
 		final Node newCuXML = HUXmlConverter.toXml(CollectionUtils.singleElement(newCUs));
-		Assert.assertThat(newCuXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
-		Assert.assertThat(newCuXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("1.000")));
+		XmlAssert.assertThat(newCuXML).valueByXPath("string(HU-VirtualPI/@HUStatus)").isEqualTo("A");
+		XmlAssert.assertThat(newCuXML).valueByXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("1.000");
 	}
 
 	@Test
@@ -164,18 +163,18 @@ public class HUTransformServiceReservationTests
 		// data.helper.commitAndDumpHU(topLevelParent);
 
 		final Node existingLUXML = HUXmlConverter.toXml(topLevelParent);
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet[@HUStatus='A'])", is("1")));
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet[@HUStatus='A'])").isEqualTo("1");
 
 		// the LU now has an aggregate (ItemType='HA'), representing 99 TUs with 5 CUs each and a "real" (ItemType='HU') TU with 4
-		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("500.000")));
-		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("495.000")));
-		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("5.000")));
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='4.000' and @C_UOM_Name='Kg'])", is("1")));
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
+		XmlAssert.assertThat(existingLUXML).valueByXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("500.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("495.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("5.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='4.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 
 		final Node newCuXML = HUXmlConverter.toXml(CollectionUtils.singleElement(newCUs));
-		Assert.assertThat(newCuXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
-		Assert.assertThat(newCuXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("1.000")));
+		XmlAssert.assertThat(newCuXML).valueByXPath("string(HU-VirtualPI/@HUStatus)").isEqualTo("A");
+		XmlAssert.assertThat(newCuXML).valueByXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("1.000");
 	}
 
 	@Test
@@ -186,6 +185,7 @@ public class HUTransformServiceReservationTests
 		final I_M_HU cuToSplit = data.mkAggregateHUWithTotalQtyCU("200");
 
 		final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(cuToSplit);
+		new HUTracerInstance().dump("topLevelParent - before husToNewCUs", topLevelParent);
 
 		final HUsToNewCUsRequest husToNewCUsRequest = HUsToNewCUsRequest.builder()
 				.sourceHU(topLevelParent)
@@ -196,20 +196,22 @@ public class HUTransformServiceReservationTests
 
 		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
 		// data.helper.commitAndDumpHU(topLevelParent);
+		new HUTracerInstance().dump("topLevelParent - after husToNewCUs", topLevelParent);
+		new HUTracerInstance().dump("newCUs", newCUs);
 
 		final Node existingLUXML = HUXmlConverter.toXml(topLevelParent);
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet[@HUStatus='A'])", is("1")));
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet[@HUStatus='A'])").isEqualTo("1");
 
 		// the LU now has an aggregate (ItemType='HA'), representing 99 TUs with 5 CUs each and a "real" (ItemType='HU') TU with 4
-		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("200.000")));
-		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("160.000")));
-		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("40.000")));
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='39.000' and @C_UOM_Name='Kg'])", is("1")));
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
+		XmlAssert.assertThat(existingLUXML).valueByXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("200.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("160.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("40.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='39.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 
 		final Node newCuXML = HUXmlConverter.toXml(CollectionUtils.singleElement(newCUs));
-		Assert.assertThat(newCuXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
-		Assert.assertThat(newCuXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("1.000")));
+		XmlAssert.assertThat(newCuXML).valueByXPath("string(HU-VirtualPI/@HUStatus)").isEqualTo("A");
+		XmlAssert.assertThat(newCuXML).valueByXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("1.000");
 	}
 
 	@Test
@@ -238,16 +240,16 @@ public class HUTransformServiceReservationTests
 		assertThat(distinctIds).hasSize(5);
 
 		final Node existingLUXML = HUXmlConverter.toXml(topLevelParent);
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet[@HUStatus='A'])", is("1")));
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet[@HUStatus='A'])").isEqualTo("1");
 
 		// the LU now has an aggregate (ItemType='HA'), representing 99 TUs with 5 CUs each and a "real" (ItemType='HU') TU with 4
-		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("200.000")));
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA'])", is("1")));
-		Assert.assertThat(existingLUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage/@Qty", is("0.000")));
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU'])", is("1")));
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("5")));
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("5")));
-		Assert.assertThat(existingLUXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("5")));
+		XmlAssert.assertThat(existingLUXML).valueByXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("200.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HA'])").isEqualTo("1");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage/@Qty").isEqualTo("0.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU'])").isEqualTo("1");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("5");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])").isEqualTo("5");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])").isEqualTo("5");
 	}
 
 	@Test
@@ -269,13 +271,13 @@ public class HUTransformServiceReservationTests
 		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
 
 		final Node tuXML = HUXmlConverter.toXml(topLevelParent);
-		Assert.assertThat(tuXML, hasXPath("HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("40.000")));
-		Assert.assertThat(tuXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='39.000' and @C_UOM_Name='Kg'])", is("1")));
-		Assert.assertThat(tuXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
+		XmlAssert.assertThat(tuXML).valueByXPath("HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("40.000");
+		XmlAssert.assertThat(tuXML).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='39.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(tuXML).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 
 		final Node newCuXML = HUXmlConverter.toXml(CollectionUtils.singleElement(newCUs));
-		Assert.assertThat(newCuXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
-		Assert.assertThat(newCuXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("1.000")));
+		XmlAssert.assertThat(newCuXML).valueByXPath("string(HU-VirtualPI/@HUStatus)").isEqualTo("A");
+		XmlAssert.assertThat(newCuXML).valueByXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("1.000");
 	}
 
 	@Test

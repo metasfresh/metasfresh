@@ -1,7 +1,6 @@
 package de.metas.pricing.attributebased.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
@@ -11,21 +10,23 @@ import de.metas.pricing.IPackingMaterialAware;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -38,7 +39,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -54,7 +54,9 @@ public class AttributePricing implements IPricingRule
 
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
+	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
@@ -62,9 +64,8 @@ public class AttributePricing implements IPricingRule
 	/**
 	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
 	 */
-	public static void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
+	public static void registerDefaultMatcher(@NonNull final IProductPriceQueryMatcher matcher)
 	{
-		Check.assumeNotNull(matcher, "Parameter matcher is not null");
 		_defaultMatchers.addIfAbsent(matcher);
 		logger.info("Registered default matcher: {}", matcher);
 	}
@@ -123,10 +124,6 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Updates the {@link IPricingResult} using the given <code>productPrice</code>.
-	 *
-	 * @param pricingCtx
-	 * @param result
-	 * @param productPrice
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void setResultForProductPriceAttribute(
@@ -137,7 +134,7 @@ public class AttributePricing implements IPricingRule
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 		final I_M_PriceList_Version pricelistVersion = loadOutOfTrx(productPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
-		final I_M_PriceList priceList = pricelistVersion.getM_PriceList();
+		final I_M_PriceList priceList = priceListDAO.getById(PriceListId.ofRepoId(pricelistVersion.getM_PriceList_ID()));
 
 		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
 		if (productPriceSettings == null)
@@ -154,11 +151,11 @@ public class AttributePricing implements IPricingRule
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
-		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(productPrice.getInvoicableQtyBasedOn()));
+		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.ofNullableCodeOrNominal(productPrice.getInvoicableQtyBasedOn()));
 		result.setTaxIncluded(false);
 		result.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 		result.setPriceListVersionId(PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID()));
-		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
+		result.setTaxCategoryId(productTaxCategoryService.getTaxCategoryId(productPrice));
 		result.setCalculated(true);
 		// 06942 : use product price uom all the time
 		result.setPriceUomId(UomId.ofRepoId(productPrice.getC_UOM_ID()));
@@ -181,7 +178,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Gets the {@link I_M_ProductPrice} to be used for setting the prices.
-	 *
+	 * <p>
 	 * It checks if the referenced object from the given {@code pricingCtx} references a {@link I_M_ProductPrice} and explicitly demands a particular product price attribute.
 	 * If that's the case, if returns that product price (if valid!).
 	 * If that's not the case it tries to search for the best matching one, if any.
@@ -262,7 +259,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Finds the best matching {@link I_M_ProductPrice} to be used.
-	 *
+	 * <p>
 	 * NOTE: this method can be overridden entirely by extending classes.
 	 *
 	 * @return best matching {@link I_M_ProductPrice}
@@ -283,16 +280,12 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
-				ctxPriceListVersion,
-				priceListVersion -> ProductPrices.newQuery(priceListVersion)
-						.setProductId(pricingCtx.getProductId())
-						.onlyValidPrices(true)
-						.matching(_defaultMatchers)
-						.strictlyMatchingAttributes(attributeSetInstance)
-						.firstMatching(),
-
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersion)
+				.setProductId(pricingCtx.getProductId())
+				.onlyValidPrices(true)
+				.matching(_defaultMatchers)
+				.strictlyMatchingAttributes(attributeSetInstance)
+				.firstMatching();
 
 		if (productPrice == null)
 		{
@@ -306,13 +299,12 @@ public class AttributePricing implements IPricingRule
 	/**
 	 * Extracts an ASI from the given {@code pricingCtx}.
 	 *
-	 * @return
-	 *         <ul>
-	 *         <li>ASI
-	 *         <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
-	 *         or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
-	 *         or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
-	 *         </ul>
+	 * @return <ul>
+	 * <li>ASI
+	 * <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
+	 * or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
+	 * or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
+	 * </ul>
 	 */
 	@Nullable
 	protected static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)

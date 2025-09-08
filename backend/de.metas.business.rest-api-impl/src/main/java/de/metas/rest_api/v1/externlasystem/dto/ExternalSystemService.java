@@ -44,6 +44,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
@@ -65,7 +66,7 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_
 @Service
 public class ExternalSystemService
 {
-	private static final transient Logger logger = LogManager.getLogger(ExternalSystemService.class);
+	private static final Logger logger = LogManager.getLogger(ExternalSystemService.class);
 	private static final String DEFAULT_ISSUE_SUMMARY = "No summary provided.";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -101,7 +102,8 @@ public class ExternalSystemService
 		// note: when the AD_PInstance is created by the schedule, it's also stored as string
 		final String configIdAsString = Integer.toString(externalSystemParentConfig.getChildConfig().getId().getRepoId());
 		
-		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
+		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
+				.setProcessCalledFrom(ProcessCalledFrom.API);
 		processInfoBuilder.setAD_Process_ID(processId.getRepoId());
 		processInfoBuilder.addParameter(PARAM_EXTERNAL_REQUEST, invokeExternalSystemProcessRequest.getRequest());
 		processInfoBuilder.addParameter(PARAM_CHILD_CONFIG_ID, configIdAsString);
@@ -184,6 +186,7 @@ public class ExternalSystemService
 				.sourceClassName(jsonErrorItem.getSourceClassName())
 				.sourceMethodName(jsonErrorItem.getSourceMethodName())
 				.stacktrace(jsonErrorItem.getStackTrace())
+				.errorCode(jsonErrorItem.getErrorCode())
 				.pInstance_ID(pInstanceId)
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.build();

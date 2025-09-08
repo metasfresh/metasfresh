@@ -1,19 +1,17 @@
 package de.metas.material.event.commons;
 
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
-
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 /*
  * #%L

@@ -17,7 +17,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -55,7 +55,7 @@ import java.util.List;
 /**
  * @implNote IMPORTANT: Keep the API endpoints/requests/responses in sync with {@link de.metas.ui.web.pattribute.ASIRestController} because on frontend side they are handled by the same code.
  */
-@Api
+@Tag(name = "AddressRestController")
 @RestController
 @RequestMapping(AddressRestController.ENDPOINT)
 public class AddressRestController

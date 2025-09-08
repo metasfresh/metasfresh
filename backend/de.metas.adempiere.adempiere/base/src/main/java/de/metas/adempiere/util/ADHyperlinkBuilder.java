@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import de.metas.util.StringUtils;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -131,7 +132,7 @@ public class ADHyperlinkBuilder
 		if (actionStr.startsWith("/"))
 			actionStr = actionStr.substring(1);
 		ADHyperlink.Action action = ADHyperlink.Action.valueOf(actionStr);
-		Map<String, String> params = decodeParams(uri.getQuery());
+		Map<String, String> params = StringUtils.parseURLQueryString(uri.getQuery());
 		return new ADHyperlink(action, params);
 	}
 
@@ -154,31 +155,6 @@ public class ADHyperlinkBuilder
 			}
 		}
 		return urlParams.toString();
-	}
-
-	private Map<String, String> decodeParams(String query)
-	{
-		Map<String, String> params = new HashMap<String, String>();
-		if (Check.isEmpty(query, true))
-			return params;
-		for (String param : query.split("&"))
-		{
-			final String key;
-			final String value;
-			final int idx = param.indexOf("=");
-			if (idx < 0)
-			{
-				key = param;
-				value = null;
-			}
-			else
-			{
-				key = param.substring(0, idx);
-				value = param.substring(idx + 1);
-			}
-			params.put(key, value);
-		}
-		return params;
 	}
 
 	private URI toURI(ADHyperlink link)

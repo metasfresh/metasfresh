@@ -45,7 +45,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.elasticsearch.action.search.SearchRequest;

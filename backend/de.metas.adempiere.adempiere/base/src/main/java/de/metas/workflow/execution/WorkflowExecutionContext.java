@@ -68,6 +68,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -111,7 +112,7 @@ public final class WorkflowExecutionContext
 	private final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
-	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
+	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.distributed("de.metas.document.UserNotifications");
 
 	@NonNull
 	@Getter
@@ -227,7 +228,7 @@ public final class WorkflowExecutionContext
 	@Nullable
 	public Object getDocumentColumnValueByColumnId(
 			@NonNull final TableRecordReference documentRef,
-			final int adColumnId)
+			final AdColumnId adColumnId)
 	{
 		return getPO(documentRef).get_ValueOfColumn(adColumnId);
 	}

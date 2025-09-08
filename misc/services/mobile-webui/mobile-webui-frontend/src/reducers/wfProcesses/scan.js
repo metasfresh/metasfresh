@@ -3,8 +3,8 @@ import * as CompleteStatus from '../../constants/CompleteStatus';
 
 import { updateUserEditable } from './utils';
 import { registerHandler } from './activityStateHandlers';
-
-const COMPONENT_TYPE = 'common/scanBarcode';
+import { COMPONENTTYPE_ScanAndValidateBarcode } from '../../containers/activities/scan/ScanAndValidateActivity';
+import { COMPONENTTYPE_ScanBarcode } from '../../containers/activities/scan/ScanActivity';
 
 export const scanReducer = ({ draftState, action }) => {
   switch (action.type) {
@@ -39,12 +39,25 @@ const computeActivityStatus = ({ draftActivityDataStored }) => {
 };
 
 registerHandler({
-  componentType: COMPONENT_TYPE,
+  componentType: COMPONENTTYPE_ScanBarcode,
   normalizeComponentProps: () => {}, // don't add componentProps to state
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.currentValue = fromActivity.componentProps.currentValue;
     draftActivityDataStored.validOptions = fromActivity.componentProps.validOptions;
-    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.componentProps.isAlwaysAvailableToUser ?? false;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
+    draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
+    draftActivityDataStored.confirmationModalMsg = fromActivity.componentProps.confirmationModalMsg;
+    draftActivityDataStored.displaySuggestions = fromActivity.componentProps.displaySuggestions;
+  },
+});
+
+registerHandler({
+  componentType: COMPONENTTYPE_ScanAndValidateBarcode,
+  normalizeComponentProps: () => {}, // don't add componentProps to state
+  mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
+    draftActivityDataStored.currentValue = fromActivity.componentProps.currentValue;
+    draftActivityDataStored.validOptions = fromActivity.componentProps.validOptions;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
     draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
   },
 });

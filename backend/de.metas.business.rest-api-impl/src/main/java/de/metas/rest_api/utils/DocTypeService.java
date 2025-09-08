@@ -1,7 +1,9 @@
 package de.metas.rest_api.utils;
 
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest.OrderDocType;
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -10,12 +12,9 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-
-import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 
 /*
  * #%L
@@ -46,23 +45,21 @@ public class DocTypeService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	public DocTypeId getInvoiceDocTypeId(
-			@Nullable final JsonDocTypeInfo invoiceDocType,
+			@Nullable final DocBaseAndSubType docBaseAndSubType,
 			@NonNull final OrgId orgId)
 	{
-		if (invoiceDocType == null)
+		if (docBaseAndSubType == null)
 		{
 			return null;
 		}
 
-		final String docSubType = firstNotEmptyTrimmed(
-				invoiceDocType.getDocSubType(),
-				DocTypeQuery.DOCSUBTYPE_NONE);
+		final DocBaseType docBaseType = docBaseAndSubType.getDocBaseType();
+		final DocSubType docSubType = docBaseAndSubType.getDocSubType();
 
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);
-
 		final DocTypeQuery query = DocTypeQuery
 				.builder()
-				.docBaseType(invoiceDocType.getDocBaseType())
+				.docBaseType(docBaseType)
 				.docSubType(docSubType)
 				.adClientId(orgRecord.getAD_Client_ID())
 				.adOrgId(orgRecord.getAD_Org_ID())
@@ -71,23 +68,24 @@ public class DocTypeService
 		return docTypeDAO.getDocTypeId(query);
 	}
 
-	public DocTypeId getOrderDocTypeId(final OrderDocType orderDocType, OrgId orgId)
+	@Nullable
+	public DocTypeId getOrderDocTypeIdOrNull(@Nullable final OrderDocType orderDocType, final OrgId orgId)
 	{
 		if (orderDocType == null)
 		{
 			return null;
 		}
 
-		final String docBaseType = X_C_DocType.DOCBASETYPE_SalesOrder;
-		final String docSubType;
+		final DocBaseType docBaseType = DocBaseType.SalesOrder;
+		final DocSubType docSubType;
 
 		if (OrderDocType.PrepayOrder.equals(orderDocType))
 		{
-			docSubType = X_C_DocType.DOCSUBTYPE_PrepayOrder;
+			docSubType = DocSubType.PrepayOrder;
 		}
 		else
 		{
-			docSubType = X_C_DocType.DOCSUBTYPE_StandardOrder;
+			docSubType = DocSubType.StandardOrder;
 		}
 
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);

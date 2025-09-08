@@ -22,64 +22,119 @@
 
 package de.metas.ui.web.process;
 
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.CopyRecordFactory;
+import lombok.Value;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
+import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Set;
 
 public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 {
-	DocumentCollection documentCollectionService = SpringContextHolder.instance.getBean(DocumentCollection.class);
-
-	@Nullable
-	@Override
-	protected String doIt() throws Exception
-	{
-		final TableRecordReference tableRecordReference = CollectionUtils.singleElementOrNull(getProcessInfo().getSelectedIncludedRecords());
-		if (tableRecordReference == null)
-		{
-			addLog("The precondition of one selected included record does not hold anymore; -> doing nothing");
-			return MSG_OK;
-		}
-		final TableRecordReference parentRef = TableRecordReference.of(getTable_ID(), getRecord_ID());
-		documentCollectionService.duplicateTabRowInTrx(parentRef, tableRecordReference, getProcessInfo().getAdWindowId());
-		return MSG_OK;
-	}
-
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (context.getAdTabId() == null)
+		return getPlan(context)
+				.mapIfAbsent(ProcessPreconditionsResolution::rejectWithInternalReason)
+				.orElseGet(ProcessPreconditionsResolution::accept);
+	}
+
+	@Nullable
+	@Override
+	protected String doIt()
+	{
+		final ClonePlan plan = getPlan(null).get();
+		final PO rowPO = plan.getRowPO();
+		final String rowTableName = rowPO.get_TableName();
+
+		CopyRecordFactory.getCopyRecordSupport(rowTableName)
+				.setAdWindowId(plan.getAdWindowId())
+				.setParentLink(plan.getHeaderPO(), plan.getRowPO_LinkColumnName())
+				.copyToNew(rowPO);
+
+		return MSG_OK;
+	}
+
+	private ExplainedOptional<ClonePlan> getPlan(final @Nullable IProcessPreconditionsContext preconditionsContext)
+	{
+		final Set<TableRecordReference> selectedRowRefs;
+		if (preconditionsContext != null)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No row(s) from a tab selected.");
+			if (preconditionsContext.getAdTabId() == null)
+			{
+				return ExplainedOptional.emptyBecause("No row(s) from a tab selected.");
+			}
+
+			selectedRowRefs = preconditionsContext.getSelectedIncludedRecords();
+		}
+		else
+		{
+			selectedRowRefs = getProcessInfo().getSelectedIncludedRecords();
 		}
 
-		//making sure only one row is selected at a time
-		if (context.getSelectedIncludedRecords().size() != 1)
+		if (selectedRowRefs.size() != 1)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("More or less than one row selected.");
+			return ExplainedOptional.emptyBecause("More or less than one row selected.");
 		}
 
-		final TableRecordReference ref = CollectionUtils.singleElement(context.getSelectedIncludedRecords());
-		if (!CopyRecordFactory.isEnabledForTableName(ref.getTableName())) // To be replaced with the table name of the sub tab selected row's table
+		final TableRecordReference rowRef = CollectionUtils.singleElement(selectedRowRefs);
+		if (!CopyRecordFactory.isEnabledForTableName(rowRef.getTableName()))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("CopyRecordFactory not enabled for the table the row belongs to.");
+			return ExplainedOptional.emptyBecause("CopyRecordFactory not enabled for the table the row belongs to.");
 		}
 
-		if (ref.getTableName().equals(context.getTableName()))
+		// we have e.g. in the C_BPartner-window two subtabs ("Customer" and "Vendor") that show a different view on the same C_BPartner record.
+		// There, cloning the subtab-line makes no sense
+		if (Objects.equals(getProcessInfo().getTableNameOrNull(), rowRef.getTableName()))
 		{
-			// we have e.g. in the C_BPartner-window two subtabs ("Customer" and "Vendor") that show a different view on the same C_BPartner record. 
-			// There, cloning the subtab-line makes no sense
-			return ProcessPreconditionsResolution.rejectWithInternalReason("The main-window has the same Record as the sub-tab, there can only be one line.");
+			return ExplainedOptional.emptyBecause("The main-window has the same Record as the sub-tab, there can only be one line.");
 		}
-		return ProcessPreconditionsResolution.accept();
+
+		final TableRecordReference headerRef = TableRecordReference.of(getTable_ID(), getRecord_ID());
+		final PO headerPO = headerRef.getModel(PlainContextAware.newWithThreadInheritedTrx(), PO.class);
+		final String headerPO_KeyColumName = headerPO.getPOInfo().getKeyColumnName();
+		if (headerPO_KeyColumName == null)
+		{
+			throw new AdempiereException("A document header which does not have a single primary key is not supported");
+		}
+
+		final PO rowPO = rowRef.getModel(PlainContextAware.newWithThreadInheritedTrx(), PO.class);
+		if (!rowPO.getPOInfo().hasColumnName(headerPO_KeyColumName))
+		{
+			throw new AdempiereException("Row which does not link to it's header via header's primary key is not supported");
+		}
+
+		return ExplainedOptional.of(
+				ClonePlan.builder()
+						.rowPO(rowPO)
+						.rowPO_LinkColumnName(headerPO_KeyColumName)
+						.headerPO(headerPO)
+						.adWindowId(getProcessInfo().getAdWindowId())
+						.build());
+	}
+
+	@Value
+	@Builder
+	private static class ClonePlan
+	{
+		@NonNull PO rowPO;
+		@NonNull String rowPO_LinkColumnName;
+
+		@NonNull PO headerPO;
+
+		@Nullable AdWindowId adWindowId;
 	}
 }

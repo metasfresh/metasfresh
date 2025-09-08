@@ -22,10 +22,12 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -33,16 +35,12 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_Product;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_HU_ID;
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMNNAME_M_HU_Storage_ID;
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMNNAME_M_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMNNAME_Qty;
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMN_M_HU_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class M_HU_Storage_StepDef
@@ -66,30 +64,44 @@ public class M_HU_Storage_StepDef
 	@And("validate M_HU_Storage:")
 	public void validate_M_HU_Storage(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_HU hu = huTable.get(huIdentifier);
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final HuId huId = huTable.getId(row.getAsIdentifier(COLUMNNAME_M_HU_ID));
 
 			final I_M_HU_Storage huStorageRecord = queryBL.createQueryBuilder(I_M_HU_Storage.class)
-					.addEqualsFilter(COLUMN_M_HU_ID, hu.getM_HU_ID())
+					.addEqualsFilter(COLUMN_M_HU_ID, huId)
 					.orderByDescending(COLUMN_M_HU_ID)
 					.create()
 					.firstOnlyOrNull(I_M_HU_Storage.class);
 
 			assertThat(huStorageRecord).isNotNull();
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
-			assertThat(huStorageRecord.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+			row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+					.map(productTable::getId)
+					.ifPresent(expectedProductId -> assertThat(ProductId.ofRepoId(huStorageRecord.getM_Product_ID())).isEqualTo(expectedProductId));
+			row.getAsOptionalBigDecimal(COLUMNNAME_Qty)
+					.ifPresent((expectedQty) -> assertThat(huStorageRecord.getQty()).isEqualTo(expectedQty));
 
-			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_Qty);
-			assertThat(huStorageRecord.getQty()).isEqualTo(qty);
+			row.getAsOptionalIdentifier(COLUMNNAME_M_HU_Storage_ID)
+					.ifPresent((huStorageIdentifier) -> huStorageTable.putOrReplace(huStorageIdentifier, huStorageRecord));
+		});
+	}
 
-			final String huStorageIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_Storage_ID + "." + TABLECOLUMN_IDENTIFIER);
-			huStorageTable.putOrReplace(huStorageIdentifier, huStorageRecord);
-		}
+	@And("update M_HU_Storage:")
+	public void update_M_HU_Storages(@NonNull final DataTable dataTable) throws Throwable
+	{
+		DataTableRows.of(dataTable).forEach(this::update_M_HU_Storage);
+	}
+
+	private void update_M_HU_Storage(@NonNull final DataTableRow tableRow)
+	{
+		final I_M_HU_Storage huStorage = tableRow.getAsIdentifier(COLUMNNAME_M_HU_Storage_ID).lookupIn(huStorageTable);
+		assertThat(huStorage).isNotNull();
+		tableRow.getAsOptionalBigDecimal(COLUMNNAME_Qty).ifPresent(huStorage::setQty);
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+				.map(productTable::get)
+				.map(I_M_Product::getM_Product_ID)
+				.ifPresent(huStorage::setM_Product_ID);
+
+		saveRecord(huStorage);
 	}
 }

@@ -454,4 +454,11 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		// NOTE: might throw exception in case there are multiple lookup values with same ID
 		return Maps.uniqueIndex(valuesById.values(), LookupValue::getId);
 	}
+
+	public static LookupValuesList of(@NonNull final LookupValue lookupValue)
+	{
+		final ImmutableListMultimap<Object, LookupValue> valuesById = ImmutableListMultimap.of(lookupValue.getId(), lookupValue);
+		final boolean ordered = true;
+		return new LookupValuesList(valuesById, ordered, DebugProperties.EMPTY);
+	}
 }

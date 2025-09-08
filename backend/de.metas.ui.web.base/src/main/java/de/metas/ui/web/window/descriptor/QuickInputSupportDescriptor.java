@@ -1,9 +1,12 @@
 package de.metas.ui.web.window.descriptor;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /**
  * Preliminary quick input (aka batch entry) support informations.

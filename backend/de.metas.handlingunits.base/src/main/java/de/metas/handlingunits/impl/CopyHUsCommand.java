@@ -36,10 +36,15 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 
-import java.util.Collection;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -48,25 +53,46 @@ import java.util.Set;
 
 public class CopyHUsCommand
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 
 	private final ImmutableSet<HuId> huIdsToCopy;
 	private final String huStatus;
+	private final LocatorId targetLocatorId;
 
 	private final HashMap<HuId, HuId> old2new_M_HU_ID = new HashMap<>();
 	private final HashMap<HuItemId, HuItemId> old2new_M_HU_Item_ID = new HashMap<>();
 	private final LinkedHashMap<HuId, I_M_HU> old2new_HU = new LinkedHashMap<>();
 
 	@Builder
-	public CopyHUsCommand(@NonNull final Collection<HuId> huIdsToCopy)
+	private CopyHUsCommand(
+			@NonNull @Singular("huIdToCopy") final ImmutableSet<HuId> huIdsToCopy,
+			@Nullable final WarehouseId targetWarehouseId)
 	{
-		this.huIdsToCopy = ImmutableSet.copyOf(huIdsToCopy);
+		this.huIdsToCopy = huIdsToCopy;
 		this.huStatus = X_M_HU.HUSTATUS_Planning;
+
+		if (targetWarehouseId != null)
+		{
+			final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+			this.targetLocatorId = warehouseBL.getOrCreateDefaultLocatorId(targetWarehouseId);
+		}
+		else
+		{
+			this.targetLocatorId = null;
+		}
+	}
+
+	public static class CopyHUsCommandBuilder
+	{
+		public CopyHUsResponse execute() {return build().execute();}
 	}
 
 	public CopyHUsResponse execute()
 	{
+		trxManager.assertThreadInheritedTrxExists();
+
 		copyHUs(huIdsToCopy);
 		return buildResponse();
 	}
@@ -74,7 +100,7 @@ public class CopyHUsCommand
 	private CopyHUsResponse buildResponse()
 	{
 		final CopyHUsResponse.CopyHUsResponseBuilder response = CopyHUsResponse.builder();
-		for (final HuId oldHUId : old2new_HU.keySet())
+		for (final HuId oldHUId : huIdsToCopy)
 		{
 			response.item(CopyHUsResponse.CopyHUsResponseItem.builder()
 					.oldHUId(oldHUId)
@@ -86,42 +112,57 @@ public class CopyHUsCommand
 
 	private void copyHUs(final Set<HuId> rootOldHUIds)
 	{
+		if (rootOldHUIds.isEmpty())
+		{
+			return;
+		}
+
 		final HashSet<HuId> allOldHUIds = new HashSet<>();
 		final HashSet<HuItemId> allOldHUItemIds = new HashSet<>();
 
+		//
+		// Copy M_HU(s) and M_HU_Item(s), level by level, staring from top level.
 		List<I_M_HU> oldHUs = handlingUnitsDAO.getByIds(rootOldHUIds);
+		boolean isCopyAsTopLevel = true;
 		while (!oldHUs.isEmpty())
 		{
 			for (final I_M_HU oldHU : oldHUs)
 			{
-				copyHU(oldHU);
+				copyHU(oldHU, isCopyAsTopLevel);
 			}
 
 			final ImmutableSet<HuId> oldHUIds = extractHUIds(oldHUs);
-			final List<I_M_HU_Item> oldHUItems = handlingUnitsDAO.retrieveItemsNoCache(oldHUIds);
+			final List<I_M_HU_Item> oldHUItems = handlingUnitsDAO.retrieveAllItemsNoCache(oldHUIds);
 			for (final I_M_HU_Item oldHUItem : oldHUItems)
 			{
 				copyHUItem(oldHUItem);
 			}
 
 			final ImmutableSet<HuItemId> oldHUItemIds = extractHUItemIds(oldHUItems);
-			oldHUs = handlingUnitsDAO.retrieveIncludedHUsNoCache(oldHUItemIds);
+			oldHUs = handlingUnitsDAO.retrieveAllIncludedHUsNoCache(oldHUItemIds);
+			isCopyAsTopLevel = false;
 
 			allOldHUIds.addAll(oldHUIds);
 			allOldHUItemIds.addAll(oldHUItemIds);
 		}
 
-		for (final I_M_HU_Item_Storage oldHUItemStorage : handlingUnitsDAO.retrieveItemStoragesNoCache(allOldHUItemIds))
+		//
+		// Copy all M_HU_Item_Storage(s) 
+		for (final I_M_HU_Item_Storage oldHUItemStorage : handlingUnitsDAO.retrieveAllItemStoragesNoCache(allOldHUItemIds))
 		{
 			copyHUItemStorage(oldHUItemStorage);
 		}
 
-		for (final I_M_HU_Storage oldHUStorage : handlingUnitsDAO.retrieveStoragesNoCache(allOldHUIds))
+		//
+		// Copy all M_HU_Storage(s)
+		for (final I_M_HU_Storage oldHUStorage : handlingUnitsDAO.retrieveAllStoragesNoCache(allOldHUIds))
 		{
 			copyHUStorage(oldHUStorage);
 		}
 
-		for (final I_M_HU_Attribute oldHUAttribute : huAttributesDAO.retrieveAttributesNoCache(allOldHUIds))
+		//
+		// Copy all M_HU_Attribute(s)
+		for (final I_M_HU_Attribute oldHUAttribute : huAttributesDAO.retrieveAllAttributesNoCache(allOldHUIds))
 		{
 			copyHUAttribute(oldHUAttribute);
 		}
@@ -137,21 +178,28 @@ public class CopyHUsCommand
 		return oldHUs.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet());
 	}
 
-	private void copyHU(@NonNull final I_M_HU oldHU)
+	private void copyHU(@NonNull final I_M_HU oldHU, boolean copyAsTopLevel)
 	{
-		final HuItemId oldParentItemId = HuItemId.ofRepoIdOrNull(oldHU.getM_HU_Item_Parent_ID());
 		final HuItemId newParentItemId;
-		if (oldParentItemId != null)
+		if (copyAsTopLevel)
 		{
-			newParentItemId = old2new_M_HU_Item_ID.get(oldParentItemId);
-			if (newParentItemId == null)
-			{
-				throw new AdempiereException("Parent item was not already cloned for " + oldParentItemId);
-			}
+			newParentItemId = null;
 		}
 		else
 		{
-			newParentItemId = null;
+			final HuItemId oldParentItemId = HuItemId.ofRepoIdOrNull(oldHU.getM_HU_Item_Parent_ID());
+			if (oldParentItemId != null)
+			{
+				newParentItemId = old2new_M_HU_Item_ID.get(oldParentItemId);
+				if (newParentItemId == null)
+				{
+					throw new AdempiereException("Parent item was not already cloned for " + oldParentItemId);
+				}
+			}
+			else
+			{
+				newParentItemId = null;
+			}
 		}
 
 		final I_M_HU newHU = InterfaceWrapperHelper.newInstance(I_M_HU.class);
@@ -159,6 +207,13 @@ public class CopyHUsCommand
 		newHU.setM_HU_Item_Parent_ID(HuItemId.toRepoId(newParentItemId));
 		newHU.setHUStatus(huStatus);
 		newHU.setIsActive(true);
+		newHU.setClonedFrom_HU_ID(oldHU.getM_HU_ID());
+
+		if (targetLocatorId != null)
+		{
+			newHU.setM_Locator_ID(targetLocatorId.getRepoId());
+		}
+
 		InterfaceWrapperHelper.saveRecord(newHU);
 
 		final HuId oldHUId = HuId.ofRepoId(oldHU.getM_HU_ID());

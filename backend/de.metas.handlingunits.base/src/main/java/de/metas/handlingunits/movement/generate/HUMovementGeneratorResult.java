@@ -1,6 +1,8 @@
 package de.metas.handlingunits.movement.generate;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -11,6 +13,7 @@ import org.compiere.model.I_M_Movement;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 @Value
 public class HUMovementGeneratorResult
@@ -56,5 +59,14 @@ public class HUMovementGeneratorResult
 
 			return new HUMovementGeneratorResult(newMovements, newMovementAndLineIds, newHUsMoved);
 		}
+	}
+
+	@NonNull
+	public Set<HuId> getMovedHUIds()
+	{
+		return husMoved.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

@@ -6,7 +6,7 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
-import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.slot.PickingSlotListenersDispatcher;
 import de.metas.picking.api.PickingSlotId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobSlotServiceTest
@@ -33,8 +34,9 @@ class PickingJobSlotServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		pickingJobSlotService = new PickingJobSlotService(new PickingJobRepository());
 		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
+		SpringContextHolder.registerJUnitBean(new PickingSlotListenersDispatcher(Optional.empty()));
+		pickingJobSlotService = PickingJobSlotService.newInstanceForUnitTesting();
 	}
 
 	private PickingJobId createJob(@NonNull DocStatus docStatus, @Nullable final PickingSlotId pickingSlotId)

@@ -1,58 +1,35 @@
-import React, { Component } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-/**
- * @file Class based component.
- * @module Filters
- * @extends Component
- */
-class Tooltips extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      opacity: 0,
-    };
-  }
-
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
-  componentDidMount() {
-    const { delay } = this.props;
-    this.timeout = setTimeout(
-      () => {
-        this.setState({
-          opacity: 1,
-        });
-      },
-      delay ? delay : 1000
-    );
-  }
-
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
-  componentWillUnmount() {
-    clearTimeout(this.timeout);
-  }
-
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
-  render() {
-    const {
-      name,
+// NOTE: we need to forward the ref because we are using it in TetherComponent (see FiltersItem.render)
+const Tooltips = forwardRef(
+  (
+    {
       action,
-      type,
-      extraClass,
-      tooltipOnFirstlevelPositionLeft,
       className,
-    } = this.props;
+      delay,
+      extraClass,
+      name,
+      tooltipOnFirstlevelPositionLeft,
+      type,
+    },
+    ref
+  ) => {
+    const [opacity, setOpacity] = useState(0);
+
+    useEffect(() => {
+      const timeout = setTimeout(
+        () => {
+          setOpacity(1);
+        },
+        delay ? delay : 1000
+      );
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }, []);
 
     const cx = classNames(
       'tooltip-wrapp',
@@ -61,9 +38,8 @@ class Tooltips extends Component {
       { [`${className}`]: className }
     );
 
-    const { opacity } = this.state;
     return (
-      <div style={{ opacity: opacity }}>
+      <div ref={ref} style={{ opacity: opacity }}>
         <div
           className={cx}
           style={{ left: tooltipOnFirstlevelPositionLeft + 'px' }}
@@ -74,26 +50,26 @@ class Tooltips extends Component {
       </div>
     );
   }
-}
+);
 
 /**
  * @typedef {object} Props Component props
- * @prop {*} action
- * @prop {*} className
- * @prop {*} delay
- * @prop {*} extraClass
- * @prop {*} name
- * @prop {*} tooltipOnFirstlevelPositionLeft
- * @prop {*} type
+ * @prop {String} action - i.e. the actual tooltip caption (displayed beneath the shortcut)
+ * @prop {String} className
+ * @prop {Number} delay
+ * @prop {String} extraClass
+ * @prop {String} name - i.e. shortcut
+ * @prop {*} tooltipOnFirstlevelPositionLeft - deprecated, looks that is no longer used
+ * @prop {String} type - deprecated, looks that is no longer used (i.e. it's always empty string)
  */
 Tooltips.propTypes = {
-  action: PropTypes.any,
-  className: PropTypes.any,
-  delay: PropTypes.any,
-  extraClass: PropTypes.any,
-  name: PropTypes.any,
-  tooltipOnFirstlevelPositionLeft: PropTypes.any,
-  type: PropTypes.any,
+  action: PropTypes.string,
+  className: PropTypes.string,
+  delay: PropTypes.number,
+  extraClass: PropTypes.string,
+  name: PropTypes.string,
+  tooltipOnFirstlevelPositionLeft: PropTypes.number,
+  type: PropTypes.string,
 };
 
 export default Tooltips;

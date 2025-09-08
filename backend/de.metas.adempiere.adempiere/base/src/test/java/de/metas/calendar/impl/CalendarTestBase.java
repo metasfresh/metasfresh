@@ -22,29 +22,22 @@ package de.metas.calendar.impl;
  * #L%
  */
 
-
-import java.util.Properties;
-
+import de.metas.calendar.ICalendarDAO;
+import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.impl.PlainCalendarDAO;
-import de.metas.util.Services;
+import java.util.Properties;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class CalendarTestBase
-{
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-	
-	@BeforeClass
+{	
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -54,7 +47,7 @@ public class CalendarTestBase
 	protected POJOLookupMap db;
 	protected PlainCalendarDAO dao;
 
-	@Before
+	@BeforeEach
 	public final void beforeTest()
 	{
 		AdempiereTestHelper.get().init();

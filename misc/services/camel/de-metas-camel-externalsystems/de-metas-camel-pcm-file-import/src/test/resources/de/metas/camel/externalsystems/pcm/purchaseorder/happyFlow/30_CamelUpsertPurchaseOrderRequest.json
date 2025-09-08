@@ -1,0 +1,36 @@
+{
+  "jsonPurchaseCandidateCreateRequest": {
+    "purchaseCandidates": [
+      {
+        "orgCode": "orgCode",
+        "externalHeaderId": "extHeader_2",
+        "poReference": "poRef_2",
+        "externalPurchaseOrderUrl": null,
+        "externalLineId": "extLine_2",
+        "isManualPrice": true,
+        "isPrepared": true,
+        "price": {
+          "value": 7,
+          "currencyCode": "EUR",
+          "priceUomCode": "PCE"
+        },
+        "isManualDiscount": false,
+        "discount": null,
+        "purchaseDatePromised": "2024-04-16T00:00:00+02:00[Europe/Berlin]",
+        "purchaseDateOrdered": "2024-04-15T07:55:00+02:00[Europe/Berlin]",
+        "vendor": {
+          "bpartnerIdentifier": "ext-ProCareManagement-bpartnerIdentifier_2",
+          "locationIdentifier": null,
+          "contactIdentifier": null
+        },
+        "warehouseIdentifier": "ext-ProCareManagement-warehouseIdentifier_2",
+        "productIdentifier": "ext-ProCareManagement-prodIdentifier_2",
+        "attributeSetInstance": null,
+        "qty": {
+          "qty": 12.598,
+          "uomCode": "PCE"
+        }
+      }
+    ]
+  }
+}

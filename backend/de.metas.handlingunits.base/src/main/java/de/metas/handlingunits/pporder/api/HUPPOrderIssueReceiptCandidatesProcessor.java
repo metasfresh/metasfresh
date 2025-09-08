@@ -29,7 +29,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -97,9 +96,9 @@ import java.util.function.Supplier;
 
 /**
  * Processes given {@link I_PP_Order_Qty}.
- *
+ * <p>
  * By default, {@link #process()} will process each candidate in it's own transaction/savepoint.
- *
+ * <p>
  * Processing one {@link I_PP_Order_Qty} means:
  * <ul>
  * <li>generate cost collector
@@ -109,7 +108,6 @@ import java.util.function.Supplier;
  * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUPPOrderIssueReceiptCandidatesProcessor
 {
@@ -119,7 +117,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	}
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueReceiptCandidatesProcessor.class);
+	private static final Logger logger = LogManager.getLogger(HUPPOrderIssueReceiptCandidatesProcessor.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorService = Services.get(ITrxItemProcessorExecutorService.class);
 	//
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
@@ -127,7 +125,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private static final AdMessageKey MSG_ONLY_CLEARED_HUs_CAN_BE_ISSUED = AdMessageKey.of("OnlyClearedHUsCanBeIssued");
@@ -145,7 +142,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	{
 		final List<I_PP_Cost_Collector> result = new ArrayList<>();
 
-		trxItemProcessorService.<I_PP_Order_Qty, Void> createExecutor()
+		trxItemProcessorService.<I_PP_Order_Qty, Void>createExecutor()
 				.setProcessor(candidate -> {
 					final I_PP_Cost_Collector costCollector = processCandidate(candidate);
 					if (costCollector != null)
@@ -276,9 +273,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Allocation Destination: our BOM Lines
+			final ProductId productId = ProductId.ofRepoId(candidate.getM_Product_ID());
 			final IAllocationDestination orderBOMLinesDestination;
 			{
-				final PPOrderBOMLineProductStorage productStorage = new PPOrderBOMLineProductStorage(ppOrderBOMLine);
+				final PPOrderBOMLineProductStorage productStorage = new PPOrderBOMLineProductStorage(ppOrderBOMLine, productId);
 				orderBOMLinesDestination = new GenericAllocationSourceDestination(productStorage, ppOrderBOMLine);
 			}
 
@@ -290,7 +288,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			//
 			// Allocation request
 			final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext //
-					, ProductId.ofRepoId(candidate.getM_Product_ID()) // product
+					, productId // product
 					, qtyToIssue // the quantity to issue
 					, SystemTime.asZonedDateTime() // transaction date
 					, null // referenced model: IMPORTANT to be null, else our build won't detect correctly which is the HU transaction and which is the BOMLine-side transaction
@@ -353,7 +351,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	 * Aggregates {@link IHUTransactionCandidate}s and creates {@link I_PP_Cost_Collector}s for issuing materials to manufacturing order
 	 *
 	 * @author tsa
-	 *
 	 */
 	private static final class IssueCandidatesBuilder
 	{
@@ -410,12 +407,12 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Get/Create Issue Candidate
+			final ProductId productId = huTransaction.getProductId();
 			final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(ppOrderBOMLine.getPP_Order_BOMLine_ID());
-			final IssueCandidate issueCandidate = candidatesByOrderBOMLineId.computeIfAbsent(ppOrderBOMLineId, k -> new IssueCandidate(ppOrderBOMLine));
+			final IssueCandidate issueCandidate = candidatesByOrderBOMLineId.computeIfAbsent(ppOrderBOMLineId, k -> new IssueCandidate(ppOrderBOMLine, productId));
 
 			//
 			// Add Qty To Issue
-			final ProductId productId = huTransaction.getProductId();
 			final Quantity qtyToIssue = huTransaction.getQuantity();
 
 			// Get HU from counterpart transaction
@@ -529,6 +526,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			final I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(
 					ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
 							.orderBOMLine(ppOrderBOMLine)
+							.productId(candidate.getProductId())
 							.locatorId(locatorId)
 							.attributeSetInstanceId(AttributeSetInstanceId.NONE) // N/A
 							.movementDate(movementDate)
@@ -577,7 +575,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_ONLY_CLEARED_HUs_CAN_BE_ISSUED));
+			throw new AdempiereException(MSG_ONLY_CLEARED_HUs_CAN_BE_ISSUED);
 		}
 	}
 
@@ -589,20 +587,23 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		//
-		private final I_PP_Order_BOMLine orderBOMLine;
+		@NonNull private final I_PP_Order_BOMLine orderBOMLine;
+		@NonNull private final ProductId productId;
 
 		//
-		@Setter(AccessLevel.NONE)
-		private Quantity qtyToIssue;
+		@NonNull @Setter(AccessLevel.NONE) private Quantity qtyToIssue;
 		private final Set<I_M_HU> husToAssign = new TreeSet<>(HUByIdComparator.instance);
 
 		@Setter(AccessLevel.NONE)
 		@Getter(AccessLevel.NONE)
-		private Map<Integer, MaterialTrackingWithQuantity> id2materialTracking = new HashMap<>();
+		private final Map<Integer, MaterialTrackingWithQuantity> id2materialTracking = new HashMap<>();
 
-		private IssueCandidate(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
+		private IssueCandidate(
+				@NonNull final I_PP_Order_BOMLine ppOrderBOMLine,
+				@NonNull final ProductId productId)
 		{
 			this.orderBOMLine = ppOrderBOMLine;
+			this.productId = productId;
 
 			final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 			final I_C_UOM uom = orderBOMBL.getBOMLineUOM(ppOrderBOMLine);
@@ -620,10 +621,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		public void addQtyToIssue(@NonNull final ProductId productId, @NonNull final Quantity qtyToIssueToAdd, @NonNull final I_M_HU huToAssign)
 		{
 			// Validate
-			if (productId.getRepoId() != orderBOMLine.getM_Product_ID())
+			if (!ProductId.equals(productId, this.productId))
 			{
 				throw new HUException("Invalid product to issue."
-						+ "\nExpected: " + orderBOMLine.getM_Product_ID()
+						+ "\nExpected: " + this.productId
 						+ "\nGot: " + productId
 						+ "\n@PP_Order_BOMLine_ID@: " + orderBOMLine);
 			}

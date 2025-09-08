@@ -3,7 +3,6 @@ package de.metas.common.rest_api.v2.authentication;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.common.rest_api.v2.i18n.JsonMessages;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -24,8 +23,14 @@ public class JsonAuthResponse
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String language;
 
- 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	Integer userId;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String username;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String userFullname;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String error;

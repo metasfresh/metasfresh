@@ -2,7 +2,7 @@ package de.metas.material.dispo.service.event.handler;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
@@ -115,7 +115,7 @@ public class StockChangedEventHandlerTest
 				.thenReturn(Candidate.builder()
 						.type(CandidateType.STOCK)
 						.clientAndOrgId(CLIENT_AND_ORG_ID)
-						.materialDescriptor(createMaterialDescriptor().withQuantity(new BigDecimal("15")))
+						.materialDescriptor(newMaterialDescriptor().withQuantity(new BigDecimal("15")))
 						.build());
 
 		// invoke the method under test

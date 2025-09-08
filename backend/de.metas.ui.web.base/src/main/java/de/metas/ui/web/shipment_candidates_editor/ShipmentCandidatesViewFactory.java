@@ -1,10 +1,8 @@
 package de.metas.ui.web.shipment_candidates_editor;
 
-import java.util.Set;
-
 import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewCloseAction;
@@ -14,8 +12,11 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -50,11 +51,13 @@ public class ShipmentCandidatesViewFactory implements IViewFactory
 	private final ShipmentCandidateRowsRepository rowsRepo;
 
 	public ShipmentCandidatesViewFactory(
-			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.shipmentScheduleBL = shipmentScheduleBL;
 		this.rowsRepo = ShipmentCandidateRowsRepository.builder()
 				.shipmentScheduleBL(shipmentScheduleBL)
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.build();
 	}
 

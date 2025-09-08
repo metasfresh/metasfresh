@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Physical inventory and disposal are correctly considered in Material Dispo
 
   Background:

@@ -22,89 +22,63 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
-import de.metas.material.event.commons.AttributesKey;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.product.ProductId;
-import lombok.Builder;
+import de.metas.util.GuavaCollectors;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
+import org.junit.jupiter.api.function.ThrowingConsumer;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
-@Builder
 @Value
 public class MD_Candidate_StepDefTable
 {
-	@Singular
-	ImmutableMap<String, MaterialDispoTableRow> rows;
+	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<StepDefDataIdentifier, MaterialDispoTableRow> rows;
 
-	public MaterialDispoTableRow getRow(@NonNull final String identifier)
+	private MD_Candidate_StepDefTable(@NonNull final List<MaterialDispoTableRow> rows)
 	{
-		return rows.get(identifier);
+		this.rows = Maps.uniqueIndex(rows, MaterialDispoTableRow::getIdentifier);
 	}
 
-	public ImmutableCollection<MaterialDispoTableRow> getRows()
+	public static Collector<MaterialDispoTableRow, ?, MD_Candidate_StepDefTable> collect()
 	{
-		return rows.values();
+		return GuavaCollectors.collectUsingListAccumulator(MD_Candidate_StepDefTable::new);
 	}
 
-	@Value
-	@Builder
-	public static class MaterialDispoTableRow
+	public int size() {return rows.size();}
+
+	public Stream<MaterialDispoTableRow> stream() {return rows.values().stream();}
+
+	public ImmutableSet<ProductId> getProductIds()
 	{
-		@NonNull
-		String identifier;
+		return stream()
+				.map(MaterialDispoTableRow::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
-		@NonNull
-		CandidateType type;
-
-		@Nullable
-		CandidateBusinessCase businessCase;
-
-		@NonNull
-		ProductId productId;
-
-		@NonNull
-		BigDecimal qty;
-
-		@NonNull
-		BigDecimal atp;
-
-		@NonNull
-		Instant time;
-
-		@Nullable
-		String attributeSetInstanceId;
-
-		boolean simulated;
-
-		public CandidatesQuery createQuery()
+	public void forEach(@NonNull final ThrowingConsumer<MaterialDispoTableRow> consumer) throws Throwable
+	{
+		for (final Map.Entry<StepDefDataIdentifier, MaterialDispoTableRow> entry : rows.entrySet())
 		{
-			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
-					.productId(productId.getRepoId())
-					.storageAttributesKey(AttributesKey.ALL) // don't restrict on ASI for now; we might use the row's attributeSetInstanceId in this query at a later time
-					.timeRangeEnd(DateAndSeqNo.builder()
-										  .date(time)
-										  .operator(DateAndSeqNo.Operator.INCLUSIVE)
-										  .build())
-					.build();
+			final StepDefDataIdentifier identifier = entry.getKey();
+			final MaterialDispoTableRow row = entry.getValue();
 
-			return CandidatesQuery.builder()
-					.type(type)
-					.businessCase(businessCase)
-					.materialDescriptorQuery(materialDescriptorQuery)
-					.simulatedQueryQualifier(this.simulated ? SimulatedQueryQualifier.ONLY_SIMULATED : SimulatedQueryQualifier.EXCLUDE_SIMULATED)
-					.build();
+			SharedTestContext.run(() -> {
+				SharedTestContext.put("rowIdentifier", identifier);
+				SharedTestContext.put("row", row);
+
+				consumer.accept(row);
+			});
 		}
 	}
 }

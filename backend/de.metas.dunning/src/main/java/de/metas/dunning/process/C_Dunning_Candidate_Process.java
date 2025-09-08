@@ -22,11 +22,9 @@ package de.metas.dunning.process;
  * #L%
  */
 
-import java.util.Iterator;
-
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.dunning.Dunning_Constants;
 import de.metas.dunning.api.IDunningBL;
@@ -40,11 +38,12 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import java.util.Iterator;
+
 /**
  * Process responsible for creating <code>C_DunningDocs</code> from dunning candidates
  *
  * @author tsa
- *
  */
 public class C_Dunning_Candidate_Process extends JavaProcess
 {
@@ -66,7 +65,7 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParametersAsArray())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{
@@ -103,15 +102,15 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 		Check.assumeNotNull(asyncBatchType, "Defined Async Batch type should not be null for internal name ", m_asyncBatchType);
 
 		// Create Async Batch for tracking
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
+		final AsyncBatchId asyncBatchId =  asyncBatchBL.newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType.getInternalName())
 				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setName(m_AsyncBatchName)
 				.setDescription(m_AsyncBatchDesc)
-				.build();
+				.buildAndEnqueue();
 
-		context.setProperty(IDunningProducer.CONTEXT_AsyncBatchDunningDoc, asyncBatch);
+		context.setProperty(IDunningProducer.CONTEXT_AsyncBatchIdDunningDoc, asyncBatchId);
 
 		final SelectedDunningCandidatesSource source = new SelectedDunningCandidatesSource(getProcessInfo().getWhereClause());
 		source.setDunningContext(context);
@@ -123,9 +122,6 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 
 	/**
 	 * This dunning candidate source returns only those candidates that have been selected by the user.
-	 *
-	 * @author ts
-	 *
 	 */
 	private static final class SelectedDunningCandidatesSource extends AbstractDunningCandidateSource
 	{

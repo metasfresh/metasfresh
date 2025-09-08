@@ -22,11 +22,11 @@ package org.adempiere.server.rpl.exceptions;
  * #L%
  */
 
-
-import java.util.List;
-
+import lombok.Getter;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.compiere.model.PO;
+
+import java.util.List;
 
 /**
  * Exception meant to contain data for failed lookups.
@@ -38,14 +38,16 @@ public final class DuplicateLookupObjectException extends ReplicationException
 {
 	private static final long serialVersionUID = 5099228399627874129L;
 
+	@Getter
 	private final List<PO> lookedUpPOs;
+	
 	private final I_EXP_ReplicationTrxLine trxLineDraft;
+	
+	@Getter
 	private final boolean doLookup;
 
 	/**
 	 * Constructs a {@link DuplicateLookupObjectException} with <code>lookedUpPOs=null</code>, <code>trxLineDraft=null</code>, and <code>doLookup=false</code>
-	 * 
-	 * @param adMessage
 	 */
 	public DuplicateLookupObjectException(final String adMessage)
 	{
@@ -60,18 +62,9 @@ public final class DuplicateLookupObjectException extends ReplicationException
 		this.doLookup = doLookup;
 	}
 
-	public List<PO> getLookedUpPOs()
-	{
-		return lookedUpPOs;
-	}
-
 	public I_EXP_ReplicationTrxLine getTrxLineDraftOrNull()
 	{
 		return trxLineDraft;
 	}
 
-	public boolean isDoLookup()
-	{
-		return doLookup;
-	}
 }

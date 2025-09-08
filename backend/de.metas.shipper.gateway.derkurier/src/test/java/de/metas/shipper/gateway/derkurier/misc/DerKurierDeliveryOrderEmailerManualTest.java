@@ -1,25 +1,23 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.fail;
-
-import java.io.UnsupportedEncodingException;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_SysConfig;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
-import de.metas.email.mailboxes.MailboxRepository;
-import de.metas.email.templates.MailTemplateRepository;
+import de.metas.email.mailboxes.MailboxType;
+import de.metas.email.mailboxes.SMTPConfig;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_SysConfig;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import java.nio.charset.StandardCharsets;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -44,14 +42,14 @@ import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
  */
 
 /**
- * This test makes a real invocation on the a mailserver. It's usually {@link Ignore}d.
+ * This test makes a real invocation on the a mailserver. It's usually {@link org.junit.jupiter.api.Disabled}d.
  */
 public class DerKurierDeliveryOrderEmailerManualTest
 {
 
 	private AttachmentEntryService attachmentEntryService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -70,14 +68,16 @@ public class DerKurierDeliveryOrderEmailerManualTest
 	}
 
 	@Test
-	@Ignore // remove the ignore to run this test manually
+	@Disabled // remove the Disabled to run this test manually
 	public void testAttachAndEmail()
 	{
 		final Mailbox mailbox = Mailbox.builder()
 				.email(EMailAddress.ofString("we@derKurier.test"))
-				.smtpHost("localhost")
-				.smtpPort(25)
-				.password("test")
+				.type(MailboxType.SMTP)
+				.smtpConfig(SMTPConfig.builder()
+						.smtpHost("localhost")
+						.smtpPort(25)
+						.build())
 				.build();
 
 		final I_DerKurier_DeliveryOrder deliveryOrder = newInstance(I_DerKurier_DeliveryOrder.class);
@@ -86,30 +86,22 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		final AttachmentEntry firstEntry = attachmentEntryService.createNewAttachment(deliveryOrder, "deliveryOrder.csv", generateBytes());
 
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
-		final MailService mailService = new MailService(new MailboxRepository(), new MailTemplateRepository());
+		final MailService mailService = MailService.newInstanceForUnitTesting();
 		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(
 				derKurierShipperConfigRepository,
 				attachmentEntryService,
 				mailService);
 
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(
-				mailbox, 
-				EMailAddress.ofString("orderProcessing@derKurier.test"), 
+				mailbox,
+				EMailAddress.ofString("orderProcessing@derKurier.test"),
 				firstEntry);
 
 		// now check in your mail server if the mail is OK..
 	}
 
-	private final byte[] generateBytes()
+	private byte[] generateBytes()
 	{
-		try
-		{
-			return new String("Test-Attachment-Text-As-Bytes").getBytes("UTF-8");
-		}
-		catch (final UnsupportedEncodingException e)
-		{
-			fail("Unable to generate byte for our attachment", e);
-			return null;
-		}
+		return "Test-Attachment-Text-As-Bytes".getBytes(StandardCharsets.UTF_8);
 	}
 }

@@ -30,13 +30,13 @@ public abstract class PrintingQueueHandlerAdapter implements IPrintingQueueHandl
 {
 
 	@Override
-	public void afterEnqueueBeforeSave(I_C_Printing_Queue queueItem, I_AD_Archive printOut)
+	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
 		// nothing
 	}
 
 	@Override
-	public void afterEnqueueAfterSave(I_C_Printing_Queue queueItem, I_AD_Archive printOut)
+	public void afterEnqueueAfterSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
 		// nothing
 	}

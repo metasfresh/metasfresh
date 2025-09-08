@@ -1,21 +1,20 @@
 package de.metas.inventory.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.Assert.assertTrue;
+import de.metas.inventory.IInventoryBL;
+import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_InventoryLine;
+import org.compiere.model.I_M_Locator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_M_InventoryLine;
-import org.compiere.model.I_M_Locator;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.inventory.IInventoryBL;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * #%L
@@ -43,7 +42,7 @@ public class InventoryBLTest
 {
 	private IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

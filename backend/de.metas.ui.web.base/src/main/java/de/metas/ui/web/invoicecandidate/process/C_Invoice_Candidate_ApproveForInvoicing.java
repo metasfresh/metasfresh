@@ -60,7 +60,10 @@ public class C_Invoice_Candidate_ApproveForInvoicing extends C_Invoice_Candidate
 			queryBuilder.filter(getProcessInfo().getQueryFilterOrElseFalse());
 		}
 
+		queryBuilder.addFilter(getSelectionFilter());
+
 		queryBuilder.addOnlyActiveRecordsFilter()
+				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, true) // not processed
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, true) // not already approved
 		;

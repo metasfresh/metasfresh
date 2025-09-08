@@ -22,17 +22,8 @@
 
 package de.metas.ui.web.material.cockpit;
 
-import java.time.Duration;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.model.I_M_Product;
-import org.springframework.stereotype.Service;
-
 import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.view.DefaultViewsRepositoryStorage;
@@ -42,6 +33,13 @@ import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.model.I_M_Product;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.util.stream.Stream;
 
 /**
  * This {@link IViewsIndexStorage} implementation is dedicated to storing {@link MaterialCockpitView}.

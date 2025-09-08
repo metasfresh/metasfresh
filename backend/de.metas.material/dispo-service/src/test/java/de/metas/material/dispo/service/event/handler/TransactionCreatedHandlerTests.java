@@ -17,6 +17,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionCreatedEventBuilder;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -345,7 +346,7 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate).isNotNull();
 		assertThat(candidate.getClientAndOrgId()).isEqualTo(CLIENT_AND_ORG_ID);
 		assertThat(candidate.getMaterialDescriptor()).isNotNull();
-		assertThat(candidate.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(candidate.getProductId()).isEqualTo(ProductId.ofRepoId(PRODUCT_ID));
 		assertThat(candidate.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(candidate.getTransactionDetails()).isNotEmpty();
 

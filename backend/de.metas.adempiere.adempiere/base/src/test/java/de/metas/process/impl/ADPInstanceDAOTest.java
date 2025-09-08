@@ -22,29 +22,27 @@ package de.metas.process.impl;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-
 import de.metas.common.util.time.SystemTime;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.sql.Timestamp;
 
 public class ADPInstanceDAOTest
 {
 	private PlainContextAware context;
 	private ADPInstanceDAO dao;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -60,7 +58,7 @@ public class ADPInstanceDAOTest
 		adPInstancePara.setP_Date(date);
 
 		final ProcessInfoParameter para = dao.createProcessInfoParameter(adPInstancePara);
-		Assert.assertEquals(date, para.getParameterAsTimestamp());
+		Assertions.assertEquals(date, para.getParameterAsTimestamp());
 	}
 
 	/**
@@ -78,6 +76,6 @@ public class ADPInstanceDAOTest
 		// NOTE: this is a common case in our processes
 		final String paramStringActual = (String)para.getParameter();
 
-		Assert.assertEquals(stringParam, paramStringActual);
+		Assertions.assertEquals(stringParam, paramStringActual);
 	}
 }

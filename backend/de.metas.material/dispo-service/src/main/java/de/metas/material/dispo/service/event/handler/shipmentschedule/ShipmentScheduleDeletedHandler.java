@@ -3,11 +3,11 @@ package de.metas.material.dispo.service.event.handler.shipmentschedule;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.util.IdConstants;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.common.util.IdConstants;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -87,15 +87,14 @@ public class ShipmentScheduleDeletedHandler implements MaterialEventHandler<Ship
 			return;
 		}
 
-		final DemandDetail updatedDemandDetail = candidate
-				.getDemandDetail()
-				.toBuilder()
+		final DemandDetail updatedDemandDetail = candidate.getDemandDetail().toBuilder()
 				.shipmentScheduleId(IdConstants.NULL_REPO_ID)
 				.qty(ZERO)
 				.build();
-		final Candidate updatedCandidate = candidate
-				.withQuantity(ZERO)
-				.withBusinessCaseDetail(updatedDemandDetail);
+		final Candidate updatedCandidate = candidate.toBuilder()
+				.quantity(ZERO)
+				.businessCaseDetail(updatedDemandDetail)
+				.build();
 		candidateChangeHandler.onCandidateNewOrChange(updatedCandidate);
 	}
 }

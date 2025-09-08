@@ -26,47 +26,49 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.common.util.EmptyUtil;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import java.util.Map.Entry;
 
 @Value
 @Builder
 public class GenerateShipmentsRequest
 {
-	@NonNull
-	ImmutableSet<ShipmentScheduleId> scheduleIds;
+	@NonNull ImmutableSet<ShipmentScheduleId> scheduleIds;
+	@Nullable ImmutableSet<HuId> onlyLUIds;
 
-	@NonNull
-	ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleToExternalInfo;
+	@NonNull ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleToExternalInfo;
 
-	@NonNull
-	ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliverOverride;
+	@NonNull QtyToDeliverMap scheduleToQuantityToDeliverOverride;
 
-	@NonNull
-	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
+	@NonNull M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
 
 	/**
 	 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
 	 * If {@code true}, then the on-the-fly picked HUs are in addition created as TUs, using the respective shipment schedules' packing instructions.
 	 */
-	@Builder.Default
-	boolean onTheFlyPickToPackingInstructions = false;
-	
-	@NonNull
-	AsyncBatchId asyncBatchId;
+	@Builder.Default boolean onTheFlyPickToPackingInstructions = false;
 
-	@NonNull
-	Boolean isCompleteShipment;
+	@NonNull AsyncBatchId asyncBatchId;
 
-	@Nullable
-	Boolean isShipDateToday;
+	@NonNull Boolean isCompleteShipment;
+	boolean isCloseShipmentSchedules;
+
+	@Nullable Boolean isShipDateToday;
+
+	/**
+	 * The shipments are created via async-workpackage and this flag decides if the caller wants to wait for them.
+	 * By default, it is set to true for backwards compatibility.
+	 *
+	 * @see ShipmentService#generateShipments(GenerateShipmentsRequest)
+	 */
+	@Builder.Default boolean waitForShipments = true;
 
 	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
 	{

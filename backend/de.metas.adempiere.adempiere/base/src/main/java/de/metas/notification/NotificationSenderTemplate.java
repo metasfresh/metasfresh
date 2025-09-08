@@ -2,14 +2,13 @@ package de.metas.notification;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
-import de.metas.email.EMail;
-import de.metas.email.EMailCustomType;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
@@ -19,7 +18,6 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
-import de.metas.process.AdProcessId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.ui.web.WebuiURLs;
@@ -32,11 +30,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +50,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -86,12 +83,12 @@ public class NotificationSenderTemplate
 	private final IUserDAO usersRepo = Services.get(IUserDAO.class);
 	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
+	private final INotificationGroupRepository notificationGroupRepository = Services.get(INotificationGroupRepository.class);
 	private final IRoleNotificationsConfigRepository roleNotificationsConfigRepository = Services.get(IRoleNotificationsConfigRepository.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final UserGroupRepository userGroupRepository = SpringContextHolder.instance.getBean(UserGroupRepository.class);
 
@@ -109,35 +106,30 @@ public class NotificationSenderTemplate
 
 	public void sendAfterCommit(@NonNull final List<UserNotificationRequest> requests)
 	{
-		if (requests.isEmpty())
-		{
-			return;
-		}
+		if (requests.isEmpty()) {return;}
 
-		final ImmutableList<UserNotificationRequest> requestsEffective = ImmutableList.copyOf(requests);
-
-		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.invokeMethodJustOnce(true)
-				.registerHandlingMethod(innerTrx -> send(requestsEffective));
+		trxManager.accumulateAndProcessAfterCommit(
+				"NotificationSenderTemplate.sendAfterCommit",
+				requests,
+				this::sendNow);
 	}
 
-	private void send(@NonNull final List<UserNotificationRequest> requests)
+	private void sendNow(@NonNull final List<UserNotificationRequest> requests)
 	{
-		requests.forEach(this::send);
+		requests.forEach(this::sendNow);
 	}
 
-	public void send(@NonNull final UserNotificationRequest request)
+	public void sendNow(@NonNull final UserNotificationRequest request)
 	{
 		logger.trace("Prepare sending notification: {}", request);
 		try
 		{
 			Stream.of(resolve(request))
-					.flatMap(this::explodeByUser)
+					.flatMap(this::explodeByRecipient)
 					.flatMap(this::explodeByEffectiveNotificationsConfigs)
 					.forEach(this::send0);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			logger.error("Failed to send notification: {}", request, ex);
 		}
@@ -177,13 +169,20 @@ public class NotificationSenderTemplate
 				.build();
 	}
 
-	private Stream<UserNotificationRequest> explodeByUser(final UserNotificationRequest request)
+	private Stream<UserNotificationRequest> explodeByRecipient(final UserNotificationRequest request)
 	{
-		return explodeRecipients(request.getRecipient())
+		final LinkedHashSet<Recipient> recipients = new LinkedHashSet<>();
+		recipients.add(request.getRecipient());
+		notificationGroupRepository.getNotificationGroupByName(request.getNotificationGroupName())
+				.ifPresent(notificationGroup -> recipients.addAll(notificationGroup.getCcs().toSet()));
+
+		return recipients.stream()
+				.flatMap(this::explodeRecipient)
+				.distinct()
 				.map(request::deriveByRecipient);
 	}
 
-	private Stream<Recipient> explodeRecipients(final Recipient recipient)
+	private Stream<Recipient> explodeRecipient(final Recipient recipient)
 	{
 		if (recipient.isAllUsers())
 		{
@@ -264,12 +263,11 @@ public class NotificationSenderTemplate
 		try
 		{
 			final Object targetRecordModel = record.getModel(PlainContextAware.createUsingOutOfTransaction());
-			final String documentNo = documentBL.getDocumentNo(targetRecordModel);
-			return documentNo;
+			return documentBL.getDocumentNo(targetRecordModel);
 		}
 		catch (final Exception ex)
 		{
-			logger.info("Failed retrieving record for " + record, ex);
+			logger.info("Failed retrieving record for {}", record, ex);
 		}
 
 		//
@@ -282,13 +280,8 @@ public class NotificationSenderTemplate
 		{
 			return targetRecordAction.getAdWindowId();
 		}
-		if (targetRecordAction.getRecord() == null)
-		{
-			return Optional.empty();
-		}
 
-		final RecordWindowFinder recordWindowFinder = RecordWindowFinder.newInstance(targetRecordAction.getRecord());
-		return recordWindowFinder.findAdWindowId();
+		return RecordWindowFinder.newInstance(targetRecordAction.getRecord()).findAdWindowId();
 	}
 
 	private String extractSubjectText(final UserNotificationRequest request)
@@ -357,7 +350,6 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isUser())
 		{
-
 			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId());
 
 			if (recipient.isRoleIdSet())
@@ -422,11 +414,11 @@ public class NotificationSenderTemplate
 		{
 			final UserNotification notification = notificationsRepo.save(request);
 
-			final Topic topic = Topic.remote(request.getNotificationGroupName().getValueAsString());
+			final Topic topic = Topic.distributed(request.getNotificationGroupName().getValueAsString());
 
 			eventBusFactory
 					.getEventBus(topic)
-					.postEvent(UserNotificationUtils.toEvent(notification));
+					.enqueueEvent(UserNotificationUtils.toEvent(notification));
 		}
 		catch (final Exception ex)
 		{
@@ -437,7 +429,6 @@ public class NotificationSenderTemplate
 	private void sendMail(final UserNotificationRequest request)
 	{
 		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
-		final Mailbox mailbox = findMailbox(notificationsConfig);
 
 		final boolean html = true;
 		final String content = extractMailContent(request);
@@ -448,25 +439,27 @@ public class NotificationSenderTemplate
 			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
 		}
 
-		final EMail mail = mailService.createEMail(
-				mailbox,
-				notificationsConfig.getEmail(),
-				subject,
-				content,
-				html);
-		request.getAttachments().forEach(mail::addAttachment);
-		mailService.send(mail);
+		mailService.sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery(notificationsConfig))
+				.to(notificationsConfig.getEmail())
+				.subject(subject)
+				.message(content)
+				.html(html)
+				.attachments(request.getAttachments().stream().map(EMailAttachment::of).collect(Collectors.toList()))
+				.build());
 	}
 
 	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
-		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(notificationsConfig.getClientId());
-		return mailService.findMailBox(
-				tenantEmailConfig,
-				notificationsConfig.getOrgId(),
-				(AdProcessId)null,  // AD_Process_ID
-				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
-				(EMailCustomType)null);  // customType
+		return mailService.findMailbox(mailboxQuery(notificationsConfig));
+	}
+
+	private static MailboxQuery mailboxQuery(final @NonNull UserNotificationsConfig notificationsConfig)
+	{
+		return MailboxQuery.builder()
+				.clientId(notificationsConfig.getClientId())
+				.orgId(notificationsConfig.getOrgId())
+				.build();
 	}
 
 	private String extractMailContent(final UserNotificationRequest request)

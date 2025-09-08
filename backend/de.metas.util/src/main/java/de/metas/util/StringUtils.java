@@ -23,12 +23,11 @@ package de.metas.util;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.Check;
-import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -38,36 +37,19 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public final class StringUtils
 {
-	public static final String REGEXP_STREET_AND_NUMBER_SPLIT = "^([^0-9]+) ?([0-9]+.*$)?";
-
 	private StringUtils()
 	{
-	}
-
-	@Nullable
-	public static IPair<String, String> splitStreetAndHouseNumberOrNull(@Nullable final String streetAndNumber)
-	{
-		if (EmptyUtil.isBlank(streetAndNumber))
-		{
-			return null;
-		}
-		final Pattern pattern = Pattern.compile(StringUtils.REGEXP_STREET_AND_NUMBER_SPLIT);
-		final Matcher matcher = pattern.matcher(streetAndNumber);
-		if (!matcher.matches())
-		{
-			return null;
-		}
-
-		final String street = matcher.group(1);
-		final String number = matcher.group(2);
-		return ImmutablePair.of(trim(street), trim(number));
 	}
 
 	@Nullable
@@ -97,9 +79,19 @@ public final class StringUtils
 		return strTrim;
 	}
 
+	@NonNull
 	public static Optional<String> trimBlankToOptional(@Nullable final String str)
 	{
 		return Optional.ofNullable(trimBlankToNull(str));
+	}
+
+	@Nullable
+	public static <T> T trimBlankToNullAndMap(@Nullable final String str, @NonNull Function<String, T> mapper)
+	{
+		final String strNorm = trimBlankToNull(str);
+		return strNorm != null
+				? mapper.apply(strNorm)
+				: null;
 	}
 
 	/**
@@ -132,19 +124,48 @@ public final class StringUtils
 	/**
 	 * Truncate string to a given length, if required.
 	 */
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static String trunc(
 			@Nullable final String str,
 			final int length)
 	{
-		return trunc(str, length, TruncateAt.STRING_END);
+		return trunc(str, length, TruncateAt.STRING_END, null);
 	}
 
+	@Contract("!null, _, _ -> !null")
 	@Nullable
 	public static String trunc(
 			@Nullable final String string,
 			final int maxLength,
 			@NonNull final TruncateAt side)
+	{
+		return trunc(string, maxLength, side, null);
+	}
+
+	/**
+	 * @param onTrunc if not {@code null}, then provide the original string and the truncated string to this, in case truncation was made.
+	 */
+	@Contract("!null, _, _ -> !null")
+	@Nullable
+	public static String trunc(
+			@Nullable final String str,
+			final int length,
+			@Nullable final BiConsumer<String, String> onTrunc)
+	{
+		return trunc(str, length, TruncateAt.STRING_END, onTrunc);
+	}
+
+	/**
+	 * @param onTrunc if not {@code null}, then provide the original string and the truncated string to this, in case truncation was made.
+	 */
+	@Contract("!null, _, _, _ -> !null")
+	@Nullable
+	public static String trunc(
+			@Nullable final String string,
+			final int maxLength,
+			@NonNull final TruncateAt side,
+			@Nullable final BiConsumer<String, String> onTrunc)
 	{
 		if (string == null)
 		{
@@ -156,16 +177,25 @@ public final class StringUtils
 			return string;
 		}
 
+		final String result;
 		switch (side)
 		{
 			case STRING_START:
-				return string.substring(string.length() - maxLength);
+				result = string.substring(string.length() - maxLength);
+				break;
 			case STRING_END:
-				return string.substring(0, maxLength);
+				result = string.substring(0, maxLength);
+				break;
 			default:
 				Check.errorIf(true, "Unexpected parameter TruncateAt={}; lenght={}; string={}", side, maxLength, string);
-				return null;
+				result = ""; // won't be reached;
 		}
+		
+		if (onTrunc != null && !Objects.equals(string, result))
+		{
+			onTrunc.accept(string, result);
+		}
+		return result;
 	}
 
 	/**
@@ -425,8 +455,7 @@ public final class StringUtils
 		{
 			if (param instanceof Supplier)
 			{
-				@SuppressWarnings("rawtypes")
-				final Supplier paramSupplier = (Supplier)param;
+				@SuppressWarnings("rawtypes") final Supplier paramSupplier = (Supplier)param;
 
 				result.add(paramSupplier.get());
 			}
@@ -670,11 +699,10 @@ public final class StringUtils
 		{
 			return in;
 		}
-		
+
 		return CharMatcher.whitespace().removeFrom(in);
 	}    // cleanWhitespace
 
-	
 	/**
 	 * remove white space from the begin
 	 */
@@ -1044,5 +1072,36 @@ public final class StringUtils
 			insertPosition += groupSize + groupSeparator.length();
 		}
 		return result.toString();
+	}
+
+	public static Map<String, String> parseURLQueryString(@Nullable final String query)
+	{
+		final String queryNorm = trimBlankToNull(query);
+		if (queryNorm == null)
+		{
+			return ImmutableMap.of();
+		}
+
+		final HashMap<String, String> params = new HashMap<String, String>();
+		for (final String param : queryNorm.split("&"))
+		{
+			final String key;
+			final String value;
+			final int idx = param.indexOf("=");
+			if (idx < 0)
+			{
+				key = param;
+				value = null;
+			}
+			else
+			{
+				key = param.substring(0, idx);
+				value = param.substring(idx + 1);
+			}
+			params.put(key, value);
+		}
+
+		return params;
+
 	}
 }

@@ -32,14 +32,18 @@ import org.compiere.model.X_EXP_ProcessorParameter;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.w3c.dom.Document;
 
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
@@ -58,21 +62,23 @@ public class RabbitMqExportProcessor implements IExportProcessor
 	protected Logger log = LogManager.getLogger(getClass());
 
 	@Override
-	public void process(final @NonNull Properties ctx, final @NonNull MEXPProcessor expProcessor,
-			final @NonNull Document document, final Trx trx)
+	public void process(final @NonNull Properties ctx, 
+			final @NonNull MEXPProcessor expProcessor,
+			final @NonNull Document document, 
+			final Trx trx)
 			throws Exception
 	{
-		String host = expProcessor.getHost();
-		int port = expProcessor.getPort();
-		String account = expProcessor.getAccount();
-		String password = expProcessor.getPasswordInfo();
+		final String host = expProcessor.getHost();
+		final int port = expProcessor.getPort();
+		final String account = expProcessor.getAccount();
+		final String password = expProcessor.getPasswordInfo();
 		String exchangeName = StringUtils.EMPTY;
 		String routingKey = StringUtils.EMPTY;
 		boolean isDurableQueue = true;
 
 		// Read all processor parameters and set them!
-		I_EXP_ProcessorParameter[] processorParameters = expProcessor.getEXP_ProcessorParameters();
-		for (I_EXP_ProcessorParameter processorParameter : processorParameters)
+		final I_EXP_ProcessorParameter[] processorParameters = expProcessor.getEXP_ProcessorParameters();
+		for (final I_EXP_ProcessorParameter processorParameter : processorParameters)
 		{
 			log.info("ProcesParameter: Value = {} ; ParameterValue = {}",
 					processorParameter.getValue(),
@@ -102,14 +108,14 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		}
 
 		// Construct Transformer Factory and Transformer
-		TransformerFactory tranFactory = TransformerFactory.newInstance();
-		Transformer aTransformer = tranFactory.newTransformer();
+		final TransformerFactory tranFactory = TransformerFactory.newInstance();
+		final Transformer aTransformer = tranFactory.newTransformer();
 		aTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
-		Source src = new DOMSource(document);
+		final Source src = new DOMSource(document);
 
 		// =================================== Write to String
-		Writer writer = new StringWriter();
-		Result dest2 = new StreamResult(writer);
+		final Writer writer = new StringWriter();
+		final Result dest2 = new StreamResult(writer);
 		aTransformer.transform(src, dest2);
 
 		sendAMQPMessage(host, port, writer.toString(), exchangeName, routingKey, account, password, isDurableQueue);
@@ -120,24 +126,23 @@ public class RabbitMqExportProcessor implements IExportProcessor
 			final @NonNull String routingKey, final @NonNull String userName, final @NonNull String password, final boolean isDurableQueue)
 	{
 
-		CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host, port);
-		if (userName != null && password != null)
-		{
-			connectionFactory.setUsername(userName);
-			connectionFactory.setPassword(password);
-		}
-		RabbitTemplate template = new RabbitTemplate(connectionFactory);
+		final CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host, port);
+		connectionFactory.setUsername(userName);
+		connectionFactory.setPassword(password);
+
+		final RabbitTemplate template = new RabbitTemplate(connectionFactory);
 		template.setRoutingKey(routingKey);
 		template.setExchange(exchangeName);
-		RabbitAdmin admin = new RabbitAdmin(template.getConnectionFactory());
-		Queue queue = new Queue(routingKey, isDurableQueue);
-		TopicExchange exchange = new TopicExchange(exchangeName, isDurableQueue, false);
+		final RabbitAdmin admin = new RabbitAdmin(template.getConnectionFactory());
+		final Queue queue = new Queue(routingKey, isDurableQueue);
+		final DirectExchange exchange = new DirectExchange(exchangeName, isDurableQueue, false);
 		admin.declareExchange(exchange);
 		admin.declareQueue(queue);
 		// queue name and routing key are the same
 		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(routingKey));
 		template.convertAndSend(msg);
 		log.info("AMQP Message sent!");
+		template.destroy();
 		connectionFactory.destroy();
 	}
 

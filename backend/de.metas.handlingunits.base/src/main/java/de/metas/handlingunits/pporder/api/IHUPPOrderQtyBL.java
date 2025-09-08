@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.uom.IUOMDAO;
@@ -8,6 +9,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -41,9 +44,15 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 		return uomDAO.getById(ppOrderQty.getC_UOM_ID());
 	}
 
+	@NonNull
 	DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull PPOrderId ppOrderId);
+
+	@NonNull
+	DraftPPOrderQuantities getPPOrderQuantities(@NonNull PPOrderId ppOrderId, boolean includeProcessedQty);
 
 	void updateDraftReceiptCandidate(@NonNull UpdateDraftReceiptCandidateRequest request);
 
 	boolean isReceipt(@NonNull final I_PP_Order_Qty ppOrderQty);
+
+	Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull PPOrderId ppOrderId);
 }

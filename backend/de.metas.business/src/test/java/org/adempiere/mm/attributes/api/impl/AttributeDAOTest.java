@@ -22,28 +22,28 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-
-import java.util.Set;
-
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
+import java.util.Set;
 
 public class AttributeDAOTest
 {
 	private AttributesTestHelper helper;
 
-	/** service under test */
+	/**
+	 * service under test
+	 */
 	private AttributeDAO attributeDAO;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -94,10 +94,11 @@ public class AttributeDAOTest
 	public void test_retrieveAttributeValueSubstitutes(final I_M_Attribute attribute, final String value, final String... expectedSubstitutes)
 	{
 		final Set<String> actualSubstitutes = attributeDAO.retrieveAttributeValueSubstitutes(attribute, value);
-		Assert.assertEquals("Invalid substitutes for: " + value,
+		Assertions.assertEquals(
 				CollectionUtils.asSet(expectedSubstitutes),
-				actualSubstitutes
-				);
+				actualSubstitutes,
+				"Invalid substitutes for: " + value
+		);
 
 	}
 }

@@ -45,7 +45,6 @@ import java.util.Properties;
  * Login context for {@link Login}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @SuppressWarnings("SameParameterValue")
 @Getter
@@ -58,9 +57,14 @@ public class LoginContext
 	private String remoteAddr = null;
 	private String remoteHost = null;
 
-	/** true if logging from webui */
+	/**
+	 * true if logging from webui
+	 */
 	private boolean webui = false;
 	private String webSessionId = null;
+
+	private static final String CTXNAME_IsPasswordAuth = "#IsPasswordAuth";
+	private static final String CTXNAME_Is2FAAuth = "#Is2FAAuth";
 
 	public LoginContext(@NonNull final Properties ctx)
 	{
@@ -96,7 +100,7 @@ public class LoginContext
 	private Optional<Integer> getOptionalPropertyAsInt(final String name)
 	{
 		final Properties ctx = getCtx();
-		if (Env.getContext(ctx, name).length() == 0)   	// could be number 0
+		if (Env.getContext(ctx, name).isEmpty())    // could be number 0
 		{
 			return Optional.empty();
 		}
@@ -149,6 +153,14 @@ public class LoginContext
 		setProperty(Env.CTXNAME_AD_Language, AD_Language);
 	}
 
+	public void setIsPasswordAuthenticated() {setProperty(CTXNAME_IsPasswordAuth, true);}
+
+	public boolean isPasswordAuthenticated() {return getPropertyAsBoolean(CTXNAME_IsPasswordAuth);}
+
+	public void setIs2FAAuthenticated(boolean authenticated) {setProperty(CTXNAME_Is2FAAuth, authenticated);}
+
+	public boolean is2FAAuthenticated() {return getPropertyAsBoolean(CTXNAME_Is2FAAuth);}
+
 	public void setUser(final UserId userId, final String username)
 	{
 		setProperty(Env.CTXNAME_AD_User_ID, UserId.toRepoId(userId));
@@ -172,7 +184,9 @@ public class LoginContext
 		setProperty("#SysAdmin", sysAdmin);
 	}
 
-	public void setRole(final RoleId roleId, final String roleName)
+	public void setRole(
+			final RoleId roleId, 
+			final String roleName)
 	{
 		setProperty(Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(roleId));
 		setProperty(Env.CTXNAME_AD_Role_Name, roleName);

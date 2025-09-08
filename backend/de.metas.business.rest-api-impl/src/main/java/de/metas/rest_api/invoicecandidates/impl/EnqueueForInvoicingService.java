@@ -1,20 +1,16 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
-import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
-import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.util.Services;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -39,22 +35,21 @@ import lombok.NonNull;
  */
 
 @Service
+@RequiredArgsConstructor
 public class EnqueueForInvoicingService
 {
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
+	@NonNull
+	private final InvoiceJsonConverters jsonConverters;
+
 	public JsonEnqueueForInvoicingResponse enqueueForInvoicing(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{
-		if (request.getInvoiceCandidates().isEmpty())
-		{
-			throw new InvalidEntityException(TranslatableStrings.constant("The request's invoiceCandidates array may not be empty"));
-		}
-
-		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
+		final InvoiceCandidateMultiQuery multiQuery = jsonConverters.fromJson(request.getInvoiceCandidates());
 		final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
 
-		invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
+		invoiceCandBL.createSelectionForInvoiceCandidates(multiQuery, pInstanceId);
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL
 				.enqueueForInvoicing()

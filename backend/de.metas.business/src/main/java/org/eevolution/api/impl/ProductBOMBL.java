@@ -25,8 +25,11 @@ package org.eevolution.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.product.UpdateProductRequest;
 import de.metas.quantity.Quantity;
@@ -35,6 +38,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -59,6 +63,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class ProductBOMBL implements IProductBOMBL
@@ -324,5 +330,48 @@ public class ProductBOMBL implements IProductBOMBL
 				.uom(uomDAO.getById(productBOMLine.getC_UOM_ID()))
 				//
 				.build();
+	}
+
+	@Override
+	public Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull final I_PP_Product_BOMLine bomLine)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> ProductBOMDAO.extractIssuingToleranceSpec(bomLine),
+				() -> productBL.getIssuingToleranceSpec(ProductId.ofRepoId(bomLine.getM_Product_ID()))
+		);
+	}
+
+	@Override
+	public Optional<ProductBOM> retrieveValidProductBOM(@NonNull final ProductBOMRequest request)
+	{
+		return bomDAO.retrieveValidProductBOM(request);
+	}
+
+	@Override
+	public Map<ProductDescriptor, Quantity> calculateRequiredQtyInStockUOMForComponents(@NonNull final Quantity qty, @NonNull final ProductBOM productBOM)
+	{
+		final Map<ProductDescriptor, Quantity> result = new HashMap<>();
+
+		final ProductId productId = ProductId.ofRepoId(productBOM.getProductDescriptor().getProductId());
+		final Quantity qtyInBomUom = uomConversionBL.convertQuantityTo(qty, productId, productBOM.getUomId());
+
+		for (final I_PP_Product_BOMLine component : productBOM.getComponents())
+		{
+			final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(component.getM_Product_ID(), AttributesKey.NONE, component.getM_AttributeSetInstance_ID());
+			final ProductId componentProductId = ProductId.ofRepoId(component.getM_Product_ID());
+			final I_C_UOM componentUOM = uomDAO.getById(component.getC_UOM_ID());
+			final Quantity componentQty = Quantity.of(computeQtyRequired(component, productId, qtyInBomUom.toBigDecimal()), componentUOM);
+			final Quantity componentQtyInStockUOM = uomConversionBL.convertToProductUOM(componentQty, ProductId.ofRepoId(component.getM_Product_ID()));
+			result.merge(productDescriptor, componentQtyInStockUOM, Quantity::add);
+
+			if (productBOM.getComponentsProductBOMs().containsKey(productDescriptor))
+			{
+				final ProductBOM componentProductBOM = productBOM.getComponentsProductBOMs().get(productDescriptor);
+				final Quantity componentQtyInBomUom = uomConversionBL.convertQuantityTo(componentQtyInStockUOM, componentProductId, componentProductBOM.getUomId());
+				calculateRequiredQtyInStockUOMForComponents(componentQtyInBomUom, componentProductBOM).forEach((key, value) -> result.merge(key, value, Quantity::add));
+			}
+		}
+
+		return result;
 	}
 }

@@ -13,6 +13,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
@@ -59,6 +60,16 @@ public class CandidatesQuery
 	 * This query matches no candidate.
 	 */
 	public static final CandidatesQuery FALSE = CandidatesQuery.fromId(CandidateId.ofRepoId(Integer.MAX_VALUE - 3));
+
+	public static CandidatesQuery ofMaterialDescriptorAndDemandDetails(
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@Nullable final DemandDetail demandDetail)
+	{
+		return CandidatesQuery.builder()
+				.demandDetailsQuery(DemandDetailsQuery.ofDemandDetailOrNull(demandDetail))
+				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(materialDescriptor))
+				.build();
+	}
 
 	/**
 	 * @param includeParentId if true, we include the given candidate's parent ID in the query.
@@ -145,11 +156,13 @@ public class CandidatesQuery
 
 	OrgId orgId;
 
+	@With
 	CandidateType type;
 
 	/**
 	 * Should be {@code null} for stock candidates.
 	 */
+	@With
 	CandidateBusinessCase businessCase;
 
 	//CandidateStatus status;
@@ -248,4 +261,6 @@ public class CandidatesQuery
 		this.stockChangeDetailQuery = stockChangeDetailQuery;
 		this.simulatedQueryQualifier = CoalesceUtil.coalesceNotNull(simulatedQueryQualifier, SimulatedQueryQualifier.EXCLUDE_SIMULATED);
 	}
+
+	public boolean isFalse() {return FALSE.equals(this);}
 }

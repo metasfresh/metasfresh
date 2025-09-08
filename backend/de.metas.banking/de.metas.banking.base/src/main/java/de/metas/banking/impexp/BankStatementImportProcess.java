@@ -85,7 +85,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -104,7 +104,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected I_I_BankStatement retrieveImportRecord(final Properties ctx, final ResultSet rs)
+	public I_I_BankStatement retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_BankStatement(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -207,7 +207,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.chargeAmt(Money.of(importRecord.getChargeAmt(), currencyId))
 						.interestAmt(Money.of(importRecord.getInterestAmt(), currencyId))
 						.chargeId(ChargeId.ofRepoIdOrNull(importRecord.getC_Charge_ID()))
-						.debitorOrCreditorId(importRecord.getDebitorOrCreditorId())
+						.debtorOrCreditorId(importRecord.getDebitorOrCreditorId())
 						//
 						.eft(ElectronicFundsTransfer.builder()
 									 .trxId(importRecord.getEftTrxID())

@@ -1,0 +1,21 @@
+.pos-screen {
+  display: flex;
+  flex-flow: column;
+  overflow: hidden;
+  font-size: 2rem;
+  background-color: #a0a0a0;
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+
+  .pos-header {
+    flex-grow: 0;
+    height: 50px;
+    margin-bottom: 1px;
+  }
+
+  .pos-content {
+    flex-grow: 1;
+    max-height: calc(100dvh - 51px);
+  }
+}

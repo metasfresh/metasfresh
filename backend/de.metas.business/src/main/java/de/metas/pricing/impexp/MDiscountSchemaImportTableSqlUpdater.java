@@ -67,7 +67,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateDiscountSchema(@NonNull final ImportRecordsSelection selection)
@@ -79,7 +79,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE M_DiscountSchema_ID IS NULL AND C_BPartner_ID IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
@@ -90,7 +90,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateC_PaymentTerms(final ImportRecordsSelection selection)
@@ -103,7 +103,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set C_PaymentTerm={}", no);
 	}
 
@@ -117,7 +117,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE Base_PricingSystem_ID IS NULL AND Base_PricingSystem_Value IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set C_PaymentTerm={}", no);
 	}
 
@@ -140,7 +140,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("AND dsb.IsActive = 'Y' ")
 				.append(selection.toSqlWhereClause("i"));
 
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
@@ -153,7 +153,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No BPartner = {}", no);
@@ -164,7 +164,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No Product = {}", no);
@@ -176,7 +176,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL AND PaymentTermValue <> '0' "
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("Invalid C_PaymentTerm={}", no);
@@ -187,7 +187,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				+ "WHERE Base_PricingSystem_ID IS NULL AND Base_PricingSystem_Value IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("Invalid Base_PricingSystem_ID={}", no);

@@ -3,6 +3,7 @@ package org.adempiere.warehouse.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.LocationId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -12,11 +13,11 @@ import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -57,11 +58,15 @@ public interface IWarehouseDAO extends ISingletonService
 {
 	I_M_Warehouse getById(WarehouseId warehouseId);
 
+	<T extends I_M_Warehouse> T getByIdInTrx(@NonNull WarehouseId warehouseId, @NonNull Class<T> modelType);
+
 	<T extends I_M_Warehouse> T getById(WarehouseId warehouseId, Class<T> modelType);
 
 	List<I_M_Warehouse> getByIds(Collection<WarehouseId> warehouseIds);
 
 	<T extends I_M_Warehouse> List<T> getByIds(Collection<WarehouseId> warehouseIds, Class<T> modelType);
+
+	List<I_M_Locator> retrieveActiveLocatorsByValue(@NonNull String locatorValue);
 
 	String getWarehouseName(WarehouseId warehouseId);
 
@@ -88,6 +93,10 @@ public interface IWarehouseDAO extends ISingletonService
 
 	@Deprecated
 	Set<WarehouseId> getWarehouseIdsForLocatorRepoIds(Set<Integer> locatorRepoIds);
+
+	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
+
+	List<I_M_Locator> getLocatorByIds(Collection<LocatorId> locatorIds);
 
 	I_M_Locator getLocatorByRepoId(final int locatorId);
 
@@ -162,6 +171,11 @@ public interface IWarehouseDAO extends ISingletonService
 
 	ImmutableSet<WarehouseId> retrieveWarehouseWithLocation(@NonNull LocationId locationId);
 
+	ClientAndOrgId getClientAndOrgIdByLocatorId(@NonNull LocatorId locatorId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull Collection<Integer> locatorId);
+
 	@Value
 	class WarehouseQuery
 	{
@@ -205,4 +219,19 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
 
 	WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(int locatorRepoId);
+
+	@NonNull
+	Optional<WarehouseId> getOptionalIdByValue(@NonNull String value);
+
+	@NonNull
+	Optional<Warehouse> getOptionalById(@NonNull WarehouseId id);
+
+	void save(@NonNull Warehouse warehouse);
+
+	/**
+	 * Create a warehouse and a default locator.
+	 */
+	@NonNull
+	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
 }

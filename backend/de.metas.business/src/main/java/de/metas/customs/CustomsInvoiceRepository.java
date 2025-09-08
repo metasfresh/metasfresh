@@ -1,29 +1,8 @@
 package de.metas.customs;
 
-import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_Customs_Invoice;
-import org.compiere.model.I_C_Customs_Invoice_Line;
-import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
@@ -44,6 +23,25 @@ import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.model.I_C_Customs_Invoice_Line;
+import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -206,7 +204,7 @@ public class CustomsInvoiceRepository
 			@NonNull final ImmutableListMultimap<CustomsInvoiceLineId, CustomsInvoiceLineAlloc> allocs)
 	{
 		final CustomsInvoiceLineId id = CustomsInvoiceLineId.ofRepoId(customsInvoiceId, record.getC_Customs_Invoice_Line_ID());
-		final Quantity qty = Quantitys.create(record.getInvoicedQty(), UomId.ofRepoId(record.getC_UOM_ID()));
+		final Quantity qty = Quantitys.of(record.getInvoicedQty(), UomId.ofRepoId(record.getC_UOM_ID()));
 		final Money lineNetAmt = Money.of(record.getLineNetAmt(), currencyId);
 
 		return CustomsInvoiceLine.builder()

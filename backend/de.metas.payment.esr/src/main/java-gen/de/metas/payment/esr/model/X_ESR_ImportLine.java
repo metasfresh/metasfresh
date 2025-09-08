@@ -433,6 +433,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public static final String ESR_PAYMENT_ACTION_Discount = "T";
 	/** Duplicate_Payment = P */
 	public static final String ESR_PAYMENT_ACTION_Duplicate_Payment = "P";
+	/** Unknown_Invoice = U */
+	public static final String ESR_PAYMENT_ACTION_Unknown_Invoice = "U";
 	@Override
 	public void setESR_Payment_Action (final @Nullable java.lang.String ESR_Payment_Action)
 	{
@@ -601,6 +603,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public static final String TYPE_QRR = "QRR";
 	/** ESR = ISR Reference */
 	public static final String TYPE_ESR = "ISR Reference";
+	/** SCOR = SCOR Reference */
+	public static final String TYPE_SCOR = "SCOR";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

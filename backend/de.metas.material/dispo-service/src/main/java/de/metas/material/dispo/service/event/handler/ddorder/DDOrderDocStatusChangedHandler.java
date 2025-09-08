@@ -2,7 +2,7 @@ package de.metas.material.dispo.service.event.handler.ddorder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -74,7 +74,7 @@ public class DDOrderDocStatusChangedHandler implements MaterialEventHandler<DDOr
 				"No Candidates found for PP_Order_ID={} ",
 				ddOrderChangedDocStatusEvent.getDdOrderId());
 
-		final String newDocStatusFromEvent = ddOrderChangedDocStatusEvent.getNewDocStatus();
+		final DocStatus newDocStatusFromEvent = ddOrderChangedDocStatusEvent.getNewDocStatus();
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
@@ -93,16 +93,15 @@ public class DDOrderDocStatusChangedHandler implements MaterialEventHandler<DDOr
 
 			updatedCandidatesToPersist.add(updatedCandidateToPersist);
 		}
-		updatedCandidatesToPersist.forEach(candidate -> candidateChangeService.onCandidateNewOrChange(candidate));
+		updatedCandidatesToPersist.forEach(candidateChangeService::onCandidateNewOrChange);
 	}
 
 	private BigDecimal computeNewQuantity(
-			@NonNull final String newDocStatusFromEvent,
+			@NonNull final DocStatus newDocStatusFromEvent,
 			@NonNull final Candidate candidateForDDOrderId)
 	{
 		final BigDecimal newQuantity;
-		final boolean ddOrderIsClosed = IDocument.STATUS_Closed.equals(newDocStatusFromEvent);
-		if (ddOrderIsClosed)
+		if (newDocStatusFromEvent.isClosed())
 		{
 			// Take the "actualQty" instead of max(actual, planned)
 			newQuantity = candidateForDDOrderId.computeActualQty();

@@ -1,33 +1,32 @@
 package de.metas.handlingunits.empties.impl;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.empties.EmptiesMovementProducer;
 import de.metas.handlingunits.empties.EmptiesMovementProducer.EmptiesMovementDirection;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.material.planning.ddorder.DistributionNetwork;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
@@ -62,40 +61,32 @@ public class HUEmptiesService implements IHUEmptiesService
 {
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
-	@Override
-	public I_M_Warehouse getEmptiesWarehouse(@NonNull final I_M_Warehouse warehouse)
+	private WarehouseId getEmptiesWarehouse(@NonNull final I_M_Warehouse warehouse)
 	{
 		// services
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
+		final DistributionNetworkRepository distributionNetworkRepository = SpringContextHolder.instance.getBean(DistributionNetworkRepository.class);
 
-		// In case the requirements will change and the empties ditribution network
+		// In case the requirements will change and the empties distribution network
 		// will be product based, here we will need to get the product gebinde
 		// and send it as parameter in the method above
-		final I_DD_NetworkDistribution emptiesNetworkDistribution = handlingUnitsDAO.retrieveEmptiesDistributionNetwork(Env.getCtx(),
-				null, // Product
-				ITrx.TRXNAME_None);
-		if (emptiesNetworkDistribution == null)
-		{
-			throw new AdempiereException("@NotFound@ @DD_NetworkDistribution_ID@ (@IsHUDestroyed@=@Y@)");
-		}
+		final DistributionNetwork emptiesDistributionNetwork = distributionNetworkRepository.getEmptiesDistributionNetwork();
 
-		final List<I_DD_NetworkDistributionLine> lines = distributionNetworkDAO.retrieveNetworkLinesBySourceWarehouse(emptiesNetworkDistribution, warehouse.getM_Warehouse_ID());
+		final List<DistributionNetworkLine> lines = emptiesDistributionNetwork.getLinesBySourceWarehouse(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 
 		if (lines.isEmpty())
 		{   // we did find the empties distribution network, but it contained no line to tell us what the given 'warehouse's empty-warehouse is.
 			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsHUDestroyed@=@Y@): " + warehouse.getName()
-					+ "\n @DD_NetworkDistribution_ID@: " + emptiesNetworkDistribution.getName());
+					+ "\n @DD_NetworkDistribution_ID@: " + emptiesDistributionNetwork.getName());
 		}
 
-		return lines.get(0).getM_Warehouse();
+		return lines.get(0).getTargetWarehouseId();
 	}
 
 	@Override
 	public I_M_Locator getEmptiesLocator(final I_M_Warehouse warehouse)
 	{
-		final I_M_Warehouse emptiesWarehouse = getEmptiesWarehouse(warehouse);
-		return InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse), I_M_Locator.class);
+		final WarehouseId emptiesWarehouseId = getEmptiesWarehouse(warehouse);
+		return InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(emptiesWarehouseId), I_M_Locator.class);
 	}
 
 	@Override
@@ -116,7 +107,6 @@ public class HUEmptiesService implements IHUEmptiesService
 						loadOutOfTrx(line.getM_Product_ID(), I_M_Product.class),
 						line.getMovementQty().intValueExact()))
 				.collect(GuavaCollectors.toImmutableList());
-
 		//
 		// Generate the empties movement
 		newEmptiesMovementProducer()

@@ -23,14 +23,25 @@ package de.metas.printing.api.impl;
  */
 // NOPMD by ts on 20.03.13 07:58
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-
+import de.metas.lock.api.ILockManager;
 import de.metas.printing.api.IPrintClientsBL;
+import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.printing.model.I_AD_Printer;
+import de.metas.printing.model.I_AD_PrinterHW_Calibration;
+import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
+import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.printing.model.I_AD_PrinterTray_Matching;
+import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_C_PrintPackageData;
+import de.metas.printing.model.I_C_Print_Job;
+import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Print_Package;
+import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -44,27 +55,12 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 
-import de.metas.lock.api.ILockManager;
-import de.metas.printing.api.IPrintPackageBL;
-import de.metas.printing.api.IPrintingQueueQuery;
-import de.metas.printing.model.I_AD_Printer;
-import de.metas.printing.model.I_AD_PrinterHW;
-import de.metas.printing.model.I_AD_PrinterHW_Calibration;
-import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
-import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
-import de.metas.printing.model.I_AD_PrinterTray_Matching;
-import de.metas.printing.model.I_AD_Printer_Matching;
-import de.metas.printing.model.I_AD_Printer_Tray;
-import de.metas.printing.model.I_C_PrintPackageData;
-import de.metas.printing.model.I_C_Print_Job;
-import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.printing.model.I_C_Print_Job_Line;
-import de.metas.printing.model.I_C_Print_Package;
-import de.metas.printing.model.I_C_Print_PackageInfo;
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.model.X_C_Print_Job_Instructions;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 public class PlainPrintingDAO extends AbstractPrintingDAO
 {
@@ -284,8 +280,8 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 				I_C_Printing_Queue.class,
 				null,  // tableName=null => get it from the given model class
 				trxName)
-						.addFilter(filter)
-						.setOrderBy(orderBy);
+				.addFilter(filter)
+				.setOrderBy(orderBy);
 
 		return query;
 	}
@@ -294,18 +290,6 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	public I_AD_PrinterHW_Calibration retrieveCalibration(final I_AD_PrinterHW_MediaSize hwMediaSize, final I_AD_PrinterHW_MediaTray hwTray)
 	{
 		return lookupMap.getFirstOnly(I_AD_PrinterHW_Calibration.class, pojo -> Objects.equals(pojo.getAD_PrinterHW_MediaSize(), hwMediaSize) && Objects.equals(pojo.getAD_PrinterHW_MediaTray(), hwTray));
-	}
-
-	@Override
-	public List<I_AD_PrinterHW_MediaSize> retrieveMediaSizes(final I_AD_PrinterHW printerHW)
-	{
-		return lookupMap.getRecords(I_AD_PrinterHW_MediaSize.class, pojo -> pojo.getAD_PrinterHW_ID() == printerHW.getAD_PrinterHW_ID());
-	}
-
-	@Override
-	public List<I_AD_PrinterHW_Calibration> retrieveCalibrations(final Properties ctx, final int printerID, final String trxName)
-	{
-		return lookupMap.getRecords(I_AD_PrinterHW_Calibration.class, pojo -> pojo.getAD_PrinterHW_ID() == printerID);
 	}
 
 	public I_C_Print_Job_Instructions retrievePrintJobInstructionsForPrintJob(final I_C_Print_Job printJob)

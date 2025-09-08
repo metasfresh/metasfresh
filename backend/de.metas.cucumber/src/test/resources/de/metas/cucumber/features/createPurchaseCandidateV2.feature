@@ -1,11 +1,12 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: create or update Purchase Candidate
   As a user
   I want create a Purchase Candidate record
 
   Background:
     Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
     Given the user adds a purchase candidate
       | ExternalLineId | ExternalHeaderId | POReference | orgCode | warehouse        | isManualPrice | isManualDiscount | product     | vendor.id | qty | qty.uom | OPT.price | OPT.currency | OPT.priceUom | OPT.discount | OPT.purchaseDatePromised | OPT.purchaseDateOrdered | OPT.ExternalPurchaseOrderURL |

@@ -1,4 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
-export PORT=3001; yarn install && yarn start
+## NOTE: we cannot use node >16 yet
+NODE_VERSION=16
+#export HTTPS=true
+export PORT=3001
 
+set -e
+
+npx "--package=node@${NODE_VERSION}" yarn install
+npx "--package=node@${NODE_VERSION}" yarn start

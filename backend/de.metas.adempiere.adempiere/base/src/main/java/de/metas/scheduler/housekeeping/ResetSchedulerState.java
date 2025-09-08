@@ -22,6 +22,9 @@
 
 package de.metas.scheduler.housekeeping;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_Scheduler;
@@ -29,10 +32,6 @@ import org.compiere.model.X_AD_Scheduler;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
 
 /**
  * Updates <code>AD_Scheduler</code> records from status "Running" to "Started".
@@ -46,7 +45,7 @@ public class ResetSchedulerState implements IStartupHouseKeepingTask
 	@Override
 	public void executeTask()
 	{
-		final int no = DB.executeUpdateEx("UPDATE " + I_AD_Scheduler.Table_Name
+		final int no = DB.executeUpdateAndThrowExceptionOnFail("UPDATE " + I_AD_Scheduler.Table_Name
 				+ " SET " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Started + "'"
 				+ " WHERE " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Running + "'", ITrx.TRXNAME_None);
 

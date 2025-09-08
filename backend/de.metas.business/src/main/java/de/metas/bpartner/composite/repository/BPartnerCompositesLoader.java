@@ -47,6 +47,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
@@ -79,7 +80,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
 import static org.compiere.util.TimeUtil.asLocalDate;
@@ -381,6 +381,7 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.vatTaxId(VATIdentifier.ofNullable(bPartnerLocationRecord.getVATaxID()))
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
@@ -567,6 +568,11 @@ final class BPartnerCompositesLoader
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
 				.bankId(bankId)
+				.accountName(bankAccountRecord.getA_Name())
+				.accountStreet(bankAccountRecord.getA_Street())
+				.accountZip(bankAccountRecord.getA_Zip())
+				.accountCity(bankAccountRecord.getA_City())
+				.accountCountry(bankAccountRecord.getA_Country())
 				.build();
 	}
 

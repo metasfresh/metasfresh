@@ -1,19 +1,8 @@
 package de.metas.contracts.invoicecandidate;
 
-import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
-import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.refund.invoicecandidatehandler.FlatrateTermRefund_Handler;
 import de.metas.contracts.subscription.invoicecandidatehandler.FlatrateTermSubscription_Handler;
@@ -32,8 +21,15 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
-import javax.annotation.Nullable;
+import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
+import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_Flatrate_Term}.
@@ -242,6 +238,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	private ConditionTypeSpecificInvoiceCandidateHandler getSpecificHandler(@NonNull final I_C_Flatrate_Term term)
 	{
 		final ConditionTypeSpecificInvoiceCandidateHandler handlerOrNull = conditionTypeSpecificInvoiceCandidateHandlers.get(term.getType_Conditions());
+		
 		return Check.assumeNotNull(handlerOrNull,
 								   "The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
 								   term.getType_Conditions(), term);

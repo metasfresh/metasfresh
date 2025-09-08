@@ -31,8 +31,11 @@ import org.adempiere.util.reflect.ClassReference;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @ToString
 /* package */ final class JUnitBeansMap
@@ -62,8 +65,7 @@ import java.util.List;
 	{
 		assertJUnitMode();
 
-		@SuppressWarnings("unchecked")
-		final Class<T> beanType = (Class<T>)beanImpl.getClass();
+		@SuppressWarnings("unchecked") final Class<T> beanType = (Class<T>)beanImpl.getClass();
 
 		registerJUnitBean(beanType, beanImpl);
 	}
@@ -75,8 +77,15 @@ import java.util.List;
 		assertJUnitMode();
 
 		final ArrayList<Object> beans = map.computeIfAbsent(ClassReference.of(beanType), key -> new ArrayList<>());
-		beans.add(beanImpl);
-		logger.info("JUnit testing: Registered bean {}={}", beanType, beanImpl);
+		if (!beans.contains(beanImpl))
+		{
+			beans.add(beanImpl);
+			logger.info("JUnit testing: Registered bean {}={}", beanType, beanImpl);
+		}
+		else
+		{
+			logger.info("JUnit testing: Skip registering bean because already registered {}={}", beanType, beanImpl);
+		}
 	}
 
 	public synchronized <BT, T extends BT> void registerJUnitBeans(
@@ -106,14 +115,13 @@ import java.util.List;
 		}
 
 		final T beanImpl = castBean(beans.get(0), beanType);
-		logger.info("JUnit testing Returning manually registered bean: {}", beanImpl);
+		logger.debug("JUnit testing Returning manually registered bean: {}", beanImpl);
 		return beanImpl;
 	}
 
-	private static <T> T castBean(final Object beanImpl, final Class<T> beanType)
+	private static <T> T castBean(final Object beanImpl, final Class<T> ignoredBeanType)
 	{
-		@SuppressWarnings("unchecked")
-		final T beanImplCasted = (T)beanImpl;
+		@SuppressWarnings("unchecked") final T beanImplCasted = (T)beanImpl;
 		return beanImplCasted;
 	}
 
@@ -121,10 +129,22 @@ import java.util.List;
 	{
 		assertJUnitMode();
 
-		final List<Object> beanObjs = map.get(ClassReference.of(beanType));
+		List<Object> beanObjs = map.get(ClassReference.of(beanType));
 		if (beanObjs == null)
 		{
-			return null;
+			final List<Object> assignableBeans = map.values()
+					.stream()
+					.filter(Objects::nonNull)
+					.flatMap(Collection::stream)
+					.filter(impl -> beanType.isAssignableFrom(impl.getClass()))
+					.collect(Collectors.toList());
+
+			if (assignableBeans.isEmpty())
+			{
+				return null;
+			}
+
+			beanObjs = assignableBeans;
 		}
 
 		return beanObjs

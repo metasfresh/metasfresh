@@ -13,6 +13,7 @@ import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Order_Candidate;
 
 import java.util.Collection;
 import java.util.List;
@@ -81,4 +82,8 @@ public interface IHUPPOrderBL extends ISingletonService
 	void save(org.eevolution.model.I_PP_Order ppOrder);
 
 	List<HuId> retrieveAvailableToIssue(I_PP_Order_BOMLine ppOrderBomLine);
+
+	void issueAndReceiveMaturingHUs(@NonNull I_PP_Order ppOrder);
+
+	boolean isAtLeastOneCandidateMaturing(@NonNull List<I_PP_Order_Candidate> candidates);
 }

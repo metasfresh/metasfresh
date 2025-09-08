@@ -4,9 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.function.Supplier;
 
-import org.junit.Test;
-
 import lombok.Getter;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

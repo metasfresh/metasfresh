@@ -5,12 +5,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -20,6 +22,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -63,6 +66,7 @@ public class C_Invoice
 
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public C_Invoice(
 			@NonNull final IBPartnerBL bpartnerBL,
@@ -121,9 +125,17 @@ public class C_Invoice
 		throw documentSalesRepDescriptorService.createMissingSalesRepException();
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Invoice.COLUMNNAME_C_BPartner_SalesRep_ID)
 	public void updateSalesPartnerInCustomerMaterdata(@NonNull final I_C_Invoice invoiceRecord)
 	{
+		final boolean performUpdate = sysConfigBL.getBooleanValue(CommissionConstants.SYSCONFIG_UPDATE_SALESPARTNER_IN_MASTER_DATA,
+				true /*preserve old behavior by default*/,
+				ClientAndOrgId.ofClientAndOrg(invoiceRecord.getAD_Client_ID(), invoiceRecord.getAD_Org_ID()));
+		if (!performUpdate)
+		{
+			return;
+		}
+
 		if (!invoiceRecord.isSOTrx())
 		{
 			return;
@@ -132,7 +144,7 @@ public class C_Invoice
 		final BPartnerId customerBPartnerId = BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_ID());
 		if (customerBPartnerId == null)
 		{
-			return; // no customer whose mater data we we could update
+			return; // no customer whose mater data we could update
 		}
 
 		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_SalesRep_ID());
@@ -148,7 +160,7 @@ public class C_Invoice
 		saveRecord(billBPartnerRecord);
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_Invoice.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_Invoice.COLUMNNAME_C_BPartner_ID })
 	public void validateSalesRep(final I_C_Invoice invoice)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());

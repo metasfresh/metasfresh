@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IEnqueueResult;
@@ -34,8 +35,10 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.common.util.EmptyUtil;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -49,6 +52,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -71,7 +75,6 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +82,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo;
-import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override;
+import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override;
 
 /**
  * Locks all the given shipments schedules into one big lock, then creates and enqueues workpackages, splitting off locks.
@@ -90,6 +93,7 @@ import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueu
 public class ShipmentScheduleEnqueuer
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleEnqueuer.class);
+	private static final AdMessageKey MSG_NO_VALID_RECORDS = AdMessageKey.of("de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords");
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
@@ -164,7 +168,7 @@ public class ShipmentScheduleEnqueuer
 
 		if (!shipmentSchedules.hasNext())
 		{
-			throw new AdempiereException("@NoSelection@").appendParametersToMessage().setParameter("query", query);
+			throw new AdempiereException(MSG_NO_VALID_RECORDS);
 		}
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(localCtx.getCtx(), GenerateInOutFromShipmentSchedules.class);
@@ -186,7 +190,7 @@ public class ShipmentScheduleEnqueuer
 				if (invalidSchedulesService.isFlaggedForRecompute(shipmentScheduleId))
 				{
 					// we can't just not enqueue those workpackages and only write a debug log message about it
-					// => enqueue them, log if and collect experience about what what the practical impact is.
+					// => enqueue them, log if and collect experience about what the practical impact is.
 					// 	doEnqueueCurrentPackage = false;
 					Loggables.withLogger(logger, Level.INFO).addLog("shipmentScheduleId is flagged for recompute; -> still enqueue the workpackage!");
 				}
@@ -216,12 +220,14 @@ public class ShipmentScheduleEnqueuer
 
 					workpackageBuilder
 							.parameters()
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_OnlyLUIds, RepoIdAwares.toCommaSeparatedString(workPackageParameters.getOnlyLUIds()))
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules, workPackageParameters.isCloseShipmentSchedules())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
 
-					// Create a new locker which will grab the locked invoice candidates from 'mainLock'
+					// Create a new locker which will grab the locked shipment candidates from 'mainLock'
 					// and it will move them to a new owner which is created per workpackage
 					final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ShipmentScheds_" + shipmentSchedule.getHeaderAggregationKey());
 					final ILockCommand workpackageElementsLocker = mainLock
@@ -244,7 +250,7 @@ public class ShipmentScheduleEnqueuer
 		return result;
 	}
 
-	private void addAdvisedShipmentDocumentNo(
+	private static void addAdvisedShipmentDocumentNo(
 			@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters,
 			@NonNull final IWorkPackageBuilder workpackageBuilder,
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -260,15 +266,10 @@ public class ShipmentScheduleEnqueuer
 			}
 		}
 
-		final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = workPackageParameters.getQtysToDeliverOverride();
+		final QtyToDeliverMap qtysToDeliverOverride = workPackageParameters.getQtysToDeliverOverride();
 		if (qtysToDeliverOverride != null)
 		{
-			final BigDecimal qtyToDeliverOverride = qtysToDeliverOverride.get(shipmentScheduleId);
-			if (qtyToDeliverOverride != null)
-			{
-				workpackageBuilder.parameters()
-						.setParameter(PARAM_PREFIX_QtyToDeliver_Override + shipmentScheduleId.getRepoId(), qtyToDeliverOverride);
-			}
+			workpackageBuilder.parameters().setParameter(PARAM_QtyToDeliver_Override, qtysToDeliverOverride.toJsonString());
 		}
 	}
 
@@ -313,6 +314,7 @@ public class ShipmentScheduleEnqueuer
 				// NOTE: when we will add the scheds to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
 				.setAutoCleanup(true)
 				.setFailIfAlreadyLocked(true)
+				.retryOnFailure(3)
 				.setSetRecordsByFilter(I_M_ShipmentSchedule.class, queryFilters)
 				.acquire();
 	}
@@ -331,7 +333,7 @@ public class ShipmentScheduleEnqueuer
 	 * Contains the enqueuer's result. Right now it's just two counters, but might be extended in future.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 * task https://metasfresh.atlassian.net/browse/FRESH-342
+	 * @implSpec <a href="https://metasfresh.atlassian.net/browse/FRESH-342">task</a>
 	 */
 	public static class Result implements IEnqueueResult
 	{
@@ -371,20 +373,21 @@ public class ShipmentScheduleEnqueuer
 	@Value
 	public static class ShipmentScheduleWorkPackageParameters
 	{
+		public static final String PARAM_OnlyLUIds = "OnlyLUIds";
 		public static final String PARAM_QuantityType = "QuantityType";
 		public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
+		public static final String PARAM_IsCloseShipmentSchedules = "IsCloseShipmentSchedules";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
-		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
+		public static final String PARAM_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID";
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
-		@NonNull
-		PInstanceId adPInstanceId;
+		@NonNull PInstanceId adPInstanceId;
 
-		@NonNull
-		IQueryFilter<I_M_ShipmentSchedule> queryFilters;
+		@NonNull IQueryFilter<I_M_ShipmentSchedule> queryFilters;
+		@Nullable ImmutableSet<HuId> onlyLUIds;
 
 		@NonNull
 		M_ShipmentSchedule_QuantityTypeToUse quantityType;
@@ -395,8 +398,9 @@ public class ShipmentScheduleEnqueuer
 		 */
 		@Builder.Default
 		boolean onTheFlyPickToPackingInstructions = false;
-		
+
 		boolean completeShipments;
+		boolean isCloseShipmentSchedules;
 		boolean isShipmentDateToday;
 
 		/**
@@ -407,7 +411,7 @@ public class ShipmentScheduleEnqueuer
 		ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos;
 
 		@Nullable
-		ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride;
+		QtyToDeliverMap qtysToDeliverOverride;
 	}
 
 }

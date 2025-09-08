@@ -22,20 +22,7 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.concurrent.Future;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.concurrent.CloseableReentrantLock;
-import org.adempiere.util.concurrent.FutureValue;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.LockOwner;
@@ -46,6 +33,17 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.concurrent.CloseableReentrantLock;
+import org.adempiere.util.concurrent.FutureValue;
+import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.Future;
 
 /* package */class LockCommand implements ILockCommand
 {
@@ -58,6 +56,7 @@ import lombok.NonNull;
 	private Boolean _autoCleanup = null;
 	private static final boolean DEFAULT_AutoCleanup = true;
 	private boolean failIfAlreadyLocked = DEFAULT_FailIfNothingLocked;
+	private int retryOnFailure = 0;
 
 	private final LockRecords _recordsToLock = new LockRecords();
 
@@ -99,7 +98,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			try (final CloseableReentrantLock ignored = parentLock.mutex)
+			try (final CloseableReentrantLock ignored = parentLock.mutex.open())
 			{
 				LockAlreadyClosedException.throwIfClosed(parentLock);
 				final ILock lock = lockDatabase.lock(this);
@@ -114,13 +113,13 @@ import lombok.NonNull;
 	{
 		return acquireOnTrxEventTiming(trxName, TrxEventTiming.BEFORE_COMMIT);
 	}
-	
+
 	@Override
 	public Future<ILock> acquireAfterTrxCommit(final String trxName)
 	{
 		return acquireOnTrxEventTiming(trxName, TrxEventTiming.AFTER_COMMIT);
 	}
-	
+
 	private Future<ILock> acquireOnTrxEventTiming(final String trxName, final TrxEventTiming timing)
 	{
 		final FutureValue<ILock> futureLock = new FutureValue<>();
@@ -142,8 +141,6 @@ import lombok.NonNull;
 				});
 		return futureLock;
 	}
-
-
 
 	@Override
 	public ILockCommand setOwner(final LockOwner owner)
@@ -227,6 +224,16 @@ import lombok.NonNull;
 	{
 		return failIfNothingLocked;
 	}
+
+	@Override
+	public ILockCommand retryOnFailure(final int retryOnFailure)
+	{
+		this.retryOnFailure = Math.max(retryOnFailure, 0);
+		return this;
+	}
+
+	@Override
+	public int getRetryOnFailure() {return retryOnFailure;}
 
 	@Override
 	public ILockCommand setRecordByModel(final Object model)

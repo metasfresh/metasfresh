@@ -26,7 +26,6 @@ import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Replenish;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -38,13 +37,20 @@ import java.math.BigDecimal;
 public class M_Replenish
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {I_M_Replenish.COLUMNNAME_Level_Min, I_M_Replenish.COLUMNNAME_Level_Max}
+			ifColumnsChanged = { I_M_Replenish.COLUMNNAME_Level_Min, I_M_Replenish.COLUMNNAME_Level_Max }
 	)
 	public void ensureValidLevel_Max(@NonNull final I_M_Replenish m_replenish)
 	{
 		final BigDecimal levelMinQty = CoalesceUtil.coalesceNotNull(m_replenish.getLevel_Min(), BigDecimal.ZERO);
 		final BigDecimal levelMaxQty = CoalesceUtil.coalesceNotNull(m_replenish.getLevel_Max(), BigDecimal.ZERO);
 
-		m_replenish.setLevel_Max(levelMaxQty.max(levelMinQty));
+		if (levelMaxQty.compareTo(levelMinQty) == 0)
+		{
+			m_replenish.setLevel_Max(null);
+		}
+		else
+		{
+			m_replenish.setLevel_Max(levelMaxQty);
+		}
 	}
 }

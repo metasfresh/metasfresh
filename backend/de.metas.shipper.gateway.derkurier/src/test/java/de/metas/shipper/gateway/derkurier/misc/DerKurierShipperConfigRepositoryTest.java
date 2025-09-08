@@ -1,24 +1,24 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalTime;
-import java.util.Optional;
-
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.MailboxId;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
-import de.metas.email.EMailAddress;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
-import de.metas.util.Services;
+import java.time.LocalTime;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -46,7 +46,7 @@ public class DerKurierShipperConfigRepositoryTest
 {
 	private I_AD_Sequence sequenceRecord;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -67,7 +67,7 @@ public class DerKurierShipperConfigRepositoryTest
 		final DerKurierShipperConfig config = new DerKurierShipperConfigRepository().retrieveConfigForShipperId(20);
 		assertThat(config.getCustomerNumber()).isEqualTo(configRecord.getDK_CustomerNumber());
 		assertThat(config.getRestApiBaseUrl()).isEqualTo(configRecord.getAPIServerBaseURL());
-		assertThat(config.getDeliveryOrderMailBoxOrNull()).isNull();
+		assertThat(config.getDeliveryOrderMailBoxId()).isEmpty();
 		assertThat(config.getDeliveryOrderRecipientEmailOrNull()).isNull();
 
 		final ParcelNumberGenerator parcelNumberGenerator = config.getParcelNumberGenerator();
@@ -94,7 +94,7 @@ public class DerKurierShipperConfigRepositoryTest
 		final DerKurierShipperConfig config = new DerKurierShipperConfigRepository().retrieveConfigForShipperId(20);
 		assertThat(config.getCustomerNumber()).isEqualTo("1234");
 		assertThat(config.getRestApiBaseUrl()).isEqualTo("https://testurl");
-		assertThat(config.getDeliveryOrderMailBoxOrNull().getSmtpHost()).isEqualTo("smtphost");
+		assertThat(config.getDeliveryOrderMailBoxId()).contains(MailboxId.ofRepoId(mailbox.getAD_MailBox_ID()));
 		assertThat(config.getDeliveryOrderRecipientEmailOrNull()).isEqualTo(EMailAddress.ofString("we@us.test"));
 
 		final ParcelNumberGenerator parcelNumberGenerator = config.getParcelNumberGenerator();

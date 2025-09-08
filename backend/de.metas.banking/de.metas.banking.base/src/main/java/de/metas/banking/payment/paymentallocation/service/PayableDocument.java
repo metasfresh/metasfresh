@@ -48,11 +48,9 @@ import java.time.LocalDate;
 
 /**
  * Mutable invoice allocation candidate.
- *
  * Used by {@link PaymentAllocationBuilder} internally.
  *
  * @author tsa
- *
  */
 @EqualsAndHashCode
 @ToString
@@ -78,15 +76,15 @@ public class PayableDocument
 	@Getter
 	private final PayableDocumentType type;
 	
-	/** Will cause this payable to be wrapped as payment, so it can be allocated agains another invoice. */
+	/** Will cause this payable to be wrapped as payment, so it can be allocated against another invoice. */
 	@Getter
 	private final boolean creditMemo;
 
-	/** 
+	/**
 	 * We need this when allocating the payment of a remittance advice (REMADV) against a credit-memo.
-	 * Because the REMADVS payment is diminished by the credit-memo, 
-	 * but there might be a payment-discount (skonto) that was held back when the original invoice was paid and which is now part of the current remittance payment. 
-	 * So we do need to allocate the positive-amount payment with the negative-amount credit-memo.  
+	 * Because the REMADVS payment is diminished by the credit-memo,
+	 * but there might be a payment-discount (skonto) that was held back when the original invoice was paid and which is now part of the current remittance payment.
+	 * So we do need to allocate the positive-amount payment with the negative-amount credit-memo.
 	 */
 	@Getter
 	private final boolean allowAllocateAgainstDifferentSignumPayment;
@@ -210,13 +208,30 @@ public class PayableDocument
 		return computeOpenAmtRemainingToAllocate().subtract(amountsToAllocate.getTotalAmt());
 	}
 
+	@NonNull
 	private Money computeOpenAmtRemainingToAllocate()
 	{
 		return openAmtInitial.subtract(amountsAllocated.getTotalAmt());
 	}
 
+	@NonNull
+	public Money getTotalAllocatedAmount()
+	{
+		return amountsAllocated.getTotalAmt();
+	}
+
 	public boolean isFullyAllocated()
 	{
 		return amountsToAllocate.getTotalAmt().isZero();
+	}
+
+	public boolean isARC()
+	{
+		return isCreditMemo() && getSoTrx().isSales();
+	}
+
+	public boolean isAPI()
+	{
+		return !isCreditMemo() && getSoTrx().isPurchase();
 	}
 }

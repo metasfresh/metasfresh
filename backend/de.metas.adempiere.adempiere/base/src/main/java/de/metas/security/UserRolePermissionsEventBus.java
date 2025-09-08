@@ -1,7 +1,5 @@
 package de.metas.security;
 
-import org.slf4j.Logger;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -9,6 +7,7 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -38,7 +37,7 @@ public final class UserRolePermissionsEventBus
 
 	private static final Topic EVENTBUS_TOPIC_Permissions = Topic.builder()
 			.name("de.metas.permissions")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	private static final String EVENT_PROPERTY_Type = "eventType";
@@ -74,7 +73,7 @@ public final class UserRolePermissionsEventBus
 				.putProperty(EVENT_PROPERTY_Type, EVENTTYPE_CacheReset)
 				.build();
 		final IEventBus eventBus = getEventBus();
-		eventBus.postEvent(event);
+		eventBus.enqueueEvent(event);
 
 		logger.debug("Post cache reset event: {} to {}", event, eventBus);
 	}

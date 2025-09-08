@@ -22,14 +22,15 @@
 
 package de.metas.document.references.related_documents;
 
-import java.util.ArrayList;
-import java.util.Properties;
-
+import com.google.common.base.MoreObjects;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_AD_Column;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DisplayType;
@@ -37,11 +38,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.util.Services;
-import lombok.Getter;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Note that webui records own source implementation.
@@ -79,7 +77,7 @@ public final class POZoomSource implements IZoomSource
 
 	/**
 	 * @return the name of a key column that is also flagged as GenericZoomOrigin and {@code true},if there is exactly one such column.<br>
-	 *         Otherwise it returns {@code null} and {@code false}.
+	 * Otherwise it returns {@code null} and {@code false}.
 	 */
 	private static IPair<String, Boolean> extractKeyColumnNameOrNull(@NonNull final PO po)
 	{
@@ -94,7 +92,7 @@ public final class POZoomSource implements IZoomSource
 		final ArrayList<String> eligibleKeyColumnNames = new ArrayList<>();
 		for (String element : keyColumnNamesArr)
 		{
-			final I_AD_Column column = adTableDAO.retrieveColumn(po.get_TableName(), element);
+			final MinimalColumnInfo column = adTableDAO.getMinimalColumnInfo(po.get_TableName(), element);
 			if (column.isGenericZoomOrigin())
 			{
 				eligibleKeyColumnNames.add(element);

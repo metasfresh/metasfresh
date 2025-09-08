@@ -7,8 +7,9 @@ import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.ZoneId;
@@ -41,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class OrderCreateResponseTest {
     private ObjectMapper jsonObjectMapper;
 
-    @Before
+    @BeforeEach
     public void init() {
         jsonObjectMapper = new ObjectMapper()
                 .findAndRegisterModules()

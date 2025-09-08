@@ -1,13 +1,10 @@
 de.metas.audit.apirequest.response.ApiResponseAuditRepositoryTest.save=[
   {
-    "apiResponseAuditId" : 100001,
-    "orgId" : 1,
-    "apiRequestAuditId" : 2,
-    "body" : "body",
-    "httpCode" : "200",
-    "time" : {
-      "seconds" : 0,
-      "nanos" : 0
-    }
+    "apiRequestAuditId": 2,
+    "apiResponseAuditId": 100001,
+    "body": "body",
+    "httpCode": "200",
+    "orgId": 1,
+    "time": "1970-01-01T00:00:00Z"
   }
 ]

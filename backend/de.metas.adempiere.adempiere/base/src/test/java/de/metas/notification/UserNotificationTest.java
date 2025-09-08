@@ -1,20 +1,19 @@
 package de.metas.notification;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.event.Event;
+import de.metas.notification.impl.NotificationSeverity;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.Instant;
 
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.metas.JsonObjectMapperHolder;
-import de.metas.event.Event;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -42,7 +41,7 @@ public class UserNotificationTest
 {
 	private ObjectMapper jsonMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -66,6 +65,7 @@ public class UserNotificationTest
 				.targetType(UserNotificationTargetType.Window)
 				.targetRecord(TableRecordReference.of("MyTable", 444))
 				.targetWindowId(AdWindowId.ofRepoId(555))
+				.severity(NotificationSeverity.Warning)
 				.build());
 	}
 
@@ -85,6 +85,7 @@ public class UserNotificationTest
 				.targetType(UserNotificationTargetType.View)
 				.targetWindowId(AdWindowId.ofRepoId(555))
 				.targetViewId("555-123")
+				.severity(NotificationSeverity.Warning)
 				.build());
 	}
 

@@ -32,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Warehouse;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -47,11 +46,11 @@ public class ProductPlanningService
 	 *
 	 * @return return duration [days]
 	 */
-	public int calculateDurationDays(final int leadTimeDays, @NonNull final I_PP_Product_Planning productPlanningData)
+	public int calculateDurationDays(final int leadTimeDays, @NonNull final ProductPlanning productPlanningData)
 	{
 		Check.assume(leadTimeDays >= 0, "leadTimeDays >= 0");
 
-		final int transferTimeDays = productPlanningData.getTransfertTime().intValueExact();
+		final int transferTimeDays = productPlanningData.getTransferTimeDays();
 		Check.assume(transferTimeDays >= 0, "transferTimeDays >= 0");
 
 		return leadTimeDays + transferTimeDays;
@@ -69,7 +68,7 @@ public class ProductPlanningService
 	}
 
 	public int calculateDurationDays(
-			@NonNull final I_PP_Product_Planning productPlanning,
+			@NonNull final ProductPlanning productPlanning,
 			@NonNull final BigDecimal qty)
 	{
 		final int leadTimeDays = calculateLeadTimeDays(productPlanning, qty);
@@ -77,18 +76,18 @@ public class ProductPlanningService
 	}
 
 	private int calculateLeadTimeDays(
-			@NonNull final I_PP_Product_Planning productPlanningRecord,
+			@NonNull final ProductPlanning productPlanningRecord,
 			@NonNull final BigDecimal qty)
 	{
-		final int leadTimeDays = productPlanningRecord.getDeliveryTime_Promised().intValueExact();
+		final int leadTimeDays = productPlanningRecord.getLeadTimeDays();
 		if (leadTimeDays > 0)
 		{
 			// LeadTime was set in Product Planning/ take the leadtime as it is
 			return leadTimeDays;
 		}
 
-		final PPRoutingId routingId = PPRoutingId.ofRepoId(productPlanningRecord.getAD_Workflow_ID());
-		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanningRecord.getS_Resource_ID());
+		final PPRoutingId routingId = productPlanningRecord.getWorkflowId();
+		final ResourceId plantId = productPlanningRecord.getPlantId();
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
 		return routingService.calculateDurationDays(routingId, plantId, qty);
 	}

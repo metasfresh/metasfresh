@@ -1,0 +1,14 @@
+.applications-list {
+  .section {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  @media only screen and (max-width: $small-screen-height) {
+    .section {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+  }
+
+}

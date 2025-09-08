@@ -30,7 +30,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.log.EventLogUserService;
-import de.metas.event.remote.RabbitMQEventBusConfiguration;
+import de.metas.event.remote.rabbitmq.queues.async_batch.AsyncBatchQueueConfiguration;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,7 +48,7 @@ import java.util.Properties;
 @Service
 public class AsyncBatchEventBusService
 {
-	private static final Topic TOPIC = RabbitMQEventBusConfiguration.AsyncBatchQueueConfiguration.EVENTBUS_TOPIC;
+	private static final Topic TOPIC = AsyncBatchQueueConfiguration.EVENTBUS_TOPIC;
 	private static final String PROPERTY_AsyncBatchNotifyRequest = "AsyncBatchNotifyRequest";
 
 	// services
@@ -74,7 +74,7 @@ public class AsyncBatchEventBusService
 	{
 		final Event event = createEventFromRequest(request);
 
-		getEventBus().postEvent(event);
+		getEventBus().enqueueEvent(event);
 	}
 
 	@NonNull
@@ -127,9 +127,9 @@ public class AsyncBatchEventBusService
 	private void registerHandler(@NonNull final AsyncBatchNotifyRequestHandler handler)
 	{
 		getEventBus().subscribe(ManageAsyncBatchRequestHandlerAsEventListener.builder()
-										.handler(handler)
-										.eventLogUserService(eventLogUserService)
-										.build());
+				.handler(handler)
+				.eventLogUserService(eventLogUserService)
+				.build());
 
 		logger.info("Registered handler: {}", handler);
 	}
@@ -154,13 +154,13 @@ public class AsyncBatchEventBusService
 		{
 			final AsyncBatchNotifyRequest request = extractAsyncBatchNotifyRequest(event);
 
-			try (final IAutoCloseable ctx = switchCtx(request);
-					final MDC.MDCCloseable eventHandlerMDC = MDC.putCloseable("eventHandler.className", handler.getClass().getName()))
+			try (final IAutoCloseable ignored = switchCtx(request);
+					final MDC.MDCCloseable ignored1 = MDC.putCloseable("eventHandler.className", handler.getClass().getName()))
 			{
 				eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
-																.handlerClass(handler.getClass())
-																.invokaction(() -> handleRequest(request))
-																.build());
+						.handlerClass(handler.getClass())
+						.invokaction(() -> handleRequest(request))
+						.build());
 			}
 		}
 

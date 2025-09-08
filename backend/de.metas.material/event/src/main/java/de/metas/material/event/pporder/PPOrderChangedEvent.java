@@ -14,6 +14,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.api.PPOrderAndBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -48,25 +53,25 @@ public class PPOrderChangedEvent implements MaterialEvent
 {
 	public static final String TYPE = "PPOrderChangedEvent";
 
-	private final EventDescriptor eventDescriptor;
+	@NonNull EventDescriptor eventDescriptor;
 
-	Instant newDatePromised;
-	Instant oldDatePromised;
+	@NonNull Instant newDatePromised;
+	@NonNull Instant oldDatePromised;
 
-	PPOrder ppOrderAfterChanges;
+	@NonNull PPOrder ppOrderAfterChanges;
 
-	BigDecimal oldQtyRequired;
-	BigDecimal newQtyRequired;
+	@NonNull BigDecimal oldQtyRequired;
+	@NonNull BigDecimal newQtyRequired;
 
-	BigDecimal oldQtyDelivered;
-	BigDecimal newQtyDelivered;
+	@NonNull BigDecimal oldQtyDelivered;
+	@NonNull BigDecimal newQtyDelivered;
 
-	DocStatus oldDocStatus;
-	DocStatus newDocStatus;
+	@NonNull DocStatus oldDocStatus;
+	@NonNull DocStatus newDocStatus;
 
-	List<PPOrderLine> newPPOrderLines;
-	List<ChangedPPOrderLineDescriptor> ppOrderLineChanges;
-	List<DeletedPPOrderLineDescriptor> deletedPPOrderLines;
+	@NonNull List<PPOrderLine> newPPOrderLines;
+	@NonNull List<ChangedPPOrderLineDescriptor> ppOrderLineChanges;
+	@NonNull List<DeletedPPOrderLineDescriptor> deletedPPOrderLines;
 
 	@Builder
 	@JsonCreator
@@ -85,7 +90,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 			@JsonProperty("deletedPPOrderLines") @Singular final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines,
 			@JsonProperty("newPPOrderLines") @Singular final List<PPOrderLine> newPPOrderLines)
 	{
-		Check.assumeGreaterThanZero(ppOrderAfterChanges.getPpOrderId(), "ppOrderAfterChanges shall be saved");
+		Check.assumeGreaterThanZero(PPOrderId.toRepoId(ppOrderAfterChanges.getPpOrderId()), "ppOrderAfterChanges shall be saved");
 
 		this.eventDescriptor = eventDescriptor;
 		this.newDatePromised = newDatePromised;
@@ -111,7 +116,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 				&& (oldDocStatus == null || oldDocStatus.isNotProcessed());
 	}
 
-	public int getPpOrderId()
+	public PPOrderId getPpOrderId()
 	{
 		return getPpOrderAfterChanges().getPpOrderId();
 	}
@@ -125,9 +130,9 @@ public class PPOrderChangedEvent implements MaterialEvent
 	@Value
 	public static class ChangedPPOrderLineDescriptor
 	{
-		int oldPPOrderLineId;
+		@NonNull PPOrderAndBOMLineId oldPPOrderLineId;
 
-		int newPPOrderLineId;
+		@Nullable PPOrderAndBOMLineId newPPOrderLineId;
 
 		ProductDescriptor productDescriptor;
 
@@ -154,8 +159,8 @@ public class PPOrderChangedEvent implements MaterialEvent
 		@Builder
 		@JsonCreator
 		private ChangedPPOrderLineDescriptor(
-				@JsonProperty("oldPPOrderLineId") final int oldPPOrderLineId,
-				@JsonProperty("newPPOrderLineId") final int newPPOrderLineId,
+				@JsonProperty("oldPPOrderLineId") @NonNull final PPOrderAndBOMLineId oldPPOrderLineId,
+				@JsonProperty("newPPOrderLineId") @Nullable final PPOrderAndBOMLineId newPPOrderLineId,
 				@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 				@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 				@JsonProperty("issueOrReceiveDate") @NonNull final Instant issueOrReceiveDate,
@@ -164,8 +169,12 @@ public class PPOrderChangedEvent implements MaterialEvent
 				@JsonProperty("oldQtyDelivered") @NonNull final BigDecimal oldQtyDelivered,
 				@JsonProperty("newQtyDelivered") @NonNull final BigDecimal newQtyDelivered)
 		{
-			this.oldPPOrderLineId = Check.assumeGreaterThanZero(oldPPOrderLineId, "oldPPOrderLineId");
-			this.newPPOrderLineId = Check.assumeGreaterThanZero(newPPOrderLineId, "newPPOrderLineId");
+			if (!oldPPOrderLineId.isSameOrderAs(newPPOrderLineId))
+			{
+				throw new AdempiereException("Old and New lines shall be part of the same order");
+			}
+			this.oldPPOrderLineId = oldPPOrderLineId;
+			this.newPPOrderLineId = newPPOrderLineId;
 			this.productDescriptor = productDescriptor;
 			this.minMaxDescriptor = minMaxDescriptor;
 			this.issueOrReceiveDate = issueOrReceiveDate;
@@ -214,4 +223,14 @@ public class PPOrderChangedEvent implements MaterialEvent
 			this.qtyDelivered = qtyDelivered;
 		}
 	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_PP_Order.Table_Name, ppOrderAfterChanges.getPpOrderId());
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

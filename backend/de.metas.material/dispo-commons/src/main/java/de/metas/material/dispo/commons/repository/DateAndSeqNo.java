@@ -8,6 +8,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Objects;
 
 /*
  * #%L
@@ -36,10 +37,14 @@ public class DateAndSeqNo
 {
 	Instant date;
 
-	/** Can be less or equal to zero which both means "not specified". */
+	/**
+	 * Can be less or equal to zero which both means "not specified".
+	 */
 	int seqNo;
 
-	/** Can be null if this instance is not used for a range start or end. */
+	/**
+	 * Can be null if this instance is not used for a range start or end.
+	 */
 	public Operator operator;
 
 	public static DateAndSeqNo atTimeNoSeqNo(@NonNull final Instant date)
@@ -85,7 +90,7 @@ public class DateAndSeqNo
 
 	/**
 	 * @return {@code true} if this instances {@code date} is after the {@code other}'s {@code date}
-	 *         or if this instance's {@code seqNo} is greater than the {@code other}'s {@code seqNo}.
+	 * or if this instance's {@code seqNo} is greater than the {@code other}'s {@code seqNo}.
 	 */
 	public boolean isAfter(@NonNull final DateAndSeqNo other)
 	{
@@ -146,4 +151,6 @@ public class DateAndSeqNo
 				.operator(operator)
 				.build();
 	}
+
+	public static boolean equals(@Nullable final DateAndSeqNo value1, @Nullable final DateAndSeqNo value2) {return Objects.equals(value1, value2);}
 }

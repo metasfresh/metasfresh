@@ -75,6 +75,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -248,6 +249,12 @@ public class HUTracerInstance
 	{
 		printTitle(title);
 		dump(hu);
+	}
+
+	public void dump(final String title, final List<I_M_HU> hus)
+	{
+		printTitle(title);
+		dump(hus);
 	}
 
 	private void printTitle(final String title)

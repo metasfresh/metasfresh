@@ -147,7 +147,7 @@ public class RollupBillOfMaterial extends JavaProcess
 		return createProductsQuery()
 				.addEqualsFilter(I_M_Product.COLUMN_LowLevel, lowLevel)
 				.create()
-				.listIds(ProductId::ofRepoId);
+				.idsAsSet(ProductId::ofRepoId);
 	}
 
 	private IQueryBuilder<I_M_Product> createProductsQuery()

@@ -1,19 +1,27 @@
 package de.metas.product;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
+import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
+import de.metas.ean13.EAN13;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.uom.UomId;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -23,8 +31,10 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -57,18 +67,25 @@ public class ProductRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+	@VisibleForTesting
+	public static ProductRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProductRepository();
+	}
 
 	@NonNull
 	public ImmutableList<BPartnerProduct> getByProductId(@NonNull final ProductId productId)
 	{
-
 		return queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list()
 				.stream()
-				.map(ProductRepository::ofBPartnerProductRecord)
+				.map(ProductRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -105,7 +122,7 @@ public class ProductRepository
 	public BPartnerProduct getByIdOrNull(@NonNull final ProductId id, @NonNull final BPartnerId bpartnerId)
 	{
 		final Optional<I_C_BPartner_Product> productRecord = getRecordById(id, bpartnerId);
-		return productRecord.map(ProductRepository::ofBPartnerProductRecord).orElse(null);
+		return productRecord.map(ProductRepository::fromRecord).orElse(null);
 	}
 
 	public ImmutableList<Product> getByIds(@NonNull final Set<ProductId> ids)
@@ -149,8 +166,8 @@ public class ProductRepository
 		{
 			final ZoneId zoneId = orgDAO.getTimeZone(request.getOrgId());
 			product.setDiscontinuedFrom(product.getDiscontinuedFrom() != null
-											   ? TimeUtil.asTimestamp(request.getDiscontinuedFrom(), zoneId)
-											   : TimeUtil.asTimestamp(Instant.now()));
+					? TimeUtil.asTimestamp(request.getDiscontinuedFrom(), zoneId)
+					: TimeUtil.asTimestamp(Instant.now()));
 		}
 		else
 		{
@@ -180,6 +197,7 @@ public class ProductRepository
 		saveRecord(record);
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public BPartnerProduct createBPartnerProduct(@NonNull final CreateBPartnerProductRequest request)
 	{
 		final I_C_BPartner_Product bPartnerProduct = newInstance(I_C_BPartner_Product.class);
@@ -211,6 +229,10 @@ public class ProductRepository
 		if (request.getUsedForVendor() != null)
 		{
 			bPartnerProduct.setUsedForVendor(request.getUsedForVendor());
+		}
+		if (request.getUsedForCustomer() != null)
+		{
+			bPartnerProduct.setUsedForCustomer(request.getUsedForCustomer());
 		}
 
 		if (request.getDropShip() != null)
@@ -247,13 +269,39 @@ public class ProductRepository
 
 		saveRecord(bPartnerProduct);
 
-		return ofBPartnerProductRecord(bPartnerProduct);
+		return fromRecord(bPartnerProduct);
 	}
 
 	public void updateBPartnerProduct(@NonNull final BPartnerProduct request)
 	{
 		final I_C_BPartner_Product record = toBPartnerProductRecord(request);
 		saveRecord(record);
+	}
+
+	@NonNull
+	@VisibleForTesting
+	public static BPartnerProduct fromRecord(@NonNull final I_C_BPartner_Product record)
+	{
+		return BPartnerProduct.builder()
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.bPartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.active(record.isActive())
+				.seqNo(record.getSeqNo())
+				.productNo(record.getProductNo())
+				.description(record.getDescription())
+				.cuEAN(record.getEAN_CU())
+				.customerLabelName(record.getCustomerLabelName())
+				.gtin(record.getGTIN())
+				.ingredients(record.getIngredients())
+				.currentVendor(record.isCurrentVendor())
+				.isExcludedFromSales(record.isExcludedFromSale())
+				.exclusionFromSalesReason(record.getExclusionFromSaleReason())
+				.isExcludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
+				.dropShip(record.isDropShip())
+				.usedForVendor(record.isUsedForVendor())
+				.usedForCustomer(record.isUsedForCustomer())
+				.build();
 	}
 
 	@NonNull
@@ -284,19 +332,23 @@ public class ProductRepository
 
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
 
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
+
 		return Product.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.productNo(productRecord.getValue())
 				.name(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()))
+				.value(productRecord.getValue())
 				.description(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()))
 				.documentNote(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_DocumentNote, productRecord.getDocumentNote()))
-				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(productRecord.getM_Product_Category_ID()))
+				.productCategoryId(productCategoryId)
+				.productCategoryName(productDAO.getProductCategoryById(productCategoryId).getName())
 				.uomId(UomId.ofRepoId(productRecord.getC_UOM_ID()))
 				.discontinued(productRecord.isDiscontinued())
 				.discontinuedFrom(TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId))
-				.manufacturerId(manufacturerId > 0 ? BPartnerId.ofRepoId(manufacturerId) : null)
+				.manufacturerId(BPartnerId.ofRepoIdOrNull(manufacturerId))
 				.packageSize(productRecord.getPackageSize())
-				.weight(productRecord.getWeight())
+				.weightNetInKg(productRecord.getWeight())
 				.stocked(productRecord.isStocked())
 				.commodityNumberId(CommodityNumberId.ofRepoIdOrNull(productRecord.getM_CommodityNumber_ID()))
 				.active(productRecord.isActive())
@@ -304,6 +356,7 @@ public class ProductRepository
 				.gtin(productRecord.getGTIN())
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
+				.procurementStatus(productRecord.getProcurementStatus())
 				.build();
 	}
 
@@ -319,8 +372,8 @@ public class ProductRepository
 			final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
 
 			record.setDiscontinuedFrom(product.getDiscontinuedFrom() != null
-											   ? TimeUtil.asTimestamp(product.getDiscontinuedFrom(), zoneId)
-											   : TimeUtil.asTimestamp(Instant.now()));
+					? TimeUtil.asTimestamp(product.getDiscontinuedFrom(), zoneId)
+					: TimeUtil.asTimestamp(Instant.now()));
 		}
 		else
 		{
@@ -334,7 +387,7 @@ public class ProductRepository
 		record.setC_UOM_ID(product.getUomId().getRepoId());
 		record.setManufacturer_ID(BPartnerId.toRepoId(product.getManufacturerId()));
 		record.setPackageSize(product.getPackageSize());
-		record.setWeight(product.getWeight());
+		record.setWeight(product.getWeightNetInKg());
 		record.setIsStocked(product.isStocked());
 		record.setM_CommodityNumber_ID(CommodityNumberId.toRepoId(product.getCommodityNumberId()));
 		record.setIsActive(product.getActive() != null ? product.getActive() : record.isActive());
@@ -352,55 +405,85 @@ public class ProductRepository
 	{
 		final I_C_BPartner_Product record = getRecordById(bPartnerProduct.getProductId(), bPartnerProduct.getBPartnerId())
 				.orElseThrow(() -> new AdempiereException("No BPartner product record found for "
-																  + bPartnerProduct.getProductId() + " " + bPartnerProduct.getBPartnerId()));
+						+ bPartnerProduct.getProductId() + " " + bPartnerProduct.getBPartnerId()));
 
-		record.setC_BPartner_ID(bPartnerProduct.getBPartnerId().getRepoId());
-		record.setIsActive(bPartnerProduct.getActive() != null ? bPartnerProduct.getActive() : record.isActive());
-		record.setSeqNo(bPartnerProduct.getSeqNo() != null ? bPartnerProduct.getSeqNo() : record.getSeqNo());
-		record.setProductNo(bPartnerProduct.getProductNo());
-		record.setDescription(bPartnerProduct.getDescription());
-		record.setEAN_CU(bPartnerProduct.getCuEAN());
-		record.setCustomerLabelName(bPartnerProduct.getCustomerLabelName());
-		record.setGTIN(bPartnerProduct.getGtin());
-		record.setIngredients(bPartnerProduct.getIngredients());
-		record.setIsCurrentVendor(bPartnerProduct.getCurrentVendor() != null ? bPartnerProduct.getCurrentVendor() : record.isCurrentVendor());
-		record.setIsExcludedFromSale(bPartnerProduct.getIsExcludedFromSales() != null ? bPartnerProduct.getIsExcludedFromSales() : record.isExcludedFromSale());
-		record.setExclusionFromSaleReason(bPartnerProduct.getExclusionFromSalesReason());
-		record.setIsDropShip(bPartnerProduct.getDropShip() != null ? bPartnerProduct.getDropShip() : record.isDropShip());
-		record.setUsedForVendor(Boolean.TRUE.equals(bPartnerProduct.getUsedForVendor()));
-
-		if (bPartnerProduct.getIsExcludedFromPurchase() != null)
-		{
-			record.setIsExcludedFromPurchase(bPartnerProduct.getIsExcludedFromPurchase());
-		}
-
-		record.setExclusionFromPurchaseReason(bPartnerProduct.getExclusionFromPurchaseReason());
+		updateRecord(record, bPartnerProduct);
 
 		return record;
 	}
 
-	@NonNull
-	private static BPartnerProduct ofBPartnerProductRecord(@NonNull final I_C_BPartner_Product record)
+	private static void updateRecord(@NonNull final I_C_BPartner_Product record, @NonNull final BPartnerProduct from)
 	{
+		record.setC_BPartner_ID(from.getBPartnerId().getRepoId());
+		record.setIsActive(from.getActive() != null ? from.getActive() : record.isActive());
+		record.setSeqNo(from.getSeqNo() != null ? from.getSeqNo() : record.getSeqNo());
+		record.setProductNo(from.getProductNo());
+		record.setDescription(from.getDescription());
+		record.setEAN_CU(from.getCuEAN());
+		record.setCustomerLabelName(from.getCustomerLabelName());
+		record.setGTIN(from.getGtin());
+		record.setIngredients(from.getIngredients());
+		record.setIsCurrentVendor(from.getCurrentVendor() != null ? from.getCurrentVendor() : record.isCurrentVendor());
+		record.setIsExcludedFromSale(from.getIsExcludedFromSales() != null ? from.getIsExcludedFromSales() : record.isExcludedFromSale());
+		record.setExclusionFromSaleReason(from.getExclusionFromSalesReason());
+		record.setIsDropShip(from.getDropShip() != null ? from.getDropShip() : record.isDropShip());
+		record.setUsedForVendor(Boolean.TRUE.equals(from.getUsedForVendor()));
+		record.setUsedForCustomer(Boolean.TRUE.equals(from.getUsedForCustomer()));
 
-		return BPartnerProduct.builder()
-				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.bPartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
-				.active(record.isActive())
-				.seqNo(record.getSeqNo())
-				.productNo(record.getProductNo())
-				.description(record.getDescription())
-				.cuEAN(record.getEAN_CU())
-				.customerLabelName(record.getCustomerLabelName())
-				.gtin(record.getGTIN())
-				.ingredients(record.getIngredients())
-				.currentVendor(record.isCurrentVendor())
-				.isExcludedFromSales(record.isExcludedFromSale())
-				.exclusionFromSalesReason(record.getExclusionFromSaleReason())
-				.isExcludedFromPurchase(record.isExcludedFromPurchase())
-				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
-				.dropShip(record.isDropShip())
-				.usedForVendor(record.isUsedForVendor())
-				.build();
+		if (from.getIsExcludedFromPurchase() != null)
+		{
+			record.setIsExcludedFromPurchase(from.getIsExcludedFromPurchase());
+		}
+
+		record.setExclusionFromPurchaseReason(from.getExclusionFromPurchaseReason());
+	}
+
+	public void updateBPartnerProductsByQuery(@NonNull final BPartnerProductQuery query, @NonNull final UnaryOperator<BPartnerProduct> updater)
+	{
+		toSqlQuery(query)
+				.forEach(record -> {
+					final BPartnerProduct bpartnerProduct = fromRecord(record);
+					final BPartnerProduct bpartnerProductChanged = updater.apply(bpartnerProduct);
+					if (!Objects.equals(bpartnerProduct, bpartnerProductChanged))
+					{
+						updateRecord(record, bpartnerProductChanged);
+						saveRecord(record);
+					}
+				});
+	}
+
+	private IQuery<I_C_BPartner_Product> toSqlQuery(@NonNull final BPartnerProductQuery query)
+	{
+		final IQueryBuilder<I_C_BPartner_Product> sqlQueryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				.orderBy(I_C_BPartner_Product.COLUMNNAME_M_Product_ID)
+				.orderBy(I_C_BPartner_Product.COLUMNNAME_SeqNo)
+				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID);
+
+		final InSetPredicate<EAN13> cuEANs = query.getCuEANs();
+		if (cuEANs != null)
+		{
+			cuEANs.apply(new InSetPredicate.CaseConsumer<EAN13>()
+			{
+				@Override
+				public void anyValue() {}
+
+				@Override
+				public void noValue()
+				{
+					sqlQueryBuilder.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, null);
+				}
+
+				@Override
+				public void onlyValues(final Set<EAN13> onlyValues)
+				{
+					final ImmutableSet<String> stringValues = onlyValues.stream()
+							.map(EAN13::getAsString)
+							.collect(ImmutableSet.toImmutableSet());
+					sqlQueryBuilder.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, stringValues);
+				}
+			});
+		}
+
+		return sqlQueryBuilder.create();
 	}
 }

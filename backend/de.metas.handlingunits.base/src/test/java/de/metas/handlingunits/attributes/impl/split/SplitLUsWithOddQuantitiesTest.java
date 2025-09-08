@@ -22,25 +22,6 @@
 
 package de.metas.handlingunits.attributes.impl.split;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.xmlunit.assertj.XmlAssert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.assertj.core.api.Assertions;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Warehouse;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.w3c.dom.Node;
-
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -55,6 +36,24 @@ import de.metas.handlingunits.receiptschedule.impl.HUReceiptScheduleWeightNetAdj
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Node;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Objects;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.xmlunit.assertj3.XmlAssert.assertThat;
 
 /**
  * Misc:
@@ -138,14 +137,14 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		//
 		// when
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 1);
-		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request);
+		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request).toHURecords();
 
 		//
 		// then
 		Assertions.assertThat(splitTUs).hasSize(1); // in this test, we static imported XMLAssert
 
 		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.get(0));
-		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isEqualTo(1);
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isOne();
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item)").as("TU has 2 items").isEqualTo("2");
@@ -219,14 +218,14 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		//
 		// when
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 7);
-		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request);
+		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request).toHURecords();
 
 		//
 		// then
 		Assertions.assertThat(splitTUs).hasSize(7); // in this test, we static imported XMLAssert
 		splitTUs.forEach(tu -> {
 			final Node xmlSplitTU = HUXmlConverter.toXml(tu);
-			assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isEqualTo(1);
+			assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isOne();
 			assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
 			assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
 			assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item)").as("TU has 2 items").isEqualTo("2");
@@ -301,14 +300,14 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		//
 		// when
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 1);
-		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request);
+		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request).toHURecords();
 
 		//
 		// then
 		Assertions.assertThat(splitTUs).hasSize(1); // in this test, we static imported XMLAssert
 
 		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.get(0));
-		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isEqualTo(1);
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isOne();
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item)").as("TU has 2 items").isEqualTo("2");
@@ -382,14 +381,14 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		//
 		// when
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 1);
-		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request);
+		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request).toHURecords();
 
 		//
 		// then
 		Assertions.assertThat(splitTUs).hasSize(1); // in this test, we static imported XMLAssert
 
 		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.get(0));
-		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isEqualTo(1);
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isOne();
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item)").as("TU has 2 items").isEqualTo("2");

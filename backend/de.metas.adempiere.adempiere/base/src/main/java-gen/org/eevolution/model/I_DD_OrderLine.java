@@ -143,8 +143,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -153,8 +152,7 @@ public interface I_DD_OrderLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -165,8 +163,28 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Auftragsposition.
-	 * Auftragsposition
+	 * Set Qty Confirmed.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setConfirmedQty (@Nullable BigDecimal ConfirmedQty);
+
+	/**
+	 * Get Qty Confirmed.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getConfirmedQty();
+
+	ModelColumn<I_DD_OrderLine, Object> COLUMN_ConfirmedQty = new ModelColumn<>(I_DD_OrderLine.class, "ConfirmedQty", null);
+	String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
+
+	/**
+	 * Set Sales Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -175,8 +193,7 @@ public interface I_DD_OrderLine
 	void setC_OrderLineSO_ID (int C_OrderLineSO_ID);
 
 	/**
-	 * Get Auftragsposition.
-	 * Auftragsposition
+	 * Get Sales Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -214,51 +231,6 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Bestätigte Menge.
-	 * Confirmation of a received quantity
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setConfirmedQty (@Nullable BigDecimal ConfirmedQty);
-
-	/**
-	 * Get Bestätigte Menge.
-	 * Confirmation of a received quantity
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getConfirmedQty();
-
-	ModelColumn<I_DD_OrderLine, Object> COLUMN_ConfirmedQty = new ModelColumn<>(I_DD_OrderLine.class, "ConfirmedQty", null);
-	String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -284,7 +256,29 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Lieferdatum.
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Date Delivered.
 	 * Date when the product was delivered
 	 *
 	 * <br>Type: Date
@@ -294,7 +288,7 @@ public interface I_DD_OrderLine
 	void setDateDelivered (@Nullable java.sql.Timestamp DateDelivered);
 
 	/**
-	 * Get Lieferdatum.
+	 * Get Date Delivered.
 	 * Date when the product was delivered
 	 *
 	 * <br>Type: Date
@@ -330,7 +324,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Zugesagter Termin.
+	 * Set Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: Date
@@ -340,7 +334,7 @@ public interface I_DD_OrderLine
 	void setDatePromised (@Nullable java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Zugesagter Termin.
+	 * Get Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: Date
@@ -374,6 +368,33 @@ public interface I_DD_OrderLine
 
 	ModelColumn<I_DD_OrderLine, Object> COLUMN_DD_AllowPush = new ModelColumn<>(I_DD_OrderLine.class, "DD_AllowPush", null);
 	String COLUMNNAME_DD_AllowPush = "DD_AllowPush";
+
+	/**
+	 * Set Network Distribution.
+	 * Identifies a distribution network, distribution networks are used to establish the source and target of the materials in the supply chain
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDD_NetworkDistribution_ID (int DD_NetworkDistribution_ID);
+
+	/**
+	 * Get Network Distribution.
+	 * Identifies a distribution network, distribution networks are used to establish the source and target of the materials in the supply chain
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDD_NetworkDistribution_ID();
+
+	@Nullable org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution();
+
+	void setDD_NetworkDistribution(@Nullable org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution);
+
+	ModelColumn<I_DD_OrderLine, org.eevolution.model.I_DD_NetworkDistribution> COLUMN_DD_NetworkDistribution_ID = new ModelColumn<>(I_DD_OrderLine.class, "DD_NetworkDistribution_ID", org.eevolution.model.I_DD_NetworkDistribution.class);
+	String COLUMNNAME_DD_NetworkDistribution_ID = "DD_NetworkDistribution_ID";
 
 	/**
 	 * Set Network Distribution Line.
@@ -468,7 +489,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Frachtbetrag.
+	 * Set Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -478,7 +499,7 @@ public interface I_DD_OrderLine
 	void setFreightAmt (@Nullable BigDecimal FreightAmt);
 
 	/**
-	 * Get Frachtbetrag.
+	 * Get Freight Amount.
 	 * Freight Amount
 	 *
 	 * <br>Type: Amount
@@ -514,7 +535,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Zugestellt.
+	 * Set Is Delivered.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -523,7 +544,7 @@ public interface I_DD_OrderLine
 	void setIsDelivered (boolean IsDelivered);
 
 	/**
-	 * Get Zugestellt.
+	 * Get Is Delivered.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -535,7 +556,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_IsDelivered = "IsDelivered";
 
 	/**
-	 * Set Zugestellt abw..
+	 * Set Is Delivered override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -544,7 +565,7 @@ public interface I_DD_OrderLine
 	void setIsDelivered_Override (@Nullable java.lang.String IsDelivered_Override);
 
 	/**
-	 * Get Zugestellt abw..
+	 * Get Is Delivered override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -557,7 +578,7 @@ public interface I_DD_OrderLine
 
 	/**
 	 * Set Description Only.
-	 * Nur Beschreibung
+	 * if true, the line is just description and no transaction
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -567,7 +588,7 @@ public interface I_DD_OrderLine
 
 	/**
 	 * Get Description Only.
-	 * Nur Beschreibung
+	 * if true, the line is just description and no transaction
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -579,8 +600,8 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_IsDescription = "IsDescription";
 
 	/**
-	 * Set Berechnete Menge.
-	 * Fakturiert?
+	 * Set Invoiced.
+	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -589,8 +610,8 @@ public interface I_DD_OrderLine
 	void setIsInvoiced (boolean IsInvoiced);
 
 	/**
-	 * Get Berechnete Menge.
-	 * Fakturiert?
+	 * Get Invoiced.
+	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -694,7 +715,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Attribute Set Instance To.
+	 * Set Instance To.
 	 * Target Product Attribute Set Instance
 	 *
 	 * <br>Type: PAttribute
@@ -704,7 +725,7 @@ public interface I_DD_OrderLine
 	void setM_AttributeSetInstanceTo_ID (int M_AttributeSetInstanceTo_ID);
 
 	/**
-	 * Get Attribute Set Instance To.
+	 * Get Instance To.
 	 * Target Product Attribute Set Instance
 	 *
 	 * <br>Type: PAttribute
@@ -743,8 +764,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Lagerort An.
-	 * Location inventory is moved to
+	 * Set Locator to.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -753,8 +773,7 @@ public interface I_DD_OrderLine
 	void setM_LocatorTo_ID (int M_LocatorTo_ID);
 
 	/**
-	 * Get Lagerort An.
-	 * Location inventory is moved to
+	 * Get Locator to.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -811,7 +830,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Lager Nach.
+	 * Set Warehouse to.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -822,7 +841,7 @@ public interface I_DD_OrderLine
 	void setM_WarehouseTo_ID (int M_WarehouseTo_ID);
 
 	/**
-	 * Get Lager Nach.
+	 * Get Warehouse to.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -854,7 +873,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_PickedQty = "PickedQty";
 
 	/**
-	 * Set Produktionsstätte ab.
+	 * Set Plant from.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -863,7 +882,7 @@ public interface I_DD_OrderLine
 	void setPP_Plant_From_ID (int PP_Plant_From_ID);
 
 	/**
-	 * Get Produktionsstätte ab.
+	 * Get Plant from.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -900,8 +919,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Delivered Quantity
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -910,8 +928,7 @@ public interface I_DD_OrderLine
 	void setQtyDelivered (@Nullable BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Delivered Quantity
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1011,8 +1028,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_QtyReserved = "QtyReserved";
 
 	/**
-	 * Set Verworfene Menge.
-	 * The Quantity scrapped due to QA issues
+	 * Set Qty Scrapped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1021,8 +1037,7 @@ public interface I_DD_OrderLine
 	void setScrappedQty (@Nullable BigDecimal ScrappedQty);
 
 	/**
-	 * Get Verworfene Menge.
-	 * The Quantity scrapped due to QA issues
+	 * Get Qty Scrapped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1034,8 +1049,7 @@ public interface I_DD_OrderLine
 	String COLUMNNAME_ScrappedQty = "ScrappedQty";
 
 	/**
-	 * Set Zielmenge.
-	 * Target Movement Quantity
+	 * Set Target Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1044,8 +1058,7 @@ public interface I_DD_OrderLine
 	void setTargetQty (@Nullable BigDecimal TargetQty);
 
 	/**
-	 * Get Zielmenge.
-	 * Target Movement Quantity
+	 * Get Target Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

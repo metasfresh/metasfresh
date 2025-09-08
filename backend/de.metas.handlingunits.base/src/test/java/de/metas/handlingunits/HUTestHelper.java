@@ -1,6 +1,7 @@
 package de.metas.handlingunits;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -17,6 +18,8 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -59,8 +62,8 @@ import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttribute
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
+import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -74,6 +77,11 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
@@ -89,10 +97,13 @@ import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
@@ -122,7 +133,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
-import org.assertj.core.api.Assertions;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
@@ -138,6 +148,7 @@ import org.compiere.model.I_Test;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 
@@ -164,8 +175,7 @@ import static de.metas.business.BusinessTestHelper.createUomEach;
 import static de.metas.business.BusinessTestHelper.createUomKg;
 import static de.metas.business.BusinessTestHelper.createUomPCE;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -213,7 +223,7 @@ public class HUTestHelper
 	//
 	// Initialization flags
 	private boolean initialized = false;
-	private boolean initAdempiere = true;
+	private final boolean initAdempiere = true;
 
 	public I_AD_Client adClient;
 	public I_AD_Role adRole;
@@ -223,6 +233,8 @@ public class HUTestHelper
 	private static final String NAME_FragileSticker_Attribute = "Fragile";
 
 	private static final String NAME_M_Material_Tracking_ID_Attribute = "M_Material_Tracking_ID";
+	private static final String NAME_AgeOffset = "AgeOffset";
+	private static final String NAME_Age = "Age";
 
 	public static final String NAME_Palet_Product = "Palet";
 	public static final String NAME_IFCO_Product = "IFCO";
@@ -370,6 +382,10 @@ public class HUTestHelper
 	public I_M_Attribute attr_PurchaseOrderLine;
 	public I_M_Attribute attr_ReceiptInOutLine;
 
+	public I_M_Attribute attr_Age;
+
+	public I_M_Attribute attr_AgeOffset;
+
 	//
 	// Default warehouses
 	public I_M_Warehouse defaultWarehouse;
@@ -379,7 +395,7 @@ public class HUTestHelper
 	private DDNetworkBuilder emptiesDDNetworkBuilder;
 
 	public Properties ctx;
-	public String trxName;
+	@Nullable public String trxName;
 	private ZonedDateTime today;
 
 	public final IContextAware contextProvider = new IContextAware()
@@ -417,13 +433,6 @@ public class HUTestHelper
 		}
 	}
 
-	public HUTestHelper setInitAdempiere(final boolean initAdempiere)
-	{
-		Check.assume(!initialized, "helper not initialized");
-		this.initAdempiere = initAdempiere;
-		return this;
-	}
-
 	/**
 	 * Returns this instance, initialized.
 	 * Note: final, because its called by a constructor.
@@ -443,11 +452,13 @@ public class HUTestHelper
 		beforeRegisteringServices();
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
+		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting());
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
-		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DocumentLocationBL(bpartnerBL));
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, DocumentLocationBL.newInstanceForUnitTesting());
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
@@ -459,7 +470,7 @@ public class HUTestHelper
 
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
-		
+
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxName = createAndStartTransaction();
@@ -482,7 +493,7 @@ public class HUTestHelper
 		// Setup context: #Date
 		today = LocalDate.of(2013, Month.NOVEMBER, 1).atStartOfDay(SystemTime.zoneId());
 		Env.setContext(ctx, Env.CTXNAME_Date, TimeUtil.asDate(today));
-		
+
 		//
 		// Setup module interceptors
 		setupModuleInterceptors_HU();
@@ -543,7 +554,7 @@ public class HUTestHelper
 
 	/**
 	 * Setup module interceptors: "de.metas.handlingunits" module - FULL (interceptors, factories, etc), like in production (used by some integration tests).
-	 *
+	 * <p>
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
 	 *
 	 * <pre>
@@ -555,6 +566,7 @@ public class HUTestHelper
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
 	{
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(newHandlingUnitsModelInterceptor());
 	}
@@ -563,16 +575,25 @@ public class HUTestHelper
 	{
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final HUQRCodesService huqrCodesService = HUQRCodesService.newInstanceForUnitTesting();
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
-				huReservationService);
+				ADReferenceService.newMocked(),
+				huReservationService,
+				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+						new PPOrderIssueScheduleService(
+								new PPOrderIssueScheduleRepository(),
+								new HUQtyService(InventoryService.newInstanceForUnitTesting())
+						)),
+				huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,
-				new PickingBOMService());
+				new PickingBOMService(),
+				huqrCodesService);
 	}
 
 	/**
@@ -673,6 +694,14 @@ public class HUTestHelper
 		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_AgeOffset = attributesTestHelper.createM_Attribute(NAME_AgeOffset, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_Age = attributesTestHelper.createM_Attribute(NAME_Age, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		createAttributeListValue(attr_Age, "1", "1");
+		createAttributeListValue(attr_Age, "2", "2");
+		createAttributeListValue(attr_Age, "3", "3");
+		createAttributeListValue(attr_Age, "4", "4");
+		createAttributeListValue(attr_Age, "5", "5");
+		createAttributeListValue(attr_Age, "6", "6");
 
 		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 		attr_LotNumber = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
@@ -1515,7 +1544,7 @@ public class HUTestHelper
 		// Execute transfer => HUs will be generated
 		final HULoader loader = HULoader.of(allocationSource, allocationDestination);
 		final IAllocationResult result = loader.load(request);
-		Assertions.assertThat(result.isCompleted()).as("Result shall be completed: " + result).isTrue();
+		assertThat(result.isCompleted()).as("Result shall be completed: " + result).isTrue();
 
 		//
 		// Get generated HUs and set them to HUContext's transaction
@@ -1721,7 +1750,7 @@ public class HUTestHelper
 				.build());
 	}
 
-	public final void load(TestHelperLoadRequest r)
+	public final void load(final TestHelperLoadRequest r)
 	{
 		final IAllocationSource source = createDummySourceDestination(
 				r.getCuProductId(),
@@ -1790,7 +1819,8 @@ public class HUTestHelper
 		final List<I_M_HU_PI_Item> piItemsForChildHU = handlingUnitsDAO.retrievePIItems(currentPIVersion, null).stream()
 				.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, piItem.getItemType()))
 				.collect(Collectors.toList());
-		assertThat("This method only works if the given 'huPI' has exactly one child-HU item", piItemsForChildHU.size(), is(1));
+		
+		assertThat(piItemsForChildHU).as("This method only works if the given 'huPI' has exactly one child-HU item").hasSize(1);
 
 		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));
 		lutuProducer.setTUPI(handlingUnitsDAO.getIncludedPI(piItemsForChildHU.get(0)));

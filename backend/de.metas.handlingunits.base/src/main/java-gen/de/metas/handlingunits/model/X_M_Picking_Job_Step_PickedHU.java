@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Job_Step_PickedHU
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Picking_Job_Step_PickedHU extends org.compiere.model.PO implements I_M_Picking_Job_Step_PickedHU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2004018572L;
+	private static final long serialVersionUID = 1779422236L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Step_PickedHU (final Properties ctx, final int M_Picking_Job_Step_PickedHU_ID, @Nullable final String trxName)
@@ -33,6 +33,34 @@ public class X_M_Picking_Job_Step_PickedHU extends org.compiere.model.PO impleme
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setCatch_UOM_ID (final int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
+	}
+
+	@Override
+	public int getCatch_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
+	}
+
+	@Override
+	public void setCatchWeight (final @Nullable BigDecimal CatchWeight)
+	{
+		set_Value (COLUMNNAME_CatchWeight, CatchWeight);
+	}
+
+	@Override
+	public BigDecimal getCatchWeight() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CatchWeight);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -198,6 +226,18 @@ public class X_M_Picking_Job_Step_PickedHU extends org.compiere.model.PO impleme
 	public int getPicked_HU_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Picked_HU_ID);
+	}
+
+	@Override
+	public void setPicked_RenderedQRCode (final @Nullable java.lang.String Picked_RenderedQRCode)
+	{
+		set_Value (COLUMNNAME_Picked_RenderedQRCode, Picked_RenderedQRCode);
+	}
+
+	@Override
+	public java.lang.String getPicked_RenderedQRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_Picked_RenderedQRCode);
 	}
 
 	@Override

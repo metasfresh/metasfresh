@@ -1,15 +1,36 @@
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
+import de.metas.ui.web.attributes_included_tab.AttributesUIElementTypeFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -34,13 +55,15 @@ import de.metas.ui.web.window.descriptor.QuickInputSupportDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_AD_UI_Column;
@@ -49,7 +72,6 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -60,119 +82,104 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED;
+import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED;
 
 public class LayoutFactory
 {
-	public static LayoutFactory ofMainTab(final GridWindowVO gridWindowVO, final GridTabVO mainTabVO)
-	{
-		final GridTabVO parentTab = null; // no parent
-		return new LayoutFactory(gridWindowVO, mainTabVO, parentTab);
-	}
-
-	public static LayoutFactory ofIncludedTab(final GridWindowVO gridWindowVO, final GridTabVO mainTabVO, final GridTabVO detailTabVO)
-	{
-		return new LayoutFactory(gridWindowVO, detailTabVO, mainTabVO);
-	}
-
 	// services
-	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
-	@Autowired
-	private QuickInputDescriptorFactoryService quickInputDescriptors;
+	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
+	@NonNull private final LayoutFactorySupportingServices services;
 
-	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
-	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
-			.defaultValue("There are no detail rows")
-			.trl("de_DE", "Es sind noch keine Detailzeilen vorhanden.")
-			.trl("de_CH", "Es sind noch keine Detailzeilen vorhanden.")
-			.build();
-
-	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
-	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_HINT = ImmutableTranslatableString.builder()
-			.defaultValue("You can create them in this window.")
-			.trl("de_DE", "Du kannst sie im jeweiligen Fenster erfassen.")
-			.trl("de_CH", "Du kannst sie im jeweiligen Fenster erfassen.")
-			.build();
+	public static final AdMessageKey TAB_EMPTY_RESULT_HINT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_HINT");
+	public static final AdMessageKey TAB_EMPTY_RESULT_TEXT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_TEXT");
 
 	private static final int DEFAULT_MultiLine_LinesCount = 3;
 
 	//
 	// Parameters
-	private final GridTabVOBasedDocumentEntityDescriptorFactory descriptorsFactory;
-	private final AdWindowId _adWindowId;
-
-	private final ImmutableSet<AdTabId> childAdTabIdsToSkip;
+	@NonNull private final IWindowUIElementsProvider windowUIElementsProvider;
+	@NonNull private final GridWindowVO gridWindowVO;
+	@NonNull private final GridTabVO gridTabVO;
+	private final boolean isRootTab;
+	@NonNull @Getter private final AdWindowId adWindowId;
 
 	//
 	// Build parameters
-	private final IWindowUIElementsProvider _uiProvider;
+	@NonNull private final IWindowUIElementsProvider _windowUIElementsProviderEffective;
 	private final List<I_AD_UI_Section> _uiSections;
+	private final GridTabVOBasedDocumentEntityDescriptorFactory descriptorsFactory;
+	private final AttributesUIElementTypeFactory attributesUIElementTypeFactory;
+	private final ImmutableSet<AdTabId> childAdTabIdsToSkip;
 
-	private LayoutFactory(
+	@lombok.Builder
+	LayoutFactory(
+			@NonNull final IWindowUIElementsProvider windowUIElementsProvider,
+			@NonNull final LayoutFactorySupportingServices services,
+			//
 			@NonNull final GridWindowVO gridWindowVO,
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTab)
 	{
-		SpringContextHolder.instance.autowire(this);
+		this.windowUIElementsProvider = windowUIElementsProvider;
+		this.services = services;
+		//
+		this.gridWindowVO = gridWindowVO;
+		this.gridTabVO = gridTabVO;
+		this.isRootTab = parentTab == null;
+		this.adWindowId = gridTabVO.getAdWindowId();
 
-		_adWindowId = gridTabVO.getAdWindowId();
-
-		final AdTabId templateTabId = CoalesceUtil.coalesce(gridTabVO.getTemplateTabId(), gridTabVO.getAdTabId());
-		if (templateTabId == null)
-		{
-			throw new AdempiereException("No AD_Tab_ID found for " + gridTabVO);
-		}
+		final AdTabId templateTabId = extractTemplateTabId(gridTabVO);
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
 		// and fetch the UI sections
 		{
-			IWindowUIElementsProvider uiProvider = new DAOWindowUIElementsProvider();
-			List<I_AD_UI_Section> uiSections = uiProvider.getUISections(templateTabId);
+			IWindowUIElementsProvider windowUIElementsProviderEffective = windowUIElementsProvider;
+			List<I_AD_UI_Section> uiSections = windowUIElementsProvider.getUISections(templateTabId);
 			if (uiSections.isEmpty())
 			{
-				uiProvider = new InMemoryUIElementsProvider();
-				logger.debug("No UI Sections found for {}. Switching to {}", gridTabVO, uiProvider);
+				windowUIElementsProviderEffective = new InMemoryUIElementsProvider();
+				logger.debug("No UI Sections found for {}. Switching to {}", gridTabVO, windowUIElementsProviderEffective);
 
-				uiSections = uiProvider.getUISections(templateTabId);
+				uiSections = windowUIElementsProviderEffective.getUISections(templateTabId);
 			}
 
 			_uiSections = ImmutableList.copyOf(uiSections);
 			logger.trace("UI sections: {}", _uiSections);
 
-			_uiProvider = uiProvider;
-			logger.trace("Using UI provider: {}", _uiProvider);
+			this._windowUIElementsProviderEffective = windowUIElementsProviderEffective;
+			logger.trace("Using UI provider: {}", this._windowUIElementsProviderEffective);
 		}
 
-		final List<I_AD_UI_Element> labelsUIElements = _uiProvider.getUIElementsOfTypeLabels(templateTabId);
+		final List<I_AD_UI_Element> labelsUIElements = this._windowUIElementsProviderEffective.getUIElementsOfType(templateTabId, LayoutElementType.Labels);
+		this.attributesUIElementTypeFactory = AttributesUIElementTypeFactory.builder()
+				.attributesIncludedTabDescriptorService(services.getAttributesIncludedTabDescriptorService())
+				.attributesUIElements(this._windowUIElementsProviderEffective.getUIElementsOfType(templateTabId, LayoutElementType.Attributes))
+				.build();
 		descriptorsFactory = GridTabVOBasedDocumentEntityDescriptorFactory.builder()
+				.services(services)
 				.gridTabVO(gridTabVO)
 				.parentTabVO(parentTab)
 				.isSOTrx(gridWindowVO.isSOTrx())
 				.labelsUIElements(labelsUIElements)
+				.attributesUIElementTypeFactory(attributesUIElementTypeFactory)
 				.build();
 
 		this.childAdTabIdsToSkip = extractLabelsTabIdsOfVisibleElements(labelsUIElements);
+	}
+
+	@NonNull
+	static AdTabId extractTemplateTabId(@NonNull final GridTabVO gridTabVO)
+	{
+		final AdTabId templateTabId = CoalesceUtil.coalesce(gridTabVO.getTemplateTabId(), gridTabVO.getAdTabId());
+		if (templateTabId == null)
+		{
+			throw new AdempiereException("No AD_Tab_ID found for " + gridTabVO); // shall not happen
+		}
+		return templateTabId;
 	}
 
 	private static ImmutableSet<AdTabId> extractLabelsTabIdsOfVisibleElements(final List<I_AD_UI_Element> labelsUIElements)
@@ -189,20 +196,58 @@ public class LayoutFactory
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("AD_Window_ID", _adWindowId)
+				.add("AD_Window_ID", adWindowId)
 				.add("AD_UI_Sections.count", getUISections().size())
 				.add("UIProvider", getUIProvider())
 				.toString();
 	}
+
+	public String getTableName() {return descriptorsFactory.getTableName();}
 
 	public boolean isSkipAD_Tab_ID(final AdTabId adTabId)
 	{
 		return childAdTabIdsToSkip.contains(adTabId);
 	}
 
+	public List<LayoutFactory> getIncludedTabLayouts()
+	{
+		if (!isRootTab)
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList.Builder<LayoutFactory> result = ImmutableList.builder();
+		for (final GridTabVO includedTabVO : gridWindowVO.getChildTabs(gridTabVO.getTabNo()))
+		{
+			// Skip sort tabs because they are not supported
+			if (includedTabVO.IsSortTab)
+			{
+				continue;
+			}
+
+			// Skip tabs which were already used/embedded in root layout
+			if (isSkipAD_Tab_ID(includedTabVO.getAdTabId()))
+			{
+				continue;
+			}
+
+			result.add(
+					LayoutFactory.builder()
+							.services(services)
+							.windowUIElementsProvider(windowUIElementsProvider)
+							.gridWindowVO(gridWindowVO)
+							.gridTabVO(includedTabVO)
+							.parentTab(gridTabVO)
+							.build()
+			);
+		}
+
+		return result.build();
+	}
+
 	private IWindowUIElementsProvider getUIProvider()
 	{
-		return _uiProvider;
+		return this._windowUIElementsProviderEffective;
 	}
 
 	private List<I_AD_UI_Section> getUISections()
@@ -217,11 +262,6 @@ public class LayoutFactory
 				.flatMap(uiSection -> getUIProvider().getUIColumns(uiSection).stream())
 				.flatMap(uiColumn -> getUIProvider().getUIElementGroups(uiColumn).stream())
 				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream());
-	}
-
-	private AdWindowId getAdWindowId()
-	{
-		return _adWindowId;
 	}
 
 	/**
@@ -257,6 +297,7 @@ public class LayoutFactory
 		return DocumentLayoutSingleRow.builder()
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
+				.notFoundMessages(entityDescriptor.getNotFoundMessages())
 				.addSections(layoutSectionsList);
 	}
 
@@ -362,152 +403,167 @@ public class LayoutFactory
 				continue;
 			}
 
-			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = layoutSingleRow_ElementLine(uiElement);
-			if (layoutElementLineBuilder == null)
+			for (final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder : layoutSingleRow_ElementLines(uiElement))
 			{
-				continue;
-			}
-			if (!layoutElementLineBuilder.hasElements())
-			{
-				logger.trace("Skip {} because it's empty", layoutElementLineBuilder);
-				continue;
-			}
+				if (!layoutElementLineBuilder.hasElements())
+				{
+					logger.trace("Skip {} because it's empty", layoutElementLineBuilder);
+					continue;
+				}
 
-			layoutElementGroupBuilder.addElementLine(layoutElementLineBuilder);
+				layoutElementGroupBuilder.addElementLine(layoutElementLineBuilder);
+			}
 		}
 
 		logger.trace("Built layout element group for {}: {}", uiElementGroup, layoutElementGroupBuilder);
 		return layoutElementGroupBuilder;
 	}
 
-	@Nullable
-	private DocumentLayoutElementLineDescriptor.Builder layoutSingleRow_ElementLine(final I_AD_UI_Element uiElement)
+	private List<DocumentLayoutElementLineDescriptor.Builder> layoutSingleRow_ElementLines(final I_AD_UI_Element uiElement)
 	{
-		logger.trace("Building layout element line for {}", uiElement);
-
-		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement);
-		if (layoutElementBuilder == null)
+		try
 		{
-			logger.trace("Skip building layout element line because got null layout element: {}", uiElement);
-			return null;
+			logger.trace("Building layout element line for {}", uiElement);
+
+			final List<DocumentLayoutElementDescriptor.Builder> layoutElementBuilders = layoutElements(uiElement);
+			if (layoutElementBuilders.isEmpty())
+			{
+				logger.trace("Skip building layout element line because got null layout element: {}", uiElement);
+				return ImmutableList.of();
+			}
+
+			final ImmutableList<DocumentLayoutElementLineDescriptor.Builder> result = layoutElementBuilders.stream()
+					.map(layoutElementBuilder -> DocumentLayoutElementLineDescriptor.builder()
+							.setInternalName(uiElement.toString())
+							.addElement(layoutElementBuilder))
+					.collect(ImmutableList.toImmutableList());
+
+			logger.trace("Built layout element lines for {}: {}", uiElement, result);
+			return result;
 		}
-
-		final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
-				.setInternalName(uiElement.toString())
-				.addElement(layoutElementBuilder);
-
-		logger.trace("Built layout element line for {}: {}", uiElement, layoutElementLineBuilder);
-		return layoutElementLineBuilder;
+		catch (Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("AD_UI_Element", uiElement)
+					.setParameter("AD_Tab_ID", uiElement.getAD_Tab_ID());
+		}
 	}
 
-	@Nullable
-	private DocumentLayoutElementDescriptor.Builder layoutElement(@NonNull final I_AD_UI_Element uiElement)
+	private List<DocumentLayoutElementDescriptor.Builder> layoutElements(@NonNull final I_AD_UI_Element uiElement)
 	{
 		logger.trace("Building layout element for {}", uiElement);
 
 		if (!uiElement.isActive())
 		{
 			logger.trace("Skip building layout element for {} because it's not active", uiElement);
-			return null;
+			return ImmutableList.of();
 		}
 
-		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder;
+		final List<DocumentLayoutElementDescriptor.Builder> result;
+
 		final LayoutElementType layoutElementType = LayoutElementType.ofCode(uiElement.getAD_UI_ElementType());
 		if (LayoutElementType.InlineTab.equals(layoutElementType))
 		{
-			layoutElementBuilder = layoutElement_InlineTab(uiElement);
+			result = layoutElements_InlineTab(uiElement);
 		}
 		else
 		{
-			layoutElementBuilder = layoutElement_Default(uiElement);
+			result = layoutElements_Default(uiElement);
 		}
 
-		if (layoutElementBuilder == null)
+		if (result.isEmpty())
 		{
-			return null;
+			return ImmutableList.of();
 		}
 
 		//
 		// Collect advanced fields
-		if (layoutElementBuilder.isAdvancedField())
-		{
-			descriptorsFactory.addFieldsCharacteristic(layoutElementBuilder.getFieldNames(), Characteristic.AdvancedField);
-		}
+		result.stream()
+				.filter(DocumentLayoutElementDescriptor.Builder::isAdvancedField)
+				.forEach(layoutElementBuilder -> descriptorsFactory.addFieldsCharacteristic(layoutElementBuilder.getFieldNames(), Characteristic.AdvancedField));
 
-		logger.trace("Built layout element for {}: {}", uiElement, layoutElementBuilder);
-		return layoutElementBuilder;
+		logger.trace("Built layout elements for {}: {}", uiElement, result);
+		return result;
 	}
 
-	@Nullable
-	private DocumentLayoutElementDescriptor.Builder layoutElement_Default(@NonNull final I_AD_UI_Element uiElement)
+	private List<DocumentLayoutElementDescriptor.Builder> layoutElements_Default(@NonNull final I_AD_UI_Element uiElement)
 	{
-		//
-		// UI main field
-		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
-				.setInternalName(uiElement.toString())
-				.setLayoutType(LayoutType.fromNullable(uiElement.getUIStyle()))
-				.setWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()))
-				.setMultilineText(uiElement.isMultiLine())
-				.setMultilineTextLines(extractMultiLineLinesCount(uiElement))
-				.setAdvancedField(uiElement.isAdvancedField())
-				.restrictToMediaTypes(MediaType.fromNullableCommaSeparatedString(uiElement.getMediaTypes()));
+		final ArrayList<DocumentLayoutElementDescriptor.Builder> result = new ArrayList<>();
 
-		for (final DocumentFieldDescriptor.Builder field : extractDocumentFields(uiElement))
+		final List<List<DocumentFieldDescriptor.Builder>> fieldsGroupedByElement = extractDocumentFields(uiElement);
+		for (final List<DocumentFieldDescriptor.Builder> fields : fieldsGroupedByElement)
 		{
-			final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementField(field);
+			// UI main field
+			final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
+					.setInternalName(uiElement.toString())
+					.setLayoutType(LayoutType.fromNullable(uiElement.getUIStyle()))
+					.setWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()))
+					.setMultilineText(uiElement.isMultiLine())
+					.setMultilineTextLines(extractMultiLineLinesCount(uiElement))
+					.setAdvancedField(uiElement.isAdvancedField())
+					.restrictToMediaTypes(MediaType.fromNullableCommaSeparatedString(uiElement.getMediaTypes()));
+
+			for (final DocumentFieldDescriptor.Builder field : fields)
+			{
+				final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementField(field);
+
+				if (layoutElementBuilder.getFieldsCount() <= 0)
+				{
+					layoutElementBuilder.setCaption(field.getCaption());
+					layoutElementBuilder.setDescription(field.getDescription());
+				}
+
+				//
+				// Element Widget type
+				if (!layoutElementBuilder.isWidgetTypeSet())
+				{
+					layoutElementBuilder.setWidgetType(field.getWidgetType());
+					layoutElementBuilder.setMaxLength(field.getFieldMaxLength());
+				}
+
+				if (!layoutElementBuilder.isWidgetSizeSet())
+				{
+					layoutElementBuilder.setWidgetSize(field.getWidgetSize());
+				}
+
+				layoutElementBuilder.setButtonActionDescriptor(field.getButtonActionDescriptor());
+
+				layoutElementBuilder.addField(layoutElementFieldBuilder);
+			}
 
 			if (layoutElementBuilder.getFieldsCount() <= 0)
 			{
-				layoutElementBuilder.setCaption(field.getCaption());
-				layoutElementBuilder.setDescription(field.getDescription());
+				logger.trace("Skip layout element for {} because it has no fields: {}", uiElement, layoutElementBuilder);
+				continue;
 			}
+
+			final ViewEditorRenderMode viewEditorRenderMode = computeViewEditorRenderMode(uiElement, layoutElementBuilder.getWidgetType());
+			layoutElementBuilder.setViewEditorRenderMode(viewEditorRenderMode);
 
 			//
-			// Element Widget type
-			if (!layoutElementBuilder.isWidgetTypeSet())
-			{
-				layoutElementBuilder.setWidgetType(field.getWidgetType());
-				layoutElementBuilder.setMaxLength(field.getFieldMaxLength());
-			}
-
-			if (!layoutElementBuilder.isWidgetSizeSet())
-			{
-				layoutElementBuilder.setWidgetSize(field.getWidgetSize());
-			}
-
-			layoutElementBuilder.setButtonActionDescriptor(field.getButtonActionDescriptor());
-
-			layoutElementBuilder.addField(layoutElementFieldBuilder);
+			result.add(layoutElementBuilder);
 		}
 
-		if (layoutElementBuilder.getFieldsCount() <= 0)
-		{
-			logger.trace("Skip layout element for {} because it has no fields: {}", uiElement, layoutElementBuilder);
-			return null;
-		}
-
-		final ViewEditorRenderMode viewEditorRenderMode = computeViewEditorRenderMode(uiElement, layoutElementBuilder.getWidgetType());
-		layoutElementBuilder.setViewEditorRenderMode(viewEditorRenderMode);
-
-		//
-		return layoutElementBuilder;
+		return result;
 	}
 
-	private DocumentLayoutElementDescriptor.Builder layoutElement_InlineTab(@NonNull final I_AD_UI_Element uiElement)
+	@NonNull
+	private List<DocumentLayoutElementDescriptor.Builder> layoutElements_InlineTab(@NonNull final I_AD_UI_Element uiElement)
 	{
 		final AdTabId inlineTabId = AdTabId.ofRepoId(uiElement.getInline_Tab_ID());
 
-		return DocumentLayoutElementDescriptor.builder()
-				.setInternalName(uiElement.toString())
-				.setLayoutType(LayoutType.fromNullable(uiElement.getUIStyle()))
-				.setWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()))
-				.setAdvancedField(uiElement.isAdvancedField())
-				.restrictToMediaTypes(MediaType.fromNullableCommaSeparatedString(uiElement.getMediaTypes()))
-				.setWidgetType(DocumentFieldWidgetType.InlineTab)
-				.setInlineTabId(DetailId.fromAD_Tab_ID(inlineTabId))
-				.setCaption(TranslatableStrings.empty())
-				.setDescription(TranslatableStrings.empty())
-				;
+		return ImmutableList.of(
+				DocumentLayoutElementDescriptor.builder()
+						.setInternalName(uiElement.toString())
+						.setLayoutType(LayoutType.fromNullable(uiElement.getUIStyle()))
+						.setWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()))
+						.setAdvancedField(uiElement.isAdvancedField())
+						.restrictToMediaTypes(MediaType.fromNullableCommaSeparatedString(uiElement.getMediaTypes()))
+						.setWidgetType(DocumentFieldWidgetType.InlineTab)
+						.setInlineTabId(DetailId.fromAD_Tab_ID(inlineTabId))
+						.setCaption(TranslatableStrings.empty())
+						.setDescription(TranslatableStrings.empty())
+		);
 	}
 
 	private static int extractMultiLineLinesCount(final I_AD_UI_Element uiElement)
@@ -522,13 +578,19 @@ public class LayoutFactory
 	}
 
 	/**
-	 * Task https://github.com/metasfresh/metasfresh-webui-api/issues/778
+	 * @implSpec task <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/778">778</a>
 	 */
 	private ViewEditorRenderMode computeViewEditorRenderMode(
 			@NonNull final I_AD_UI_Element uiElement,
 			final DocumentFieldWidgetType widgetType)
 	{
-		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
+		final AdFieldId adFieldId = AdFieldId.ofRepoIdOrNull(uiElement.getAD_Field_ID());
+		if (adFieldId == null)
+		{
+			return ViewEditorRenderMode.NEVER;
+		}
+
+		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(adFieldId);
 		final boolean readOnly = field != null && field.getReadonlyLogicEffective().isConstantTrue();
 		if (readOnly)
 		{
@@ -536,7 +598,7 @@ public class LayoutFactory
 		}
 
 		final ViewEditorRenderMode viewEditMode = ViewEditorRenderMode.ofNullableCode(uiElement.getViewEditMode());
-		if(viewEditMode != null)
+		if (viewEditMode != null)
 		{
 			return viewEditMode;
 		}
@@ -554,67 +616,110 @@ public class LayoutFactory
 		}
 	}
 
-	private List<DocumentFieldDescriptor.Builder> extractDocumentFields(final I_AD_UI_Element uiElement)
+	private List<List<DocumentFieldDescriptor.Builder>> extractDocumentFields(final I_AD_UI_Element uiElement)
 	{
-		final List<DocumentFieldDescriptor.Builder> fields = new ArrayList<>();
-
 		final LayoutElementType uiElementType = LayoutElementType.ofCode(uiElement.getAD_UI_ElementType());
 		if (LayoutElementType.Field.equals(uiElementType))
 		{
-			// add the "primary" field
-			{
-				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
-				if (field != null)
-				{
-					fields.add(field);
-				}
-				else
-				{
-					logger.warn("No field found for AD_Field_ID={}; AD_UI_Element={}", uiElement.getAD_Field_ID(), uiElement);
-				}
-			}
-
-			// add additional fields / tooltips (if any)
-			for (final I_AD_UI_ElementField uiElementField : getUIProvider().getUIElementFields(uiElement))
-			{
-				if (!uiElementField.isActive())
-				{
-					logger.trace("Skip {} because it's not active", uiElementField);
-					continue;
-				}
-
-				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_UI_ElementField(uiElementField);
-				if (field == null)
-				{
-					logger.warn("No field found for AD_UI_ElementField_ID={}; AD_UI_ElementField={}", uiElementField.getAD_Field_ID(), uiElementField);
-					continue;
-				}
-
-				fields.add(field);
-			}
+			return extractDocumentFields_Field(uiElement);
 		}
 		else if (LayoutElementType.Labels.equals(uiElementType))
 		{
-			final String labelsFieldName = GridTabVOBasedDocumentEntityDescriptorFactory.extractLabelsFieldName(uiElement);
-			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(labelsFieldName);
-			if (field == null)
-			{
-				logger.warn("No label field found for labelsFieldName={}", labelsFieldName);
-			}
-			else
-			{
-				fields.add(field);
-			}
+			return extractDocumentFields_Labels(uiElement);
 		}
 		else if (LayoutElementType.InlineTab.equals(uiElementType))
 		{
 			throw new AdempiereException("InlineTab element has no fields: " + uiElement);
 		}
+		else if (LayoutElementType.Attributes.equals(uiElementType))
+		{
+			return extractDocumentFields_Attributes(uiElement);
+		}
 		else
 		{
 			throw new AdempiereException("Unknown AD_UI_ElementType: " + uiElementType + "  for " + uiElement);
 		}
-		return fields;
+	}
+
+	private List<List<DocumentFieldDescriptor.Builder>> extractDocumentFields_Field(final I_AD_UI_Element uiElement)
+	{
+		final ArrayList<DocumentFieldDescriptor.Builder> fields = new ArrayList<>();
+
+		// add the "primary" field
+		{
+			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(AdFieldId.ofRepoId(uiElement.getAD_Field_ID()));
+			if (field != null && isSkipField(field))
+			{
+				logger.trace("Skip field {} because it's not displayed", field.getFieldName());
+			}
+			else if (field != null)
+			{
+				fields.add(field);
+			}
+			else
+			{
+				logger.warn("No field found for AD_Field_ID={}; AD_UI_Element={}", uiElement.getAD_Field_ID(), uiElement);
+			}
+		}
+
+		// add additional fields / tooltips (if any)
+		for (final I_AD_UI_ElementField uiElementField : getUIProvider().getUIElementFields(uiElement))
+		{
+			if (!uiElementField.isActive())
+			{
+				logger.trace("Skip {} because it's not active", uiElementField);
+				continue;
+			}
+
+			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_UI_ElementField(uiElementField);
+			if (field == null)
+			{
+				logger.warn("No field found for AD_UI_ElementField_ID={}; AD_UI_ElementField={}", uiElementField.getAD_Field_ID(), uiElementField);
+				continue;
+			}
+
+			fields.add(field);
+		}
+
+		return ImmutableList.of(fields);
+	}
+
+	private List<List<DocumentFieldDescriptor.Builder>> extractDocumentFields_Labels(final I_AD_UI_Element uiElement)
+	{
+		final String labelsFieldName = descriptorsFactory.getLabelsFieldName(AdUIElementId.ofRepoId(uiElement.getAD_UI_Element_ID()));
+		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(labelsFieldName);
+		if (field == null)
+		{
+			logger.warn("No label field found for labelsFieldName={}", labelsFieldName);
+			return ImmutableList.of();
+		}
+		else
+		{
+			return ImmutableList.of(ImmutableList.of(field));
+		}
+	}
+
+	private List<List<DocumentFieldDescriptor.Builder>> extractDocumentFields_Attributes(final I_AD_UI_Element uiElement)
+	{
+		final ArrayList<List<DocumentFieldDescriptor.Builder>> result = new ArrayList<>();
+
+		final AdUIElementId uiElementId = AdUIElementId.ofRepoId(uiElement.getAD_UI_Element_ID());
+		attributesUIElementTypeFactory.getGeneratedFieldNames(uiElementId)
+				.stream()
+				.distinct()
+				.forEach(fieldName -> {
+					final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(fieldName);
+					if (field == null)
+					{
+						logger.warn("No generated field found for name={}", fieldName);
+					}
+					else
+					{
+						result.add(ImmutableList.of(field));
+					}
+				});
+
+		return result;
 	}
 
 	public ViewLayout.Builder layoutGridView()
@@ -626,8 +731,9 @@ public class LayoutFactory
 				.setDetailId(entityDescriptor.getDetailId())
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
-				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setEmptyResultText(TranslatableStrings.adMessage(TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(TranslatableStrings.adMessage(TAB_EMPTY_RESULT_HINT))
+				.setPageLength(entityDescriptor.getViewPageLength())
 				.setIdFieldName(entityDescriptor.getSingleIdFieldNameOrNull())
 				.setDefaultOrderBys(entityDescriptor.getDefaultOrderBys());
 
@@ -635,11 +741,11 @@ public class LayoutFactory
 		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
 		{
 			streamAD_UI_Elements()
-					.filter(adUIElement -> adUIElement.isDisplayedGrid())
+					.filter(I_AD_UI_Element::isDisplayedGrid)
 					.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
-					.map(adUIElement -> layoutElement(adUIElement))
-					.filter(uiElement -> uiElement != null)
-					.peek(uiElement -> uiElement.setGridElement())
+					.flatMap(adUIElement -> layoutElements(adUIElement).stream())
+					.filter(Objects::nonNull)
+					.peek(DocumentLayoutElementDescriptor.Builder::setGridElement)
 					.forEach(layout::addElement);
 		}
 
@@ -650,9 +756,9 @@ public class LayoutFactory
 			logger.debug("No grid layout was found for {}. Trying to create one based on single row layout elements", entityDescriptor);
 			streamAD_UI_Elements()
 					.filter(adUIElement -> adUIElement.isDisplayed() && !adUIElement.isAdvancedField())
-					.map(adUIElement -> layoutElement(adUIElement))
-					.filter(uiElement -> uiElement != null)
-					.peek(uiElement -> uiElement.setGridElement())
+					.flatMap(adUIElement -> layoutElements(adUIElement).stream())
+					.filter(Objects::nonNull)
+					.peek(DocumentLayoutElementDescriptor.Builder::setGridElement)
 					.forEach(layout::addElement);
 		}
 
@@ -686,7 +792,7 @@ public class LayoutFactory
 			return Optional.empty();
 		}
 
-		final Builder layoutSingleRow = layoutSingleRow();
+		@NonNull final Builder layoutSingleRow = Objects.requireNonNull(layoutSingleRow());
 
 		final DocumentLayoutDetailDescriptor.Builder builder = DocumentLayoutDetailDescriptor
 				.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
@@ -710,12 +816,7 @@ public class LayoutFactory
 			return null;
 		}
 
-		if(!quickInputDescriptors.hasQuickInputEntityDescriptor(
-				entityDescriptor.getDocumentType(),
-				entityDescriptor.getDocumentTypeId(),
-				entityDescriptor.getTableName(),
-				entityDescriptor.getDetailId(),
-				entityDescriptor.getSOTrx()))
+		if (!services.hasQuickInputEntityDescriptor(entityDescriptor))
 		{
 			return null;
 		}
@@ -738,7 +839,8 @@ public class LayoutFactory
 				.setLookupInfos(field.getLookupDescriptor().orElse(null))
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
 				.setSupportZoomInto(field.isSupportZoomInto())
-				.trackField(field);
+				.trackField(field)
+				.setForbidNewRecordCreation(field.isForbidNewRecordCreation());
 
 		if (!Check.isEmpty(field.getTooltipIconName()))
 		{
@@ -753,20 +855,19 @@ public class LayoutFactory
 	public final ViewLayout layoutSideListView()
 	{
 		final ViewLayout.Builder layoutBuilder = ViewLayout.builder()
-				.setWindowId(WindowId.of(getAdWindowId()))
-				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
+				.setWindowId(WindowId.of(adWindowId))
+				.setEmptyResultText(TranslatableStrings.adMessage(TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(TranslatableStrings.adMessage(TAB_EMPTY_RESULT_HINT));
 
 		//
 		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
 		streamAD_UI_Elements()
 				// .peek((uiElement)->System.out.println("UI ELEMENT: "+uiElement + ", SIDE="+uiElement.isDisplayed_SideList()))
-				.filter(uiElement -> uiElement.isDisplayed_SideList())
+				.filter(I_AD_UI_Element::isDisplayed_SideList)
 				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo_SideList))
-				.map(this::layoutElement)
+				.flatMap(adUIElement -> layoutElements(adUIElement).stream())
 				.filter(Objects::nonNull) // avoid NPE
-				.map(layoutElement -> layoutElement.setGridElement())
-				.filter(uiElement -> uiElement != null)
+				.map(DocumentLayoutElementDescriptor.Builder::setGridElement)
 				.forEach(layoutBuilder::addElement);
 
 		//
@@ -776,9 +877,9 @@ public class LayoutFactory
 			logger.debug("No side list layout was found for {}. Trying to create one based on single row layout elements", this);
 			streamAD_UI_Elements()
 					.filter(adUIElement -> adUIElement.isDisplayed() && !adUIElement.isAdvancedField())
-					.map(adUIElement -> layoutElement(adUIElement))
-					.filter(uiElement -> uiElement != null)
-					.peek(uiElement -> uiElement.setGridElement())
+					.flatMap(adUIElement -> layoutElements(adUIElement).stream())
+					.filter(Objects::nonNull)
+					.peek(DocumentLayoutElementDescriptor.Builder::setGridElement)
 					.forEach(layoutBuilder::addElement);
 		}
 
@@ -840,5 +941,18 @@ public class LayoutFactory
 				.addField(layoutElementField(docStatusField).setFieldType(FieldType.ActionButtonStatus))
 				.addField(layoutElementField(docActionField).setFieldType(FieldType.ActionButton))
 				.build();
+	}
+
+	private boolean isSkipField(@NonNull final DocumentFieldDescriptor.Builder field)
+	{
+		switch (field.getFieldName())
+		{
+			case FIELDNAME_AD_Org_ID:
+				return !services.getSysConfigBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
+			case FIELDNAME_AD_Client_ID:
+				return !services.getSysConfigBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
+			default:
+				return false;
+		}
 	}
 }

@@ -17,7 +17,28 @@ public interface I_C_ElementValue
 
 
 	/**
-	 * Set Kontovorzeichen.
+	 * Set Account Role.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAccountConceptualName (@Nullable java.lang.String AccountConceptualName);
+
+	/**
+	 * Get Account Role.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAccountConceptualName();
+
+	ModelColumn<I_C_ElementValue, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_C_ElementValue.class, "AccountConceptualName", null);
+	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
+
+	/**
+	 * Set Account Sign.
 	 * Indicates the Natural Sign of the Account as a Debit or Credit
 	 *
 	 * <br>Type: List
@@ -27,7 +48,7 @@ public interface I_C_ElementValue
 	void setAccountSign (java.lang.String AccountSign);
 
 	/**
-	 * Get Kontovorzeichen.
+	 * Get Account Sign.
 	 * Indicates the Natural Sign of the Account as a Debit or Credit
 	 *
 	 * <br>Type: List
@@ -40,7 +61,7 @@ public interface I_C_ElementValue
 	String COLUMNNAME_AccountSign = "AccountSign";
 
 	/**
-	 * Set Kontenart.
+	 * Set Account Type.
 	 * Indicates the type of account
 	 *
 	 * <br>Type: List
@@ -50,7 +71,7 @@ public interface I_C_ElementValue
 	void setAccountType (java.lang.String AccountType);
 
 	/**
-	 * Get Kontenart.
+	 * Get Account Type.
 	 * Indicates the type of account
 	 *
 	 * <br>Type: List
@@ -185,7 +206,7 @@ public interface I_C_ElementValue
 	String COLUMNNAME_C_Element_ID = "C_Element_ID";
 
 	/**
-	 * Set Kontenart.
+	 * Set Account Element.
 	 * Account Element
 	 *
 	 * <br>Type: ID
@@ -195,7 +216,7 @@ public interface I_C_ElementValue
 	void setC_ElementValue_ID (int C_ElementValue_ID);
 
 	/**
-	 * Get Kontenart.
+	 * Get Account Element.
 	 * Account Element
 	 *
 	 * <br>Type: ID
@@ -206,28 +227,6 @@ public interface I_C_ElementValue
 
 	ModelColumn<I_C_ElementValue, Object> COLUMN_C_ElementValue_ID = new ModelColumn<>(I_C_ElementValue.class, "C_ElementValue_ID", null);
 	String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
-
-	/**
-	 * Set Tax.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Tax_ID (int C_Tax_ID);
-
-	/**
-	 * Get Tax.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Tax_ID();
-
-	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
 	/**
 	 * Get Created.
@@ -253,6 +252,28 @@ public interface I_C_ElementValue
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_ID();
+
+	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
 	/**
 	 * Set Default Account.
@@ -345,7 +366,7 @@ public interface I_C_ElementValue
 	String COLUMNNAME_IsAutoTaxAccount = "IsAutoTaxAccount";
 
 	/**
-	 * Set Bankkonto.
+	 * Set Bank Account.
 	 * Indicates if this is the Bank Account
 	 *
 	 * <br>Type: YesNo
@@ -355,7 +376,7 @@ public interface I_C_ElementValue
 	void setIsBankAccount (boolean IsBankAccount);
 
 	/**
-	 * Get Bankkonto.
+	 * Get Bank Account.
 	 * Indicates if this is the Bank Account
 	 *
 	 * <br>Type: YesNo
@@ -368,7 +389,7 @@ public interface I_C_ElementValue
 	String COLUMNNAME_IsBankAccount = "IsBankAccount";
 
 	/**
-	 * Set Belegartgesteuert.
+	 * Set Document Controlled.
 	 * Control account - If an account is controlled by a document, you cannot post manually to it
 	 *
 	 * <br>Type: YesNo
@@ -378,7 +399,7 @@ public interface I_C_ElementValue
 	void setIsDocControlled (boolean IsDocControlled);
 
 	/**
-	 * Get Belegartgesteuert.
+	 * Get Document Controlled.
 	 * Control account - If an account is controlled by a document, you cannot post manually to it
 	 *
 	 * <br>Type: YesNo
@@ -433,6 +454,29 @@ public interface I_C_ElementValue
 
 	ModelColumn<I_C_ElementValue, Object> COLUMN_IsMandatoryActivity = new ModelColumn<>(I_C_ElementValue.class, "IsMandatoryActivity", null);
 	String COLUMNNAME_IsMandatoryActivity = "IsMandatoryActivity";
+
+	/**
+	 * Set Open Item Managed.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOpenItem (boolean IsOpenItem);
+
+	/**
+	 * Get Open Item Managed.
+	 * This indicator shows that the account selected is an open item managed account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOpenItem();
+
+	ModelColumn<I_C_ElementValue, Object> COLUMN_IsOpenItem = new ModelColumn<>(I_C_ElementValue.class, "IsOpenItem", null);
+	String COLUMNNAME_IsOpenItem = "IsOpenItem";
 
 	/**
 	 * Set Summary Level.
@@ -506,7 +550,7 @@ public interface I_C_ElementValue
 	String COLUMNNAME_Parent_ID = "Parent_ID";
 
 	/**
-	 * Set Buchen "Ist".
+	 * Set Post Actual.
 	 * Actual Values can be posted
 	 *
 	 * <br>Type: YesNo
@@ -516,7 +560,7 @@ public interface I_C_ElementValue
 	void setPostActual (boolean PostActual);
 
 	/**
-	 * Get Buchen "Ist".
+	 * Get Post Actual.
 	 * Actual Values can be posted
 	 *
 	 * <br>Type: YesNo
@@ -529,7 +573,7 @@ public interface I_C_ElementValue
 	String COLUMNNAME_PostActual = "PostActual";
 
 	/**
-	 * Set Buchen "Budget".
+	 * Set Post Budget.
 	 * Budget values can be posted
 	 *
 	 * <br>Type: YesNo
@@ -539,7 +583,7 @@ public interface I_C_ElementValue
 	void setPostBudget (boolean PostBudget);
 
 	/**
-	 * Get Buchen "Budget".
+	 * Get Post Budget.
 	 * Budget values can be posted
 	 *
 	 * <br>Type: YesNo
@@ -552,7 +596,7 @@ public interface I_C_ElementValue
 	String COLUMNNAME_PostBudget = "PostBudget";
 
 	/**
-	 * Set Buchen "Reservierung".
+	 * Set Post Encumbrance.
 	 * Post commitments to this account
 	 *
 	 * <br>Type: YesNo
@@ -562,7 +606,7 @@ public interface I_C_ElementValue
 	void setPostEncumbrance (boolean PostEncumbrance);
 
 	/**
-	 * Get Buchen "Reservierung".
+	 * Get Post Encumbrance.
 	 * Post commitments to this account
 	 *
 	 * <br>Type: YesNo
@@ -575,7 +619,7 @@ public interface I_C_ElementValue
 	String COLUMNNAME_PostEncumbrance = "PostEncumbrance";
 
 	/**
-	 * Set Buchen "statistisch".
+	 * Set Post Statistical.
 	 * Post statistical quantities to this account?
 	 *
 	 * <br>Type: YesNo
@@ -585,7 +629,7 @@ public interface I_C_ElementValue
 	void setPostStatistical (boolean PostStatistical);
 
 	/**
-	 * Get Buchen "statistisch".
+	 * Get Post Statistical.
 	 * Post statistical quantities to this account?
 	 *
 	 * <br>Type: YesNo

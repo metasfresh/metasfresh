@@ -5,6 +5,7 @@ import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -26,7 +27,7 @@ public interface IPPOrderDAO extends ISingletonService
 
 	<T extends I_PP_Order> T getById(PPOrderId ppOrderId, Class<T> type);
 
-	default List<I_PP_Order> getByIds(Set<PPOrderId> orderIds)
+	default List<I_PP_Order> getByIds(final Set<PPOrderId> orderIds)
 	{
 		return getByIds(orderIds, I_PP_Order.class);
 	}
@@ -41,6 +42,8 @@ public interface IPPOrderDAO extends ISingletonService
 	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(WarehouseId warehouseId);
 
 	Stream<I_PP_Order> streamManufacturingOrders(@NonNull ManufacturingOrderQuery query);
+
+	SeqNo getNextSeqNoPerDateStartSchedule(@NonNull final I_PP_Order ppOrder);
 
 	/**
 	 * @return PP_Order_ID or -1 if not found.

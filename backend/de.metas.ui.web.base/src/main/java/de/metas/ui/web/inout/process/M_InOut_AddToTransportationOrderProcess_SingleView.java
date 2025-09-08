@@ -25,7 +25,7 @@ package de.metas.ui.web.inout.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.model.I_M_InOut;
-import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
+import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.InOutId;

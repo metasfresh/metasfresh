@@ -40,7 +40,7 @@ import java.util.Set;
  * This class allows us to disable annotated model interceptors via {@link org.compiere.model.I_AD_SysConfig} records.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh/issues/2482
+ * task https://github.com/metasfresh/metasfresh/issues/2482
  */
 /* package */ class AnnotatedModelInterceptorDisabler
 {
@@ -53,7 +53,7 @@ import java.util.Set;
 
 	final static String SYS_CONFIG_NAME_PREFIX = "InterceptorEnabled_";
 
-	private final ExtendedMemorizingSupplier<Set<String>> disabledPointcutIdsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveDisabledPointcutIds());
+	private final ExtendedMemorizingSupplier<Set<String>> disabledPointcutIdsSupplier = ExtendedMemorizingSupplier.of(AnnotatedModelInterceptorDisabler::retrieveDisabledPointcutIds);
 
 	@VisibleForTesting
 	AnnotatedModelInterceptorDisabler()
@@ -76,9 +76,6 @@ import java.util.Set;
 
 	/**
 	 * Returns a message that tells an admin how to disable the given {@code pointcut}.
-	 *
-	 * @param pointcut
-	 * @return
 	 */
 	static String createHowtoDisableMessage(@NonNull final Pointcut pointcut)
 	{

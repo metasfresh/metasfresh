@@ -30,17 +30,20 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
 @UtilityClass
 public class DataTableUtil
@@ -50,7 +53,7 @@ public class DataTableUtil
 	 */
 	private static int recordIdentifierFallback = 0;
 
-	private static final String NULL_STRING = "null";
+	public static final String NULL_STRING = "null";
 
 	/**
 	 * @param fallbackPrefix if the given dataTableRow has no {@value StepDefConstants#TABLECOLUMN_IDENTIFIER} column,
@@ -61,8 +64,8 @@ public class DataTableUtil
 			@NonNull final String fallbackPrefix)
 	{
 		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
-				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+				() -> dataTableRow.get(TABLECOLUMN_IDENTIFIER),
+				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
 
 	public String extractRecordIdentifier(
@@ -71,9 +74,9 @@ public class DataTableUtil
 			@NonNull final String fallbackPrefix)
 	{
 		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
-				() -> dataTableRow.get(columnNamePrefix + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER),
-				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+				() -> dataTableRow.get(TABLECOLUMN_IDENTIFIER),
+				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
+				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
 
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
@@ -95,6 +98,14 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@Nullable
+	public Integer extractIntegerOrNullForColumnName(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntegerOrNullForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@Nullable
@@ -123,6 +134,13 @@ public class DataTableUtil
 	}
 
 	public int extractIntOrMinusOneForColumnName(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntOrMinusOneForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	public int extractIntOrMinusOneForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
@@ -130,8 +148,8 @@ public class DataTableUtil
 	}
 
 	private int extractIntOrDefaultForColumnName(
-			final @NotNull Map<String, String> dataTableRow,
-			final @NotNull String columnName,
+			final @NonNull Map<String, String> dataTableRow,
+			final @NonNull String columnName,
 			final int defaultValue)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
@@ -140,6 +158,12 @@ public class DataTableUtil
 			return defaultValue;
 		}
 		return extractIntForColumnName(dataTableRow, columnName);
+	}
+
+	@Nullable
+	public String extractStringOrNullForColumnName(@NonNull final DataTableRow dataTableRow, @NonNull final String columnName)
+	{
+		return extractStringOrNullForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@Nullable
@@ -162,22 +186,35 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	public String extractNullableStringForColumnName(@NonNull final DataTableRow dataTableRow, @NonNull final String columnName)
+	{
+		return extractNullableStringForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
 	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		return dataTableRow.get(columnName);
 	}
 
+	@Contract("null -> null")
 	@Nullable
-	public String nullToken2Null(@NonNull final String value)
+	public String nullToken2Null(@Nullable final String value)
 	{
-		return NULL_STRING.equals(value) ? null : value;
+		return Check.isBlank(value) || NULL_STRING.equals(value) ? null : value;
+	}
+
+	@NonNull
+	public String extractStringForColumnName(@NonNull final DataTableRow dataTableRow, @NonNull final String columnName)
+	{
+		return extractStringForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@NonNull
 	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		final String string = dataTableRow.get(columnName);
-		if (Check.isBlank(string))
+		if (string == null || Check.isBlank(string))
 		{
 			throw new AdempiereException("Missing value for columnName=" + columnName).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
@@ -185,6 +222,7 @@ public class DataTableUtil
 		return string;
 	}
 
+	@SuppressWarnings("unused")
 	public int extractIntForIndex(
 			@NonNull final List<String> dataTableRow,
 			final int index)
@@ -215,6 +253,7 @@ public class DataTableUtil
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public Instant extractInstantForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
@@ -230,12 +269,48 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	public static LocalDate extractLocalDateOrNullForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		try
+		{
+			return Check.isBlank(string) ? null : LocalDate.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@NonNull
+	public static LocalDate extractLocalDateForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringForColumnName(dataTableRow, columnName);
+		try
+		{
+			return LocalDate.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@Nullable
 	public static ZonedDateTime extractZonedDateTimeOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		try
 		{
-			return Check.isBlank(string) ? null : ZonedDateTime.parse(string);
+			return StringUtils.trimBlankToOptional(string)
+					.map(ZonedDateTime::parse)
+					.orElse(null);
 		}
 		catch (final DateTimeParseException e)
 		{
@@ -258,11 +333,17 @@ public class DataTableUtil
 		}
 	}
 
+	public static Timestamp extractDateTimestampForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractDateTimestampForColumnName(dataTableRow.asMap(), columnName);
+	}
+
 	public static Timestamp extractDateTimestampForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringForColumnName(dataTableRow, columnName);
 		try
 		{
+			//noinspection deprecation
 			return TimeUtil.parseTimestamp(string);
 		}
 		catch (final DateTimeParseException e)
@@ -270,6 +351,12 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@Nullable
+	public static Timestamp extractDateTimestampForColumnNameOrNull(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractDateTimestampForColumnNameOrNull(dataTableRow.asMap(), columnName);
 	}
 
 	@Nullable
@@ -285,6 +372,7 @@ public class DataTableUtil
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public BigDecimal extractBigDecimalForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
@@ -297,6 +385,12 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of index=" + index, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@Nullable
+	public static BigDecimal extractBigDecimalOrNullForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractBigDecimalOrNullForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@Nullable
@@ -313,6 +407,12 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@NonNull
+	public static BigDecimal extractBigDecimalForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractBigDecimalForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@NonNull
@@ -346,6 +446,13 @@ public class DataTableUtil
 	}
 
 	public static boolean extractBooleanForColumnName(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractBooleanForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	public static boolean extractBooleanForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
@@ -360,12 +467,36 @@ public class DataTableUtil
 
 	@Nullable
 	public static Boolean extractBooleanForColumnNameOr(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName,
+			@Nullable final Boolean defaultValue)
+	{
+		return extractBooleanForColumnNameOr(dataTableRow.asMap(), columnName, defaultValue);
+	}
+
+	@Contract("_, _, !null -> !null")
+	@Nullable
+	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName,
 			@Nullable final Boolean defaultValue)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		return StringUtils.toBoolean(string, defaultValue);
+	}
+
+	@Nullable
+	public static Boolean extractBooleanForColumnNameOrNull(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		if (Check.isBlank(string))
+		{
+			return null;
+		}
+
+		return StringUtils.toBoolean(string);
 	}
 
 	public String extractStringForIndex(final List<String> dataTableRow, final int index)

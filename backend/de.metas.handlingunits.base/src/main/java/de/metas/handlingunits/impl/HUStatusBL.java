@@ -22,25 +22,14 @@
 
 package de.metas.handlingunits.impl;
 
-import java.util.Collection;
-
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -49,6 +38,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 public class HUStatusBL implements IHUStatusBL
 {
@@ -61,7 +57,7 @@ public class HUStatusBL implements IHUStatusBL
 			X_M_HU.HUSTATUS_Destroyed,
 			X_M_HU.HUSTATUS_Active);
 
-	private final static Multimap<String, String> ALLOWED_STATUS_TRANSITIONS = ImmutableMultimap.<String, String> builder()
+	private final static Multimap<String, String> ALLOWED_STATUS_TRANSITIONS = ImmutableMultimap.<String, String>builder()
 
 			.put(X_M_HU.HUSTATUS_Planning, X_M_HU.HUSTATUS_Active)
 
@@ -103,7 +99,6 @@ public class HUStatusBL implements IHUStatusBL
 			X_M_HU.HUSTATUS_Active);
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 
 	@Override
 	public boolean isQtyOnHand(final String huStatus)
@@ -179,24 +174,17 @@ public class HUStatusBL implements IHUStatusBL
 			return false; // can be the case with a new/unsaved HU
 		}
 
-		if (X_M_HU.HUSTATUS_Destroyed.equals(huStatus))
+		switch (huStatus)
 		{
-			return false;
+			case X_M_HU.HUSTATUS_Destroyed:
+			case X_M_HU.HUSTATUS_Shipped:
+			case X_M_HU.HUSTATUS_Planning:
+				return false;
+			default:
+				// we consider the rest of the statuses to be physical
+				// (active, picked and issued)
+				return true;
 		}
-
-		if (X_M_HU.HUSTATUS_Planning.equals(huStatus))
-		{
-			return false;
-		}
-
-		if (X_M_HU.HUSTATUS_Shipped.equals(huStatus))
-		{
-			return false;
-		}
-
-		// we consider the rest of the statuses to be physical
-		// (active, picked and issued)
-		return true;
 	}
 
 	@Override
@@ -223,6 +211,19 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
+	public boolean isStatusActiveOrPicked(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+
+		final String huStatus = huRecord.getHUStatus();
+		return X_M_HU.HUSTATUS_Active.equals(huStatus)
+				|| X_M_HU.HUSTATUS_Picked.equals(huStatus);
+	}
+
+	@Override
 	public boolean isStatusActive(@Nullable final I_M_HU huRecord)
 	{
 		if (huRecord == null)
@@ -243,7 +244,8 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public boolean isStatusIssued(@NonNull final HuId huId){
+	public boolean isStatusIssued(@NonNull final HuId huId)
+	{
 		return isStatusIssued(handlingUnitsDAO.getById(huId));
 	}
 
@@ -269,13 +271,14 @@ public class HUStatusBL implements IHUStatusBL
 
 	@Override
 	public void setHUStatus(final IHUContext huContext,
-			@NonNull final I_M_HU hu,
-			@NonNull final String huStatus)
+							@NonNull final I_M_HU hu,
+							@NonNull final String huStatus)
 	{
 		final boolean forceFetchPackingMaterial = false; // rely on HU Status configuration for detection when fetching packing material
 		setHUStatus(huContext, hu, huStatus, forceFetchPackingMaterial);
 	}
 
+	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public void setHUStatus(
 			@NonNull final IHUContext huContext,

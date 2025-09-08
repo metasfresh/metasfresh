@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { detect } from 'detect-browser';
 import { connect } from 'react-redux';
-import LoginForm from '../components/app/LoginForm';
+import LoginForm from '../components/login/LoginForm';
 import ErrorScreen from '../components/app/ErrorScreen';
 
 const BROWSER = detect();

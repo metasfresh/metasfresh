@@ -1,12 +1,6 @@
 package de.metas.handlingunits.impl;
 
-import java.util.Properties;
-
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -20,11 +14,16 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.Properties;
 
 public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(HUDisplayNameBuilder.class);
+	private static final Logger logger = LogManager.getLogger(HUDisplayNameBuilder.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	// Options
@@ -34,10 +33,10 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 	private boolean showIfDestroyed = false; // legacy-default=false
 
 	// Formatting
-	private final String STR_NewLine = "<br>";
+	private static final String STR_NewLine = "<br>";
 
 	/** HU */
-	private I_M_HU _hu;
+	private final I_M_HU _hu;
 
 	public HUDisplayNameBuilder(final I_M_HU hu)
 	{
@@ -97,24 +96,23 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 
 		if (X_M_HU.HUSTATUS_Shipped.equals(getM_HU().getHUStatus()))
 		{
-			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Shipped);
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final String destroyedStr = adReferenceService.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Shipped);
 			displayNameBuilder.append(STR_NewLine).append("(").append(escape(destroyedStr)).append(")");
 		}
 		//
 		// Display "Destroyed" if HU was destroyed
 		else if (showIfDestroyed && handlingUnitsBL.isDestroyed(getM_HU()))
 		{
-			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Destroyed);
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final String destroyedStr = adReferenceService.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Destroyed);
 			displayNameBuilder.append(STR_NewLine).append("(").append(escape(destroyedStr)).append(")");
 		}
 
-		final String displayName = displayNameBuilder.toString();
-		return displayName;
+		return displayNameBuilder.toString();
 	}
 
-	private final Properties getCtx()
+	private Properties getCtx()
 	{
 		if (_hu != null)
 		{
@@ -201,8 +199,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 			piNameRaw = pi != null ? pi.getName() : "?";
 		}
 
-		final String piName = escape(piNameRaw);
-		return piName;
+		return escape(piNameRaw);
 	}
 
 	private static String getAggregateHuPiName(final I_M_HU hu)
@@ -212,6 +209,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 
 		if (parentPIItem == null)
 		{
+			//noinspection ThrowableNotThrown
 			new HUException("Aggregate HU's parent item has no M_HU_PI_Item; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
 			return "?";
 		}
@@ -219,6 +217,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoIdOrNull(parentPIItem.getIncluded_HU_PI_ID());
 		if (includedPIId == null)
 		{
+			//noinspection ThrowableNotThrown
 			new HUException("Aggregate HU's parent item has M_HU_PI_Item without an Included_HU_PI; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
 			return "?";
 		}

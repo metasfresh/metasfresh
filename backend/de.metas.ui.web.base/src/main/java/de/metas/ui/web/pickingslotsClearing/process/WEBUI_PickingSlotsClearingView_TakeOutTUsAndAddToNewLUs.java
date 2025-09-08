@@ -34,7 +34,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -53,7 +53,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUsAndAddToNewLUs extends Pic
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-	private PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -117,6 +117,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUsAndAddToNewLUs extends Pic
 		final LULoader luLoader = new LULoader(huContext);
 
 		hus.forEach(luLoader::addTU);
+		luLoader.close();
 
 		Loggables.withLogger(log, Level.DEBUG).addLog("*** doIt(): created the following HUs: {}" , luLoader.getLU_HUs());
 

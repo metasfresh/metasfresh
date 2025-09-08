@@ -40,7 +40,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.adempiere.model.InterfaceWrapperHelper.*;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
@@ -109,7 +110,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		// NOTE: we are not using C_InvoicePaySchedule_ID. It shall be a column in C_Payment
 
-		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, creditMemoAdjusted);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted).toBigDecimal();
 	}
 
 	@Override
@@ -163,7 +164,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_AllocationLine> retrieveAllocationLines(@NonNull I_C_Payment payment)
+	public List<I_C_AllocationLine> retrieveAllocationLines(@NonNull final I_C_Payment payment)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
@@ -183,7 +184,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.createQueryBuilder(I_C_Payment.class)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(PaymentId::ofRepoId)
+				.idsAsSet(PaymentId::ofRepoId)
 				.stream();
 	}
 
@@ -237,7 +238,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		return queryBuilder
 				.setLimit(query.getLimit())
 				.create()
-				.listIds(PaymentId::ofRepoId);
+				.idsAsSet(PaymentId::ofRepoId);
 	}
 
 	@Override

@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class ReferenceListAwareEnums
@@ -181,13 +182,33 @@ public class ReferenceListAwareEnums
 					throw Check.mkEx("Field " + field.getName() + " is expected to be static");
 				}
 
-				final int adReferenceId = field.getInt(null);
+				final Class<?> fieldType = field.getType();
+				final int adReferenceId;
+				if (int.class.equals(fieldType) || Integer.class.equals(fieldType))
+				{
+					adReferenceId = field.getInt(null);
+				}
+				// NOTE: because ReferenceId is not available here, we have to use RepoIdAware
+				else if (RepoIdAware.class.isAssignableFrom(fieldType))
+				{
+					final RepoIdAware id = (RepoIdAware)field.get(null);
+					if (id == null)
+					{
+						throw Check.mkEx("Field " + field.getName() + " is expected to be set");
+					}
+					adReferenceId = id.getRepoId();
+				}
+				else
+				{
+					throw Check.mkEx("Field " + field.getName() + " has unsupported type: " + fieldType);
+				}
+
 				if (adReferenceId <= 0)
 				{
 					throw Check.mkEx("Field " + field.getName() + "is expected to have a positive value");
 				}
-
 				return adReferenceId;
+
 			}
 		}
 
@@ -265,6 +286,7 @@ public class ReferenceListAwareEnums
 	{
 		private final String typeName;
 		private final ImmutableMap<String, T> typesByCode;
+		private final ImmutableMap<String, T> typesByName;
 
 		private ValuesIndex(@NonNull final T[] values)
 		{
@@ -273,13 +295,30 @@ public class ReferenceListAwareEnums
 				throw new IllegalArgumentException("values not allowed to be empty");
 			}
 			this.typeName = values[0].getClass().getSimpleName();
+
 			typesByCode = Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
+			this.typesByName = indexByName(values);
+		}
+
+		@NonNull
+		private static <T extends ReferenceListAwareEnum> ImmutableMap<String, T> indexByName(@NonNull final T @NonNull [] values)
+		{
+			final ImmutableMap.Builder<String, T> typesByName = ImmutableMap.builder();
+			for (final T value : values)
+			{
+				if (value instanceof Enum)
+				{
+					final String name = ((Enum<?>)value).name();
+					typesByName.put(name, value);
+				}
+			}
+			return typesByName.build();
 		}
 
 		@Nullable
 		public T ofNullableCode(@Nullable final String code)
 		{
-			return code != null && Check.isNotBlank(code) ? ofCode(code) : null;
+			return Check.isNotBlank(code) ? ofCode(code) : null;
 		}
 
 		public Optional<T> optionalOfNullableCode(@Nullable final String code)
@@ -295,6 +334,38 @@ public class ReferenceListAwareEnums
 				throw Check.mkEx("No " + typeName + " found for code: " + code);
 			}
 			return type;
+		}
+
+		public T ofCodeOrName(@NonNull final String code)
+		{
+			T type = typesByCode.get(code);
+			if (type == null)
+			{
+				type = typesByName.get(code);
+			}
+			if (type == null)
+			{
+				throw Check.mkEx("No " + typeName + " found for code or name: " + code);
+			}
+			return type;
+		}
+
+		@Nullable
+		public T ofNullableCodeOrName(@Nullable final String code)
+		{
+			return code != null && Check.isNotBlank(code) ? ofCodeOrName(code) : null;
+		}
+
+		@NonNull
+		public Stream<T> stream()
+		{
+			return typesByCode.values().stream();
+		}
+
+		@NonNull
+		public ImmutableList<T> toList()
+		{
+			return stream().collect(ImmutableList.toImmutableList());
 		}
 	}
 }

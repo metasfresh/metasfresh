@@ -22,7 +22,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -52,7 +52,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-@Ignore
+@Disabled
 public class AcctSchemaTestHelper
 {
 	private static final Logger logger = LogManager.getLogger(AcctSchemaTestHelper.class);
@@ -85,6 +85,8 @@ public class AcctSchemaTestHelper
 		acctSchemaGL.setIncomeSummary_Acct(1);
 		acctSchemaGL.setRetainedEarning_Acct(1);
 		acctSchemaGL.setPPVOffset_Acct(1);
+		acctSchemaGL.setCashRounding_Acct(1);
+
 		saveRecord(acctSchemaGL);
 
 		final I_C_AcctSchema_Default acctSchemaDefault = newInstance(I_C_AcctSchema_Default.class);

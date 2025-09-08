@@ -1,5 +1,13 @@
 package de.metas.adempiere.modelvalidator;
 
+import de.metas.adempiere.exception.OrderInvoicePricesNotMatchException;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.invoice.service.impl.InvoiceLineBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MClient;
@@ -8,15 +16,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
-
-import de.metas.adempiere.exception.OrderInvoicePricesNotMatchException;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IInvoiceLineBL;
-import de.metas.invoice.service.impl.InvoiceLineBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 public class InvoiceLine implements ModelValidator
 {
@@ -99,9 +98,9 @@ public class InvoiceLine implements ModelValidator
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
-		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
+		final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
 
-		for (final I_C_InvoiceLine refInvoiceLine : invoiceDAO.retrieveReferringLines(invoiceLineId))
+		for (final I_C_InvoiceLine refInvoiceLine : invoiceDAO.retrieveReferringLines(invoiceAndLineId))
 		{
 			refInvoiceLine.setRef_InvoiceLine_ID(0);
 			invoiceDAO.save(refInvoiceLine);

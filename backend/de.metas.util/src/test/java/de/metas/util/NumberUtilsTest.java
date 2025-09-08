@@ -6,10 +6,68 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class NumberUtilsTest
 {
+	@Test
+	void asBigDecimal()
+	{
+		assertThat(NumberUtils.asBigDecimal(new BigDecimal("0"))).isEqualByComparingTo(BigDecimal.ZERO);
+	}
+
+	@Test
+	void roundTo5Cents()
+	{
+
+		BigDecimal initialValue;
+		BigDecimal roundedValue;
+
+		initialValue = new BigDecimal(1.12345);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.10));
+
+		initialValue = new BigDecimal(1.1345);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.15));
+
+		initialValue = new BigDecimal(2);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(2));
+
+		initialValue = new BigDecimal(1.02345);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1));
+
+		initialValue = new BigDecimal(1.0345);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.05));
+
+		initialValue = new BigDecimal(1.0645);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.05));
+
+		initialValue = new BigDecimal(1.0845);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.1));
+
+		initialValue = new BigDecimal(1.09);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.1));
+
+		initialValue = new BigDecimal(1.1);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.1));
+
+		initialValue = new BigDecimal(1.129);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.15));
+
+		initialValue = new BigDecimal(1.029);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.05));
+	}
+
 	@Nested
 	public class stripTrailingDecimalZeros
 	{
@@ -114,16 +172,10 @@ public class NumberUtilsTest
 		}
 	}
 
-	@Test
-	void asBigDecimal()
-	{
-		assertThat(NumberUtils.asBigDecimal(new BigDecimal("0"))).isEqualByComparingTo(BigDecimal.ZERO);
-	}
-
 	@Nested
 	public class asInt_with_defaultValue
 	{
-		@Test
+	@Test
 		void emptyString()
 		{
 			assertThat(NumberUtils.asInt("", -100)).isEqualTo(-100);

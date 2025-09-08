@@ -180,6 +180,26 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner2_ID (int C_BPartner2_ID);
+
+	/**
+	 * Get Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner2_ID();
+
+	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: TableDir
@@ -501,6 +521,31 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_C_OrderLine.class, "C_OrderLine_ID", null);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
+	 * Set Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderSO_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
+
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
+
+	ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_C_OrderLine.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
 	 * Set Zahlungsbedingung abw..
@@ -1114,6 +1159,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Separate invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowSeparateInvoicing (boolean IsAllowSeparateInvoicing);
+
+	/**
+	 * Get Separate invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowSeparateInvoicing();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsAllowSeparateInvoicing = new ModelColumn<>(I_C_OrderLine.class, "IsAllowSeparateInvoicing", null);
+	String COLUMNNAME_IsAllowSeparateInvoicing = "IsAllowSeparateInvoicing";
+
+	/**
 	 * Set CP.
 	 * Campaign Price
 	 *
@@ -1135,6 +1201,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_IsCampaignPrice = new ModelColumn<>(I_C_OrderLine.class, "IsCampaignPrice", null);
 	String COLUMNNAME_IsCampaignPrice = "IsCampaignPrice";
+
+	/**
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_OrderLine.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
 	 * Set Description Only.
@@ -1311,6 +1398,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsManualPrice = "IsManualPrice";
 
 	/**
+	 * Set Manual Qty In Price UOM.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualQtyInPriceUOM (boolean IsManualQtyInPriceUOM);
+
+	/**
+	 * Get Manual Qty In Price UOM.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualQtyInPriceUOM();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualQtyInPriceUOM = new ModelColumn<>(I_C_OrderLine.class, "IsManualQtyInPriceUOM", null);
+	String COLUMNNAME_IsManualQtyInPriceUOM = "IsManualQtyInPriceUOM";
+
+	/**
 	 * Set Packaging Material .
 	 *
 	 * <br>Type: YesNo
@@ -1416,6 +1524,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_IsUseBPartnerAddress = new ModelColumn<>(I_C_OrderLine.class, "IsUseBPartnerAddress", null);
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
+
+	/**
+	 * Set Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWithoutCharge (boolean IsWithoutCharge);
+
+	/**
+	 * Get Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWithoutCharge();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsWithoutCharge = new ModelColumn<>(I_C_OrderLine.class, "IsWithoutCharge", null);
+	String COLUMNNAME_IsWithoutCharge = "IsWithoutCharge";
 
 	/**
 	 * Set SeqNo..
@@ -1565,7 +1694,7 @@ public interface I_C_OrderLine
 	 * Set Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1575,7 +1704,7 @@ public interface I_C_OrderLine
 	 * Get Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1588,7 +1717,7 @@ public interface I_C_OrderLine
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	void setM_Product_DocumentNote (@Nullable java.lang.String M_Product_DocumentNote);
 
@@ -1597,7 +1726,7 @@ public interface I_C_OrderLine
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getM_Product_DocumentNote();
 
@@ -1788,6 +1917,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_Order_Min = new ModelColumn<>(I_C_OrderLine.class, "Order_Min", null);
 	String COLUMNNAME_Order_Min = "Order_Min";
+
+	/**
+	 * Set Packinfo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackInfo (@Nullable java.lang.String PackInfo);
+
+	/**
+	 * Get Packinfo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPackInfo();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_PackInfo = new ModelColumn<>(I_C_OrderLine.class, "PackInfo", null);
+	String COLUMNNAME_PackInfo = "PackInfo";
 
 	/**
 	 * Set Payment Discount %.
@@ -2380,6 +2530,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_QtyReserved = new ModelColumn<>(I_C_OrderLine.class, "QtyReserved", null);
 	String COLUMNNAME_QtyReserved = "QtyReserved";
+
+	/**
+	 * Set Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReason (@Nullable java.lang.String Reason);
+
+	/**
+	 * Get Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReason();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Reason = new ModelColumn<>(I_C_OrderLine.class, "Reason", null);
+	String COLUMNNAME_Reason = "Reason";
 
 	/**
 	 * Set Referenced Order Line.

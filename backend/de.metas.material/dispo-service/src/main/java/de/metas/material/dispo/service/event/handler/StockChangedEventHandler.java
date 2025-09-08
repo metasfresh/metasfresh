@@ -87,13 +87,13 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	{
 		if (event.getStockChangeDetails() == null)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("The event has no stockChangeDetails; -> nothing to do");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("The event has no stockChangeDetails; -> nothing to do");
 			return;
 		}
 		if (event.getStockChangeDetails().getResetStockPInstanceId() == null
 				|| event.getStockChangeDetails().getResetStockPInstanceId().getRepoId() <= 0)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("The event has no stockChangeDetails.resetStockPInstanceId; -> nothing to do");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("The event has no stockChangeDetails.resetStockPInstanceId; -> nothing to do");
 			return;
 		}
 
@@ -188,7 +188,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.quantity(quantity)
 				.build();
 
-		return Candidate.builderForEventDescr(event.getEventDescriptor())
+		return Candidate.builderForEventDescriptor(event.getEventDescriptor())
 				.materialDescriptor(materialDescriptorBuilder)
 				.transactionDetail(stockChangeDetail);
 	}

@@ -1,10 +1,13 @@
 package org.eevolution.api;
 
+import de.metas.document.DocSubType;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -12,12 +15,18 @@ import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface IPPOrderBL extends ISingletonService
 {
 	I_PP_Order getById(@NonNull PPOrderId id);
+
+	List<I_PP_Order> getByIds(@NonNull Set<PPOrderId> ids);
+
+	String getDocumentNoById(@NonNull PPOrderId ppOrderId);
 
 	void save(I_PP_Order ppOrder);
 
@@ -74,9 +83,13 @@ public interface IPPOrderBL extends ISingletonService
 	void setDocType(
 			I_PP_Order ppOrder,
 			PPOrderDocBaseType docBaseType,
-			@Nullable String docSubType);
+			@Nullable DocSubType docSubType);
 
 	void closeOrder(PPOrderId ppOrderId);
+
+	void closeOrder(I_PP_Order ppOrder);
+
+	void closeOrdersByIds(@NonNull Set<PPOrderId> ppOrderIds);
 
 	/**
 	 * Set QtyOrdered=QtyDelivered, QtyClosed=QtyOrdered(old) - QtyDelivered
@@ -103,5 +116,11 @@ public interface IPPOrderBL extends ISingletonService
 
 	void setC_OrderLine(@NonNull PPOrderId ppOrderId, @NonNull OrderLineId orderLineId);
 
-	void postPPOrderCreatedEvent(@NonNull final I_PP_Order ppOrder);
+	void postPPOrderCreatedEvent(@NonNull I_PP_Order ppOrder);
+
+	void completeDocument(@NonNull I_PP_Order ppOrder);
+
+	Set<ProductId> getProductIdsToIssue(@NonNull PPOrderId ppOrderId);
+
+	String getResourceName(@NonNull ResourceId resourceId);
 }

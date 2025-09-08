@@ -51,11 +51,11 @@
     <POReference>testReference3</POReference>
     <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>000000000000000062</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>EURO</M_HU_PackagingCode_LU_Text>
+        <M_HU_PackagingCode_Text>EURO</M_HU_PackagingCode_Text>
         <EDI_Exp_Desadv_Pack_Item>
             <BestBeforeDate>2022-12-12+02:00</BestBeforeDate>
             <LotNumber>Lot-Number</LotNumber>
-            <QtyCU>10</QtyCU>
+            <QtyCUsPerTU>10</QtyCUsPerTU>
             <QtyCUsPerLU>90</QtyCUsPerLU>
             <QtyTU>9</QtyTU>
             <EDI_DesadvLine_ID>

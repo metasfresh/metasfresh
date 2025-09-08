@@ -25,9 +25,11 @@ package de.metas.order.model.interceptor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
@@ -53,6 +55,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -69,6 +72,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
@@ -98,10 +102,12 @@ public class C_Order
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPGroupDAO groupDAO = Services.get(IBPGroupDAO.class);
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
+	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -111,12 +117,14 @@ public class C_Order
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
+			@NonNull final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
+		this.purchaseOrderToShipperTransportationService = purchaseOrderToShipperTransportationService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -219,7 +227,11 @@ public class C_Order
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
 	public void setIncoterms(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
+		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
+		if (bpartner == null)
+		{
+			return; // nothing to do yet
+		}
 
 		final int c_Incoterms;
 
@@ -235,7 +247,7 @@ public class C_Order
 		order.setC_Incoterms_ID(c_Incoterms);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{
 		final DeliveryViaRule deliveryViaRule = orderBL.findDeliveryViaRule(order).orElse(null);
@@ -347,6 +359,15 @@ public class C_Order
 	{
 		checkPaymentRuleWithReservation(order);
 		orderLinePricingConditions.failForMissingPricingConditions(order);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void createMPackages(final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			purchaseOrderToShipperTransportationService.addPurchaseOrderToCurrentShipperTransportation(order);
+		}
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_PaymentRule)
@@ -479,7 +500,7 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_DropShip_Location_ID
+			I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID
 	})
 	public void onDropShipLocation(final I_C_Order order)
 	{
@@ -490,6 +511,8 @@ public class C_Order
 		}
 
 		orderBL.setPriceList(order);
+
+		orderBL.setShipperId(order);
 	}
 
 	@ModelChange(timings = {
@@ -533,7 +556,7 @@ public class C_Order
 		validateSupplierApprovals(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
 	public void validateVoidActionForMediatedOrder(final I_C_Order order)
 	{
 		if (orderBL.isMediated(order))
@@ -569,6 +592,32 @@ public class C_Order
 			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 			partnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	public void setBillBPartnerIdIfAssociation(final I_C_Order order)
+	{
+		final I_C_BP_Group bpartnerGroup = groupDAO.getByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
+		if (bpartnerGroup.isAssociation())
+		{
+			order.setBill_BPartner_ID(bpartnerGroup.getBill_BPartner_ID());
+			order.setBill_Location_ID(bpartnerGroup.getBill_Location_ID());
+			order.setBill_User_ID(bpartnerGroup.getBill_User_ID());
+		}
+		else
+		{
+			final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpartnerGroup.getParent_BP_Group_ID());
+			if (parentGroupId != null)
+			{
+				final I_C_BP_Group parentGroup = groupDAO.getById(parentGroupId);
+				if (parentGroup.isAssociation())
+				{
+					order.setBill_BPartner_ID(parentGroup.getBill_BPartner_ID());
+					order.setBill_Location_ID(parentGroup.getBill_Location_ID());
+					order.setBill_User_ID(parentGroup.getBill_User_ID());
+				}
+			}
 		}
 	}
 }

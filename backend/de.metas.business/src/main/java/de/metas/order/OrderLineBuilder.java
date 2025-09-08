@@ -2,6 +2,7 @@ package de.metas.order;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -71,12 +72,15 @@ public class OrderLineBuilder
 
 	private ProductId productId;
 	private AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
+	@Nullable private HUPIItemProductId piItemProductId;
 	private Quantity qty;
 
 	@Nullable private BigDecimal manualPrice;
+	@Nullable private UomId priceUomId;
 	private BigDecimal manualDiscount;
 
-	@Nullable private String description;
+	@Nullable
+	private String description;
 
 	private boolean hideWhenPrinting;
 
@@ -103,6 +107,10 @@ public class OrderLineBuilder
 
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
+		if (piItemProductId != null)
+		{
+			orderLine.setM_HU_PI_Item_Product_ID(piItemProductId.getRepoId());
+		}
 
 		orderLine.setQtyEntered(qty.toBigDecimal());
 		orderLine.setC_UOM_ID(qty.getUomId().getRepoId());
@@ -114,6 +122,7 @@ public class OrderLineBuilder
 		{
 			orderLine.setIsManualPrice(true);
 			orderLine.setPriceEntered(manualPrice);
+			orderLine.setPrice_UOM_ID(UomId.toRepoId(priceUomId));
 		}
 
 		if (manualDiscount != null)
@@ -166,16 +175,23 @@ public class OrderLineBuilder
 		}
 	}
 
-	private OrderFactory getParent() { return parent; }
+	private OrderFactory getParent() {return parent;}
 
-	public OrderFactory endOrderLine() { return getParent(); }
+	public OrderFactory endOrderLine() {return getParent();}
 
-	public OrderAndLineId getCreatedOrderAndLineId() { return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID()); }
+	public OrderAndLineId getCreatedOrderAndLineId() {return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());}
 
 	public OrderLineBuilder productId(final ProductId productId)
 	{
 		assertNotBuilt();
 		this.productId = productId;
+		return this;
+	}
+
+	public OrderLineBuilder piItemProductId(final HUPIItemProductId piItemProductId)
+	{
+		assertNotBuilt();
+		this.piItemProductId = piItemProductId;
 		return this;
 	}
 
@@ -220,6 +236,13 @@ public class OrderLineBuilder
 	private UomId getUomId()
 	{
 		return qty != null ? qty.getUomId() : null;
+	}
+
+	public OrderLineBuilder priceUomId(@Nullable final UomId priceUomId)
+	{
+		assertNotBuilt();
+		this.priceUomId = priceUomId;
+		return this;
 	}
 
 	public OrderLineBuilder manualPrice(@Nullable final BigDecimal manualPrice)

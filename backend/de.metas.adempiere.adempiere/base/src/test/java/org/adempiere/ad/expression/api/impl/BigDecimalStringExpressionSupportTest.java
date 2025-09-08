@@ -1,19 +1,17 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.math.BigDecimal;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Services;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.impl.BigDecimalStringExpressionSupport.BigDecimalStringExpression;
 import org.compiere.util.Evaluatees;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Map;
 
 /*
  * #%L
@@ -41,7 +39,7 @@ public class BigDecimalStringExpressionSupportTest
 {
 	private IExpressionFactory expressionFactory;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		expressionFactory = Services.get(IExpressionFactory.class);
@@ -51,7 +49,7 @@ public class BigDecimalStringExpressionSupportTest
 	public void test_NullExpression()
 	{
 		final BigDecimalStringExpression expr = expressionFactory.compile("", BigDecimalStringExpression.class);
-		Assert.assertTrue("Expect null expression: " + expr, expr.isNullExpression());
+		Assertions.assertTrue(expr.isNullExpression(), "Expect null expression: " + expr);
 	}
 
 	@Test
@@ -59,7 +57,7 @@ public class BigDecimalStringExpressionSupportTest
 	{
 		final BigDecimalStringExpression expr = expressionFactory.compile("12.3456", BigDecimalStringExpression.class);
 		final BigDecimal value = expr.evaluate(Evaluatees.empty(), OnVariableNotFound.Fail);
-		Assert.assertEquals(new BigDecimal("12.3456"), value);
+		Assertions.assertEquals(new BigDecimal("12.3456"), value);
 	}
 
 	@Test
@@ -67,16 +65,16 @@ public class BigDecimalStringExpressionSupportTest
 	{
 		final BigDecimalStringExpression expr = expressionFactory.compile("@ValueBD@", BigDecimalStringExpression.class);
 		final BigDecimal value = expr.evaluate(Evaluatees.ofSingleton("ValueBD", "12.3456"), OnVariableNotFound.Fail);
-		Assert.assertEquals(new BigDecimal("12.3456"), value);
+		Assertions.assertEquals(new BigDecimal("12.3456"), value);
 	}
 
 	@Test
 	public void test_GeneralExpression()
 	{
 		final BigDecimalStringExpression expr = expressionFactory.compile("@DecimalValue@.@FractionValue@", BigDecimalStringExpression.class);
-		final Map<String, ? extends Object> ctx = ImmutableMap.of("DecimalValue", 12, "FractionValue", "3456");
+		final Map<String, ?> ctx = ImmutableMap.of("DecimalValue", 12, "FractionValue", "3456");
 		final BigDecimal value = expr.evaluate(Evaluatees.ofMap(ctx), OnVariableNotFound.Fail);
-		Assert.assertEquals(new BigDecimal("12.3456"), value);
+		Assertions.assertEquals(new BigDecimal("12.3456"), value);
 	}
 
 }

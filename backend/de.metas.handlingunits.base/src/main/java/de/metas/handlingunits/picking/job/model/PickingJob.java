@@ -24,58 +24,76 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import lombok.experimental.Delegate;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
+
+import static de.metas.handlingunits.picking.job.service.PickingJobService.PICKING_JOB_PROCESSED_ERROR_MSG;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ToString
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class PickingJob
+public final class PickingJob implements PickingJobHeaderOrLine
 {
-	@Getter
-	@NonNull private final PickingJobId id;
+	@NonNull @Getter private final PickingJobId id;
 
-	@Delegate
 	@NonNull private final PickingJobHeader header;
 
-	@Getter
-	@NonNull private final Optional<PickingSlotIdAndCaption> pickingSlot;
+	@NonNull @Getter private final Optional<HUInfo> pickFromHU;
+	@NonNull @Getter private final CurrentPickingTarget currentPickingTarget;
 
-	@Getter
-	@NonNull private final ImmutableList<PickingJobLine> lines;
+	@NonNull @Getter private final ImmutableList<PickingJobLine> lines;
+	@NonNull @Getter @JsonIgnore private final ImmutableMap<PickingJobLineId, PickingJobLine> linesById;
 
-	@Getter
-	@NonNull private final ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives;
+	@NonNull @Getter private final ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives;
 
-	@Getter
-	private final PickingJobDocStatus docStatus;
+	@Getter private final PickingJobDocStatus docStatus;
 
-	@Getter
-	private final PickingJobProgress progress;
+	@Getter private final PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
+	@SuppressWarnings("OptionalAssignedToNull")
 	private PickingJob(
 			final @NonNull PickingJobId id,
 			final @NonNull PickingJobHeader header,
-			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
+			final @Nullable Optional<HUInfo> pickFromHU,
+			final @Nullable CurrentPickingTarget currentPickingTarget,
 			final @NonNull ImmutableList<PickingJobLine> lines,
 			final @NonNull ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives,
 			final @NonNull PickingJobDocStatus docStatus)
@@ -84,13 +102,68 @@ public final class PickingJob
 
 		this.id = id;
 		this.header = header;
-		//noinspection OptionalAssignedToNull
-		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
+		this.pickFromHU = pickFromHU != null ? pickFromHU : Optional.empty();
+		this.currentPickingTarget = currentPickingTarget != null ? currentPickingTarget : CurrentPickingTarget.EMPTY;
 		this.lines = lines;
+		this.linesById = Maps.uniqueIndex(this.lines, PickingJobLine::getId);
 		this.pickFromAlternatives = pickFromAlternatives;
 		this.docStatus = docStatus;
 
 		this.progress = computeProgress(lines);
+	}
+
+	@NonNull
+	public PickingJobAggregationType getAggregationType() {return header.getAggregationType();}
+
+	@Nullable
+	public String getSalesOrderDocumentNo() {return header.getSalesOrderDocumentNo();}
+
+	@Nullable
+	public ZonedDateTime getPreparationDate() {return header.getPreparationDate();}
+
+	@Nullable
+	public ZonedDateTime getDeliveryDate() {return header.getDeliveryDate();}
+
+	@Nullable
+	public BPartnerId getCustomerId() {return header.getCustomerId();}
+
+	@Nullable
+	public String getCustomerName() {return header.getCustomerName();}
+
+	@Nullable
+	public BPartnerLocationId getDeliveryBPLocationId() {return header.getDeliveryBPLocationId();}
+
+	public Set<BPartnerLocationId> getDeliveryBPLocationIds()
+	{
+		final ImmutableSet.Builder<BPartnerLocationId> result = ImmutableSet.builder();
+		if (getDeliveryBPLocationId() != null)
+		{
+			result.add(getDeliveryBPLocationId());
+		}
+
+		streamLines()
+				.map(PickingJobLine::getDeliveryBPLocationId)
+				.forEach(result::add);
+
+		return result.build();
+	}
+
+	@Nullable
+	public BPartnerLocationId getHandoverLocationId() {return header.getHandoverLocationId();}
+
+	@JsonIgnore
+	public boolean isAllowPickingAnyHU() {return header.isAllowPickingAnyHU();}
+
+	@JsonIgnore
+	public boolean isAnonymousPickHUsOnTheFly() {return header.isAnonymousPickHUsOnTheFly();}
+
+	public UserId getLockedBy() {return header.getLockedBy();}
+
+	public PickingJob withLockedBy(@Nullable final UserId lockedBy)
+	{
+		return UserId.equals(header.getLockedBy(), lockedBy)
+				? this
+				: toBuilder().header(header.toBuilder().lockedBy(lockedBy).build()).build();
 	}
 
 	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)
@@ -101,19 +174,190 @@ public final class PickingJob
 
 	public void assertNotProcessed()
 	{
-		if (docStatus.isProcessed())
+		if (isProcessed())
 		{
-			throw new AdempiereException("Picking Job was already processed");
+			throw new AdempiereException(PICKING_JOB_PROCESSED_ERROR_MSG);
 		}
 	}
 
-	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
+	public void assertPickingSlotScanned() {currentPickingTarget.assertPickingSlotScanned();}
+
+	@NonNull
+	public PickingSlotIdAndCaption getPickingSlotNotNull() {return currentPickingTarget.getPickingSlotNotNull();}
+
+	public Optional<PickingSlotId> getPickingSlotIdEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getPickingSlotId);
+	}
+
+	public boolean isDisplayPickingSlotSuggestions() {return header.isDisplayPickingSlotSuggestions();}
+
+	public boolean isProcessed()
+	{
+		return docStatus.isProcessed();
+	}
+
+	public boolean isAllowAbort() {return !isProcessed() && isNothingPicked();}
+
+	public boolean isNothingPicked() {return getProgress().isNotStarted();}
+
+	private CurrentPickingTarget getCurrentPickingTarget(@Nullable final PickingJobLineId lineId) {return getHeaderOrLine(lineId).getCurrentPickingTarget();}
+
+	private <T> Optional<T> getCurrentPickingTargetEffectiveValue(
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final Function<CurrentPickingTarget, Optional<T>> valueMapper)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> lineId != null ? valueMapper.apply(getLineById(lineId).getCurrentPickingTarget()) : Optional.empty(),
+				() -> valueMapper.apply(currentPickingTarget)
+		);
+	}
+
+	private PickingJob withCurrentPickingTarget(@NonNull final CurrentPickingTarget currentPickingTarget)
+	{
+		if (CurrentPickingTarget.equals(this.currentPickingTarget, currentPickingTarget))
+		{
+			return this;
+		}
+
+		assertCurrentPickingTargetAllowedOnHeader(currentPickingTarget);
+		return toBuilder().currentPickingTarget(currentPickingTarget).build();
+	}
+
+	private PickingJob withCurrentPickingTarget(
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final UnaryOperator<CurrentPickingTarget> currentPickingTargetMapper)
+	{
+		if (lineId != null)
+		{
+			return withChangedLine(lineId, (line) -> {
+				final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
+				final CurrentPickingTarget currentPickingTargetNew = currentPickingTargetMapper.apply(currentPickingTarget);
+				return line.withCurrentPickingTarget(currentPickingTargetNew);
+			});
+		}
+		else
+		{
+			final CurrentPickingTarget currentPickingTargetNew = currentPickingTargetMapper.apply(this.currentPickingTarget);
+			return withCurrentPickingTarget(currentPickingTargetNew);
+		}
+	}
+
+	private void assertCurrentPickingTargetAllowedOnHeader(@NonNull final CurrentPickingTarget currentPickingTargetNew)
+	{
+		if (!isLineLevelPickTarget())
+		{
+			return;
+		}
+
+		final LUPickingTarget luPickingTarget = currentPickingTargetNew.getLuPickingTarget().orElse(null);
+		if (luPickingTarget != null && luPickingTarget.isExistingLU())
+		{
+			throw new AdempiereException("Setting existing HU as picking targets on job level is not allowed");
+		}
+	}
+
+	public Optional<PickingSlotIdAndCaption> getPickingSlot() {return currentPickingTarget.getPickingSlot();}
+
+	public Optional<PickingSlotId> getPickingSlotId() {return currentPickingTarget.getPickingSlotId();}
 
 	public PickingJob withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
 	{
-		return PickingSlotIdAndCaption.equals(this.pickingSlot.orElse(null), pickingSlot)
+		return withCurrentPickingTarget(currentPickingTarget.withPickingSlot(pickingSlot));
+	}
+
+	public boolean isLineLevelPickTarget() {return getAggregationType().isLineLevelPickTarget();}
+
+	public Optional<LUPickingTarget> getLuPickingTarget(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTarget(lineId).getLuPickingTarget();
+	}
+
+	public Optional<LUPickingTarget> getLuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getLuPickingTarget);
+	}
+
+	@NonNull
+	public PickingJob withLuPickingTarget(
+			@Nullable final PickingJobLineId lineId,
+			@Nullable final LUPickingTarget luPickingTarget)
+	{
+		return withCurrentPickingTarget(lineId, currentPickingTarget -> currentPickingTarget.withLuPickingTarget(luPickingTarget));
+	}
+
+	@NonNull
+	public PickingJob withLuPickingTarget(
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final UnaryOperator<LUPickingTarget> luPickingTargetMapper)
+	{
+		return withCurrentPickingTarget(lineId, currentPickingTarget -> currentPickingTarget.withLuPickingTarget(luPickingTargetMapper));
+	}
+
+	public PickingJob withClosedLUAndTUPickingTargets(
+			boolean isCloseOnHeader,
+			boolean isCloseOnLines,
+			@Nullable PickingJobLineId onlyLineId,
+			@Nullable final LUIdsAndTopLevelTUIdsCollector closedHuIdCollector)
+	{
+		final PickingJobBuilder builder = toBuilder();
+		boolean hasChanges = false;
+
+		if (isCloseOnHeader)
+		{
+			final CurrentPickingTarget changedCurrentPickingTarget = currentPickingTarget.withClosedLUAndTUPickingTarget(closedHuIdCollector);
+			builder.currentPickingTarget(changedCurrentPickingTarget);
+			if (!CurrentPickingTarget.equals(changedCurrentPickingTarget, currentPickingTarget))
+			{
+				hasChanges = true;
+			}
+		}
+		if (isCloseOnLines)
+		{
+			final ImmutableList<PickingJobLine> changedLines = CollectionUtils.map(this.lines, line -> {
+				if (onlyLineId == null || PickingJobLineId.equals(line.getId(), onlyLineId))
+				{
+					return line.withCurrentPickingTarget(currentPickingTarget -> currentPickingTarget.withClosedLUAndTUPickingTarget(closedHuIdCollector));
+				}
+				else
+				{
+					return line;
+				}
+			});
+			builder.lines(changedLines);
+
+			if (!Objects.equals(this.lines, changedLines))
+			{
+				hasChanges = true;
+			}
+		}
+
+		return hasChanges ? builder.build() : this;
+	}
+
+	public Optional<TUPickingTarget> getTuPickingTarget(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTarget(lineId).getTuPickingTarget();
+	}
+
+	public Optional<TUPickingTarget> getTuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getTuPickingTarget);
+	}
+
+	@NonNull
+	public PickingJob withTuPickingTarget(
+			@Nullable final PickingJobLineId lineId,
+			@Nullable final TUPickingTarget tuPickingTarget)
+	{
+		return withCurrentPickingTarget(lineId, currentPickingTarget -> currentPickingTarget.withTuPickingTarget(tuPickingTarget));
+	}
+
+	public PickingJob withPickFromHU(@Nullable final HUInfo pickFromHU)
+	{
+		return HUInfo.equals(this.pickFromHU.orElse(null), pickFromHU)
 				? this
-				: toBuilder().pickingSlot(Optional.ofNullable(pickingSlot)).build();
+				: toBuilder().pickFromHU(Optional.ofNullable(pickFromHU)).build();
 	}
 
 	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
@@ -123,14 +367,28 @@ public final class PickingJob
 
 	public Stream<ShipmentScheduleId> streamShipmentScheduleIds()
 	{
-		return lines.stream().flatMap(PickingJobLine::streamShipmentScheduleId);
+		return streamLines().flatMap(PickingJobLine::streamShipmentScheduleId);
 	}
 
-	public Stream<PickingJobStep> streamSteps() {return lines.stream().flatMap(PickingJobLine::streamSteps);}
+	private PickingJobHeaderOrLine getHeaderOrLine(@Nullable final PickingJobLineId lineId) {return lineId != null ? getLineById(lineId) : this;}
 
-	public PickingJobStep getStepById(final PickingJobStepId stepId)
+	public PickingJobLine getLineById(@NonNull final PickingJobLineId lineId)
 	{
-		return lines.stream()
+		final PickingJobLine line = linesById.get(lineId);
+		if (line == null)
+		{
+			throw new AdempiereException("No line found for " + lineId);
+		}
+		return line;
+	}
+
+	public Stream<PickingJobStep> streamSteps() {return streamLines().flatMap(PickingJobLine::streamSteps);}
+
+	public Stream<PickingJobLine> streamLines() {return lines.stream();}
+
+	public PickingJobStep getStepById(@NonNull final PickingJobStepId stepId)
+	{
+		return streamLines()
 				.flatMap(PickingJobLine::streamSteps)
 				.filter(step -> PickingJobStepId.equals(step.getId(), stepId))
 				.findFirst()
@@ -152,6 +410,11 @@ public final class PickingJob
 				: toBuilder().lines(changedLines).build();
 	}
 
+	public PickingJob withChangedLine(@NonNull final PickingJobLineId lineId, final UnaryOperator<PickingJobLine> lineMapper)
+	{
+		return withChangedLines(line -> PickingJobLineId.equals(line.getId(), lineId) ? lineMapper.apply(line) : line);
+	}
+
 	public PickingJob withChangedStep(
 			@NonNull final PickingJobStepId stepId,
 			@NonNull final UnaryOperator<PickingJobStep> stepMapper)
@@ -171,8 +434,124 @@ public final class PickingJob
 		return withChangedLines(line -> line.withChangedSteps(stepIds, stepMapper));
 	}
 
-	public PickingJob withChangedSteps(@NonNull final UnaryOperator<PickingJobStep> stepMapper)
+	@Value
+	@Builder
+	public static class AddStepRequest
 	{
-		return withChangedLines(line -> line.withChangedSteps(stepMapper));
+		boolean isGeneratedOnFly;
+		@NonNull PickingJobStepId newStepId;
+		@NonNull PickingJobLineId lineId;
+		@NonNull Quantity qtyToPick;
+		@NonNull LocatorInfo pickFromLocator;
+		@NonNull HUInfo pickFromHU;
+		@NonNull PackToSpec packToSpec;
 	}
+
+	public PickingJob withNewStep(@NonNull final AddStepRequest request)
+	{
+		return withChangedLine(request.getLineId(), line -> line.withNewStep(request));
+	}
+
+	@NonNull
+	public ImmutableSet<ProductId> getProductIds()
+	{
+		return streamLines()
+				.map(PickingJobLine::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public ITranslatableString getSingleProductNameOrEmpty()
+	{
+		ProductId productId = null;
+		ITranslatableString productName = TranslatableStrings.empty();
+		for (final PickingJobLine line : lines)
+		{
+			if (productId == null)
+			{
+				productId = line.getProductId();
+			}
+			else if (!ProductId.equals(productId, line.getProductId()))
+			{
+				// found different products
+				return TranslatableStrings.empty();
+			}
+
+			productName = line.getProductName();
+		}
+
+		return productName;
+	}
+
+	@Nullable
+	public Quantity getSingleQtyToPickOrNull()
+	{
+		return extractQtyToPickOrNull(lines, PickingJobLine::getProductId, PickingJobLine::getQtyToPick);
+	}
+
+	@Nullable
+	public static <T> Quantity extractQtyToPickOrNull(
+			@NonNull final Collection<T> lines,
+			@NonNull final Function<T, ProductId> extractProductId,
+			@NonNull final Function<T, Quantity> extractQtyToPick)
+	{
+		ProductId productId = null;
+		Quantity qtyToPick = null;
+
+		for (final T line : lines)
+		{
+			final ProductId lineProductId = extractProductId.apply(line);
+			if (productId == null)
+			{
+				productId = lineProductId;
+			}
+			else if (!ProductId.equals(productId, lineProductId))
+			{
+				// found different products
+				return null;
+			}
+
+			final Quantity lineQtyToPick = extractQtyToPick.apply(line);
+			if (qtyToPick == null)
+			{
+				qtyToPick = lineQtyToPick;
+			}
+			else if (UomId.equals(qtyToPick.getUomId(), lineQtyToPick.getUomId()))
+			{
+				qtyToPick = qtyToPick.add(lineQtyToPick);
+			}
+			else
+			{
+				// found different UOMs
+				return null;
+			}
+		}
+
+		return qtyToPick;
+	}
+
+	@NonNull
+	public ImmutableSet<HuId> getPickedHuIds(@Nullable final PickingJobLineId lineId)
+	{
+		return lineId != null
+				? getLineById(lineId).getPickedHUIds()
+				: getAllPickedHuIds();
+	}
+
+	public ImmutableSet<HuId> getAllPickedHuIds()
+	{
+		return streamLines()
+				.map(PickingJobLine::getPickedHUIds)
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public ImmutableSet<PPOrderId> getManufacturingOrderIds()
+	{
+		return streamLines()
+				.map(PickingJobLine::getPickFromManufacturingOrderId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }

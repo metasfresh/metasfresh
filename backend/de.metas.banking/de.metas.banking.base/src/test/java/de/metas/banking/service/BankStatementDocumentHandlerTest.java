@@ -6,10 +6,12 @@ import de.metas.banking.BankId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
-import de.metas.banking.api.BankAccountAcctRepository;
+import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.impl.BankStatementBL;
 import de.metas.banking.service.impl.C_BankStatementLine_MockedInterceptor;
 import de.metas.bpartner.BPartnerId;
@@ -20,6 +22,8 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentTableFields;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -103,10 +107,17 @@ public class BankStatementDocumentHandlerTest
 			}
 		};
 
+		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		final MoneyService moneyService = new MoneyService(currencyRepository);
+		SpringContextHolder.registerJUnitBean(moneyService);
+
+		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
+
 		// bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		final BankStatementPaymentBL bankStatementPaymentBL = new BankStatementPaymentBL(
 				bankStatementBL,
-				new MoneyService(new CurrencyRepository()));
+				moneyService,
+				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
 
 		final BankStatementDocumentHandlerRequiredServicesFacade servicesFacade = new BankStatementDocumentHandlerRequiredServicesFacade(
 				bankStatementPaymentBL,
@@ -121,7 +132,7 @@ public class BankStatementDocumentHandlerTest
 
 		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
-		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, bankAccountAcctRepo, currencyRepo));
+		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, currencyRepo));
 
 		createMasterData();
 	}

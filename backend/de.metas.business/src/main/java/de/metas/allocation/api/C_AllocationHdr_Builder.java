@@ -22,22 +22,8 @@ package de.metas.allocation.api;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.function.Supplier;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -48,8 +34,19 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.function.Supplier;
 
 /**
  * Convenient way to create (and maybe complete) and {@link I_C_AllocationHdr} with {@link I_C_AllocationLine}s.
@@ -58,7 +55,7 @@ import javax.annotation.Nullable;
 public class C_AllocationHdr_Builder
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(C_AllocationHdr_Builder.class);
+	private static final Logger logger = LogManager.getLogger(C_AllocationHdr_Builder.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
@@ -121,6 +118,8 @@ public class C_AllocationHdr_Builder
 			InterfaceWrapperHelper.delete(allocHdr);
 		}
 
+		detectAndCrossLinkCounterAllocationLines();
+
 		//
 		// Process the allocation if asked
 		if (complete)
@@ -130,6 +129,27 @@ public class C_AllocationHdr_Builder
 
 		return allocHdr;
 	}
+
+	private void detectAndCrossLinkCounterAllocationLines()
+	{
+		if (allocationLines.size() != 2)
+		{
+			return;
+		}
+
+		final I_C_AllocationLine line1 = allocationLines.get(0);
+		final I_C_AllocationLine line2 = allocationLines.get(1);
+		if ((line1.getC_Invoice_ID() > 0 && line1.getC_Payment_ID() <= 0)
+				&& (line2.getC_Invoice_ID() > 0 && line2.getC_Payment_ID() <= 0)
+				&& line1.getAmount().compareTo(line2.getAmount().negate()) == 0)
+		{
+			line1.setCounter_AllocationLine_ID(line2.getC_AllocationLine_ID());
+			allocationDAO.save(line1);
+			line2.setCounter_AllocationLine_ID(line1.getC_AllocationLine_ID());
+			allocationDAO.save(line2);
+		}
+	}
+
 
 	public final I_C_AllocationHdr createAndComplete()
 	{

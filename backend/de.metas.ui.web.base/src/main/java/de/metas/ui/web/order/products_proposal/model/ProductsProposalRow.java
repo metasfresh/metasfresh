@@ -9,7 +9,6 @@ import de.metas.order.OrderLineId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
-import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.order.products_proposal.service.OrderLine;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
@@ -26,6 +25,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -127,6 +127,9 @@ public class ProductsProposalRow implements IViewRow
 	private final ProductProposalPrice price;
 
 	@Getter
+	private final AttributeSetInstanceId asiId;
+
+	@Getter
 	private final OrderLineId existingOrderLineId;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsProposalRow> values;
@@ -144,6 +147,7 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final ITranslatableString packingDescription,
 			@Nullable final HUPIItemProductId packingMaterialId,
 			@Nullable final ProductASIDescription asiDescription,
+			@Nullable final AttributeSetInstanceId asiId,
 			@NonNull final ProductProposalPrice price,
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,
@@ -162,6 +166,7 @@ public class ProductsProposalRow implements IViewRow
 		this.packingDescription = packingDescription;
 		this.packingMaterialId = packingMaterialId;
 		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
+		this.asiId = asiId;
 
 		this.price = price;
 		this.isCampaignPrice = price.isCampaignPriceUsed();
@@ -275,21 +280,14 @@ public class ProductsProposalRow implements IViewRow
 				|| getProductName().toLowerCase().contains(filter.getProductName().toLowerCase());
 	}
 
-	public ProductsProposalRow withExistingOrderLine(@Nullable final Order order)
+	public ProductsProposalRow withExistingOrderLine(@Nullable final OrderLine existingOrderLine)
 	{
-		if (order == null)
+		if(existingOrderLine == null)
 		{
 			return this;
 		}
+		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), existingOrderLine.getCurrency().getCurrencyCode());
 
-		final OrderLine existingOrderLine = order.getFirstMatchingOrderLine(getProductId(), getPackingMaterialId()).orElse(null);
-		if (existingOrderLine == null)
-		{
-			return this;
-		}
-
-		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), order.getCurrency().getCurrencyCode());
-		
 		return toBuilder()
 				.qty(existingOrderLine.isPackingMaterialWithInfiniteCapacity()
 						? existingOrderLine.getQtyEnteredCU()

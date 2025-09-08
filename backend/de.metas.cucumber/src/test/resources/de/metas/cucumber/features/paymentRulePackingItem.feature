@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Validate that PaymentRule is correctly set on C_Order and that it correctly propagates on C_InvoiceCandidates
   (default payment rule is not propagated on C_InvoiceCandidates in this case, the payment rule set on C_Order is taken into consideration)
 
@@ -9,6 +10,12 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config String value P for sys config de.metas.invoice.C_Invoice_PaymentRule
     And assert defaultValue is P for tableName C_Invoice_Candidate and columnName PaymentRule
+    And load M_Product:
+      | Identifier | M_Product_ID |
+      | ifco6410   | 2001343      |
+    And update M_Product:
+      | Identifier | IsActive |
+      | ifco6410   | Y        |
 
   @from:cucumber
   Scenario: Payment rule 'Cash' (set on C_Order) correctly propagates to Invoice Candidate for packing items (making sure, the default payment rule is set to OnCredit)
@@ -16,8 +23,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.PaymentRule | DateOrdered |
       | o_1        | true    | 2156425                  | B               | 2022-03-23  |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | 2005577                 | 10         |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_1       | o_1                   | 2005577      | 10         |
     And update order
       | C_Order_ID.Identifier | OPT.PaymentRule |
       | o_1                   | B               |
@@ -32,12 +39,16 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
       | s_s_1      | ol_1                      | N             |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-03-23  | 2001343                 | 0            | 1          | 0           | 1     | 0        | EUR          | true      |
+      | Identifier | C_Order_ID | dateordered | M_Product_ID | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2       | o_1        | 2022-03-23  | 2001343      | 0            | 1          | 0           | 1     | 0        | EUR          | true      |
 
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | s_s_1                            | 10                        |
+
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
 
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |

@@ -109,6 +109,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
+	 *
+	 *
 	 * @see C_Order_Handler#expandRequest(InvoiceCandidateGenerateRequest)
 	 */
 	@Override
@@ -148,23 +150,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate icRecord = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 
 		icRecord.setAD_Org_ID(orderLine.getAD_Org_ID());
-		icRecord.setC_ILCandHandler(getHandlerRecord());
 
 		icRecord.setAD_Table_ID(tableDAO.retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
 		icRecord.setRecord_ID(orderLine.getC_OrderLine_ID());
 
 		icRecord.setC_OrderLine(orderLine);
-
-		final int productRecordId = orderLine.getM_Product_ID();
-		icRecord.setM_Product_ID(productRecordId);
-
-		final boolean isFreightCostProduct = productBL
-				.getProductType(ProductId.ofRepoId(productRecordId))
-				.isFreightCost();
-
-		icRecord.setIsFreightCost(isFreightCostProduct);
-		icRecord.setIsPackagingMaterial(orderLine.isPackagingMaterial());
-		icRecord.setC_Charge_ID(orderLine.getC_Charge_ID());
 
 		setOrderedData(icRecord, orderLine);
 
@@ -201,6 +191,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// Dimension
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
+
+		icRecord.setC_Tax_ID(orderLine.getC_Tax_ID());
 
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
@@ -297,6 +289,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		// Product related data
+		{
+			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+			ic.setM_Product_ID(productId.getRepoId());
+			ic.setIsFreightCost(productBL.getProductType(productId).isFreightCost());
+			ic.setIsPackagingMaterial(orderLine.isPackagingMaterial());
+			ic.setC_Charge_ID(orderLine.getC_Charge_ID());
+		}
+
 		// prefer priceUOM, if given
 		if (orderLine.getPrice_UOM_ID() > 0)
 		{
@@ -324,8 +325,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
-
-		setIncoterms(ic, orderLine);
 	}
 
 	private void setPaymentRule(
@@ -362,7 +361,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
 		ic.setIncotermLocation(order.getIncotermLocation());
 	}
-
+	
 	private void setC_PaymentTerm(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
@@ -451,7 +450,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// ts: we *must* use the order line's data
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
-				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(orderLine.getInvoicableQtyBasedOn()))
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.ofNullableCodeOrNominal(orderLine.getInvoicableQtyBasedOn()))
 				.pricingSystemId(PricingSystemId.ofRepoId(order.getM_PricingSystem_ID()))
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())
@@ -536,6 +535,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationType(fromOrderLine.getGroupCompensationType());
 		ic.setGroupCompensationAmtType(fromOrderLine.getGroupCompensationAmtType());
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
+		ic.setIsAllowSeparateInvoicing(fromOrderLine.isAllowSeparateInvoicing());
 	}
 
 	private static void setC_Flatrate_Term_ID(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final org.compiere.model.I_C_OrderLine orderLine)

@@ -3,8 +3,6 @@ package de.metas.shipment.model.interceptor;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.logging.TableRecordMDC;
@@ -14,7 +12,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
@@ -54,7 +54,7 @@ public class M_InOut
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	public M_InOut(@NonNull final ShipmentDeclarationCreator shipmentDeclarationCreator,
-			@NonNull final ShipmentDeclarationRepository shipmentDeclarationRepo)
+				   @NonNull final ShipmentDeclarationRepository shipmentDeclarationRepo)
 	{
 		this.shipmentDeclarationCreator = shipmentDeclarationCreator;
 		this.shipmentDeclarationRepo = shipmentDeclarationRepo;
@@ -101,11 +101,23 @@ public class M_InOut
 
 			if (shipmentDeclarationRepo.existCompletedShipmentDeclarationsForShipmentId(shipmentId))
 			{
-				final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-				final ITranslatableString msg = msgBL.getTranslatableMsgText(ERR_ShipmentDeclaration);
-				throw new AdempiereException(msg).markAsUserValidationError();
+				throw new AdempiereException(ERR_ShipmentDeclaration).markAsUserValidationError();
 			}
 		}
 	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE,
+	}, ifColumnsChanged = {
+			I_M_InOut.COLUMNNAME_DropShip_Location_ID, I_M_InOut.COLUMNNAME_C_BPartner_Location_ID
+	})
+	public void onBPartnerLocation(final I_M_InOut inout)
+	{
+		if (InterfaceWrapperHelper.isUIAction(inout))
+		{
+			inOutBL.setShipperId(inout);
+		}
+	}
+
 }

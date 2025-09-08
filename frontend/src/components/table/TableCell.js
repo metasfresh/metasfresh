@@ -67,12 +67,14 @@ class TableCell extends PureComponent {
     }
 
     const { onKeyDown, property, isReadonly, tableCellData } = this.props;
+    const widgetType = tableCellData?.widgetType;
+
     onKeyDown &&
       onKeyDown({
         event,
         property,
         readonly: isReadonly,
-        isAttributeWidget: tableCellData.widgetType === 'ProductAttributes',
+        isAttributeWidget: widgetType === 'ProductAttributes',
       });
   };
 
@@ -166,6 +168,7 @@ class TableCell extends PureComponent {
       mainTable,
       viewId,
       modalVisible,
+      isModal,
       onClickOutside,
       updateHeight,
       rowIndex,
@@ -244,6 +247,7 @@ class TableCell extends PureComponent {
               entity,
               updateHeight,
               updateRow,
+              isModal,
             }}
             suppressChange={isEdited}
             clearValue={this.clearWidgetValue}
@@ -291,6 +295,7 @@ TableCell.propTypes = {
   viewId: PropTypes.string,
   rowId: PropTypes.string,
   docId: PropTypes.any,
+  isModal: PropTypes.bool,
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   colIndex: PropTypes.number,
   tabIndex: PropTypes.number,

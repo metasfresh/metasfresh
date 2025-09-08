@@ -1,0 +1,19 @@
+{
+  "pickingSlot": "Kommissionier Fach",
+  "currentTarget": {
+    "New": "Neues Gebinde",
+    "Current": "Offenes Gebinde"
+  },
+  "SelectHUConsolidationTargetScreen": {
+    "caption": "Select Target",
+    "closeTarget": "Schließen",
+    "printLabel": "Drucken",
+    "scanQRCode": "QR scannen"
+  },
+  "ScanHUConsolidationTargetScreen": {
+    "caption": "QR scannen"
+  },
+  "PickingSlotScreen": {
+    "consolidateAll": "Consolidate All"
+  }
+}

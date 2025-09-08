@@ -8,14 +8,13 @@ import de.metas.bpartner.product.callout.C_BPartner_Product;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.TableNamesGroup;
-import de.metas.cache.model.ColumnSqlCacheInvalidateRequestInitializer;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
-import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
-import de.metas.notification.INotificationGroupNameRepository;
+import de.metas.notification.INotificationGroupRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.organization.interceptors.C_Fiscal_Representation;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
@@ -27,7 +26,6 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
@@ -99,8 +97,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		final INotificationGroupNameRepository notificationGroupNameRepo = Services.get(INotificationGroupNameRepository.class);
-		return notificationGroupNameRepo.getAll()
+		final INotificationGroupRepository notificationGroupRepo = Services.get(INotificationGroupRepository.class);
+		return notificationGroupRepo.getActiveNames()
 				.stream()
 				.map(NotificationGroupName::toTopic)
 				.collect(ImmutableList.toImmutableList());
@@ -341,7 +339,5 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
 
-		WindowBasedCacheInvalidateRequestInitializer.setup();
-		ColumnSqlCacheInvalidateRequestInitializer.setup();
 	}
 }

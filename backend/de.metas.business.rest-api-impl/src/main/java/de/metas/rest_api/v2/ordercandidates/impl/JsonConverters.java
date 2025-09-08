@@ -15,7 +15,10 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -118,7 +121,7 @@ public class JsonConverters
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(request.getCurrencyCode());
 
-		final WarehouseId warehouseDestId = !Check.isEmpty(request.getWarehouseDestCode())
+		final WarehouseId warehouseDestId = Check.isNotBlank(request.getWarehouseDestCode())
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
@@ -170,13 +173,16 @@ public class JsonConverters
 			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
 		}
 
-		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+		final DocBaseType docBaseType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocBaseType)
+				.map(DocBaseType::ofCode)
 				.orElse(null);
 
-		final String subType = Optional.ofNullable(request.getInvoiceDocType())
+		final DocSubType subType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocSubType)
-				.orElse(null);
+				.map(DocSubType::ofNullableCode)
+				.orElse(DocSubType.ANY);
+
 
 		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
 
@@ -184,6 +190,10 @@ public class JsonConverters
 
 		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
 
+		final int huPIItemProductId = CoalesceUtil.firstGreaterThanZero(
+				JsonMetasfreshId.toValueInt(request.getPackingMaterialId()),
+				HUPIItemProductId.toRepoIdVirtualToZero(productInfo.getHupiItemProductId()));
+		
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -204,7 +214,7 @@ public class JsonConverters
 				.dateRequired(request.getDateRequired())
 				.dateCandidate(request.getDateCandidate())
 				//
-				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseType, subType, orgId))
+				.docTypeInvoiceId(docBaseType != null ? docTypeService.getDocTypeId(docBaseType, subType, orgId) : null)
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
@@ -213,10 +223,12 @@ public class JsonConverters
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
 				.productId(productInfo.getProductId())
+				.huPIItemProductId(huPIItemProductId)
+				.qtyItemCapacity(request.getQtyItemCapacity()) // if none is given, we will use the huPIItemProductId's capacity down the road
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
 				.uomId(uomId)
-				.huPIItemProductId(JsonMetasfreshId.toValueInt(request.getPackingMaterialId()))
+				
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
@@ -239,12 +251,11 @@ public class JsonConverters
 				.description(request.getDescription())
 				.line(request.getLine())
 				.isManualPrice(request.getIsManualPrice())
-				.isImportedWithIssues(request.getIsImportedWithIssues())
 				.importWarningMessage(request.getImportWarningMessage())
 				.deliveryRule(request.getDeliveryRule())
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
-				.qtyItemCapacity(request.getQtyItemCapacity())
+
 				//
 				.assignSalesRepRule(assignSalesRepRule)
 				.salesRepInternalId(salesRepInternalId)
@@ -357,7 +368,7 @@ public class JsonConverters
 				.handOverBPartner(toJson(orgCode, olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateCandidate(TimeUtil.asLocalDate(olCand.unbox().getDateCandidate(), SystemTime.zoneId()))
-				.dateOrdered(olCand.getDateDoc())
+				.dateOrdered(olCand.getDateOrdered())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//

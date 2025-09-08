@@ -22,24 +22,8 @@ package de.metas.edi.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_DocType;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
@@ -47,7 +31,9 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
@@ -57,12 +43,16 @@ import de.metas.edi.model.I_C_BPartner_Location;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
+import de.metas.edi.process.export.impl.EDI_DESADV_InOut_Export;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.InOutId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
@@ -74,12 +64,27 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.X_C_DocType;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class EDIDocumentBL implements IEDIDocumentBL
 {
 	private static final String ERR_NotExistsShipmentForOrderError = "NotExistsShipmentForOrderError";
 
 	private static final Logger logger = LogManager.getLogger(EDIDocumentBL.class);
+	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
 	@Override
 	public boolean updateEdiEnabled(@NonNull final I_EDI_Document_Extension document)
@@ -89,7 +94,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		if (!document.isSOTrx() && document.isEdiEnabled())
 		{
 			loggable.addLog("IsSoTrx=false; => update IsEdiEnabled to false");
-			document.setIsEdiEnabled(false); // 08619: don't assume that the flag is already false from the beginning, but make sure it is false now
+			setEdiEnabled(document, false); // 08619: don't assume that the flag is already false from the beginning, but make sure it is false now
 			return document.isEdiEnabled();
 		}
 
@@ -98,19 +103,36 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		if (docStatus.isReversed() && document.isEdiEnabled())
 		{
 			loggable.addLog("DocStatus={} is reversed; => update IsEdiEnabled to false", docStatus);
-			document.setIsEdiEnabled(false);
+			setEdiEnabled(document, false);
 			return document.isEdiEnabled();
 		}
 
 		if (document.getReversal_ID() > 0 && document.isEdiEnabled())
 		{
 			loggable.addLog("Reversal_ID={} (i.e. >0); => update IsEdiEnabled to false", docStatus);
-			document.setIsEdiEnabled(false);
+			setEdiEnabled(document, false);
 			return document.isEdiEnabled();
 		}
 
 		logger.debug("return non-updated isEdiEnabled={}", document.isEdiEnabled());
 		return document.isEdiEnabled();
+	}
+
+	@Override
+	public void setEdiEnabled(@NonNull final I_EDI_Document_Extension document, final boolean isEdiEnabled)
+	{
+		if(!InterfaceWrapperHelper.isNullOrEmpty(document, I_EDI_Document_Extension.COLUMNNAME_IsEdiEnabled) && document.isEdiEnabled() == isEdiEnabled)
+		{
+			return;
+		}
+
+		if(!isEdiEnabled && EDIExportStatus.isInProgressOrSend(EDIExportStatus.ofNullableCode(document.getEDI_ExportStatus())))
+		{
+			throw new AdempiereException("EdiEnabled can't be deactivated, if export is in progress or sent ");
+		}
+
+		document.setIsEdiEnabled(isEdiEnabled);
+		document.setEDI_ExportStatus(isEdiEnabled ? EDIExportStatus.Pending.getCode() : EDIExportStatus.DontSend.getCode());
 	}
 
 	@Override
@@ -142,12 +164,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 				&& Services.get(IInvoiceBL.class).isCreditMemo(docType.getDocBaseType())
 				&& X_C_DocType.DOCSUBTYPE_GS_Retoure.equals(docType.getDocSubType());
 
-		if (invoice.getC_Order_ID() <= 0 && !invoiceIsRMCreditMemo)
-		{
-			// an order must be linked to an invoice for successful EDI export
-			feedback.add(new EDIFillMandatoryException(null, null, org.compiere.model.I_C_Invoice.COLUMNNAME_C_Order_ID));
-		}
-
 		// an invoice order must have AT LEAST one M_InOut for successful EDI export
 		if (invoice.getC_Order_ID() > 0 // to avoid NPE in OrderDAO impl
 				&& !invoiceIsRMCreditMemo)
@@ -157,7 +173,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			if (!hasInOuts)
 			{
 				feedback.add(new EDIMissingDependencyException(EDIDocumentBL.ERR_NotExistsShipmentForOrderError,
-						org.compiere.model.I_C_Invoice.COLUMNNAME_C_Order_ID, order.getDocumentNo()));
+															   org.compiere.model.I_C_Invoice.COLUMNNAME_C_Order_ID, order.getDocumentNo()));
 			}
 		}
 
@@ -226,21 +242,22 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}
 
-		if (Check.isEmpty(ediPartner.getEdiDesadvRecipientGLN(), true))
+		if (ediPartner.isEdiDesadvRecipient() && Check.isBlank(ediPartner.getEdiDesadvRecipientGLN()))
 		{
 			missingFields.add(I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
 		}
-
+		if (ediPartner.isEdiInvoicRecipient() && Check.isBlank(ediPartner.getEdiInvoicRecipientGLN()))
+		{
+			missingFields.add(I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN);
+		}
+		
 		final boolean checkForAggregationRule = !isPartOfInvoiceValidation; // if we validate for an already existing invoice we don't need to bother for the partner's aggregation rule
 		if (checkForAggregationRule && !hasValidInvoiceAggregation(ediPartner))
 		{
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Invalid_Invoice_Aggregation_Error)));
 		}
 
-		if (Check.isEmpty(ediPartner.getVATaxID(), true))
-		{
-			missingFields.add(de.metas.interfaces.I_C_BPartner.COLUMNNAME_VATaxID);
-		}
+		// VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
 
 		if (!missingFields.isEmpty())
 		{
@@ -259,14 +276,9 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		final Aggregation soAggregation = Services.get(IInvoiceAggregationFactory.class).getAggregation(ctx, ediPartner, isSOTrx, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
 
 		// Make sure that aggregation includes C_Order_ID or POReference
-		if (!soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
-				&& !soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_POReference))
-		{
-			return false;
-		}
-
-		return true;
-	}
+        return soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
+                || soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_POReference);
+    }
 
 	private List<Exception> isValidBPLocation(@NonNull final org.compiere.model.I_C_BPartner_Location bpLocation)
 	{
@@ -276,7 +288,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		if (Check.isEmpty(ediLocation.getGLN(), true))
 		{
 			feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpLocation.getName(),
-					I_C_BPartner_Location.COLUMNNAME_GLN));
+													   I_C_BPartner_Location.COLUMNNAME_GLN));
 		}
 
 		return feedback;
@@ -334,6 +346,14 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 			final I_EDI_Desadv desadv = InterfaceWrapperHelper.create(ctx, recordId, I_EDI_Desadv.class, trxName);
 			export = new EDI_DESADVExport(desadv, tableIdentifier, clientId);
+		}
+		else if (I_M_InOut.Table_Name.equals(tableName))
+		{
+			final String tableIdentifier = I_M_InOut.COLUMNNAME_M_InOut_ID;
+			verifyRecordId(recordId, tableIdentifier);
+
+			final I_M_InOut_Desadv_V desadvInOut = desadvDAO.getInOutDesadvByInOutId(InOutId.ofRepoId(recordId));
+			export = new EDI_DESADV_InOut_Export(desadvInOut, tableIdentifier, clientId);
 		}
 		else
 		{

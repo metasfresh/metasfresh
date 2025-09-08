@@ -1,5 +1,6 @@
 @from:cucumber
-Feature: external references for metasfresh resources
+@ghActions:run_on_executor5
+Feature: external references for metasfresh resources (V2)
   As a REST-API invoker
   I want want to query and update the external references for metasfresh resources like BPartners
   So that the resources 3rd party systems can be connected with metasfresh data

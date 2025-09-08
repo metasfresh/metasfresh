@@ -3,6 +3,8 @@ import counterpart from 'counterpart';
 import currentDevice from 'current-device';
 
 import history from '../services/History';
+import * as IndicatorState from '../constants/IndicatorState';
+import * as StaticModalType from '../constants/StaticModalType';
 
 import {
   ACTIVATE_TAB,
@@ -18,6 +20,7 @@ import {
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   INIT_WINDOW,
+  MARK_MASTER_DATA_DISCARDED,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
@@ -43,15 +46,19 @@ import {
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
 } from '../constants/ActionTypes';
-import { createView } from './ViewActions';
+import { createView, patchViewAction } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { preFormatPostDATA, toggleFullScreen } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
+import {
+  getInvalidDataItem,
+  getScope,
+  parseItemToDisplay,
+  parseToDisplay,
+} from '../utils/documentListHelper';
 
 import {
   formatParentUrl,
   getData,
-  getLayout,
   getTabLayoutRequest,
   getTabRequest,
   patchRequest,
@@ -63,7 +70,7 @@ import {
   deleteNotification,
   setNotificationProgress,
 } from './AppActions';
-import { getWindowBreadcrumb } from './MenuActions';
+import { setBreadcrumbByWindowId } from './MenuActions';
 import {
   updateCommentsPanel,
   updateCommentsPanelOpenFlag,
@@ -71,10 +78,12 @@ import {
 } from './CommentsPanelActions';
 import {
   createTabTable,
+  partialUpdateGridTableRows,
   updateTableRowProperty,
   updateTabTable,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
+import { getPrintFile, getPrintUrl } from '../api/window';
 
 export function toggleOverlay(data) {
   return {
@@ -213,6 +222,7 @@ export function initLayoutSuccess(layout, scope) {
 
 // @VisibleForTesting
 export function initDataSuccess({
+  windowId,
   data,
   docId,
   includedTabsInfo,
@@ -222,9 +232,12 @@ export function initDataSuccess({
   validStatus,
   websocket,
   hasComments,
+  notFoundMessage,
+  notFoundMessageDetail,
 }) {
   return {
     type: INIT_DATA_SUCCESS,
+    windowId,
     data,
     docId,
     includedTabsInfo,
@@ -234,16 +247,20 @@ export function initDataSuccess({
     validStatus,
     websocket,
     hasComments,
+    notFoundMessage,
+    notFoundMessageDetail,
   };
 }
 
-function initDataNotFound(windowId) {
+function initDataNotFound({ windowId, message, messageDetail }) {
   return (dispose) => {
-    dispose(getWindowBreadcrumb(windowId));
+    dispose(setBreadcrumbByWindowId(windowId));
     dispose(
       initDataSuccess({
         data: {},
         docId: 'notfound',
+        notFoundMessage: message,
+        notFoundMessageDetail: messageDetail,
         includedTabsInfo: {},
         scope: 'master',
         saveStatus: { saved: true },
@@ -267,10 +284,12 @@ export function clearMasterData() {
   };
 }
 
-export function sortTab(scope, tabId, field, asc) {
+export function sortTab({ scope, windowId, docId, tabId, field, asc }) {
   return {
     type: SORT_TAB,
     scope,
+    windowId,
+    docId,
     tabId,
     field,
     asc,
@@ -299,6 +318,12 @@ export function updateDataValidStatus(scope, validStatus) {
     type: UPDATE_DATA_VALID_STATUS,
     scope,
     validStatus,
+  };
+}
+
+export function markMasterDataAsChanged() {
+  return {
+    type: MARK_MASTER_DATA_DISCARDED,
   };
 }
 
@@ -385,10 +410,11 @@ export function updateModal(rowId, dataId) {
   };
 }
 
-export function indicatorState(state) {
+export function indicatorState({ state, isModal }) {
   return {
     type: CHANGE_INDICATOR_STATE,
     state: state,
+    isModal: !!isModal,
   };
 }
 
@@ -403,14 +429,16 @@ export function fetchTab({ tabId, windowId, docId, orderBy }) {
     const tableId = getTableId({ windowId, tabId, docId });
     dispatch(updateTabTable({ tableId, pending: true }));
     return getTabRequest(tabId, windowId, docId, orderBy)
-      .then((response) => {
-        const tableData = { result: response };
-
+      .then(({ rows, orderBys }) => {
         dispatch(
-          updateTabTable({ tableId, tableResponse: tableData, pending: false })
+          updateTabTable({
+            tableId,
+            tableResponse: { result: rows, orderBys },
+            pending: false,
+          })
         );
 
-        return Promise.resolve(response);
+        return rows;
       })
       .catch((error) => {
         //show error message ?
@@ -429,8 +457,8 @@ export function fetchTab({ tabId, windowId, docId, orderBy }) {
 export function updateTabLayout(windowId, tabId) {
   return (dispatch) => {
     return getTabLayoutRequest(windowId, tabId)
-      .then(({ data }) => {
-        dispatch(setUpdatedTabLayout(tabId, data));
+      .then((layout) => {
+        dispatch(setUpdatedTabLayout(tabId, layout));
 
         return Promise.resolve(tabId);
       })
@@ -440,54 +468,42 @@ export function updateTabLayout(windowId, tabId) {
   };
 }
 
-function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
-  return (dispatch) => {
-    dispatch({ type: INIT_WINDOW });
-
-    if (docId === 'NEW') {
-      //New master document
-      return patchRequest({
-        entity: 'window',
-        docType: windowType,
-        docId,
-      });
-    } else {
-      if (rowId === 'NEW') {
-        //New row document
-        return patchRequest({
-          entity: 'window',
-          docType: windowType,
-          docId,
-          tabId,
-          rowId,
-        });
-      } else if (rowId) {
-        //Existing row document
-        return getData({
-          entity: 'window',
-          docType: windowType,
-          docId: docId,
-          tabId: tabId,
-          rowId: rowId,
-          fetchAdvancedFields: isAdvanced,
-        }).catch((e) => {
-          return e;
-        });
-      } else {
-        //Existing master document
-        return getData({
-          entity: 'window',
-          docType: windowType,
-          docId: docId,
-          fetchAdvancedFields: isAdvanced,
-        }).catch((e) => {
-          dispatch(initDataNotFound(windowType));
-
-          return { status: e.status, message: e.statusText };
-        });
-      }
-    }
-  };
+function getOrCreateData(windowId, docId, tabId, rowId = null, isAdvanced) {
+  if (docId === 'NEW') {
+    //New master document
+    return patchRequest({
+      entity: 'window',
+      docType: windowId,
+      docId,
+    });
+  } else if (rowId === 'NEW') {
+    //New row document
+    return patchRequest({
+      entity: 'window',
+      docType: windowId,
+      docId,
+      tabId,
+      rowId,
+    });
+  } else if (rowId) {
+    //Existing row document
+    return getData({
+      entity: 'window',
+      docType: windowId,
+      docId: docId,
+      tabId: tabId,
+      rowId: rowId,
+      fetchAdvancedFields: isAdvanced,
+    }).catch((e) => e);
+  } else {
+    //Existing master document
+    return getData({
+      entity: 'window',
+      docType: windowId,
+      docId: docId,
+      fetchAdvancedFields: isAdvanced,
+    });
+  }
 }
 
 /*
@@ -527,7 +543,7 @@ export function createSearchWindow({
  * Main method to generate window
  */
 export function createWindow({
-  windowId: windowType,
+  windowId,
   docId,
   tabId,
   rowId,
@@ -535,17 +551,23 @@ export function createWindow({
   isAdvanced,
   disconnected,
   title,
+  urlSearchParams,
 }) {
-  let disconnectedData = null;
   let documentId = docId || 'NEW';
-  return (dispatch) => {
+  if (documentId.toLowerCase() === 'new') {
+    documentId = 'NEW';
+  }
+
+  let disconnectedData = null;
+
+  return async (dispatch) => {
     if (documentId === 'SEARCH') {
       // set the `showSpinner` flag to true to show the spinner while data is fetched
       dispatch(setSpinner(true));
 
       // use specific function for search window creation
       createSearchWindow({
-        windowId: windowType,
+        windowId,
         docId,
         tabId,
         rowId,
@@ -558,127 +580,135 @@ export function createWindow({
       return false;
     }
 
-    if (documentId.toLowerCase() === 'new') {
-      documentId = 'NEW';
+    dispatch({ type: INIT_WINDOW });
+
+    //
+    // Get layout but do not initialize the state yet.
+    // This chain is really important, to do not re-render widgets on init.
+    const layout = await getTabLayoutRequest(windowId, tabId, isAdvanced).catch(
+      (e) => {
+        console.log('get error while loading layout', { windowId, tabId, e });
+        dispatch(initDataNotFound({ windowId }));
+      }
+    );
+    if (!layout) {
+      return;
     }
 
-    // this chain is really important,
-    // to do not re-render widgets on init
-    return dispatch(
-      initWindow(windowType, documentId, tabId, rowId, isAdvanced)
-    ).then((response) => {
-      if (!response || !response.data) {
-        return Promise.resolve(null);
-      }
-      // Note: this `documents` key comes only as a result of a PATCH, this is the reason this check is needed
-      const data = response.data.documents
-        ? response.data.documents[0]
-        : response.data[0];
-      const tabs = data.includedTabsInfo;
-      let docId = data.id;
-
-      // we don't create table for advanced edit
-      if (tabs && !isAdvanced) {
-        Object.values(tabs).forEach((tab) => {
-          const tabId = tab.tabId || tab.tabid;
-          const tableId = getTableId({ windowId: windowType, docId, tabId });
-          const tableData = {
-            windowType,
-            docId,
-            tabId,
-            ...tab,
-          };
-
-          dispatch(createTabTable(tableId, tableData));
-        });
-      }
-
-      if (documentId === 'NEW' && !isModal) {
-        // redirect immedietely
-        return history.replace(`/window/${windowType}/${docId}`);
-      }
-
-      let elem = 0;
-
-      let responseDocuments = response.data.documents
-        ? response.data.documents
-        : response.data;
-
-      responseDocuments.forEach((value, index) => {
-        if (value.rowId === rowId) {
-          elem = index;
+    return getOrCreateData(windowId, documentId, tabId, rowId, isAdvanced)
+      .then((response) => {
+        if (!response || !response.data) {
+          return Promise.resolve(null);
         }
-      });
+        // Note: this `documents` key comes only as a result of a PATCH, this is the reason this check is needed
+        const data = response.data.documents
+          ? response.data.documents[0]
+          : response.data[0];
+        const tabs = data.includedTabsInfo;
+        let docId = data.id;
 
-      if (documentId === 'NEW') {
-        dispatch(updateModal(null, docId));
-        const { includedTabsInfo } = responseDocuments[0];
-        includedTabsInfo &&
-          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
-      }
+        // we don't create table for advanced edit
+        if (tabs && !isAdvanced) {
+          Object.values(tabs).forEach((tab) => {
+            const tabId = tab.tabId || tab.tabid;
+            const tableId = getTableId({ windowId, docId, tabId });
+            const tableData = {
+              windowType: windowId,
+              docId,
+              tabId,
+              ...tab,
+            };
 
-      // TODO: Is `elem` ever different than 0 ?
-      docId = responseDocuments[elem].id;
-      disconnected !== 'inlineTab' &&
-        dispatch(
-          initDataSuccess({
-            data: parseToDisplay(responseDocuments[elem].fieldsByName),
-            docId,
-            saveStatus: data.saveStatus,
-            scope: getScope(isModal),
-            standardActions: data.standardActions,
-            validStatus: data.validStatus,
-            includedTabsInfo: data.includedTabsInfo,
-            websocket: data.websocketEndpoint,
-            hasComments: data.hasComments,
-          })
-        );
+            dispatch(createTabTable(tableId, tableData));
+          });
+        }
 
-      if (isModal) {
-        if (rowId === 'NEW') {
-          /** special case of inlineTab - disconnectedData will be used for data feed */
-          if (disconnected === 'inlineTab') {
-            disconnectedData = responseDocuments[0];
-          } else {
-            dispatch(
-              mapDataToState({
-                data: response.data,
-                isModal: false,
-                rowId: 'NEW',
-                docId,
-                windowType,
-              })
-            );
-            dispatch(updateStatus(responseDocuments));
-            dispatch(updateModal(data.rowId));
+        if (documentId === 'NEW' && !isModal) {
+          // redirect immediately, but preserve URL search params if any
+          return history.replace(
+            `/window/${windowId}/${docId}${urlSearchParams ?? ''}`
+          );
+        }
+
+        let elem = 0;
+
+        let responseDocuments = response.data.documents
+          ? response.data.documents
+          : response.data;
+
+        responseDocuments.forEach((value, index) => {
+          if (value.rowId === rowId) {
+            elem = index;
           }
+        });
+
+        if (documentId === 'NEW') {
+          dispatch(updateModal(null, docId));
+          const { includedTabsInfo } = responseDocuments[0];
+          includedTabsInfo &&
+            dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
         }
-      } else {
-        dispatch(getWindowBreadcrumb(windowType));
-      }
 
-      return getLayout('window', windowType, tabId, null, null, isAdvanced)
-        .then(({ data }) => {
-          const layoutTabs = data.tabs;
+        // TODO: Is `elem` ever different than 0 ?
+        docId = responseDocuments[elem].id;
+        disconnected !== 'inlineTab' &&
+          dispatch(
+            initDataSuccess({
+              windowId,
+              data: parseToDisplay(responseDocuments[elem].fieldsByName),
+              docId,
+              saveStatus: data.saveStatus,
+              scope: getScope(isModal),
+              standardActions: data.standardActions,
+              validStatus: data.validStatus,
+              includedTabsInfo: data.includedTabsInfo,
+              websocket: data.websocketEndpoint,
+              hasComments: data.hasComments,
+            })
+          );
 
-          if (layoutTabs && !isAdvanced) {
-            Object.values(layoutTabs).forEach((tab) => {
+        if (isModal) {
+          if (rowId === 'NEW') {
+            /** special case of inlineTab - disconnectedData will be used for data feed */
+            if (disconnected === 'inlineTab') {
+              disconnectedData = responseDocuments[0];
+            } else {
+              dispatch(
+                mapDataToState({
+                  data: response.data,
+                  isModal: false,
+                  rowId: 'NEW',
+                  docId,
+                  windowType: windowId,
+                })
+              );
+              dispatch(updateStatus(responseDocuments));
+              dispatch(updateModal(data.rowId));
+            }
+          }
+        } else {
+          dispatch(setBreadcrumbByWindowId(windowId));
+        }
+
+        //
+        // Layout
+        {
+          if (layout.tabs && !isAdvanced) {
+            Object.values(layout.tabs).forEach((tab) => {
               const { tabId } = tab;
-              const tableId = getTableId({
-                windowId: windowType,
-                docId,
-                tabId,
-              });
-              const tableData = {
-                windowType,
-                docId,
-                tabId,
-                ...tab,
-              };
               dispatch(
                 updateTabTable({
-                  tableId,
-                  tableResponse: tableData,
+                  tableId: getTableId({
+                    windowId,
+                    docId,
+                    tabId,
+                  }),
+                  tableResponse: {
+                    windowType: windowId,
+                    docId,
+                    tabId,
+                    ...tab,
+                  },
                   pending: false,
                 })
               );
@@ -686,13 +716,25 @@ export function createWindow({
           }
           /** post get layout action triggered for the inlineTab case */
           if (disconnectedData && disconnected === 'inlineTab') {
-            dispatch(inlineTabAfterGetLayout({ data, disconnectedData }));
+            dispatch(
+              inlineTabAfterGetLayout({ data: layout, disconnectedData })
+            );
           } else {
-            dispatch(initLayoutSuccess(data, getScope(isModal)));
+            dispatch(initLayoutSuccess(layout, getScope(isModal)));
           }
-        })
-        .catch((e) => Promise.reject(e));
-    });
+        }
+      })
+      .catch((e) => {
+        dispatch(
+          initDataNotFound({
+            windowId,
+            message: layout.notFoundMessage,
+            messageDetail: layout.notFoundMessageDetail,
+          })
+        );
+
+        return { status: e.status, message: e.statusText };
+      });
   };
 }
 
@@ -773,7 +815,7 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
           data.rowsData = rowData;
         }
         // update corresponding target in the store - might be adapted for more separated entities
-        if (target === 'comments') {
+        if (target === StaticModalType.Comments) {
           dispatch(updateCommentsPanel(data));
         }
         // -- end updating corresponding target
@@ -792,7 +834,7 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
       const dataToSend = preFormatPostDATA({ target, postData: { txt: data } });
       return axios.post(parentUrl, dataToSend).then(async (response) => {
         const data = response.data;
-        if (target === 'comments') {
+        if (target === StaticModalType.Comments) {
           dispatch(
             callAPI({
               windowId,
@@ -811,15 +853,39 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
   };
 }
 
+export const patchWindow = ({
+  windowId,
+  documentId = 'NEW',
+  tabId = null,
+  rowId = null,
+  fieldName,
+  value,
+}) => {
+  return patch(
+    'window', // entity
+    windowId,
+    documentId,
+    tabId,
+    rowId,
+    fieldName,
+    value,
+    false, //isModal
+    false, // isAdvanced
+    null, // viewId
+    false, // isEdit
+    false // disconnected
+  );
+};
+
 /*
  * Wrapper for patch request of widget elements
  * when responses should merge store
  * @todo TODO: This should return a promise
  */
 export function patch(
-  entity,
-  windowType,
-  id = 'NEW',
+  entity, // type, e.g. documentView
+  windowType, // aka windowId
+  id = 'NEW', // documentId
   tabId,
   rowId,
   property,
@@ -830,6 +896,16 @@ export function patch(
   isEdit,
   disconnected
 ) {
+  if (entity === 'documentView') {
+    return patchViewAction({
+      windowId: windowType,
+      viewId,
+      rowId,
+      fieldName: property,
+      value,
+    });
+  }
+
   return async (dispatch) => {
     const symbol = Symbol();
 
@@ -846,8 +922,25 @@ export function patch(
       isEdit,
     };
 
-    await dispatch(indicatorState('pending'));
     await dispatch({ type: PATCH_REQUEST, symbol, options });
+    await dispatch(indicatorState({ state: IndicatorState.PENDING, isModal }));
+
+    //
+    // Update the state with the new property value
+    // In case the PATCH fails on server side, we will update the state again
+    await dispatch(
+      updatePropertyValue({
+        entity,
+        windowId: windowType,
+        docId: id,
+        tabId,
+        rowId,
+        property,
+        value,
+        isModal,
+        disconnected,
+      })
+    );
 
     try {
       const response = await patchRequest(options);
@@ -855,7 +948,11 @@ export function patch(
         response.data.documents instanceof Array
           ? response.data.documents
           : response.data;
-      const dataItem = data[0];
+
+      const invalidDataItem = getInvalidDataItem(data);
+
+      const dataItem = invalidDataItem === null ? data[0] : invalidDataItem;
+
       const includedTabsInfo =
         dataItem && dataItem.includedTabsInfo
           ? dataItem.includedTabsInfo
@@ -889,53 +986,87 @@ export function patch(
         (property === dataItem.validStatus.fieldName ||
           dataItem.validStatus.fieldName === undefined)
       ) {
-        await dispatch(indicatorState('error'));
         await dispatch({ type: PATCH_FAILURE, symbol });
-        const errorMessage = dataItem.validStatus.reason;
 
-        dispatch(
-          addNotification(
-            'Error: ' + errorMessage.split(' ', 4).join(' ') + '...',
-            errorMessage,
-            5000,
-            'error',
-            ''
-          )
-        );
+        // Don't show the notification because we are showing the error message in Indicator component
+
+        // const errorMessage = dataItem.validStatus.reason;
+        // dispatch(
+        //   addNotification(
+        //     'Error: ' + errorMessage.split(' ', 4).join(' ') + '...',
+        //     errorMessage,
+        //     5000,
+        //     'error',
+        //     ''
+        //   )
+        // );
       } else {
-        await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
         return response.data;
       }
     } catch (error) {
-      await dispatch(indicatorState('error'));
       await dispatch({ type: PATCH_FAILURE, symbol });
 
-      const response = await getData({
-        entity: entity,
-        docType: windowType,
-        docId: id,
-        tabId: tabId,
-        rowId: rowId,
-        fetchAdvancedFields: isAdvanced,
-        viewId: viewId,
-      });
-
+      // Restore the state by fetching it from server
       await dispatch(
-        mapDataToState({
-          data: response.data,
-          isModal,
-          rowId,
-          id,
+        updateDataFromServer({
+          dispatch,
+          entity,
           windowType,
+          id,
+          tabId,
+          rowId,
           isAdvanced,
+          viewId,
+          isModal,
           disconnected,
         })
       );
+
+      // Propagate the exception, so callers are aware that something went wrong.
+      throw error;
+    } finally {
+      await dispatch(indicatorState({ state: IndicatorState.SAVED, isModal }));
     }
   };
 }
+
+const updateDataFromServer = ({
+  entity,
+  windowType,
+  id,
+  tabId,
+  rowId,
+  isAdvanced,
+  viewId,
+  isModal,
+  disconnected,
+}) => {
+  return async (dispatch) => {
+    const response = await getData({
+      entity: entity,
+      docType: windowType,
+      docId: id,
+      tabId: tabId,
+      rowId: rowId,
+      fetchAdvancedFields: isAdvanced,
+      viewId: viewId,
+    });
+
+    await dispatch(
+      mapDataToState({
+        data: response.data,
+        isModal,
+        rowId,
+        id,
+        windowType,
+        isAdvanced,
+        disconnected,
+      })
+    );
+  };
+};
 
 export function fireUpdateData({
   windowId,
@@ -968,7 +1099,7 @@ export function fireUpdateData({
       })
       .catch((axiosError) => {
         if (is404(axiosError) && !tabId) {
-          dispatch(initDataNotFound(windowId));
+          dispatch(initDataNotFound({ windowId }));
         }
 
         return axiosError;
@@ -998,26 +1129,51 @@ function updateData(doc, scope) {
 }
 
 function mapDataToState({ data, isModal, rowId, disconnected }) {
+  const isNewRow = rowId === 'NEW';
+
   return (dispatch) => {
+    if (disconnected === 'inlineTab') {
+      // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
+      // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
+      return;
+    }
+
     const dataArray = typeof data.splice === 'function' ? data : [data];
+    const rowsToUpdateByTableId = {};
 
-    dataArray.map((item, index) => {
-      const parsedItem = item.fieldsByName
-        ? {
-            ...item,
-            fieldsByName: parseToDisplay(item.fieldsByName),
-          }
-        : item;
+    dataArray.forEach((item, index) => {
+      const isFirstItem = index === 0;
+      const isRow = !!item.rowId;
 
-      if (
-        !(index === 0 && rowId === 'NEW') &&
-        (!item.rowId || (isModal && item.rowId))
-      ) {
-        // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
-        // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
-        disconnected !== 'inlineTab' &&
-          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+      if (isNewRow && isFirstItem) {
+        //
+      } else if (!isRow || (isModal && isRow)) {
+        const parsedItem = parseItemToDisplay({ item });
+        dispatch(updateData(parsedItem, getScope(isModal && isFirstItem)));
       }
+
+      if (isRow) {
+        const tableId = getTableId({
+          windowId: item.windowId,
+          docId: item.id,
+          tabId: item.tabId,
+        });
+
+        if (!rowsToUpdateByTableId[tableId]) {
+          rowsToUpdateByTableId[tableId] = [];
+        }
+
+        rowsToUpdateByTableId[tableId].push(item);
+      }
+    });
+
+    Object.keys(rowsToUpdateByTableId).forEach((tableId) => {
+      dispatch(
+        partialUpdateGridTableRows({
+          tableId,
+          rowsToUpdate: rowsToUpdateByTableId[tableId],
+        })
+      );
     });
   };
 }
@@ -1080,7 +1236,9 @@ export function updatePropertyValue({
         return false;
       }
 
-      dispatch(updateTableRowProperty({ tableId, rowId, change }));
+      if (tableId) {
+        dispatch(updateTableRowProperty({ tableId, rowId, change }));
+      }
     } else if (!tabId || !rowId) {
       // modal's data is in `tables`
       if (!isModal) {
@@ -1207,6 +1365,32 @@ export function togglePrintingOption(target) {
   };
 }
 
+export function openPrintingOptionsModal({
+  title,
+  windowId,
+  documentId,
+  documentNo,
+}) {
+  return openModal({
+    title,
+    windowId,
+    modalType: 'static',
+    //viewId,
+    viewDocumentIds: [documentNo],
+    dataId: documentId,
+    staticModalType: StaticModalType.Printing,
+  });
+}
+
+export function openSelectCurrentWorkplaceModal() {
+  return openModal({
+    title: counterpart.translate('userDropdown.changeWorkplace.caption'),
+    windowId: 'selectCurrentWorkplace',
+    modalType: 'static',
+    staticModalType: StaticModalType.ChangeCurrentWorkplace,
+  });
+}
+
 /**
  * @method setSpinner
  * @summary - action. It sets the `showSpinner` in the store to the boolean value passed in the action
@@ -1217,4 +1401,30 @@ export function setSpinner(data) {
     type: SET_SPINNER,
     payload: data,
   };
+}
+
+export function printDocument({
+  windowId,
+  documentId,
+  documentNo,
+  options = {},
+}) {
+  const filename = `${windowId}_${documentNo ?? documentId}.pdf`;
+
+  let isOpenInBrowser = true;
+  if (options && options['PRINTER_OPTS_IsAlsoSendToBrowser'] !== undefined) {
+    isOpenInBrowser = !!options['PRINTER_OPTS_IsAlsoSendToBrowser'];
+  } else if (options && options['IsAlsoSendToBrowser'] !== undefined) {
+    isOpenInBrowser = !!options['IsAlsoSendToBrowser'];
+  } else {
+    isOpenInBrowser = true;
+  }
+
+  if (isOpenInBrowser) {
+    const url = getPrintUrl({ windowId, documentId, filename, options });
+    window.open(url, '_blank');
+    return Promise.resolve();
+  } else {
+    return getPrintFile({ windowId, documentId, filename, options });
+  }
 }

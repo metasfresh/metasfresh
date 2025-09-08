@@ -25,40 +25,36 @@ package de.metas.cucumber.stepdefs.attribute;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
 
+@RequiredArgsConstructor
 public class M_AttributeSetInstance_StepDef
 {
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-
-	private final JsonAttributeService jsonAttributeService;
-
+	private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public M_AttributeSetInstance_StepDef(@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
-	{
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-
-		this.jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
-	}
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	@And("metasfresh contains M_AttributeSetInstance with identifier {string}:")
 	public void contains_M_AttributeSetInstance(
@@ -88,35 +84,58 @@ public class M_AttributeSetInstance_StepDef
 	@And("validate M_AttributeInstance:")
 	public void validate_M_AttributeInstance(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-			assertThat(attributeSetInstance).isNotNull();
-
-			final List<I_M_AttributeInstance> attributeInstances = queryBL.createQueryBuilder(I_M_AttributeInstance.class)
-					.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, attributeSetInstance.getM_AttributeSetInstance_ID())
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.list();
-
-			assertThat(attributeInstances).isNotEmpty();
-
-			final String value = DataTableUtil.extractStringForColumnName(row, I_M_AttributeInstance.COLUMNNAME_Value);
-			final List<String> attributeValues = StepDefUtil.splitIdentifiers(value);
-
-			assertThat(attributeValues.size()).isEqualTo(attributeInstances.size());
-
-			for (final String attributeValue : attributeValues)
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final AttributeCode attributeCode = row.getAsOptionalString("AttributeCode").map(AttributeCode::ofString).orElse(null);
+			if (attributeCode == null)
 			{
-				final I_M_AttributeInstance attributeInstance = attributeInstances.stream()
-						.filter(instance -> instance.getValue().equals(attributeValue))
-						.findFirst()
-						.orElse(null);
-
-				assertThat(attributeInstance).isNotNull();
+				validate_M_AttributeInstance_CommaSeparatedValues(row);
 			}
+			else
+			{
+				validate_M_AttributeInstance_SingleValue(row, attributeCode);
+			}
+		});
+	}
+
+	private void validate_M_AttributeInstance_SingleValue(final DataTableRow row, final AttributeCode attributeCode)
+	{
+		SharedTestContext.put("attributeCode", attributeCode);
+
+		final AttributeSetInstanceId asiId = getAttributeSetInstanceId(row);
+		SharedTestContext.put("asiId", asiId);
+		final ImmutableAttributeSet asi = attributeDAO.getImmutableAttributeSetById(asiId);
+		SharedTestContext.put("asi", asi);
+
+		final String expectedValue = row.getAsOptionalString("Value").orElse(null);
+		final String actualValue = asi.hasAttribute(attributeCode) ? asi.getValueAsString(attributeCode) : null;
+
+		assertThat(actualValue).as("attribute value").isEqualTo(expectedValue);
+	}
+
+	private void validate_M_AttributeInstance_CommaSeparatedValues(final DataTableRow row)
+	{
+		final AttributeSetInstanceId asiId = getAttributeSetInstanceId(row);
+		SharedTestContext.put("asiId", asiId);
+		final ImmutableAttributeSet asi = attributeDAO.getImmutableAttributeSetById(asiId);
+		SharedTestContext.put("asi", asi);
+
+		final List<String> expectedValues = row.getAsCommaSeparatedString("Value");
+		assertThat(expectedValues).hasSameSizeAs(asi.getAttributeCodes());
+
+		for (final String expectedValue : expectedValues)
+		{
+			assertAttributeSetContainsValue(asi, expectedValue);
 		}
+	}
+
+	private static void assertAttributeSetContainsValue(final ImmutableAttributeSet asi, final String expectedValue)
+	{
+		final boolean matches = asi.getAttributeCodes().stream().anyMatch(attributeCode -> Objects.equals(asi.getValueAsString(attributeCode), expectedValue));
+		assertThat(matches).as("AttributeSet contains value: `" + expectedValue + "`").isTrue();
+	}
+
+	private AttributeSetInstanceId getAttributeSetInstanceId(final DataTableRow row)
+	{
+		return attributeSetInstanceTable.getId(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID));
 	}
 }

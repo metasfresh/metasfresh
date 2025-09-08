@@ -1,19 +1,17 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Services;
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.impl.BooleanStringExpressionSupport.BooleanStringExpression;
 import org.compiere.util.Evaluatees;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.Services;
+import java.util.Map;
 
 /*
  * #%L
@@ -42,7 +40,7 @@ public class BooleanStringExpressionSupportTest
 	private IExpressionFactory expressionFactory;
 	private ExpressionContext context;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		expressionFactory = Services.get(IExpressionFactory.class);
@@ -54,7 +52,7 @@ public class BooleanStringExpressionSupportTest
 	public void test_NullExpression()
 	{
 		final BooleanStringExpression expr = expressionFactory.compile("", BooleanStringExpression.class, context);
-		Assert.assertTrue("Expect null expression: " + expr, expr.isNullExpression());
+		Assertions.assertTrue(expr.isNullExpression(), "Expect null expression: " + expr);
 	}
 
 	@Test
@@ -62,7 +60,7 @@ public class BooleanStringExpressionSupportTest
 	{
 		final BooleanStringExpression expr = expressionFactory.compile("Y", BooleanStringExpression.class, context);
 		final Boolean value = expr.evaluate(Evaluatees.empty(), OnVariableNotFound.Fail);
-		Assert.assertEquals(Boolean.TRUE, value);
+		Assertions.assertEquals(Boolean.TRUE, value);
 	}
 
 	@Test
@@ -70,7 +68,7 @@ public class BooleanStringExpressionSupportTest
 	{
 		final BooleanStringExpression expr = expressionFactory.compile("@Processed@", BooleanStringExpression.class, context);
 		final Boolean value = expr.evaluate(Evaluatees.ofSingleton("Processed", "N"), OnVariableNotFound.Fail);
-		Assert.assertEquals(Boolean.FALSE, value);
+		Assertions.assertEquals(Boolean.FALSE, value);
 
 	}
 
@@ -81,7 +79,7 @@ public class BooleanStringExpressionSupportTest
 		final BooleanStringExpression expr = expressionFactory.compile("@1@@2@", BooleanStringExpression.class);
 		final Map<String, ? extends Object> ctx = ImmutableMap.of("1", "tr", "2", "ue");
 		final Boolean value = expr.evaluate(Evaluatees.ofMap(ctx), OnVariableNotFound.Fail);
-		Assert.assertEquals(Boolean.TRUE, value);
+		Assertions.assertEquals(Boolean.TRUE, value);
 	}
 
 }

@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
@@ -28,6 +29,7 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -38,16 +40,17 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvBL;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
-import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -60,7 +63,6 @@ import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.misc.service.IPOService;
@@ -91,18 +93,18 @@ import java.util.Properties;
  * Shipment Model
  *
  * @author Jorg Janke
- * @version $Id: MInOut.java,v 1.4 2006/07/30 00:51:03 jjanke Exp $
- *
- *          Modifications: Added the RMA functionality (Ashley Ramdass)
  * @author Karsten Thiemann, Schaeffer AG
- *         <li>Bug [ 1759431 ] Problems with VCreateFrom
+ * <li>Bug [ 1759431 ] Problems with VCreateFrom
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- *         <li>FR [ 1948157 ] Is necessary the reference for document reverse
- *         <li>FR [ 2520591 ] Support multiples calendar for Org
+ * <li>FR [ 1948157 ] Is necessary the reference for document reverse
+ * <li>FR [ 2520591 ] Support multiples calendar for Org
  * see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id =176962
  * @author Armen Rizal, Goodwill Consulting
- *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+ * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  * see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id =176962
+ * @version $Id: MInOut.java,v 1.4 2006/07/30 00:51:03 jjanke Exp $
+ * <p>
+ * Modifications: Added the RMA functionality (Ashley Ramdass)
  */
 public class MInOut extends X_M_InOut implements IDocument
 {
@@ -121,7 +123,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @return Shipment
 	 */
 	public static MInOut copyFrom(final MInOut from, final Timestamp dateDoc, final Timestamp dateAcct,
-			final int C_DocType_ID, final boolean isSOTrx, final boolean counter, final String trxName, final boolean setOrder)
+								  final int C_DocType_ID, final boolean isSOTrx, final boolean counter, final String trxName, final boolean setOrder)
 	{
 		final MInOut to = copyHeader(from, dateDoc, dateAcct, C_DocType_ID, isSOTrx, counter, trxName, setOrder);
 
@@ -249,7 +251,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	@Deprecated
 	public static MInOut copyFrom(final MInOut from, final Timestamp dateDoc,
-			final int C_DocType_ID, final boolean isSOTrx, final boolean counter, final String trxName, final boolean setOrder)
+								  final int C_DocType_ID, final boolean isSOTrx, final boolean counter, final String trxName, final boolean setOrder)
 	{
 		final MInOut to = copyFrom(from, dateDoc, dateDoc,
 				C_DocType_ID, isSOTrx, counter,
@@ -276,7 +278,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			// setM_Warehouse_ID (0);
 			// setC_DocType_ID (0);
 			setIsSOTrx(false);
-			setMovementDate(Env.getDate(ctx));	// use Login date (08306)
+			setMovementDate(Env.getDate(ctx));    // use Login date (08306)
 			setDateAcct(getMovementDate());
 			// setMovementType (MOVEMENTTYPE_CustomerShipment);
 			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
@@ -405,7 +407,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(
 				ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
 
-		if(propagateToMInOut)
+		if (propagateToMInOut)
 		{
 			setEMail(order.getEMail());
 		}
@@ -614,7 +616,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	public String getDocStatusName()
 	{
-		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
+		return ADReferenceService.get().retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
 	} // getDocStatusName
 
 	/**
@@ -755,6 +757,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			// Reset
 			if (!setOrder)
 			{
+				line.setC_Order_ID(0);
 				line.setC_OrderLine_ID(0);
 				line.setM_RMALine_ID(0); // Reset RMA Line
 			}
@@ -857,7 +860,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final String sql = "UPDATE M_InOutLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE M_InOut_ID=" + getM_InOut_ID();
-		final int noLine = DB.executeUpdate(sql, get_TrxName());
+		final int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		m_lines = null;
 		log.debug("{} - Lines={}", processed, noLine);
 	} // setProcessed
@@ -1123,7 +1126,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					+ "(SELECT AD_Org_ID"
 					+ " FROM M_InOut o WHERE ol.M_InOut_ID=o.M_InOut_ID) "
 					+ "WHERE M_InOut_ID=" + getC_Order_ID();
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Lines -> #{}", no);
 		}
 		return true;
@@ -1201,8 +1204,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final MInOutLine[] lines = getLines();
 		if (lines == null || lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 		BigDecimal Volume = BigDecimal.ZERO;
 		BigDecimal Weight = BigDecimal.ZERO;
@@ -1351,6 +1353,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	@Override
 	public String completeIt()
 	{
+		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+
 		// Re-Check
 		if (!m_justPrepared)
 		{
@@ -1475,16 +1479,16 @@ public class MInOut extends X_M_InOut implements IDocument
 						storageBL.addAsync(
 								getCtx(),
 								warehouseId.getRepoId(),
-								Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
+								Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
 								sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								BigDecimal.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
 					}
 					// FallBack: Create Transaction
 					final MTransaction mtrx = new MTransaction(getCtx(), sLine.getAD_Org_ID(),
-															   MovementType, sLine.getM_Locator_ID(),
-															   sLine.getM_Product_ID(), sLine.getM_AttributeSetInstance_ID(),
-															   Qty, getMovementDate(), get_TrxName());
+							MovementType, sLine.getM_Locator_ID(),
+							sLine.getM_Product_ID(), sLine.getM_AttributeSetInstance_ID(),
+							Qty, getMovementDate(), get_TrxName());
 					mtrx.setM_InOutLine_ID(sLine.getM_InOutLine_ID());
 					InterfaceWrapperHelper.save(mtrx);
 				}
@@ -1628,14 +1632,13 @@ public class MInOut extends X_M_InOut implements IDocument
 				iLine = MInvoiceLine.getOfInOutLine(sLine);
 				if (iLine != null && iLine.getM_Product_ID() > 0)
 				{
-					final boolean matchInvCreated = Services.get(IMatchInvBL.class).createMatchInvBuilder()
-							.setContext(this)
-							.setC_InvoiceLine(iLine)
-							.setM_InOutLine(sLine)
-							.setDateTrx(getMovementDate())
-							.setConsiderQtysAlreadyMatched(false) // backward compatibility
-							.setAllowQtysOfOppositeSigns(true) // backward compatibility
-							.setSkipIfMatchingsAlreadyExist(true) // backward compatibility
+					final boolean matchInvCreated = matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
+							.invoiceLine(iLine)
+							.inoutLine(sLine)
+							.dateTrx(getMovementDate())
+							.considerQtysAlreadyMatched(false) // backward compatibility
+							.allowQtysOfOppositeSigns() // backward compatibility
+							.skipIfMatchingsAlreadyExist() // backward compatibility
 							.build();
 
 					// Update matched invoice line's ASI
@@ -1656,7 +1659,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		// task 08921: we don't want an automatically created dropship shipment. They are created via shipmentschedule, just like all the other shipments!
-// @formatter:off
+		// @formatter:off
 //		// Drop Shipments
 //		for (final MInOut dropShipment : createDropShipment())
 //		{
@@ -1696,6 +1699,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	}
 
 	// metas us1251: ommit negative qtyReserved value
+
 	/**
 	 * Helper method to omit negative qtyreserved values Returns either ol.getQtyReserved() or iol.getMovementQty()
 	 */
@@ -1755,7 +1759,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // renumberLinesWithoutComment
 
 	// task 08921: we don't want an automatically created dropship shipment. They are created via shipmentschedule, just like all the other shipments!
-// @formatter:off
+	// @formatter:off
 //	/**
 //	 * Automatically creates a customer shipment for any drop shipment material receipt Based on createCounterDoc() by JJ
 //	 *
@@ -2175,7 +2179,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		//
 		// Delete invoice matching records
 		// (no matter is IsSOTrx or not, because we are creating them for both cases)
-		Services.get(IInOutBL.class).deleteMatchInvs(this);
+		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+		matchInvoiceService.deleteByInOutId(InOutId.ofRepoId(getM_InOut_ID()));
 
 		// reverse/unlink Matching
 		deleteOrUnLinkMatchPOs();
@@ -2272,19 +2277,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			return; // nothing to do
 		}
 
-		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(getM_InOut_ID()))
-		{
-			if (matchPO.getC_InvoiceLine_ID() <= 0)
-			{
-				matchPO.setProcessed(false);
-				InterfaceWrapperHelper.delete(matchPO);
-			}
-			else
-			{
-				matchPO.setM_InOutLine_ID(-1);
-				InterfaceWrapperHelper.save(matchPO);
-			}
-		}
+		Services.get(IMatchPOBL.class).unlink(InOutId.ofRepoId(getM_InOut_ID()));
 	}
 
 	@Override
@@ -2308,7 +2301,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID());
 
 		//
 		// Make sure it's not a reversal or reversed document.
@@ -2362,7 +2355,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			{
 				final I_C_Invoice existingInvoice = existingInvoiceLine.getC_Invoice();
 				final DocStatus existingInvoiceDocStatus = DocStatus.ofCode(existingInvoice.getDocStatus());
-				if(!existingInvoiceDocStatus.isReversedOrVoided())
+				if (!existingInvoiceDocStatus.isReversedOrVoided())
 				{
 					foundInvoice = true;
 				}
@@ -2399,7 +2392,8 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 
 			// task 09266: delete MatchInvs also on reactivate
-			Services.get(IInOutBL.class).deleteMatchInvs(this);
+			final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+			matchInvoiceService.deleteByInOutId(InOutId.ofRepoId(getM_InOut_ID()));
 
 			// task 09266: unlink or delete MatchPOs also on reactivate
 			deleteOrUnLinkMatchPOs();

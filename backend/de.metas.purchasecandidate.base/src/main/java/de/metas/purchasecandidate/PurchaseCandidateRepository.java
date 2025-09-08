@@ -6,8 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.CalendarId;
-import de.metas.calendar.ICalendarDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -30,15 +29,15 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.calendar.IBusinessDayMatcher;
-import de.metas.util.calendar.NullBusinessDayMatcher;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -93,35 +92,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 @Repository
+@RequiredArgsConstructor
 public class PurchaseCandidateRepository
 {
 	// services
-	private final PurchaseItemRepository purchaseItemRepository;
+	@NonNull private final PurchaseItemRepository purchaseItemRepository;
+	@NonNull private final ReferenceGenerator referenceGenerator;
+	@NonNull private final DimensionService dimensionService;
+	
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final BPPurchaseScheduleService bpPurchaseScheduleService;
-	private final DimensionService dimensionService;
-
 	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
-	private final ReferenceGenerator referenceGenerator;
-
 	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	public PurchaseCandidateRepository(
-			@NonNull final PurchaseItemRepository purchaseItemRepository,
-			@NonNull final ReferenceGenerator referenceGenerator,
-			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
-			@NonNull final DimensionService dimensionService
-	)
-	{
-		this.purchaseItemRepository = purchaseItemRepository;
-		this.referenceGenerator = referenceGenerator;
-		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
-		this.dimensionService = dimensionService;
-	}
 
 	public PurchaseCandidateId getIdByPurchaseOrderLineIdOrNull(
 			@Nullable final OrderLineId purchaseOrderLineId)
@@ -347,7 +331,7 @@ public class PurchaseCandidateRepository
 		record.setC_UOM_ID(qtyToPurchase.getUomId().getRepoId());
 		record.setQtyToPurchase(qtyToPurchase.toBigDecimal());
 
-		final ZonedDateTime purchaseDateOrdered = calculatePurchaseDateOrdered(purchaseCandidate);
+		final ZonedDateTime purchaseDateOrdered = CoalesceUtil.coalesceNotNull(purchaseCandidate.getPurchaseDateOrdered(), purchaseCandidate.getPurchaseDatePromised());
 		record.setPurchaseDatePromised(TimeUtil.asTimestamp(purchaseCandidate.getPurchaseDatePromised()));
 		record.setPurchaseDateOrdered(TimeUtil.asTimestamp(purchaseDateOrdered));
 		record.setReminderDate(TimeUtil.asTimestamp(calculateReminderDate(purchaseDateOrdered, purchaseCandidate)));
@@ -388,6 +372,7 @@ public class PurchaseCandidateRepository
 		record.setPriceInternal(purchaseCandidate.getPriceInternal());
 		record.setPriceEntered(purchaseCandidate.getPrice());
 		record.setPriceEffective(purchaseCandidate.getPriceEnteredEff());
+		record.setPrice_UOM_ID(UomId.toRepoId(purchaseCandidate.getPriceUomId()));
 		if (purchaseCandidate.getDiscount() != null)
 		{
 			record.setDiscount(purchaseCandidate.getDiscount().toBigDecimal());
@@ -424,39 +409,20 @@ public class PurchaseCandidateRepository
 			record.setProcessed(true);
 		}
 
+		record.setIsManualPrice(purchaseCandidate.isManualPrice());
+		if (purchaseCandidate.isManualPrice())
+		{
+			record.setC_Currency_ID(CurrencyId.toRepoId(purchaseCandidate.getCurrencyId()));
+			record.setPrice_UOM_ID(UomId.toRepoId(purchaseCandidate.getPriceUomId()));
+		}
+
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 
 		return record;
 	}
 
-	private ZonedDateTime calculatePurchaseDateOrdered(final PurchaseCandidate candidate)
-	{
-		final ZonedDateTime purchaseDatePromised = candidate.getPurchaseDatePromised();
-		final BPartnerId vendorId = candidate.getVendorId();
-		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService
-				.getBPPurchaseSchedule(vendorId, purchaseDatePromised.toLocalDate())
-				.orElse(null);
-		if (bpPurchaseSchedule == null)
-		{
-			return purchaseDatePromised;
-		}
 
-		final IBusinessDayMatcher calendarNonBusinessDays;
-		final CalendarId nonBusinessDaysCalendarId = bpPurchaseSchedule.getNonBusinessDaysCalendarId();
-		if (nonBusinessDaysCalendarId != null)
-		{
-			final ICalendarDAO calendarsRepo = Services.get(ICalendarDAO.class);
-			calendarNonBusinessDays = calendarsRepo.getCalendarNonBusinessDays(nonBusinessDaysCalendarId);
-		}
-		else
-		{
-			calendarNonBusinessDays = NullBusinessDayMatcher.instance;
-		}
-
-		final Duration leadTimeOffset = bpPurchaseSchedule.getLeadTimeOffset();
-		return calendarNonBusinessDays.getPreviousBusinessDay(purchaseDatePromised, (int)leadTimeOffset.toDays());
-	}
 
 	private static ZonedDateTime calculateReminderDate(final ZonedDateTime purchaseDateOrdered, final PurchaseCandidate candidate)
 	{
@@ -531,12 +497,14 @@ public class PurchaseCandidateRepository
 				.price(record.getPriceEntered())
 				.priceInternal(record.getPriceInternal())
 				.priceEnteredEff(record.getPriceEffective())
+				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.discount(Percent.ofNullable(record.getDiscount()))
 				.discountInternal(Percent.ofNullable(record.getDiscountInternal()))
 				.discountEff(Percent.ofNullable(record.getDiscountEff()))
 				.priceActual(record.getPurchasePriceActual())
 				.isManualDiscount(record.isManualDiscount())
 				.isManualPrice(record.isManualPrice())
+				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.isTaxIncluded(record.isTaxIncluded())
 				.prepared(record.isPrepared())
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))
@@ -630,7 +598,7 @@ public class PurchaseCandidateRepository
 		{
 			return null;
 		}
-		
+
 		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoIdOrAny(record.getAD_Org_ID()));
 
 		final ZonedDateTime reminderDate = TimeUtil.asZonedDateTime(record.getReminderDate(), timeZone);
@@ -728,5 +696,29 @@ public class PurchaseCandidateRepository
 				.map(PurchaseCandidateId::ofRepoId)
 				.map(this::getById)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void deletePurchaseCandidates(@NonNull final DeletePurchaseCandidateQuery deletePurchaseCandidateQuery)
+	{
+		final IQueryBuilder<I_C_PurchaseCandidate> deleteQuery = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class);
+
+		if (deletePurchaseCandidateQuery.isOnlySimulated())
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, deletePurchaseCandidateQuery.isOnlySimulated());
+		}
+
+		if (deletePurchaseCandidateQuery.getSalesOrderLineId() != null)
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, deletePurchaseCandidateQuery.getSalesOrderLineId());
+		}
+
+		if (deleteQuery.getCompositeFilter().isEmpty())
+		{
+			throw new AdempiereException("Deleting all I_C_PurchaseCandidate records is not allowed!");
+		}
+
+		deleteQuery
+				.create()
+				.deleteDirectly();
 	}
 }

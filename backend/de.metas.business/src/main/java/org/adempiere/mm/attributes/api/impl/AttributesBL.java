@@ -93,7 +93,7 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public AttributeAction getAttributeAction(final Properties ctx)
+	public @NonNull AttributeAction getAttributeAction(final Properties ctx)
 	{
 		final String attributeActionCode = sysConfigs.getValue(SYSCONFIG_AttributeAction, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		if (Check.isEmpty(attributeActionCode, true))
@@ -104,15 +104,22 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public IAttributeValueGenerator getAttributeValueGenerator(final org.compiere.model.I_M_Attribute attributeParam)
+	public @NonNull IAttributeValueGenerator getAttributeValueGenerator(final org.compiere.model.I_M_Attribute attributeParam)
 	{
 		final IAttributeValueGenerator generator = getAttributeValueGeneratorOrNull(attributeParam);
 		if (generator == null)
 		{
-			throw new AdempiereException(AttributesBL.MSG_NoAttributeGenerator, new Object[] { attributeParam.getName() });
+			throw new AdempiereException(AttributesBL.MSG_NoAttributeGenerator, attributeParam.getName());
 		}
 
 		return generator;
+	}
+
+	@Override
+	public IAttributeValuesProvider createAttributeValuesProvider(final AttributeId attributeId)
+	{
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+		return createAttributeValuesProvider(attribute);
 	}
 
 	@Override
@@ -131,7 +138,7 @@ public class AttributesBL implements IAttributesBL
 		// Second try: check if our attribute is of type list, in which case we are dealing with standard M_AttributeValues
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType()))
 		{
-			return new DefaultAttributeValuesProvider(attribute);
+			return new DefaultAttributeValuesProvider(attributesRepo, attribute);
 		}
 		//
 		// Fallback: there is no IAttributeValuesProvider because attribute does not support Lists
@@ -163,8 +170,7 @@ public class AttributesBL implements IAttributesBL
 			return null;
 		}
 
-		final IAttributeValueHandler handler = javaClassBL.newInstance(javaClassDef);
-		return handler;
+		return javaClassBL.newInstance(javaClassDef);
 	}
 
 	@Nullable
@@ -248,25 +254,20 @@ public class AttributesBL implements IAttributesBL
 	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+		return attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOnPicking(productId,
-														  AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
-
-		return attributesMandatoryOnPicking;
 	}
 
 	@Override
 	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+		return attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOnShipment(productId,
-														   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
-
-		return attributesMandatoryOnShipment;
 	}
 
 	@Override
@@ -332,16 +333,20 @@ public class AttributesBL implements IAttributesBL
 
 		//
 		// Calculate the Best-Before date
-		final Date bestBeforeDate = TimeUtil.addDays(dateReceipt, bestBeforeDays);
-		return bestBeforeDate;
+		return TimeUtil.addDays(dateReceipt, bestBeforeDays);
 	}
 
 	@Override
 	public int getNumberDisplayType(@NonNull final I_M_Attribute attribute)
 	{
-		return attribute.getC_UOM_ID() == UomId.EACH.getRepoId()
+		return isInteger(UomId.ofRepoIdOrNull(attribute.getC_UOM_ID()))
 				? DisplayType.Integer
 				: DisplayType.Number;
+	}
+
+	public static boolean isInteger(@Nullable final UomId uomId)
+	{
+		return uomId != null && UomId.equals(uomId, UomId.EACH);
 	}
 
 	@Override

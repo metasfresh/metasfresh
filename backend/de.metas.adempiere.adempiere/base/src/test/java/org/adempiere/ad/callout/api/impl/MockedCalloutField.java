@@ -22,9 +22,8 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
@@ -41,13 +40,13 @@ import org.compiere.model.I_AD_ColumnCallout;
 import org.compiere.model.I_AD_Table;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
-import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
-@Ignore
+@Disabled
 public class MockedCalloutField implements ICalloutField
 {
 	public static MockedCalloutField createNewField()
@@ -230,9 +229,11 @@ public class MockedCalloutField implements ICalloutField
 	@Override
 	public <T> T getModelBeforeChanges(Class<T> modelClass)
 	{
-		final T modelConv = InterfaceWrapperHelper.createOld(model, modelClass);
+		final T modelConv = InterfaceWrapperHelper.create(model, modelClass);
 		Check.assumeNotNull(modelConv, "modelConv not null");
-		return modelConv;
+		final T modelOld = InterfaceWrapperHelper.createOld(modelConv, modelClass);
+		Check.assumeNotNull(modelOld, "modelOld not null");
+		return modelOld;
 	}
 
 
@@ -310,7 +311,7 @@ public class MockedCalloutField implements ICalloutField
 	public I_AD_ColumnCallout createAD_ColumnCallout(final String calloutClassName)
 	{
 		final int AD_Column_ID = getAD_Column_ID();
-		Assert.assertTrue("AD_Column_ID is set for " + this, AD_Column_ID > 0);
+		Assertions.assertTrue(AD_Column_ID > 0, "AD_Column_ID is set for " + this);
 
 		final I_AD_ColumnCallout cc = InterfaceWrapperHelper.create(getCtx(), I_AD_ColumnCallout.class, ITrx.TRXNAME_None);
 		cc.setAD_Column_ID(AD_Column_ID);

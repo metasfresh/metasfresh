@@ -97,7 +97,7 @@ public class CommissionPointsService
 						OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()),
 						commissionProductId,
 						bPartnerId,
-						Quantitys.create(ONE, commissionProductId),
+						Quantitys.of(ONE, commissionProductId),
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
 				.setPriceDate(requestedDate);

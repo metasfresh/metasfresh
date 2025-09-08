@@ -22,16 +22,6 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.junit.Assert;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -39,6 +29,15 @@ import de.metas.event.IEventListener;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationUtils;
 import de.metas.util.Services;
+import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+import org.junit.jupiter.api.Assertions;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Listens to InvoiceGenerated topic, collects the invoices which were notified and later can compare with a given list.
@@ -48,7 +47,7 @@ import de.metas.util.Services;
  */
 public class InvoiceGeneratedNotificationChecker implements IEventListener
 {
-	public static final InvoiceGeneratedNotificationChecker createAnSubscribe()
+	public static InvoiceGeneratedNotificationChecker createAnSubscribe()
 	{
 		final InvoiceGeneratedNotificationChecker notificationsChecker = new InvoiceGeneratedNotificationChecker();
 		Services.get(IEventBusFactory.class)
@@ -97,6 +96,6 @@ public class InvoiceGeneratedNotificationChecker implements IEventListener
 			return;
 		}
 
-		Assert.fail("Following invoices were expected to be notified by they were not: " + invoicesNotNotified);
+		Assertions.fail("Following invoices were expected to be notified by they were not: " + invoicesNotNotified);
 	}
 }

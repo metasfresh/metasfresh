@@ -1,5 +1,6 @@
 package de.metas.modelvalidator;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Services;
@@ -55,28 +56,30 @@ public class M_Warehouse
 			ifColumnsChanged = I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
 	public void syncLocation(final I_M_Warehouse warehouse)
 	{
-		final int bPartnerLocationRepoId = warehouse.getC_BPartner_Location_ID();
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(
+				BPartnerId.ofRepoIdOrNull(warehouse.getC_BPartner_ID()),
+				warehouse.getC_BPartner_Location_ID()
+		);
 
-		if (bPartnerLocationRepoId <= 0)
+		if (bPartnerLocationId == null)
 		{
 			return;
 		}
 
-		// Load the BPartner Location based on the C_BPartner_Location_ID because the C_BPartner_ID is not yet set (see below).
-		final BPartnerLocationId bpartnerLocationId = bpartnerDAO.getBPartnerLocationIdByRepoId(bPartnerLocationRepoId);
-
-		if (bpartnerLocationId == null)
-		{
-			return;
-		}
-
-		final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bPartnerLocationId);
 		if (bpLocation == null)
 		{
 			return;
 		}
+
 		warehouse.setC_Location_ID(bpLocation.getC_Location_ID());
-		// The business partner is taken from the C_BPartner_Location!
-		warehouse.setC_BPartner_ID(bpLocation.getC_BPartner_ID());
+	}
+
+	@CalloutMethod(columnNames = I_M_Warehouse.COLUMNNAME_C_BPartner_ID)
+	public void onPartnerChange(final I_M_Warehouse warehouse)
+	{
+		warehouse.setC_Location_ID(-1);
+		warehouse.setC_BPartner_Location_ID(-1);
+		warehouse.setAD_User_ID(-1);
 	}
 }

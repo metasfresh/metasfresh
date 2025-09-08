@@ -25,14 +25,6 @@ package org.eevolution.mrp.api;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.eevolution.model.I_PP_MRP;
 
-import javax.annotation.Nullable;
-
-/**
- * To get an instance call {@link IMRPDAO#createMRPQueryBuilder()}.
- * 
- * @author tsa
- *
- */
 public interface IMRPQueryBuilder
 {
 	IQueryBuilder<I_PP_MRP> createQueryBuilder();

@@ -24,5 +24,5 @@ package de.metas.material.planning;
 
 public interface IMaterialDemandMatcher
 {
-	boolean matches(IMaterialPlanningContext mrpcontext);
+	boolean matches(MaterialPlanningContext context);
 }

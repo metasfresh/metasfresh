@@ -1,0 +1,71 @@
+/*!
+ * #%L
+ * metas-2
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+.toastCloseButton {
+  overflow: hidden;
+  position: relative;
+  border: none;
+  padding: 0;
+  margin-right: 0.125em;
+  width: 1.5em; height: 1.5em;
+  border-radius: 50%;
+  background: #ffffff52;
+  color: white;
+  font: inherit;
+  text-indent: 100%;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(29, 161, 142, .1)
+  }
+
+  &:before, &:after {
+    position: absolute;
+    top: 15%; left: calc(50% - .0625em);
+    width: .125em; height: 70%;
+    transform: rotate(45deg);
+    background: currentcolor;
+    content: ''
+  }
+
+  &:after { transform: rotate(-45deg); }
+}
+
+.toastContainer {
+  background: #FF0000;
+  transition: opacity 50ms ease-in-out;
+  border-radius: 1em;
+  color: white;
+  padding: 0.5em;
+  display: flex;
+  align-items: center;
+}
+
+.toastSuccessContainer {
+  background: $indicator-green;
+  transition: opacity 50ms ease-in-out;
+  border-radius: 1em;
+  color: white;
+  padding: 0.5em;
+  display: flex;
+  align-items: center;
+}

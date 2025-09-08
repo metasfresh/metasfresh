@@ -22,11 +22,13 @@
 
 package org.adempiere.archive.api;
 
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.Value;
 import org.compiere.model.I_AD_Archive;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -40,4 +42,6 @@ public class ArchiveResult
 	byte[] data;
 
 	public boolean isNoArchive() { return archiveRecord == null; }
+	
+	public Optional<String> getName() { return archiveRecord == null ? Optional.empty() : StringUtils.trimBlankToOptional(archiveRecord.getName()); }
 }

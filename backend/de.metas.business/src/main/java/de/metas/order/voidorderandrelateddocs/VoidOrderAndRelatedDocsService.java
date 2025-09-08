@@ -1,21 +1,19 @@
 package de.metas.order.voidorderandrelateddocs;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.ImmutablePair;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
-
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler.RecordsToHandleKey;
 import de.metas.util.RelatedRecordsProvider;
 import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
 import lombok.NonNull;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L

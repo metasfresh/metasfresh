@@ -2,74 +2,57 @@ package de.metas.workflow.rest_api.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.scannable_code.PrintableScannedCode;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import static de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
 
 @EqualsAndHashCode
 @ToString
 public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 {
 	@NonNull private final ImmutableList<WorkflowLauncher> launchers;
-
-	@Getter
-	private final boolean scanBarcodeToStartJobSupport;
+	@Getter @NonNull private final ImmutableList<OrderBy> orderByFields;
+	@Getter @Nullable private final PrintableScannedCode filterByQRCode;
 
 	@Getter
 	@NonNull private final Instant timestamp;
 
 	@Builder
 	private WorkflowLaunchersList(
-			@NonNull final ImmutableList<WorkflowLauncher> launchers,
-			final boolean scanBarcodeToStartJobSupport,
-			@NonNull final Instant timestamp)
+			@NonNull final List<WorkflowLauncher> launchers,
+			@NonNull @Singular final ImmutableList<OrderBy> orderByFields,
+			@Nullable final PrintableScannedCode filterByQRCode,
+			@Nullable final Instant timestamp)
 	{
-		this.launchers = launchers;
-		this.scanBarcodeToStartJobSupport = scanBarcodeToStartJobSupport;
-		this.timestamp = timestamp;
+		this.launchers = ImmutableList.copyOf(launchers);
+		this.orderByFields = orderByFields;
+		this.filterByQRCode = filterByQRCode;
+		this.timestamp = timestamp != null ? timestamp : SystemTime.asInstant();
 	}
 
-	public static WorkflowLaunchersList emptyNow()
-	{
-		return builder().launchers(ImmutableList.of()).timestamp(SystemTime.asInstant()).build();
-	}
+	public int size() {return launchers.size();}
 
 	@Override
+	@NonNull
 	public Iterator<WorkflowLauncher> iterator() {return launchers.iterator();}
 
 	public Stream<WorkflowLauncher> stream() {return launchers.stream();}
 
 	public boolean isEmpty() {return launchers.isEmpty();}
-
-	public WorkflowLaunchersList mergeWith(@NonNull WorkflowLaunchersList other)
-	{
-		if (other.isEmpty())
-		{
-			return this;
-		}
-		else if (isEmpty())
-		{
-			return other;
-		}
-		else
-		{
-			return builder()
-					.launchers(ImmutableList.<WorkflowLauncher>builder()
-							.addAll(this.launchers)
-							.addAll(other.launchers)
-							.build())
-					.timestamp(this.timestamp.isAfter(other.timestamp) ? this.timestamp : other.timestamp)
-					.build();
-		}
-	}
 
 	public boolean isStaled(@NonNull final Duration maxStaleAccepted)
 	{
@@ -79,6 +62,7 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 
 	public boolean equalsIgnoringTimestamp(@NonNull final WorkflowLaunchersList other)
 	{
-		return Objects.equals(this.launchers, other.launchers);
+		return Objects.equals(this.launchers, other.launchers)
+				&& Objects.equals(this.filterByQRCode, other.filterByQRCode);
 	}
 }

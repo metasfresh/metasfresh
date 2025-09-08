@@ -1,24 +1,19 @@
 package de.metas.uom;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.CoalesceUtil;
-import org.adempiere.exceptions.NoUOMConversionException;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.product.ProductId;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.NoUOMConversionException;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -48,8 +43,7 @@ public class UOMConversionsMap
 	public static final UOMConversionsMap EMPTY = new UOMConversionsMap();
 
 	ProductId productId;
-	
-	@Getter(AccessLevel.NONE)
+
 	ImmutableMap<FromAndToUomIds, UOMConversionRate> rates;
 
 	/**
@@ -147,7 +141,7 @@ public class UOMConversionsMap
 
 	@Value
 	@Builder
-	private static class FromAndToUomIds
+	public static class FromAndToUomIds
 	{
 		@NonNull
 		UomId fromUomId;

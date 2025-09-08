@@ -18,10 +18,12 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_BPartner_ProductsProposal_Launcher;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -61,17 +63,22 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	private final BPartnerProductStatsService bpartnerProductStatsService;
-
+	private final OrderProductProposalsService orderProductProposalsService;
+	private final LookupDataSourceFactory lookupDataSourceFactory;
 	protected BPartnerProductsProposalViewFactory(
-			@NonNull final BPartnerProductStatsService bpartnerProductStatsService)
+			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
+			@NonNull final OrderProductProposalsService orderProductProposalsService,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		super(WINDOW_ID);
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
+		this.orderProductProposalsService = orderProductProposalsService;
+		this.lookupDataSourceFactory = lookupDataSourceFactory;
 	}
 
 	@Override
-	protected ViewLayout createViewLayout(ViewLayoutKey key)
+	protected ViewLayout createViewLayout(final ViewLayoutKey key)
 	{
 		final ITranslatableString caption = getProcessCaption(WEBUI_BPartner_ProductsProposal_Launcher.class)
 				.orElse(null);
@@ -87,7 +94,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 	}
 
 	@Override
-	protected ProductsProposalRowsLoader createRowsLoaderFromRecord(TableRecordReference recordRef)
+	protected ProductsProposalRowsLoader createRowsLoaderFromRecord(final TableRecordReference recordRef)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
@@ -125,7 +132,9 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 				.collect(ImmutableSet.toImmutableSet());
 
 		return ProductsProposalRowsLoader.builder()
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.bpartnerProductStatsService(bpartnerProductStatsService)
+				.orderProductProposalsService(orderProductProposalsService)
 				.priceListVersionIds(priceListVersionIds)
 				.bpartnerId(bpartnerId)
 				.soTrx(soTrx)

@@ -45,7 +45,6 @@ import de.metas.shipper.gateway.dpd.logger.DpdClientLogEvent;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
-import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
@@ -291,8 +290,8 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 				//noinspection ConstantConditions
 				parcel.setContent(deliveryOrderLine.getContent());
 				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderLine.getPackageDimensions()));
-				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderLine.getGrossWeightKg()));
-				//				parcel.setInternational(); // todo non-UE orders will be implemented in a followup task, as with dhl
+				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderLine.getGrossWeightKg().intValue()));
+				//				parcel.setInternational(); // todo non-UE orders will be implemented in a followup task
 			}
 		}
 		{

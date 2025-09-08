@@ -25,6 +25,12 @@ package org.adempiere.process;
  * #L%
  */
 
+import de.metas.process.JavaProcess;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_ColumnCallout;
+import org.compiere.model.Query;
+import org.compiere.util.DB;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,14 +38,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_ColumnCallout;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
-
-import de.metas.process.JavaProcess;
 
 /**
  * Migrate AD_Column.Callout fields to new approach, by using AD_ColumnCallout table
@@ -120,11 +118,6 @@ public class AD_ColumnCallout_Migrate extends JavaProcess
 			InterfaceWrapperHelper.save(cc);
 			seqNo += 10;
 		}
-//		// Update AD_Column.Callout 
-//		DB.executeUpdateEx(
-//				"UPDATE AD_Column SET Callout=NULL, Updated=now(), UpdatedBy=? WHERE AD_Column_ID=?",
-//				new Object[]{getAD_User_ID(), AD_Column_ID},
-//				get_TrxName());
 	}
 	
 	private List<String> toCalloutsList(String callouts)

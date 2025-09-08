@@ -79,7 +79,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	public LocatorId getDefaultLocatorId(final I_M_ShipmentSchedule sched)
 	{
 		final WarehouseId warehouseId = getWarehouseId(sched);
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 	}
 
 	@Override
@@ -200,7 +200,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public ZonedDateTime getPreparationDate(final I_M_ShipmentSchedule sched)
+	public ZonedDateTime getPreparationDate(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final ZonedDateTime preparationDateOverride = TimeUtil.asZonedDateTime(sched.getPreparationDate_Override());
 		if (preparationDateOverride != null)

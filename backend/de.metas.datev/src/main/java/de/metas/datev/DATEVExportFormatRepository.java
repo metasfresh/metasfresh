@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.POInfo;
@@ -90,7 +91,7 @@ public class DATEVExportFormatRepository
 			final I_DATEV_ExportFormat exportFormatPO,
 			final POInfo exportLinePOInfo)
 	{
-		final int adColumnId = formatColumnPO.getAD_Column_ID();
+		final AdColumnId adColumnId = AdColumnId.ofRepoId(formatColumnPO.getAD_Column_ID());
 		final int columnIndex = exportLinePOInfo.getColumnIndex(adColumnId);
 		final String columnName = exportLinePOInfo.getColumnName(columnIndex);
 		if (Check.isEmpty(columnName, true))

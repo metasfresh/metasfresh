@@ -1,10 +1,9 @@
 package org.compiere.model;
 
+import com.google.common.collect.ImmutableMap;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxManager;
-
-import com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Nullable;
 
@@ -98,8 +97,8 @@ public interface ModelValidator
 	/** Called after document is reverse-accrual */
 	int TIMING_AFTER_REVERSEACCRUAL = DOCTIMING_Offset + 14;
 
-	/** Called after document is un-posted */
-	int TIMING_AFTER_UNPOST = DOCTIMING_Offset + 16;
+	// /** Called after document is un-posted */
+	// int TIMING_AFTER_UNPOST = DOCTIMING_Offset + 16;
 
 	/** Called before document is posted */
 	int TIMING_BEFORE_POST = DOCTIMING_Offset + 17;

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 941054265L;
+	private static final long serialVersionUID = -167576390L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -812,6 +812,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setIsCatchWeight (final boolean IsCatchWeight)
+	{
+		set_Value (COLUMNNAME_IsCatchWeight, IsCatchWeight);
+	}
+
+	@Override
+	public boolean isCatchWeight() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeight);
+	}
+
+	@Override
 	public void setIsClosed (final boolean IsClosed)
 	{
 		set_Value (COLUMNNAME_IsClosed, IsClosed);
@@ -1605,5 +1617,29 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.lang.String getStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_Status);
+	}
+
+	@Override
+	public void setExternalHeaderId (final @Nullable String ExternalHeaderId)
+	{
+		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
+	}
+
+	@Override
+	public String getExternalHeaderId()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalHeaderId);
+	}
+
+	@Override
+	public void setExternalLineId (final @Nullable String ExternalLineId)
+	{
+		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+	}
+
+	@Override
+	public String getExternalLineId()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalLineId);
 	}
 }

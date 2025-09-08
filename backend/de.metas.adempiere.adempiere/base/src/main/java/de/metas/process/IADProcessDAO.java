@@ -9,6 +9,7 @@ import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Process;
@@ -67,6 +68,7 @@ public interface IADProcessDAO extends ISingletonService
 	 * Similar to {@link #retrieveProcessIdByClassIfUnique(Class)}, but assumes that there is a unique ID and throws an exception if that's not the case.
 	 * This can be beneficial since the exception message contains the class for which no {@code AD_Process_ID} could be fetched.
 	 */
+	@NonNull
 	AdProcessId retrieveProcessIdByClass(Class<?> processClass);
 
 	/**
@@ -132,4 +134,7 @@ public interface IADProcessDAO extends ISingletonService
 	ProcessType retrieveProcessType(@NonNull AdProcessId processId);
 
 	ImmutableSet<AdProcessId> retrieveAllActiveAdProcesIds();
+
+	@NonNull
+	List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull AdValRuleId valRuleId);
 }

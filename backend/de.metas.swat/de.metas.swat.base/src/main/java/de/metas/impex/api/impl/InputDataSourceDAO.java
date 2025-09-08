@@ -132,7 +132,7 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 
 		queryBuilder.addInArrayFilter(I_AD_InputDataSource.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
 
-		if (!query.getInternalName().isEmpty())
+		if (Check.isNotBlank(query.getInternalName()))
 		{
 			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_InternalName, query.getInternalName());
 		}

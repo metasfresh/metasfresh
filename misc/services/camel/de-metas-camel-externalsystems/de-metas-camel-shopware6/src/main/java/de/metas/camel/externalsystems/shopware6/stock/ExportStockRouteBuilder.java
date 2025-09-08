@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,7 +31,6 @@ import de.metas.camel.externalsystems.shopware6.api.model.stock.JsonStock;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonAvailableForSales;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.camel.externalsystems.shopware6.stock.ExportStockRouteContext;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -75,7 +74,7 @@ public class ExportStockRouteBuilder extends RouteBuilder
 		from(direct(EXPORT_STOCK_ROUTE_ID))
 				.routeId(EXPORT_STOCK_ROUTE_ID)
 				.log("Route invoked")
-				.streamCaching()
+				.streamCache("true")
 				.process(this::buildAndAttachRouteContext).id(ATTACH_CONTEXT_PROCESSOR_ID)
 				.process(this::createJsonStock).id(CREATE_JSON_STOCK_PROCESSOR_ID)
 				.process(this::exportStockToShopware).id(EXPORT_STOCK_PROCESSOR_ID);

@@ -1,14 +1,13 @@
 package de.metas.document;
 
-import static de.metas.util.Check.assumeNotEmpty;
-
-import javax.annotation.Nullable;
-
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
-
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -33,32 +32,64 @@ import lombok.Value;
  */
 
 @Value
+@JsonIncludeProperties({ "docBaseType", "docSubType" })
 public class DocBaseAndSubType
 {
-	public static DocBaseAndSubType of(@NonNull final String docBaseType)
+	public static DocBaseAndSubType of(@NonNull final DocBaseType docBaseType)
 	{
-		final String docSubType = null;
+		return interner.intern(new DocBaseAndSubType(docBaseType, DocSubType.ANY));
+	}
+
+	public static DocBaseAndSubType of(@NonNull final String docBaseType, @Nullable final String docSubType)
+	{
+		return interner.intern(new DocBaseAndSubType(DocBaseType.ofCode(docBaseType), DocSubType.ofNullableCode(docSubType)));
+	}
+
+	public static DocBaseAndSubType of(@NonNull final DocBaseType docBaseType, @Nullable final String docSubType)
+	{
+		return interner.intern(new DocBaseAndSubType(docBaseType, DocSubType.ofNullableCode(docSubType)));
+	}
+
+	public static DocBaseAndSubType of(@NonNull final DocBaseType docBaseType, @NonNull final DocSubType docSubType)
+	{
 		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
 	}
 
-	public static DocBaseAndSubType of(
-			@NonNull final String docBaseType,
+	@Nullable
+	public static DocBaseAndSubType ofNullable(
+			@Nullable final String docBaseType,
 			@Nullable final String docSubType)
 	{
-		return interner.intern(new DocBaseAndSubType(docBaseType, docSubType));
+		final String docBaseTypeNorm = StringUtils.trimBlankToNull(docBaseType);
+		return docBaseTypeNorm != null ? of(docBaseTypeNorm, docSubType) : null;
 	}
 
 	private static final Interner<DocBaseAndSubType> interner = Interners.newStrongInterner();
 
-	String docBaseType;
-	String docSubType;
+	@NonNull DocBaseType docBaseType;
+	@NonNull DocSubType docSubType;
 
 	private DocBaseAndSubType(
-			@NonNull final String docBaseType,
-			@Nullable final String docSubType)
+			@NonNull final DocBaseType docBaseType,
+			@NonNull final DocSubType docSubType)
 	{
-		this.docBaseType = assumeNotEmpty(docBaseType, "Param docBaseType may not be empty");
+		this.docBaseType = docBaseType;
 		this.docSubType = docSubType;
 	}
+
+	// DocBaseAndSubTypeChecks
+	public boolean isSalesInvoice() {return docBaseType.isSalesInvoice() && docSubType.isNone();}
+
+
+	public boolean isPrepaySO() {return docBaseType.isSalesOrder() && docSubType.isPrepay();}
+
+
+	public boolean isCallOrder() {return (docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder()) && docSubType.isCallOrder();}
+
+	public boolean isFrameAgreement() { return ( docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder() ) && docSubType.isFrameAgreement(); }
+
+	public boolean isMediated() {return (docBaseType.isPurchaseOrder()) && docSubType.isMediated();}
+
+	public boolean isRequisition() {return (docBaseType.isPurchaseOrder()) && docSubType.isRequisition();}
 
 }

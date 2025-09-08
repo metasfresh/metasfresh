@@ -137,6 +137,7 @@ public final class CConnection implements Serializable, Cloneable
 		return cc;
 	}
 
+	@Nullable
 	private static CConnection createFromIniIfOK()
 	{
 		// First, try to create the connection from properties, if any
@@ -153,7 +154,7 @@ public final class CConnection implements Serializable, Cloneable
 			cc.setAttributes(attributes);
 			cc.testDatabaseIfNeeded();
 
-			return cc.isDatabaseOK() ? cc : null;
+			return cc;
 		}
 		catch (Exception e)
 		{
@@ -185,6 +186,9 @@ public final class CConnection implements Serializable, Cloneable
 		if (ccTemplate == null)
 		{
 			ccTemplateToUse = new CConnection();
+			ccTemplateToUse.setDbHost("localhost");
+			ccTemplateToUse.setDbUid("metasfresh");
+			ccTemplateToUse.setDbPwd("metasfresh");
 		}
 		else
 		{

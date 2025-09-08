@@ -1,77 +1,135 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { forEach } from 'lodash';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import { pickingLineScreenLocation } from '../../../routes/picking';
-import { useHistory } from 'react-router-dom';
+import {
+  pickingLineScanScreenLocation,
+  pickingLineScreenLocation,
+  pickingScanScreenLocation,
+} from '../../../routes/picking';
+import { getLinesArrayFromActivity, isAnonymousPickHUsOnTheFly } from '../../../reducers/wfProcesses';
+import {
+  getCurrentPickFromHUQRCode,
+  isAllowPickingAnyHUOnHeaderLevel,
+  isUserEditable as isUserEditableFunc,
+} from '../../../utils/picking';
+import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import { NEXT_PickingJob } from './PickLineScanScreen';
+import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
+import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
+import {
+  computeCatchWeightsArrayForLine,
+  formatCatchWeightToHumanReadableStr,
+} from '../../../reducers/wfProcesses/picking/catch_weight';
 
-const computeLineQuantities = (line) => {
-  let picked = 0;
-  let toPick = 0;
-  let uom = '';
+export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
-  forEach(line.steps, (step) => {
-    const { qtyToPick, uom: stepUom } = step;
+const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
+  const history = useMobileNavigation();
 
-    picked += computeStepQtyPickedTotal(step);
-    toPick += qtyToPick;
-    uom = stepUom;
+  const isUserEditable = isUserEditableFunc({ activity });
+  const isAllowPickingAnyHU = isAllowPickingAnyHUOnHeaderLevel({ activity });
+
+  const { isPickWithNewLU, isLUScanRequiredAndMissing, isAllowNewTU, tuPickingTarget } = useCurrentPickingTargetInfo({
+    wfProcessId,
+    activityId,
   });
 
-  return { picked, toPick, uom };
-};
+  const groupedLines = useMemo(() => {
+    const lines = getLinesArrayFromActivity(activity);
+    return groupLinesByDisplayKey(lines);
+  }, [activity]);
 
-const computeStepQtyPickedTotal = (step) => {
-  let qtyPickedTotal = 0;
+  const onScanButtonClick = () => {
+    history.push(pickingScanScreenLocation({ applicationId, wfProcessId, activityId }));
+  };
+  const onLineButtonClick = useLineButtonClickHandler({ applicationId, wfProcessId, activity, history });
 
-  if (step.mainPickFrom.qtyPicked) {
-    qtyPickedTotal += step.mainPickFrom.qtyPicked;
-  }
+  const isLineReadOnly = ({ line }) => {
+    const tuTargetIsSetButCurrentLineHasItsOwnPacking = tuPickingTarget && line.pickingUnit === 'TU';
+    const tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs =
+      isPickWithNewLU && isAllowNewTU && !tuPickingTarget && line.pickingUnit === 'CU';
 
-  if (step.pickFromAlternatives) {
-    const qtyPickedInAltSteps = Object.values(step.pickFromAlternatives).reduce(
-      (accum, pickFromAlternative) => accum + pickFromAlternative.qtyPicked,
-      0
-    );
+    // noinspection UnnecessaryLocalVariableJS
+    const result =
+      !isUserEditable ||
+      isLUScanRequiredAndMissing ||
+      tuTargetIsSetButCurrentLineHasItsOwnPacking ||
+      tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs;
+    // console.log(`isLineReadOnly: ${result}`, {
+    //   tuPickingTarget,
+    //   isPickWithNewLU,
+    //   isAllowNewTU,
+    //   isUserEditable,
+    //   isLUScanRequiredAndMissing,
+    //   tuTargetIsSetButCurrentLineHasItsOwnPacking,
+    //   tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs,
+    // });
+    return result;
+  };
 
-    qtyPickedTotal += qtyPickedInAltSteps;
-  }
-
-  return qtyPickedTotal;
-};
-
-const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
-  const {
-    dataStored: { lines, completeStatus, isUserEditable },
-  } = activityState;
-
-  const history = useHistory();
-  const onButtonClick = ({ lineId }) => {
-    history.push(pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
+  const isAtLeastOneReadOnlyLine = (groupedLines) => {
+    return groupedLines.some((lines) => lines.some((line) => isLineReadOnly({ line })));
   };
 
   return (
     <div className="mt-5">
-      {lines && lines.length > 0
-        ? lines.map((lineItem, lineIndex) => {
-            const lineId = '' + lineIndex;
-            const { picked, toPick, uom } = computeLineQuantities(lineItem);
+      <SelectCurrentLUTUButtons
+        applicationId={applicationId}
+        wfProcessId={wfProcessId}
+        activityId={activityId}
+        isUserEditable={isUserEditable}
+      />
+      <br />
 
-            return (
-              <ButtonWithIndicator
-                key={lineId}
-                caption={lineItem.caption}
-                completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
-                disabled={!isUserEditable}
-                onClick={() => onButtonClick({ lineId })}
-              >
-                <ButtonQuantityProp qtyCurrent={picked} qtyTarget={toPick} uom={uom} applicationId={applicationId} />
-              </ButtonWithIndicator>
-            );
-          })
-        : null}
+      {isAllowPickingAnyHU && (
+        <ButtonWithIndicator
+          id="scanQRCode-button"
+          captionKey="activities.picking.scanQRCode"
+          disabled={isAtLeastOneReadOnlyLine(groupedLines)}
+          onClick={onScanButtonClick}
+        />
+      )}
+      {groupedLines &&
+        groupedLines.map((group, groupIndex) => {
+          const getDisplayLines = (lines) => {
+            return lines.map((line, lineIndex) => {
+              const lineId = line.pickingLineId;
+              const { uom, qtyToPick, qtyPicked } = line;
+              const qtyPickedCatchWeight = computeCatchWeightsArrayForLine({ line });
+              const qtyPickedCatchWeightStr = formatCatchWeightToHumanReadableStr(qtyPickedCatchWeight);
+
+              return (
+                <ButtonWithIndicator
+                  id={`line-${groupIndex}-${lineIndex}-button`}
+                  testId={`line-${groupIndex}-${lineIndex}-button`}
+                  key={lineId}
+                  caption={line.caption}
+                  completeStatus={line.completeStatus || CompleteStatus.NOT_STARTED}
+                  disabled={isLineReadOnly({ line })}
+                  onClick={() => onLineButtonClick({ line })}
+                >
+                  <ButtonQuantityProp
+                    uom={uom}
+                    qtyTarget={qtyToPick}
+                    qtyCurrent={qtyPicked}
+                    qtyCurrentCatchWeight={qtyPickedCatchWeightStr}
+                    applicationId={applicationId}
+                  />
+                </ButtonWithIndicator>
+              );
+            });
+          };
+
+          return (
+            <React.Fragment key={groupIndex}>
+              {getDisplayLines(group)}
+              {groupIndex !== groupedLines.length - 1 && <br />}
+            </React.Fragment>
+          );
+        })}
     </div>
   );
 };
@@ -80,7 +138,78 @@ PickProductsActivity.propTypes = {
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
-  activityState: PropTypes.object.isRequired,
+  activity: PropTypes.object.isRequired,
 };
 
 export default PickProductsActivity;
+
+//
+//
+//
+//
+//
+
+const groupLinesByDisplayKey = (lines) => {
+  lines.sort((a, b) => (a?.sortingIndex ?? 0) - (b.sortingIndex ?? 0));
+  let currentGroupKey = undefined;
+  const groups = [];
+  let currentGroup = [];
+
+  for (const line of lines) {
+    if (currentGroupKey === undefined) {
+      currentGroupKey = line.displayGroupKey;
+    }
+    if (currentGroupKey !== line.displayGroupKey) {
+      groups.push([...currentGroup]);
+      currentGroupKey = line.displayGroupKey;
+      currentGroup = [line];
+    } else {
+      currentGroup.push(line);
+    }
+  }
+  groups.push([...currentGroup]);
+
+  return groups;
+};
+
+//
+//
+//
+//
+//
+
+const useLineButtonClickHandler = ({ applicationId, wfProcessId, activity, history }) => {
+  const { activityId } = activity;
+  const allowAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly({ activity });
+
+  return ({ line }) => {
+    const { pickingLineId: lineId, qtyPicked } = line;
+
+    const pickFromHUQRCode = getCurrentPickFromHUQRCode({ activity });
+    if (qtyPicked <= 0 && pickFromHUQRCode) {
+      history.push(
+        pickingLineScanScreenLocation({
+          applicationId,
+          wfProcessId,
+          activityId,
+          lineId,
+          qrCode: pickFromHUQRCode,
+          next: NEXT_PickingJob,
+        })
+      );
+    } else if (qtyPicked <= 0 && allowAnonymousPickHUsOnTheFly) {
+      history.push(
+        pickingLineScanScreenLocation({
+          applicationId,
+          wfProcessId,
+          activityId,
+          lineId,
+          qrCode: PICK_ON_THE_FLY_QRCODE,
+          next: NEXT_PickingJob,
+        })
+      );
+    } else {
+      history.push(pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
+    }
+  };
+};

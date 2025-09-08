@@ -63,7 +63,7 @@ public class ElementLinkBL implements IElementLinkBL
 	public void deleteExistingADElementLinkForFieldId(final AdFieldId adFieldId)
 	{
 		// IMPORTANT: we have to call delete directly because we don't want to have the AD_Element_Link_ID is the migration scripts
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				"DELETE FROM " + I_AD_Element_Link.Table_Name + " WHERE AD_Field_ID=" + adFieldId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
 	}
@@ -88,7 +88,7 @@ public class ElementLinkBL implements IElementLinkBL
 	public void deleteExistingADElementLinkForTabId(final AdTabId adTabId)
 	{
 		// IMPORTANT: we have to call delete directly because we don't want to have the AD_Element_Link_ID is the migration scripts
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				"DELETE FROM " + I_AD_Element_Link.Table_Name + " WHERE AD_Tab_ID=" + adTabId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
 	}
@@ -113,7 +113,7 @@ public class ElementLinkBL implements IElementLinkBL
 	public void deleteExistingADElementLinkForWindowId(final AdWindowId adWindowId)
 	{
 		// IMPORTANT: we have to call delete directly because we don't want to have the AD_Element_Link_ID is the migration scripts
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				"DELETE FROM " + I_AD_Element_Link.Table_Name + " WHERE AD_Window_ID=" + adWindowId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
 	}

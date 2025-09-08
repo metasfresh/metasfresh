@@ -77,7 +77,7 @@ public class MetasfreshId
 
 		return of(id);
 	}
-	
+
 	public static MetasfreshId of(@NonNull final RepoIdAware id)
 	{
 		return new MetasfreshId(id.getRepoId());

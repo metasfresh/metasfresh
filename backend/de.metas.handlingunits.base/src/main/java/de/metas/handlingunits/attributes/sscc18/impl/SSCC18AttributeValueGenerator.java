@@ -22,26 +22,39 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.organization.OrgId;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.SSCC18;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
-import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.SSCC18;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerator
 {
 
-	private ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
+	private final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
+
+	private static final AtomicBoolean disabled = new AtomicBoolean(false);
+
+	public static IAutoCloseable temporaryDisableItIf(final boolean condition)
+	{
+		return condition ? temporaryDisableIt() : IAutoCloseable.NOP;
+	}
+
+	public static IAutoCloseable temporaryDisableIt()
+	{
+		final boolean disabledOld = disabled.getAndSet(true);
+		return () -> disabled.set(disabledOld);
+	}
 
 	@Override
 	public String getAttributeValueType()
@@ -52,7 +65,7 @@ public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerat
 	@Override
 	public boolean canGenerateValue(final Properties ctx, final IAttributeSet attributeSet, final I_M_Attribute attribute)
 	{
-		return true;
+		return !disabled.get();
 	}
 
 	@Override
@@ -63,11 +76,8 @@ public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerat
 	{
 		final I_M_HU hu = Services.get(IHUAttributesBL.class).getM_HU(attributeSet);
 
-		// We use M_HU_ID for SSCC18 serial number (06852)
-		final int serialNumber = hu.getM_HU_ID();
-		Check.errorIf(serialNumber <= 0, "M_HU_ID={} for M_HU={}", serialNumber, hu);
-
-		final SSCC18 sscc18 = sscc18CodeBL.generate(OrgId.ofRepoIdOrAny(hu.getAD_Org_ID()), serialNumber);
+		// Just don't use the M_HU_ID as serial number. It introduced FUD as multiple packs can have the same HU and each pack needs an individual SSCC.
+		final SSCC18 sscc18 = sscc18CodeBL.generate(OrgId.ofRepoIdOrAny(hu.getAD_Org_ID()));
 		return sscc18.asString();
 	}
 }

@@ -16,15 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -32,9 +23,22 @@ import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Account Object Entity to maintain all segment values. C_ValidCombination
@@ -72,14 +76,15 @@ public class MAccount extends X_C_ValidCombination
 			int AD_OrgTrx_ID,
 			int C_LocFrom_ID,
 			int C_LocTo_ID,
-			int C_SalesRegion_ID,
+			@Nullable SalesRegionId C_SalesRegion_ID,
 			int C_Project_ID,
 			int C_Campaign_ID,
 			int C_Activity_ID,
 			int User1_ID,
 			int User2_ID,
 			int UserElement1_ID,
-			int UserElement2_ID)
+			int UserElement2_ID,
+			int C_OrderSO_ID)
 	{
 		final AccountDimension dim = AccountDimension.builder()
 				.setAcctSchemaId(acctSchemaId)
@@ -100,6 +105,7 @@ public class MAccount extends X_C_ValidCombination
 				.setUser2_ID(User2_ID)
 				.setUserElement1_ID(UserElement1_ID)
 				.setUserElement2_ID(UserElement2_ID)
+				.setSalesOrderId(C_OrderSO_ID)
 
 				.build();
 		return get(ctx, dim);
@@ -155,49 +161,6 @@ public class MAccount extends X_C_ValidCombination
 		logger.debug("New: {}", newAccount);
 		return newAccount;
 	}	// get
-	
-	public static I_C_ValidCombination getCreate(final AccountDimension dimension)
-	{
-		// services
-		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-
-		// Existing
-		final MAccount existingAccount = accountDAO.retrieveAccount(Env.getCtx(), dimension);
-		if (existingAccount != null)
-		{
-			return existingAccount;
-		}
-
-		final I_C_ValidCombination vc = InterfaceWrapperHelper.newInstance(I_C_ValidCombination.class);
-		vc.setAD_Org_ID(dimension.getAD_Org_ID());
-		vc.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
-		vc.setAccount_ID(dimension.getC_ElementValue_ID());
-		vc.setC_SubAcct_ID(dimension.getC_SubAcct_ID());
-		vc.setM_Product_ID(dimension.getM_Product_ID());
-		vc.setC_BPartner_ID(dimension.getC_BPartner_ID());
-		vc.setAD_OrgTrx_ID(dimension.getAD_OrgTrx_ID());
-		vc.setC_LocFrom_ID(dimension.getC_LocFrom_ID());
-		vc.setC_LocTo_ID(dimension.getC_LocTo_ID());
-		vc.setC_SalesRegion_ID(dimension.getC_SalesRegion_ID());
-		vc.setC_Project_ID(dimension.getC_Project_ID());
-		vc.setC_Campaign_ID(dimension.getC_Campaign_ID());
-		vc.setC_Activity_ID(dimension.getC_Activity_ID());
-		vc.setUser1_ID(dimension.getUser1_ID());
-		vc.setUser2_ID(dimension.getUser2_ID());
-		vc.setUserElement1_ID(dimension.getUserElement1_ID());
-		vc.setUserElement2_ID(dimension.getUserElement2_ID());
-		vc.setUserElementString1(dimension.getUserElementString1());
-		vc.setUserElementString2(dimension.getUserElementString2());
-		vc.setUserElementString3(dimension.getUserElementString3());
-		vc.setUserElementString4(dimension.getUserElementString4());
-		vc.setUserElementString5(dimension.getUserElementString5());
-		vc.setUserElementString6(dimension.getUserElementString6());
-		vc.setUserElementString7(dimension.getUserElementString7());
-		InterfaceWrapperHelper.save(vc);
-		
-		return vc;
-	}	// get
-
 
 	/**
 	 * Factory: default combination
@@ -358,23 +321,18 @@ public class MAccount extends X_C_ValidCombination
 		return elementValue.getAccountType();
 	}
 
-	public boolean isBalanceSheet()
-	{
-		String accountType = getAccountType();
-		return (X_C_ElementValue.ACCOUNTTYPE_Asset.equals(accountType)
-				|| X_C_ElementValue.ACCOUNTTYPE_Liability.equals(accountType)
-				|| X_C_ElementValue.ACCOUNTTYPE_OwnerSEquity.equals(accountType));
-	}
+	@NonNull
+	public ElementValueId getElementValueId() {return ElementValueId.ofRepoId(getAccount_ID());}
 
-	public boolean isActiva()
-	{
-		return X_C_ElementValue.ACCOUNTTYPE_Asset.equals(getAccountType());
-	}
+	@Nullable
+	public SalesRegionId getSalesRegionId() {return SalesRegionId.ofRepoIdOrNull(getC_SalesRegion_ID());}
 
-	public boolean isPassiva()
-	{
-		String accountType = getAccountType();
-		return (X_C_ElementValue.ACCOUNTTYPE_Liability.equals(accountType)
-				|| X_C_ElementValue.ACCOUNTTYPE_OwnerSEquity.equals(accountType));
-	}
+	@Nullable
+	public LocationId getLocFromId() {return LocationId.ofRepoIdOrNull(getC_LocFrom_ID());}
+
+	@Nullable
+	public LocationId getLocToId() {return LocationId.ofRepoIdOrNull(getC_LocTo_ID());}
+
+	@Nullable
+	public OrgId getOrgTrxId() {return OrgId.ofRepoIdOrNull(getAD_OrgTrx_ID());}
 }

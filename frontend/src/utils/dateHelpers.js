@@ -6,6 +6,7 @@ import { DATE_FIELDS } from '../constants/Constants';
 
 import { parseDateWithCurrentTimezone } from './documentListHelper';
 import MomentTZ from 'moment-timezone';
+import moment from 'moment';
 
 /**
  * @method convertDateToReadable
@@ -41,23 +42,31 @@ export const setTimezoneToMoment = (moment, timeZone) => {
   }
 };
 
-export const convertMomentToTimezone = (moment, timeZone) => {
+export const convertMomentToTimezone = (momentDate, timeZone) => {
   if (!timeZone) {
-    return moment;
+    return momentDate;
   }
 
-  if (moment.tz) {
-    if (moment.tz() === timeZone) {
-      return moment;
+  if (momentDate.tz) {
+    if (momentDate.tz() === timeZone) {
+      return momentDate;
     } else {
-      return MomentTZ(moment).tz(timeZone, false);
+      return MomentTZ(momentDate).tz(timeZone, false);
     }
   } else {
+    const actualMoment = moment(momentDate);
     const momentWithTZ = MomentTZ(
-      moment.format('YYYY-MM-DDTHH:mm:ss.SSS'),
+      actualMoment.format('YYYY-MM-DDTHH:mm:ss.SSS'),
       'YYYY-MM-DDTHH:mm:ss.SSS',
       true
     );
     return momentWithTZ.tz(timeZone, false);
   }
+};
+
+export const setMomentToEndOfDay = (moment) => {
+  moment.hours(23);
+  moment.minutes(59);
+  moment.seconds(59);
+  moment.milliseconds(999);
 };

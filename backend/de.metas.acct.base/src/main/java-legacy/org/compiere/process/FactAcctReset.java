@@ -157,12 +157,12 @@ public class FactAcctReset extends JavaProcess
 		String sql = "UPDATE " + TableName
 			+ " SET Processing='N' WHERE AD_Client_ID=" + p_AD_Client_ID
 			+ " AND (Processing<>'N' OR Processing IS NULL)";
-		final int unlocked = DB.executeUpdate(sql, get_TrxName());
+		final int unlocked = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		//
 		sql = "UPDATE " + TableName
 			+ " SET Posted='N' WHERE AD_Client_ID=" + p_AD_Client_ID
 			+ " AND (Posted NOT IN ('Y','N') OR Posted IS NULL) AND Processed='Y'";
-		final int invalid = DB.executeUpdate(sql, get_TrxName());
+		final int invalid = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		//
 		if (unlocked + invalid != 0)
 			log.debug(TableName + " - Unlocked=" + unlocked + " - Invalid=" + invalid);
@@ -278,7 +278,7 @@ public class FactAcctReset extends JavaProcess
 
 		log.debug(sql1);
 
-		final int reset = DB.executeUpdate(sql1, get_TrxName());
+		final int reset = DB.executeUpdateAndSaveErrorOnFail(sql1, get_TrxName());
 		//	Fact
 		String sql2 = "DELETE FROM Fact_Acct "
 			+ "WHERE AD_Client_ID=" + p_AD_Client_ID
@@ -297,7 +297,7 @@ public class FactAcctReset extends JavaProcess
 
 		log.debug(sql2);
 
-		final int deleted = DB.executeUpdate(sql2, get_TrxName());
+		final int deleted = DB.executeUpdateAndSaveErrorOnFail(sql2, get_TrxName());
 		//
 		log.info(TableName + "(" + AD_Table_ID + ") - Reset=" + reset + " - Deleted=" + deleted);
 		final String s = TableName + " - Reset=" + reset + " - Deleted=" + deleted;

@@ -10,6 +10,7 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -23,8 +24,10 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /*
@@ -59,6 +62,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	String getBPartnerValueAndName(final BPartnerId bpartnerId);
 
+	Map<BPartnerId, String> getBPartnerNames(@NonNull Set<BPartnerId> bpartnerIds);
+
 	/**
 	 * make full address
 	 */
@@ -85,6 +90,8 @@ public interface IBPartnerBL extends ISingletonService
 	void setAddress(I_C_BPartner_Location bpLocation);
 
 	void updateAllAddresses(I_C_BPartner bpartner);
+
+	void updateMemo(@NonNull final BPartnerId bpartnerId, String memo);
 
 	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 
@@ -213,6 +220,9 @@ public interface IBPartnerBL extends ISingletonService
 		@NonNull
 		Comparator<User> comparator = Comparator.comparing(User::getName);
 
+		@Default
+		boolean onlyIfInvoiceEmailEnabled = false;
+
 		boolean onlyActive;
 
 		@Default
@@ -250,4 +260,10 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return
 	 */
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
+
+	@NonNull
+	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
+
+	@NonNull
+	Optional<VATIdentifier> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
 }

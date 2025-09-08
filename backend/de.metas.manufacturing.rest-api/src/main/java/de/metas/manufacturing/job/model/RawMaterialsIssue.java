@@ -39,6 +39,16 @@ public class RawMaterialsIssue
 		return withLines(linesNew);
 	}
 
+	@NonNull
+	public RawMaterialsIssue withChangedLines(@NonNull final UnaryOperator<RawMaterialsIssueLine> mapper)
+	{
+		final ImmutableList<RawMaterialsIssueLine> changedLines = lines.stream()
+				.map(mapper)
+				.collect(ImmutableList.toImmutableList());
+
+		return withLines(changedLines);
+	}
+
 	private RawMaterialsIssue withLines(final ImmutableList<RawMaterialsIssueLine> linesNew)
 	{
 		return !Objects.equals(this.lines, linesNew) ? toBuilder().lines(linesNew).build() : this;

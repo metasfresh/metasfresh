@@ -29,12 +29,15 @@ import de.metas.MetasfreshBeanNameGenerator;
 import de.metas.Profiles;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection_ToDelete;
 import de.metas.ui.web.config.ConfigConstants;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 import de.metas.util.Check;
 import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,10 +46,10 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -69,6 +72,7 @@ import java.util.ArrayList;
 public class WebRestApiApplication
 {
 	private static final String SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE = "de.metas.ui.web.spring.profiles.active";
+	private static final String SYSTEM_PROPERTY_APP_NAME = "spring.application.name";
 
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
@@ -76,15 +80,16 @@ public class WebRestApiApplication
 	 */
 	private static final String SYSTEM_PROPERTY_HEADLESS = "webui-api-run-headless";
 
-	@Autowired
-	private ApplicationContext applicationContext;
+	private final ApplicationContext applicationContext;
+
+	public WebRestApiApplication(@NonNull final ApplicationContext applicationContext)
+	{
+		this.applicationContext = applicationContext;
+	}
 
 	public static void main(final String[] args)
 	{
-		if (Check.isEmpty(System.getProperty("PropertyFile"), true))
-		{
-			System.setProperty("PropertyFile", "./metasfresh.properties");
-		}
+		setDefaultProperties();
 
 		final CommandLineParser.CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
@@ -109,8 +114,12 @@ public class WebRestApiApplication
 					.run(args);
 		}
 
+		final WebRestApiApplicationHealthIndicator healthIndicator = SpringContextHolder.instance.getBean(WebRestApiApplicationHealthIndicator.class);
+
 		// now init the model validation engine
 		ModelValidationEngine.get();
+
+		healthIndicator.setStatusUp();
 	}
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
@@ -137,26 +146,27 @@ public class WebRestApiApplication
 
 		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
 
-		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
+		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
+		migrationLogger.addTablesToIgnoreList(
+				I_T_WEBUI_ViewSelection.Table_Name,
+				I_T_WEBUI_ViewSelectionLine.Table_Name,
+				I_T_WEBUI_ViewSelection_ToDelete.Table_Name
+		);
 
 		return Env.getSingleAdempiereInstance(applicationContext);
 	}
 
 	@Bean
-	public WebServerFactoryCustomizer servletContainerCustomizer()
+	public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer()
 	{
-		return servletContainer -> {
-			final TomcatServletWebServerFactory tomcatContainerFactory = (TomcatServletWebServerFactory)servletContainer;
-			
-			tomcatContainerFactory.addConnectorCustomizers(connector -> {
-				final AbstractHttp11Protocol<?> httpProtocol = (AbstractHttp11Protocol<?>)connector.getProtocolHandler();
-				httpProtocol.setCompression("on");
-				httpProtocol.setCompressionMinSize(256);
-				final String mimeTypes = httpProtocol.getCompressibleMimeType();
-				final String mimeTypesWithJson = mimeTypes + "," + MediaType.APPLICATION_JSON_VALUE + ",application/javascript";
-				httpProtocol.setCompressibleMimeType(mimeTypesWithJson);
-			});
-		};
+		return tomcatContainerFactory -> tomcatContainerFactory.addConnectorCustomizers(connector -> {
+			final AbstractHttp11Protocol<?> httpProtocol = (AbstractHttp11Protocol<?>)connector.getProtocolHandler();
+			httpProtocol.setCompression("on");
+			httpProtocol.setCompressionMinSize(256);
+			final String mimeTypes = httpProtocol.getCompressibleMimeType();
+			final String mimeTypesWithJson = mimeTypes + "," + MediaType.APPLICATION_JSON_VALUE + ",application/javascript";
+			httpProtocol.setCompressibleMimeType(mimeTypesWithJson);
+		});
 	}
 
 	@Bean(ConfigConstants.BEANNAME_WebuiTaskScheduler)
@@ -167,5 +177,18 @@ public class WebRestApiApplication
 		taskScheduler.setDaemon(true);
 		taskScheduler.setPoolSize(10);
 		return taskScheduler;
+	}
+
+	private static void setDefaultProperties()
+	{
+		if (Check.isEmpty(System.getProperty("PropertyFile"), true))
+		{
+			System.setProperty("PropertyFile", "./metasfresh.properties");
+		}
+
+		if (Check.isBlank(System.getProperty(SYSTEM_PROPERTY_APP_NAME)))
+		{
+			System.setProperty(SYSTEM_PROPERTY_APP_NAME, WebRestApiApplication.class.getSimpleName());
+		}
 	}
 }

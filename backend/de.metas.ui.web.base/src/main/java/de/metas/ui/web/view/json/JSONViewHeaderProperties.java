@@ -49,7 +49,7 @@ public class JSONViewHeaderProperties
 		return new JSONViewHeaderProperties(jsonEntries);
 	}
 
-	private static JSONViewHeaderProperties EMPTY = new JSONViewHeaderProperties(ImmutableList.of());
+	private static final JSONViewHeaderProperties EMPTY = new JSONViewHeaderProperties(ImmutableList.of());
 
 	@JsonProperty("groups")
 	private ImmutableList<JSONViewHeaderPropertiesGroup> groups;

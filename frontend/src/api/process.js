@@ -13,6 +13,7 @@ export const startProcess = (processId, pinstanceId) => {
 export const getProcessData = ({
   processId,
   viewId,
+  viewOrderBy,
   documentType,
   ids,
   tabId,
@@ -27,6 +28,7 @@ export const getProcessData = ({
 
   if (viewId) {
     payload.viewId = viewId;
+    payload.viewOrderBy = viewOrderBy;
     payload.viewDocumentIds = ids;
 
     if (childViewId) {

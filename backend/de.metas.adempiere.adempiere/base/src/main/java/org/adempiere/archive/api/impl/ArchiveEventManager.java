@@ -35,6 +35,7 @@ import org.compiere.model.I_AD_Archive;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ArchiveEventManager implements IArchiveEventManager
@@ -71,7 +72,7 @@ public class ArchiveEventManager implements IArchiveEventManager
 	@Override
 	public void firePdfUpdate(
 			@NonNull final I_AD_Archive archive,
-			@Nullable final UserId userId, 
+			@Nullable final UserId userId,
 			String action)
 	{
 		for (final IArchiveEventListener listener : listeners)
@@ -107,6 +108,23 @@ public class ArchiveEventManager implements IArchiveEventManager
 		for (final IArchiveEventListener listener : listeners)
 		{
 			listener.onPrintOut(archive, userId, printerName, copies, status);
+		}
+	}
+
+	@Override
+	public void firePrintOut(
+			final I_AD_Archive archive,
+			@Nullable final UserId userId,
+			@NonNull final Set<String> printerNames,
+			final int copies,
+			@NonNull final ArchivePrintOutStatus status)
+	{
+		for (final String printerName : printerNames)
+		{
+			for (final IArchiveEventListener listener : listeners)
+			{
+				listener.onPrintOut(archive, userId, printerName, copies, status);
+			}
 		}
 	}
 

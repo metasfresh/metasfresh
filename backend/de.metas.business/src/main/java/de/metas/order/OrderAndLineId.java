@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -95,17 +96,27 @@ public class OrderAndLineId
 				: null;
 	}
 
-	public static int getOrderRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
+	public static Optional<OrderAndLineId> optionalOfRepoIds(final int orderRepoId, final int orderLineRepoId)
+	{
+		return Optional.ofNullable(ofRepoIdsOrNull(orderRepoId, orderLineRepoId));
+	}
+
+	public static int toOrderRepoId(@Nullable final OrderAndLineId orderAndLineId)
+	{
+		return getOrderRepoIdOr(orderAndLineId, -1);
+	}
+
+	public static int getOrderRepoIdOr(@Nullable final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderRepoId() : defaultValue;
 	}
 
-	public static int toOrderLineRepoId(final OrderAndLineId orderAndLineId)
+	public static int toOrderLineRepoId(@Nullable final OrderAndLineId orderAndLineId)
 	{
 		return getOrderLineRepoIdOr(orderAndLineId, -1);
 	}
 
-	public static int getOrderLineRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
+	public static int getOrderLineRepoIdOr(@Nullable final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderLineRepoId() : defaultValue;
 	}

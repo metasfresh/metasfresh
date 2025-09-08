@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/tax_accounting_v3/report" uuid="368dee7e-3f75-4062-a55c-84e201083d00">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="vatcode" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="account_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DateFrom" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DateTo" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="c_tax_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="currency" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT t.*, (sm.taxbaseamt + sm.taxamt) AS invoice_total_sum, sm.taxbaseamt AS taxbaseamt_vat_sum, sm.taxamt AS taxamt_vat_sum
+FROM report.tax_accounting_report_details($P{DateFrom},
+             	                               $P{DateTo},
+                                               $P{vatcode},
+                                               $P{account_id},
+                                               $P{c_tax_id},
+											   $P{AD_Org_ID},
+                                               $P{ad_language}) t,
+     de_metas_acct.tax_accounting_report_details_sum($P{DateFrom},
+             	                               $P{DateTo},
+                                               $P{vatcode},
+                                               $P{account_id},
+                                               $P{c_tax_id},
+											   $P{AD_Org_ID}) sm
+
+ORDER BY t.vatcode, t.kontono, t.taxname, t.DateAcct
+;]]>
+	</queryString>
+	<field name="vatcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
+	</field>
+	<field name="kontono" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="kontono"/>
+	</field>
+	<field name="kontoname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="kontoname"/>
+	</field>
+	<field name="dateacct" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="dateacct"/>
+	</field>
+	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
+	</field>
+	<field name="taxname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
+	</field>
+	<field name="taxrate" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxrate"/>
+	</field>
+	<field name="bpname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bpname"/>
+	</field>
+	<field name="taxbaseamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxbaseamt"/>
+	</field>
+	<field name="taxamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamt"/>
+	</field>
+	<field name="taxamtperaccount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamtperaccount"/>
+	</field>
+	<field name="istaxline" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="istaxline"/>
+	</field>
+	<field name="iso_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="iso_code"/>
+	</field>
+	<field name="param_startdate" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="param_startdate"/>
+	</field>
+	<field name="param_enddate" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="param_enddate"/>
+	</field>
+	<field name="param_konto" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="param_konto"/>
+	</field>
+	<field name="param_vatcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="param_vatcode"/>
+	</field>
+	<field name="param_org" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="param_org"/>
+	</field>
+	<field name="c_tax_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_tax_id"/>
+	</field>
+	<field name="account_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="account_id"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="invoice_total_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="invoice_total_sum"/>
+	</field>
+	<field name="taxbaseamt_vat_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxbaseamt_vat_sum"/>
+	</field>
+	<field name="taxamt_vat_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamt_vat_sum"/>
+	</field>
+	<group name="Group1">
+		<groupExpression><![CDATA[$F{account_id}]]></groupExpression>
+		<groupHeader>
+			<band height="17">
+				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="Group1" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="555" y="2" width="70" height="12" uuid="f597143b-0e6c-4e57-872f-171cd1882ba5"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{taxbaseamt_vat_sum}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="Group1" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="438" y="2" width="91" height="12" uuid="15b58fce-5286-4696-b31b-f5f5fb5c7813"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{invoice_total_sum}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="Group1" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="625" y="2" width="106" height="12" uuid="166a25f6-7b45-410f-8d4e-c05d87ff8327"/>
+					<box rightPadding="5"/>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{taxamt_vat_sum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement x="529" y="2" width="26" height="12" uuid="a9722214-53d6-45f0-9abb-aee2043e4ba1"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{currency}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<detail>
+		<band height="17" splitType="Stretch">
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="0" y="0" width="70" height="12" uuid="dfd5727d-fc81-4b4b-9fb9-13ed7a8cf830"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="70" y="0" width="59" height="12" uuid="19c279ed-5e02-498d-9f9f-2c9571c30b89"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="249" y="0" width="131" height="12" uuid="3be0201f-0fe0-4acb-98a1-ad5efa157a49"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxname}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="383" y="0" width="55" height="12" uuid="54f96ea7-b31a-4158-9037-be149c76287d"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="625" y="0" width="106" height="12" uuid="340f6297-1764-4b1c-b30b-c217e46eeaba"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+					<paragraph rightIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="128" y="0" width="120" height="12" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpname}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="438" y="0" width="91" height="12" uuid="1f45bf74-d605-4c4d-b3f0-e5876ba9a6ba"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="529" y="0" width="96" height="12" uuid="32b42174-c631-4ec9-82f0-de6bcf560eb9"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="529" y="0" width="26" height="12" uuid="5ea4aa31-5b4b-464b-b429-27bebb8ee8c2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

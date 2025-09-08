@@ -1,15 +1,7 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-
 import com.google.common.annotations.VisibleForTesting;
-
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
@@ -17,6 +9,13 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+
+import javax.annotation.Nullable;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -40,17 +39,19 @@ import lombok.NonNull;
  * #L%
  */
 
-/** Intended to be used only be the "main" repository code */
+/**
+ * Intended to be used only be the "main" repository code
+ */
 public final class PurchaseDetailRepoHelper
 {
 	private PurchaseDetailRepoHelper()
 	{
 	}
 
-	public static PurchaseDetail getSingleForCandidateRecordOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	public static PurchaseDetail getSingleForCandidateRecordOrNull(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate_Purchase_Detail purchaseDetailRecord = RepositoryCommons
-				.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Purchase_Detail.class)
+				.createCandidateDetailQueryBuilder(candidateId, I_MD_Candidate_Purchase_Detail.class)
 				.firstOnly(I_MD_Candidate_Purchase_Detail.class);
 
 		return ofRecord(purchaseDetailRecord);
@@ -85,13 +86,12 @@ public final class PurchaseDetailRepoHelper
 			return;
 		}
 
-		I_MD_Candidate_Purchase_Detail recordToUpdate = RepositoryCommons.retrieveSingleCandidateDetail(
-				candidateRecord,
-				I_MD_Candidate_Purchase_Detail.class);
+		final CandidateId candidateId = CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID());
+		I_MD_Candidate_Purchase_Detail recordToUpdate = RepositoryCommons.retrieveSingleCandidateDetail(candidateId, I_MD_Candidate_Purchase_Detail.class);
 		if (recordToUpdate == null)
 		{
 			recordToUpdate = newInstance(I_MD_Candidate_Purchase_Detail.class, candidateRecord);
-			recordToUpdate.setMD_Candidate_ID(candidateRecord.getMD_Candidate_ID());
+			recordToUpdate.setMD_Candidate_ID(candidateId.getRepoId());
 		}
 
 		if (purchaseDetail.getAdvised().isUpdateExistingRecord())
@@ -159,7 +159,7 @@ public final class PurchaseDetailRepoHelper
 			purchaseDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_PP_Product_Planning_ID, purchaseDetailsQuery.getProductPlanningRepoId());
 		}
 
-		if(purchaseDetailsQuery.isOrderLineRepoIdMustBeNull())
+		if (purchaseDetailsQuery.isOrderLineRepoIdMustBeNull())
 		{
 			purchaseDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Purchase_Detail.COLUMN_C_OrderLinePO_ID, null);
 		}

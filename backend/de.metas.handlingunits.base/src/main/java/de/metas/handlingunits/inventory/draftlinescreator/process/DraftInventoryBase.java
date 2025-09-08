@@ -8,8 +8,8 @@ import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregator;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
@@ -43,7 +43,6 @@ import de.metas.util.Check;
 public abstract class DraftInventoryBase extends JavaProcess implements IProcessPrecondition
 {
 	private final InventoryRepository inventoryRepo = SpringContextHolder.instance.getBean(InventoryRepository.class);
-	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory = SpringContextHolder.instance.getBean(InventoryLineAggregatorFactory.class);
 
 	@Override
 	final public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -71,7 +70,7 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 
 		final HUsForInventoryStrategy strategy = createStrategy(inventory);
 
-		final InventoryLineAggregator inventoryLineAggregator = inventoryLineAggregatorFactory.createForDocBaseAndSubType(docBaseAndSubType);
+		final InventoryLineAggregator inventoryLineAggregator = InventoryLineAggregatorFactory.getForDocBaseAndSubType(docBaseAndSubType);
 
 		Check.errorUnless(
 				inventory.getDocStatus().isDraftedOrInProgress(),

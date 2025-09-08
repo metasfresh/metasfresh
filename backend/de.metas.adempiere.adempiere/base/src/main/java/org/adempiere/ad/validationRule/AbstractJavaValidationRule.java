@@ -1,18 +1,16 @@
 package org.adempiere.ad.validationRule;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract Java Validation Rule be the extension point for all Java Based Validation Rules.
@@ -24,7 +22,7 @@ public abstract class AbstractJavaValidationRule implements IValidationRule, INa
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
-	private static List<ValueNamePair> exceptionTableAndColumns = new ArrayList<>();
+	private static final List<ValueNamePair> exceptionTableAndColumns = new ArrayList<>();
 
 	/**
 	 * A Java Validation rule shall never provide a pre-filter where clause.
@@ -39,7 +37,7 @@ public abstract class AbstractJavaValidationRule implements IValidationRule, INa
 	@Override
 	public final Set<String> getAllParameters()
 	{
-		return getPostQueryFilter().getParameters();
+		return getPostQueryFilter().getParameters(null);
 	}
 
 	@Override
@@ -68,7 +66,7 @@ public abstract class AbstractJavaValidationRule implements IValidationRule, INa
 
 	// NOTE: better enforce developer to define this method
 	@Override
-	public abstract Set<String> getParameters();
+	public abstract Set<String> getParameters(@Nullable final String contextTableName);
 
 	@Override
 	public abstract boolean accept(final IValidationContext evalCtx, final NamePair item);

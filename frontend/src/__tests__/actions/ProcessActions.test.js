@@ -1,23 +1,24 @@
-import nock from 'nock';
-import * as ACTION_TYPES from '../../constants/ActionTypes';
-import { merge } from 'merge-anything';
-import thunk from 'redux-thunk';
-import configureStore from 'redux-mock-store';
-import { initialState } from '../../reducers/viewHandler';
-import { initialState as appInitialState } from '../../reducers/appHandler';
+import nock from "nock";
+import * as ACTION_TYPES from "../../constants/ActionTypes";
+import { merge } from "merge-anything";
+import thunk from "redux-thunk";
+import configureStore from "redux-mock-store";
+import { initialState } from "../../reducers/viewHandler";
+import { initialState as appInitialState } from "../../reducers/appHandler";
 import {
   createProcess,
-  handleProcessResponse
-} from '../../actions/ProcessActions';
-import { setProcessPending, setProcessSaved } from '../../actions/AppActions';
+  handleProcessResponse,
+} from "../../actions/ProcessActions";
+import { setProcessPending, setProcessSaved } from "../../actions/AppActions";
 
-const createState = (state = {}) => merge(
+const createState = (state = {}) =>
+  merge(
     {
-        viewHandler: initialState,
-        appHandler: appInitialState,
+      viewHandler: initialState,
+      appHandler: appInitialState,
     },
     state
-);
+  );
 
 describe('WindowActions thunks', () => {
     const mockStore = configureStore([thunk]);

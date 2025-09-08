@@ -19,10 +19,10 @@
     <POReference>POReference</POReference>
     <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>Line30_Pack_SSCC18</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>Line30_LUGTIN</GTIN_LU_PackingMaterial>
+        <M_HU_PackagingCode_Text>ISO1</M_HU_PackagingCode_Text>
+        <GTIN_PackingMaterial>Line30_LUGTIN</GTIN_PackingMaterial>
         <EDI_Exp_Desadv_Pack_Item>
-            <QtyCU>10</QtyCU>
+            <QtyCUsPerTU>10</QtyCUsPerTU>
             <QtyCUsPerLU>10</QtyCUsPerLU>
             <QtyTU>1</QtyTU>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>
@@ -61,10 +61,10 @@
     </EDI_Exp_Desadv_Pack>
     <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>Line20_Pack_SSCC18</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>Line20_LUGTIN</GTIN_LU_PackingMaterial>
+        <M_HU_PackagingCode_Text>ISO1</M_HU_PackagingCode_Text>
+        <GTIN_PackingMaterial>Line20_LUGTIN</GTIN_PackingMaterial>
         <EDI_Exp_Desadv_Pack_Item>
-            <QtyCU>60</QtyCU>
+            <QtyCUsPerTU>60</QtyCUsPerTU>
             <QtyCUsPerLU>60</QtyCUsPerLU>
             <QtyTU>1</QtyTU>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>
@@ -103,10 +103,10 @@
     </EDI_Exp_Desadv_Pack>
     <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>Line10_Pack_SSCC18</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
-        <GTIN_LU_PackingMaterial>Line10_LUGTIN</GTIN_LU_PackingMaterial>
+        <M_HU_PackagingCode_Text>ISO1</M_HU_PackagingCode_Text>
+        <GTIN_PackingMaterial>Line10_LUGTIN</GTIN_PackingMaterial>
         <EDI_Exp_Desadv_Pack_Item>
-            <QtyCU>24</QtyCU>
+            <QtyCUsPerTU>24</QtyCUsPerTU>
             <QtyCUsPerLU>24</QtyCUsPerLU>
             <QtyTU>1</QtyTU>
             <M_HU_PackagingCode_TU_Text>BOXS</M_HU_PackagingCode_TU_Text>

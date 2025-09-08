@@ -22,11 +22,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * #L%
  */
 
-
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.materialtracking.impl.MaterialTrackingPPOrderBL;
+import de.metas.materialtracking.model.I_C_Invoice_Detail;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.I_PP_Order;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,25 +34,22 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.eevolution.model.X_PP_Order;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.materialtracking.impl.MaterialTrackingPPOrderBL;
-import de.metas.materialtracking.model.I_C_Invoice_Detail;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.materialtracking.model.I_PP_Order;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 public class PP_Order_MaterialTracking_HandlerDAOTest
 {
 	private IContextAware context;
 	private PP_Order_MaterialTracking_HandlerDAO dao;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -92,7 +89,7 @@ public class PP_Order_MaterialTracking_HandlerDAOTest
 		final Iterator<I_PP_Order> resultActualIt = dao.retrievePPOrdersWithMissingICs(QueryLimit.NO_LIMIT);
 		final List<I_PP_Order> resultActual = IteratorUtils.toList(resultActualIt);
 
-		Assert.assertEquals("Invalid result", resultExpected, resultActual);
+		Assertions.assertEquals(resultExpected, resultActual, "Invalid result");
 	}
 
 	private I_PP_Order createPP_Order(
