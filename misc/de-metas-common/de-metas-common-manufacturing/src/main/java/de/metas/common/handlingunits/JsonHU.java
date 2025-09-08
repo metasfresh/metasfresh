@@ -139,6 +139,7 @@ public class JsonHU
 	}
 
 	@NonNull
+	@SuppressWarnings("SameParameterValue")
 	private static <T> T singleNonNullValue(@NonNull final String name, @Nullable final T value1, @Nullable final T value2)
 	{
 		if (value1 == null && value2 == null)
