@@ -25,7 +25,7 @@
 DROP VIEW IF EXISTS public.edi_cctop_invoic_500_v
 ;
 
-CREATE OR REPLACE TEMPORARY VIEW edi_cctop_invoic_500_v AS
+CREATE OR REPLACE VIEW edi_cctop_invoic_500_v AS
 SELECT SUM(il.qtyEntered)                                                        AS QtyInvoiced,
        CASE
            WHEN u.x12de355 = 'TU' THEN 'PCE'
