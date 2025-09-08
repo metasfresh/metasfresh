@@ -785,7 +785,7 @@ public class M_HU_StepDef
 				assertThat(jsonHU.getClearanceStatus().getCaption()).isEqualTo(clearanceStatusCaption);
 			}
 
-			assertThat(jsonHU.getJsonHUType()).isEqualTo(JsonHUType.valueOf(jsonHUType));
+			assertThat(jsonHU.getUnitType()).isEqualTo(JsonHUType.valueOf(jsonHUType));
 			assertThat(jsonHU.getAttributes().getAttributes().get(HU_ATTR_LOT_NUMBER)).isEqualTo(attrLotNo);
 			assertThat(jsonHU.getProducts().get(0).getProductName()).isEqualTo(productName);
 			assertThat(jsonHU.getProducts().get(0).getProductValue()).isEqualTo(productValue);
