@@ -51,6 +51,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -151,9 +152,14 @@ class OLCandOrderFactoryTest
 	@Builder(builderMethodName = "documentLocation", builderClassName = "$DocumentLocationBuilder")
 	private DocumentLocation createDocumentLocation(@NonNull final CountryId countryId, final String address1)
 	{
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		bpGroup.setName("bpGroup");
+		InterfaceWrapperHelper.saveRecord(bpGroup);
+
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 		bpartner.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
 		bpartner.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
+		bpartner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 		InterfaceWrapperHelper.saveRecord(bpartner);
 
 		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);
