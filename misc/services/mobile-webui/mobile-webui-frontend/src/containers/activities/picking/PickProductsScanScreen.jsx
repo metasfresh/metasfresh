@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
-import { getActivityById } from '../../../reducers/wfProcesses';
+import { getActivityById, getCustomQRCodeFormats } from '../../../reducers/wfProcesses';
 import { getNextEligibleLineToPick } from '../../../utils/picking';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
@@ -17,9 +17,11 @@ const PickProductsScanScreen = () => {
   });
 
   const { activity } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId }), shallowEqual);
+  const customQRCodeFormats = getCustomQRCodeFormats({ activity });
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
-    const qrCode = parseQRCodeString(scannedBarcode);
+    const qrCode = parseQRCodeString({ string: scannedBarcode, customQRCodeFormats });
+    // console.log('onBarcodeScanned', { scannedBarcode, qrCode });
     const line = getNextEligibleLineToPick({ activity, productId: qrCode.productId });
     if (!line) {
       throw 'No matching lines found'; // TODO trl

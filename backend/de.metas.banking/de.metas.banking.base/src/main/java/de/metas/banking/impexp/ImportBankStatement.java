@@ -41,6 +41,7 @@ public class ImportBankStatement extends JavaProcess
 		importProcess.setCtx(getCtx());
 		importProcess.setParameters(getParameterAsIParams());
 		importProcess.setLoggable(this);
+		importProcess.notifyUserId(getUserId());
 	}
 
 	@Override

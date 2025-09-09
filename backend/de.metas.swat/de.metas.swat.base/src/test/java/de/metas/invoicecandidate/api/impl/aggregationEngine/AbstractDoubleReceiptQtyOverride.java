@@ -46,8 +46,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * The general scenario if these tests is a duplicated receipt, i.e. 50 were ordered and then two inouts of 50 each were received. In this scenario, the user wants to set
@@ -119,7 +118,8 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 			iol121 = createInvoiceCandidateInOutLine(ic1, inOut12, qtysDelivered, inOutDocumentNo + "_1");
 			completeInOut(inOut12);
 		}
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(2));
+		
+		 assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1))).hasSize(2);
 
 		return Arrays.asList(iol111, iol121);
 	}
@@ -138,6 +138,6 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic1);
 
-		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(2));
+		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1))).hasSize(2);
 	}
 }

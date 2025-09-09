@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-rabbitmq
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,10 +23,10 @@
 package de.metas.camel.externalsystems.rabbitmq.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.rabbitmq.bpartner.processor.BPartnerDispatchMessageProcessor;
 import de.metas.camel.externalsystems.rabbitmq.bpartner.processor.ExportBPartnerProcessor;
-import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
@@ -50,7 +50,7 @@ public class RabbitMQExportBPartnerRouteBuilder extends RouteBuilder
 
 		from(direct(EXPORT_BPARTNER_ROUTE_ID))
 				.routeId(EXPORT_BPARTNER_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(new ExportBPartnerProcessor())
 
 				.to("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}")

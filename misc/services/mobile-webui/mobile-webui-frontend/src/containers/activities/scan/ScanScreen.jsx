@@ -1,19 +1,19 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { setScannedBarcode } from '../../../actions/ScanActions';
-import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { setScannedBarcode, useScannedBarcodeSuggestions } from '../../../actions/ScanActions';
 import { updateHeaderEntry } from '../../../actions/HeaderActions';
-import { postScannedBarcode } from '../../../api/scanner';
 import { getActivityById } from '../../../reducers/wfProcesses';
 
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { fireWFActivityCompleted } from '../../../apps';
 import { toastError } from '../../../utils/toast';
 import Spinner from '../../../components/Spinner';
 import * as uiTrace from '../../../utils/ui_trace';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import PropTypes from 'prop-types';
+import ButtonDetails from '../../../components/buttons/ButtonDetails';
 
 const ScanScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId } = useScreenDefinition({
@@ -22,18 +22,21 @@ const ScanScreen = () => {
   });
 
   const queryParameters = new URLSearchParams(window.location.search);
-  const useTheAlreadyScannedQrCode = queryParameters.get('resendQr');
+  const isUseTheAlreadyScannedQrCode = queryParameters.get('resendQr') === 'true';
   const validOptionIndex = queryParameters.get('validOptionIndex');
 
-  const { activityCaption, userInstructions, currentValue, validOptions } = useSelector((state) => {
-    const activity = getActivityById(state, wfProcessId, activityId);
-    return {
-      activityCaption: activity?.caption,
-      userInstructions: activity?.userInstructions,
-      currentValue: activity?.dataStored.currentValue,
-      validOptions: activity?.dataStored?.validOptions,
-    };
-  });
+  const { activityCaption, userInstructions, currentValue, validOptions, isDisplaySuggestions } = useSelector(
+    (state) => {
+      const activity = getActivityById(state, wfProcessId, activityId);
+      return {
+        activityCaption: activity?.caption,
+        userInstructions: activity?.userInstructions,
+        currentValue: activity?.dataStored.currentValue,
+        validOptions: activity?.dataStored?.validOptions,
+        isDisplaySuggestions: activity?.dataStored?.displaySuggestions ?? false,
+      };
+    }
+  );
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -41,58 +44,126 @@ const ScanScreen = () => {
   }, [url, activityCaption, userInstructions]);
 
   useEffect(() => {
-    if (useTheAlreadyScannedQrCode === 'true' && currentValue?.qrCode !== undefined) {
+    if (isUseTheAlreadyScannedQrCode && currentValue?.qrCode !== undefined) {
       onBarcodeScanned({ scannedBarcode: currentValue?.qrCode });
     }
-  }, [useTheAlreadyScannedQrCode, currentValue?.qrCode]);
+  }, [isUseTheAlreadyScannedQrCode, currentValue?.qrCode]);
+
+  const { isScannedBarcodeSuggestionsLoading, scannedBarcodeSuggestions } = useScannedBarcodeSuggestions({
+    wfProcessId,
+    activityId,
+    enabled: isDisplaySuggestions,
+  });
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
-    //console.log('onBarcodeScanned', { scannedBarcode });
+    // console.log('onBarcodeScanned', { scannedBarcode, history });
     uiTrace.trace({ eventName: 'barcodeScanned', scannedBarcode, wfProcessId, activityId });
 
+    //
+    // Validate scanned barcode
     if (validOptionIndex != null && !validOptions?.length) {
-      toastError({ messageKey: 'activities.mfg.validateSourceLocator.noValidOption' });
+      toastError({
+        messageKey: 'activities.mfg.validateSourceLocator.noValidOption',
+        context: { validOptionIndex, validOptions },
+      });
       history.goBack();
       return;
     }
 
-    if (validOptionIndex != null && scannedBarcode !== validOptions[validOptionIndex]?.qrCode) {
-      toastError({ messageKey: 'activities.mfg.validateSourceLocator.qrDoesNotMatch' });
+    const scannedBarcodeExpected = validOptionIndex != null ? validOptions[validOptionIndex]?.qrCode : null;
+    if (scannedBarcodeExpected != null && scannedBarcode !== scannedBarcodeExpected) {
+      toastError({
+        messageKey: 'activities.mfg.validateSourceLocator.qrDoesNotMatch',
+        context: { scannedBarcode, scannedBarcodeExpected, validOptionIndex, validOptions },
+      });
       return;
     }
 
-    dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode }));
-
-    return postScannedBarcode({ wfProcessId, activityId, scannedBarcode })
-      .then((wfProcess) => {
-        //console.log('postScannedBarcode.then', { wfProcess });
-        dispatch(updateWFProcess({ wfProcess }));
-
-        dispatch(
-          fireWFActivityCompleted({
-            applicationId,
-            wfProcessId,
-            activityId,
-            history,
-            defaultAction: () => history.goBack(),
-          })
-        );
+    dispatch(
+      setScannedBarcode({
+        applicationId,
+        wfProcessId,
+        activityId,
+        scannedBarcode,
+        history,
+        onWFActivityCompleted: () => {
+          history.goBack();
+        },
       })
-      .catch((error) => {
-        dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null }));
-
-        throw {
-          axiosError: error,
-          fallbackMessageKey: 'activities.scanBarcode.invalidScannedBarcode',
-        };
-      });
+    );
   };
 
-  if (useTheAlreadyScannedQrCode === 'true') {
+  if (isUseTheAlreadyScannedQrCode) {
     return <Spinner />;
+  } else {
+    return (
+      <>
+        <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />
+        {isDisplaySuggestions && (
+          <ScannedBarcodeSuggestions
+            isLoading={isScannedBarcodeSuggestionsLoading}
+            suggestions={scannedBarcodeSuggestions}
+            onClick={(suggestion) => onBarcodeScanned({ scannedBarcode: suggestion.qrCode })}
+          />
+        )}
+        )
+      </>
+    );
   }
-
-  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />;
 };
 
 export default ScanScreen;
+
+//
+//
+//
+//
+//
+
+const ScannedBarcodeSuggestions = ({ isLoading, suggestions, onClick }) => {
+  if (isLoading) return <Spinner />;
+
+  return (
+    <>
+      {suggestions?.list.map((suggestion, index) => (
+        <ScannedBarcodeSuggestion key={index} suggestion={suggestion} onClick={onClick} />
+      ))}
+    </>
+  );
+};
+ScannedBarcodeSuggestions.propTypes = {
+  isLoading: PropTypes.bool,
+  suggestions: PropTypes.object,
+  onClick: PropTypes.func.isRequired,
+};
+
+//
+//
+//
+//
+//
+
+const ScannedBarcodeSuggestion = ({ suggestion, onClick }) => {
+  // console.log('ScannedBarcodeSuggestion', { suggestion });
+  return (
+    <ButtonWithIndicator
+      caption={suggestion.caption + ' ' + suggestion.detail}
+      onClick={() => onClick(suggestion)}
+      additionalCssClass="pickingSlot-button" // needed for playwright testing
+      testId={suggestion.qrCode}
+      data-bpartnerlocationid={suggestion.additionalProperties?.bpartnerLocationId}
+      data-detail-value1={suggestion.value1}
+    >
+      <ButtonDetails
+        caption1={suggestion.property1}
+        value1={suggestion.value1}
+        caption2={suggestion.property2}
+        value2={suggestion.value2}
+      />
+    </ButtonWithIndicator>
+  );
+};
+ScannedBarcodeSuggestion.propTypes = {
+  suggestion: PropTypes.object,
+  onClick: PropTypes.func.isRequired,
+};

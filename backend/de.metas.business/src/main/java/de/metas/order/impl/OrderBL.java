@@ -40,6 +40,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -81,6 +82,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.Tax;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -477,7 +479,11 @@ public class OrderBL implements IOrderBL
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
-		if (!docType.isCopyDescriptionToDocument())
+
+		@Nullable
+		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+
+		if (copyDescriptionAndDocumentNote == null)
 		{
 			return;
 		}
@@ -1341,5 +1347,59 @@ public class OrderBL implements IOrderBL
 	public void deleteLineById(final OrderAndLineId orderAndLineId)
 	{
 		orderDAO.deleteByLineId(orderAndLineId);
+	}
+
+	@Override
+	public String getDescriptionBottomById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDescriptionBottom();
+	}
+
+	@Override
+	public String getDescriptionById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDescription();
+	}
+
+	@Override
+	public void setShipperId(@NonNull final I_C_Order order)
+	{
+		order.setM_Shipper_ID(ShipperId.toRepoId(findShipperId(order)));
+	}
+
+	private ShipperId findShipperId(@NonNull final I_C_Order orderRecord)
+	{
+		final Optional<ShipperId> dropShipShipperId = getDropShipAddressShipperId(orderRecord);
+		return dropShipShipperId.orElse(getDeliveryAddressShipperId(orderRecord));
+	}
+
+	private Optional<ShipperId> getDropShipAddressShipperId(final I_C_Order orderRecord)
+	{
+		if (orderRecord.getDropShip_BPartner_ID() <= 0 || orderRecord.getDropShip_Location_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final Optional<ShipperId> dropShipShipperId = partnerDAO.getShipperIdByBPLocationId(
+				BPartnerLocationId.ofRepoId(
+						orderRecord.getDropShip_BPartner_ID(),
+						orderRecord.getDropShip_Location_ID()));
+
+		return Optional.ofNullable(dropShipShipperId.orElse(getPartnerShipperId(BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID()))));
+	}
+
+	private ShipperId getDeliveryAddressShipperId(final I_C_Order orderRecord)
+	{
+		final Optional<ShipperId> deliveryShipShipperId = partnerDAO.getShipperIdByBPLocationId(
+				BPartnerLocationId.ofRepoId(
+						orderRecord.getC_BPartner_ID(),
+						orderRecord.getC_BPartner_Location_ID()));
+
+		return deliveryShipShipperId.orElse(getPartnerShipperId(BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID())));
+	}
+
+	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
+	{
+		return partnerDAO.getShipperId(partnerId);
 	}
 }

@@ -1,28 +1,26 @@
 package de.metas.dataentry.data;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.util.Optional;
-
+import de.metas.dataentry.DataEntrySubTabId;
+import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
+import de.metas.dataentry.model.I_DataEntry_Record;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
 import org.json.JSONException;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import de.metas.dataentry.DataEntrySubTabId;
-import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
-import de.metas.dataentry.model.I_DataEntry_Record;
+import java.io.IOException;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -45,15 +43,12 @@ import de.metas.dataentry.model.I_DataEntry_Record;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class DataEntryRecordRepositoryTest
 {
-	@Rule
-	public final TestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
-
 	private DataEntryRecordRepository dataEntryRecordRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

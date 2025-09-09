@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -76,6 +77,7 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 	String userElementString7;
 
 	boolean simulated;
+	ProductPlanningId productPlanningId;
 
 	@Builder
 	@JsonCreator
@@ -99,7 +101,8 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 			@JsonProperty("userElementString5") @Nullable final String userElementString5,
 			@JsonProperty("userElementString6") @Nullable final String userElementString6,
 			@JsonProperty("userElementString7") @Nullable final String userElementString7,
-			@JsonProperty("simulated") final boolean simulated)
+			@JsonProperty("simulated") final boolean simulated,
+			@JsonProperty("productPlanningId") @Nullable final ProductPlanningId productPlanningId)
 	{
 		this.supplyCandidateRepoId = Check.assumeGreaterThanZero(supplyCandidateRepoId, "supplyCandidateRepoId");
 		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
@@ -123,6 +126,7 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 		this.userElementString6 = userElementString6;
 		this.userElementString7 = userElementString7;
 		this.simulated = simulated;
+		this.productPlanningId = productPlanningId;
 	}
 
 	@Override

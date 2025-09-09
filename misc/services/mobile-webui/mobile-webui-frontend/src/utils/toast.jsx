@@ -62,10 +62,12 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
       const data = axiosError.response && unboxAxiosResponse(axiosError.response);
       if (data && data.errors && data.errors[0] && data.errors[0].message) {
         const error = data.errors[0];
-        return extractUserFriendlyErrorSingleErrorObject(error);
+        return extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey });
       } else if (axiosError.response.data.error) {
-        return extractUserFriendlyErrorSingleErrorObject(axiosError.response.data.error);
+        return extractUserFriendlyErrorSingleErrorObject({ error: axiosError.response.data.error, fallbackMessageKey });
       }
+    } else if (axiosError.message) {
+      return extractUserFriendlyErrorSingleErrorObject({ error: axiosError, fallbackMessageKey });
     }
   }
 
@@ -100,17 +102,17 @@ export const extractErrorResponseFromAxiosError = (axiosError) => {
   return unboxAxiosResponse(axiosError.response);
 };
 
-function extractUserFriendlyErrorSingleErrorObject(error) {
+function extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey }) {
   if (!error) {
     // null/empty error message... shall not happen
-    return trl('error.PleaseTryAgain');
+    return trl(fallbackMessageKey ?? 'error.PleaseTryAgain');
   }
   if (typeof error === 'object') {
     if (error.userFriendlyError || window.showAllErrorMessages) {
       return error.message;
     } else {
       // don't scare the user with weird errors. Better show him some generic error.
-      return trl('error.PleaseTryAgain');
+      return trl(fallbackMessageKey ?? 'error.PleaseTryAgain');
     }
   } else {
     // assume it's a string

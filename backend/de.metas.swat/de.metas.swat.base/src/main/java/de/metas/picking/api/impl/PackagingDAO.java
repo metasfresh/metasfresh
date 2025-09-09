@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -48,6 +49,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -133,7 +135,31 @@ public class PackagingDAO implements IPackagingDAO
 		// Filter: PreparationDate
 		if (query.getPreparationDate() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+		}
+
+		//
+		// Filter: IsFixedPreparationDate
+		final ZonedDateTime maximumFixedPreparationDate = query.getMaximumFixedPreparationDate();
+		if (maximumFixedPreparationDate != null)
+		{
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+					.setJoinOr()
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, maximumFixedPreparationDate.toInstant())
+					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedPreparationDate, false)
+			);
+		}
+
+		//
+		// Filter: IsFixedDatePromised
+		final ZonedDateTime maximumFixedPromisedDate = query.getMaximumFixedPromisedDate();
+		if (maximumFixedPromisedDate != null)
+		{
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+					.setJoinOr()
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, maximumFixedPromisedDate.toInstant())
+					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
+			);
 		}
 
 		if (query.getShipperId() != null)
@@ -205,17 +231,17 @@ public class PackagingDAO implements IPackagingDAO
 		{
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_HandOver_Location_ID, query.getHandoverLocationIds());
 		}
-		
+
 		//
-		if(query.getScannedProductCodes() != null)
+		if (query.getScannedProductCodes() != null)
 		{
 			final ICompositeQueryFilter<I_M_Packageable_V> productCodesFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
-			for(final ResolvedScannedProductCode scannedProductCode : query.getScannedProductCodes())
+			for (final ResolvedScannedProductCode scannedProductCode : query.getScannedProductCodes())
 			{
 				final ICompositeQueryFilter<I_M_Packageable_V> currentProductCodeFilter = productCodesFilter.addCompositeQueryFilter()
 						.setJoinAnd()
 						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, scannedProductCode.getProductId());
-				if(scannedProductCode.getBpartnerId() != null)
+				if (scannedProductCode.getBpartnerId() != null)
 				{
 					currentProductCodeFilter.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, scannedProductCode.getBpartnerId());
 				}

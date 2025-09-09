@@ -3,6 +3,7 @@ package de.metas.handlingunits.allocation.transfer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Check;
@@ -34,8 +35,6 @@ public class LUTUResult
 	@NonNull @Builder.Default TUsList topLevelTUs = TUsList.EMPTY;
 
 	public static LUTUResult ofLU(@NonNull final I_M_HU lu, @NonNull final TU... tus) {return ofLU(LU.of(lu, tus));}
-
-	public static LUTUResult ofLU(@NonNull final I_M_HU lu, @NonNull final TUsList tus) {return ofLU(LU.of(lu, tus));}
 
 	public static LUTUResult ofLU(@NonNull final LU lu) {return builder().lu(lu).build();}
 
@@ -71,13 +70,12 @@ public class LUTUResult
 		return this;
 	}
 
-	public LUTUResult assertNoTopLevelTUs()
+	public void assertNoTopLevelTUs()
 	{
 		if (!topLevelTUs.isEmpty())
 		{
 			throw new AdempiereException("Expected no top level TUs: " + this);
 		}
-		return this;
 	}
 
 	public List<I_M_HU> getTopLevelTURecords() {return topLevelTUs.toHURecords();}
@@ -204,6 +202,24 @@ public class LUTUResult
 				throw new AdempiereException("Expected single TU but got " + this);
 			}
 		}
+
+		/**
+		 * @return TU (aggregated or non-aggregated)
+		 */
+		public boolean isTransportUnitOrAggregate()
+		{
+			return !isVHU();
+		}
+
+		/**
+		 * @return true if pure VHU (and not aggregated TUs)
+		 */
+		public boolean isVHU()
+		{
+			return !isAggregate && HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID()).isVirtual();
+		}
+
+		public boolean containsAnyOfHUIds(final Collection<HuId> huIds) {return huIds.contains(getId());}
 	}
 
 	//
@@ -287,6 +303,14 @@ public class LUTUResult
 						.collect(collect());
 			}
 		}
+
+		public boolean containsAnyOfHUIds(final Collection<HuId> huIds)
+		{
+			if (huIds.isEmpty()) {return false;}
+			
+			return list.stream().anyMatch(tu -> tu.containsAnyOfHUIds(huIds));
+		}
+
 	}
 
 	//
@@ -334,6 +358,8 @@ public class LUTUResult
 
 		public Stream<TU> streamTUs() {return tus.stream();}
 
+		public QtyTU getQtyTU() {return tus.getQtyTU();}
+
 		public LU mergeWith(@NonNull final LU other)
 		{
 			if (this.hu.getM_HU_ID() != other.hu.getM_HU_ID())
@@ -368,5 +394,12 @@ public class LUTUResult
 			}
 		}
 
+		public boolean containsAnyOfHUIds(final Collection<HuId> huIds)
+		{
+			if (huIds.isEmpty()) {return false;}
+
+			return huIds.contains(getId()) // LU matches
+					|| tus.containsAnyOfHUIds(huIds); // any of the TU matches
+		}
 	}
 }

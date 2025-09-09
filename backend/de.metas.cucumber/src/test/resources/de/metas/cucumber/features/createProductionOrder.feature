@@ -53,7 +53,7 @@ Feature: create production order
   @from:cucumber
   @Id:S0129.1_100
   @Id:S0129.2_100
-  Scenario:  The manufacturing order is created from a manufacturing order candidate, then voided
+  Scenario:  The manufacturing order is created from a manufacturing order candidate, then voided. Then we void the candidate.
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
       | p_1        | standard_category     |
@@ -196,8 +196,21 @@ Feature: create production order
       | 2          | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0    | productPlanningASI        |
       | 3          | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100 | bomLineASI                |
 
+    And the following PP_Order_Candidates are closed
+      | PP_Order_Candidate_ID.Identifier |
+      | oc_1                             |
 
+    And after not more than 60s, PP_Order_Candidates are found
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | M_AttributeSetInstance_ID |
+      | oc_1       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 0 PCE      | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | true     | bomASI                    |
 
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_AttributeSetInstance_ID |
+      # Sales Order / Shipment Schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | -10 | -10 | olASI                     |
+      # PP_Order_Candidate:
+      | 2          | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 0   | -10 | productPlanningASI        |
+      | 3          | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 0   | 0   | bomLineASI                |
 
 
 

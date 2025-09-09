@@ -6,6 +6,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.currency.Amount;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -60,12 +61,12 @@ public class FactAcctToTabularStringConverter
 			I_Fact_Acct.COLUMNNAME_C_BPartner_ID
 	);
 
-	public Table toTabular(final I_Fact_Acct singleRecord, int lineNo)
+	public Table toTabular(final I_Fact_Acct singleRecord, final int lineNo)
 	{
 		return toTabular(ImmutableList.of(singleRecord), lineNo);
 	}
 
-	public Table toTabular(final List<I_Fact_Acct> records, Integer startLineNo)
+	public Table toTabular(final List<I_Fact_Acct> records, final Integer startLineNo)
 	{
 		final Table table = new Table();
 
@@ -80,7 +81,7 @@ public class FactAcctToTabularStringConverter
 		return table;
 	}
 
-	private Row toRow(final I_Fact_Acct record, final Integer lineNo)
+	private Row toRow(final I_Fact_Acct record, @Nullable final Integer lineNo)
 	{
 		final Row row = new Row();
 
@@ -186,6 +187,7 @@ public class FactAcctToTabularStringConverter
 		return CurrencyId.ofRepoId(record.getC_Currency_ID());
 	}
 
+	@Nullable
 	private String extractQuantityString(final I_Fact_Acct record)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
@@ -204,6 +206,7 @@ public class FactAcctToTabularStringConverter
 		}
 	}
 
+	@Nullable
 	private String extractBPartnerString(final I_Fact_Acct record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
@@ -224,6 +227,7 @@ public class FactAcctToTabularStringConverter
 		return "<" + bpartnerId.getRepoId() + ">";
 	}
 
+	@Nullable
 	private String extractProductString(final I_Fact_Acct record)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());

@@ -1,26 +1,5 @@
 package de.metas.shipping;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyCode;
@@ -42,6 +21,26 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -67,6 +66,7 @@ import de.metas.util.Services;
 
 public class PurchaseOrderToShipperTransportationServiceTest
 {
+	public static final int M_SHIPPER_ID = 1000000;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private CurrencyId chf;
 
@@ -295,6 +295,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
 		order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		order.setM_Shipper_ID(M_SHIPPER_ID);
 
 		order.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 6), orgDAO.getTimeZone(OrgId.ofRepoId(warehouse.getAD_Org_ID()))));
 

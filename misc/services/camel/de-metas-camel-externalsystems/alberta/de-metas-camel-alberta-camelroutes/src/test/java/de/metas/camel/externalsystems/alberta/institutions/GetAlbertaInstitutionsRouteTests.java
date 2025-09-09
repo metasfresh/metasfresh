@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-alberta-camelroutes
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -146,7 +146,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		//fire the route
 		template.sendBody("direct:" + GetAlbertaInstitutionsRoute.EXTERNAL_SYSTEM_REQUEST, invokeExternalSystemRequest);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(1);
 	}
 
@@ -179,7 +179,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		//fire the route
 		template.sendBody("direct:" + GetAlbertaInstitutionsRoute.EXTERNAL_SYSTEM_REQUEST, invokeExternalSystemRequest);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(1);
 	}
 
@@ -212,7 +212,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		//fire the route
 		template.sendBody("direct:" + GetAlbertaInstitutionsRoute.EXTERNAL_SYSTEM_REQUEST, invokeExternalSystemRequest);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(1);
 	}
 
@@ -245,7 +245,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		//fire the route
 		template.sendBody("direct:" + GetAlbertaInstitutionsRoute.EXTERNAL_SYSTEM_REQUEST, invokeExternalSystemRequest);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(1);
 	}
 
@@ -278,7 +278,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		//fire the route
 		template.sendBody("direct:" + GetAlbertaInstitutionsRoute.EXTERNAL_SYSTEM_REQUEST, invokeExternalSystemRequest);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(1);
 	}
 
@@ -311,26 +311,26 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		//fire the route
 		template.sendBody("direct:" + GetAlbertaInstitutionsRoute.EXTERNAL_SYSTEM_REQUEST, invokeExternalSystemRequest);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(1);
 	}
 
 	private void prepareRouteForTesting(final MockBPartnerUpsertResponse mockBPartnerUpsertResponse) throws Exception
 	{
 		AdviceWith.adviceWith(context, GetAlbertaInstitutionsRoute.EXTERNAL_SYSTEM_REQUEST,
-							  advice -> {
-								  advice.weaveById(GetAlbertaInstitutionsRoute.PREPARE_ALBERTA_INSTITUTIONS_CONTEXT_PROCESSOR_ID)
-										  .replace()
-										  .process(new MockPrepareContext());
+				advice -> {
+					advice.weaveById(GetAlbertaInstitutionsRoute.PREPARE_ALBERTA_INSTITUTIONS_CONTEXT_PROCESSOR_ID)
+							.replace()
+							.process(new MockPrepareContext());
 
-								  advice.weaveById(GetAlbertaInstitutionsRoute.PREPARE_ALBERTA_BPARTNER_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_UPSERT_BPARTNER_REQUEST);
+					advice.weaveById(GetAlbertaInstitutionsRoute.PREPARE_ALBERTA_BPARTNER_PROCESSOR_ID)
+							.after()
+							.to(MOCK_UPSERT_BPARTNER_REQUEST);
 
-								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-										  .skipSendToOriginalEndpoint()
-										  .process(mockBPartnerUpsertResponse);
-							  });
+					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+							.skipSendToOriginalEndpoint()
+							.process(mockBPartnerUpsertResponse);
+				});
 	}
 
 	private static class MockPrepareContext implements Processor

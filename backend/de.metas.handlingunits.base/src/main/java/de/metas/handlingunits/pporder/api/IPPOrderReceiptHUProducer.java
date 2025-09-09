@@ -25,6 +25,7 @@ import java.util.Set;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface IPPOrderReceiptHUProducer
 {
 	/**

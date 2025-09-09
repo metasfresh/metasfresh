@@ -31,7 +31,8 @@ export const GetQuantityDialog = {
         // Replace `.` with locale-appropriate decimal, e.g., `,` for some regions
         const correctedQty = `${qty}`.replace('.', (1.1).toLocaleString().substring(1, 2));
 
-        await page.locator('#catch-weight').type(correctedQty);
+        const field = page.locator('#catch-weight');
+        await clickAndType(field, correctedQty);
     }),
 
     scanCatchWeightQRCode: async ({ qrCode, stepName }) => await test.step(`${NAME} - Scan ${stepName}: ${qrCode}`, async () => {
@@ -126,3 +127,16 @@ const expectMissingOrDisabled = async (locator) => {
         await expect(locator).toBeDisabled();
     }
 };
+
+const clickAndType = async (field, value) => {
+    // Tap the field before, to gain focus so our code will react and select all text
+    await field.tap();
+    // ... so when typing, we will actually override the current value
+    await field.type(value);
+
+    // cannot check in case of qtys, because we set "0,789" but we get "0.789"
+    // const enteredValue = await field.inputValue();
+    // if (enteredValue !== value) {
+    //     throw new Error(`Expected value '${value}', but got '${enteredValue}'`);
+    // }
+}

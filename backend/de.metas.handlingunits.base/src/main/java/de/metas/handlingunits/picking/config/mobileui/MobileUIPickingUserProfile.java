@@ -52,7 +52,7 @@ public class MobileUIPickingUserProfile
 					.isAllowSkippingRejectedReason(false)
 					.createShipmentPolicy(CreateShipmentPolicy.DO_NOT_CREATE)
 					.isAllowCompletingPartialPickingJob(true)
-       			                .isShowLastPickedBestBeforeDateForLines(false)
+					.isShowLastPickedBestBeforeDateForLines(false)
 					.build())
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
@@ -136,9 +136,17 @@ public class MobileUIPickingUserProfile
 	@NonNull
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId, @NonNull PickingJobOptionsCollection pickingJobOptionsCollection)
 	{
-		return customerId != null
-				? customerConfigs.getPickingJobOptionsId(customerId).map(pickingJobOptionsCollection::getById).orElse(defaultPickingJobOptions)
-				: defaultPickingJobOptions;
+		final PickingJobOptions customerPickingJobOptions = customerId != null
+				? customerConfigs.getPickingJobOptionsId(customerId).map(pickingJobOptionsCollection::getById).orElse(null)
+				: null;
+		if (customerPickingJobOptions != null)
+		{
+			return customerPickingJobOptions.fallbackTo(defaultPickingJobOptions);
+		}
+		else
+		{
+			return defaultPickingJobOptions;
+		}
 	}
 
 	public PickingJobAggregationType getAggregationType(@Nullable final BPartnerId customerId, @NonNull PickingJobOptionsCollection pickingJobOptionsCollection)

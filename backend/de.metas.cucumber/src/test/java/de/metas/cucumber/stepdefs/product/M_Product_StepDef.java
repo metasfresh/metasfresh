@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -70,6 +71,7 @@ import org.compiere.util.DB;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
@@ -243,11 +245,9 @@ public class M_Product_StepDef
 	@Given("load M_Product:")
 	public void load_product(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			loadProduct(tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.forEach(this::loadProduct);
 	}
 
 	@And("load product by value:")
@@ -339,6 +339,11 @@ public class M_Product_StepDef
 		productTable.putOrReplace(tableRow.getAsIdentifier(), productRecord);
 
 		restTestContext.setIntVariableFromRow(tableRow, productRecord::getM_Product_ID);
+
+		tableRow.getAsOptionalIdentifier("REST.Context.Value")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), productRecord.getValue()));
+		tableRow.getAsOptionalIdentifier("REST.Context.Name")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), productRecord.getName()));
 	}
 
 	private void locate_product_by_external_identifier(@NonNull final Map<String, String> tableRow)
@@ -403,18 +408,12 @@ public class M_Product_StepDef
 		return productType;
 	}
 
-	private void loadProduct(@NonNull final Map<String, String> row)
+	private void loadProduct(@NonNull final DataTableRow row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 
-		final String id = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_M_Product_ID);
-
-		if (de.metas.util.Check.isNotBlank(id))
-		{
-			final I_M_Product productRecord = productDAO.getById(Integer.parseInt(id));
-
-			productTable.putOrReplace(identifier, productRecord);
-		}
+		final OptionalInt optionalProductId = row.getAsOptionalInt(I_M_Product.COLUMNNAME_M_Product_ID);
+		optionalProductId.ifPresent(id -> productTable.putOrReplace(identifier, productDAO.getById(id)));
 	}
 
 	private void updateMProduct(@NonNull final DataTableRow row)
@@ -425,7 +424,9 @@ public class M_Product_StepDef
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(productRecord::setGTIN);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
+		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 
 		saveRecord(productRecord);
+		productTable.putOrReplace(row.getAsIdentifier(), productRecord);
 	}
 }

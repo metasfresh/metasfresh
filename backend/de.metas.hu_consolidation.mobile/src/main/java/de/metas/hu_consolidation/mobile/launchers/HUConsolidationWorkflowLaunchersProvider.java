@@ -3,7 +3,7 @@ package de.metas.hu_consolidation.mobile.launchers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.picking.slot.PickingSlotQuery;
+import de.metas.handlingunits.picking.slot.PickingSlotQueueQuery;
 import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.picking.slot.PickingSlotQueuesSummary;
@@ -56,7 +56,7 @@ public class HUConsolidationWorkflowLaunchersProvider
 
 		//
 		// New possible jobs
-		streamNewJobReferences(PickingSlotQuery.builder()
+		streamNewJobReferences(PickingSlotQueueQuery.builder()
 				.excludePickingSlotIds(pickingSlotIdsAlreadyInUse)
 				.build())
 				.forEach(jobReferences::add);
@@ -64,7 +64,7 @@ public class HUConsolidationWorkflowLaunchersProvider
 		return toWorkflowLaunchersList(jobReferences);
 	}
 
-	private Stream<HUConsolidationJobReference> streamNewJobReferences(@NonNull final PickingSlotQuery query)
+	private Stream<HUConsolidationJobReference> streamNewJobReferences(@NonNull final PickingSlotQueueQuery query)
 	{
 		final PickingSlotQueues pickingSlotQueues = pickingSlotService.getNotEmptyQueues(query);
 		final List<PickingSlotReservation> pickingSlots = pickingSlotService.getPickingSlotReservations(pickingSlotQueues.getPickingSlotIds());
@@ -139,7 +139,7 @@ public class HUConsolidationWorkflowLaunchersProvider
 			return PickingSlotQueuesSummary.EMPTY;
 		}
 
-		return pickingSlotService.getNotEmptyQueuesSummary(PickingSlotQuery.onlyPickingSlotIds(pickingSlotIdsWithoutStats));
+		return pickingSlotService.getNotEmptyQueuesSummary(PickingSlotQueueQuery.onlyPickingSlotIds(pickingSlotIdsWithoutStats));
 	}
 
 	//

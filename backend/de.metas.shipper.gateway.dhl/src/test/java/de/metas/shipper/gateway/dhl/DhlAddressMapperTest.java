@@ -43,7 +43,7 @@ public class DhlAddressMapperTest
 				.street1("Main Street")
 				.street2("Suite 1")
 				.houseNo("123A")
-				.zipCode("12345")
+				.zipCode(" 12345")
 				.city("Testville")
 				.country(CountryCode.builder()
 						.alpha2("XX")
@@ -76,7 +76,7 @@ public class DhlAddressMapperTest
 				.street1("Second Street")
 				.street2("Apt 101")
 				.houseNo("456B")
-				.zipCode("67890")
+				.zipCode("SW1W 0NY ")
 				.city("Exampletown")
 				.country(CountryCode.builder()
 						.alpha2("XX")
@@ -96,7 +96,7 @@ public class DhlAddressMapperTest
 		assertThat(result.getName2()).isEqualTo("Dept B");
 		assertThat(result.getAddressStreet()).isEqualTo("Second Street");
 		assertThat(result.getAddressHouse()).isEqualTo("456B");
-		assertThat(result.getPostalCode()).isEqualTo("67890");
+		assertThat(result.getPostalCode()).isEqualTo("SW1W 0NY");
 		assertThat(result.getCity()).isEqualTo("Exampletown");
 		assertThat(result.getCountry()).isEqualTo("AFG");
 		assertThat(result.getAdditionalAddressInformation1()).isEqualTo("Apt 101");

@@ -39,7 +39,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Invoice_Candidate_StefDef
 {
@@ -59,15 +59,13 @@ public class C_Invoice_Candidate_StefDef
 
 		final List<JsonCheckInvoiceCandidatesStatusResponseItem> responseItemList = statusResponse.getInvoiceCandidates();
 		assertThat(responseItemList).isNotNull();
-		assertThat(responseItemList.size()).isEqualTo(1);
-
-		final JsonCheckInvoiceCandidatesStatusResponseItem responseItem = responseItemList.get(0);
 
 		final SoftAssertions softly = new SoftAssertions();
 
 		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
+		for (int i = 0; i < dataTable.size(); i++)
 		{
+			final Map<String, String> row = dataTable.get(i);
 			final String externalHeaderId = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_ExternalHeaderId);
 			final String externalLineId = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_ExternalLineId);
 			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyEntered);
@@ -75,6 +73,7 @@ public class C_Invoice_Candidate_StefDef
 			final BigDecimal qtyInvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced);
 			final boolean processed = DataTableUtil.extractBooleanForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_Processed);
 
+			final JsonCheckInvoiceCandidatesStatusResponseItem responseItem = responseItemList.get(i);
 			softly.assertThat(responseItem.getExternalHeaderId().getValue()).as("externalHeaderId").isEqualTo(externalHeaderId);
 			softly.assertThat(responseItem.getExternalLineId().getValue()).as("externalLineId").isEqualTo(externalLineId);
 			softly.assertThat(responseItem.getQtyToInvoice()).as("qtyToInvoice").isEqualTo(qtyToInvoice);

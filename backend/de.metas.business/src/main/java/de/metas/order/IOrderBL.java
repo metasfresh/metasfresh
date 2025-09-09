@@ -52,6 +52,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
@@ -332,4 +333,16 @@ public interface IOrderBL extends ISingletonService
 	CurrencyConversionContext getCurrencyConversionContext(I_C_Order order);
 
 	void deleteLineById(final OrderAndLineId orderAndLineId);
+
+	String getDescriptionBottomById(@NonNull OrderId orderId);
+
+	String getDescriptionById(@NonNull OrderId orderId);
+
+	void setShipperId(@NonNull I_C_Order order);
+
+	default boolean isLUQtySet(final @NonNull de.metas.interfaces.I_C_OrderLine orderLine)
+	{
+		final BigDecimal luQty = orderLine.getQtyLU();
+		return luQty != null && luQty.signum() > 0;
+	}
 }

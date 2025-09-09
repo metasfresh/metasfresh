@@ -25,35 +25,21 @@ package de.metas.handlingunits.shipping;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutId;
-import de.metas.mpackage.Package;
-import de.metas.mpackage.PackageId;
-import de.metas.mpackage.PackageItem;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 @Repository
 public class InOutPackageRepository
 {
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	public ImmutableList<I_M_Package> createM_Packages(@NonNull final List<CreatePackagesRequest> packagesRequestList)
@@ -63,6 +49,7 @@ public class InOutPackageRepository
 
 	private I_M_Package createM_Package(@NonNull final CreatePackagesRequest createPackageRequest)
 	{
+
 		final I_M_InOut inOut = inOutDAO.getById(createPackageRequest.getInOutId());
 
 		final I_M_Package mPackage = newInstance(I_M_Package.class);
@@ -81,52 +68,6 @@ public class InOutPackageRepository
 		InterfaceWrapperHelper.save(mPackage);
 
 		return mPackage;
-	}
-
-	public Package getPackageById(@NonNull final PackageId packageId)
-	{
-		final I_M_Package mPackage = load(packageId, I_M_Package.class);
-		return fromPO(mPackage);
-	}
-
-	private Package fromPO(final I_M_Package mPackage)
-	{
-		final InOutId inOutId = InOutId.ofRepoId(mPackage.getM_InOut_ID());
-		return Package.builder()
-				.id(PackageId.ofRepoId(mPackage.getM_Package_ID()))
-				.inOutId(inOutId)
-				.weightInKg(mPackage.getPackageWeight())
-				.packageContents(getHuStorageList(inOutId))
-				.build();
-	}
-
-	private List<PackageItem> getHuStorageList(@NonNull final InOutId inOutId)
-	{
-		return queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutId)
-				.create()
-				.stream()
-				.map(this::toPackageItem)
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Nullable
-	private PackageItem toPackageItem(@NonNull final I_M_InOutLine inOutLine)
-	{
-
-		final ProductId productId = ProductId.ofRepoIdOrNull(inOutLine.getM_Product_ID());
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
-		if (productId == null || orderLineId == null)
-		{
-			return null;
-		}
-		return PackageItem.builder()
-				.productId(productId)
-				.quantity(Quantitys.of(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
-				.orderLineId(orderLineId)
-				.build();
 	}
 
 }

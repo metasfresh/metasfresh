@@ -4,9 +4,9 @@ import com.google.common.base.Stopwatch;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyRepository;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -75,7 +75,7 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class, "spring component")
 			.skipServiceInterface(de.metas.document.sequence.IDocumentNoBuilderFactory.class, "spring component")
 			.skipServiceInterface(de.metas.edi.api.IDesadvBL.class, "spring component")
-			.skipServiceInterface(de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL.class, "spring component")
+			.skipServiceInterface(ISSCC18CodeBL.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleUpdater.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL.class, "spring component")
@@ -86,6 +86,7 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IServerSyncBL.class, "spring component")
+			.skipServiceInterface(de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.class, "spring component")
 
 			.skipServiceInterface(de.metas.hostkey.spi.IHttpSessionProvider.class, "implementation is registered in de.metas.ui.web.base project")
 			//
@@ -96,7 +97,6 @@ public class AllAvailableSingletonServicesTest
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(new BankAccountService(new BankRepository(), new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));

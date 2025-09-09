@@ -92,9 +92,13 @@ export default defineConfig({
     // },
 });
 
+export const testContext = {};
+
 export const test = testOrig.extend({
     page: async ({ page }, use) => {
         setCurrentPage(page);
+        Object.keys(testContext).forEach(key => delete testContext[key]);
+
         await use(page);
     },
 });

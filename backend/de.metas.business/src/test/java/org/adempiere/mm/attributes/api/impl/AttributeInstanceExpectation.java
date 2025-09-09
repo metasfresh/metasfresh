@@ -1,9 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Date;
-
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -13,9 +10,11 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Date;
 
 /*
  * #%L
@@ -43,13 +42,14 @@ import de.metas.util.Services;
  * {@link I_M_AttributeInstance} expectation.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class AttributeInstanceExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {
 
 	private I_M_Attribute attribute;
-	/** i.e. M_Attribute.Value */
+	/**
+	 * i.e. M_Attribute.Value
+	 */
 	private String attributeKey;
 	private String valueString;
 	private boolean valueStringSet;
@@ -189,7 +189,7 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 		}
 
 		// Fail
-		Assert.fail(messageIfNotFound.toString());
+		Assertions.fail(messageIfNotFound.toString());
 		return null; // shall not reach this point
 	}
 

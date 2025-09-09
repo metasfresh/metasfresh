@@ -54,7 +54,10 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 
 		final boolean calledViaAPI = isCalledViaAPI();
 
-		return CustomPostgRESTParameters.builder().storeJsonFile(!calledViaAPI).build();
+		return CustomPostgRESTParameters.builder()
+				.storeJsonFile(!calledViaAPI)
+				.expectSingleResult(true) // because we export exactly one record, we don't want the JSON to be an array
+				.build();
 	}
 
 	private boolean isCalledViaAPI()

@@ -10,6 +10,8 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.MockedImportRecordsAsyncExecutor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.inventory.impexp.InventoryImportProcess.InventoryGroupKey;
@@ -95,6 +97,7 @@ public class InventoryImportProcessTest
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
 		SpringContextHolder.registerJUnitBean(new InventoryRepository());
 		SpringContextHolder.registerJUnitBean(new HuForInventoryLineFactory());
+		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
 
 		inventoryImportProcess = new InventoryImportProcess();
 
@@ -104,7 +107,7 @@ public class InventoryImportProcessTest
 
 		uomEach = BusinessTestHelper.createUomEach();
 		final I_M_AttributeSet attributeSet = attributesTestHelper.createM_AttributeSet();
-		final I_M_Product_Category productCategory  = BusinessTestHelper.createM_Product_Cagetory("ProductCategory", attributeSet);
+		final I_M_Product_Category productCategory = BusinessTestHelper.createM_Product_Cagetory("ProductCategory", attributeSet);
 		final I_M_Product product = BusinessTestHelper.createProduct("product", uomEach, productCategory);
 		product.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
 		saveRecord(product);

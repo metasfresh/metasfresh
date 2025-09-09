@@ -1,4 +1,4 @@
-FROM node:16 as build-step
+FROM node:16 AS build-step
 
 LABEL maintainer="info@metasfresh.com"
 LABEL runinfo="Run this image with -e PUBLIC_URL=https://yourdomain.org"

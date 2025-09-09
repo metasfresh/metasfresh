@@ -28,7 +28,7 @@ public interface I_M_PickingSlot extends de.metas.picking.model.I_M_PickingSlot
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 	@Override void setM_HU_ID(int M_HU_ID);
 	@Override int getM_HU_ID();
-	de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException;
-	void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
+	// de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException;
+	// void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
 	// @formatter:on
 }

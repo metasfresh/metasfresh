@@ -44,8 +44,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.IHUQRCode;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
@@ -65,6 +63,7 @@ import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActiv
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickFromHUWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WFActivity;
@@ -426,21 +425,17 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 			@NonNull final PickingJob pickingJob,
 			@NonNull final PickingJobOptions pickingJobOptions)
 	{
-		final IHUQRCode qrCode = HUQRCodesService.toHUQRCode(json.getHuQRCode());
-
+		final ScannedCode qrCode = ScannedCode.ofString(json.getHuQRCode());
 		final PickingJobLineId pickingLineId = PickingJobLineId.ofString(json.getPickingLineId());
 		final PickingJobStepId pickingStepId = PickingJobStepId.ofNullableString(json.getPickingStepId());
-		final PickingJobStepPickFromKey pickFromKey = pickingStepId != null && (qrCode instanceof HUQRCode)
-				? pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode((HUQRCode)qrCode).getPickFromKey()
-				: null;
 
 		return PickingJobStepEvent.builder()
 				.timestamp(SystemTime.asInstant())
 				.pickingLineId(pickingLineId)
 				.pickingStepId(pickingStepId)
-				.pickFromKey(pickFromKey)
+				.pickFromKey(getPickingJobStepPickFromKey(pickingJob, pickingStepId, qrCode))
 				.eventType(fromJson(json.getType()))
-				.huQRCode(qrCode)
+				.qrCode(qrCode)
 				.qtyPicked(json.getQtyPicked())
 				.isPickWholeTU(json.isPickWholeTU())
 				.checkIfAlreadyPacked(isCheckIfAlreadyPacked(json, pickingJobOptions))
@@ -457,6 +452,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 						.map(HUQRCode::fromGlobalQRCodeJsonString)
 						.orElse(null))
 				.build();
+	}
+
+	@Nullable
+	private static PickingJobStepPickFromKey getPickingJobStepPickFromKey(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobStepId pickingStepId,
+			@NonNull final ScannedCode qrCode)
+	{
+		if (pickingStepId == null) {return null;}
+
+		final HUQRCode huQRCode = HUQRCode.parse(qrCode).orElse(null);
+		if (huQRCode == null) {return null;}
+
+		return pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(huQRCode).getPickFromKey();
 	}
 
 	private static boolean isCheckIfAlreadyPacked(

@@ -14,10 +14,15 @@ import java.time.LocalDate;
 public class ParsedScannedCode
 {
 	@NonNull ScannedCode scannedCode;
-	
+
 	@Nullable String productNo;
 	@Nullable BigDecimal weightKg;
 	@Nullable String lotNo;
 	@Nullable LocalDate bestBeforeDate;
 	@Nullable LocalDate productionDate;
+
+	public String getAsString()
+	{
+		return scannedCode.getAsString();
+	}
 }

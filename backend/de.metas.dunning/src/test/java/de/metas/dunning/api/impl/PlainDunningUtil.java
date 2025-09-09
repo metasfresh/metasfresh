@@ -22,17 +22,15 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import org.junit.Ignore;
-
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+import java.math.BigDecimal;
+
+@Disabled
 public class PlainDunningUtil extends DunningUtil
 {
 	private final PlainCurrencyDAO currencyDAO;

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 476393024L;
+	private static final long serialVersionUID = -1759313928L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (final Properties ctx, final int M_Packageable_V_ID, @Nullable final String trxName)
@@ -222,6 +222,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.sql.Timestamp getDateOrdered() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
+	}
+
+	@Override
+	public void setDatePromised (final @Nullable java.sql.Timestamp DatePromised)
+	{
+		set_ValueNoCheck (COLUMNNAME_DatePromised, DatePromised);
+	}
+
+	@Override
+	public java.sql.Timestamp getDatePromised() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
 	}
 
 	@Override
@@ -459,6 +471,30 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public boolean isDisplayed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDisplayed);
+	}
+
+	@Override
+	public void setIsFixedDatePromised (final boolean IsFixedDatePromised)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsFixedDatePromised, IsFixedDatePromised);
+	}
+
+	@Override
+	public boolean isFixedDatePromised() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedDatePromised);
+	}
+
+	@Override
+	public void setIsFixedPreparationDate (final boolean IsFixedPreparationDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsFixedPreparationDate, IsFixedPreparationDate);
+	}
+
+	@Override
+	public boolean isFixedPreparationDate() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedPreparationDate);
 	}
 
 	@Override

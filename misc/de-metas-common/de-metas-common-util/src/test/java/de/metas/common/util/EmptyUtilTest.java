@@ -22,15 +22,15 @@
 
 package de.metas.common.util;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class EmptyUtilTest
 {
@@ -53,6 +53,6 @@ public class EmptyUtilTest
 	public void test_isEmpty_collection(final boolean emptyExpected, final Collection<?> collection)
 	{
 		final boolean emptyActual = EmptyUtil.isEmpty(collection);
-		Assert.assertEquals("Invalid isEmpty result for collection: " + collection, emptyExpected, emptyActual);
+		Assertions.assertEquals(emptyExpected, emptyActual, "Invalid isEmpty result for collection: " + collection);
 	}
 }

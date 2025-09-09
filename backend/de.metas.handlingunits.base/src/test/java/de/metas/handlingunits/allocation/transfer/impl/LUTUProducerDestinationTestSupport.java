@@ -27,7 +27,6 @@ import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Before;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,8 +35,7 @@ import java.util.function.Consumer;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -119,7 +117,7 @@ public class LUTUProducerDestinationTestSupport
 	 * This is an <b>alternative</b> to calling link AdempiereTestHelper#init()}! Don't call both, they will reset each other's stuff.
 	 * <p>
 	 * Creates a new instance with fresh masterdata. Also causes the {@link HUTestHelper} to be initialized.
-	 * This constructor should be called from tests' {@link Before} methods.
+	 * This constructor should be called from tests' {@link org.junit.jupiter.api.BeforeEach} methods.
 	 * <p>
 	 * Creates PI as follows
 	 * <ul>
@@ -263,7 +261,7 @@ public class LUTUProducerDestinationTestSupport
 		helper.load(loadRequest);
 
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
-		assertThat(createdCUs.size(), is(1));
+		assertThat(createdCUs).hasSize(1);
 
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final I_M_HU cuToSplit = createdCUs.get(0);
@@ -290,7 +288,7 @@ public class LUTUProducerDestinationTestSupport
 
 		helper.load(lutuProducer, helper.pTomatoProductId, cuQty.toBigDecimal(), cuQty.getUOM());
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
-		assertThat(createdTUs.size(), is(1));
+		assertThat(createdTUs).hasSize(1);
 
 		final I_M_HU createdTU = createdTUs.get(0);
 		huStatusBL.setHUStatus(helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
@@ -298,7 +296,7 @@ public class LUTUProducerDestinationTestSupport
 		save(createdTU);
 
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
-		assertThat(createdCUs.size(), is(1));
+		assertThat(createdCUs).hasSize(1);
 
 		return createdCUs.get(0);
 	}
@@ -345,7 +343,7 @@ public class LUTUProducerDestinationTestSupport
 		helper.load(loadRequest);
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
-		assertThat(createdLUs.size(), is(1));
+		assertThat(createdLUs).hasSize(1);
 		// data.helper.commitAndDumpHU(createdLUs.get(0));
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -355,18 +353,18 @@ public class LUTUProducerDestinationTestSupport
 		final I_M_HU createdLU = createdLUs.get(0);
 		final IMutableHUContext huContext = helper.createMutableHUContextOutOfTransaction();
 		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
-		assertThat(createdLU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 
 		M_HU.INSTANCE.updateChildren(createdLU);
 		save(createdLU);
 
 		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
-		assertThat(createdAggregateHUs.size(), is(1));
+		assertThat(createdAggregateHUs).hasSize(1);
 
 		final I_M_HU cuToSplit = createdAggregateHUs.get(0);
-		assertThat(handlingUnitsBL.isAggregateHU(cuToSplit), is(true));
-		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID(), is(piLU_Item_IFCO.getM_HU_PI_Item_ID()));
-		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+		assertThat(handlingUnitsBL.isAggregateHU(cuToSplit)).isTrue();
+		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID()).isEqualTo(piLU_Item_IFCO.getM_HU_PI_Item_ID());
+		assertThat(cuToSplit.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 
 		return cuToSplit;
 	}
@@ -399,7 +397,7 @@ public class LUTUProducerDestinationTestSupport
 		helper.load(loadRequest);
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
-		assertThat(createdLUs.size(), is(totalQtyCU.intValueExact() / customQtyCUsPerTU));
+		assertThat(createdLUs).hasSize(totalQtyCU.intValueExact() / customQtyCUsPerTU);
 
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -407,7 +405,7 @@ public class LUTUProducerDestinationTestSupport
 		final I_M_HU createdLU = createdLUs.get(0);
 		final IMutableHUContext huContext = helper.createMutableHUContextOutOfTransaction();
 		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
-		assertThat(createdLU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 
 		M_HU.INSTANCE.updateChildren(createdLU);
 		save(createdLU);
@@ -416,8 +414,8 @@ public class LUTUProducerDestinationTestSupport
 
 		final I_M_HU cuToSplit = createdAggregateHUs.get(0);
 
-		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID(), is(piLU_Item_Virtual.getM_HU_PI_Item_ID()));
-		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID()).isEqualTo(piLU_Item_Virtual.getM_HU_PI_Item_ID());
+		assertThat(cuToSplit.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 
 		return cuToSplit;
 	}

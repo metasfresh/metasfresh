@@ -2,7 +2,7 @@ package de.metas.shipper.gateway.go;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.location.ICountryCodeFactory;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
@@ -14,7 +14,7 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.Services;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -52,7 +52,7 @@ import java.util.List;
  */
 
 @SpringBootApplication(scanBasePackages = "de.metas.shipper.gateway")
-@Ignore
+@Disabled
 public class Application
 {
 	public static void main(final String[] args)

@@ -302,7 +302,7 @@ public interface I_I_Product
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -312,7 +312,7 @@ public interface I_I_Product
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -582,6 +582,29 @@ public interface I_I_Product
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set Min Guarantee Days.
+	 * Minimum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGuaranteeDaysMin (int GuaranteeDaysMin);
+
+	/**
+	 * Get Min Guarantee Days.
+	 * Minimum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getGuaranteeDaysMin();
+
+	ModelColumn<I_I_Product, Object> COLUMN_GuaranteeDaysMin = new ModelColumn<>(I_I_Product.class, "GuaranteeDaysMin", null);
+	String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
+
+	/**
 	 * Set Help.
 	 * Comment or Hint
 	 *
@@ -846,6 +869,29 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_ISO_Code = new ModelColumn<>(I_I_Product.class, "ISO_Code", null);
 	String COLUMNNAME_ISO_Code = "ISO_Code";
+
+	/**
+	 * Set Purchased.
+	 * Organization purchases this product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPurchased (boolean IsPurchased);
+
+	/**
+	 * Get Purchased.
+	 * Organization purchases this product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPurchased();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsPurchased = new ModelColumn<>(I_I_Product.class, "IsPurchased", null);
+	String COLUMNNAME_IsPurchased = "IsPurchased";
 
 	/**
 	 * Set Scale Price.
@@ -2043,6 +2089,26 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_WeightUOM = new ModelColumn<>(I_I_Product.class, "WeightUOM", null);
 	String COLUMNNAME_WeightUOM = "WeightUOM";
+
+	/**
+	 * Set Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWeight_UOM_ID (int Weight_UOM_ID);
+
+	/**
+	 * Get Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWeight_UOM_ID();
+
+	String COLUMNNAME_Weight_UOM_ID = "Weight_UOM_ID";
 
 	/**
 	 * Set UOM Code.

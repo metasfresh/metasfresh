@@ -38,6 +38,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -92,6 +93,7 @@ import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueu
 public class ShipmentScheduleEnqueuer
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleEnqueuer.class);
+	private static final AdMessageKey MSG_NO_VALID_RECORDS = AdMessageKey.of("de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords");
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
@@ -166,7 +168,7 @@ public class ShipmentScheduleEnqueuer
 
 		if (!shipmentSchedules.hasNext())
 		{
-			throw new AdempiereException("@NoSelection@").appendParametersToMessage().setParameter("query", query);
+			throw new AdempiereException(MSG_NO_VALID_RECORDS);
 		}
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(localCtx.getCtx(), GenerateInOutFromShipmentSchedules.class);
@@ -312,6 +314,7 @@ public class ShipmentScheduleEnqueuer
 				// NOTE: when we will add the scheds to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
 				.setAutoCleanup(true)
 				.setFailIfAlreadyLocked(true)
+				.retryOnFailure(3)
 				.setSetRecordsByFilter(I_M_ShipmentSchedule.class, queryFilters)
 				.acquire();
 	}

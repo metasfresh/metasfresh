@@ -25,9 +25,7 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.CurrencyRepository;
-import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.location.CountryCode;
-import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
@@ -45,8 +43,10 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -54,15 +54,12 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @UtilityClass
 class DhlTestHelper
@@ -231,7 +228,7 @@ class DhlTestHelper
 		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
 		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository);
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
-		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(new InOutPackageRepository(), new CurrencyRepository(), orderRepository);
+		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), new CurrencyRepository(), orderRepository);
 
 		final UomId dummyUom = UomId.ofRepoId(1);
 
@@ -255,7 +252,7 @@ class DhlTestHelper
 		//
 		// check 1: draft DO <->> initial dummy DO
 		final DeliveryOrder draftDeliveryOrder = createDraftDeliveryOrderFromDummy(initialDummyDeliveryOrder, draftDeliveryOrderCreator);
-		assertEquals("nothing should be changed", initialDummyDeliveryOrder, draftDeliveryOrder);
+		Assertions.assertEquals(initialDummyDeliveryOrder, draftDeliveryOrder, "nothing should be changed");
 
 		//
 		// check 2: persisted DO <-> initial dummy DO => create updatedDummy DO
@@ -263,8 +260,8 @@ class DhlTestHelper
 		DeliveryOrder updatedDummyDeliveryOrder = initialDummyDeliveryOrder.toBuilder()
 				.id(persistedDeliveryOrder.getId())
 				.build();
-		assertNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
-		assertEquals("only the repoId should change after the first persistence", updatedDummyDeliveryOrder, persistedDeliveryOrder);
+		Assertions.assertNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
+		Assertions.assertEquals(updatedDummyDeliveryOrder, persistedDeliveryOrder, "only the repoId should change after the first persistence");
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
@@ -275,7 +272,7 @@ class DhlTestHelper
 		updatedDummyDeliveryOrder = updatedDummyDeliveryOrder.toBuilder()
 				.customDeliveryData(customDeliveryData)
 				.build();
-		assertEquals("only packageId and SequenceNumber should be modified", updatedDummyDeliveryOrder, deserialisedDO);
+		Assertions.assertEquals(updatedDummyDeliveryOrder, deserialisedDO, "only packageId and SequenceNumber should be modified");
 
 		//
 		// check 4: run Client.completeDeliveryOrder
@@ -286,27 +283,27 @@ class DhlTestHelper
 		updatedDummyDeliveryOrder = updatedDummyDeliveryOrder.toBuilder()
 				.customDeliveryData(customDeliveryData)
 				.build();
-		assertEquals("only awb, pdf label data and tracking url should be modified", updatedDummyDeliveryOrder, completedDeliveryOrder);
+		Assertions.assertEquals(updatedDummyDeliveryOrder, completedDeliveryOrder, "only awb, pdf label data and tracking url should be modified");
 		assertSizeOfCustomDeliveryData(completedDeliveryOrder);
 
 		//
 		// check 5: persist the completed delivery order: nothing should be modified
 		final DeliveryOrder savedCompletedDeliveryOrder = orderRepository.save(completedDeliveryOrder);
-		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, savedCompletedDeliveryOrder);
+		Assertions.assertEquals(updatedDummyDeliveryOrder, savedCompletedDeliveryOrder, "nothing should be modified");
 		assertSizeOfCustomDeliveryData(savedCompletedDeliveryOrder);
 
 		//
 		// check 6: retrieve the persisted completed DO. nothing should be modified
 		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderService.getByRepoId(updatedDummyDeliveryOrder.getId());
-		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
+		Assertions.assertEquals(updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder, "nothing should be modified");
 		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
 
 		//
 		// check 7: expect 1 database log: the one for createShipment
-		assertEquals("there should be 1 database request logs", 1, Services.get(IQueryBL.class)
+		Assertions.assertEquals(1, Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Dhl_ShipmentOrder_Log.class)
 				.create()
-				.count());
+				.count(), "there should be 1 database request logs");
 
 		//
 		// check 8: there's no way to test that label printing => create attachment works. :(
@@ -314,21 +311,21 @@ class DhlTestHelper
 
 	private void assertSizeOfCustomDeliveryData(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		assertNotNull(deliveryOrder.getCustomDeliveryData());
-		assertEquals(5, DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getDetails().size());
+		Assertions.assertNotNull(deliveryOrder.getCustomDeliveryData());
+		Assertions.assertEquals(5, DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getDetails().size());
 	}
 
 	private DhlCustomDeliveryDataDetail extractFieldsAfterCompleteDeliveryOrder(@NonNull final DhlCustomDeliveryData customDeliveryData, @NonNull final DeliveryOrder completedDeliveryOrder, final PackageId packageId)
 	{
-		assertNotNull(completedDeliveryOrder.getCustomDeliveryData());
+		Assertions.assertNotNull(completedDeliveryOrder.getCustomDeliveryData());
 
 		final DhlCustomDeliveryDataDetail dhlCustomDeliveryDataDetail = DhlCustomDeliveryData.cast(completedDeliveryOrder.getCustomDeliveryData()).getDetailByPackageId(packageId);
 		final String awb = dhlCustomDeliveryDataDetail.getAwb();
 		final byte[] pdfLabelData = dhlCustomDeliveryDataDetail.getPdfLabelData();
 		final String trackingUrl = dhlCustomDeliveryDataDetail.getTrackingUrl();
-		assertNotNull(awb);
-		assertNotNull(pdfLabelData);
-		assertNotNull(trackingUrl);
+		Assertions.assertNotNull(awb);
+		Assertions.assertNotNull(pdfLabelData);
+		Assertions.assertNotNull(trackingUrl);
 
 		final DhlCustomDeliveryDataDetail detailByPackageId = customDeliveryData.getDetailByPackageId(packageId);
 		return detailByPackageId.toBuilder()
@@ -342,7 +339,7 @@ class DhlTestHelper
 	{
 		//noinspection ConstantConditions
 		final DhlSequenceNumber sequenceNumber = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getDetailByPackageId(packageId).getSequenceNumber();
-		assertNotNull(sequenceNumber);
+		Assertions.assertNotNull(sequenceNumber);
 		return DhlCustomDeliveryDataDetail.builder()
 				.packageId(packageId)
 				.sequenceNumber(sequenceNumber)

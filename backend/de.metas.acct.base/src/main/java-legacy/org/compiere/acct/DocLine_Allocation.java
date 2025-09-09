@@ -305,6 +305,12 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			return false;
 		}
 
+		// sales/purchase invoice against credit memos are not considered compensations that need to be booked
+		if (isSOTrxInvoice() == counterLine.isSOTrxInvoice() && isCreditMemoInvoice() != counterLine.isCreditMemoInvoice())
+		{
+			return false;
+		}
+
 		//
 		//
 		return isSOTrxInvoice() != counterLine.isSOTrxInvoice() // opposite transactions (sales-purchase)

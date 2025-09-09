@@ -105,6 +105,7 @@ import java.math.BigDecimal;
 			product.setPackageSize(from.getPackageSize());
 		}
 		product.setIsSold(from.isSold());
+		product.setIsPurchased(from.isPurchased());
 		product.setIsStocked(from.isStocked());
 		if (from.getUPC() != null)
 		{
@@ -131,6 +132,10 @@ import java.math.BigDecimal;
 		if (from.getWeight() != null)
 		{
 			product.setGrossWeight(from.getWeight());
+		}
+		if (UomId.ofRepoIdOrNull(from.getWeight_UOM_ID()) != null)
+		{
+			product.setGrossWeight_UOM_ID(from.getWeight_UOM_ID());
 		}
 		if (from.getNetWeight() != null)
 		{
@@ -175,6 +180,7 @@ import java.math.BigDecimal;
 			product.setM_ProductPlanningSchema_Selector(from.getM_ProductPlanningSchema_Selector());
 		}
 
+		product.setGuaranteeDaysMin(from.getGuaranteeDaysMin());
 	}
 
 	private de.metas.adempiere.model.I_M_Product createProductRecordNoSave(@NonNull final I_I_Product importRecord)
@@ -199,15 +205,18 @@ import java.math.BigDecimal;
 		product.setImageURL(importRecord.getImageURL());
 		product.setDescriptionURL(importRecord.getDescriptionURL());
 		product.setIsSold(importRecord.isSold());
+		product.setIsPurchased(importRecord.isPurchased());
 		product.setIsStocked(importRecord.isStocked());
 		product.setWeight(importRecord.getNetWeight());
 		product.setGrossWeight(importRecord.getWeight());
+		product.setGrossWeight_UOM_ID(importRecord.getWeight_UOM_ID());
 		product.setM_CustomsTariff_ID(importRecord.getM_CustomsTariff_ID());
 		product.setRawMaterialOrigin_ID(importRecord.getRawMaterialOrigin_ID());
 		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
 		product.setTrademark(importRecord.getTrademark());
 		product.setPZN(importRecord.getPZN());
 		product.setIsCommissioned(importRecord.isCommissioned());
+		product.setGuaranteeDaysMin(importRecord.getGuaranteeDaysMin());
 
 		return product;
 	}    // MProduct

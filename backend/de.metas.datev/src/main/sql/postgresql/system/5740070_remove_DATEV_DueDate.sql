@@ -42,6 +42,12 @@ DELETE FROM AD_Field WHERE AD_Field_ID=562787
 /* DDL */ SELECT public.db_alter_table('DATEV_ExportLine','ALTER TABLE DATEV_ExportLine DROP COLUMN IF EXISTS DueDate')
 ;
 
+DELETE FROM ad_ui_element where ad_field_id in (select ad_field_id FROM AD_Field where ad_column_id=559219);
+
+DELETE FROM AD_Field where ad_column_id=559219;
+
+DELETE FROM datev_exportformatcolumn where ad_column_id=559219;
+
 -- Column: DATEV_ExportLine.DueDate
 -- 2024-11-20T15:40:55.223Z
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=559219
