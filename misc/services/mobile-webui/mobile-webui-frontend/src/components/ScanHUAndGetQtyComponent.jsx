@@ -124,13 +124,13 @@ const ScanHUAndGetQtyComponent = ({
   // IMPORTANT: this shall be called after the "Init / reset resolvedBarcodeData" effect
   useEffect(() => {
     if (scannedBarcodeParam) {
-      onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: scannedBarcodeParam }));
+      handleResolveScannedBarcode({ scannedBarcode: scannedBarcodeParam }).then(onBarcodeScanned);
     } else {
       setProgressStatus(STATUS_READ_BARCODE);
     }
   }, [scannedBarcodeParam]);
 
-  const handleResolveScannedBarcode = ({ scannedBarcode, huId }) => {
+  const handleResolveScannedBarcode = async ({ scannedBarcode, huId }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
 
     // If an eligible barcode was provided, make sure the scanned barcode is matching it
@@ -142,8 +142,9 @@ const ScanHUAndGetQtyComponent = ({
 
     let resolveScannedBarcodeFuncResult = {};
     if (resolveScannedBarcode && scannedBarcode !== PICK_ON_THE_FLY_QRCODE) {
-      resolveScannedBarcodeFuncResult = resolveScannedBarcode(scannedBarcode, huId);
+      resolveScannedBarcodeFuncResult = await resolveScannedBarcode(scannedBarcode, huId);
     }
+    console.log('handleResolveScannedBarcode', { resolveScannedBarcodeFuncResult });
 
     // noinspection UnnecessaryLocalVariableJS
     let resolvedBarcodeDataNew = {
@@ -151,6 +152,19 @@ const ScanHUAndGetQtyComponent = ({
       ...resolveScannedBarcodeFuncResult,
       scannedBarcode,
     };
+
+    //
+    // Make sure qtyTarget is not exceeding the number of available TUs on scanned LU
+    if (
+      resolvedBarcodeDataNew?.qtyMax != null &&
+      resolvedBarcodeDataNew?.scannedHU?.huUnitType === 'LU' &&
+      resolvedBarcodeDataNew?.scannedHU?.qtyTUs != null
+    ) {
+      resolvedBarcodeDataNew.qtyInitial = Math.min(
+        resolvedBarcodeDataNew.qtyMax,
+        resolvedBarcodeDataNew.scannedHU.qtyTUs
+      );
+    }
 
     console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
 
@@ -161,14 +175,13 @@ const ScanHUAndGetQtyComponent = ({
     return handleResolveScannedBarcode({ scannedBarcode });
   };
 
-  const handleHandlingUnitInfoScanned = (handlingUnitInfo) => {
+  const handleHandlingUnitInfoScanned = async (handlingUnitInfo) => {
     try {
-      onBarcodeScanned(
-        handleResolveScannedBarcode({
-          scannedBarcode: toQRCodeString(handlingUnitInfo.qrCode),
-          huId: handlingUnitInfo.id,
-        })
-      );
+      const resolvedBarcodeDataNew = await handleResolveScannedBarcode({
+        scannedBarcode: toQRCodeString(handlingUnitInfo.qrCode),
+        huId: handlingUnitInfo.id,
+      });
+      onBarcodeScanned(resolvedBarcodeDataNew);
     } catch (e) {
       toastError({ plainMessage: e });
     }
@@ -186,7 +199,7 @@ const ScanHUAndGetQtyComponent = ({
       askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
     }
 
-    console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, askForQty });
+    console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, qrCode, askForQty });
 
     if (askForQty) {
       setProgressStatus(STATUS_READ_QTY);
@@ -291,6 +304,7 @@ const ScanHUAndGetQtyComponent = ({
           qtyTargetCaption={resolvedBarcodeData.qtyTargetCaption}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
+          qtyInitial={resolvedBarcodeData.qtyInitial}
           packingItemName={resolvedBarcodeData.packingItemName}
           totalQty={resolvedBarcodeData.lineQtyToIssue}
           qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}

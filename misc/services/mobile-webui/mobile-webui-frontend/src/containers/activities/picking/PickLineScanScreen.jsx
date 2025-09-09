@@ -30,8 +30,8 @@ import {
   getLineById,
   getQtyRejectedReasonsFromActivity,
 } from '../../../reducers/wfProcesses';
-import { parseQRCodeString } from '../../../utils/qrCode/hu';
-import { postStepPicked } from '../../../api/picking';
+import { parseQRCodeString, toQRCodeString } from '../../../utils/qrCode/hu';
+import { getScannedHUQRCodeInfo, postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useBooleanSetting } from '../../../reducers/settings';
 import {
@@ -93,7 +93,7 @@ const PickLineScanScreen = () => {
         expectedProductId: productId,
         customQRCodeFormats,
       }),
-    [productId]
+    [productId, customQRCodeFormats]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
@@ -180,7 +180,7 @@ export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expected
   return convertQRCodeObjectToResolvedResult(parsedQRCode);
 };
 
-const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
+const convertQRCodeObjectToResolvedResult = async (qrCodeObj) => {
   const result = {
     qrCode: qrCodeObj,
   };
@@ -196,6 +196,18 @@ const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   result['bestBeforeDate'] = qrCodeObj.bestBeforeDate;
   result['productionDate'] = qrCodeObj.productionDate;
   result['lotNo'] = qrCodeObj.lotNo;
+
+  result.scannedHU = {
+    huUnitType: qrCodeObj.huUnitType,
+  };
+  if (qrCodeObj.huUnitType === 'LU') {
+    try {
+      const huInfo = await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(qrCodeObj) });
+      result.scannedHU.qtyTUs = huInfo.qtyTUs;
+    } catch (error) {
+      console.warn('Failed to get LU info. Ignored', error);
+    }
+  }
 
   console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj });
   return result;

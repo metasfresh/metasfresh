@@ -9,6 +9,7 @@ const containerElement = () => page.locator('.get-qty-dialog');
 export const QTY_NOT_FOUND_REASON_NOT_FOUND = 'N';
 // noinspection JSUnusedGlobalSymbols
 export const QTY_NOT_FOUND_REASON_DAMAGED = 'D';
+export const QTY_NOT_FOUND_REASON_IGNORE = 'IgnoreReason';
 
 export const GetQuantityDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
@@ -57,6 +58,11 @@ export const GetQuantityDialog = {
         await page.getByTestId(`qty-reason-radio-${reason}`).tap();
     }),
 
+    expectQtyNotFoundReason: async ({ reason }) => await test.step(`${NAME} - Expect qty not found reason '${reason}'`, async () => {
+        const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
+        await expect(radioButton).toBeChecked();
+    }),
+
     clickDone: async () => await test.step(`${NAME} - Press OK`, async () => {
         await page.getByTestId('done-button').tap();
         await GetQuantityDialog.expectComponentsDisabled();
@@ -83,7 +89,7 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
@@ -107,6 +113,9 @@ export const GetQuantityDialog = {
                 const qrCode = qrCodesArray[idx];
                 await GetQuantityDialog.scanCatchWeightQRCode({ qrCode, stepName: `#${idx + 1}/${length}` });
             }
+        }
+        if (expectQtyNotFoundReason != null) {
+            await GetQuantityDialog.expectQtyNotFoundReason({ reason: expectQtyNotFoundReason });
         }
         if (qtyNotFoundReason != null) {
             await GetQuantityDialog.clickQtyNotFoundReason({ reason: qtyNotFoundReason });
