@@ -42,6 +42,9 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 
+/**
+ * Set then environment-variable {@code SKIP_MIGRATION_SCRIPTS_TEST} to {@code true} to skip testing the migration scripts.
+ */
 public class RunMigrationScriptsTest
 {
 	private static final Logger logger = LogManager.getLogger(RunMigrationScriptsTest.class);

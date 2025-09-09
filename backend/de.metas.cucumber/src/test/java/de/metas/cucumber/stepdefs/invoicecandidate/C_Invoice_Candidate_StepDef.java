@@ -112,7 +112,6 @@ import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceC
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasFound;
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasNotFound;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
@@ -148,6 +147,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues_Effective;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override;
+import static de.metas.invoicecandidate.process.params.InvoicingParams.PARA_IsCompleteInvoices;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -784,11 +784,8 @@ public class C_Invoice_Candidate_StepDef
 			final InvoicingParams invoicingParams = InvoicingParams.builder()
 					.ignoreInvoiceSchedule(false)
 					.updateLocationAndContactForInvoice(DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsUpdateLocationAndContactForInvoice", false))
-					.completeInvoices(DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + InvoicingParams.PARA_IsCompleteInvoices, true))
+					.completeInvoices(DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + PARA_IsCompleteInvoices, true))
 					.build();
-
-					final boolean completeInvoices = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + PARA_IsCompleteInvoices, true);
-					invoicingParams.setCompleteInvoices(completeInvoices);
 
 					StepDefUtil.tryAndWait(timeoutSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
 

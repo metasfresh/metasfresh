@@ -76,9 +76,6 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	@RunOutOfTrx
 	protected void prepare()
 	{
-		final IParams params = getParameterAsIParams();
-		this.invoicingParams = new InvoicingParams(params);
-
 		final int selectionCount = createSelection();
 
 		if (selectionCount <= 0)

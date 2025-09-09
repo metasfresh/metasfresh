@@ -1,17 +1,10 @@
-<<<<<<<< HEAD:backend/de.metas.adempiere.adempiere/base/src/main/java/de/metas/cache/CCacheConfig.java
-========
 package de.metas.handlingunits.inventory.draftlinescreator.aggregator;
 
->>>>>>>> origin/new_dawn_uat:backend/de.metas.handlingunits.base/src/main/java/de/metas/handlingunits/inventory/draftlinescreator/aggregator/InventoryLineAggregationKey.java
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
-<<<<<<<< HEAD:backend/de.metas.adempiere.adempiere/base/src/main/java/de/metas/cache/CCacheConfig.java
- * Copyright (C) 2024 metas GmbH
-========
  * Copyright (C) 2019 metas GmbH
->>>>>>>> origin/new_dawn_uat:backend/de.metas.handlingunits.base/src/main/java/de/metas/handlingunits/inventory/draftlinescreator/aggregator/InventoryLineAggregationKey.java
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,24 +22,6 @@ package de.metas.handlingunits.inventory.draftlinescreator.aggregator;
  * #L%
  */
 
-<<<<<<<< HEAD:backend/de.metas.adempiere.adempiere/base/src/main/java/de/metas/cache/CCacheConfig.java
-package de.metas.cache;
-
-import de.metas.cache.CCache.CacheMapType;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-@Value
-@Builder
-public class CCacheConfig
-{
-	@NonNull CacheMapType cacheMapType;
-	int initialCapacity;
-	int maximumSize;
-	int expireMinutes;
-========
 public interface InventoryLineAggregationKey
 {
->>>>>>>> origin/new_dawn_uat:backend/de.metas.handlingunits.base/src/main/java/de/metas/handlingunits/inventory/draftlinescreator/aggregator/InventoryLineAggregationKey.java
 }

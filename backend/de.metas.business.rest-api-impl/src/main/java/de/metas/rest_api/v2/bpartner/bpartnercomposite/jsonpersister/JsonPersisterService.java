@@ -239,7 +239,7 @@ public class JsonPersisterService
 				effectiveSyncAdvise);
 
 		final JsonResponseBPartnerCompositeUpsertItem result = resultBuilder.build();
-		handleExternalReferenceRecords(requestItem, result, bpartnerComposite.getOrgId());
+		handleExternalReferenceRecords(requestItem, result, resultBuilder, orgCode);
 
 		handleAlbertaInfo(bpartnerComposite.getOrgId(), effectiveSyncAdvise, requestItem, result);
 
@@ -1908,7 +1908,8 @@ public class JsonPersisterService
 	private void handleExternalReferenceRecords(
 			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem result,
-			@NonNull final OrgId orgId)
+			@NonNull final JsonResponseBPartnerCompositeUpsertItemUnderConstrunction resultBuilder,
+			@Nullable final String orgCode)
 	{
 		final Set<JsonRequestExternalReferenceUpsert> externalReferenceCreateReqs = new HashSet<>();
 
@@ -1974,7 +1975,7 @@ public class JsonPersisterService
 
 		for (final JsonRequestExternalReferenceUpsert request : externalReferenceCreateReqs)
 		{
-			externalReferenceRestControllerService.performUpsert(request, orgId);
+			externalReferenceRestControllerService.performUpsert(request, orgCode);
 		}
 	}
 

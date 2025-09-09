@@ -1204,7 +1204,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
-	public IInvoiceGenerator setInvoicingParams(final @NonNull IInvoicingParams invoicingParams)
+	public IInvoiceGenerator setInvoicingParams(final @NonNull InvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;

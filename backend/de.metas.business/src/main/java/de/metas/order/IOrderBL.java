@@ -297,6 +297,9 @@ public interface IOrderBL extends ISingletonService
 
 	String getLocationEmail(OrderId ofRepoId);
 
+	@Nullable
+	DocTypeId getDocTypeIdEffectiveOrNull(@NonNull I_C_Order order);
+	
 	@NonNull
 	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
 

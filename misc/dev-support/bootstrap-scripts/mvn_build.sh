@@ -28,19 +28,27 @@ set -e
 #export JAVA_HOME=c:/Users/tobia/.jdks/temurin-17.0.15
 export JAVA_HOME=c:/Users/tobia/.jdks/temurin-1.8.0_452
 
+# set to false if you want he maven tests to include RunMigrationScriptsTest
+export SKIP_MIGRATION_SCRIPTS_TEST=true
+
 MULTITHREAD_PARAM=''
 #MULTITHREAD_PARAM='-T2C'
 
-ADDITIONAL_PARAMS='-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true'
-#ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS} -DskipTests'
-#ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS} -Dmaven.test.skip=true'
+ADDITIONAL_PARAMS_DEFAULT='-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true'
+ADDITIONAL_PARAMS=${ADDITIONAL_PARAMS_DEFAULT}
+
+# don't compile or run tests, i.e. skip the whole testing-phase
+#ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS_DEFAULT} -Dmaven.test.skip=true'
+
+# compile but don't run tests
+#ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS_DEFAULT} -DskipTests'
 
 #GOALS='test'
 GOALS='clean install'
 
-#mvn --file ../../parent-pom/pom.xml --settings ../maven/settings.xml $ADDITIONAL_PARAMS $GOALS && \
+mvn --file ../../parent-pom/pom.xml --settings ../maven/settings.xml $ADDITIONAL_PARAMS $GOALS && \
 
-#mvn --file ../../de-metas-common/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+mvn --file ../../de-metas-common/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
 
 mvn -e --file ../../../backend/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
 

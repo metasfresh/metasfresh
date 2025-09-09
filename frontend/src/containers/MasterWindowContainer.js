@@ -155,8 +155,7 @@ class MasterWindowContainer extends PureComponent {
           fieldName,
           value,
         });
-        }
-      );
+      }
     }
 
     if (doRemoveURLParams) {

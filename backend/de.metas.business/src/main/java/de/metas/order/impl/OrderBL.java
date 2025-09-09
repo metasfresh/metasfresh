@@ -1067,6 +1067,7 @@ public class OrderBL implements IOrderBL
 		return docTypeBL.isPrepay(docTypeId);
 	}
 
+	@Override
 	@Nullable
 	public DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
 	{

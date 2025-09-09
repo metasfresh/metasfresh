@@ -120,18 +120,10 @@ public class ExternalIdentifier
 		if (nameMatcher.matches())
 
 		{
-			return new ExternalIdentifier(Type.NAME, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.NAME, identifier, null));
 		}
 
-		throw new
-
-				AdempiereException("Unknown externalId type!")
-				.
-
-				appendParametersToMessage()
-						.
-
-				setParameter("externalId", identifier));
+		return Optional.empty();
 	}
 
 	@NonNull
@@ -213,12 +205,12 @@ public class ExternalIdentifier
 
 		return gtinMatcher.group(1);
 	}
-	
+
 	@NonNull
 	public String asName()
 	{
 		Check.assume(Type.NAME.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.NAME, this);
+				"The type of this instance needs to be {}; this={}", Type.NAME, this);
 
 		final Matcher nameMatcher = Type.NAME.pattern.matcher(rawValue);
 

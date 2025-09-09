@@ -18,6 +18,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.util.Check;
@@ -46,6 +47,7 @@ public class C_Order
 
 	private static final AdMessageKey MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = AdMessageKey.of("Order_DateOrdered_Change_Forbidden");
 	
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
@@ -59,7 +61,7 @@ public class C_Order
 			ifColumnsChanged = I_C_Order.COLUMNNAME_DateOrdered)
 	public void updateDataEntry(@NonNull final I_C_Order order)
 	{
-		for (final I_C_OrderLine ol : orderBL.retrieveOrderLines(order, I_C_OrderLine.class))
+		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
 		{
 			for (final I_C_Invoice_Candidate icOfOl : invoiceCandDB.retrieveReferencing(TableRecordReference.of(ol)))
 			{
@@ -80,7 +82,7 @@ public class C_Order
 			return;
 		}
 
-		final List<I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(order, I_C_OrderLine.class);
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{
 			if (!subscriptionBL.isSubscription(ol))
@@ -148,7 +150,7 @@ public class C_Order
 			return;
 		}
 		
-		final List<I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(order, I_C_OrderLine.class);
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{
 			if (ol.getC_Flatrate_Conditions_ID() <= 0)
@@ -196,7 +198,7 @@ public class C_Order
 	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised)
 	public void updateOrderLineFromContract(final I_C_Order order)
 	{
-		orderBL.retrieveOrderLines(order)
+		orderDAO.retrieveOrderLines(order)
 				.stream()
 				.map(ol -> InterfaceWrapperHelper.create(ol, de.metas.contracts.order.model.I_C_OrderLine.class))
 				.filter(subscriptionBL::isSubscription)

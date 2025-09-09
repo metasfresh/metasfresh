@@ -8,7 +8,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.order.impl.DocTypeService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -97,15 +97,15 @@ public class InvoiceJsonConverters
 	@NonNull
 	public static InvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setDateAcct(request.getDateAcct());
-		invoicingParams.setDateInvoiced(request.getDateInvoiced());
-		invoicingParams.setIgnoreInvoiceSchedule(request.getIgnoreInvoiceSchedule());
-		invoicingParams.setPOReference(request.getPoReference());
-		invoicingParams.setSupplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds());
-		invoicingParams.setUpdateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice());
-		invoicingParams.setCompleteInvoices(request.getCompleteInvoices());
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.dateAcct(request.getDateAcct())
+				.dateInvoiced(request.getDateInvoiced())
+				.ignoreInvoiceSchedule(request.getIgnoreInvoiceSchedule())
+				.poReference(request.getPoReference())
+				.supplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds())
+				.updateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice())
+				.completeInvoices(request.getCompleteInvoices())
+				.build();
 	}
 
 	@Nullable
