@@ -507,6 +507,14 @@ public class PickingJobPickCommand
 				{
 					setPickingTUTarget(result.getSingleTopLevelTU());
 				}
+				else if (result.isSingleLU())
+				{
+					final LU lu = result.getSingleLU();
+					if (lu.getTus().isSingleTU())
+					{
+						setPickingTUTarget(lu.getTus().getSingleTU());
+					}
+				}
 			}
 		}
 	}

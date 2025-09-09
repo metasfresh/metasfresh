@@ -26,6 +26,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -107,7 +108,7 @@ public class CreateHUCommand
 								.orgId(MasterdataContext.ORG_ID)
 								.warehouseId(warehouseId)
 								.productId(productId)
-								.qty(Quantity.of(computeQtyCUs(), uom))
+								.qty(Quantity.of(getTotalQtyCUs(), uom))
 								.movementDate(SystemTime.asZonedDateTime())
 								.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 								.build()
@@ -143,16 +144,23 @@ public class CreateHUCommand
 		return warehouseId;
 	}
 
-	private BigDecimal computeQtyCUs()
+	private BigDecimal getTotalQtyCUs()
 	{
 		if (request.getPackingInstructions() != null)
 		{
-			if (request.getQty() != null)
-			{
-				throw new AdempiereException("qty shall not be set when packingInstructions are set");
-			}
 			final PackingInstructions packingInstructions = context.getObjectNotNull(request.getPackingInstructions());
-			return packingInstructions.getQtyCUs();
+			if (packingInstructions.isInfiniteCapacity())
+			{
+				return Check.assumeNotNull(request.getQty(), "qty shall be set when packingInstructions has infinite capacity");
+			}
+			else
+			{
+				if (request.getQty() != null)
+				{
+					throw new AdempiereException("qty shall not be set when packingInstructions are set");
+				}
+				return packingInstructions.getQtyCUs();
+			}
 		}
 		else
 		{
@@ -198,9 +206,16 @@ public class CreateHUCommand
 		}
 
 		final I_M_HU_PI tuPI = packingInstructions.getTuPI();
-		final BigDecimal qtyCUsPerTU = packingInstructions.getQtyCUsPerTU();
 		producer.setTUPI(tuPI);
-		producer.addCUPerTU(productId, qtyCUsPerTU, uom);
+		if (packingInstructions.isInfiniteCapacity())
+		{
+			producer.addCUPerTU(Capacity.createInfiniteCapacity(productId, uom));
+		}
+		else
+		{
+			final BigDecimal qtyCUsPerTU = packingInstructions.getQtyCUsPerTUNotNull();
+			producer.addCUPerTU(productId, qtyCUsPerTU, uom);
+		}
 
 		final I_M_HU_PI_Item luPIItem = packingInstructions.getLuPIItem();
 		if (luPIItem != null)
@@ -223,7 +238,7 @@ public class CreateHUCommand
 				.load(AllocationUtils.builder()
 						.setHUContext(huContext)
 						.setProduct(productId)
-						.setQuantity(Quantity.of(packingInstructions.getQtyCUs(), uom))
+						.setQuantity(Quantity.of(getTotalQtyCUs(), uom))
 						.setDateAsToday()
 						.setForceQtyAllocation(true)
 						.create());

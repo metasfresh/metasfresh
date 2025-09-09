@@ -1,19 +1,30 @@
 import { shallowEqual, useSelector } from 'react-redux';
 import { getActivityById, getLineByIdFromActivity } from '../index';
 import { isLineLevelPickTarget } from '../../../utils/picking';
+import {
+  addPickToStructure,
+  isLUBasedPickToStructure,
+  PICKTO_STRUCTURE_CU,
+  PICKTO_STRUCTURE_LU_CU,
+  PICKTO_STRUCTURE_TU,
+  removePickToStructure,
+} from './PickToStructure';
 
 export const useCurrentPickingTargetInfo = ({ wfProcessId, activityId, lineId }) => {
   return useSelector((state) => getCurrentPickingTargetInfo({ state, wfProcessId, activityId, lineId }), shallowEqual);
 };
 
-const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, lineId }) => {
+const computeIsAllowReopeningLU = ({ allowedPickToStructures }) =>
+  allowedPickToStructures.some(isLUBasedPickToStructure);
+
+export const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
 
-  let isAllowReopeningLU = false;
-  let isPickWithNewLU = false;
-  let isAllowNewTU = false;
   let luPickingTarget = null;
   let tuPickingTarget = null;
+
+  let allowedPickToStructures = [];
+  let isAllowReopeningLU = false;
 
   //
   // Picking Job Line level
@@ -23,9 +34,8 @@ const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, lineId })
     if (isLineLevelPickTarget({ activity })) {
       luPickingTarget = line?.luPickingTarget;
       tuPickingTarget = line?.tuPickingTarget;
-      isPickWithNewLU = activity.dataStored.isPickWithNewLU;
-      isAllowReopeningLU = isPickWithNewLU;
-      isAllowNewTU = activity.dataStored.isAllowNewTU;
+      allowedPickToStructures = activity.dataStored.allowedPickToStructures;
+      isAllowReopeningLU = computeIsAllowReopeningLU({ allowedPickToStructures });
     }
   }
   //
@@ -33,22 +43,22 @@ const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, lineId })
   else {
     luPickingTarget = activity?.dataStored?.luPickingTarget;
     tuPickingTarget = activity?.dataStored?.tuPickingTarget;
-    isPickWithNewLU = activity.dataStored.isPickWithNewLU;
 
     if (isLineLevelPickTarget({ activity })) {
+      allowedPickToStructures = activity.dataStored.allowedPickToStructures;
+      allowedPickToStructures = addPickToStructure(allowedPickToStructures, PICKTO_STRUCTURE_TU);
+      allowedPickToStructures = removePickToStructure(allowedPickToStructures, PICKTO_STRUCTURE_LU_CU);
+      allowedPickToStructures = removePickToStructure(allowedPickToStructures, PICKTO_STRUCTURE_CU);
       isAllowReopeningLU = false;
-      isAllowNewTU = true;
     } else {
-      isAllowReopeningLU = isPickWithNewLU;
-      isAllowNewTU = activity.dataStored.isAllowNewTU;
+      allowedPickToStructures = activity.dataStored.allowedPickToStructures;
+      isAllowReopeningLU = computeIsAllowReopeningLU({ allowedPickToStructures });
     }
   }
 
   return {
+    allowedPickToStructures,
     isAllowReopeningLU,
-    isPickWithNewLU,
-    isLUScanRequiredAndMissing: isPickWithNewLU && !luPickingTarget,
-    isAllowNewTU,
     luPickingTarget,
     tuPickingTarget,
   };

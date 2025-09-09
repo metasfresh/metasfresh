@@ -5,21 +5,24 @@ import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picki
 import PropTypes from 'prop-types';
 import { reopenClosedLUScreenLocation, selectPickingTargetScreenLocation } from '../../../routes/picking';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import {
+  PICKTO_STRUCTURE_CU,
+  PICKTO_STRUCTURE_LU_CU,
+  PICKTO_STRUCTURE_LU_TU,
+  PICKTO_STRUCTURE_TU,
+} from '../../../reducers/wfProcesses/picking/PickToStructure';
 
 const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, lineId, isUserEditable = true }) => {
   const history = useMobileNavigation();
 
-  const {
-    isAllowReopeningLU,
-    isPickWithNewLU,
-    isLUScanRequiredAndMissing,
-    isAllowNewTU,
+  const { luPickingTarget, tuPickingTarget, allowedPickToStructures, isAllowReopeningLU } = useCurrentPickingTargetInfo(
+    { wfProcessId, activityId, lineId }
+  );
+
+  const { isShowLUButton, isShowTUButton } = computeIsShowButtons({
     luPickingTarget,
     tuPickingTarget,
-  } = useCurrentPickingTargetInfo({
-    wfProcessId,
-    activityId,
-    lineId,
+    allowedPickToStructures,
   });
 
   const onReopenClosedLUClicked = () => {
@@ -44,7 +47,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
           onClick={onReopenClosedLUClicked}
         />
       )}
-      {isPickWithNewLU && (
+      {isShowLUButton && (
         <ButtonWithIndicator
           testId="targetLU-button"
           caption={
@@ -56,7 +59,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
           onClick={onSelectLUPickingTargetClick}
         />
       )}
-      {isAllowNewTU && (
+      {isShowTUButton && (
         <ButtonWithIndicator
           testId="targetTU-button"
           caption={
@@ -64,7 +67,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
               ? trl('activities.picking.tuPickingTarget.Current') + ': ' + tuPickingTarget?.caption
               : trl('activities.picking.tuPickingTarget.New')
           }
-          disabled={!isUserEditable || isLUScanRequiredAndMissing}
+          disabled={!isUserEditable}
           onClick={onSelectTUPickingTargetClick}
         />
       )}
@@ -79,3 +82,37 @@ SelectCurrentLUTUButtons.propTypes = {
   isUserEditable: PropTypes.bool,
 };
 export default SelectCurrentLUTUButtons;
+
+//
+//
+//
+//
+//
+
+const computeIsShowButtons = ({ luPickingTarget, tuPickingTarget, allowedPickToStructures }) => {
+  let isShowLUButton = false;
+  let isHideLUButton = false;
+  let isShowTUButton = false;
+  let isHideTUButton = false;
+
+  allowedPickToStructures.forEach((pickToStructure) => {
+    if (pickToStructure === PICKTO_STRUCTURE_LU_TU) {
+      isShowLUButton = true;
+      isShowTUButton = true;
+    } else if (pickToStructure === PICKTO_STRUCTURE_TU) {
+      isShowTUButton = true;
+      if (tuPickingTarget && !luPickingTarget) {
+        isHideLUButton = true;
+      }
+    } else if (pickToStructure === PICKTO_STRUCTURE_LU_CU) {
+      isShowLUButton = true;
+    } else if (pickToStructure === PICKTO_STRUCTURE_CU) {
+      // don't show LU nor TU buttons
+    }
+  });
+
+  return {
+    isShowLUButton: isShowLUButton && !isHideLUButton,
+    isShowTUButton: isShowTUButton && !isHideTUButton,
+  };
+};

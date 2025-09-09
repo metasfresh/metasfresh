@@ -76,6 +76,8 @@ export const PickingJobScreen = {
         await page.getByTestId('targetLU-button').tap();
     }),
     setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
+        if (!lu) throw new Error("No LU specified.");
+        
         await PickingJobScreen.clickLUTargetButton();
         await SelectPickTargetLUScreen.waitForScreen();
         await SelectPickTargetLUScreen.clickLUButton({ lu });

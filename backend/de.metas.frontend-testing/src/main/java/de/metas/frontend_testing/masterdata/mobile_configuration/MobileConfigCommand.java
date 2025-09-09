@@ -8,6 +8,7 @@ import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
@@ -26,6 +27,7 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 
 @Builder
@@ -105,9 +107,8 @@ public class MobileConfigCommand
 				.allowPickingAnyHU(profile.getDefaultPickingJobOptions().isAllowPickingAnyHU())
 				.createShipmentPolicy(profile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
-				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
 				.shipOnCloseLU(profile.getDefaultPickingJobOptions().isShipOnCloseLU())
-				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
+				.pickTo(profile.getDefaultPickingJobOptions().getAllowedPickToStructures().toAllowedSet())
 				.filterByQRCode(profile.isFilterByBarcode())
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
@@ -134,15 +135,23 @@ public class MobileConfigCommand
 		{
 			builder.isAlwaysSplitHUsEnabled(from.getAlwaysSplitHUsEnabled());
 		}
+		builder.isShipOnCloseLU(from.getShipOnCloseLU() != null ? from.getShipOnCloseLU() : false);
+
+		final HashMap<PickToStructure, Boolean> allowedPickToStructures = new HashMap<>();
+		if (from.getPickTo() != null)
+		{
+			from.getPickTo().forEach(pickToStructure -> allowedPickToStructures.put(pickToStructure, true));
+		}
 		if (from.getPickWithNewLU() != null)
 		{
-			builder.isPickWithNewLU(from.getPickWithNewLU());
+			allowedPickToStructures.put(PickToStructure.LU_TU, from.getPickWithNewLU());
+			allowedPickToStructures.put(PickToStructure.LU_CU, from.getPickWithNewLU());
 		}
-		builder.isShipOnCloseLU(from.getShipOnCloseLU() != null ? from.getShipOnCloseLU() : false);
 		if (from.getAllowNewTU() != null)
 		{
-			builder.isAllowNewTU(from.getAllowNewTU());
+			allowedPickToStructures.put(PickToStructure.TU, from.getPickWithNewLU());
 		}
+
 		if (from.getAllowCompletingPartialPickingJob() != null)
 		{
 			builder.isAllowCompletingPartialPickingJob(from.getAllowCompletingPartialPickingJob());

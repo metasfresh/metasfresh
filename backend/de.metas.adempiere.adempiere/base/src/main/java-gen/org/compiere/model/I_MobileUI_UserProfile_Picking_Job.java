@@ -51,6 +51,90 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Pick to top level CU structure.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_CU (@Nullable java.lang.String AllowPickToStructure_CU);
+
+	/**
+	 * Get Pick to top level CU structure.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAllowPickToStructure_CU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_AllowPickToStructure_CU = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "AllowPickToStructure_CU", null);
+	String COLUMNNAME_AllowPickToStructure_CU = "AllowPickToStructure_CU";
+
+	/**
+	 * Set Pick to LU/CU structure.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_LU_CU (@Nullable java.lang.String AllowPickToStructure_LU_CU);
+
+	/**
+	 * Get Pick to LU/CU structure.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAllowPickToStructure_LU_CU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_AllowPickToStructure_LU_CU = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "AllowPickToStructure_LU_CU", null);
+	String COLUMNNAME_AllowPickToStructure_LU_CU = "AllowPickToStructure_LU_CU";
+
+	/**
+	 * Set Pick to LU/TU structure.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_LU_TU (@Nullable java.lang.String AllowPickToStructure_LU_TU);
+
+	/**
+	 * Get Pick to LU/TU structure.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAllowPickToStructure_LU_TU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_AllowPickToStructure_LU_TU = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "AllowPickToStructure_LU_TU", null);
+	String COLUMNNAME_AllowPickToStructure_LU_TU = "AllowPickToStructure_LU_TU";
+
+	/**
+	 * Set Pick to top level TU structure.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_TU (@Nullable java.lang.String AllowPickToStructure_TU);
+
+	/**
+	 * Get Pick to top level TU structure.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAllowPickToStructure_TU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_AllowPickToStructure_TU = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "AllowPickToStructure_TU", null);
+	String COLUMNNAME_AllowPickToStructure_TU = "AllowPickToStructure_TU";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

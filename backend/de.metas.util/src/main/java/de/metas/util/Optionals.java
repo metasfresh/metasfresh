@@ -47,7 +47,7 @@ public class Optionals
 			{
 				continue;
 			}
-			
+
 			final Optional<T> optionalValue = supplier.get();
 			if (optionalValue != null && optionalValue.isPresent())
 			{
@@ -69,6 +69,13 @@ public class Optionals
 		}
 
 		return supplier2.get();
+	}
+
+	public static <T> Optional<T> firstPresent(
+			@NonNull final Optional<T> supplier1,
+			@NonNull final Optional<T> supplier2)
+	{
+		return supplier1.isPresent() ? supplier1 : supplier2;
 	}
 
 	/**

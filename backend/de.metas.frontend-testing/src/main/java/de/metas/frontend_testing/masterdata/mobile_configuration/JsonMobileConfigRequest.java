@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.mobile.MobileAuthMethod;
@@ -11,6 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 @Value
 @Builder
@@ -37,9 +39,12 @@ public class JsonMobileConfigRequest
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean allowCompletingPartialPickingJob;
-		@Nullable Boolean pickWithNewLU;
 		@Nullable Boolean shipOnCloseLU;
-		@Nullable Boolean allowNewTU;
+
+		@Nullable Set<PickToStructure> pickTo;
+		@Nullable @Deprecated Boolean pickWithNewLU;
+		@Nullable @Deprecated Boolean allowNewTU;
+
 		@Nullable Boolean allowSkippingRejectedReason;
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean showLastPickedBestBeforeDateForLines;

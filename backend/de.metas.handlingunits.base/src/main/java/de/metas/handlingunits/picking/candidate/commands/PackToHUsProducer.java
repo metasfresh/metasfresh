@@ -17,6 +17,8 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -228,7 +230,20 @@ public class PackToHUsProducer
 			}
 			else if (packToDestination instanceof HUListAllocationSourceDestination)
 			{
-				result = LUTUResult.ofSingleTopLevelTU(((HUListAllocationSourceDestination)packToDestination).getSingleSourceHU());
+				final I_M_HU tuRecord = ((HUListAllocationSourceDestination)packToDestination).getSingleSourceHU();
+				final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
+				if (luRecord == null)
+				{
+					result = LUTUResult.ofSingleTopLevelTU(tuRecord);
+				}
+				else
+				{
+					final TU tu = handlingUnitsBL.isAggregateHU(tuRecord)
+							? TU.ofAggregatedTU(tuRecord, handlingUnitsBL.getTUsCount(tuRecord))
+							: TU.ofSingleTU(tuRecord);
+					final LU lu = LU.of(luRecord, tu).markedAsPreExistingLU();
+					result = LUTUResult.ofLU(lu);
+				}
 			}
 			else
 			{
