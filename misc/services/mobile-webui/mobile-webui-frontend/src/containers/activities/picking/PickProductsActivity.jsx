@@ -133,7 +133,7 @@ const useIsLineReadonly = ({ wfProcessId, activityId }) => {
 
   return {
     isLineReadOnly: ({ line }) => {
-      return isCurrentTargetEligibleForLine({ line, luPickingTarget, tuPickingTarget, allowedPickToStructures });
+      return !isCurrentTargetEligibleForLine({ line, luPickingTarget, tuPickingTarget, allowedPickToStructures });
     },
   };
 };
