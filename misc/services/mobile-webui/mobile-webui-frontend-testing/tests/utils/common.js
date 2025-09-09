@@ -55,6 +55,14 @@ const runAndWatchForErrors = async (func) => {
     }
 }
 
+export const expectErrorToastIf = async (condition, title, func) => {
+    if (condition) {
+        return await expectErrorToast(title, func);
+    } else {
+        return await func();
+    }
+};
+
 export const expectErrorToast = async (title, func) => {
     const watcherId = ++nextErrorWatcherId;
 

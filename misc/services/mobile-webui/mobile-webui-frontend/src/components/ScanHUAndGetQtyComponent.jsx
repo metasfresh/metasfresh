@@ -11,7 +11,7 @@ import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
-import { ATTR_isUnique } from '../utils/qrCode/common';
+import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
@@ -181,7 +181,7 @@ const ScanHUAndGetQtyComponent = ({
     const qrCode = resolvedBarcodeDataNew?.qrCode;
     if (qrCode && qrCode[ATTR_isUnique] === false) {
       // user just scanned a non-unique QR code (e.g. EAN13, custom)
-      askForQty = false;
+      askForQty = qrCode[ATTR_isTUToBePickedAsWhole] === false;
     } else {
       askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
     }

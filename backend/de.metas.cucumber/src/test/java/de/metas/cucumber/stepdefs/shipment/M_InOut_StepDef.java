@@ -104,6 +104,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -800,5 +802,27 @@ public class M_InOut_StepDef
 				.collect(ImmutableSet.toImmutableSet());
 
 		AccountingCucumberHelper.waitUtilPosted(inoutRefs);
+	}
+
+	@And("^store shipment PDF endpointPath (.*) in context$")
+	public void store_shipment_endpointPath_in_context(@NonNull String endpointPath)
+	{
+		final String regex = ".*(:[a-zA-Z]+)/?.*";
+
+		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(endpointPath);
+
+		while (matcher.find())
+		{
+			final String shipmentIdentifierGroup = matcher.group(1);
+			final String shipmentIdentifier = shipmentIdentifierGroup.replace(":", "");
+
+			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
+			assertThat(shipment).isNotNull();
+
+			endpointPath = endpointPath.replace(shipmentIdentifierGroup, String.valueOf(shipment.getM_InOut_ID()));
+
+			restTestContext.setEndpointPath(endpointPath);
+		}
 	}
 }

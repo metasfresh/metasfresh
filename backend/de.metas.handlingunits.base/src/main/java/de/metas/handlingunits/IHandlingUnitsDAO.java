@@ -118,6 +118,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
 
+	List<I_M_HU_PI_Item> getPackingInstructionItemsByIds(@NonNull Set<HuPackingInstructionsItemId> piItemIds);
+
 	/**
 	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.
 	 */

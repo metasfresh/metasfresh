@@ -105,6 +105,9 @@ public interface IOrderBL extends ISingletonService
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
 
+	@Nullable
+	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_C_Order orderRecord);
+	
 	/**
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
 	 * Be sure to first check with {@link #hasBillToContactId(I_C_Order)}.
@@ -242,8 +245,6 @@ public interface IOrderBL extends ISingletonService
 	 * <li>QtyInvoiced
 	 * </ul>
 	 * from the sums of the order's lines.
-	 *
-	 * @param order task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	void updateOrderQtySums(I_C_Order order);
 

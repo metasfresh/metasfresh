@@ -40,22 +40,32 @@ public class EAN13ProductCodes
 		return actualProductNo != null && EAN13ProductCode.equals(expectedProductNo, actualProductNo);
 	}
 
+	private boolean endsWith(@NonNull final EAN13ProductCode expectedProductNo, @Nullable final BPartnerId bpartnerId)
+	{
+		final EAN13ProductCode actualProductNo = getCode(bpartnerId).orElse(null);
+		return actualProductNo != null && actualProductNo.endsWith(expectedProductNo);
+	}
+
 	public boolean isValidProductNo(@NonNull final EAN13 ean13, @Nullable final BPartnerId bpartnerId)
 	{
 		final EAN13Prefix ean13Prefix = ean13.getPrefix();
 		final EAN13ProductCode ean13ProductNo = ean13.getProductNo();
-		if (ean13Prefix.isVariableWeight()) // 28
+
+		// 28 - Variable-Weight barcodes
+		if (ean13Prefix.isVariableWeight())
 		{
 			return contains(ean13ProductNo, bpartnerId)
 					|| ean13ProductNo.isPrefixOf(productValue);
 		}
-		else if (ean13Prefix.isInternalUseOrVariableMeasure()) // 29
+		// 29 - Internal Use / Variable measure
+		else if (ean13Prefix.isInternalUseOrVariableMeasure())
 		{
 			return contains(ean13ProductNo, bpartnerId);
 		}
+		// Parse regular product codes for other prefixes
 		else
 		{
-			return false;
+			return endsWith(ean13ProductNo, bpartnerId);
 		}
 
 	}

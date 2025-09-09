@@ -833,43 +833,34 @@ public class BPartnerDAO implements IBPartnerDAO
 			throw new AdempiereException("No BPartner found for " + bpartnerId);
 		}
 
-		final Integer bpPricingSysId;
-		if (soTrx.isSales())
-		{
-			bpPricingSysId = bPartner.getM_PricingSystem_ID();
-		}
-		else
-		{
-			bpPricingSysId = bPartner.getPO_PricingSystem_ID();
-		}
-
-		if (bpPricingSysId > 0)
+		final PricingSystemId bpPricingSysId = soTrx.isSales() ? PricingSystemId.ofRepoIdOrNull(bPartner.getM_PricingSystem_ID()) : PricingSystemId.ofRepoIdOrNull(bPartner.getPO_PricingSystem_ID());
+		if (bpPricingSysId != null)
 		{
 			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);
-			return PricingSystemId.ofRepoId(bpPricingSysId);
+			return bpPricingSysId;
 		}
 
-		final int bpGroupId = bPartner.getC_BP_Group_ID();
-		if (bpGroupId > 0)
-		{
-			final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, bpGroupId, I_C_BP_Group.class, trxName);
-			final Integer bpGroupPricingSysId;
+		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bPartner.getC_BP_Group_ID());
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, BPGroupId.toRepoId(bpGroupId), I_C_BP_Group.class, trxName);
+		final PricingSystemId bpGroupPricingSysId = soTrx.isSales() ? PricingSystemId.ofRepoIdOrNull(bpGroup.getM_PricingSystem_ID()) : PricingSystemId.ofRepoIdOrNull(bpGroup.getPO_PricingSystem_ID());
 
-			// metas: Same problem as above: The method always retrieved SO-PricingSys. This caused errors in
-			// PO-Documents.
-			if (soTrx.isSales())
-			{
-				bpGroupPricingSysId = bpGroup.getM_PricingSystem_ID();
-			}
-			else
-			{
-				bpGroupPricingSysId = bpGroup.getPO_PricingSystem_ID();
-			}
+		// metas: end
+		if (bpGroupPricingSysId != null)
+		{
+			logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
+			return bpGroupPricingSysId;
+		}
+		final BPGroupId parentBPGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
+		if (parentBPGroupId != null)
+		{
+			final I_C_BP_Group parentBpGroup = InterfaceWrapperHelper.create(ctx, BPGroupId.toRepoId(parentBPGroupId), I_C_BP_Group.class, trxName);
+			final PricingSystemId parentBpGroupPricingSystemId = soTrx.isSales() ? PricingSystemId.ofRepoIdOrNull(parentBpGroup.getM_PricingSystem_ID()) : PricingSystemId.ofRepoIdOrNull(parentBpGroup.getPO_PricingSystem_ID());
+
 			// metas: end
-			if (bpGroupPricingSysId > 0)
+			if (parentBpGroupPricingSystemId != null)
 			{
-				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
-				return PricingSystemId.ofRepoId(bpGroupPricingSysId);
+				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", parentBpGroupPricingSystemId, parentBpGroup);
+				return parentBpGroupPricingSystemId;
 			}
 		}
 

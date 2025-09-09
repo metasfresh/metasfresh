@@ -121,6 +121,12 @@ public enum OptionalBoolean
 		}
 	}
 
+	@Nullable
+	public String toBooleanString()
+	{
+		return StringUtils.ofBoolean(toBooleanOrNull());
+	}
+
 	public void ifPresent(@NonNull final BooleanConsumer action)
 	{
 		if (this == TRUE)

@@ -153,7 +153,7 @@ public class ProductsRestControllerTest
 		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
 
 		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
-		
+
 		final ProductTaxCategoryRepository productTaxCategoryRepository = new ProductTaxCategoryRepository();
 		final ProductTaxCategoryService productTaxCategoryService = new ProductTaxCategoryService(productTaxCategoryRepository);
 		final ProductPriceRepository productPriceRepository = new ProductPriceRepository(productTaxCategoryService);
@@ -182,8 +182,8 @@ public class ProductsRestControllerTest
 
 	private void createMasterData()
 	{
-		eachUomId = createUOM("Ea");
-		kgUomId = createUOM("Kg");
+		eachUomId = createUOM("Ea", "PCE");
+		kgUomId = createUOM("Kg", "KGM");
 	}
 
 	@Test
@@ -252,6 +252,7 @@ public class ProductsRestControllerTest
 													.description("description1")
 													.ean("ean1")
 													.uom("Ea")
+										  			.uomX12DE355("PCE")
 													.productCategoryId(JsonMetasfreshId.of(3))
 													.bpartner(JsonProductBPartner.builder()
 																	  .bpartnerId(JsonMetasfreshId.of(1))
@@ -285,6 +286,7 @@ public class ProductsRestControllerTest
 													.description("description2")
 													.ean("ean2")
 													.uom("Kg")
+										            .uomX12DE355("KGM")
 													.productCategoryId(JsonMetasfreshId.of(4))
 													.build())
 								   .build());
@@ -293,10 +295,11 @@ public class ProductsRestControllerTest
 		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
 	}
 
-	private UomId createUOM(@NonNull final String uomSymbol)
+	private UomId createUOM(@NonNull final String uomSymbol, @NonNull final String uomX12DE355)
 	{
 		final I_C_UOM record = newInstance(I_C_UOM.class);
 		record.setUOMSymbol(uomSymbol);
+		record.setX12DE355(uomX12DE355);
 		saveRecord(record);
 		return UomId.ofRepoId(record.getC_UOM_ID());
 	}
