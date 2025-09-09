@@ -91,7 +91,6 @@ SELECT SUM(il.qtyEntered)                                                       
        REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)                      AS Supplier_GTIN_CU,
        SUM(il.QtyEnteredInBPartnerUOM)                                           AS qtyEnteredInBPartnerUOM,
        il.C_UOM_BPartner_ID                                                      AS C_UOM_BPartner_ID,
-       il.externalids                                                            AS ExternalId,
        ol.externalseqno                                                          AS externalSeqNo
 FROM c_invoiceline il
          LEFT JOIN c_orderline ol ON ol.c_orderline_id = il.c_orderline_id AND ol.isactive = 'Y'
@@ -149,7 +148,7 @@ GROUP BY il.c_invoice_id,
          (COALESCE(ol.line, il.line)),
          il.c_orderline_id,
          pip.UPC, pip.GTIN, pip.EAN_TU, pp.GTIN, p.GTIN,
-         il.C_UOM_BPartner_ID, il.externalids, ol.externalseqno
+         il.C_UOM_BPartner_ID, ol.externalseqno
 ORDER BY COALESCE(ol.line, il.line)
 ;
 
