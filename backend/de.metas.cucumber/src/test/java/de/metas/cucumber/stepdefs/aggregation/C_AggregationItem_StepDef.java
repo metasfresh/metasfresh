@@ -28,6 +28,7 @@ import de.metas.aggregation.model.I_C_Aggregation_Attribute;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,6 +54,51 @@ public class C_AggregationItem_StepDef
 		this.aggregationAttributeTable = aggregationAttributeTable;
 	}
 
+	@And("load C_AggregationItem")
+	public void load_C_AggregationItem(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			loadAggregationItem(tableRow);
+		}
+	}
+
+	@And("update C_AggregationItem")
+	public void update_C_AggregationItem(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateAggregationItem(tableRow);
+		}
+	}
+
+	private void loadAggregationItem(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_AggregationItem.COLUMNNAME_C_AggregationItem_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final String id = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_AggregationItem.COLUMNNAME_C_AggregationItem_ID);
+
+		if (de.metas.common.util.Check.isNotBlank(id))
+		{
+			final I_C_AggregationItem aggregationItemRecord = InterfaceWrapperHelper.load(Integer.parseInt(id), I_C_AggregationItem.class);
+
+			aggregationItemTable.putOrReplace(identifier, aggregationItemRecord);
+		}
+	}
+
+	private void updateAggregationItem(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_AggregationItem.COLUMNNAME_C_AggregationItem_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_AggregationItem aggregationItemRecord = aggregationItemTable.get(identifier);
+
+		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, I_C_AggregationItem.COLUMNNAME_IsActive);
+		aggregationItemRecord.setIsActive(isActive);
+
+		InterfaceWrapperHelper.saveRecord(aggregationItemRecord);
+	}
+	
 	@Given("metasfresh contains C_AggregationItems:")
 	public void metasfresh_contains_c_aggregation_item(@NonNull final DataTable dataTable)
 	{
