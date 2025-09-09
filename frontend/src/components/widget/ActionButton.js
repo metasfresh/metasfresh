@@ -6,8 +6,7 @@ import classnames from 'classnames';
 
 import { dropdownRequest } from '../../actions/GenericActions';
 
-import DocumentStatusContextShortcuts
-  from '../keyshortcuts/DocumentStatusContextShortcuts';
+import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
 import Prompt from '../../components/app/Prompt';
 
 /**
