@@ -6,6 +6,7 @@ import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfig.MobileUIDistributionConfigBuilder;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.handlingunits.picking.config.mobileui.AllowedPickToStructures;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
@@ -137,20 +138,7 @@ public class MobileConfigCommand
 		}
 		builder.isShipOnCloseLU(from.getShipOnCloseLU() != null ? from.getShipOnCloseLU() : false);
 
-		final HashMap<PickToStructure, Boolean> allowedPickToStructures = new HashMap<>();
-		if (from.getPickTo() != null)
-		{
-			from.getPickTo().forEach(pickToStructure -> allowedPickToStructures.put(pickToStructure, true));
-		}
-		if (from.getPickWithNewLU() != null)
-		{
-			allowedPickToStructures.put(PickToStructure.LU_TU, from.getPickWithNewLU());
-			allowedPickToStructures.put(PickToStructure.LU_CU, from.getPickWithNewLU());
-		}
-		if (from.getAllowNewTU() != null)
-		{
-			allowedPickToStructures.put(PickToStructure.TU, from.getPickWithNewLU());
-		}
+		builder.allowedPickToStructures(extractAllowedPickToStructures(from));
 
 		if (from.getAllowCompletingPartialPickingJob() != null)
 		{
@@ -172,6 +160,32 @@ public class MobileConfigCommand
 		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
 
 		return builder.build();
+	}
+
+	private static AllowedPickToStructures extractAllowedPickToStructures(final JsonMobileConfigRequest.Picking from)
+	{
+		final HashMap<PickToStructure, Boolean> allowedPickToStructures = new HashMap<>();
+		if (from.getPickTo() != null)
+		{
+			from.getPickTo().forEach(pickToStructure -> allowedPickToStructures.put(pickToStructure, true));
+		}
+
+		//noinspection deprecation
+		final Boolean pickWithNewLU = from.getPickWithNewLU();
+		if (pickWithNewLU != null)
+		{
+			allowedPickToStructures.put(PickToStructure.LU_TU, pickWithNewLU);
+			allowedPickToStructures.put(PickToStructure.LU_CU, pickWithNewLU);
+		}
+
+		//noinspection deprecation
+		final Boolean allowNewTU = from.getAllowNewTU();
+		if (allowNewTU != null)
+		{
+			allowedPickToStructures.put(PickToStructure.TU, pickWithNewLU);
+		}
+
+		return AllowedPickToStructures.ofMap(allowedPickToStructures);
 	}
 
 	private PickingCustomerConfigsCollection updatePickingCustomers(

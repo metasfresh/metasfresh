@@ -66,11 +66,6 @@ public class AllowedPickToStructures
 		return ofMap(mapBuilder.build());
 	}
 
-	public static AllowedPickToStructures ofAllowed(@NonNull final PickToStructure... allowed)
-	{
-		return ofAllowed(ImmutableSet.copyOf(allowed));
-	}
-
 	public boolean isEmpty() {return map.isEmpty();}
 
 	public @NonNull AllowedPickToStructures fallbackTo(final @NonNull AllowedPickToStructures fallback)
