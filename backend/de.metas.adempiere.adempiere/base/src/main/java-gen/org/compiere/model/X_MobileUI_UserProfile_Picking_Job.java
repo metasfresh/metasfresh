@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1607907164L;
+	private static final long serialVersionUID = 1572842256L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final int MobileUI_UserProfile_Picking_Job_ID, @Nullable final String trxName)
@@ -168,18 +168,6 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
-	public void setIsAllowNewTU (final boolean IsAllowNewTU)
-	{
-		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
-	}
-
-	@Override
-	public boolean isAllowNewTU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewTU);
-	}
-
-	@Override
 	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
 	{
 		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
@@ -270,18 +258,6 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public java.lang.String getIsDisplayPickingSlotSuggestions() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsDisplayPickingSlotSuggestions);
-	}
-
-	@Override
-	public void setIsPickingWithNewLU (final boolean IsPickingWithNewLU)
-	{
-		set_Value (COLUMNNAME_IsPickingWithNewLU, IsPickingWithNewLU);
-	}
-
-	@Override
-	public boolean isPickingWithNewLU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
 	}
 
 	@Override

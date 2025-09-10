@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1028833285L;
+	private static final long serialVersionUID = -1669066319L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -132,18 +132,6 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public void setIsAllowNewTU (final boolean IsAllowNewTU)
-	{
-		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
-	}
-
-	@Override
-	public boolean isAllowNewTU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewTU);
-	}
-
-	@Override
 	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
 	{
 		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
@@ -237,18 +225,6 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isFilterByBarcode() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFilterByBarcode);
-	}
-
-	@Override
-	public void setIsPickingWithNewLU (final boolean IsPickingWithNewLU)
-	{
-		set_Value (COLUMNNAME_IsPickingWithNewLU, IsPickingWithNewLU);
-	}
-
-	@Override
-	public boolean isPickingWithNewLU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
 	}
 
 	@Override

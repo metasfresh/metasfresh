@@ -250,27 +250,6 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsAllowCompletingPartialPickingJob = "IsAllowCompletingPartialPickingJob";
 
 	/**
-	 * Set Allow new TU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowNewTU (boolean IsAllowNewTU);
-
-	/**
-	 * Get Allow new TU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAllowNewTU();
-
-	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAllowNewTU = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAllowNewTU", null);
-	String COLUMNNAME_IsAllowNewTU = "IsAllowNewTU";
-
-	/**
 	 * Set Allow picking any HU.
 	 *
 	 * <br>Type: YesNo
@@ -424,27 +403,6 @@ public interface I_MobileUI_UserProfile_Picking_Job
 
 	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsDisplayPickingSlotSuggestions = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsDisplayPickingSlotSuggestions", null);
 	String COLUMNNAME_IsDisplayPickingSlotSuggestions = "IsDisplayPickingSlotSuggestions";
-
-	/**
-	 * Set Pick with LU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsPickingWithNewLU (boolean IsPickingWithNewLU);
-
-	/**
-	 * Get Pick with LU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isPickingWithNewLU();
-
-	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsPickingWithNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsPickingWithNewLU", null);
-	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
 
 	/**
 	 * Set Ship after closing LU.
