@@ -157,7 +157,7 @@ test('Product based aggregation', async ({ page }) => {
     });
 
     await test.step('Picking job for P2', async () => {
-        const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 54 });
+        await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 54 });
         await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P2_HU.qrCode });
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
         await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P2_7x3.luName });
