@@ -14,7 +14,6 @@ import {
   isAllowPickingAnyHUOnHeaderLevel,
   isUserEditable as isUserEditableFunc,
 } from '../../../utils/picking';
-import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { NEXT_PickingJob } from './PickLineScanScreen';
 import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
@@ -23,7 +22,7 @@ import {
   computeCatchWeightsArrayForLine,
   formatCatchWeightToHumanReadableStr,
 } from '../../../reducers/wfProcesses/picking/catch_weight';
-import { isCurrentTargetEligibleForLine } from '../../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
+import { isCurrentTargetEligibleForActivityAndLine } from '../../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
@@ -43,11 +42,9 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   };
   const onLineButtonClick = useLineButtonClickHandler({ applicationId, wfProcessId, activity, history });
 
-  const { isLineReadOnly } = useIsLineReadonly({ wfProcessId, activityId });
-
   const isAtLeastOneReadOnlyLine = (groupedLines) => {
     if (!isUserEditable) return false;
-    return groupedLines.some((lines) => lines.some((line) => isLineReadOnly({ line })));
+    return groupedLines.some((lines) => lines.some((line) => isLineReadOnly({ activity, line })));
   };
 
   return (
@@ -84,7 +81,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
                   key={lineId}
                   caption={line.caption}
                   completeStatus={line.completeStatus || CompleteStatus.NOT_STARTED}
-                  disabled={!isUserEditable || isLineReadOnly({ line })}
+                  disabled={!isUserEditable || isLineReadOnly({ activity, line })}
                   onClick={() => onLineButtonClick({ line })}
                 >
                   <ButtonQuantityProp
@@ -125,17 +122,8 @@ export default PickProductsActivity;
 //
 //
 
-const useIsLineReadonly = ({ wfProcessId, activityId }) => {
-  const { allowedPickToStructures, luPickingTarget, tuPickingTarget } = useCurrentPickingTargetInfo({
-    wfProcessId,
-    activityId,
-  });
-
-  return {
-    isLineReadOnly: ({ line }) => {
-      return !isCurrentTargetEligibleForLine({ line, luPickingTarget, tuPickingTarget, allowedPickToStructures });
-    },
-  };
+const isLineReadOnly = ({ activity, line }) => {
+  return !isCurrentTargetEligibleForActivityAndLine({ activity, line });
 };
 
 //

@@ -3,8 +3,7 @@ import { getActivityById, getFirstActivityByComponentType } from '../../reducers
 import { pickingLineScanScreenLocation } from '../../routes/picking';
 import { COMPONENTTYPE_PickProducts } from '../../containers/activities/picking/PickProductsActivity';
 import { NEXT_NextPickingLine } from '../../containers/activities/picking/PickLineScanScreen';
-import { getCurrentPickingTargetInfo } from '../../reducers/wfProcesses/picking/useCurrentPickTarget';
-import { isCurrentTargetEligibleForLine } from '../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
+import { isCurrentTargetEligibleForActivityAndLine } from '../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
 
 export const APPLICATION_ID_Picking = 'picking';
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
@@ -40,22 +39,15 @@ const openFirstEligiblePickingLineScanner = ({ state, applicationId, wfProcessId
 
   const eligibleLine = getNextEligibleLineToPick({ activity: pickActivity });
   const lineId = eligibleLine?.pickingLineId;
-  // console.log('onWFActivityCompleted', { lineId, lines, linesToPick, activity });
+  //console.log('openFirstEligiblePickingLineScanner', { eligibleLine });
   if (!lineId) {
     return;
   }
 
   //
-  // Check if the current picking target is eligible, if not, go back to the picking job screen
-  const { allowedPickToStructures, luPickingTarget, tuPickingTarget } = getCurrentPickingTargetInfo({
-    state,
-    wfProcessId,
-    activityId: pickActivity.activityId,
-    lineId,
-  });
-  if (
-    !isCurrentTargetEligibleForLine({ line: eligibleLine, allowedPickToStructures, luPickingTarget, tuPickingTarget })
-  ) {
+  // Check if the current picking target is eligible for picking that line
+  // if not, go back to the picking job screen
+  if (!isCurrentTargetEligibleForActivityAndLine({ activity: pickActivity, line: eligibleLine })) {
     history.goBack();
     return;
   }

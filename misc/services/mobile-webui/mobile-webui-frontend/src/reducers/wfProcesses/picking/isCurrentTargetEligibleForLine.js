@@ -4,8 +4,32 @@ import {
   PICKTO_STRUCTURE_LU_TU,
   PICKTO_STRUCTURE_TU,
 } from './PickToStructure';
+import { getCurrentPickingTargetInfoFromActivity } from './useCurrentPickTarget';
+
+export const isCurrentTargetEligibleForActivityAndLine = ({ activity, line }) => {
+  const lineId = line?.pickingLineId;
+  if (!lineId) return false;
+
+  const { allowedPickToStructures, luPickingTarget, tuPickingTarget } = getCurrentPickingTargetInfoFromActivity({
+    activity,
+    lineId,
+    fallbackToHeader: true,
+  });
+  //console.log('isCurrentTargetEligibleForActivityAndLine', { allowedPickToStructures, luPickingTarget, tuPickingTarget });
+
+  return isCurrentTargetEligibleForLine({ line, allowedPickToStructures, luPickingTarget, tuPickingTarget });
+};
 
 export const isCurrentTargetEligibleForLine = ({ line, luPickingTarget, tuPickingTarget, allowedPickToStructures }) => {
+  if (!allowedPickToStructures?.length) {
+    console.log('isCurrentTargetEligibleForLine: allowedPickToStructures is empty. Returning false.', {
+      line,
+      luPickingTarget,
+      tuPickingTarget,
+    });
+    return false;
+  }
+
   const linePickingUnit = line.pickingUnit;
 
   return allowedPickToStructures.some((pickToStructure) => {
