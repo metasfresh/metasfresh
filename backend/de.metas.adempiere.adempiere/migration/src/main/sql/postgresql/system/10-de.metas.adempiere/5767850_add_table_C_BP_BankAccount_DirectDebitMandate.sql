@@ -625,7 +625,7 @@ CREATE UNIQUE INDEX C_BP_BankAccount_DirectDebitMandate_MandateReferrence_org_uq
 
 -- Column: C_BP_BankAccount_DirectDebitMandate.C_BP_BankAccount_ID
 -- 2025-09-09T13:50:48.341Z
-UPDATE AD_Column SET AD_Reference_Value_ID=541977, AD_Val_Rule_ID=269,Updated=TO_TIMESTAMP('2025-09-09 13:50:48.341000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590828
+UPDATE AD_Column SET AD_Val_Rule_ID=269,Updated=TO_TIMESTAMP('2025-09-09 13:50:48.341000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590828
 ;
 
 -- Column: C_BP_BankAccount_DirectDebitMandate.C_BPartner_ID
