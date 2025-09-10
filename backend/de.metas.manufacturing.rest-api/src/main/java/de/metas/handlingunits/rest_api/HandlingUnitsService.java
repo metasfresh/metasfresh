@@ -38,6 +38,7 @@ import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.ean13.EAN13;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.ClearanceStatus;
@@ -73,12 +74,14 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.process.AdProcessId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.report.PrintCopies;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.exception.MissingResourceException;
@@ -197,6 +200,18 @@ public class HandlingUnitsService
 
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
+		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
+		final IHUProductStorage singleProductStorage = productStorages.stream()
+				.filter(productStorage -> !productStorage.isEmpty())
+				.collect(GuavaCollectors.singleElementOrNull());
+
+		String eanCode = null;
+		if (singleProductStorage != null)
+		{
+			final ProductId productId = singleProductStorage.getProductId();
+			eanCode = productBL.getEAN13(productId).map(EAN13::getAsString).orElse(null);
+		}
+
 		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu, adLanguage);
 		final JsonHUType unitType = toJsonHUType(hu);
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
@@ -205,8 +220,9 @@ public class HandlingUnitsService
 				.huStatusCaption(TranslatableStrings.adRefList(X_M_HU.HUSTATUS_AD_Reference_ID, hu.getHUStatus()).translate(adLanguage))
 				.displayName(handlingUnitsBL.getDisplayName(hu))
 				.qrCode(toJsonHUQRCode(huId, expectedQRCode))
+				.eanCode(eanCode)
 				.unitType(unitType)
-				.products(getProductStorage(huContext, hu))
+				.products(toJsonHUProducts(productStorages))
 				.attributes2(jsonHUAttributes)
 				.clearanceNote(hu.getClearanceNote())
 				.clearanceStatus(getClearanceStatusInfo(hu))
@@ -303,7 +319,10 @@ public class HandlingUnitsService
 
 			final JsonHU jsonHU = getFullHU(huId, expectedQRCode, adLanguage, includeAllowedClearanceStatuses)
 					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId))
-					.withDisplayedAttributesOnly(orderedAttributeCodes != null ? AttributeCode.toStringList(orderedAttributeCodes) : null);
+					.withDisplayedAttributesOnly(orderedAttributeCodes != null ? AttributeCode.toStringList(orderedAttributeCodes) : null)
+					.withLayoutSections(request.getLayoutSections() != null
+							? request.getLayoutSections().toStringList()
+							: null);
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder().result(jsonHU).build());
 		}
@@ -341,19 +360,6 @@ public class HandlingUnitsService
 						.caption(printProcess.getName().translate(adLanguage))
 						.build())
 				.sorted(Comparator.comparing(JsonHULabelPrintingOption::getCaption))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	public List<JsonHU> getHUsForDisplayableQrCode(@NonNull final String displayableQrCode, @NonNull final String adLanguage)
-	{
-		final Set<HuId> huIdSet = huQRCodeService.streamHUIdsByDisplayableQrCode(displayableQrCode)
-				.collect(ImmutableSet.toImmutableSet());
-
-		return handlingUnitsBL.getByIds(huIdSet)
-				.stream()
-				.map(hu -> LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage))
-				.map(this::toJson)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -425,9 +431,13 @@ public class HandlingUnitsService
 			@NonNull final IMutableHUContext huContext,
 			@NonNull final I_M_HU hu)
 	{
-		return huContext.getHUStorageFactory()
-				.getStorage(hu)
-				.streamProductStorages()
+		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
+		return toJsonHUProducts(productStorages);
+	}
+
+	private ImmutableList<JsonHUProduct> toJsonHUProducts(final List<IHUProductStorage> productStorages)
+	{
+		return productStorages.stream()
 				.map(this::toJson)
 				.collect(ImmutableList.toImmutableList());
 	}
