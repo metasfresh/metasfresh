@@ -1,0 +1,13 @@
+POST {{baseURL}}/api/v2/processes/Available_For_Sales_JSON/invoke
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+accept: application/json;charset=UTF-8
+
+{
+  "processParameters": [
+    {
+      "name": "ExternalSystem",
+      "value": "ProCareManagement"
+    }
+  ]
+}

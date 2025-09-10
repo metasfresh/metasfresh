@@ -1,13 +1,13 @@
 package de.metas.material.cockpit.availableforsales;
 
 import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
-import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import org.compiere.Adempiere;
 import org.compiere.db.Database;
 import org.compiere.model.IQuery;
@@ -93,6 +93,7 @@ public class AvailableForSalesSqlHelper
 				+ ", p_PreparationDate => " + dateString
 				+ ", p_shipmentDateLookAheadHours => " + availableForSalesQuery.getShipmentDateLookAheadHours()
 				+ ", p_salesOrderLookBehindHours => " + availableForSalesQuery.getSalesOrderLookBehindHours()
+				+ ", p_AD_ORG_ID => " + availableForSalesQuery.getOrgId().getRepoId()
 				+ ")";
 
 		sqlDbQuery.setSqlFrom(sqlFrom);
