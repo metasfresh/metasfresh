@@ -26,8 +26,7 @@ const createMasterdata = async ({
                     allowPickingAnyCustomer: true,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
-                    pickWithNewLU: true,
-                    allowNewTU: true,
+                    pickTo: ['LU_TU'],
                     allowCompletingPartialPickingJob: true,
                     showLastPickedBestBeforeDateForLines: showLastPickedBestBeforeDateForLines ?? false,
                 }
