@@ -290,6 +290,7 @@ Feature: available for sales
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID.Identifier | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | plv_1                             | p_1          | 10.0     | PCE      | Normal           |
+      | plv_1                             | p_2          | 10.0     | PCE      | Normal           |
     And metasfresh contains C_BPartners:
       | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID |
       | endcustomer_1 | N        | Y          | ps_1               |
