@@ -15,4 +15,5 @@ FROM MD_Available_For_Sales availableForSales
          LEFT JOIN s_externalreference externalReference ON externalreference.record_id = product.m_product_id AND externalreference.referenced_ad_table_id = get_table_id('M_Product')
     AND externalreference.type = 'Product'
          LEFT JOIN externalsystem_config externalSystemConfig ON externalSystemConfig.name ILIKE externalreference.externalsystem
+ORDER BY availableForSales.m_product_id
 ;

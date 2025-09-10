@@ -1,4 +1,5 @@
 @from:cucumber
+@myfeature
 Feature: available for sales
 
   Background:
@@ -272,10 +273,11 @@ Feature: available for sales
   Scenario: sync MD_Available_For_Sales and export it via API
     Given metasfresh contains M_Products:
       | Identifier | REST.Context |
-      | p_1        | productId    |
+      | p_1        | productId_1  |
+      | p_2        | productId_2  |
     And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference          | ExternalReferenceType.Code | RecordId.Identifier |
-      | GRSSignum           | availableForSales_09102025 | Product                    | p_1                 |
+      | ExternalSystem.Code | ExternalReference            | ExternalReferenceType.Code | RecordId.Identifier |
+      | GRSSignum           | availableForSales_09102025_1 | Product                    | p_1                 |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_1       |
@@ -297,6 +299,7 @@ Feature: available for sales
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | ol_1       | o_1        | p_1          | 8          |
+      | ol_2       | o_1        | p_2          | 10         |
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
@@ -309,6 +312,7 @@ Feature: available for sales
     And after not more than 30s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 10             | 8              | -1002                           |
+      | p_2                     | 0              | 10             | -1002                           |
 
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -334,12 +338,37 @@ Feature: available for sales
     """
 [
     {
-    "ProductExternalReference": "availableForSales_09102025",
-    "Product_ID": @productId@,
+    "ProductExternalReference": "availableForSales_09102025_1",
+    "Product_ID": @productId_1@,
     "QtyOnHandStock": 10,
     "QtyToBeShipped": 8,
     "StorageAttributesKey": "-1002",
     "ExternalSystem": "GRSSignum"
   }
+]
+    """
+    
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Available_For_Sales_JSON/invoke' and fulfills with '200' status code
+    """
+    """
+    And the metasfresh REST-API responds with
+    """
+[
+    {
+    "ProductExternalReference": "availableForSales_10102025_1",
+    "Product_ID": @productId_1@,
+    "QtyOnHandStock": 10,
+    "QtyToBeShipped": 8,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": "GRSSignum"
+    },
+    {
+    "ProductExternalReference": "",
+    "Product_ID": @productId_2@,
+    "QtyOnHandStock": 0,
+    "QtyToBeShipped": 10,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": ""
+    }
 ]
     """
