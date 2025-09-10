@@ -1,5 +1,4 @@
 @from:cucumber
-@myfeature
 Feature: available for sales
 
   Background:
@@ -356,7 +355,7 @@ Feature: available for sales
     """
 [
     {
-    "ProductExternalReference": "availableForSales_10102025_1",
+    "ProductExternalReference": "availableForSales_09102025_1",
     "Product_ID": @productId_1@,
     "QtyOnHandStock": 10,
     "QtyToBeShipped": 8,
