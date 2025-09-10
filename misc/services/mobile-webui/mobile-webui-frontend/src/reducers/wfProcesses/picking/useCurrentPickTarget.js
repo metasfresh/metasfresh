@@ -23,11 +23,11 @@ export const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, li
 };
 
 export const getCurrentPickingTargetInfoFromActivity = ({ activity, lineId, fallbackToHeader = false }) => {
-  let luPickingTarget = null;
-  let tuPickingTarget = null;
+  let luPickingTarget;
+  let tuPickingTarget;
 
-  let allowedPickToStructures = [];
-  let isAllowReopeningLU = false;
+  let allowedPickToStructures;
+  let isAllowReopeningLU;
 
   //
   // Picking Job Line level
