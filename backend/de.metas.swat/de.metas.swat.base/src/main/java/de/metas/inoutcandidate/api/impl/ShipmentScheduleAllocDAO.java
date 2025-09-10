@@ -3,7 +3,6 @@ package de.metas.inoutcandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -134,26 +133,6 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	}
 
 	@Override
-	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(
-			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
-			@NonNull final Class<T> clazz)
-	{
-		if (shipmentScheduleIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.filter(createShipmentLineFilter(shipmentScheduleIds, false))
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID)
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID)
-				.create()
-				.list(clazz);
-	}
-
-	@Override
 	public Stream<I_M_ShipmentSchedule_QtyPicked> stream(@NonNull final ShipmentScheduleAllocQuery query)
 	{
 		return toSqlQuery(query).stream();
@@ -272,19 +251,6 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	}
 
 	@Override
-	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveByInOutLineId(
-			@NonNull final InOutLineId inoutLineId,
-			@NonNull final Class<T> modelClass)
-	{
-		return queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, inoutLineId)
-				.create()
-				.listImmutable(modelClass);
-	}
-
-	@Override
 	public List<I_M_ShipmentSchedule> retrieveSchedulesForInOut(final org.compiere.model.I_M_InOut inOut)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> linesBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
@@ -292,14 +258,6 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
 				.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID);
 		return linesBuilder.addOnlyActiveRecordsFilter().create().list(I_M_ShipmentSchedule.class);
-	}
-
-	@Override
-	public List<I_M_ShipmentSchedule> retrieveSchedulesForInOutLine(final I_M_InOutLine inoutLine)
-	{
-		return retrieveSchedulesForInOutLineQuery(inoutLine)
-				.create()
-				.list(I_M_ShipmentSchedule.class);
 	}
 
 	@Override
