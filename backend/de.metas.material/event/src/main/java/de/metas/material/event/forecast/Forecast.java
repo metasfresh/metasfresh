@@ -2,8 +2,10 @@ package de.metas.material.event.forecast;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
+import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -13,6 +15,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 /*
  * #%L
@@ -44,6 +47,13 @@ public class Forecast
 
 	String docStatus;
 
+	String name;
+	int bPartnerId;
+	int warehouseId;
+	int priceListId ;
+	String externalId;
+	Timestamp datePromised;
+
 	@Singular
 	List<ForecastLine> forecastLines;
 
@@ -51,10 +61,22 @@ public class Forecast
 	public Forecast(
 			@JsonProperty("forecastId") final int forecastId,
 			@JsonProperty("docStatus") @NonNull final String docStatus,
+			@JsonProperty("name") @NonNull final String name,
+			@JsonProperty("bPartnerId") @NonNull final int bPartnerId,
+			@JsonProperty("warehouseId") @NonNull final int warehouseId,
+			@JsonProperty("priceListId") @NonNull final int priceListId,
+			@JsonProperty("externalId") @NonNull final String externalId,
+			@JsonProperty("datePromised") @NonNull final Timestamp datePromised,
 			@JsonProperty("forecastLines") final List<ForecastLine> forecastLines)
 	{
 		this.forecastId = checkIdGreaterThanZero("forecastId", forecastId);
 		this.docStatus = docStatus;
+		this.name = name;
+		this.bPartnerId = bPartnerId;
+		this.warehouseId = warehouseId;
+		this.priceListId = priceListId;
+		this.externalId = externalId;
+		this.datePromised = datePromised;
 		this.forecastLines = forecastLines;
 	}
 

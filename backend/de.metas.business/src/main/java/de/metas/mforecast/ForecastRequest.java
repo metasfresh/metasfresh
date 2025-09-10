@@ -23,6 +23,8 @@
 package de.metas.mforecast;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -30,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
@@ -39,6 +42,9 @@ public class ForecastRequest
 	@NonNull WarehouseId warehouseId;
 	@NonNull Instant datePromised;
 	@NonNull String name;
+	@Nullable BPartnerId bpartnerId;
+	@Nullable PriceListId priceListId;
+	@Nullable String exernalId;
 	@NonNull ImmutableList<ForecastLineRequest> forecastLineRequests;
 
 	@Value

@@ -22,19 +22,23 @@ package de.metas.mforecast.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.material.event.forecast.Forecast;
 import de.metas.mforecast.ForecastRequest;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
+import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -108,4 +112,5 @@ public class ForecastDAO implements IForecastDAO
 
 		saveRecord(forecastLineRecord);
 	}
+
 }
