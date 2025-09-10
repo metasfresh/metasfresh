@@ -70,12 +70,16 @@ const isCurrentTargetEligibleForLine_LU_TU = ({ luPickingTarget, tuPickingTarget
     : tuPickingTarget != null; // expect TU target to be set because the line is bringing CUs
 };
 
-const isCurrentTargetEligibleForLine_TU = ({ luPickingTarget, tuPickingTarget, linePickingUnit }) => {
+const isCurrentTargetEligibleForLine_TU = ({ luPickingTarget /*, tuPickingTarget, linePickingUnit*/ }) => {
   if (luPickingTarget != null) return false; // expect LU target to NOT be set
 
-  return linePickingUnit === 'TU'
-    ? tuPickingTarget == null // expect TU target to not be set because the line is bringing TUs directly
-    : tuPickingTarget != null; // expect TU target to be set because the line is bringing CUs
+  // NOTE: we have to cover the case of picking by custom QR codes,
+  // so in that case linePickingUnit is 'CU' but we still want to be able to scan that custom QR code and pick the entire TU.
+  // For that reason we are not enforcing tuPickingTarget to be set
+  return true;
+  // return linePickingUnit === 'TU'
+  //   ? tuPickingTarget == null // expect TU target to not be set because the line is bringing TUs directly
+  //   : tuPickingTarget != null; // expect TU target to be set because the line is bringing CUs
 };
 
 const isCurrentTargetEligibleForLine_LU_CU = ({ luPickingTarget, tuPickingTarget, linePickingUnit }) => {

@@ -70,7 +70,7 @@ test('LU/CU -> top level TU', async ({ page }) => {
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickingJobScreen' });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
 
     await test.step("Pick all 3 lines", async () => {
@@ -155,7 +155,7 @@ test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickingJobScreen' });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
 
     await test.step("Pick first 2 lines into same TU", async () => {
         await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
@@ -251,9 +251,7 @@ test('LU/CU -> LU/CU', async ({ page }) => {
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickingJobScreen' });
-    // await PickLineScanScreen.goBack();
-    // await PickingJobLineScreen.goBack();
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
 
     await test.step("Pick all 3 lines", async () => {
@@ -343,10 +341,8 @@ test('LU/CU -> top level CUs', async ({ page }) => {
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickingJobScreen' });
-    // await PickLineScanScreen.goBack();
-    // await PickingJobLineScreen.goBack();
-    // await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
+    // NO target to be set => pick to top level CUs
 
     await test.step("Pick all 3 lines", async () => {
         await PickingJobScreen.pickHU({
