@@ -22,8 +22,7 @@ const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, disp
                     allowPickingAnyCustomer: false,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
-                    pickWithNewLU: true,
-                    allowNewTU: true,
+                    pickTo: ['LU_TU'],
                     filterByQRCode: filterByQRCode ?? false,
                     anonymousPickHUsOnTheFly: anonymousPickHUsOnTheFly ?? false,
                     displayPickingSlotSuggestions,
@@ -104,7 +103,7 @@ test('Product based aggregation', async ({ page }) => {
     await PickingJobsListScreen.waitForScreen();
 
     await test.step('Picking job for P1', async () => {
-        await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 72 });
+        const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 72 });
         await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
         await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P1_20x4.luName });
@@ -133,10 +132,32 @@ test('Product based aggregation', async ({ page }) => {
 
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.complete();
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [
+                                // TODO find out why is not processed/shipped?!
+                                { qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, vhuId: 'tu11', tu: 'tu11', lu: 'lu11', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "24 PCE", qtyTUs: 6, qtyLUs: 1, vhuId: 'tu12', tu: 'tu12', lu: 'lu12', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "28 PCE", qtyTUs: 7, qtyLUs: 1, vhuId: 'tu13', tu: 'tu13', lu: 'lu13', processed: false, shipmentLineId: '-' },
+                            ]
+                        }
+                    }
+                }
+            },
+            hus: {
+                [masterdata.handlingUnits.P1_HU.qrCode]: { huStatus: 'A', storages: { P1: '8  PCE' } },
+                tu11: { huStatus: 'S', storages: { P1: '20 PCE' } },
+                tu12: { huStatus: 'S', storages: { P1: '24 PCE' } },
+                tu13: { huStatus: 'S', storages: { P1: '28 PCE' } },
+            }
+        });
     });
 
     await test.step('Picking job for P2', async () => {
-        await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 54 });
+        const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 54 });
         await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P2_HU.qrCode });
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
         await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P2_7x3.luName });
@@ -189,6 +210,31 @@ test('Product based aggregation', async ({ page }) => {
 
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.complete();
+
+        /* TODO: to be fixed in some other issue
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P2: {
+                            qtyPicked: [
+                                // TODO find out why is not processed/shipped?!
+                                { qtyPicked: "21 PCE", qtyTUs: 7, qtyLUs: 1, vhuId: 'tu21', tu: 'tu21', lu: 'P2_HU', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "18 PCE", qtyTUs: 6, qtyLUs: 1, vhuId: 'tu22', tu: 'tu22', lu: 'lu21', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "3 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu23', tu: 'tu23', lu: 'P2_HU_2', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "12 PCE", qtyTUs: 4, qtyLUs: 1, vhuId: 'tu24', tu: 'tu24', lu: 'P2_HU_2', processed: false, shipmentLineId: '-' },
+                            ]
+                        }
+                    }
+                }
+            },
+            hus: {
+                'P2_HU': { huStatus: 'S', storages: { P2: '21 PCE' } },
+                'P2_HU_2': { huStatus: 'S', storages: { P2: '15 PCE' } },
+                'P2_HU_3': { huStatus: 'A', storages: { P2: '18 PCE' } },
+            }
+        });
+         */
     });
 
     await PickingJobsListScreen.waitForScreen();

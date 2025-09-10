@@ -32,6 +32,14 @@ export const isCurrentTargetEligibleForLine = ({ line, luPickingTarget, tuPickin
 
   const linePickingUnit = line.pickingUnit;
 
+  // console.log('isCurrentTargetEligibleForLine', {
+  //   linePickingUnit,
+  //   line,
+  //   luPickingTarget,
+  //   tuPickingTarget,
+  //   allowedPickToStructures,
+  // });
+
   return allowedPickToStructures.some((pickToStructure) => {
     return isCurrentTargetEligibleForLine_SinglePickToStructure({
       pickToStructure,
@@ -62,9 +70,9 @@ const isCurrentTargetEligibleForLine_SinglePickToStructure = ({
 };
 
 const isCurrentTargetEligibleForLine_LU_TU = ({ luPickingTarget, tuPickingTarget, linePickingUnit }) => {
-  // expect LU target to be set
-  if (luPickingTarget == null) return false;
+  if (luPickingTarget == null) return false; // expect LU target to be set
 
+  // console.log('isCurrentTargetEligibleForLine_LU_TU', { luPickingTarget, tuPickingTarget, linePickingUnit });
   return linePickingUnit === 'TU'
     ? tuPickingTarget == null // expect TU target to not be set because the line is bringing TUs directly
     : tuPickingTarget != null; // expect TU target to be set because the line is bringing CUs

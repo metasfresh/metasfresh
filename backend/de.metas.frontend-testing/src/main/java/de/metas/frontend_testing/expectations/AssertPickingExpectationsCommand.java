@@ -1,6 +1,9 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.frontend_testing.expectations.request.JsonPickingExpectation;
 import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleExpectation;
 import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleQtyPickedExpectation;
@@ -11,6 +14,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
@@ -26,7 +30,7 @@ import org.slf4j.Logger;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -78,21 +82,21 @@ class AssertPickingExpectationsCommand
 			@NonNull final Map<String, JsonShipmentScheduleExpectation> expectations,
 			@NonNull final Collection<I_M_ShipmentSchedule> actuals) throws Exception
 	{
-		final HashMap<ProductId, I_M_ShipmentSchedule> actualsByProductId = indexByProductId(actuals);
+		final ArrayListMultimap<ProductId, I_M_ShipmentSchedule> actualsByProductId = indexByProductId(actuals);
 
 		for (final Map.Entry<String, JsonShipmentScheduleExpectation> expectationEntry : expectations.entrySet())
 		{
-			final String productIdentifierStr = expectationEntry.getKey();
+			final Identifier productIdentifier = Identifier.ofString(expectationEntry.getKey());
 			final JsonShipmentScheduleExpectation expectation = expectationEntry.getValue();
-			final Identifier productIdentifier = Identifier.ofString(productIdentifierStr);
 			final ProductId productId = context.getId(productIdentifier, ProductId.class);
-			final I_M_ShipmentSchedule actual = actualsByProductId.remove(productId);
-			if (actual == null)
+
+			final List<I_M_ShipmentSchedule> actualsForExpectation = actualsByProductId.removeAll(productId);
+			if (actualsForExpectation.isEmpty())
 			{
 				throw new AdempiereException("No shipment schedule found for product " + productId);
 			}
 
-			assertShipmentSchedule(expectation, actual);
+			assertShipmentSchedule(expectation, actualsForExpectation);
 		}
 
 		if (!actualsByProductId.isEmpty())
@@ -101,17 +105,13 @@ class AssertPickingExpectationsCommand
 		}
 	}
 
-	private static HashMap<ProductId, I_M_ShipmentSchedule> indexByProductId(final @NotNull Collection<I_M_ShipmentSchedule> actuals)
+	private static ArrayListMultimap<ProductId, I_M_ShipmentSchedule> indexByProductId(final @NotNull Collection<I_M_ShipmentSchedule> actuals)
 	{
 		return actuals.stream()
-				.collect(
-						GuavaCollectors.toHashMapByKey(
-								AssertPickingExpectationsCommand::extractProductId,
-								(shipmentSchedule1, shipmentSchedule2) -> {
-									final ProductId productId = extractProductId(shipmentSchedule1);
-									throw new AdempiereException("More than one shipment schedule records found for product " + productId + ": " + shipmentSchedule1 + ", " + shipmentSchedule2);
-								}
-						));
+				.sorted(Comparator.comparingInt(I_M_ShipmentSchedule::getM_Product_ID)
+						.thenComparing(I_M_ShipmentSchedule::getC_Order_ID)
+						.thenComparing(I_M_ShipmentSchedule::getC_OrderLine_ID))
+				.collect(GuavaCollectors.toArrayListMultimapByKey(AssertPickingExpectationsCommand::extractProductId));
 	}
 
 	@NotNull
@@ -122,28 +122,32 @@ class AssertPickingExpectationsCommand
 
 	private void assertShipmentSchedule(
 			@NonNull final JsonShipmentScheduleExpectation expectation,
-			@NonNull final I_M_ShipmentSchedule actual) throws Exception
+			@NonNull final List<I_M_ShipmentSchedule> actuals) throws Exception
 	{
 		if (expectation.getQtyPicked() != null)
 		{
-			final List<I_M_ShipmentSchedule_QtyPicked> actualQtyPickedRecords = services.getShipmentScheduleQtyPickedRecords(actual);
-			assertQtyPickedList(expectation.getQtyPicked(), actualQtyPickedRecords, actual);
+			final ImmutableMap<ShipmentScheduleId, I_M_ShipmentSchedule> actualsById = Maps.uniqueIndex(actuals, actual -> ShipmentScheduleId.ofRepoId(actual.getM_ShipmentSchedule_ID()));
+			final List<I_M_ShipmentSchedule_QtyPicked> actualQtyPickedRecords = services.getShipmentScheduleQtyPickedRecords(actualsById.keySet());
+			assertQtyPickedList(expectation.getQtyPicked(), actualQtyPickedRecords, actualsById);
 		}
 	}
 
 	private void assertQtyPickedList(
 			@NonNull final List<JsonShipmentScheduleQtyPickedExpectation> expectations,
 			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> actuals,
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule) throws Exception
+			final ImmutableMap<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesById) throws Exception
 	{
 		assertThat(actuals).as("qty picked records").hasSameSize(expectations);
 
 		waitQtyPickedListProcessed(expectations, actuals);
 
-		final int size = expectations.size();
-		for (int i = 0; i < size; i++)
+		for (int i = 0, size = expectations.size(); i < size; i++)
 		{
-			assertQtyPicked(expectations.get(i), actuals.get(i), shipmentSchedule);
+			final JsonShipmentScheduleQtyPickedExpectation expectation = expectations.get(i);
+			final I_M_ShipmentSchedule_QtyPicked actual = actuals.get(i);
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(actual.getM_ShipmentSchedule_ID());
+			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesById.get(shipmentScheduleId);
+			assertQtyPicked(expectation, actual, shipmentSchedule);
 		}
 	}
 

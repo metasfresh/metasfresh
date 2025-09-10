@@ -79,6 +79,8 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 */
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllQtyPickedRecords(I_M_ShipmentSchedule shipmentSchedule, Class<T> modelClass);
 
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllQtyPickedRecords(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull Class<T> modelClass);
+
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllForInOutLine(I_M_InOutLine inoutLine, Class<T> modelClass);
 
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveByInOutLineId(InOutLineId inoutLineId, Class<T> modelClass);

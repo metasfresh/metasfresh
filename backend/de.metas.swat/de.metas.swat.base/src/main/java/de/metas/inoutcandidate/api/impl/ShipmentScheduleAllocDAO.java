@@ -171,7 +171,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		{
 			queryBuilder.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_LU_HU_ID, query.getOnlyLUIds());
 		}
-		
+
 		return queryBuilder;
 	}
 
@@ -235,6 +235,21 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.addColumn(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID);
 
 		return queryBuilder
+				.create()
+				.list(modelClass);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveAllQtyPickedRecords(
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
+			@NonNull final Class<T> modelClass)
+	{
+		if (shipmentScheduleIds.isEmpty()) {return ImmutableList.of();}
+
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID)
 				.create()
 				.list(modelClass);
 	}

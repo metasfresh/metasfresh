@@ -21,7 +21,7 @@ export const applicationDescriptor = {
     const activity = getActivityById(state, wfProcessId, activityId);
     // console.log('onWFActivityCompleted', { activity });
 
-    if (activity.activityId === ACTIVITY_ID_ScanPickingSlot && !isLineLevelPickTarget({ activity })) {
+    if (activity.activityId === ACTIVITY_ID_ScanPickingSlot) {
       // Scan picking slot activity completed => consider scanning HU for the first pick line
       openFirstEligiblePickingLineScanner({ state, applicationId, wfProcessId, history });
     } else {
@@ -36,6 +36,12 @@ const openFirstEligiblePickingLineScanner = ({ state, applicationId, wfProcessId
     wfProcessId,
     componentType: COMPONENTTYPE_PickProducts,
   });
+
+  // In case we do line level picking, after scanning the picking slot go back to picking job screen
+  if (isLineLevelPickTarget({ activity: pickActivity })) {
+    history.goBack();
+    return;
+  }
 
   const eligibleLine = getNextEligibleLineToPick({ activity: pickActivity });
   const lineId = eligibleLine?.pickingLineId;

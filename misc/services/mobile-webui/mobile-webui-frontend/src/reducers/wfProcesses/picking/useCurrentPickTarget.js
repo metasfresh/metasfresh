@@ -32,20 +32,24 @@ export const getCurrentPickingTargetInfoFromActivity = ({ activity, lineId, fall
   //
   // Picking Job Line level
   if (lineId) {
-    const line = getLineByIdFromActivity(activity, lineId);
-
     if (isLineLevelPickTarget({ activity })) {
+      const line = getLineByIdFromActivity(activity, lineId);
       luPickingTarget = line?.luPickingTarget;
       tuPickingTarget = line?.tuPickingTarget;
       allowedPickToStructures = activity.dataStored.allowedPickToStructures;
       isAllowReopeningLU = computeIsAllowReopeningLU({ allowedPickToStructures });
-    } else if (fallbackToHeader) {
+    } else {
+      luPickingTarget = null;
+      tuPickingTarget = null;
+      allowedPickToStructures = [];
+      isAllowReopeningLU = false;
+    }
+
+    if (fallbackToHeader && luPickingTarget == null && tuPickingTarget == null) {
       luPickingTarget = activity?.dataStored?.luPickingTarget;
       tuPickingTarget = activity?.dataStored?.tuPickingTarget;
       allowedPickToStructures = activity.dataStored.allowedPickToStructures;
       isAllowReopeningLU = computeIsAllowReopeningLU({ allowedPickToStructures });
-    } else {
-      // console.log('getCurrentPickingTargetInfoFromActivity: considering empty allowedPickToStructures because was asked about line level but this line is not a line level picking', { line });
     }
   }
   //
@@ -59,28 +63,16 @@ export const getCurrentPickingTargetInfoFromActivity = ({ activity, lineId, fall
       allowedPickToStructures = addPickToStructure(allowedPickToStructures, PICKTO_STRUCTURE_TU);
       allowedPickToStructures = removePickToStructure(allowedPickToStructures, PICKTO_STRUCTURE_LU_CU);
       allowedPickToStructures = removePickToStructure(allowedPickToStructures, PICKTO_STRUCTURE_CU);
-      console.log('getCurrentPickingTargetInfoFromActivity: line level allowedPickToStructures', {
-        allowedPickToStructures_headerLevel: activity.dataStored.allowedPickToStructures,
-        allwoedPickToStructures_lineLevel: allowedPickToStructures,
-      });
+      // console.log('getCurrentPickingTargetInfoFromActivity: line level allowedPickToStructures', {
+      //   allowedPickToStructures_headerLevel: activity.dataStored.allowedPickToStructures,
+      //   allwoedPickToStructures_lineLevel: allowedPickToStructures,
+      // });
       isAllowReopeningLU = false;
     } else {
       allowedPickToStructures = activity.dataStored.allowedPickToStructures;
       isAllowReopeningLU = computeIsAllowReopeningLU({ allowedPickToStructures });
     }
   }
-
-  // // WARN if empty allowed Pick To structures
-  // if (!allowedPickToStructures.length) {
-  //   console.warn('getCurrentPickingTargetInfoFromActivity: returning empty allowedPickToStructures', {
-  //     activity,
-  //     lineId,
-  //     luPickingTarget,
-  //     tuPickingTarget,
-  //     isAllowReopeningLU,
-  //     allowedPickToStructures,
-  //   });
-  // }
 
   return {
     allowedPickToStructures,
