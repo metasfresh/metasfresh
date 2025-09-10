@@ -25,6 +25,7 @@ import de.metas.util.OptionalBoolean;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
@@ -97,6 +98,13 @@ public class MobileConfigCommand
 		mobilePickingConfigRepository.save(newProfile);
 
 		newProfile = mobilePickingConfigRepository.getProfile(); // reload to make sure we are returning exactly what's in DB
+
+		// guard against common config errors
+		if (newProfile.getDefaultPickingJobOptions().getAllowedPickToStructures().toAllowedSet().isEmpty())
+		{
+			throw new AdempiereException("Picking profile shall have at least one pick to structure available");
+		}
+
 		return toJson(newProfile);
 	}
 
@@ -182,7 +190,7 @@ public class MobileConfigCommand
 		final Boolean allowNewTU = from.getAllowNewTU();
 		if (allowNewTU != null)
 		{
-			allowedPickToStructures.put(PickToStructure.TU, pickWithNewLU);
+			allowedPickToStructures.put(PickToStructure.TU, allowNewTU);
 		}
 
 		return AllowedPickToStructures.ofMap(allowedPickToStructures);
