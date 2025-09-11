@@ -81,7 +81,6 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 			stateHolder.setValue(context);
 		}
 
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		boolean wasInsert = false;
 
 		// Normalize name
@@ -160,7 +159,7 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		}
 
 		importRecord.setM_Forecast_ID(context.forecastId.getRepoId());
-		InterfaceWrapperHelper.save(importRecord, trxName);
+		InterfaceWrapperHelper.save(importRecord, ITrx.TRXNAME_ThreadInherited);
 
 		return wasInsert ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
