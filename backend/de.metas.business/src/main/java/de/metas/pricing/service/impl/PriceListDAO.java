@@ -260,7 +260,7 @@ public class PriceListDAO implements IPriceListDAO
 		assumeNotNull(bpartnerLocationId, "If the given pricingSystemId={} is not null and not-none, then bpartnerLocationId may not be null", pricingSystemId);
 		final CountryId countryId = Services.get(IBPartnerBL.class).getCountryId(bpartnerLocationId);
 
-		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
+		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx, null);
 
 		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
 	}
@@ -269,7 +269,8 @@ public class PriceListDAO implements IPriceListDAO
 	public PriceListId retrievePriceListIdByPricingSyst(
 			@Nullable final PricingSystemId pricingSystemId,
 			final CountryId countryId,
-			final SOTrx soTrx)
+			final SOTrx soTrx,
+			@Nullable final CurrencyId currencyId)
 	{
 		if (pricingSystemId == null)
 		{
@@ -284,7 +285,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		assumeNotNull(countryId, "If the given pricingSystemId={} is not null and not-none, then countryId may not be null", countryId);
 
-		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
+		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx, currencyId);
 
 		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
 	}
@@ -297,10 +298,10 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public List<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx)
+	public List<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx, @Nullable final CurrencyId currencyId)
 	{
 		return retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
-				.filterAndList(countryId, soTrx);
+				.filterAndList(countryId, soTrx, currencyId);
 	}
 
 	@Override

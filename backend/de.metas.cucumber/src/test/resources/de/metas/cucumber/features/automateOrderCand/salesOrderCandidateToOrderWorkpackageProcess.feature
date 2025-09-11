@@ -14,9 +14,9 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
   @from:cucumber
   @topic:orderCandidate
   Scenario: Process C_OLCand in batches:
-    - create 4 olcands - they would end of in 3 C_Orders
-    - deactivate the productprice of one of the C_OLcand's products
-    - verify that three C_Orders are still created
+  - create 4 olcands - they would end of in 3 C_Orders
+  - deactivate the productprice of one of the C_OLcand's products
+  - verify that three C_Orders are still created
     Given metasfresh contains M_PricingSystems
       | Identifier           | Name                             | Value                            | OPT.IsActive |
       | ps_scenario_14042022 | pricing_system_scenario_14042022 | pricing_system_scenario_14042022 | true         |
@@ -35,8 +35,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | pp_product             | plv_scenario_14042022             | product_14042022             | 10.0     | PCE               | Normal                        |
       | pp_product_priceChange | plv_scenario_14042022             | product_priceChange_14042022 | 20.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier      | Name                     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier |
-      | olCand_Customer | olCand_Customer_14042022 | Y              | N            | ps_scenario_14042022          |
+      | Identifier      | Name                     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           |
+      | olCand_Customer | olCand_Customer_14042022 | Y              | N            | ps_scenario_14042022          | olCand_Customer_location   | 1354423215434 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier               | GLN           | C_BPartner_ID.Identifier |
       | olCand_Customer_location | 1354423215434 | olCand_Customer          |
@@ -199,3 +199,66 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     And validate enqueued elements for C_Queue_WorkPackage
       | C_Queue_Element_ID.Identifier | C_Queue_WorkPackage_ID.Identifier | AD_Table_ID.TableName | Record_ID.Identifier |
       | queueElement_olCand_2         | wp_order_1                        | C_OLCand              | olCand_2             |
+
+  @from:cucumber
+  @topic:orderCandidate
+  Scenario: Create OLCand with different currency than what the pricelist allows -> an error is thrown when trying to create an order from it
+    Given metasfresh contains M_PricingSystems
+      | Identifier           |
+      | ps_scenario_11092025 |
+    And metasfresh contains M_PriceLists
+      | Identifier           | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                 | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_scenario_11092025 | ps_scenario_11092025          | DE                        | EUR                 | pl_scenario_11092025 | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier            | M_PriceList_ID.Identifier | Name                  | ValidFrom  |
+      | plv_scenario_11092025 | pl_scenario_11092025      | plv_scenario_11092025 | 2021-04-01 |
+    And metasfresh contains M_Products:
+      | Identifier       | Name             |
+      | product_11092025 | product_11092025 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | plv_scenario_11092025             | product_11092025        | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners:
+      | Identifier               | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | C_BPartner_Location_ID.Identifier | GLN           |
+      | olCand_Customer_11092025 | Y              | N            | ps_scenario_11092025          | olCand_Customer_location_11092025 | 1234543215432 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                        | C_BPartner_ID.Identifier | C_Country_ID | GLN           |
+      | olCand_Customer_location_11092025 | olCand_Customer_11092025 | CH           | 1234543215432 |
+
+    # we create 1 OLCand with externalHeaderId `11092025`
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "11092025",
+            "externalLineId": "11092025_0",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-1234543215432",
+                "bpartnerLocationIdentifier": "gln-1234543215432"
+            },
+            "dateRequired": "2021-12-02",
+            "dateOrdered": "2021-11-20",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-product_11092025",
+            "qty": 2,
+            "currencyCode": "CHF",
+            "price" : 8,
+            "discount": 0,
+            "poReference": "11092025",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_1               |
+    And validate C_OLCand is with error
+      | C_OLCand_ID.Identifier | ErrorMsg                    |
+      | olCand_1               | Preisliste * Nicht gefunden |
