@@ -23,13 +23,20 @@
 package de.metas.mforecast;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.marketing.base.model.CampaignId;
+import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
@@ -39,7 +46,10 @@ public class ForecastRequest
 	@NonNull WarehouseId warehouseId;
 	@NonNull Instant datePromised;
 	@NonNull String name;
-	@NonNull ImmutableList<ForecastLineRequest> forecastLineRequests;
+	@Nullable BPartnerId bpartnerId;
+	@Nullable PriceListId priceListId;
+	@Nullable String externalId;
+	@NonNull @Singular ImmutableList<ForecastLineRequest> forecastLineRequests;
 
 	@Value
 	@Builder
@@ -47,5 +57,9 @@ public class ForecastRequest
 	{
 		@NonNull ProductId productId;
 		@NonNull Quantity quantity;
+		@Nullable Quantity quantityCalculated;
+		@Nullable ActivityId activityId;
+		@Nullable CampaignId campaignId;
+		@Nullable ProjectId projectId;
 	}
 }
