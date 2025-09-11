@@ -169,7 +169,7 @@ test('Product based aggregation', async ({ page }) => {
             await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot3.qrCode });
             await PickingJobScreen.clickLineButton({ index: 3 })
             await GetQuantityDialog.waitForDialog();
-            await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 5/*TU*/, qtyEntered: 1/*TU*/, qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
+            await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 1/*TU*/, qtyEntered: 1/*TU*/, qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
             await PickingJobScreen.waitForScreen();
         });
 

@@ -138,3 +138,9 @@ export const getClosedLUs = ({ wfProcessId, lineId }) => {
     .get(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/closed-lu`, { lineId }))
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const getScannedHUQRCodeInfo = ({ qrCode }) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/picking/hu/byQRCode`, { qrCode }))
+    .then((response) => unboxAxiosResponse(response));
+};

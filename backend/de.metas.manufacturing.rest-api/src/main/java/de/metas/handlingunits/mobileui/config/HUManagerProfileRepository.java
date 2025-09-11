@@ -24,22 +24,20 @@ package de.metas.handlingunits.mobileui.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeId;
 import org.compiere.model.I_MobileUI_HUManager;
 import org.compiere.model.I_MobileUI_HUManager_Attribute;
+import org.compiere.model.I_MobileUI_HUManager_LayoutSection;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.stream.Collector;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 public class HUManagerProfileRepository
@@ -60,24 +58,26 @@ public class HUManagerProfileRepository
 	@NonNull
 	private HUManagerProfilesMap getMap()
 	{
+		//noinspection DataFlowIssue
 		return cache.getOrLoad(0, this::retrieveMap);
 	}
 
 	@NonNull
 	private HUManagerProfilesMap retrieveMap()
 	{
-		@NonNull final ImmutableListMultimap<Integer, AttributeId> displayedAttributeIdsInOrderByProfileId = retrieveDisplayedAttributeIdsInOrder();
+		final ImmutableListMultimap<HUManagerProfileId, AttributeId> displayedAttributeIdsInOrderByProfileId = retrieveDisplayedAttributeIdsInOrder();
+		final Map<HUManagerProfileId, HUManagerProfileLayoutSectionList> layoutSectionsByProfileId = retrieveLayoutSectionsInOrder();
 
 		return queryBL.createQueryBuilder(I_MobileUI_HUManager.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(record -> fromRecord(record, displayedAttributeIdsInOrderByProfileId))
+				.map(record -> fromRecord(record, displayedAttributeIdsInOrderByProfileId, layoutSectionsByProfileId))
 				.collect(HUManagerProfilesMap.collect());
 	}
 
 	@NonNull
-	private ImmutableListMultimap<Integer, AttributeId> retrieveDisplayedAttributeIdsInOrder()
+	private ImmutableListMultimap<HUManagerProfileId, AttributeId> retrieveDisplayedAttributeIdsInOrder()
 	{
 		return queryBL.createQueryBuilder(I_MobileUI_HUManager_Attribute.class)
 				.addOnlyActiveRecordsFilter()
@@ -87,7 +87,7 @@ public class HUManagerProfileRepository
 				.create()
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						I_MobileUI_HUManager_Attribute::getMobileUI_HUManager_ID,
+						record -> HUManagerProfileId.ofRepoId(record.getMobileUI_HUManager_ID()),
 						record -> AttributeId.ofRepoId(record.getM_Attribute_ID())
 				));
 	}
@@ -95,43 +95,40 @@ public class HUManagerProfileRepository
 	@NonNull
 	private static HUManagerProfile fromRecord(
 			@NonNull final I_MobileUI_HUManager record,
-			@NonNull final ImmutableListMultimap<Integer, AttributeId> displayedAttributeIdsInOrderByProfileId)
+			@NonNull final ImmutableListMultimap<HUManagerProfileId, AttributeId> displayedAttributeIdsInOrderByProfileId,
+			@NonNull final Map<HUManagerProfileId, HUManagerProfileLayoutSectionList> layoutSectionsByProfileId)
 	{
+		final HUManagerProfileId profileId = HUManagerProfileId.ofRepoId(record.getMobileUI_HUManager_ID());
+
 		return HUManagerProfile.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.displayedAttributeIdsInOrder(displayedAttributeIdsInOrderByProfileId.get(record.getMobileUI_HUManager_ID()))
+				.displayedAttributeIdsInOrder(displayedAttributeIdsInOrderByProfileId.get(profileId))
+				.layoutSections(layoutSectionsByProfileId.getOrDefault(profileId, HUManagerProfileLayoutSectionList.DEFAULT))
 				.build();
 	}
 
-	private static class HUManagerProfilesMap
+	@NonNull
+	private Map<HUManagerProfileId, HUManagerProfileLayoutSectionList> retrieveLayoutSectionsInOrder()
 	{
-		public static final HUManagerProfilesMap EMPTY = new HUManagerProfilesMap(ImmutableList.of());
-
-		private final ImmutableMap<OrgId, HUManagerProfile> byOrgId;
-
-		private HUManagerProfilesMap(final List<HUManagerProfile> list)
-		{
-			this.byOrgId = Maps.uniqueIndex(list, HUManagerProfile::getOrgId);
-		}
-
-		public static Collector<HUManagerProfile, ?, HUManagerProfilesMap> collect()
-		{
-			return GuavaCollectors.collectUsingListAccumulator(HUManagerProfilesMap::ofList);
-		}
-
-		private static HUManagerProfilesMap ofList(List<HUManagerProfile> list)
-		{
-			return list.isEmpty() ? EMPTY : new HUManagerProfilesMap(list);
-		}
-
-		@NonNull
-		public HUManagerProfile getByOrgId(@NonNull final OrgId orgId)
-		{
-			return CoalesceUtil.coalesceSuppliersNotNull(
-					() -> byOrgId.get(orgId),
-					() -> byOrgId.get(OrgId.ANY),
-					() -> HUManagerProfile.DEFAULT
-			);
-		}
+		return queryBL.createQueryBuilder(I_MobileUI_HUManager_LayoutSection.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_MobileUI_HUManager_LayoutSection.COLUMNNAME_MobileUI_HUManager_ID)
+				.orderBy(I_MobileUI_HUManager_LayoutSection.COLUMNNAME_SeqNo)
+				.orderBy(I_MobileUI_HUManager_LayoutSection.COLUMNNAME_MobileUI_HUManager_LayoutSection_ID)
+				.create()
+				.stream()
+				.collect(Collectors.groupingBy(
+						record -> HUManagerProfileId.ofRepoId(record.getMobileUI_HUManager_ID()),
+						Collectors.mapping(
+								HUManagerProfileRepository::fromRecord,
+								HUManagerProfileLayoutSectionList.collectOrDefault()
+						)
+				));
 	}
+
+	private static @NotNull HUManagerProfileLayoutSection fromRecord(final I_MobileUI_HUManager_LayoutSection record)
+	{
+		return HUManagerProfileLayoutSection.ofCode(record.getLayoutSection());
+	}
+
 }
