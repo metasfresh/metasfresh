@@ -22,23 +22,26 @@ package de.metas.mforecast.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.material.event.forecast.Forecast;
+import de.metas.bpartner.BPartnerId;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.mforecast.ForecastRequest;
 import de.metas.mforecast.IForecastDAO;
+import de.metas.pricing.PriceListId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
-import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -55,7 +58,7 @@ public class ForecastDAO implements IForecastDAO
 		{
 			return Stream.empty();
 		}
-		
+
 		return queryBL.createQueryBuilder(I_M_Forecast.class)
 				.addInArrayFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, ids)
 				.create()
@@ -89,6 +92,8 @@ public class ForecastDAO implements IForecastDAO
 		forecastRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 		forecastRecord.setDatePromised(TimeUtil.asTimestamp(request.getDatePromised()));
 		forecastRecord.setName(request.getName());
+		forecastRecord.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+		forecastRecord.setM_PriceList_ID(PriceListId.getRepoId(request.getPriceListId()));
 
 		saveRecord(forecastRecord);
 
@@ -98,7 +103,9 @@ public class ForecastDAO implements IForecastDAO
 		return ForecastId.ofRepoId(forecastRecord.getM_Forecast_ID());
 	}
 
-	private void createForecastLine(
+	@NonNull
+	@Override
+	public void createForecastLine(
 			@NonNull final I_M_Forecast forecastRecord,
 			@NonNull final ForecastRequest.ForecastLineRequest request)
 	{
@@ -109,8 +116,22 @@ public class ForecastDAO implements IForecastDAO
 		forecastLineRecord.setQty(request.getQuantity().toBigDecimal());
 		forecastLineRecord.setC_UOM_ID(request.getQuantity().getUomId().getRepoId());
 		forecastLineRecord.setM_Product_ID(request.getProductId().getRepoId());
+		forecastLineRecord.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
+		forecastLineRecord.setC_Campaign_ID(CampaignId.toRepoId(request.getCampaignId()));
+		forecastLineRecord.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));
+		forecastLineRecord.setQtyCalculated(Quantity.toBigDecimal(request.getQuantityCalculated()));
 
 		saveRecord(forecastLineRecord);
 	}
 
+	@Override
+	public I_M_Forecast getById(@NonNull final ForecastId forecastId)
+	{
+		final I_M_Forecast forecast = InterfaceWrapperHelper.load(forecastId.getRepoId(), I_M_Forecast.class);
+		if (forecast == null)
+		{
+			throw new AdempiereException("@NotFound@: " + forecastId);
+		}
+		return forecast;
+	}
 }

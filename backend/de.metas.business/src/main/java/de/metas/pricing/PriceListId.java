@@ -50,7 +50,7 @@ public class PriceListId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int getRepoId(final PriceListId PriceListId)
+	public static int getRepoId(final @org.jetbrains.annotations.Nullable PriceListId PriceListId)
 	{
 		return PriceListId != null ? PriceListId.getRepoId() : -1;
 	}

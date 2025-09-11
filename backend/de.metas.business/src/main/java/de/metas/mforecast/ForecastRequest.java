@@ -24,8 +24,11 @@ package de.metas.mforecast;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -53,5 +56,9 @@ public class ForecastRequest
 	{
 		@NonNull ProductId productId;
 		@NonNull Quantity quantity;
+		@Nullable Quantity quantityCalculated;
+		@Nullable ActivityId activityId;
+		@Nullable CampaignId campaignId;
+		@Nullable ProjectId projectId;
 	}
 }

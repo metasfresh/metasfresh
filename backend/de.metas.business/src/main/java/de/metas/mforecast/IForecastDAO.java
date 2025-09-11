@@ -44,4 +44,11 @@ public interface IForecastDAO extends ISingletonService
 
 	@NonNull
 	Stream<I_M_Forecast> streamRecordsByIds(@NonNull ImmutableSet<ForecastId> ids);
+
+	@NonNull
+	void createForecastLine(
+			@NonNull I_M_Forecast forecastRecord,
+			@NonNull ForecastRequest.ForecastLineRequest request);
+
+	I_M_Forecast getById(@NonNull ForecastId forecastId);
 }
