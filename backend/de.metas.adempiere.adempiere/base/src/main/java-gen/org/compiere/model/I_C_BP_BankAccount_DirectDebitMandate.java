@@ -71,7 +71,7 @@ public interface I_C_BP_BankAccount_DirectDebitMandate
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Lastschrift Mandat.
+	 * Set Direct Debit Mandate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -80,7 +80,7 @@ public interface I_C_BP_BankAccount_DirectDebitMandate
 	void setC_BP_BankAccount_DirectDebitMandate_ID (int C_BP_BankAccount_DirectDebitMandate_ID);
 
 	/**
-	 * Get Lastschrift Mandat.
+	 * Get Direct Debit Mandate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_BankAccount_DirectDebitMandate extends org.compiere.model.PO implements I_C_BP_BankAccount_DirectDebitMandate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1220445212L;
+	private static final long serialVersionUID = -1976974232L;
 
     /** Standard Constructor */
     public X_C_BP_BankAccount_DirectDebitMandate (final Properties ctx, final int C_BP_BankAccount_DirectDebitMandate_ID, @Nullable final String trxName)
@@ -38,9 +38,9 @@ public class X_C_BP_BankAccount_DirectDebitMandate extends org.compiere.model.PO
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
@@ -132,14 +132,12 @@ public class X_C_BP_BankAccount_DirectDebitMandate extends org.compiere.model.PO
 	 * Reference name: Mandat Status
 	 */
 	public static final int MANDATESTATUS_AD_Reference_ID=541976;
-	/** active = A */
-	public static final String MANDATESTATUS_Active = "A";
-	/** paused = P */
-	public static final String MANDATESTATUS_Paused = "P";
-	/** canceled = C */
-	public static final String MANDATESTATUS_Canceled = "C";
-	/** expired = E */
-	public static final String MANDATESTATUS_Expired = "E";
+	/** FirstTime = F */
+	public static final String MANDATESTATUS_FirstTime = "F";
+	/** Recurring = R */
+	public static final String MANDATESTATUS_Recurring = "R";
+	/** LastTime = L */
+	public static final String MANDATESTATUS_LastTime = "L";
 	@Override
 	public void setMandateStatus (final java.lang.String MandateStatus)
 	{
