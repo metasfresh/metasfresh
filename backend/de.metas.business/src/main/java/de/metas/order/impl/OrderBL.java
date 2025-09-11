@@ -322,7 +322,7 @@ public class OrderBL implements IOrderBL
 		final CountryId countryId = partnerBL.getCountryId(shipToBPLocationId);
 
 		final IPriceListDAO priceListDAO = this.priceListDAO;
-		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx);
+		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx, null);
 	}
 
 	@Override
@@ -1243,10 +1243,7 @@ public class OrderBL implements IOrderBL
 		{
 			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
 			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
-			if (billLocationEmail != null)
-			{
-				return billLocationEmail;
-			}
+			return billLocationEmail;
 		}
 
 		//
