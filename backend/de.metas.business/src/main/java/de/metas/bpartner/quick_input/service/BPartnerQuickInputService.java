@@ -506,7 +506,7 @@ public class BPartnerQuickInputService
 		if (possibleDefaultCountryId.isPresent())
 		{
 			final CountryId defaultCountryId = possibleDefaultCountryId.get();
-			final ImmutableList<I_M_PriceList> defaultPriceLists = salesPriceLists.filterAndList(defaultCountryId, soTrx);
+			final ImmutableList<I_M_PriceList> defaultPriceLists = salesPriceLists.filterAndList(defaultCountryId, soTrx, null);
 
 			if (Check.isEmpty(defaultPriceLists))
 			{
@@ -519,7 +519,7 @@ public class BPartnerQuickInputService
 			boolean onePriceWasFound = false;
 			for (final CountryId countryId : nonDefaultCountryIds)
 			{
-				final ImmutableList<I_M_PriceList> nonDefaultPriceLists = salesPriceLists.filterAndList(countryId, soTrx);
+				final ImmutableList<I_M_PriceList> nonDefaultPriceLists = salesPriceLists.filterAndList(countryId, soTrx, null);
 				if (Check.isEmpty(nonDefaultPriceLists))
 				{
 					nonDefaultCountriesWithoutPrices.add(countryId);

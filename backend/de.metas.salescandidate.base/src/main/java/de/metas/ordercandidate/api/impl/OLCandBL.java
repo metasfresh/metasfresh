@@ -369,7 +369,8 @@ public class OLCandBL implements IOLCandBL
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
 				countryId,
-				SOTrx.SALES);
+				SOTrx.SALES,
+				olCandRecord.isManualPrice() ? CurrencyId.ofRepoId(olCandRecord.getC_Currency_ID()) : null);
 		if (plId == null)
 		{
 			throw new AdempiereException("@M_PriceList_ID@ @NotFound@: @M_PricingSystem_ID@ " + pricingSystemId + ", @DropShip_Location_ID@ " + shipToPartnerInfo.getBpartnerLocationId());
