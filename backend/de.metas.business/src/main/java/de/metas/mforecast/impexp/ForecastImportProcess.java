@@ -107,6 +107,7 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 	private ForecastRequestBuilder prepareForecastRequest(@NonNull final ForecastHeaderKey key)
 	{
 		return ForecastRequest.builder()
+				.name(key.getName())
 				.warehouseId(key.getWarehouseId())
 				.bpartnerId(key.getBpartnerId())
 				.priceListId(key.getPriceListId())
@@ -156,9 +157,6 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		return new X_I_Forecast(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	//
-	//
-	//
 	//
 	//
 
