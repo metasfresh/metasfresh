@@ -148,7 +148,7 @@ GROUP BY il.c_invoice_id,
          (COALESCE(ol.line, il.line)),
          il.c_orderline_id,
          pip.UPC, pip.GTIN, pip.EAN_TU, pp.GTIN, p.GTIN,
-         il.C_UOM_BPartner_ID, ol.externalseqno
+         il.C_UOM_BPartner_ID, il.externalids, ol.externalseqno
 ORDER BY COALESCE(ol.line, il.line)
 ;
 
