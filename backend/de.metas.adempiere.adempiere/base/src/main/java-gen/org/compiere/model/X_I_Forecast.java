@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Forecast extends org.compiere.model.PO implements I_I_Forecast, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 240516399L;
+	private static final long serialVersionUID = -1205673443L;
 
     /** Standard Constructor */
     public X_I_Forecast (final Properties ctx, final int I_Forecast_ID, @Nullable final String trxName)
@@ -431,6 +431,18 @@ public class X_I_Forecast extends org.compiere.model.PO implements I_I_Forecast,
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setProcessing (final boolean Processing)
+	{
+		set_Value (COLUMNNAME_Processing, Processing);
+	}
+
+	@Override
+	public boolean isProcessing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
 	@Override

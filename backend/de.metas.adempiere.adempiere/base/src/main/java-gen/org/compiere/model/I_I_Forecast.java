@@ -657,6 +657,27 @@ public interface I_I_Forecast
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessing (boolean Processing);
+
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessing();
+
+	ModelColumn<I_I_Forecast, Object> COLUMN_Processing = new ModelColumn<>(I_I_Forecast.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
+
+	/**
 	 * Set Product Value.
 	 * Product identifier;
  "val-<search key>", "ext-<external id>" or internal M_Product_ID
