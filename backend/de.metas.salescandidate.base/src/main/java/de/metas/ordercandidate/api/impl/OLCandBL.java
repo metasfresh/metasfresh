@@ -366,14 +366,15 @@ public class OLCandBL implements IOLCandBL
 		pricingCtx.setDisallowDiscount(olCandRecord.isManualDiscount());
 
 		final CountryId countryId = bpartnerBL.getCountryId(shipToPartnerInfo);
+		final CurrencyId pricelistCurrency = olCandRecord.isManualPrice() ? CurrencyId.ofRepoId(olCandRecord.getC_Currency_ID()) : null;
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
 				countryId,
 				SOTrx.SALES,
-				olCandRecord.isManualPrice() ? CurrencyId.ofRepoId(olCandRecord.getC_Currency_ID()) : null);
+				pricelistCurrency);
 		if (plId == null)
 		{
-			throw new AdempiereException("@M_PriceList_ID@ @NotFound@: @M_PricingSystem_ID@ " + pricingSystemId + ", @DropShip_Location_ID@ " + shipToPartnerInfo.getBpartnerLocationId());
+			throw new AdempiereException("@M_PriceList_ID@ @NotFound@: @M_PricingSystem_ID@ " + pricingSystemId + ", @DropShip_Location_ID@ " + shipToPartnerInfo.getBpartnerLocationId()+", @C_Currency_ID@ " + pricelistCurrency);
 		}
 		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCandRecord));
