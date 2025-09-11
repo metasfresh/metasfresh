@@ -15,6 +15,7 @@ import de.metas.ean13.EAN13Prefix;
 import de.metas.ean13.EAN13ProductCode;
 import de.metas.ean13.EAN13ProductCodes;
 import de.metas.gs1.GTIN;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -40,6 +41,7 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
@@ -548,6 +550,20 @@ public final class ProductBL implements IProductBL
 		}
 
 		return result.build();
+	}
+
+	@Override
+	public ExplainedOptional<EAN13> getEAN13(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+
+		final String gtin = StringUtils.trimBlankToNull(product.getGTIN());
+		if (gtin != null)
+		{
+			return EAN13.fromString(gtin);
+		}
+
+		return ExplainedOptional.emptyBecause("No GTIN set");
 	}
 
 	@Override
