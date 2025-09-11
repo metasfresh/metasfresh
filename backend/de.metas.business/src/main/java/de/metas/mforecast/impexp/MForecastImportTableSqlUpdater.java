@@ -134,11 +134,11 @@ public class MForecastImportTableSqlUpdater
 	{
 		final String sql = "UPDATE "
 				+ targetTableName + " i set "
-				+ "M_Price_List_ID=(select pl.M_PriceList_ID FROM M_PriceList pl "
+				+ "M_PriceList_ID=(select pl.M_PriceList_ID FROM M_PriceList pl "
 				+ " WHERE (pl.InternalName=i.PriceList or pl.Name=i.PriceList) "
 				+ " AND pl.AD_Org_ID = i.AD_Org_ID"
 				+ " AND pl.IsActive='Y' order by pl.M_PriceList_ID limit 1)"
-				+ "WHERE M_Price_List_ID IS NULL AND PriceList IS NOT NULL"
+				+ "WHERE M_PriceList_ID IS NULL AND PriceList IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
 				+ selection.toSqlWhereClause("i");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -146,8 +146,8 @@ public class MForecastImportTableSqlUpdater
 
 		///  set error message if needed
 		final String errorSql = "UPDATE " + targetTableName + " i "
-				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid UOM,' "
-				+ "WHERE C_UOM_ID IS NULL AND PriceList IS NOT NULL"
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Price List,' "
+				+ "WHERE M_PriceList_ID IS NULL AND PriceList IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 		DB.executeUpdateAndThrowExceptionOnFail(errorSql, ITrx.TRXNAME_ThreadInherited);

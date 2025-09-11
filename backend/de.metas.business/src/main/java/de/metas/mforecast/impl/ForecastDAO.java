@@ -134,4 +134,10 @@ public class ForecastDAO implements IForecastDAO
 		}
 		return forecast;
 	}
+
+	@Override
+	public void save(@NonNull final I_M_Forecast forecastRecord)
+	{
+		saveRecord(forecastRecord);
+	}
 }

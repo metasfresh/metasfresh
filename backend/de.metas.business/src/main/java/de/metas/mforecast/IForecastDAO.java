@@ -51,4 +51,6 @@ public interface IForecastDAO extends ISingletonService
 			@NonNull ForecastRequest.ForecastLineRequest request);
 
 	I_M_Forecast getById(@NonNull ForecastId forecastId);
+
+	void save(@NonNull I_M_Forecast forecastRecord);
 }

@@ -155,6 +155,9 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 
 		}
 
+		importRecord.setM_Forecast_ID(context.forecastId.getRepoId());
+		InterfaceWrapperHelper.save(importRecord, trxName);
+
 		return wasInsert ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Forecast extends org.compiere.model.PO implements I_I_Forecast, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 705312840L;
+	private static final long serialVersionUID = 240516399L;
 
     /** Standard Constructor */
     public X_I_Forecast (final Properties ctx, final int I_Forecast_ID, @Nullable final String trxName)
@@ -90,7 +90,7 @@ public class X_I_Forecast extends org.compiere.model.PO implements I_I_Forecast,
 	}
 
 	@Override
-	public void setCampaignValue (final java.lang.String CampaignValue)
+	public void setCampaignValue (final @Nullable java.lang.String CampaignValue)
 	{
 		set_Value (COLUMNNAME_CampaignValue, CampaignValue);
 	}
@@ -323,6 +323,33 @@ public class X_I_Forecast extends org.compiere.model.PO implements I_I_Forecast,
 	public int getI_LineNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_I_LineNo);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Forecast getM_Forecast()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class);
+	}
+
+	@Override
+	public void setM_Forecast(final org.compiere.model.I_M_Forecast M_Forecast)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class, M_Forecast);
+	}
+
+	@Override
+	public void setM_Forecast_ID (final int M_Forecast_ID)
+	{
+		if (M_Forecast_ID < 1) 
+			set_Value (COLUMNNAME_M_Forecast_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Forecast_ID, M_Forecast_ID);
+	}
+
+	@Override
+	public int getM_Forecast_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Forecast_ID);
 	}
 
 	@Override

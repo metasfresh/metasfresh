@@ -139,19 +139,19 @@ public interface I_I_Forecast
 	 * Set Campaign value.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCampaignValue (java.lang.String CampaignValue);
+	void setCampaignValue (@Nullable java.lang.String CampaignValue);
 
 	/**
 	 * Get Campaign value.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getCampaignValue();
+	@Nullable java.lang.String getCampaignValue();
 
 	ModelColumn<I_I_Forecast, Object> COLUMN_CampaignValue = new ModelColumn<>(I_I_Forecast.class, "CampaignValue", null);
 	String COLUMNNAME_CampaignValue = "CampaignValue";
@@ -497,6 +497,33 @@ public interface I_I_Forecast
 
 	ModelColumn<I_I_Forecast, Object> COLUMN_IsActive = new ModelColumn<>(I_I_Forecast.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Forecast.
+	 * Material Forecast
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Forecast_ID (int M_Forecast_ID);
+
+	/**
+	 * Get Forecast.
+	 * Material Forecast
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Forecast_ID();
+
+	@Nullable org.compiere.model.I_M_Forecast getM_Forecast();
+
+	void setM_Forecast(@Nullable org.compiere.model.I_M_Forecast M_Forecast);
+
+	ModelColumn<I_I_Forecast, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new ModelColumn<>(I_I_Forecast.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
+	String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
 
 	/**
 	 * Set Price List.
