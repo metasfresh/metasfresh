@@ -1,18 +1,8 @@
-package de.metas.material.cockpit.availableforsales;
-
-import com.google.common.collect.ImmutableList;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
-import java.util.List;
-
 /*
  * #%L
- * metasfresh-available-for-sales
+ * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,16 +20,19 @@ import java.util.List;
  * #L%
  */
 
-@Value
-@Builder
-public class AvailableForSalesMultiQuery
+package de.metas.material.cockpit.availableforsales;
+
+import lombok.NonNull;
+import lombok.Value;
+
+import java.util.Properties;
+
+@Value(staticConstructor = "of")
+public class EnqueueAvailableForSalesRequest
 {
 	@NonNull
-	public static AvailableForSalesMultiQuery of(@NonNull final AvailableForSalesQuery availableForSalesQuery)
-	{
-		return new AvailableForSalesMultiQuery(ImmutableList.of(availableForSalesQuery));
-	}
+	AvailableForSalesQuery availableForSalesQuery;
 
-	@Singular
-	List<AvailableForSalesQuery> availableForSalesQueries;
+	@NonNull
+	Properties ctx;
 }
