@@ -191,13 +191,13 @@ test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
                     },
                     P2: {
-                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 1, tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
                     },
                     P3: {
-                        qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu2', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 1, tu: 'tu2', lu: 'lu1', processed: false, shipmentLineId: '-' }]
                     },
                 }
             }
@@ -218,13 +218,13 @@ test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine1' }]
+                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine1' }]
                     },
                     P2: {
-                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine2' }]
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 1, tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine2' }]
                     },
                     P3: {
-                        qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu2', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine3' }]
+                        qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 1, tu: 'tu2', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine3' }]
                     },
                 }
             }
