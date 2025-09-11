@@ -136,7 +136,7 @@ public class ForecastDAO implements IForecastDAO
 	@Override
 	public I_M_Forecast getById(@NonNull final ForecastId forecastId)
 	{
-		final I_M_Forecast forecast = InterfaceWrapperHelper.load(forecastId.getRepoId(), I_M_Forecast.class);
+		final I_M_Forecast forecast = InterfaceWrapperHelper.load(forecastId, I_M_Forecast.class);
 		if (forecast == null)
 		{
 			throw new AdempiereException("@NotFound@: " + forecastId);
