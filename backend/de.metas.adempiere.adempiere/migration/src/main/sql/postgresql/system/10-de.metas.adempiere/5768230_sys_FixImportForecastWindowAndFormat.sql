@@ -998,3 +998,29 @@ UPDATE AD_ImpFormat_Row SET StartNo=10,Updated=TO_TIMESTAMP('2025-09-11 13:34:02
 UPDATE AD_ImpFormat_Row SET StartNo=11,Updated=TO_TIMESTAMP('2025-09-11 13:34:09.389000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542129
 ;
 
+-- UI Element: Prognose importieren(541940,D) -> Prognose importieren(548411,D) -> Main -> 20 -> main.Importiert
+-- Column: I_Forecast.I_IsImported
+-- 2025-09-11T13:50:58.664Z
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=637015
+;
+
+-- Column: I_Forecast.BPValue
+-- 2025-09-11T13:51:54.150Z
+UPDATE AD_Column SET FilterOperator='E', IsIdentifier='Y', IsSelectionColumn='Y', SeqNo=10,Updated=TO_TIMESTAMP('2025-09-11 13:51:54.150000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590863
+;
+
+-- Column: I_Forecast.C_BPartner_ID
+-- 2025-09-11T13:52:06.325Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-09-11 13:52:06.325000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590864
+;
+
+-- Column: I_Forecast.M_Warehouse_ID
+-- 2025-09-11T13:52:14.779Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-09-11 13:52:14.779000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590866
+;
+
+-- Column: I_Forecast.M_Product_ID
+-- 2025-09-11T13:52:23.060Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-09-11 13:52:23.060000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590882
+;
+
