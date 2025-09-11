@@ -23,7 +23,6 @@
 package de.metas.mforecast.impexp;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.mforecast.ForecastRequest;
@@ -44,6 +43,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.warehouse.WarehouseId;
@@ -110,7 +110,7 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 				.warehouseId(key.getWarehouseId())
 				.bpartnerId(key.getBpartnerId())
 				.priceListId(key.getPriceListId())
-				.exernalId(key.getExternalId())
+				.externalId(key.getExternalId())
 				.datePromised(TimeUtil.asInstant(key.getDatePromisedDay()));
 	}
 
@@ -129,45 +129,26 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 	}
 
 	@Override
-	protected String getTargetTableName()
-	{
-		return I_M_Forecast.Table_Name;
-	}
+	protected String getTargetTableName() {return I_M_Forecast.Table_Name;}
 
 	@Override
 	protected void updateAndValidateImportRecordsImpl()
 	{
-		final ImportRecordsSelection selection = getImportRecordsSelection();
-
 		MForecastImportTableSqlUpdater.builder()
-				.selection(selection)
+				.selection(getImportRecordsSelection())
 				.tableName(getImportTableName())
 				.build()
 				.updateIForecast();
 	}
 
 	@Override
-	protected String getImportOrderBySql()
-	{
-		return I_I_Forecast.COLUMNNAME_Name
-				+ ',' + I_I_Forecast.COLUMNNAME_DatePromised
-				+ ',' + I_I_Forecast.COLUMNNAME_BPValue
-				+ ',' + I_I_Forecast.COLUMNNAME_WarehouseValue
-				+ ',' + I_I_Forecast.COLUMNNAME_PriceList
-				+ ',' + I_I_Forecast.COLUMNNAME_ProductValue;
-	}
+	protected String getImportOrderBySql() {return ForecastHeaderKey.IMPORT_ORDER_BY;}
 
 	@Override
-	public Class<I_I_Forecast> getImportModelClass()
-	{
-		return I_I_Forecast.class;
-	}
+	public Class<I_I_Forecast> getImportModelClass() {return I_I_Forecast.class;}
 
 	@Override
-	public String getImportTableName()
-	{
-		return I_I_Forecast.Table_Name;
-	}
+	public String getImportTableName() {return I_I_Forecast.Table_Name;}
 
 	@Override
 	public I_I_Forecast retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
@@ -185,6 +166,13 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 	@Builder
 	private static class ForecastHeaderKey
 	{
+		public static final String IMPORT_ORDER_BY = I_I_Forecast.COLUMNNAME_Name
+				+ ',' + I_I_Forecast.COLUMNNAME_DatePromised
+				+ ',' + I_I_Forecast.COLUMNNAME_BPValue
+				+ ',' + I_I_Forecast.COLUMNNAME_WarehouseValue
+				+ ',' + I_I_Forecast.COLUMNNAME_PriceList
+				+ ',' + I_I_Forecast.COLUMNNAME_ProductValue;
+
 		@NonNull String name;
 		@NonNull WarehouseId warehouseId;
 		@Nullable PriceListId priceListId;
@@ -195,7 +183,7 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		public static ForecastHeaderKey of(final I_I_Forecast importRecord)
 		{
 			return ForecastHeaderKey.builder()
-					.name(StringUtils.trimBlankToOptional(importRecord.getName()).orElse(""))
+					.name(StringUtils.trimBlankToOptional(importRecord.getName()).orElseThrow(() -> new FillMandatoryException("Name")))
 					.warehouseId(WarehouseId.ofRepoId(importRecord.getM_Warehouse_ID()))
 					.priceListId(PriceListId.ofRepoIdOrNull(importRecord.getM_PriceList_ID()))
 					.bpartnerId(BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID()))

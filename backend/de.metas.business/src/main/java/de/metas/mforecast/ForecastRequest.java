@@ -48,7 +48,7 @@ public class ForecastRequest
 	@NonNull String name;
 	@Nullable BPartnerId bpartnerId;
 	@Nullable PriceListId priceListId;
-	@Nullable String exernalId;
+	@Nullable String externalId;
 	@NonNull @Singular ImmutableList<ForecastLineRequest> forecastLineRequests;
 
 	@Value

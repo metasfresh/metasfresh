@@ -33,6 +33,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
@@ -93,10 +94,10 @@ public class ForecastDAO implements IForecastDAO
 
 		forecastRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 		forecastRecord.setDatePromised(TimeUtil.asTimestamp(request.getDatePromised()));
-		forecastRecord.setName(request.getName());
+		forecastRecord.setName(StringUtils.trimBlankToNull(request.getName()));
 		forecastRecord.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 		forecastRecord.setM_PriceList_ID(PriceListId.getRepoId(request.getPriceListId()));
-		forecastRecord.setExternalId(request.getExernalId());
+		forecastRecord.setExternalId(StringUtils.trimBlankToNull(request.getExternalId()));
 
 		saveRecord(forecastRecord);
 
