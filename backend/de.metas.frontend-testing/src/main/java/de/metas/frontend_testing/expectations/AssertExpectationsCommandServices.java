@@ -57,9 +57,9 @@ public class AssertExpectationsCommandServices
 		return shipmentScheduleBL.getByIds(shipmentScheduleIds).values();
 	}
 
-	public List<I_M_ShipmentSchedule_QtyPicked> getShipmentScheduleQtyPickedRecords(final I_M_ShipmentSchedule shipmentSchedule)
+	public List<I_M_ShipmentSchedule_QtyPicked> getShipmentScheduleQtyPickedRecords(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		return shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		return shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentScheduleIds, I_M_ShipmentSchedule_QtyPicked.class);
 	}
 
 	public StockQtyAndUOMQty extractQtyPicked(@NonNull final I_M_ShipmentSchedule_QtyPicked alloc, @NonNull final ProductId productId)

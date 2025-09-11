@@ -38,6 +38,7 @@ import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -89,7 +90,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
@@ -153,6 +153,7 @@ public class HUTransformService
 	// services
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
@@ -163,7 +164,7 @@ public class HUTransformService
 	private final SpringContextHolder.Lazy<HUQRCodesService> huQRCodesService;
 	private final SpringContextHolder.Lazy<QRCodeConfigurationService> qrCodeConfigurationService;
 
-	private final IHUContext huContext;
+	@NonNull private final IHUContext huContext;
 	private final ImmutableList<TableRecordReference> referencedObjects;
 
 	/**
@@ -1656,31 +1657,34 @@ public class HUTransformService
 			@NonNull final List<I_M_HU> childCUs,
 			@NonNull final I_M_HU targetTU)
 	{
-		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
 		final I_M_HU_Item tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTU)
 				.stream()
 				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Param 'tuHU' does not have one 'MI' item; tuHU=" + targetTU)));
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No Material HU Item found for " + targetTU));
 
-		// finally do the attaching
+		childCUs.forEach(childCU -> {
+			setParent(childCU,
+					tuMaterialItem,
+					true,
+					// before the newChildCU's parent item is set,
+					localHuContext -> {
+						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
+						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
+						updateAllocation(oldParentLU, oldParentTU, childCU, null, true, localHuContext);
+					},
 
-		// iterate the child CUs and set their parent item
-		childCUs.forEach(childCU -> setParent(childCU,
-				tuMaterialItem,
-				true,
-				// before the newChildCU's parent item is set,
-				localHuContext -> {
-					final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
-					final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-					updateAllocation(oldParentLU, oldParentTU, childCU, null, true, localHuContext);
-				},
+					// after the newChildCU's parent item is set,
+					localHuContext -> {
+						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
+						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
+						updateAllocation(newParentLU, newParentTU, childCU, null, false, localHuContext);
+					});
 
-				// after the newChildCU's parent item is set,
-				localHuContext -> {
-					final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
-					final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
-					updateAllocation(newParentLU, newParentTU, childCU, null, false, localHuContext);
-				}));
+			// Make sure child CU will have the same status as the target TU
+			huStatusBL.setHUStatus(huContext, childCU, targetTU.getHUStatus());
+			handlingUnitsDAO.saveHU(childCU);
+		});
 	}
 
 	@NonNull

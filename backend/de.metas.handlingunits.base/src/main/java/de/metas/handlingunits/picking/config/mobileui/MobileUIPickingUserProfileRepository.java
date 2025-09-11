@@ -38,10 +38,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_BPartner;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -111,9 +113,8 @@ public class MobileUIPickingUserProfileRepository
 				.aggregationType(PickingJobAggregationType.ofCode(profileRecord.getPickingJobAggregationType()))
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
-				.isPickWithNewLU(profileRecord.isPickingWithNewLU())
+				.allowedPickToStructures(extractAllowedPickToStructures(profileRecord))
 				.isShipOnCloseLU(profileRecord.isShipOnCloseLU())
-				.isAllowNewTU(profileRecord.isAllowNewTU())
 				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
 				.isAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason())
@@ -126,6 +127,28 @@ public class MobileUIPickingUserProfileRepository
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
 				.build();
+	}
+
+	private static AllowedPickToStructures extractAllowedPickToStructures(final I_MobileUI_UserProfile_Picking record)
+	{
+		final HashSet<PickToStructure> allowed = new HashSet<>();
+		if (record.isAllowPickToStructure_LU_TU())
+		{
+			allowed.add(PickToStructure.LU_TU);
+		}
+		if (record.isAllowPickToStructure_TU())
+		{
+			allowed.add(PickToStructure.TU);
+		}
+		if (record.isAllowPickToStructure_LU_CU())
+		{
+			allowed.add(PickToStructure.LU_CU);
+		}
+		if (record.isAllowPickToStructure_CU())
+		{
+			allowed.add(PickToStructure.CU);
+		}
+		return AllowedPickToStructures.ofAllowed(allowed);
 	}
 
 	@Nullable
@@ -222,9 +245,8 @@ public class MobileUIPickingUserProfileRepository
 		record.setPickingJobAggregationType(Objects.requireNonNull(from.getAggregationType()).getCode());
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
 		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
-		record.setIsPickingWithNewLU(from.isPickWithNewLU());
 		record.setIsShipOnCloseLU(from.isShipOnCloseLU());
-		record.setIsAllowNewTU(from.isAllowNewTU());
+		updateRecord(record, from.getAllowedPickToStructures());
 		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
 		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
@@ -236,6 +258,14 @@ public class MobileUIPickingUserProfileRepository
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
+	}
+
+	private static void updateRecord(final @NotNull I_MobileUI_UserProfile_Picking record, final AllowedPickToStructures from)
+	{
+		record.setAllowPickToStructure_LU_TU(from.isStrictlyAllowed(PickToStructure.LU_TU));
+		record.setAllowPickToStructure_TU(from.isStrictlyAllowed(PickToStructure.TU));
+		record.setAllowPickToStructure_LU_CU(from.isStrictlyAllowed(PickToStructure.LU_CU));
+		record.setAllowPickToStructure_CU(from.isStrictlyAllowed(PickToStructure.CU));
 	}
 
 	@NonNull
@@ -293,9 +323,8 @@ public class MobileUIPickingUserProfileRepository
 				.aggregationType(PickingJobAggregationType.ofNullableCode(record.getPickingJobAggregationType()))
 				.isAlwaysSplitHUsEnabled(record.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
-				.isPickWithNewLU(record.isPickingWithNewLU())
+				.allowedPickToStructures(extractAllowedPickToStructures(record))
 				.isShipOnCloseLU(record.isShipOnCloseLU())
-				.isAllowNewTU(record.isAllowNewTU())
 				.considerSalesOrderCapacity(record.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(record.isCatchWeightTUPickingEnabled())
 				.isAllowSkippingRejectedReason(record.isAllowSkippingRejectedReason())
@@ -311,4 +340,15 @@ public class MobileUIPickingUserProfileRepository
 
 		return GuavaCollectors.entry(pickingJobOptionsId, pickingJobOptions);
 	}
+
+	private static AllowedPickToStructures extractAllowedPickToStructures(final I_MobileUI_UserProfile_Picking_Job record)
+	{
+		final HashMap<PickToStructure, Boolean> map = new HashMap<>();
+		OptionalBoolean.ofNullableString(record.getAllowPickToStructure_LU_TU()).ifPresent(allowed -> map.put(PickToStructure.LU_TU, allowed));
+		OptionalBoolean.ofNullableString(record.getAllowPickToStructure_TU()).ifPresent(allowed -> map.put(PickToStructure.TU, allowed));
+		OptionalBoolean.ofNullableString(record.getAllowPickToStructure_LU_CU()).ifPresent(allowed -> map.put(PickToStructure.LU_CU, allowed));
+		OptionalBoolean.ofNullableString(record.getAllowPickToStructure_CU()).ifPresent(allowed -> map.put(PickToStructure.CU, allowed));
+		return AllowedPickToStructures.ofMap(map);
+	}
+
 }
