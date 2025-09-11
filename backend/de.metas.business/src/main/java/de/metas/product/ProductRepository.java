@@ -30,6 +30,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -311,6 +312,29 @@ public class ProductRepository
 				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, id)
 				.create()
 				.firstOnlyNotNull(I_M_Product.class);
+	}
+
+	@NonNull
+	public Iterator<Product> getProductsByQuery(@NonNull final ProductQuery productQuery)
+	{
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (productQuery.getIsSold() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_IsSold, productQuery.getIsSold());
+		}
+
+		if (productQuery.getIsStocked() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, productQuery.getIsStocked());
+		}
+
+		return queryBuilder
+				.create()
+				.iterateAndStream()
+				.map(this::ofProductRecord)
+				.iterator();
 	}
 
 	@NonNull
