@@ -94,6 +94,7 @@ public class ForecastDAO implements IForecastDAO
 		forecastRecord.setName(request.getName());
 		forecastRecord.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 		forecastRecord.setM_PriceList_ID(PriceListId.getRepoId(request.getPriceListId()));
+		forecastRecord.setExternalId(request.getExernalId());
 
 		saveRecord(forecastRecord);
 

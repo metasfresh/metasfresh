@@ -96,6 +96,7 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(importRecord.getM_Warehouse_ID());
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(importRecord.getM_PriceList_ID());
+		final I_C_UOM uomRecord = uomDAO.getById(UomId.ofRepoIdOrNull(importRecord.getC_UOM_ID()));
 
 		// Check if we need a new Forecast
 		if (context.forecastId == null
@@ -112,6 +113,10 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 			final ForecastRequest.ForecastLineRequest lineRequest = ForecastRequest.ForecastLineRequest.builder()
 					.productId(ProductId.ofRepoId(importRecord.getM_Product_ID()))
 					.quantity(Quantity.of(importRecord.getQty(), uomDAO.getById(uomId)))
+					.activityId(ActivityId.ofRepoIdOrNull(importRecord.getC_Activity_ID()))
+					.campaignId(CampaignId.ofRepoIdOrNull(importRecord.getC_Campaign_ID()))
+					.projectId(ProjectId.ofRepoIdOrNull(importRecord.getC_Project_ID()))
+					.quantityCalculated(Quantity.ofNullable(importRecord.getQtyCalculated(),uomRecord))
 					.build();
 
 			final ForecastRequest forecastRequest = ForecastRequest.builder()
@@ -140,7 +145,6 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		else
 		{
 			// Add line to the current forecast
-			final I_C_UOM uomRecord = uomDAO.getById(UomId.ofRepoIdOrNull(importRecord.getC_UOM_ID()));
 			final ForecastRequest.ForecastLineRequest lineRequest = ForecastRequest.ForecastLineRequest.builder()
 					.productId(ProductId.ofRepoId(importRecord.getM_Product_ID()))
 					.quantity(Quantity.of(importRecord.getQty(),uomRecord))
