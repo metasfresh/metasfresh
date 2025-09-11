@@ -1,13 +1,13 @@
 package de.metas.pricing;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -75,4 +75,6 @@ public class PriceListId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static boolean equals(@Nullable PriceListId priceList1, @Nullable PriceListId priceList2) {return Objects.equals(priceList1, priceList2);}
 }

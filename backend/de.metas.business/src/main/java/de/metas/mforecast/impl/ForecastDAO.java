@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.mforecast.ForecastRequest;
+import de.metas.mforecast.ForecastRequest.ForecastLineRequest;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.pricing.PriceListId;
 import de.metas.product.acct.api.ActivityId;
@@ -40,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -99,16 +101,21 @@ public class ForecastDAO implements IForecastDAO
 		saveRecord(forecastRecord);
 
 		request.getForecastLineRequests()
-				.forEach(lineRequest -> createForecastLine(forecastRecord, lineRequest));
+				.forEach(lineRequest -> addForecastLine(forecastRecord, lineRequest));
 
 		return ForecastId.ofRepoId(forecastRecord.getM_Forecast_ID());
 	}
 
-	@NonNull
 	@Override
-	public void createForecastLine(
-			@NonNull final I_M_Forecast forecastRecord,
-			@NonNull final ForecastRequest.ForecastLineRequest request)
+	public void addForecastLine(
+			@NonNull final ForecastId forecastId,
+			@NonNull final ForecastLineRequest request)
+	{
+		final I_M_Forecast forecastRecord = getById(forecastId);
+		addForecastLine(forecastRecord, request);
+	}
+
+	private static void addForecastLine(final I_M_Forecast forecastRecord, final @NotNull ForecastLineRequest request)
 	{
 		final I_M_ForecastLine forecastLineRecord = InterfaceWrapperHelper.newInstance(I_M_ForecastLine.class);
 

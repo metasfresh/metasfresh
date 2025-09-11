@@ -32,6 +32,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -48,7 +49,7 @@ public class ForecastRequest
 	@Nullable BPartnerId bpartnerId;
 	@Nullable PriceListId priceListId;
 	@Nullable String exernalId;
-	@NonNull ImmutableList<ForecastLineRequest> forecastLineRequests;
+	@NonNull @Singular ImmutableList<ForecastLineRequest> forecastLineRequests;
 
 	@Value
 	@Builder

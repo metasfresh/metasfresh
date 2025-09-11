@@ -22,16 +22,14 @@
 
 package de.metas.mforecast.impexp;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.AccountDimension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.marketing.base.model.CampaignId;
-import de.metas.material.event.forecast.Forecast;
 import de.metas.mforecast.ForecastRequest;
+import de.metas.mforecast.ForecastRequest.ForecastLineRequest;
+import de.metas.mforecast.ForecastRequest.ForecastRequestBuilder;
 import de.metas.mforecast.IForecastDAO;
-import de.metas.mforecast.impl.ForecastDAO;
 import de.metas.mforecast.impl.ForecastId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
@@ -42,24 +40,24 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_I_Forecast;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.MAccount;
 import org.compiere.model.X_I_Forecast;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -74,88 +72,30 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 			final @NonNull I_I_Forecast importRecord,
 			final boolean isInsertOnly) throws Exception
 	{
-		ForecastImportContext context = (ForecastImportContext) stateHolder.getValue();
-		if (context == null)
-		{
-			context = new ForecastImportContext();
-			stateHolder.setValue(context);
-		}
-
+		final ForecastImportContext context = (ForecastImportContext)stateHolder.computeIfNull(ForecastImportContext::new);
+		final ForecastHeaderKey forecastHeaderKey = ForecastHeaderKey.of(importRecord);
 		boolean wasInsert = false;
 
-		// Normalize name
-		String impName = importRecord.getName();
-		if (impName == null)
-		{
-			impName = "";
-		}
-
-		final Timestamp datePromised = importRecord.getDatePromised();
-		final String name = impName;
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(importRecord.getM_Warehouse_ID());
-		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
-		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(importRecord.getM_PriceList_ID());
-		final I_C_UOM uomRecord = uomDAO.getById(UomId.ofRepoIdOrNull(importRecord.getC_UOM_ID()));
-
-		// Check if we need a new Forecast
+		//
+		// New Forecast document
 		if (context.forecastId == null
-				|| !context.name.equals(name)
-				|| context.warehouseId.compareTo(warehouseId)!=0
-				|| (context.priceListId!=null && context.priceListId.getRepoId() != importRecord.getM_PriceList_ID())
-				|| context.bPartnerId.getRepoId() != importRecord.getC_BPartner_ID()
-				|| !Objects.equals(context.externalId,importRecord.getExternalId())
-				|| !TimeUtil.equals (context.datePromised ,  datePromised, TimeUtil.TRUNC_DAY) )
+				|| !Objects.equals(context.forecastHeaderKey, forecastHeaderKey))
 		{
-			final UomId uomId = UomId.ofRepoIdOrNull(importRecord.getC_UOM_ID());
-
-			// Build ForecastRequest with one line
-			final ForecastRequest.ForecastLineRequest lineRequest = ForecastRequest.ForecastLineRequest.builder()
-					.productId(ProductId.ofRepoId(importRecord.getM_Product_ID()))
-					.quantity(Quantity.of(importRecord.getQty(), uomDAO.getById(uomId)))
-					.activityId(ActivityId.ofRepoIdOrNull(importRecord.getC_Activity_ID()))
-					.campaignId(CampaignId.ofRepoIdOrNull(importRecord.getC_Campaign_ID()))
-					.projectId(ProjectId.ofRepoIdOrNull(importRecord.getC_Project_ID()))
-					.quantityCalculated(Quantity.ofNullable(importRecord.getQtyCalculated(),uomRecord))
+			final ForecastRequest forecastRequest = prepareForecastRequest(forecastHeaderKey)
+					.forecastLineRequest(toForecastLineRequest(importRecord))
 					.build();
-
-			final ForecastRequest forecastRequest = ForecastRequest.builder()
-					.warehouseId(warehouseId)
-					.bpartnerId(bPartnerId)
-					.priceListId(priceListId)
-					.exernalId(importRecord.getExternalId())
-					.datePromised(datePromised.toInstant())
-					.name(name)
-					.forecastLineRequests(ImmutableList.of(lineRequest))
-					.build();
-
-			// Persist forecast
 
 			// Update context
 			context.forecastId = forecastDAO.createForecast(forecastRequest);
-			context.name = name;
-			context.warehouseId = warehouseId;
-			context.bPartnerId = bPartnerId;
-			context.priceListId = priceListId;
-			context.externalId = importRecord.getExternalId();
-			context.datePromised = datePromised;
+			context.forecastHeaderKey = forecastHeaderKey;
 
 			wasInsert = true;
 		}
+		//
+		// Add a line to the current forecast document
 		else
 		{
-			// Add line to the current forecast
-			final ForecastRequest.ForecastLineRequest lineRequest = ForecastRequest.ForecastLineRequest.builder()
-					.productId(ProductId.ofRepoId(importRecord.getM_Product_ID()))
-					.quantity(Quantity.of(importRecord.getQty(),uomRecord))
-					.activityId(ActivityId.ofRepoIdOrNull(importRecord.getC_Activity_ID()))
-					.campaignId(CampaignId.ofRepoIdOrNull(importRecord.getC_Campaign_ID()))
-					.projectId(ProjectId.ofRepoIdOrNull(importRecord.getC_Project_ID()))
-					.quantityCalculated(Quantity.ofNullable(importRecord.getQtyCalculated(),uomRecord))
-					.build();
-
-			final I_M_Forecast forecastRecord = forecastDAO.getById(context.forecastId);
-			forecastDAO.createForecastLine(forecastRecord, lineRequest);
-
+			forecastDAO.addForecastLine(context.forecastId, toForecastLineRequest(importRecord));
 		}
 
 		importRecord.setM_Forecast_ID(context.forecastId.getRepoId());
@@ -164,6 +104,29 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		return wasInsert ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
+	private ForecastRequestBuilder prepareForecastRequest(@NonNull final ForecastHeaderKey key)
+	{
+		return ForecastRequest.builder()
+				.warehouseId(key.getWarehouseId())
+				.bpartnerId(key.getBpartnerId())
+				.priceListId(key.getPriceListId())
+				.exernalId(key.getExternalId())
+				.datePromised(TimeUtil.asInstant(key.getDatePromisedDay()));
+	}
+
+	private ForecastLineRequest toForecastLineRequest(final @NotNull I_I_Forecast importRecord)
+	{
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(importRecord.getC_UOM_ID()));
+
+		return ForecastLineRequest.builder()
+				.productId(ProductId.ofRepoId(importRecord.getM_Product_ID()))
+				.quantity(Quantity.of(importRecord.getQty(), uom))
+				.activityId(ActivityId.ofRepoIdOrNull(importRecord.getC_Activity_ID()))
+				.campaignId(CampaignId.ofRepoIdOrNull(importRecord.getC_Campaign_ID()))
+				.projectId(ProjectId.ofRepoIdOrNull(importRecord.getC_Project_ID()))
+				.quantityCalculated(Quantity.ofNullable(importRecord.getQtyCalculated(), uom))
+				.build();
+	}
 
 	@Override
 	protected String getTargetTableName()
@@ -212,16 +175,46 @@ public class ForecastImportProcess extends SimpleImportProcessTemplate<I_I_Forec
 		return new X_I_Forecast(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	//
+	//
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	private static class ForecastHeaderKey
+	{
+		@NonNull String name;
+		@NonNull WarehouseId warehouseId;
+		@Nullable PriceListId priceListId;
+		@Nullable BPartnerId bpartnerId;
+		@Nullable String externalId;
+		@NonNull LocalDate datePromisedDay;
+
+		public static ForecastHeaderKey of(final I_I_Forecast importRecord)
+		{
+			return ForecastHeaderKey.builder()
+					.name(StringUtils.trimBlankToOptional(importRecord.getName()).orElse(""))
+					.warehouseId(WarehouseId.ofRepoId(importRecord.getM_Warehouse_ID()))
+					.priceListId(PriceListId.ofRepoIdOrNull(importRecord.getM_PriceList_ID()))
+					.bpartnerId(BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID()))
+					.externalId(StringUtils.trimBlankToNull(importRecord.getExternalId()))
+					.datePromisedDay(importRecord.getDatePromised().toLocalDateTime().toLocalDate())
+					.build();
+		}
+	}
+
+	//
+	//
+	//
+	//
+	//
 
 	public static final class ForecastImportContext
 	{
-		ForecastId forecastId = null;
-		String name = "";
-		@Nullable BPartnerId bPartnerId = null;
-		WarehouseId warehouseId = null;
-		@Nullable PriceListId priceListId = null;
-		@Nullable String externalId = "";
-		Timestamp datePromised = null;
+		@Nullable ForecastId forecastId;
+		@Nullable ForecastImportProcess.ForecastHeaderKey forecastHeaderKey;
 	}
 
 }
