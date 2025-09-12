@@ -142,7 +142,7 @@ public class UpsertProduct_StepDef
 				assertThat(bPartnerProduct.getActive()).isTrue();
 				assertThat(bPartnerProduct.getProductNo()).isEqualTo(jsonRequestBPartnerProductUpsert.getProductNo());
 				assertThat(bPartnerProduct.getSeqNo()).isEqualTo(jsonRequestBPartnerProductUpsert.getSeqNo());
-				assertThat(bPartnerProduct.getCuEAN()).isEqualTo(EAN13.fromNullableString(jsonRequestBPartnerProductUpsert.getCuEAN()));
+				assertThat(bPartnerProduct.getCuEAN()).isEqualTo(EAN13.ofNullableString(jsonRequestBPartnerProductUpsert.getCuEAN()));
 				assertThat(bPartnerProduct.getGtin()).isEqualTo(GTIN.ofNullableString(jsonRequestBPartnerProductUpsert.getGtin()));
 				assertThat(bPartnerProduct.getCustomerLabelName()).isEqualTo(jsonRequestBPartnerProductUpsert.getCustomerLabelName());
 				assertThat(bPartnerProduct.getIngredients()).isEqualTo(jsonRequestBPartnerProductUpsert.getIngredients());

@@ -20,7 +20,7 @@ class EAN13Test
 			@Test
 			void happyCase()
 			{
-				final EAN13 ean13 = EAN13.fromString("2859414004825").get();
+				final EAN13 ean13 = EAN13.ofString("2859414004825").get();
 
 				assertThat(ean13.getPrefix().getAsString()).isEqualTo("28");
 				assertThat(ean13.getProductNo().getAsString()).contains("59414");
@@ -30,7 +30,7 @@ class EAN13Test
 			@Test
 			void happyCase2()
 			{
-				final EAN13 ean13 = EAN13.fromString("2800027002616").get();
+				final EAN13 ean13 = EAN13.ofString("2800027002616").get();
 
 				assertThat(ean13.getPrefix().getAsString()).isEqualTo("28");
 				assertThat(ean13.getProductNo().getAsString()).contains("00027");
@@ -44,7 +44,7 @@ class EAN13Test
 			@Test
 			void happyCase()
 			{
-				final ExplainedOptional<EAN13> result = EAN13.fromString("2912345005009");
+				final ExplainedOptional<EAN13> result = EAN13.ofString("2912345005009");
 				assertThat(result.isPresent()).isTrue();
 				final EAN13 ean13 = result.get();
 				assertThat(ean13.getPrefix().getAsString()).isEqualTo("29");
@@ -57,7 +57,7 @@ class EAN13Test
 			@Test
 			void happyCase2()
 			{
-				final ExplainedOptional<EAN13> result = EAN13.fromString("2948882005745");
+				final ExplainedOptional<EAN13> result = EAN13.ofString("2948882005745");
 				assertThat(result.isPresent()).isTrue();
 				final EAN13 qrCode = result.get();
 				assertThat(qrCode.getPrefix().getAsString()).isEqualTo("29");
@@ -69,7 +69,7 @@ class EAN13Test
 			@Test
 			void invalidChecksum()
 			{
-				final ExplainedOptional<EAN13> result = EAN13.fromString("2912345005004"); // Invalid checksum (last digit)
+				final ExplainedOptional<EAN13> result = EAN13.ofString("2912345005004"); // Invalid checksum (last digit)
 				assertThat(result.isPresent()).isFalse();
 				assertThat(result.getExplanation().getDefaultValue()).contains("Invalid checksum");
 			}
@@ -77,7 +77,7 @@ class EAN13Test
 			@Test
 			void invalidLength()
 			{
-				final ExplainedOptional<EAN13> result = EAN13.fromString("29123450050"); // Only 12 digits
+				final ExplainedOptional<EAN13> result = EAN13.ofString("29123450050"); // Only 12 digits
 				assertThat(result.isPresent()).isFalse();
 				assertThat(result.getExplanation().getDefaultValue()).contains("Invalid barcode length");
 			}
@@ -89,7 +89,7 @@ class EAN13Test
 			@Test
 			void happyCase()
 			{
-				final ExplainedOptional<EAN13> result = EAN13.fromString("5901234123457");
+				final ExplainedOptional<EAN13> result = EAN13.ofString("5901234123457");
 				assertThat(result.isPresent()).isTrue();
 				final EAN13 qrCode = result.get();
 				assertThat(qrCode.getPrefix().getAsString()).isEqualTo("590");
@@ -101,7 +101,7 @@ class EAN13Test
 			@Test
 			void happyCase2()
 			{
-				final ExplainedOptional<EAN13> result = EAN13.fromString("7617027667210");
+				final ExplainedOptional<EAN13> result = EAN13.ofString("7617027667210");
 				assertThat(result.isPresent()).isTrue();
 				final EAN13 qrCode = result.get();
 				assertThat(qrCode.getPrefix().getAsString()).isEqualTo("761");

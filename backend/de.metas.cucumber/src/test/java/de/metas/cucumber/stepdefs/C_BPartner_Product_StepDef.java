@@ -129,7 +129,7 @@ public class C_BPartner_Product_StepDef
 		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(row, COLUMNNAME_SeqNo);
 		final String productNo = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ProductNo);
 		final String description = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Description);
-		final EAN13 ean = EAN13.fromNullableString(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_EAN_CU));
+		final EAN13 ean = EAN13.ofNullableString(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_EAN_CU));
 		final GTIN gtin = GTIN.ofNullableString(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_GTIN));
 		final String customerLabelName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_CustomerLabelName);
 		final String ingredients = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Ingredients);

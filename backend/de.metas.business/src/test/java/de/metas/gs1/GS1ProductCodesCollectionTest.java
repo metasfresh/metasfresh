@@ -10,7 +10,7 @@ class GS1ProductCodesCollectionTest
 {
 	private static EAN13 ean13(String string)
 	{
-		return EAN13.fromString(string).orElseThrow();
+		return EAN13.ofString(string).orElseThrow();
 	}
 
 	@SuppressWarnings("SameParameterValue")
@@ -45,7 +45,7 @@ class GS1ProductCodesCollectionTest
 			{
 				final GS1ProductCodesCollection collection = collection(
 						GS1ProductCodes.builder()
-								.ean13(EAN13.fromString("7614049612303").orElseThrow())
+								.ean13(EAN13.ofString("7614049612303").orElseThrow())
 								.build()
 				);
 				Assertions.assertThat(collection.isValidProductNo(ean13("7614049612303"), null)).isTrue();

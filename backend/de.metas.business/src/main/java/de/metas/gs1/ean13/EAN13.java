@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.scannable_code.ScannedCode;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -31,18 +30,14 @@ public final class EAN13
 	@Nullable private final BigDecimal weightInKg;
 	@Getter private final int checksum;
 
-	public static ExplainedOptional<EAN13> fromScannedCode(@NonNull final ScannedCode scannedCode)
-	{
-		return fromString(scannedCode.getAsString());
-	}
-
-	public static ExplainedOptional<EAN13> fromString(@NonNull final String barcode)
+	public static ExplainedOptional<EAN13> ofString(@NonNull final String barcode)
 	{
 		return EAN13Parser.parse(barcode);
 	}
 
 	@JsonCreator
-	public static EAN13 fromNullableString(@Nullable final String barcode)
+	@Nullable
+	public static EAN13 ofNullableString(@Nullable final String barcode)
 	{
 		final String barcodeNorm = StringUtils.trimBlankToNull(barcode);
 		return barcodeNorm != null

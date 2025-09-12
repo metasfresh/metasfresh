@@ -292,7 +292,7 @@ public class ProductRepository
 				.productNo(record.getProductNo())
 				.description(record.getDescription())
 				.gtin(GTIN.ofNullableString(record.getGTIN()))
-				.cuEAN(EAN13.fromNullableString(record.getEAN_CU()))
+				.cuEAN(EAN13.ofNullableString(record.getEAN_CU()))
 				.customerLabelName(record.getCustomerLabelName())
 				.ingredients(record.getIngredients())
 				.currentVendor(record.isCurrentVendor())

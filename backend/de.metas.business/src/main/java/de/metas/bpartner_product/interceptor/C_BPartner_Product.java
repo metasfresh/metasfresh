@@ -9,7 +9,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -129,8 +128,7 @@ public class C_BPartner_Product
 		}
 		if (InterfaceWrapperHelper.isValueChanged(bpartnerProduct, I_C_BPartner_Product.COLUMNNAME_EAN_CU))
 		{
-			final String ean13Str = StringUtils.trimBlankToNull(bpartnerProduct.getEAN_CU());
-			final EAN13 ean13 = ean13Str != null ? EAN13.fromString(ean13Str).orElseThrow() : null;
+			final EAN13 ean13 = EAN13.ofNullableString(bpartnerProduct.getEAN_CU());
 			if (ean13 != null)
 			{
 				bpartnerProduct.setGTIN(ean13.toGTIN().getAsString());

@@ -10,10 +10,10 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.gs1.ean13.EAN13;
-import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -255,9 +255,7 @@ public class CreateProductCommand
 	private void createBPartnerProduct(@NonNull final JsonCreateProductRequest.BPartner bpartner, @NonNull final ProductId productId)
 	{
 		final BPartnerId bpartnerId = context.getId(bpartner.getBpartner(), BPartnerId.class);
-		final EAN13 cuEAN = StringUtils.trimBlankToOptional(bpartner.getCu_ean())
-				.map(string -> EAN13.fromString(string).orElseThrow())
-				.orElse(null);
+		final EAN13 cuEAN = EAN13.ofNullableString(bpartner.getCu_ean());
 
 		//
 		// Make sure there are no previous C_BPartner_Products with the same EAN13 because that will fail our tests

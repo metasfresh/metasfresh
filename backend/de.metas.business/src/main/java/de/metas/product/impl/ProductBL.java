@@ -565,7 +565,7 @@ public final class ProductBL implements IProductBL
 
 		return GS1ProductCodes.builder()
 				.gtin(GTIN.ofNullableString(bpartnerProduct.getGTIN()))
-				.ean13(ean != null ? EAN13.fromString(ean).orElse(null) : null)
+				.ean13(ean != null ? EAN13.ofString(ean).orElse(null) : null)
 				.ean13ProductCode(EAN13ProductCode.ofNullableString(bpartnerProduct.getEAN13_ProductCode()))
 				.build();
 	}
@@ -578,7 +578,7 @@ public final class ProductBL implements IProductBL
 		final String gtin = StringUtils.trimBlankToNull(product.getGTIN());
 		if (gtin != null)
 		{
-			return EAN13.fromString(gtin);
+			return EAN13.ofString(gtin);
 		}
 
 		return ExplainedOptional.emptyBecause("No GTIN set");

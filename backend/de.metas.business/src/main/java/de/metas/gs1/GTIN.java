@@ -87,7 +87,7 @@ public final class GTIN
 		ExplainedOptional<EAN13> ean13Holder = this.ean13Holder;
 		if (ean13Holder == null)
 		{
-			ean13Holder = this.ean13Holder = EAN13.fromString(value);
+			ean13Holder = this.ean13Holder = EAN13.ofString(value);
 		}
 		return ean13Holder;
 	}

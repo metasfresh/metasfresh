@@ -38,7 +38,7 @@ public class EAN13HUQRCode implements IHUQRCode
 
 	public static ExplainedOptional<EAN13HUQRCode> fromString(@NonNull final String barcode)
 	{
-		return EAN13.fromString(barcode).map(EAN13HUQRCode::ofEAN13);
+		return EAN13.ofString(barcode).map(EAN13HUQRCode::ofEAN13);
 	}
 
 	@Override

@@ -544,7 +544,7 @@ public class ProductRestService
 		// ean
 		if (jsonRequestBPartnerProductUpsert.isCuEANSet())
 		{
-			builder.cuEAN(EAN13.fromNullableString(jsonRequestBPartnerProductUpsert.getCuEAN()));
+			builder.cuEAN(EAN13.ofNullableString(jsonRequestBPartnerProductUpsert.getCuEAN()));
 		}
 		else
 		{
