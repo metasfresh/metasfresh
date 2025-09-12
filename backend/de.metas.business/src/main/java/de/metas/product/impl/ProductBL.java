@@ -11,7 +11,6 @@ import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
 import de.metas.ean13.EAN13;
-import de.metas.ean13.EAN13Prefix;
 import de.metas.ean13.EAN13ProductCode;
 import de.metas.ean13.EAN13ProductCodes;
 import de.metas.gs1.GTIN;
@@ -774,21 +773,23 @@ public final class ProductBL implements IProductBL
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ClientId clientId)
 	{
-		final EAN13Prefix ean13Prefix = ean13.getPrefix();
-		if (ean13Prefix.isVariableWeight())
+		if (ean13.isVariableWeight())
 		{
 			return Optionals.firstPresentOfSuppliers(
 					() -> getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId),
 					() -> getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId)
 			);
 		}
-		else if (ean13Prefix.isInternalUseOrVariableMeasure())
+		else if (ean13.isInternalUseOrVariableMeasure())
 		{
 			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
 		}
 		else
 		{
-			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
+			return Optionals.firstPresentOfSuppliers(
+					() -> getProductIdByGTIN(ean13.toGTIN(), clientId),
+					() -> getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId)
+			);
 		}
 	}
 
