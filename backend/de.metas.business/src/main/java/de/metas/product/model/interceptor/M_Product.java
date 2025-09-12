@@ -7,6 +7,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductConstants;
@@ -71,6 +72,7 @@ public class M_Product
 	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Init
 	public void registerCallouts()
@@ -180,23 +182,24 @@ public class M_Product
 				});
 	}
 
-	private void normalizeProductCodeFields(@NonNull I_M_Product product)
+	private void normalizeProductCodeFields(@NonNull I_M_Product record)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(product, I_M_Product.COLUMNNAME_GTIN))
+		if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_GTIN))
 		{
-			final GTIN gtin = GTIN.ofNullableString(product.getGTIN());
-			if (gtin != null)
-			{
-				product.setEAN13_ProductCode(null);
-			}
+			final GTIN gtin = GTIN.ofNullableString(record.getGTIN());
+			productBL.setProductCodeFieldsFromGTIN(record, gtin);
 		}
-		else if (InterfaceWrapperHelper.isValueChanged(product, I_M_Product.COLUMNNAME_EAN13_ProductCode))
+		// NOTE: syncing UPC to GTIN is not quite correct, but we have a lot of BPs which are relying on this logic
+		else if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_UPC))
 		{
-			final EAN13ProductCode ean13ProductCode = EAN13ProductCode.ofNullableString(product.getEAN13_ProductCode());
-			if (ean13ProductCode != null)
-			{
-				product.setGTIN(null);
-			}
+			final GTIN gtin = GTIN.ofNullableString(record.getUPC());
+			productBL.setProductCodeFieldsFromGTIN(record, gtin);
+		}
+		else if (InterfaceWrapperHelper.isValueChanged(record, I_M_Product.COLUMNNAME_EAN13_ProductCode))
+		{
+			final EAN13ProductCode ean13ProductCode = EAN13ProductCode.ofNullableString(record.getEAN13_ProductCode());
+			productBL.setProductCodeFieldsFromEAN13ProductCode(record, ean13ProductCode);
 		}
 	}
+
 }

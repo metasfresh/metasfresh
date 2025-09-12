@@ -1,6 +1,7 @@
 package de.metas.bpartner_product.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
@@ -52,6 +53,8 @@ import java.util.List;
 public class C_BPartner_Product
 {
 	private final static AdMessageKey MSG_C_BPartner_Product_Duplicate_ASI = AdMessageKey.of("C_BPartner_Product_Duplicate_ASI");
+
+	private final IBPartnerProductBL bpartnerProductBL = Services.get(IBPartnerProductBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BPartner_Product.COLUMNNAME_M_AttributeSetInstance_ID)
 	public void onASISet(final I_C_BPartner_Product bpProduct)
@@ -111,42 +114,29 @@ public class C_BPartner_Product
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_BPartner_Product.COLUMNNAME_GTIN, I_C_BPartner_Product.COLUMNNAME_EAN_CU, I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode })
-	private void normalizeProductCodeFields(@NonNull I_C_BPartner_Product bpartnerProduct)
+	private void normalizeProductCodeFields(@NonNull I_C_BPartner_Product record)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(bpartnerProduct, I_C_BPartner_Product.COLUMNNAME_GTIN))
+		if (InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_GTIN))
 		{
-			final GTIN gtin = GTIN.ofNullableString(bpartnerProduct.getGTIN());
-			if (gtin != null)
-			{
-				bpartnerProduct.setEAN_CU(gtin.toEAN13().map(EAN13::getAsString).orElse(null));
-				bpartnerProduct.setEAN13_ProductCode(null);
-			}
-			else
-			{
-				bpartnerProduct.setEAN_CU(null);
-			}
+			final GTIN gtin = GTIN.ofNullableString(record.getGTIN());
+			bpartnerProductBL.setProductCodeFieldsFromGTIN(record, gtin);
 		}
-		if (InterfaceWrapperHelper.isValueChanged(bpartnerProduct, I_C_BPartner_Product.COLUMNNAME_EAN_CU))
+		else if (InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_EAN_CU))
 		{
-			final EAN13 ean13 = EAN13.ofNullableString(bpartnerProduct.getEAN_CU());
-			if (ean13 != null)
-			{
-				bpartnerProduct.setGTIN(ean13.toGTIN().getAsString());
-				bpartnerProduct.setEAN13_ProductCode(null);
-			}
-			else
-			{
-				bpartnerProduct.setGTIN(null);
-			}
+			final EAN13 ean13 = EAN13.ofNullableString(record.getEAN_CU());
+			final GTIN gtin = ean13 != null ? ean13.toGTIN() : null;
+			bpartnerProductBL.setProductCodeFieldsFromGTIN(record, gtin);
 		}
-		else if (InterfaceWrapperHelper.isValueChanged(bpartnerProduct, I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode))
+		// NOTE: syncing UPC to GTIN is not quite correct, but we have a lot of BPs which are relying on this logic
+		else if (InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_UPC))
 		{
-			final EAN13ProductCode ean13ProductCode = EAN13ProductCode.ofNullableString(bpartnerProduct.getEAN13_ProductCode());
-			if (ean13ProductCode != null)
-			{
-				bpartnerProduct.setGTIN(null);
-				bpartnerProduct.setEAN_CU(null);
-			}
+			final GTIN gtin = GTIN.ofNullableString(record.getUPC());
+			bpartnerProductBL.setProductCodeFieldsFromGTIN(record, gtin);
+		}
+		else if (InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode))
+		{
+			final EAN13ProductCode ean13ProductCode = EAN13ProductCode.ofNullableString(record.getEAN13_ProductCode());
+			bpartnerProductBL.setProductCodeFieldsFromEAN13ProductCode(record, ean13ProductCode);
 		}
 	}
 

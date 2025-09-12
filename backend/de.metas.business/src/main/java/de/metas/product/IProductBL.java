@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.gs1.GS1ProductCodesCollection;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -271,4 +272,8 @@ public interface IProductBL extends ISingletonService
 	List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
 
 	boolean isExistingValue(@NonNull String value, @NonNull ClientId clientId);
+
+	void setProductCodeFieldsFromGTIN(@NonNull I_M_Product record, @Nullable GTIN gtin);
+
+	void setProductCodeFieldsFromEAN13ProductCode(@NonNull I_M_Product record, @Nullable EAN13ProductCode ean13ProductCode);
 }

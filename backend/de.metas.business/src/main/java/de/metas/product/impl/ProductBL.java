@@ -859,4 +859,27 @@ public final class ProductBL implements IProductBL
 		return productsRepo.isExistingValue(value, clientId);
 	}
 
+	@Override
+	public void setProductCodeFieldsFromGTIN(@NonNull final I_M_Product record, @Nullable final GTIN gtin)
+	{
+		record.setGTIN(gtin != null ? gtin.getAsString() : null);
+		record.setUPC(gtin != null ? gtin.getAsString() : null);
+
+		if (gtin != null)
+		{
+			record.setEAN13_ProductCode(null);
+		}
+	}
+
+	@Override
+	public void setProductCodeFieldsFromEAN13ProductCode(@NonNull final I_M_Product record, @Nullable final EAN13ProductCode ean13ProductCode)
+	{
+		record.setEAN13_ProductCode(ean13ProductCode != null ? ean13ProductCode.getAsString() : null);
+		if (ean13ProductCode != null)
+		{
+			record.setGTIN(null);
+			record.setUPC(null);
+		}
+	}
+
 }
