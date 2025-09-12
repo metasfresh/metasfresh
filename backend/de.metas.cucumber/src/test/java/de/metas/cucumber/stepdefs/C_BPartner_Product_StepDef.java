@@ -94,11 +94,9 @@ public class C_BPartner_Product_StepDef
 	@Then("verify bpartner product info")
 	public void verify_bpartner_product_info(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			verifyBPartnerProductInfo(dataTableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_BPartner_Product_ID)
+				.forEach(this::verifyBPartnerProductInfo);
 	}
 
 	@Given("metasfresh contains C_BPartner_Product")
@@ -123,7 +121,7 @@ public class C_BPartner_Product_StepDef
 		bpartnerProductTable.put(bpartnerProductIdentifier, bPartnerProduct);
 	}
 
-	private void verifyBPartnerProductInfo(@NonNull final Map<String, String> row)
+	private void verifyBPartnerProductInfo(@NonNull final DataTableRow row)
 	{
 		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
 		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(row, COLUMNNAME_SeqNo);
@@ -174,16 +172,15 @@ public class C_BPartner_Product_StepDef
 		bPartnerProductRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 
 		bPartnerProductRecord.setUsedForVendor(tableRow.getAsOptionalBoolean(COLUMNNAME_UsedForVendor).orElse(true));
+		bPartnerProductRecord.setIsCurrentVendor(tableRow.getAsOptionalBoolean(COLUMNNAME_IsCurrentVendor).orElse(true));
 		bPartnerProductRecord.setIsExcludedFromSale(tableRow.getAsOptionalBoolean(COLUMNNAME_IsExcludedFromSale).orElse(false));
 		tableRow.getAsOptionalString(COLUMNNAME_ExclusionFromSaleReason).ifPresent(bPartnerProductRecord::setExclusionFromSaleReason);
 		bPartnerProductRecord.setIsExcludedFromPurchase(tableRow.getAsOptionalBoolean(COLUMNNAME_IsExcludedFromPurchase).orElse(false));
 		tableRow.getAsOptionalString(COLUMNNAME_ExclusionFromPurchaseReason).ifPresent(bPartnerProductRecord::setExclusionFromPurchaseReason);
 		tableRow.getAsOptionalString(COLUMNNAME_ProductNo).ifPresent(bPartnerProductRecord::setProductNo);
-		tableRow.getAsOptionalString(COLUMNNAME_UPC).ifPresent(bPartnerProductRecord::setUPC);
-
-		bPartnerProductRecord.setIsCurrentVendor(tableRow.getAsOptionalBoolean(COLUMNNAME_IsCurrentVendor).orElse(true));
 		tableRow.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(bPartnerProductRecord::setGTIN);
 		tableRow.getAsOptionalString(COLUMNNAME_EAN_CU).ifPresent(bPartnerProductRecord::setEAN_CU);
+		tableRow.getAsOptionalString(COLUMNNAME_UPC).ifPresent(bPartnerProductRecord::setUPC);
 
 		saveRecord(bPartnerProductRecord);
 
