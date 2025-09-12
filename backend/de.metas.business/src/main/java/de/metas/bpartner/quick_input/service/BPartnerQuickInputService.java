@@ -157,6 +157,13 @@ public class BPartnerQuickInputService
 				.findAdWindowId();
 	}
 
+	public Optional<AdWindowId> getNewBPartnerLocationWindowId()
+	{
+		return RecordWindowFinder.newInstance(I_C_BPartner_Location_QuickInput.Table_Name, customizedWindowInfoMapRepository)
+				.ignoreExcludeFromZoomTargetsFlag()
+				.findAdWindowId();
+	}
+
 	public void updateNameAndGreeting(@NonNull final BPartnerQuickInputId bpartnerQuickInputId)
 	{
 		final I_C_BPartner_QuickInput bpartner = bpartnerQuickInputRepository.getById(bpartnerQuickInputId);
@@ -255,11 +262,19 @@ public class BPartnerQuickInputService
 		return requestBuilder.build();
 	}
 
+	public BPartnerLocationId createBPartnerLocationFromTemplate(@NonNull final I_C_BPartner_Location_QuickInput template,
+														 @NonNull final NewRecordContext newRecordContext)
+	{
+		//TODO implement me
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+
 	/**
 	 * Creates BPartner, Location and contacts from given template.
 	 * <p>
 	 * Task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
+
 	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template,
 												 @NonNull final NewRecordContext newRecordContext)
 	{

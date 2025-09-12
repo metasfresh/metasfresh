@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 208495014L;
+	private static final long serialVersionUID = 289003344L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -335,6 +335,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isNameReadWrite() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsNameReadWrite);
+	}
+
+	@Override
+	public void setIsOneTime (final boolean IsOneTime)
+	{
+		set_Value (COLUMNNAME_IsOneTime, IsOneTime);
+	}
+
+	@Override
+	public boolean isOneTime() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOneTime);
 	}
 
 	@Override

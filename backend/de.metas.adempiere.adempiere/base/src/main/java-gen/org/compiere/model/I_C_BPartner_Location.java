@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -569,6 +570,27 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsNameReadWrite = new ModelColumn<>(I_C_BPartner_Location.class, "IsNameReadWrite", null);
 	String COLUMNNAME_IsNameReadWrite = "IsNameReadWrite";
+
+	/**
+	 * Set One time transaction.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOneTime (boolean IsOneTime);
+
+	/**
+	 * Get One time transaction.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOneTime();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsOneTime = new ModelColumn<>(I_C_BPartner_Location.class, "IsOneTime", null);
+	String COLUMNNAME_IsOneTime = "IsOneTime";
 
 	/**
 	 * Set Pay-From Address.

@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.descriptor.factory;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.quick_input.service.BPartnerQuickInputService;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -11,6 +12,8 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Location_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -60,6 +63,12 @@ public class NewRecordDescriptorsProvider
 	{
 		this.documentDescriptors = documentDescriptors;
 
+		addBpartnerRecordDescriptor(bpartnerQuickInputService);
+		addBpartnerLocationRecordDescriptor(bpartnerQuickInputService);
+	}
+
+	private void addBpartnerRecordDescriptor(final @NonNull BPartnerQuickInputService bpartnerQuickInputService)
+	{
 		final AdWindowId bpartnerQuickInputAdWindowId = bpartnerQuickInputService.getNewBPartnerWindowId().orElse(null);
 		if (bpartnerQuickInputAdWindowId != null)
 		{
@@ -69,6 +78,26 @@ public class NewRecordDescriptorsProvider
 					(document, newRecordContext) -> {
 						final I_C_BPartner_QuickInput template = InterfaceWrapperHelper.getPO(document);
 						final BPartnerId bpartnerId = bpartnerQuickInputService.createBPartnerFromTemplate(template, newRecordContext);
+						return bpartnerId.getRepoId();
+					}));
+		}
+		else
+		{
+			logger.warn("No window found for " + I_C_BPartner_QuickInput.Table_Name);
+		}
+	}
+
+	private void addBpartnerLocationRecordDescriptor(final @NonNull BPartnerQuickInputService bpartnerQuickInputService)
+	{
+		final AdWindowId bpartnerLocationQuickInputAdWindowId = bpartnerQuickInputService.getNewBPartnerLocationWindowId().orElse(null);
+		if (bpartnerLocationQuickInputAdWindowId != null)
+		{
+			addNewRecordDescriptor(NewRecordDescriptor.of(
+					I_C_BPartner_Location.Table_Name,
+					WindowId.of(bpartnerLocationQuickInputAdWindowId),
+					(document, newRecordContext) -> {
+						final I_C_BPartner_Location_QuickInput template = InterfaceWrapperHelper.getPO(document);
+						final BPartnerLocationId bpartnerId = bpartnerQuickInputService.createBPartnerLocationFromTemplate(template, newRecordContext);
 						return bpartnerId.getRepoId();
 					}));
 		}
