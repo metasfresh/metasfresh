@@ -24,7 +24,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
