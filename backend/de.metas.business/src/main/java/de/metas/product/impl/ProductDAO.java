@@ -28,7 +28,7 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.common.util.pair.ImmutablePair;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;

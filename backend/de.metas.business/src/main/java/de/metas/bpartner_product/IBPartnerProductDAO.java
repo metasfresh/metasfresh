@@ -26,7 +26,7 @@ package de.metas.bpartner_product;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;

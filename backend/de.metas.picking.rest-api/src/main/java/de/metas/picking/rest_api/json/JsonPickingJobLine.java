@@ -23,7 +23,7 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingUnit;

@@ -1,8 +1,8 @@
 package de.metas.handlingunits.picking.job.service.commands.pick;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.ean13.EAN13;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;

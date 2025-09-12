@@ -3,7 +3,7 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;

@@ -33,7 +33,7 @@ import de.metas.bpartner_product.ProductExclude;
 import de.metas.bpartner_product.ProductExclude.ProductExcludeBuilder;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;

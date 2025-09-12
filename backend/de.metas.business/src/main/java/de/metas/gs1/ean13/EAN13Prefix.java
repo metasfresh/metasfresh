@@ -1,4 +1,4 @@
-package de.metas.ean13;
+package de.metas.gs1.ean13;
 
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;

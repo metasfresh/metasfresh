@@ -8,7 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
-import de.metas.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;

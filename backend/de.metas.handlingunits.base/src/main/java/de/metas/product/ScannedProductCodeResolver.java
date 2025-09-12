@@ -1,7 +1,7 @@
 package de.metas.product;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.edi.EDIProductLookupService;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;

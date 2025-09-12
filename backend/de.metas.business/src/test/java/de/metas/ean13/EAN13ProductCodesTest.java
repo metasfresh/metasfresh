@@ -1,5 +1,8 @@
 package de.metas.ean13;
 
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
+import de.metas.gs1.ean13.EAN13ProductCodes;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

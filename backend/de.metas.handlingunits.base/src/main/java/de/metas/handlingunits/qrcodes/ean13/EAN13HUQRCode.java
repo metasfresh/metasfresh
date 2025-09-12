@@ -1,6 +1,6 @@
 package de.metas.handlingunits.qrcodes.ean13;
 
-import de.metas.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.scannable_code.ScannedCode;

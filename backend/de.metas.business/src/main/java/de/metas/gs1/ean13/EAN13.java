@@ -1,4 +1,4 @@
-package de.metas.ean13;
+package de.metas.gs1.ean13;
 
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ExplainedOptional;

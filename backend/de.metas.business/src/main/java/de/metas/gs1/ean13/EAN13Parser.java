@@ -1,4 +1,4 @@
-package de.metas.ean13;
+package de.metas.gs1.ean13;
 
 import de.metas.i18n.ExplainedOptional;
 import lombok.NonNull;
