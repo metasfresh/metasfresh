@@ -22,6 +22,10 @@ package de.metas.util.lang;
  * #L%
  */
 
+import lombok.NonNull;
+
+import java.util.function.Function;
+
 /**
  * @implNote Following static methods shall be implemented
  * <ul>

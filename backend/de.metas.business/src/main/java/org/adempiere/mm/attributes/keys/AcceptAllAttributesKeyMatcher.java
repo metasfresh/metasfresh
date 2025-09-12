@@ -22,11 +22,11 @@
 
 package org.adempiere.mm.attributes.keys;
 
-import java.util.Optional;
-
 import de.metas.material.event.commons.AttributesKey;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.util.Optional;
 
 @EqualsAndHashCode
 @ToString

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class NumberUtilsTest
 {
@@ -175,7 +175,7 @@ public class NumberUtilsTest
 	@Nested
 	public class asInt_with_defaultValue
 	{
-		@Test
+	@Test
 		void emptyString()
 		{
 			assertThat(NumberUtils.asInt("", -100)).isEqualTo(-100);

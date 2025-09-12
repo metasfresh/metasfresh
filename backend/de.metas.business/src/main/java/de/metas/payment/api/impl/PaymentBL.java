@@ -407,7 +407,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public boolean isMatchInvoice(final I_C_Payment payment, final I_C_Invoice invoice)
+	public boolean isMatchInvoice(@NonNull final I_C_Payment payment, @NonNull final I_C_Invoice invoice)
 	{
 		final List<I_C_AllocationLine> allocations = paymentDAO.retrieveAllocationLines(payment);
 		final List<I_C_Invoice> invoices = new ArrayList<>();

@@ -135,7 +135,8 @@ class ContactRestControllerTest
 				new CurrencyRepository(),
 				new JobRepository(),
 				externalReferenceRestControllerService,
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				new JsonGreetingService(new GreetingRepository(), externalReferenceRestControllerService));
 
 		contactRestController = new ContactRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

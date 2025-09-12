@@ -12,89 +12,99 @@ Feature: create or update BPartner v2
   Scenario: create a BPartner record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
+
 {
-   "requestItems":[
-      {
-         "bpartnerIdentifier":"ext-ALBERTA-001",
-         "externalReferenceUrl":"www.ExternalReferenceURL.com",
-         "bpartnerComposite":{
-            "bpartner":{
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-001",
+      "externalReferenceUrl": "www.ExternalReferenceURL.com",
+      "bpartnerComposite": {
+        "bpartner": {
                "code":"test_code1",
-               "name":"test_name",
-               "companyName":"test_company",
-               "parentId":null,
-               "phone":null,
-               "language":"de",
-               "url":null,
-               "group":"test-group",
+          "name": "test_name",
+          "companyName": "test_company",
+          "parentId": null,
+          "phone": null,
+          "language": "de",
+          "url": null,
+          "group": "test-group",
                 "vatId": "vatId_BPartner001"
-            },
-            "locations":{
-               "requestItems":[
-                  {
-                     "locationIdentifier":"gln-l11",
-                     "location":{
-                        "address1":"test_address1",
-                        "address2":"test_address2",
-                        "poBox":null,
-                        "district":null,
-                        "region":null,
-                        "city":null,
-                        "countryCode":"DE",
-                        "gln":null,
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "gln-l11",
+              "location": {
+                "address1": "test_address1",
+                "address2": "test_address2",
+                "poBox": null,
+                "district": null,
+                "region": null,
+                "city": null,
+                "countryCode": "DE",
+                "gln": null,
                         "postal":null,
                         "vatId": null
-                     }
-                  },
-                  {
-                     "locationIdentifier":"gln-l22",
-                     "location":{
-                        "address1":null,
-                        "address2":"test_address2",
-                        "poBox":"test_poBox",
-                        "district":null,
-                        "region":"test_region",
-                        "city":"test_city",
-                        "countryCode":"DE",
-                        "gln":null,
+              }
+            },
+            {
+              "locationIdentifier": "gln-l22",
+              "location": {
+                "address1": null,
+                "address2": "test_address2",
+                "poBox": "test_poBox",
+                "district": null,
+                "region": "test_region",
+                "city": "test_city",
+                "countryCode": "DE",
+                "gln": null,
                         "postal":null,
                         "vatId": "vatId_Location_l22"
-                     }
-                  }
-               ]
-            },
-            "contacts":{
-               "requestItems":[
-                  {
-                     "contactIdentifier":"ext-ALBERTA-c11",
-                     "contact":{
-                        "code":"c11",
-                        "name":"test_name_c11",
-                        "email":"test_email",
-                        "fax":"fax",
-                        "invoiceEmailEnabled" : false
-                     }
-                  },
-                  {
-                     "contactIdentifier":"ext-ALBERTA-c22",
-                     "contact":{
-                        "code":"c22",
-                        "name":"test_name_c22",
-                        "email":null,
-                        "fax":"test_fax",
-                        "invoiceEmailEnabled" : true
-                     }
-                  }
-               ]
+              }
             }
-         }
+          ]
+        },
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-c11",
+              "contact": {
+                "code": "c11",
+                "name": "test_name_c11",
+                "email": "test_email",
+                "fax": "fax",
+                "invoiceEmailEnabled": false,
+                "greeting": {
+                  "greetingInfo": {
+                    "greeting": "test_greeting_261023",
+                    "letterSalutation": "test_salutation_261023",
+                    "name": "test_name_261023"
+                  },
+                  "identifier": "ext-ALBERTA-greetingTest261023"
+                }
+              }
+            },
+            {
+              "contactIdentifier": "ext-ALBERTA-c22",
+              "contact": {
+                "code": "c22",
+                "name": "test_name_c22",
+                "email": null,
+                "fax": "test_fax",
+                "invoiceEmailEnabled": true
+              }
+            }
+          ]
+        }
       }
-   ],
-   "syncAdvise":{
-      "ifNotExists":"CREATE",
-      "ifExists":"UPDATE_MERGE"
-   }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
 }
+
 """
     Then verify that bPartner was created for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code   | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId |
@@ -108,8 +118,25 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  | false                   |
       | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  | true                    |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference | ExternalReferenceURL         |
-      | ALBERTA        | BPartner | 001               | www.ExternalReferenceURL.com |
+      | ExternalSystem | Type     | ExternalReference  | ExternalReferenceURL         |
+      | ALBERTA        | BPartner | 001                | www.ExternalReferenceURL.com |
+      | ALBERTA        | Greeting | greetingTest261023 |                              |
+    And the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-001' receives a 'GET' request
+    Then the metasfresh REST-API responds with
+"""
+{
+  "contacts": [
+    {
+      "greeting": {
+        "name": "test_name_261023",
+        "greeting": "test_greeting_261023",
+        "letterSalutation": "test_salutation_261023"
+      }
+    },
+    {}
+  ]
+}
+"""
 
   Scenario: Update a BPartner record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
@@ -146,37 +173,63 @@ Feature: create or update BPartner v2
   Scenario: Update a BPartner contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
+
 {
-   "requestItems":[
-      {
-         "bpartnerIdentifier":"ext-ALBERTA-001",
-         "bpartnerComposite":{
-            "contacts":{
-               "requestItems":[
-                  {
-                     "contactIdentifier":"ext-ALBERTA-c11",
-                     "contact":{
-                        "code":"c11",
-                        "name":"test_name_c11_updated",
-                        "email":"test_email_updated",
-                        "fax":"fax_updated",
-                        "invoiceEmailEnabled" : true
-                     }
-                  }
-               ]
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-001",
+      "bpartnerComposite": {
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-c11",
+              "contact": {
+                "code": "c11",
+                "name": "test_name_c11_updated",
+                "email": "test_email_updated",
+                "fax": "fax_updated",
+                "invoiceEmailEnabled": true,
+                "greeting": {
+                  "greetingInfo": {
+                    "greeting": "test_greeting_261023_updated",
+                    "letterSalutation": "test_salutation_261023_updated",
+                    "name": "test_name_261023_updated"
+                  },
+                  "identifier": "ext-ALBERTA-greetingCPTest1"
+                }
+              }
             }
-         }
+          ]
+        }
       }
-   ],
-   "syncAdvise":{
-      "ifNotExists":"CREATE",
-      "ifExists":"UPDATE_MERGE"
-   }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
 }
 """
     Then verify that contact was updated for bpartner
       | bpartnerIdentifier | contactIdentifier | Name                  | OPT.Email          | OPT.Fax     | Code | OPT.InvoiceEmailEnabled |
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11_updated | test_email_updated | fax_updated | c11  | true                    |
+
+    And the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-001' receives a 'GET' request
+    Then the metasfresh REST-API responds with
+"""
+{
+  "contacts": [
+    {
+      "greeting": {
+        "name": "test_name_261023_updated",
+        "greeting": "test_greeting_261023_updated",
+        "letterSalutation": "test_salutation_261023_updated"
+      }
+    },
+    {}
+  ]
+}
+"""
 
   Scenario: Update a BPartner contact record and Create another contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
@@ -464,6 +517,49 @@ Feature: create or update BPartner v2
             {
               "iban": "DOESNT_MATTER",
               "currencyCode": "EUR"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "FAIL",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+"""
+
+
+
+  Scenario: Update a BPartner contact record with a missing greeting, expecting error
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '422' status code
+    """
+
+{
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-001",
+      "bpartnerComposite": {
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-c11",
+              "contact": {
+                "code": "c11",
+                "name": "test_name_c11_updated",
+                "email": "test_email_updated",
+                "fax": "fax_updated",
+                "invoiceEmailEnabled": true,
+                "greeting": {
+                  "greetingInfo": {
+                    "greeting": "test_greeting_261023_updated",
+                    "letterSalutation": "test_salutation_261023_updated",
+                    "name": "test_name_261023_updated"
+                  },
+                  "identifier": "ext-ALBERTA-greetingCPTest1_missing"
+                }
+              }
             }
           ]
         }

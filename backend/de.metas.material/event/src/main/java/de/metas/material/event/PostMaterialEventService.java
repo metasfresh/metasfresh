@@ -2,12 +2,16 @@ package de.metas.material.event;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 import java.util.Collection;
 
@@ -36,6 +40,8 @@ import java.util.Collection;
 @Service
 public class PostMaterialEventService
 {
+	public static final String SYSCONFIG_ENQUEUE_EVENTS = "de.metas.material.event.EnqueueEvents";
+	
 	private static final Logger logger = LogManager.getLogger(PostMaterialEventService.class);
 
 	private final MetasfreshEventBusService materialEventService;

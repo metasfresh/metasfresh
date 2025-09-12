@@ -72,6 +72,6 @@ class CreateCandidatesOnCommitCollector extends TrxOnCommitCollectorFactory<List
 	@Override
 	protected void processCollector(@NonNull final List<TableRecordReference> collector)
 	{
-		trxManager.runInNewTrx(() -> invoiceSyncCreationService.generateIcsAndInvoices(collector));
+		trxManager.runInNewTrx(() -> invoiceSyncCreationService.generateIcsAndInvoices(collector, null));
 	}
 }

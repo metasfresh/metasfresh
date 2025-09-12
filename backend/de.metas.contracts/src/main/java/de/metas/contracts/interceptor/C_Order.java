@@ -17,6 +17,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
@@ -52,15 +53,14 @@ public class C_Order
 	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
 			ifColumnsChanged = I_C_Order.COLUMNNAME_DateOrdered)
 	public void updateDataEntry(@NonNull final I_C_Order order)
 	{
-		final IOrderDAO orderDAO = this.orderDAO;
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-
 		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
 		{
 			for (final I_C_Invoice_Candidate icOfOl : invoiceCandDB.retrieveReferencing(TableRecordReference.of(ol)))
@@ -136,9 +136,20 @@ public class C_Order
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE })
-	public void handleReactivate(final I_C_Order order)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE )
+	public void handleReactivate(@NonNull final I_C_Order order)
 	{
+		final DocTypeId docTypeId = orderBL.getDocTypeIdEffectiveOrNull(order);
+		if (docTypeId == null)
+		{
+			return;
+		}
+
+		if (!docTypeBL.isStandardOrder(docTypeId))
+		{
+			return;
+		}
+		
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{

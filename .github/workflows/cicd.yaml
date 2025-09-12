@@ -778,6 +778,10 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           --tag metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat \
           .
+      - name: retag db-image
+        run: |
+          docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
       - name: tag images
         run: |
           docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded --quiet

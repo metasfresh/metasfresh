@@ -125,7 +125,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 						() -> ContractLocationHelper.extractDropshipLocationId(term),
 						() -> ContractLocationHelper.extractBillToLocationId(term)),
 				SOTrx.ofBoolean(ic.isSOTrx()));
-		
+
 		return PriceAndTax.builder()
 				.pricingSystemId(PricingSystemId.ofRepoId(term.getM_PricingSystem_ID()))
 				.priceActual(term.getPriceActual())

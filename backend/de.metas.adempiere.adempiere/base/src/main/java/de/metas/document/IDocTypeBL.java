@@ -77,6 +77,8 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isCallOrder(DocTypeId docTypeId);
 
+	boolean isStandardOrder(@NonNull DocTypeId docTypeId);
+
 	void save(I_C_DocType dt);
 
 	@NonNull

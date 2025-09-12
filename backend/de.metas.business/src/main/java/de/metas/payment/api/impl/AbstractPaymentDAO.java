@@ -40,7 +40,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.adempiere.model.InterfaceWrapperHelper.*;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
@@ -163,7 +164,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Payment payment)
+	public List<I_C_AllocationLine> retrieveAllocationLines(@NonNull final I_C_Payment payment)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);

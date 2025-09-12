@@ -184,8 +184,8 @@ public class QuerySelectionToDeleteHelper
 					+ " UUID IN (SELECT distinct UUID FROM T_Query_Selection_ToDelete WHERE Executor_UUID IS NULL LIMIT ?)";
 
 			final int querySelectionToDeleteCount = DB.executeUpdateAndThrowExceptionOnFail(sql,
-																							new Object[] { executorId, maxQuerySelectionToDeleteToProcess },
-																							ITrx.TRXNAME_ThreadInherited);
+																	   new Object[] { executorId, maxQuerySelectionToDeleteToProcess },
+																	   ITrx.TRXNAME_ThreadInherited);
 			logger.debug("Tagged {} selectionIds to be deleted", querySelectionToDeleteCount);
 			if (querySelectionToDeleteCount <= 0)
 			{

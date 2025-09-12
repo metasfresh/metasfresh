@@ -115,10 +115,17 @@ public class ExternalIdentifier
 		{
 			return Optional.of(new ExternalIdentifier(Type.GTIN, identifier, null));
 		}
-		
+
+		final Matcher nameMatcher = Type.NAME.pattern.matcher(identifier);
+		if (nameMatcher.matches())
+
+		{
+			return Optional.of(new ExternalIdentifier(Type.NAME, identifier, null));
+		}
+
 		return Optional.empty();
 	}
-	
+
 	@NonNull
 	public static ExternalIdentifier of(@NonNull final String identifier)
 	{
@@ -132,9 +139,9 @@ public class ExternalIdentifier
 	public ExternalReferenceValueAndSystem asExternalValueAndSystem()
 	{
 		Check.assume(Type.EXTERNAL_REFERENCE.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.EXTERNAL_REFERENCE, this);
+				"The type of this instance needs to be {}; this={}", Type.EXTERNAL_REFERENCE, this);
 		Check.assumeNotNull(externalReferenceValueAndSystem,
-							"externalReferenceValueAndSystem cannot be null to EXTERNAL_REFERENCE type!");
+				"externalReferenceValueAndSystem cannot be null to EXTERNAL_REFERENCE type!");
 
 		return externalReferenceValueAndSystem;
 	}
@@ -143,7 +150,7 @@ public class ExternalIdentifier
 	public MetasfreshId asMetasfreshId()
 	{
 		Check.assume(Type.METASFRESH_ID.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.METASFRESH_ID, this);
+				"The type of this instance needs to be {}; this={}", Type.METASFRESH_ID, this);
 
 		return MetasfreshId.of(Integer.parseInt(rawValue));
 	}
@@ -152,14 +159,16 @@ public class ExternalIdentifier
 	public GLN asGLN()
 	{
 		Check.assume(Type.GLN.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.GLN, this);
+				"The type of this instance needs to be {}; this={}", Type.GLN, this);
 
 		final Matcher glnMatcher = Type.GLN.pattern.matcher(rawValue);
 
-		if(glnMatcher.find()){
+		if (glnMatcher.find())
+		{
 			return GLN.ofString(glnMatcher.group(1));
 		}
-		else {
+		else
+		{
 			throw new AdempiereException("External identifier of GLN parsing failed. External Identifier:" + rawValue);
 		}
 
@@ -169,7 +178,7 @@ public class ExternalIdentifier
 	public String asValue()
 	{
 		Check.assume(Type.VALUE.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.VALUE, this);
+				"The type of this instance needs to be {}; this={}", Type.VALUE, this);
 
 		final Matcher valueMatcher = Type.VALUE.pattern.matcher(rawValue);
 
@@ -196,7 +205,23 @@ public class ExternalIdentifier
 
 		return gtinMatcher.group(1);
 	}
-	
+
+	@NonNull
+	public String asName()
+	{
+		Check.assume(Type.NAME.equals(type),
+				"The type of this instance needs to be {}; this={}", Type.NAME, this);
+
+		final Matcher nameMatcher = Type.NAME.pattern.matcher(rawValue);
+
+		if (!nameMatcher.matches())
+		{
+			throw new AdempiereException("External identifier parsing failed. External Identifier:" + rawValue);
+		}
+
+		return nameMatcher.group(1);
+	}
+
 	@AllArgsConstructor
 	@Getter
 	public enum Type
@@ -205,7 +230,8 @@ public class ExternalIdentifier
 		EXTERNAL_REFERENCE(Pattern.compile("^ext-([a-zA-Z0-9]+)-(.+)")),
 		GLN(Pattern.compile("^gln-(.+)")),
 		GTIN(Pattern.compile("^gtin-(.+)")),
-		VALUE(Pattern.compile("^val-(.+)"));
+		VALUE(Pattern.compile("^val-(.+)")),
+		NAME(Pattern.compile("(?:^name)-(.+)"));
 
 		private final Pattern pattern;
 	}

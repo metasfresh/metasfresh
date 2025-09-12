@@ -335,4 +335,10 @@ public final class BPartnerComposite
 	{
 		return this.getLocations().stream().map(BPartnerLocation::getId);
 	}
+
+	@NonNull
+	public OrgId getOrgIdNotNull()
+	{
+		return Check.assumeNotNull(orgId, "Assuming OrgId was set when calling this method!");
+	}
 }

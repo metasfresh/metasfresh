@@ -39,6 +39,8 @@ import java.util.Set;
 @ToString
 public class InvoiceHeaderImplBuilder
 {
+	private static int SalesRep_User_ID_UNSET_VALUE = Integer.MIN_VALUE;
+	
 	private static final int REPO_ID_UNSET_VALUE = Integer.MIN_VALUE;
 
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
@@ -349,17 +351,15 @@ public class InvoiceHeaderImplBuilder
 		}
 	}
 
-	public int get_SaleRep_ID ()
+	public int get_SaleRep_ID()
 	{
 		return SalesRep_User_ID;
 	}
-
 
 	public void setC_BPartner_SalesRep_ID(final int sales_BPartner_ID)
 	{
 		Sales_BPartner_ID = checkOverrideID("Sales_BPartner_ID", Sales_BPartner_ID, sales_BPartner_ID);
 	}
-
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{

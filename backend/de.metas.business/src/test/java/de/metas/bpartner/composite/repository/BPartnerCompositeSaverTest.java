@@ -69,13 +69,15 @@ public class BPartnerCompositeSaverTest
 	public static final String HU_CITY = "Szolnok";
 
 	private BPartnerBL bpartnerBL;
+	private GreetingRepository greetingRepository;
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		greetingRepository = new GreetingRepository();
+		SpringContextHolder.registerJUnitBean(greetingRepository);
 
 		bpartnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, bpartnerBL);

@@ -23,6 +23,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
@@ -101,7 +103,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 @Service
 public class ESRImportBL implements IESRImportBL
 {
-	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
+	private static final Logger logger = LogManager.getLogger(ESRImportBL.class);
 	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -113,13 +115,14 @@ public class ESRImportBL implements IESRImportBL
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 	/**
-	 * task https://github.com/metasfresh/metasfresh/issues/2118
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/2118">https://github.com/metasfresh/metasfresh/issues/2118</a>
 	 */
 	private static final String CFG_PROCESS_UNSPPORTED_TRX_TYPES = "de.metas.payment.esr.ProcessUnspportedTrxTypes";
 
@@ -142,7 +145,7 @@ public class ESRImportBL implements IESRImportBL
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
-	private final void lockAndProcess(
+	private void lockAndProcess(
 			@NonNull final I_ESR_Import esrImport,
 			@NonNull final Runnable processor)
 	{
@@ -219,7 +222,7 @@ public class ESRImportBL implements IESRImportBL
 		{
 			in.close();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -373,7 +376,7 @@ public class ESRImportBL implements IESRImportBL
 		{
 			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), DocBaseType.PurchasePayment, importLine.getAD_Org_ID());
 		}
-		catch (PeriodClosedException p)
+		catch (final PeriodClosedException p)
 		{
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine, p.getLocalizedMessage());
 		}
@@ -402,9 +405,6 @@ public class ESRImportBL implements IESRImportBL
 	 * <li>AccountingDate</li>
 	 * <li>PaymentDate</li>
 	 * </ul>
-	 *
-	 * @param importedLines
-	 * @return
 	 */
 	private Map<ArrayKey, List<I_ESR_ImportLine>> groupLines(final List<I_ESR_ImportLine> importedLines)
 	{
@@ -420,12 +420,7 @@ public class ESRImportBL implements IESRImportBL
 
 			final ArrayKey key = mkESRLineKey(line);
 
-			List<I_ESR_ImportLine> linesOfInvoice = key2Lines.get(key);
-			if (linesOfInvoice == null)
-			{
-				linesOfInvoice = new ArrayList<>();
-				key2Lines.put(key, linesOfInvoice);
-			}
+			List<I_ESR_ImportLine> linesOfInvoice = key2Lines.computeIfAbsent(key, k -> new ArrayList<>());
 			linesOfInvoice.add(line);
 
 		}
@@ -678,7 +673,7 @@ public class ESRImportBL implements IESRImportBL
 
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/2118
+	 * task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
 	private void handleUnsupportedTrxType(@NonNull final I_ESR_ImportLine line)
 	{
@@ -1120,7 +1115,7 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	@Override
-	public void setInvoice(final I_ESR_ImportLine importLine, final I_C_Invoice invoice)
+	public void setInvoice(@NonNull final I_ESR_ImportLine importLine, @NonNull final I_C_Invoice invoice)
 	{
 
 		// we always update the open amount, even if the invoice reference hasn't changed
@@ -1213,7 +1208,7 @@ public class ESRImportBL implements IESRImportBL
 	 * <b>IMPORTANT:</b> as written this method might update the given {@code esrImportLine}, but does <b>not</b> save it. The decision to save or not is left to the caller.
 	 */
 	/* package */
-	void updateLinesOpenAmt(final I_ESR_ImportLine esrImportLine, final I_C_Invoice invoice)
+	void updateLinesOpenAmt(@NonNull final I_ESR_ImportLine esrImportLine, @NonNull final I_C_Invoice invoice)
 	{
 		final List<I_ESR_ImportLine> linesWithSameInvoice = esrImportDAO.retrieveLinesForInvoice(esrImportLine, invoice);
 
@@ -1230,7 +1225,7 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	// note: package level for testing purpose
-	/* package */void updateOpenAmtAndStatusDontSave(final I_C_Invoice invoice, final List<I_ESR_ImportLine> linesWithSameInvoice)
+	/* package */void updateOpenAmtAndStatusDontSave(@NonNull final I_C_Invoice invoice, final List<I_ESR_ImportLine> linesWithSameInvoice)
 	{
 		/*
 			Can't use the DAO from above because of mocked tests
@@ -1294,8 +1289,10 @@ public class ESRImportBL implements IESRImportBL
 				{
 					final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(fullyMatchedImportLine.getC_Payment_ID()));
 
-					final I_C_Invoice invoiceESR = fullyMatchedImportLine.getC_Invoice();
-					if (paymentBL.isMatchInvoice(payment, invoiceESR))
+					final int invoiceId = fullyMatchedImportLine.getC_Invoice_ID();
+					final I_C_Invoice invoiceESR = invoiceId <= 0 ? null : invoiceBL.getById(InvoiceId.ofRepoId(invoiceId));
+
+					if (invoiceESR != null && paymentBL.isMatchInvoice(payment, invoiceESR))
 					{
 						fullyMatchedImportLine.setProcessed(true);
 						fullyMatchedImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);

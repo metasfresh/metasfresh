@@ -179,7 +179,8 @@ class BpartnerRestControllerTest
 				currencyRepository,
 				new JobRepository(),
 				externalReferenceRestControllerService,
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				new JsonGreetingService(new GreetingRepository(), externalReferenceRestControllerService));
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

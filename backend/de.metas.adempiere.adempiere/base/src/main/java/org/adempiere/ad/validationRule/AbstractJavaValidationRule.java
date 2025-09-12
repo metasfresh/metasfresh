@@ -1,18 +1,16 @@
 package org.adempiere.ad.validationRule;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract Java Validation Rule be the extension point for all Java Based Validation Rules.

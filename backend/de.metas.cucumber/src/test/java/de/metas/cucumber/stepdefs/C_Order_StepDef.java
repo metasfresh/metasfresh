@@ -180,6 +180,7 @@ public class C_Order_StepDef
 		final StepDefDataIdentifier bpartnerIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
 		final BPartnerId bpartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
 				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
+			final int salesRepID = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_SalesRep_ID);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setC_BPartner_ID(bpartnerId.getRepoId());
@@ -334,6 +335,11 @@ public class C_Order_StepDef
 			order.setDropShip_Location_ID(dropShipLocation.getC_BPartner_Location_ID());
 			order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
 		}
+
+			if (salesRepID > 0)
+			{
+				order.setSalesRep_ID(salesRepID);
+			}
 
 		tableRow.getAsOptionalString(COLUMNNAME_DocumentNo)
 				.ifPresent(order::setDocumentNo);

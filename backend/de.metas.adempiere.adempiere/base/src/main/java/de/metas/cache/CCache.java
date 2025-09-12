@@ -131,12 +131,9 @@ public class CCache<K, V> implements CacheInterface
 	@Getter
 	private final long cacheId;
 
-	@NonNull
-	@Getter
-	private final String cacheName;
-	@NonNull
-	@Getter
-	private final ImmutableSet<CacheLabel> labels;
+	@NonNull @Getter private final String cacheName;
+	
+	@NonNull @Getter private final ImmutableSet<CacheLabel> labels;
 
 	public static final int EXPIREMINUTES_Never = 0;
 	/**
@@ -149,8 +146,7 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	private final Optional<CachingKeysMapper<K>> invalidationKeysMapper;
 
-	@Nullable
-	private final String debugAcquireStacktrace;
+	@Nullable private final String debugAcquireStacktrace;
 
 	@Nullable
 	private final CacheAdditionListener<K, V> additionListener;
@@ -180,14 +176,14 @@ public class CCache<K, V> implements CacheInterface
 		this(name, // cache name
 			 null, // auto-detect tableName
 			 null, // additionalTableNamesToResetFor
-			 null, // additionalLabels
+				null, // additionalLabels
 			 initialCapacity,
-			 null,
+				null,
 			 expireMinutes,
-			 null,
-			 null,
-			 null,
-			 null);
+				null,
+				null,
+				null,
+				null);
 	}
 
 	@Builder
@@ -302,10 +298,8 @@ public class CCache<K, V> implements CacheInterface
 		{
 			//noinspection ResultOfMethodCallIgnored
 			cacheBuilder.removalListener(notification -> {
-				@SuppressWarnings("unchecked")
-				final K key = (K)notification.getKey();
-				@SuppressWarnings("unchecked")
-				final V value = (V)notification.getValue();
+				@SuppressWarnings("unchecked") final K key = (K)notification.getKey();
+				@SuppressWarnings("unchecked") final V value = (V)notification.getValue();
 				removalListener.itemRemoved(key, value);
 			});
 		}
@@ -377,10 +371,7 @@ public class CCache<K, V> implements CacheInterface
 	 *
 	 * @return true if it was just reset
 	 */
-	public final boolean isReset()
-	{
-		return m_justReset;
-	}
+	public final boolean isReset() {return m_justReset;}
 
 	/**
 	 * Reset Cache.

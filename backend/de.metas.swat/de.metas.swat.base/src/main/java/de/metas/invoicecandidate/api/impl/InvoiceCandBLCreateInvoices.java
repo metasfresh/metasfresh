@@ -36,12 +36,12 @@ import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
@@ -162,7 +162,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
-	private IInvoicingParams _invoicingParams;
+	private InvoicingParams _invoicingParams;
 	private IInvoiceGenerateResult _collector;
 
 	public InvoiceCandBLCreateInvoices(
@@ -921,7 +921,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		//
 		// Make sure we have the same net amt as expected (08610)
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 		final BigDecimal expectedNetAmtToInvoice = invoicingParams == null ? null : invoicingParams.getCheck_NetAmtToInvoice();
 		if (expectedNetAmtToInvoice != null && expectedNetAmtToInvoice.signum() != 0)
 		{
@@ -937,7 +937,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	private AggregationEngine newAggregationEngine()
 	{
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 
 		return AggregationEngine.builder()
 				.matchInvoiceService(matchInvoiceService)
@@ -1177,7 +1177,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			return _ignoreInvoiceSchedule;
 		}
 
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 		if (invoicingParams != null)
 		{
 			return invoicingParams.isIgnoreInvoiceSchedule();
@@ -1204,13 +1204,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
-	public IInvoiceGenerator setInvoicingParams(final @NonNull IInvoicingParams invoicingParams)
+	public IInvoiceGenerator setInvoicingParams(final @NonNull InvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;
 	}
 
-	private IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
 		return _invoicingParams;
 	}

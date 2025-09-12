@@ -31,6 +31,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
 
@@ -86,7 +87,7 @@ public interface IInvoiceCandidateEnqueuer
 	/**
 	 * Sets invoicing parameters to be used.
 	 */
-	IInvoiceCandidateEnqueuer setInvoicingParams(IInvoicingParams invoicingParams);
+	IInvoiceCandidateEnqueuer setInvoicingParams(InvoicingParams invoicingParams);
 
 	/**
 	 * Sets the total net amount to invoice checksum.

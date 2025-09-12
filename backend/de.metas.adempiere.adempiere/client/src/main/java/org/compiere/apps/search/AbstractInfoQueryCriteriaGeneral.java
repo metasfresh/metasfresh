@@ -22,10 +22,11 @@ package org.compiere.apps.search;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.ad_reference.ReferenceId;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -41,10 +42,8 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Properties;
 
 public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCriteria
 {

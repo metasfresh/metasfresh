@@ -25,6 +25,14 @@ package org.adempiere.process;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.process.JavaProcess;
+import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.MIndexTable;
+import org.compiere.util.DB;
+import org.compiere.util.Trx;
+
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,16 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MIndexTable;
-import org.compiere.util.DB;
-import org.compiere.util.Trx;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.process.JavaProcess;
-import de.metas.util.Check;
 
 /**
  * @author teo_sarca

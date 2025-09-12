@@ -69,7 +69,7 @@ class BPartnerCompositeRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		orgId = AdempiereTestHelper.createOrgWithTimeZone("defaultOrg");
-		
+
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(

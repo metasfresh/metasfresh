@@ -56,6 +56,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCo
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseContactPosition;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
+import de.metas.common.bpartner.v2.response.JsonResponseGreeting;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
 import de.metas.common.changelog.JsonChangeInfo;
@@ -452,12 +453,19 @@ public class JsonRetrieverService
 
 			final BPartnerContactType contactType = contact.getContactType();
 
-			String greetingTrl = null;
+			JsonResponseGreeting greetingJson = null;
 			if (contact.getGreetingId() != null)
 			{
 				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
 				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
-				greetingTrl = greeting.getGreeting(ad_language);
+				final String greetingTrl = greeting.getGreeting(ad_language);
+
+				greetingJson = JsonResponseGreeting.builder()
+						.id(greeting.getId().map(JsonMetasfreshId::of))
+						.greeting(greetingTrl)
+						.name(greeting.getName())
+						.letterSalutation(greeting.getLetterSalutation())
+						.build();
 			}
 
 			String titleTrl = null;
@@ -491,7 +499,7 @@ public class JsonRetrieverService
 					.metasfreshBPartnerId(metasfreshBPartnerId)
 					.metasfreshId(metasfreshId)
 					.name(contact.getName())
-					.greeting(greetingTrl)
+					.greeting(greetingJson)
 					.title(titleTrl)
 					.newsletter(contact.isNewsletter())
 					.invoiceEmailEnabled(contact.getInvoiceEmailEnabled())

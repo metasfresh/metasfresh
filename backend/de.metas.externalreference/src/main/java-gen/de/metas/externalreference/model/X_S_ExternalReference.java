@@ -41,7 +41,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
-	public String getExternalReference()
+	public String getExternalReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalReference);
 	}
@@ -53,7 +53,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
-	public String getExternalReferenceURL()
+	public String getExternalReferenceURL() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalReferenceURL);
 	}
@@ -88,7 +88,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
-	public String getExternalSystem()
+	public String getExternalSystem() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystem);
 	}
@@ -186,6 +186,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Shipper = "Shipper";
 	/** Warehouse = Warehouse */
 	public static final String TYPE_Warehouse = "Warehouse";
+	/** Greeting = Greeting */
+	public static final String TYPE_Greeting = "Greeting";
 	@Override
 	public void setType (final String Type)
 	{
@@ -193,7 +195,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
-	public String getType()
+	public String getType() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
 	}
@@ -205,7 +207,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
-	public String getVersion()
+	public String getVersion() 
 	{
 		return get_ValueAsString(COLUMNNAME_Version);
 	}

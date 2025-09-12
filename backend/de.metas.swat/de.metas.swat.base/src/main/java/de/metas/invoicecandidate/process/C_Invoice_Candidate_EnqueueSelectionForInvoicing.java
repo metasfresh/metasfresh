@@ -30,9 +30,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -67,7 +66,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final C_Invoice_Candidate_ProcessCaptionMapperHelper processCaptionMapperHelper = SpringContextHolder.instance.getBean(C_Invoice_Candidate_ProcessCaptionMapperHelper.class);
 	// Parameters
-	private IInvoicingParams invoicingParams;
+	private InvoicingParams invoicingParams;
 	private BigDecimal totalNetAmtToInvoiceChecksum;
 
 	private int selectionCount = 0;
@@ -96,7 +95,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		setShowProcessLogs(ShowProcessLogs.OnError);
 
 		final IParams params = getParameterAsIParams();
-		this.invoicingParams = new InvoicingParams(params);
+		this.invoicingParams = InvoicingParams.ofParams(params);
 
 		//
 		// Create and check invoice candidate selection

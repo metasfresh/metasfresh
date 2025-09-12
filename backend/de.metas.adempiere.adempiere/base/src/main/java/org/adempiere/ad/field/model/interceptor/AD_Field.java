@@ -1,8 +1,8 @@
 package org.adempiere.ad.field.model.interceptor;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;

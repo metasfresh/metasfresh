@@ -1,16 +1,16 @@
 import { quickActionsRequest, topActionsRequest } from '../api';
 import {
   DELETE_QUICK_ACTIONS,
-  TOP_ACTIONS_DELETE,
   FETCH_QUICK_ACTIONS,
   FETCH_QUICK_ACTIONS_FAILURE,
   FETCH_QUICK_ACTIONS_SUCCESS,
-  TOP_ACTIONS_LOADING,
+  TOP_ACTIONS_DELETE,
   TOP_ACTIONS_FAILURE,
+  TOP_ACTIONS_LOADING,
   TOP_ACTIONS_SUCCESS,
 } from '../constants/ActionTypes';
 
-import { getQuickActionsId, getQuickActions } from '../reducers/actionsHandler';
+import { getQuickActions, getQuickActionsId } from '../reducers/actionsHandler';
 import { getTable, getTableId } from '../reducers/tables';
 import { findViewByViewId, getView } from '../reducers/viewHandler';
 

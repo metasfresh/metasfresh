@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OrderLine
  *  @author metasfresh (generated) 
@@ -1090,6 +1090,27 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_LineNetAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * ManualCompensationLinePosition AD_Reference_ID=541856
+	 * Reference name: ManualCompensationLinePosition
+	 */
+	public static final int MANUALCOMPENSATIONLINEPOSITION_AD_Reference_ID=541856;
+	/** BeforeGeneratedCompensationLines = B */
+	public static final String MANUALCOMPENSATIONLINEPOSITION_BeforeGeneratedCompensationLines = "B";
+	/** Last = L */
+	public static final String MANUALCOMPENSATIONLINEPOSITION_Last = "L";
+	@Override
+	public void setManualCompensationLinePosition (final @Nullable java.lang.String ManualCompensationLinePosition)
+	{
+		set_Value (COLUMNNAME_ManualCompensationLinePosition, ManualCompensationLinePosition);
+	}
+
+	@Override
+	public java.lang.String getManualCompensationLinePosition() 
+	{
+		return get_ValueAsString(COLUMNNAME_ManualCompensationLinePosition);
 	}
 
 	@Override

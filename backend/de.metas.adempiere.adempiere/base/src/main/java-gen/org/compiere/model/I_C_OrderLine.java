@@ -1589,6 +1589,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
+	 * Set Manual Compensation Line Position.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManualCompensationLinePosition (@Nullable java.lang.String ManualCompensationLinePosition);
+
+	/**
+	 * Get Manual Compensation Line Position.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getManualCompensationLinePosition();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_ManualCompensationLinePosition = new ModelColumn<>(I_C_OrderLine.class, "ManualCompensationLinePosition", null);
+	String COLUMNNAME_ManualCompensationLinePosition = "ManualCompensationLinePosition";
+
+	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *

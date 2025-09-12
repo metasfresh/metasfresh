@@ -1,14 +1,26 @@
 package de.metas.dlm.impl;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Stream;
-
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.dlm.IDLMService;
+import de.metas.dlm.Partition;
+import de.metas.dlm.migrator.IMigratorService;
+import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.model.I_AD_Table;
+import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.dlm.model.I_DLM_Partition_Config;
+import de.metas.dlm.model.I_DLM_Partition_Config_Line;
+import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
+import de.metas.dlm.model.I_DLM_Partition_Record_V;
+import de.metas.dlm.partitioner.config.PartitionConfig;
+import de.metas.dlm.partitioner.config.PartitionConfig.Builder;
+import de.metas.dlm.partitioner.config.PartitionerConfigLine;
+import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
+import de.metas.dlm.partitioner.config.PartitionerConfigReference;
+import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -31,27 +43,14 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.dlm.IDLMService;
-import de.metas.dlm.Partition;
-import de.metas.dlm.migrator.IMigratorService;
-import de.metas.dlm.model.IDLMAware;
-import de.metas.dlm.model.I_AD_Table;
-import de.metas.dlm.model.I_DLM_Partition;
-import de.metas.dlm.model.I_DLM_Partition_Config;
-import de.metas.dlm.model.I_DLM_Partition_Config_Line;
-import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
-import de.metas.dlm.model.I_DLM_Partition_Record_V;
-import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.dlm.partitioner.config.PartitionConfig.Builder;
-import de.metas.dlm.partitioner.config.PartitionerConfigLine;
-import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
-import de.metas.dlm.partitioner.config.PartitionerConfigReference;
-import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 /*
  * #%L

@@ -23,6 +23,7 @@
 package de.metas.common.bpartner.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.pentabyte.springfox.ApiEnum;
@@ -30,9 +31,11 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @ApiModel("Response to a a single mater data upsert request entity")
 @Value
@@ -60,16 +63,29 @@ public class JsonResponseUpsertItem
 
 	SyncOutcome syncOutcome;
 
+	@ApiModelProperty(value = "The name of the upserted record.\n"
+			+ "Generally missing, as it is only set for nested records that get upserted 'under' the root record.",//
+			position = 40, dataType = "java.lang.String")
+	String resourceName;
+
+	@ApiModelProperty(value = "The outcome of any included resources that get updated together with the root record.\n",
+			position = 40)
+	List<JsonResponseUpsertItem> includedResources;
+
 	@Builder
 	@JsonCreator
 	public JsonResponseUpsertItem(
 			@JsonProperty("identifier") @NonNull final String identifier,
 			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
-			@JsonProperty("syncOutcome") @NonNull final SyncOutcome syncOutcome)
+			@JsonProperty("syncOutcome") @NonNull final SyncOutcome syncOutcome,
+			@JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty("resourceName") @Nullable final String resourceName,
+			@JsonInclude(JsonInclude.Include.NON_EMPTY) @JsonProperty("includedResources") @Singular final List<JsonResponseUpsertItem> includedResources)
 	{
 		this.identifier = identifier;
 		this.metasfreshId = metasfreshId;
 		this.syncOutcome = syncOutcome;
+		this.resourceName = resourceName;
+		this.includedResources = includedResources;
 	}
 
 }

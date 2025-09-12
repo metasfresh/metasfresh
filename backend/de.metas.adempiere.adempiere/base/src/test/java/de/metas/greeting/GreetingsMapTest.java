@@ -23,6 +23,7 @@
 package de.metas.greeting;
 
 import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,12 +57,14 @@ class GreetingsMapTest
 			greeting_withoutStandardType = Greeting.builder()
 					.id(GreetingId.ofRepoId(nextGreetingId.getAndIncrement()))
 					.name("greeting_withoutStandardType")
+					.orgId(OrgId.MAIN)
 					.greeting(TranslatableStrings.anyLanguage("greeting_withoutStandardType"))
 					.build();
 
 			greeting_notPartOfAComposite = Greeting.builder()
 					.id(GreetingId.ofRepoId(nextGreetingId.getAndIncrement()))
 					.name("greeting_notPartOfAComposite")
+					.orgId(OrgId.MAIN)
 					.greeting(TranslatableStrings.anyLanguage("greeting_notPartOfAComposite"))
 					.standardType(GreetingStandardType.ofCode("greeting_notPartOfAComposite"))
 					.build();
@@ -79,6 +82,7 @@ class GreetingsMapTest
 		{
 			return Greeting.builder()
 					.id(GreetingId.ofRepoId(nextGreetingId.getAndIncrement()))
+					.orgId(OrgId.MAIN)
 					.name(standardType.getCode())
 					.greeting(TranslatableStrings.anyLanguage(standardType.getCode()))
 					.standardType(standardType)

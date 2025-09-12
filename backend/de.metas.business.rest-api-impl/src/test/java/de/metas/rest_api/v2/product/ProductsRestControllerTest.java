@@ -57,6 +57,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
@@ -138,6 +139,7 @@ public class ProductsRestControllerTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
@@ -147,9 +149,10 @@ public class ProductsRestControllerTest
 				new TitleRepository(),
 				currencyRepository,
 				new JobRepository(),
-				Mockito.mock(ExternalReferenceRestControllerService.class),
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
-
+				externalReferenceRestControllerService,
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				new JsonGreetingService(new GreetingRepository(), externalReferenceRestControllerService));
+		
 		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
 
 		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);

@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Greeting
  *  @author metasfresh (generated) 
@@ -230,6 +231,27 @@ public interface I_C_Greeting
 
 	ModelColumn<I_C_Greeting, Object> COLUMN_IsFirstNameOnly = new ModelColumn<>(I_C_Greeting.class, "IsFirstNameOnly", null);
 	String COLUMNNAME_IsFirstNameOnly = "IsFirstNameOnly";
+
+	/**
+	 * Set Briefanrede.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLetter_Salutation (@Nullable java.lang.String Letter_Salutation);
+
+	/**
+	 * Get Briefanrede.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLetter_Salutation();
+
+	ModelColumn<I_C_Greeting, Object> COLUMN_Letter_Salutation = new ModelColumn<>(I_C_Greeting.class, "Letter_Salutation", null);
+	String COLUMNNAME_Letter_Salutation = "Letter_Salutation";
 
 	/**
 	 * Set Name.

@@ -1067,8 +1067,9 @@ public class OrderBL implements IOrderBL
 		return docTypeBL.isPrepay(docTypeId);
 	}
 
+	@Override
 	@Nullable
-	private DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
+	public DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
 		if (docTypeId != null)
@@ -1076,8 +1077,7 @@ public class OrderBL implements IOrderBL
 			return docTypeId;
 		}
 
-		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
-		return docTypeTargetId;
+		return DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 	}
 
 	@Override
