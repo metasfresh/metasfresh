@@ -28,7 +28,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.gs1.GS1ProductCodesCollection;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
-import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -207,7 +206,10 @@ public interface IProductBL extends ISingletonService
 
 	GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull I_M_Product product);
 
-	ExplainedOptional<EAN13> getEAN13(@NonNull ProductId productId);
+	/**
+	 * @return GTIN/EAN13
+	 */
+	Optional<GTIN> getGTIN(@NonNull ProductId productId);
 
 	ImmutableMap<ProductId, String> getProductValues(Set<ProductId> productIds);
 

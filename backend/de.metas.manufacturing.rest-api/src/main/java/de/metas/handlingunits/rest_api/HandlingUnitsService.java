@@ -38,9 +38,9 @@ import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.gs1.ean13.EAN13;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
@@ -209,7 +209,7 @@ public class HandlingUnitsService
 		if (singleProductStorage != null)
 		{
 			final ProductId productId = singleProductStorage.getProductId();
-			eanCode = productBL.getEAN13(productId).map(EAN13::getAsString).orElse(null);
+			eanCode = productBL.getGTIN(productId).map(GTIN::getAsString).orElse(null);
 		}
 
 		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu, adLanguage);
@@ -424,15 +424,6 @@ public class HandlingUnitsService
 				.qty(qty.toBigDecimal().toString())
 				.uom(qty.getX12DE355().getCode())
 				.build();
-	}
-
-	@NonNull
-	private ImmutableList<JsonHUProduct> getProductStorage(
-			@NonNull final IMutableHUContext huContext,
-			@NonNull final I_M_HU hu)
-	{
-		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
-		return toJsonHUProducts(productStorages);
 	}
 
 	private ImmutableList<JsonHUProduct> toJsonHUProducts(final List<IHUProductStorage> productStorages)

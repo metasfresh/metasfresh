@@ -16,7 +16,6 @@ import de.metas.gs1.GS1ProductCodesCollection.GS1ProductCodesCollectionBuilder;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.gs1.ean13.EAN13ProductCode;
-import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -571,17 +570,10 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public ExplainedOptional<EAN13> getEAN13(@NonNull final ProductId productId)
+	public Optional<GTIN> getGTIN(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-
-		final String gtin = StringUtils.trimBlankToNull(product.getGTIN());
-		if (gtin != null)
-		{
-			return EAN13.ofString(gtin);
-		}
-
-		return ExplainedOptional.emptyBecause("No GTIN set");
+		return GTIN.optionalOfNullableString(product.getGTIN());
 	}
 
 	@Override
