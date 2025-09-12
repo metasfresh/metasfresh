@@ -111,7 +111,7 @@ public interface IProductDAO extends ISingletonService
 	
 	void clearIndividualMasterDataFromProduct(ProductId productId);
 
-	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByGTINStrictly(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
 

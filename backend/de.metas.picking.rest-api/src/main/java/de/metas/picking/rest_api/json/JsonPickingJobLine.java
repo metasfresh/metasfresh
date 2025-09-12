@@ -23,7 +23,6 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
@@ -53,7 +52,7 @@ public class JsonPickingJobLine
 	@NonNull String pickingLineId;
 	@NonNull String productId;
 	@NonNull String productNo;
-	@Nullable EAN13ProductCode ean13ProductCode;
+	@Nullable JsonPickingJobLineProductCodes gs1ProductCodes;
 	@NonNull String caption;
 
 	@Nullable JsonQRCode pickingSlot;
@@ -115,7 +114,7 @@ public class JsonPickingJobLine
 				.pickingLineId(line.getId().getAsString())
 				.productId(line.getProductId().getAsString())
 				.productNo(line.getProductNo())
-				.ean13ProductCode(line.getEan13ProductCode())
+				.gs1ProductCodes(JsonPickingJobLineProductCodes.ofNullable(line.getGs1ProductCodes()))
 				.caption(line.getCaption().translate(adLanguage))
 				.pickingSlot(currentPickingTarget.getPickingSlot().map(JsonPickingJobLine::toJsonQRCode).orElse(null))
 				.luPickingTarget(currentPickingTarget.getLuPickingTarget().map(JsonLUPickingTarget::of).orElse(null))

@@ -1,7 +1,7 @@
 package de.metas.product;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.edi.EDIProductLookupService;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
@@ -20,10 +20,10 @@ public class ScannedProductCodeResolver
 
 	public Optional<ResolvedScannedProductCodes> resolve(@NonNull final ScannedCode scannedCode)
 	{
-		final EAN13 ean13 = EAN13.fromScannedCode(scannedCode).orElse(null);
-		if (ean13 != null)
+		final GTIN gtin = GTIN.ofScannedCode(scannedCode).orElse(null);
+		if (gtin != null)
 		{
-			final ProductId productId = productBL.getProductIdByEAN13(ean13).orElse(null);
+			final ProductId productId = productBL.getProductIdByGTIN(gtin).orElse(null);
 			if (productId != null)
 			{
 				return Optional.of(ResolvedScannedProductCodes.ofSingleCode(

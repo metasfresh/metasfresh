@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.gs1.ean13.EAN13ProductCode;
+import de.metas.gs1.GS1ProductCodes;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
@@ -67,7 +67,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 
 	@NonNull ProductId productId;
 	@NonNull String productNo;
-	@Nullable EAN13ProductCode ean13ProductCode;
+	@Nullable GS1ProductCodes gs1ProductCodes;
 	@NonNull ProductCategoryId productCategoryId;
 	@NonNull ITranslatableString productName;
 	@NonNull HUPIItemProduct packingInfo;
@@ -104,7 +104,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 			@NonNull final ITranslatableString caption,
 			@NonNull final ProductId productId,
 			@NonNull final String productNo,
-			@Nullable final EAN13ProductCode ean13ProductCode,
+			@Nullable final GS1ProductCodes gs1ProductCodes,
 			@NonNull final ProductCategoryId productCategoryId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final HUPIItemProduct packingInfo,
@@ -125,7 +125,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 		this.caption = caption;
 		this.productId = productId;
 		this.productNo = productNo;
-		this.ean13ProductCode = ean13ProductCode;
+		this.gs1ProductCodes = gs1ProductCodes;
 		this.productCategoryId = productCategoryId;
 		this.productName = productName;
 		this.packingInfo = packingInfo;

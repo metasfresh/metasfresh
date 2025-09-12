@@ -1,6 +1,8 @@
 package de.metas.product.model.interceptor;
 
 import com.google.common.collect.Iterators;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -23,6 +25,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -62,15 +65,12 @@ public class M_Product
 
 	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
 
-
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-
-
 
 	@Init
 	public void registerCallouts()
@@ -82,6 +82,7 @@ public class M_Product
 	public void beforeSave(final @NonNull I_M_Product product)
 	{
 		ProductDAO.extractIssuingToleranceSpec(product); // validate
+		normalizeProductCodeFields(product);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -150,7 +151,6 @@ public class M_Product
 		return Optional.empty();
 	}
 
-
 	private Optional<AdMessageKey> isProductUsed(@NonNull final ProductId productId)
 	{
 		if (productDAO.isProductUsed(productId))
@@ -178,5 +178,25 @@ public class M_Product
 
 					saveRecord(order);
 				});
+	}
+
+	private void normalizeProductCodeFields(@NonNull I_M_Product product)
+	{
+		if (InterfaceWrapperHelper.isValueChanged(product, I_M_Product.COLUMNNAME_GTIN))
+		{
+			final GTIN gtin = GTIN.ofNullableString(product.getGTIN());
+			if (gtin != null)
+			{
+				product.setEAN13_ProductCode(null);
+			}
+		}
+		else if (InterfaceWrapperHelper.isValueChanged(product, I_M_Product.COLUMNNAME_EAN13_ProductCode))
+		{
+			final EAN13ProductCode ean13ProductCode = EAN13ProductCode.ofNullableString(product.getEAN13_ProductCode());
+			if (ean13ProductCode != null)
+			{
+				product.setGTIN(null);
+			}
+		}
 	}
 }

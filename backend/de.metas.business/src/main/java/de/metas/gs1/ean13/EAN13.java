@@ -1,5 +1,7 @@
 package de.metas.gs1.ean13;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.scannable_code.ScannedCode;
@@ -33,6 +35,7 @@ public final class EAN13
 		return fromString(scannedCode.getAsString());
 	}
 
+	@JsonCreator
 	public static ExplainedOptional<EAN13> fromString(@NonNull final String barcode)
 	{
 		return EAN13Parser.parse(barcode);
@@ -42,7 +45,15 @@ public final class EAN13
 	@Deprecated
 	public String toString() {return getAsString();}
 
+	@JsonValue
 	public String getAsString() {return barcode;}
+
+	/**
+	 * @return true if standard/fixed code (i.e. not starting with prefix 28 nor 29)
+	 */
+	public boolean isFixed() {return prefix.isFixed();}
+
+	public boolean isVariable() {return prefix.isFixed();}
 
 	/**
 	 * @return true if variable weight EAN13 (i.e. starts with prefix 28)
@@ -56,5 +67,15 @@ public final class EAN13
 
 	public Optional<BigDecimal> getWeightInKg() {return Optional.ofNullable(weightInKg);}
 
-	public GTIN toGTIN() {return GTIN.ofString(barcode);}
+	public GTIN toGTIN() {return GTIN.ofEAN13(this);}
+
+	public boolean isMatching(@NonNull final EAN13ProductCode expectedProductNo)
+	{
+		return EAN13ProductCode.equals(this.productNo, expectedProductNo);
+	}
+
+	public boolean productCodeEndsWith(final @NonNull EAN13ProductCode expectedProductCode)
+	{
+		return this.productNo.endsWith(expectedProductCode);
+	}
 }

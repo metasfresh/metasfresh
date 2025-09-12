@@ -72,7 +72,7 @@ class POSProductsSearchCommand
 			return null;
 		}
 
-		final ProductId productId = productBL.getProductIdByGTIN(gtin, ClientId.METASFRESH).orElse(null);
+		final ProductId productId = productBL.getProductIdByGTIN(gtin).orElse(null);
 		final POSProduct product = getPOSProduct(productId);
 		if (product == null)
 		{

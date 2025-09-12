@@ -10,10 +10,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.gs1.GS1ProductCodes;
+import de.metas.gs1.GS1ProductCodesCollection;
+import de.metas.gs1.GS1ProductCodesCollection.GS1ProductCodesCollectionBuilder;
+import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.gs1.ean13.EAN13ProductCode;
-import de.metas.gs1.ean13.EAN13ProductCodes;
-import de.metas.gs1.GTIN;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -524,31 +526,48 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public EAN13ProductCodes getEAN13ProductCodes(@NonNull final ProductId productId)
+	public GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-		return getEAN13ProductCodes(product);
+		return getGS1ProductCodesCollection(product);
 	}
 
 	@Override
-	public EAN13ProductCodes getEAN13ProductCodes(@NonNull final I_M_Product product)
+	public GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull final I_M_Product product)
 	{
-		final EAN13ProductCodes.EAN13ProductCodesBuilder result = EAN13ProductCodes.builder()
+		final GS1ProductCodesCollectionBuilder result = GS1ProductCodesCollection.builder()
 				.productValue(product.getValue())
-				.defaultCode(EAN13ProductCode.ofNullableString(product.getEAN13_ProductCode()));
+				.defaultCodes(extractGS1ProductCodes(product));
 
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-		for (final I_C_BPartner_Product bPartnerProductRecord : partnerProductDAO.retrieveForProductIds(ImmutableSet.of(productId)))
+		for (final I_C_BPartner_Product bpartnerProductRecord : partnerProductDAO.retrieveForProductIds(ImmutableSet.of(productId)))
 		{
-			final EAN13ProductCode partnerEAN13ProductCode = EAN13ProductCode.ofNullableString(bPartnerProductRecord.getEAN13_ProductCode());
-			if (partnerEAN13ProductCode != null)
-			{
-				final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartnerProductRecord.getC_BPartner_ID());
-				result.code(bpartnerId, partnerEAN13ProductCode);
-			}
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerProductRecord.getC_BPartner_ID());
+			result.codes(bpartnerId, extractGS1ProductCodes(bpartnerProductRecord));
 		}
 
 		return result.build();
+	}
+
+	@NonNull
+	private static GS1ProductCodes extractGS1ProductCodes(@NonNull final I_M_Product product)
+	{
+		return GS1ProductCodes.builder()
+				.gtin(GTIN.ofNullableString(product.getGTIN()))
+				.ean13ProductCode(EAN13ProductCode.ofNullableString(product.getEAN13_ProductCode()))
+				.build();
+	}
+
+	@NonNull
+	private static GS1ProductCodes extractGS1ProductCodes(@NonNull final I_C_BPartner_Product bpartnerProduct)
+	{
+		final String ean = StringUtils.trimBlankToNull(bpartnerProduct.getEAN_CU());
+
+		return GS1ProductCodes.builder()
+				.gtin(GTIN.ofNullableString(bpartnerProduct.getGTIN()))
+				.ean13(ean != null ? EAN13.fromString(ean).orElse(null) : null)
+				.ean13ProductCode(EAN13ProductCode.ofNullableString(bpartnerProduct.getEAN13_ProductCode()))
+				.build();
 	}
 
 	@Override
@@ -743,64 +762,29 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin)
 	{
-		return productsRepo.getProductIdByGTIN(gtin, clientId);
+		return getProductIdByGTIN(gtin, null, ClientId.METASFRESH);
 	}
 
 	@Override
-	public ProductId getProductIdByGTINNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
 	{
-		return getProductIdByGTIN(gtin, clientId)
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ " + gtin));
+		final EAN13 ean13 = gtin.toEAN13().orElse(null);
+
+		//noinspection OptionalAssignedToNull
+		return Optionals.firstPresentOfSuppliers(
+				() -> gtin.isFixed() ? getProductIdByGTINStrictly(gtin, bpartnerId, clientId) : null,
+				() -> ean13 != null && ean13.isVariable() ? getProductIdByEAN13ProductCode(ean13.getProductNo(), bpartnerId, clientId) : null,
+				() -> ean13 != null && ean13.isVariableWeight() ? productsRepo.getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId) : null
+		);
 	}
 
-	@Override
-	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
-	{
-		return productsRepo.getProductIdByValueStartsWith(valuePrefix, clientId);
-	}
-
-	@Override
-	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13)
-	{
-		return getProductIdByEAN13(ean13, null, ClientId.METASFRESH);
-	}
-
-	@Override
-	public Optional<ProductId> getProductIdByEAN13(
-			@NonNull final EAN13 ean13,
-			@Nullable final BPartnerId bpartnerId,
-			@NonNull final ClientId clientId)
-	{
-		if (ean13.isVariableWeight())
-		{
-			return Optionals.firstPresentOfSuppliers(
-					() -> getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId),
-					() -> getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId)
-			);
-		}
-		else if (ean13.isInternalUseOrVariableMeasure())
-		{
-			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
-		}
-		else
-		{
-			return Optionals.firstPresentOfSuppliers(
-					() -> getProductIdByGTIN(ean13.toGTIN(), clientId),
-					() -> getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId)
-			);
-		}
-	}
-
-	private Optional<ProductId> getProductIdByEAN13ProductCode(
-			@NonNull final EAN13 ean13,
-			@Nullable final BPartnerId bpartnerId,
-			@NonNull final ClientId clientId)
+	private Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
 	{
 		if (bpartnerId != null)
 		{
-			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByEAN13ProductCode(ean13.getProductNo(), bpartnerId)
+			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByGTIN(gtin, bpartnerId)
 					.stream()
 					.map(partnerProduct -> ProductId.ofRepoId(partnerProduct.getM_Product_ID()))
 					.collect(ImmutableSet.toImmutableSet());
@@ -810,13 +794,55 @@ public final class ProductBL implements IProductBL
 			}
 		}
 
-		return productsRepo.getProductIdByEAN13ProductCode(ean13.getProductNo(), clientId);
+		return productsRepo.getProductIdByGTINStrictly(gtin, clientId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByGTINStrictly(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return productsRepo.getProductIdByGTINStrictly(gtin, clientId);
+	}
+
+	@Override
+	public ProductId getProductIdByGTINStrictlyNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return getProductIdByGTINStrictly(gtin, clientId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ " + gtin));
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13) {return getProductIdByEAN13(ean13, null, ClientId.METASFRESH);}
+
+	@Override
+	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13, @Nullable final BPartnerId bpartnerId, @NonNull final ClientId clientId)
+	{
+		return getProductIdByGTIN(ean13.toGTIN(), bpartnerId, clientId);
+	}
+
+	private Optional<ProductId> getProductIdByEAN13ProductCode(
+			@NonNull final EAN13ProductCode ean13ProductCode,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ClientId clientId)
+	{
+		if (bpartnerId != null)
+		{
+			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByEAN13ProductCode(ean13ProductCode, bpartnerId)
+					.stream()
+					.map(partnerProduct -> ProductId.ofRepoId(partnerProduct.getM_Product_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+			if (productIds.size() == 1)
+			{
+				return Optional.of(productIds.iterator().next());
+			}
+		}
+
+		return productsRepo.getProductIdByEAN13ProductCode(ean13ProductCode, clientId);
 	}
 
 	@Override
 	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId, @Nullable final BPartnerId bpartnerId)
 	{
-		return getEAN13ProductCodes(expectedProductId).isValidProductNo(ean13, bpartnerId);
+		return getGS1ProductCodesCollection(expectedProductId).isValidProductNo(ean13, bpartnerId);
 	}
 
 	@Override

@@ -25,9 +25,9 @@ package de.metas.product;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
-import de.metas.gs1.ean13.EAN13;
-import de.metas.gs1.ean13.EAN13ProductCodes;
+import de.metas.gs1.GS1ProductCodesCollection;
 import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
@@ -203,9 +203,9 @@ public interface IProductBL extends ISingletonService
 
 	String getProductValue(ProductId productId);
 
-	EAN13ProductCodes getEAN13ProductCodes(@NonNull ProductId productId);
+	GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull ProductId productId);
 
-	EAN13ProductCodes getEAN13ProductCodes(@NonNull I_M_Product product);
+	GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull I_M_Product product);
 
 	ExplainedOptional<EAN13> getEAN13(@NonNull ProductId productId);
 
@@ -246,11 +246,13 @@ public interface IProductBL extends ISingletonService
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
 
-	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin);
 
-	ProductId getProductIdByGTINNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
 
-	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByGTINStrictly(@NonNull GTIN gtin, @NonNull ClientId clientId);
+
+	ProductId getProductIdByGTINStrictlyNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
 	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13);
 
