@@ -39,8 +39,8 @@ Feature: EDI_cctop_invoic_v export format
       | 2155894                  | bPartnerVaTaxID |
 
     And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN            | OPT.EAN_CU           |
-      | bp_1                             | 2156425                  | convenienceSalate       | bPartnerProductGTIN | bPartnerProductEANCU |
+      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
+      | bp_1                             | 2156425                  | convenienceSalate       | 0575095404663 |
 
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.GLN       |
@@ -131,8 +131,8 @@ Feature: EDI_cctop_invoic_v export format
       | ic_1                             | d_1                                |
 
     And EDI_cctop_invoic_500_v of the following EDI_cctop_invoic_v is validated
-      | EDI_cctop_invoic_v_ID.Identifier | OPT.Buyer_GTIN_CU   | OPT.Buyer_EAN_CU     | OPT.Supplier_GTIN_CU | OPT.Buyer_GTIN_TU | OPT.GTIN        |
-      | ic_1                             | bPartnerProductGTIN | bPartnerProductEANCU | productGTIN          | itemProductGTIN   | itemProductGTIN |
+      | EDI_cctop_invoic_v_ID.Identifier | OPT.Buyer_GTIN_CU | OPT.Buyer_EAN_CU | OPT.Supplier_GTIN_CU | OPT.Buyer_GTIN_TU | OPT.GTIN        |
+      | ic_1                             | 0575095404663     | 0575095404663    | productGTIN          | itemProductGTIN   | itemProductGTIN |
 
     And validate EDI_cctop_119_v within EDI_cctop_invoic_v ic_1 by location type
       | eancom_locationtype | OPT.Contact |

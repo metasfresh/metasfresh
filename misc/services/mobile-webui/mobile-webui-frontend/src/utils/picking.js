@@ -4,10 +4,6 @@ import * as CompleteStatus from '../constants/CompleteStatus';
 export const isUserEditable = ({ activity }) => activity?.dataStored?.isUserEditable ?? false;
 
 export const isLineLevelPickTarget = ({ activity }) => {
-  console.log('isLineLevelPickTarget', {
-    activity,
-    isLineLevelPickTarget: activity?.dataStored?.isLineLevelPickTarget,
-  });
   return activity?.dataStored?.isLineLevelPickTarget;
 };
 

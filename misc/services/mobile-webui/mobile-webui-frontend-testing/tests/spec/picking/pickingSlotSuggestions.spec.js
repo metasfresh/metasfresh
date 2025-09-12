@@ -52,7 +52,7 @@ const createMasterdata = async ({ displayPickingSlotSuggestions } = {}) => {
                 },
                 products: {
                     "P1": { price: 1 },
-                    "P2": { price: 1, bpartners: [{ bpartner: "customer1", cu_ean: '7617027667203' }] },
+                    "P2": { price: 1, bpartners: [{ bpartner: "customer1", ean13: '7617027667203' }] },
                 },
                 packingInstructions: {
                     "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4, tu_ean: '7617027667210' },

@@ -1,7 +1,10 @@
-package de.metas.ean13;
+package de.metas.gs1;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13Prefix;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -14,36 +17,24 @@ import java.util.Optional;
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString
 @Builder
-public class EAN13ProductCodes
+public class GS1ProductCodesCollection
 {
 	@NonNull private final String productValue;
-	@Nullable private final EAN13ProductCode defaultCode;
-	@NonNull @Singular private final ImmutableMap<BPartnerId, EAN13ProductCode> codes;
-
-	public Optional<EAN13ProductCode> getCode(@Nullable final BPartnerId bpartnerId)
-	{
-		if (bpartnerId != null)
-		{
-			final EAN13ProductCode code = codes.get(bpartnerId);
-			if (code != null)
-			{
-				return Optional.of(code);
-			}
-		}
-
-		return Optional.ofNullable(defaultCode);
-	}
+	@NonNull private final GS1ProductCodes defaultCodes;
+	@NonNull @Singular("codes") private final ImmutableMap<BPartnerId, GS1ProductCodes> codesByBPartnerId;
 
 	public boolean contains(@NonNull final EAN13ProductCode expectedProductNo, @Nullable final BPartnerId bpartnerId)
 	{
-		final EAN13ProductCode actualProductNo = getCode(bpartnerId).orElse(null);
-		return actualProductNo != null && EAN13ProductCode.equals(expectedProductNo, actualProductNo);
+		final GS1ProductCodes bpartnerCodes = bpartnerId != null ? codesByBPartnerId.get(bpartnerId) : null;
+		return (bpartnerCodes != null && bpartnerCodes.isMatching(expectedProductNo))
+				|| defaultCodes.isMatching(expectedProductNo);
 	}
 
 	private boolean endsWith(@NonNull final EAN13ProductCode expectedProductNo, @Nullable final BPartnerId bpartnerId)
 	{
-		final EAN13ProductCode actualProductNo = getCode(bpartnerId).orElse(null);
-		return actualProductNo != null && actualProductNo.endsWith(expectedProductNo);
+		final GS1ProductCodes bpartnerCodes = bpartnerId != null ? codesByBPartnerId.get(bpartnerId) : null;
+		return (bpartnerCodes != null && bpartnerCodes.endsWith(expectedProductNo))
+				|| defaultCodes.endsWith(expectedProductNo);
 	}
 
 	public boolean isValidProductNo(@NonNull final EAN13 ean13, @Nullable final BPartnerId bpartnerId)
@@ -67,7 +58,15 @@ public class EAN13ProductCodes
 		{
 			return endsWith(ean13ProductNo, bpartnerId);
 		}
-
 	}
 
+	public Optional<GS1ProductCodes> getEffectiveCodes(@Nullable final BPartnerId bpartnerId)
+	{
+		final GS1ProductCodes bpartnerCodes = bpartnerId != null ? codesByBPartnerId.get(bpartnerId) : null;
+		final GS1ProductCodes effectiveCodes = bpartnerCodes != null
+				? bpartnerCodes.fallbackTo(defaultCodes)
+				: defaultCodes;
+
+		return Optional.ofNullable(effectiveCodes.isEmpty() ? null : effectiveCodes);
+	}
 }

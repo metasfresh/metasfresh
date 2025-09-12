@@ -1,8 +1,8 @@
 package de.metas.handlingunits.picking.job.service.commands.pick;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.ean13.EAN13;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -140,7 +140,7 @@ class PickFromHUQRCodeResolver
 		final GTIN gtin = pickFromHUQRCode.getGTIN().orElse(null);
 		if (gtin != null)
 		{
-			final ProductId gs1ProductId = productBL.getProductIdByGTINNotNull(gtin, ClientId.METASFRESH);
+			final ProductId gs1ProductId = productBL.getProductIdByGTINStrictlyNotNull(gtin, ClientId.METASFRESH);
 			if (!ProductId.equals(expectedProductId, gs1ProductId))
 			{
 				throw new AdempiereException(ERR_QR_ProductNotMatching)

@@ -3,8 +3,8 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.ean13.EAN13ProductCode;
-import de.metas.ean13.EAN13ProductCodes;
+import de.metas.gs1.GS1ProductCodes;
+import de.metas.gs1.GS1ProductCodesCollection;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -143,9 +143,9 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public Optional<EAN13ProductCode> getEAN13ProductCode(@NonNull final ProductId productId, @Nullable final BPartnerId customerId)
+	public Optional<GS1ProductCodes> getGS1ProductCodes(@NonNull final ProductId productId, @Nullable final BPartnerId customerId)
 	{
-		return getProductInfo(productId).getEan13ProductCodes().getCode(customerId);
+		return getProductInfo(productId).getGs1ProductCodes().getEffectiveCodes(customerId);
 	}
 
 	@Override
@@ -169,12 +169,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private ProductInfo retrieveProductInfo(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = productBL.getById(productId);
-		final EAN13ProductCodes ean13ProductCodes = productBL.getEAN13ProductCodes(product);
+		final GS1ProductCodesCollection gs1ProductCodes = productBL.getGS1ProductCodesCollection(product);
 		
 		return ProductInfo.builder()
 				.productId(productId)
 				.productNo(product.getValue())
-				.ean13ProductCodes(ean13ProductCodes)
+				.gs1ProductCodes(gs1ProductCodes)
 				.productCategoryId(ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()))
 				.name(InterfaceWrapperHelper.getModelTranslationMap(product).getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName()))
 				.build();
@@ -230,7 +230,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	{
 		@NonNull ProductId productId;
 		@NonNull String productNo;
-		@NonNull EAN13ProductCodes ean13ProductCodes;
+		@NonNull GS1ProductCodesCollection gs1ProductCodes;
 		@NonNull ProductCategoryId productCategoryId;
 		@NonNull ITranslatableString name;
 	}
