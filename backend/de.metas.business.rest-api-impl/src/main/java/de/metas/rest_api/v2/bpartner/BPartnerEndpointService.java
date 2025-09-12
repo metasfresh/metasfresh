@@ -42,6 +42,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.util.JsonConverters;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -143,11 +144,28 @@ public class BPartnerEndpointService
 
 	public Optional<JsonResponseCompositeList> retrieveBPartnersSince(
 			@Nullable final Long epochMilli,
-			@Nullable final String nextPageId)
+			@Nullable final String nextPageId,
+			@Nullable final String orgCode)
 	{
-		final SinceQuery sinceQuery = SinceQuery.anyEntity(
-				extractInstant(epochMilli),
-				getPageSize());
+
+		final SinceQuery sinceQuery;
+
+		if (Check.isBlank(orgCode))
+		{
+			sinceQuery = SinceQuery.anyEntity(
+					extractInstant(epochMilli),
+					getPageSize());
+
+		}
+		else
+		{
+			final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+
+			sinceQuery = SinceQuery.anyEntityForOrg(
+					extractInstant(epochMilli),
+					getPageSize(),
+					orgId);
+		}
 
 		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(nextPageId);
 
