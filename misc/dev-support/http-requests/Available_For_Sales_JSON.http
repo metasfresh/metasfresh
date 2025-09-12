@@ -8,6 +8,14 @@ accept: application/json;charset=UTF-8
     {
       "name": "ExternalSystem",
       "value": "ProCareManagement"
+    },
+    {
+    "name": "Limit",
+    "value": "2000"
+    },
+    {
+      "name": "Offset",
+      "value": "0"
     }
   ]
 }
