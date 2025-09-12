@@ -24,14 +24,7 @@ package de.metas.cucumber.stepdefs.allocation;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
-<<<<<<< HEAD
 import de.metas.cucumber.stepdefs.DataTableUtil;
-=======
-import de.metas.allocation.api.PaymentAllocationLineId;
-import de.metas.cucumber.stepdefs.DataTableRow;
-import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
->>>>>>> c2cff50176 (Fix payment to payment allocation reversal posting error)
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.util.Services;
@@ -39,16 +32,11 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 
-<<<<<<< HEAD
 import java.math.BigDecimal;
-=======
-import java.util.HashSet;
->>>>>>> c2cff50176 (Fix payment to payment allocation reversal posting error)
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,7 +66,6 @@ public class C_AllocationLine_StepDef
 	@And("validate C_AllocationLines")
 	public void validate_C_AllocationLines(@NonNull final DataTable dataTable)
 	{
-<<<<<<< HEAD
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> dataTableRow : rows)
 		{
@@ -101,38 +88,6 @@ public class C_AllocationLine_StepDef
 
 			validateAllocationLine(singleAllocationLine, dataTableRow);
 		}
-=======
-		final HashSet<PaymentAllocationLineId> alreadyCheckedLineIds = new HashSet<>();
-		DataTableRows.of(dataTable)
-				.forEach(row -> validate_C_AllocationLine(row, alreadyCheckedLineIds));
-	}
-
-	private void validate_C_AllocationLine(@NonNull final DataTableRow row, @NonNull final HashSet<PaymentAllocationLineId> alreadyCheckedLineIds)
-	{
-		final InvoiceId invoiceId = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
-				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
-				.map(invoiceTable::getId)
-				.orElse(null);
-		final PaymentId paymentId = row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
-				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
-				.map(paymentTable::getId)
-				.orElse(null);
-
-		final IQueryBuilder<I_C_AllocationLine> queryBuilder = queryBL.createQueryBuilder(I_C_AllocationLine.class)
-				.orderBy(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId);
-		if (!alreadyCheckedLineIds.isEmpty())
-		{
-			queryBuilder.addNotInArrayFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationLine_ID, alreadyCheckedLineIds);
-		}
-		final I_C_AllocationLine allocationLine = queryBuilder.create().firstNotNull(I_C_AllocationLine.class);
-
-		validateAllocationLine(allocationLine, row);
-
-		alreadyCheckedLineIds.add(PaymentAllocationLineId.ofRepoId(allocationLine.getC_AllocationHdr_ID(), allocationLine.getC_AllocationLine_ID()));
->>>>>>> c2cff50176 (Fix payment to payment allocation reversal posting error)
 	}
 
 	@And("^validate C_AllocationLines for invoice (.*)$")
