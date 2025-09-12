@@ -252,7 +252,7 @@ public class BpartnerRestController
 	{
 		try
 		{
-			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(epochTimestampMillis, next, orgCode);
+			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(orgCode, epochTimestampMillis, next);
 			return okOrNotFound(result);
 		}
 		catch (final Exception ex)

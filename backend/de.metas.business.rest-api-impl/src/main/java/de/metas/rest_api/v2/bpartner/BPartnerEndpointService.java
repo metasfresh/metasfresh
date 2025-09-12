@@ -143,9 +143,10 @@ public class BPartnerEndpointService
 	}
 
 	public Optional<JsonResponseCompositeList> retrieveBPartnersSince(
+			@Nullable final String orgCode,
 			@Nullable final Long epochMilli,
-			@Nullable final String nextPageId,
-			@Nullable final String orgCode)
+			@Nullable final String nextPageId
+	)
 	{
 
 		final SinceQuery sinceQuery;
