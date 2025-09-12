@@ -13,7 +13,7 @@ const createMasterdata = async ({
                                     filterByQRCode,
                                     anonymousPickHUsOnTheFly,
                                     displayPickingSlotSuggestions,
-                                    P1_ean13ProductCode,
+                                    P1_EAN13,
                                     P1_TU_EAN13,
                                     P2_CUSTOMER1_EAN13,
                                 } = {}) => {
@@ -54,7 +54,7 @@ const createMasterdata = async ({
                 slot3: {},
             },
             products: {
-                "P1": { price: 1, ean13ProductCode: P1_ean13ProductCode },
+                "P1": { price: 1, gtin: P1_EAN13 },
                 "P2": { price: 1, bpartners: [{ bpartner: "customer1", ean13: P2_CUSTOMER1_EAN13 }] },
             },
             packingInstructions: {
@@ -249,12 +249,12 @@ test('Product based aggregation', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Filter by EAN13', async ({ page }) => {
-    const P1_ean13 = generateEAN13();
+    const P1_EAN13 = generateEAN13();
     const P1_TU_EAN13 = generateEAN13();
     const P2_CUSTOMER1_EAN13 = generateEAN13();
     const masterdata = await createMasterdata({
         filterByQRCode: true,
-        P1_ean13ProductCode: P1_ean13.productCode,
+        P1_EAN13: P1_EAN13.ean13,
         P1_TU_EAN13: P1_TU_EAN13.ean13,
         P2_CUSTOMER1_EAN13: P2_CUSTOMER1_EAN13.ean13,
     });
@@ -291,7 +291,7 @@ test('Filter by EAN13', async ({ page }) => {
     });
 
     await test.step('Filter by EAN13 Product Code', async () => {
-        await PickingJobsListScreen.filterByQRCode(P1_ean13.ean13);
+        await PickingJobsListScreen.filterByQRCode(P1_EAN13.ean13);
         await PickingJobsListScreen.expectJobButtons([
             { qtyToDeliver: 72, productId: masterdata.products.P1.id },
         ]);
