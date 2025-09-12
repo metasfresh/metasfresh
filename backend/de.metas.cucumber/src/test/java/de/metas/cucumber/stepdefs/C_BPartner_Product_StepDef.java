@@ -24,6 +24,8 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import io.cucumber.datatable.DataTable;
@@ -127,8 +129,8 @@ public class C_BPartner_Product_StepDef
 		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(row, COLUMNNAME_SeqNo);
 		final String productNo = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ProductNo);
 		final String description = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Description);
-		final String ean = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_EAN_CU);
-		final String gtin = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_GTIN);
+		final EAN13 ean = EAN13.fromNullableString(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_EAN_CU));
+		final GTIN gtin = GTIN.ofNullableString(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_GTIN));
 		final String customerLabelName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_CustomerLabelName);
 		final String ingredients = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Ingredients);
 		final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsExcludedFromSale);
@@ -168,9 +170,9 @@ public class C_BPartner_Product_StepDef
 		final StepDefDataIdentifier bpartnerIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
 		final BPartnerId bpartnerId = bPartnerTable.getIdOptional(bpartnerIdentifier)
 				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
-		
+
 		bPartnerProductRecord.setC_BPartner_ID(bpartnerId.getRepoId());
-		
+
 		bPartnerProductRecord.setUsedForVendor(tableRow.getAsOptionalBoolean(COLUMNNAME_UsedForVendor).orElse(true));
 		bPartnerProductRecord.setIsExcludedFromSale(tableRow.getAsOptionalBoolean(COLUMNNAME_IsExcludedFromSale).orElse(false));
 		tableRow.getAsOptionalString(COLUMNNAME_ExclusionFromSaleReason).ifPresent(bPartnerProductRecord::setExclusionFromSaleReason);

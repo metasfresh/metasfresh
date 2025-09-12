@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -35,10 +36,18 @@ public final class EAN13
 		return fromString(scannedCode.getAsString());
 	}
 
-	@JsonCreator
 	public static ExplainedOptional<EAN13> fromString(@NonNull final String barcode)
 	{
 		return EAN13Parser.parse(barcode);
+	}
+
+	@JsonCreator
+	public static EAN13 fromNullableString(@Nullable final String barcode)
+	{
+		final String barcodeNorm = StringUtils.trimBlankToNull(barcode);
+		return barcodeNorm != null
+				? EAN13Parser.parse(barcodeNorm).orElseThrow()
+				: null;
 	}
 
 	@Override

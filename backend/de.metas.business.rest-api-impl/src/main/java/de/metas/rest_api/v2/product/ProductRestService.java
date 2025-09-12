@@ -48,6 +48,8 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
@@ -111,7 +113,6 @@ public class ProductRestService
 	private final @NonNull ProductPriceRestService productPriceRestService;
 	private final @NonNull ProductTaxCategoryService productTaxCategoryService;
 	private final @NonNull UomConversionRestService uomConversionRestService;
-
 
 	@NonNull
 	public JsonResponseUpsert upsertProducts(
@@ -543,7 +544,7 @@ public class ProductRestService
 		// ean
 		if (jsonRequestBPartnerProductUpsert.isCuEANSet())
 		{
-			builder.cuEAN(jsonRequestBPartnerProductUpsert.getCuEAN());
+			builder.cuEAN(EAN13.fromNullableString(jsonRequestBPartnerProductUpsert.getCuEAN()));
 		}
 		else
 		{
@@ -553,7 +554,7 @@ public class ProductRestService
 		// gtin
 		if (jsonRequestBPartnerProductUpsert.isGtinSet())
 		{
-			builder.gtin(jsonRequestBPartnerProductUpsert.getGtin());
+			builder.gtin(GTIN.ofNullableString(jsonRequestBPartnerProductUpsert.getGtin()));
 		}
 		else
 		{
