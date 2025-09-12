@@ -12,6 +12,8 @@ const createMasterdata = async ({
                                     showLastPickedBestBeforeDateForLines,
                                     productValuePrefix,
                                     productRandomValue,
+                                    gtin,
+                                    ean13ProductCode,
                                     customQRCodeFormats = []
                                 } = {}) => {
     return await Backend.createMasterdata({
@@ -42,8 +44,8 @@ const createMasterdata = async ({
                 "P1": {
                     valuePrefix: productValuePrefix,
                     randomValue: productRandomValue,
-                    gtin: '97311876341811',
-                    ean13ProductCode: '4888',
+                    gtin,
+                    ean13ProductCode,
                     uom: 'PCE',
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
                     prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }]
@@ -213,7 +215,7 @@ test('Leich+Mehl', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('GS1', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdata({ gtin: '97311876341811' });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -323,7 +325,7 @@ test('EAN13 with prefix 28 and not matching product', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('EAN13 with prefix 29', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdata({ ean13ProductCode: '4888' });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();

@@ -1,5 +1,8 @@
 package de.metas.ean13;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.i18n.ExplainedOptional;
 import org.junit.jupiter.api.Nested;
@@ -11,6 +14,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class EAN13Test
 {
+	@Test
+	public void testSerializeDeserialize() throws JsonProcessingException
+	{
+		testSerializeDeserialize(EAN13.ofString("2859414004825").orElseThrow());
+	}
+
+	private static void testSerializeDeserialize(final EAN13 ean13) throws JsonProcessingException
+	{
+		System.out.println("EAN13: " + ean13);
+
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		final String json = jsonObjectMapper.writeValueAsString(ean13);
+		System.out.println("JSON: " + json);
+
+		final EAN13 ean13Deserialized = jsonObjectMapper.readValue(json, EAN13.class);
+		System.out.println("EAN13 deserialized: " + ean13Deserialized);
+		
+		assertThat(ean13Deserialized).isEqualTo(ean13);
+	}
+
 	@Nested
 	class parse
 	{

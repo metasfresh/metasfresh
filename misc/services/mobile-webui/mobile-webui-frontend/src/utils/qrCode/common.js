@@ -44,6 +44,12 @@ export const isBarcodeProductNoMatching = ({
   barcodeProductNo,
   barcodeType,
 }) => {
+  console.log('isBarcodeProductNoMatching', {
+    expectedProductNo,
+    expectedGS1ProductCodes,
+    barcodeProductNo,
+    barcodeType,
+  });
   // if no barcode productNo provided, then there is nothing to validate
   if (!barcodeProductNo) {
     return true;
@@ -69,9 +75,10 @@ export const isBarcodeProductNoMatching = ({
 const isEAN13MatchingGS1ProductCodes = ({ barcodeProductNo, expectedGS1ProductCodes }) => {
   if (!expectedGS1ProductCodes) return false; // IMPORTANT: at this point, we consider missing expectations as not matching
 
-  // TODO handle
+  // TODO handle:
   // expectedGS1ProductCodes.gtin
   // expectedGS1ProductCodes.ean13
+  // NOTE: atm is not really needed because when we reach this point we expect only variable weight (prefix 28, 29) EAN13 product codes
 
   if (
     expectedGS1ProductCodes.ean13ProductCode &&

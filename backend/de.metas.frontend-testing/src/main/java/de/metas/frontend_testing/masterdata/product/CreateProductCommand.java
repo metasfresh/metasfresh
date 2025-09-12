@@ -12,6 +12,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.logging.LogManager;
@@ -95,6 +96,7 @@ public class CreateProductCommand
 		return JsonCreateProductResponse.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.productCode(productRecord.getValue())
+				.gtin(GTIN.ofNullableString(productRecord.getGTIN()))
 				.ean13ProductCode(EAN13ProductCode.ofNullableString(productRecord.getEAN13_ProductCode()))
 				.build();
 	}
@@ -111,8 +113,8 @@ public class CreateProductCommand
 		productRecord.setAD_Org_ID(orgId.getRepoId());
 		productRecord.setValue(value);
 		productRecord.setName(value);
-		productRecord.setGTIN(request.getGtin());
-		productRecord.setEAN13_ProductCode(StringUtils.trimBlankToNull(request.getEan13ProductCode()));
+		productRecord.setGTIN(request.getGtin() != null ? request.getGtin().getAsString() : null);
+		productRecord.setEAN13_ProductCode(request.getEan13ProductCode() != null ? request.getEan13ProductCode().getAsString() : null);
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
 		productRecord.setProductType(ProductType.Item.getCode());
 		productRecord.setIsStocked(true);
@@ -255,14 +257,14 @@ public class CreateProductCommand
 	private void createBPartnerProduct(@NonNull final JsonCreateProductRequest.BPartner bpartner, @NonNull final ProductId productId)
 	{
 		final BPartnerId bpartnerId = context.getId(bpartner.getBpartner(), BPartnerId.class);
-		final EAN13 cuEAN = EAN13.ofNullableString(bpartner.getCu_ean());
+		final EAN13 ean13 = bpartner.getEan13();
 
 		//
 		// Make sure there are no previous C_BPartner_Products with the same EAN13 because that will fail our tests
-		if (cuEAN != null)
+		if (ean13 != null)
 		{
 			productRepository.updateBPartnerProductsByQuery(
-					BPartnerProductQuery.builder().cuEANs(InSetPredicate.only(cuEAN)).build(),
+					BPartnerProductQuery.builder().cuEANs(InSetPredicate.only(ean13)).build(),
 					bpartnerProduct -> {
 						logger.info("Updating CU EAN of bpartner product {} to null", bpartnerProduct);
 						return bpartnerProduct.toBuilder().cuEAN(null).build();
@@ -274,7 +276,7 @@ public class CreateProductCommand
 				.productId(productId)
 				.bPartnerId(bpartnerId)
 				.usedForCustomer(true)
-				.cuEAN(cuEAN != null ? cuEAN.getAsString() : null)
+				.cuEAN(ean13 != null ? ean13.getAsString() : null)
 				.build());
 	}
 
@@ -376,7 +378,7 @@ public class CreateProductCommand
 
 	private void renamePreviousEAN13ProductCodes()
 	{
-		final String ean13ProductCode = StringUtils.trimBlankToNull(request.getEan13ProductCode());
+		final EAN13ProductCode ean13ProductCode = request.getEan13ProductCode();
 		if (ean13ProductCode == null)
 		{
 			return;
@@ -384,7 +386,7 @@ public class CreateProductCommand
 
 		queryBL.createQueryBuilder(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
 				.create()
 				.forEach(record -> {
 					final String ean13ProductCode_before = record.getEAN13_ProductCode();

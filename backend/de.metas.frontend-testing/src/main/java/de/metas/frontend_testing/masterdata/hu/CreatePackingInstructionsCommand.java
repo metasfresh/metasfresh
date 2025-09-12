@@ -4,6 +4,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -52,7 +53,7 @@ public class CreatePackingInstructionsCommand
 		renamePreviousEANs();
 
 		//
- 		// TU or CU
+		// TU or CU
 		final PIResult tu;
 		final JsonTestId tuPIItemProductTestId;
 		if (request.isCu())
@@ -68,7 +69,7 @@ public class CreatePackingInstructionsCommand
 		}
 
 		//
- 		// LU
+		// LU
 		final PIResult lu;
 		final I_M_HU_PI_Item luPIItem;
 		final JsonTestId luPIItemTestId;
@@ -201,7 +202,7 @@ public class CreatePackingInstructionsCommand
 		record.setQty(request.getQtyCUsPerTUNotNull());
 		record.setC_UOM_ID(uomId.getRepoId());
 		record.setValidFrom(Timestamp.from(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant()));
-		record.setEAN_TU(StringUtils.trimBlankToNull(request.getTu_ean()));
+		record.setEAN_TU(request.getTu_ean() != null ? request.getTu_ean().getAsString() : null);
 		saveRecord(record);
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID());
 
@@ -213,7 +214,7 @@ public class CreatePackingInstructionsCommand
 
 	private void renamePreviousEANs()
 	{
-		final String tu_ean = StringUtils.trimBlankToNull(request.getTu_ean());
+		final EAN13 tu_ean = request.getTu_ean();
 		if (tu_ean == null)
 		{
 			return;
@@ -221,7 +222,7 @@ public class CreatePackingInstructionsCommand
 
 		queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, tu_ean)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, tu_ean.getAsString())
 				.create()
 				.forEach(record -> {
 					final String tuEAN_before = record.getEAN_TU();
