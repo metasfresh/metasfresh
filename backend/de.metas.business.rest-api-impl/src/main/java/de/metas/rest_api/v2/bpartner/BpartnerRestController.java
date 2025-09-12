@@ -235,6 +235,7 @@ public class BpartnerRestController
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
 			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
 	})
+	@GetMapping
 	public ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSince(
 
 			@ApiParam(value = ORG_CODE_PARAMETER_DOC)//
