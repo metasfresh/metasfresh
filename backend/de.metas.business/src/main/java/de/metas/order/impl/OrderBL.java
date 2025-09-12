@@ -322,7 +322,7 @@ public class OrderBL implements IOrderBL
 		final CountryId countryId = partnerBL.getCountryId(shipToBPLocationId);
 
 		final IPriceListDAO priceListDAO = this.priceListDAO;
-		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx);
+		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx, null);
 	}
 
 	@Override
@@ -907,6 +907,17 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	@Nullable
+	public BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_C_Order orderRecord)
+	{
+		if (orderRecord.isDropShip() && orderRecord.getDropShip_BPartner_ID() > 0)
+		{
+			return BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID());
+		}
+		return BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
+	}
+
+	@Override
 	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
 	{
@@ -1232,10 +1243,7 @@ public class OrderBL implements IOrderBL
 		{
 			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
 			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
-			if (billLocationEmail != null)
-			{
-				return billLocationEmail;
-			}
+			return billLocationEmail;
 		}
 
 		//

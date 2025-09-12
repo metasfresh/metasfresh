@@ -51,6 +51,90 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Pick to top level CU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_CU (boolean AllowPickToStructure_CU);
+
+	/**
+	 * Get Pick to top level CU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickToStructure_CU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_AllowPickToStructure_CU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "AllowPickToStructure_CU", null);
+	String COLUMNNAME_AllowPickToStructure_CU = "AllowPickToStructure_CU";
+
+	/**
+	 * Set Pick to LU/CU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_LU_CU (boolean AllowPickToStructure_LU_CU);
+
+	/**
+	 * Get Pick to LU/CU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickToStructure_LU_CU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_AllowPickToStructure_LU_CU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "AllowPickToStructure_LU_CU", null);
+	String COLUMNNAME_AllowPickToStructure_LU_CU = "AllowPickToStructure_LU_CU";
+
+	/**
+	 * Set Pick to LU/TU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_LU_TU (boolean AllowPickToStructure_LU_TU);
+
+	/**
+	 * Get Pick to LU/TU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickToStructure_LU_TU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_AllowPickToStructure_LU_TU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "AllowPickToStructure_LU_TU", null);
+	String COLUMNNAME_AllowPickToStructure_LU_TU = "AllowPickToStructure_LU_TU";
+
+	/**
+	 * Set Pick to top level TU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAllowPickToStructure_TU (boolean AllowPickToStructure_TU);
+
+	/**
+	 * Get Pick to top level TU structure.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickToStructure_TU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_AllowPickToStructure_TU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "AllowPickToStructure_TU", null);
+	String COLUMNNAME_AllowPickToStructure_TU = "AllowPickToStructure_TU";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -164,27 +248,6 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowCompletingPartialPickingJob = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowCompletingPartialPickingJob", null);
 	String COLUMNNAME_IsAllowCompletingPartialPickingJob = "IsAllowCompletingPartialPickingJob";
-
-	/**
-	 * Set Allow new TU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowNewTU (boolean IsAllowNewTU);
-
-	/**
-	 * Get Allow new TU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAllowNewTU();
-
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowNewTU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowNewTU", null);
-	String COLUMNNAME_IsAllowNewTU = "IsAllowNewTU";
 
 	/**
 	 * Set Allow picking any HU.
@@ -382,27 +445,6 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsFilterByBarcode = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsFilterByBarcode", null);
 	String COLUMNNAME_IsFilterByBarcode = "IsFilterByBarcode";
-
-	/**
-	 * Set Pick with LU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsPickingWithNewLU (boolean IsPickingWithNewLU);
-
-	/**
-	 * Get Pick with LU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isPickingWithNewLU();
-
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsPickingWithNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsPickingWithNewLU", null);
-	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
 
 	/**
 	 * Set Ship after closing LU.

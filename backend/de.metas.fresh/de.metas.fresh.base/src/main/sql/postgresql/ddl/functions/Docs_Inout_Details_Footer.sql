@@ -76,7 +76,7 @@ FROM (
          --Descriptionbottom
          SELECT io.descriptionbottom             AS textleft,
                 NULL                             AS textcenter,
-                NULL                             AS language,
+                (SELECT l.AD_Language FROM AD_Language l WHERE l.IsBaseLanguage = 'Y' AND l.isActive = 'Y') AS language,
                 io.m_inout_id                    AS m_inout_id,
                 'descr'                          AS tag,
                 2                                AS pozition,

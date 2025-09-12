@@ -286,6 +286,31 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_Current_PickTo_LU_QRCode = "Current_PickTo_LU_QRCode";
 
 	/**
+	 * Set Current Pick To TU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_TU_ID (int Current_PickTo_TU_ID);
+
+	/**
+	 * Get Current Pick To TU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_PickTo_TU_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU getCurrent_PickTo_TU();
+
+	void setCurrent_PickTo_TU(@Nullable de.metas.handlingunits.model.I_M_HU Current_PickTo_TU);
+
+	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_HU> COLUMN_Current_PickTo_TU_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_TU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_Current_PickTo_TU_ID = "Current_PickTo_TU_ID";
+
+	/**
 	 * Set Current Pick To TU PI.
 	 *
 	 * <br>Type: Search
@@ -309,6 +334,27 @@ public interface I_M_Picking_Job_Line
 
 	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_Current_PickTo_TU_PI_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_TU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
 	String COLUMNNAME_Current_PickTo_TU_PI_ID = "Current_PickTo_TU_PI_ID";
+
+	/**
+	 * Set Current Pick To TU QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_TU_QRCode (@Nullable java.lang.String Current_PickTo_TU_QRCode);
+
+	/**
+	 * Get Current Pick To TU QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrent_PickTo_TU_QRCode();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Current_PickTo_TU_QRCode = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_TU_QRCode", null);
+	String COLUMNNAME_Current_PickTo_TU_QRCode = "Current_PickTo_TU_QRCode";
 
 	/**
 	 * Set Active.

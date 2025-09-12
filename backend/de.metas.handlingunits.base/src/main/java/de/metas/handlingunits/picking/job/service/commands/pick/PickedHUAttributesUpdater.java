@@ -2,6 +2,9 @@ package de.metas.handlingunits.picking.job.service.commands.pick;
 
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
@@ -38,7 +41,7 @@ class PickedHUAttributesUpdater
 		if (catchWeight == null) {return;}
 
 		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL, HUContextHolder.getCurrent(), productId, catchWeight);
-		weightUpdater.updatePackToHUs(result.getAllTURecords());
+		weightUpdater.updatePackToHUs(result);
 	}
 
 	private void updatePickAttributes(@NonNull final LUTUResult result, final @NonNull PickAttributes pickAttributes)
@@ -47,16 +50,33 @@ class PickedHUAttributesUpdater
 		result.getTopLevelTUs().forEach(tu -> updateTUPickAttributes(tu, pickAttributes));
 	}
 
-	private void updateLUPickAttributes(@NonNull final LUTUResult.LU lu, @NonNull PickAttributes pickAttributes)
+	private void updateLUPickAttributes(@NonNull final LU lu, @NonNull PickAttributes pickAttributes)
 	{
 		lu.getTus().forEach(tu -> updateTUPickAttributes(tu, pickAttributes));
 
 		updateHUPickAttributes(lu.toHU(), pickAttributes, lu.isPreExistingLU());
 	}
 
-	private void updateTUPickAttributes(@NonNull final LUTUResult.TU tu, @NonNull final PickAttributes pickAttributes)
+	private void updateTUPickAttributes(@NonNull final TU tu, @NonNull final PickAttributes pickAttributes)
 	{
-		updateHUPickAttributes(tu.toHU(), pickAttributes, false);
+		if (tu.isFullTU())
+		{
+			updateHUPickAttributes(tu.toHU(), pickAttributes, false);
+		}
+		else
+		{
+			for (final TUPart cu : tu.getCUsNotEmpty())
+			{
+				updateCUPickAttributes(cu, pickAttributes);
+			}
+			
+			updateHUPickAttributes(tu.toHU(), pickAttributes, true);
+		}
+	}
+
+	private void updateCUPickAttributes(@NonNull final TUPart cu, @NonNull final PickAttributes pickAttributes)
+	{
+		updateHUPickAttributes(cu.toHU(), pickAttributes, false);
 	}
 
 	private void updateHUPickAttributes(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes, final boolean recomputeFromChildren)

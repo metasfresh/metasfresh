@@ -44,6 +44,7 @@ public class LoginUserCommand
 		InterfaceWrapperHelper.save(user);
 		userBL.save(user);
 		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
+		context.putIdentifier(identifier, userId);
 
 		//noinspection UnnecessaryLocalVariable
 		final String password = login; // for convenience, we use the same password as user // UUID.randomUUID().toString().replace("-", "");

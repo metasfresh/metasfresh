@@ -9,6 +9,7 @@ import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
 import { PickFromHUScanScreen } from './PickFromHUScanScreen';
 import { expect } from '@playwright/test';
 import { PickLineScanScreen } from './PickLineScanScreen';
+import { PickingJobLineScreen } from './PickingJobLineScreen';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -55,7 +56,7 @@ export const PickingJobScreen = {
         await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    scanPickingSlot: async ({ qrCode, expectNextScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
+    scanPickingSlot: async ({ qrCode, expectNextScreen, gotoPickingJobScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
         await PickingJobScreen.clickPickingSlotButton();
         await PickingSlotScanScreen.typeQRCode(qrCode);
 
@@ -64,9 +65,18 @@ export const PickingJobScreen = {
             await PickingJobScreen.expectPickingSlotButtonGreen();
         } else if (expectNextScreen === 'PickLineScanScreen') {
             await PickLineScanScreen.waitForScreen();
+            if(gotoPickingJobScreen) {
+                await step('Go back from PickLineScanScreen to PickingJobScreen', async () => {
+                    await PickLineScanScreen.goBack();
+                    await PickingJobLineScreen.goBack();
+                });
+            }
         } else if (expectNextScreen === 'PickingSlotScanScreen') {
             await PickingSlotScanScreen.waitForScreen();
             await PickingSlotScanScreen.waitForInputFieldToGetEmpty();
+            if(gotoPickingJobScreen) {
+                throw new Error("GO back from PickingSlotScanScreen to PickingJobScreen is not implemented yet.");
+            }
         } else {
             throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
         }
@@ -76,6 +86,8 @@ export const PickingJobScreen = {
         await page.getByTestId('targetLU-button').tap();
     }),
     setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
+        if (!lu) throw new Error("No LU specified.");
+        
         await PickingJobScreen.clickLUTargetButton();
         await SelectPickTargetLUScreen.waitForScreen();
         await SelectPickTargetLUScreen.clickLUButton({ lu });
@@ -102,11 +114,11 @@ export const PickingJobScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
-    pickHU: async ({ qrCode, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
+    pickHU: async ({ qrCode, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
         await PickingJobScanHUScreen.waitForScreen();
         await PickingJobScanHUScreen.typeQRCode(qrCode);
-        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason });
+        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason });
         await PickingJobScreen.waitForScreen();
     }),
 

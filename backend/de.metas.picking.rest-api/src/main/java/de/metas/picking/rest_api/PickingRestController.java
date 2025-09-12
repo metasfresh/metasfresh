@@ -23,13 +23,16 @@
 package de.metas.picking.rest_api;
 
 import de.metas.Profiles;
+import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
+import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.picking.rest_api.json.JsonHUInfo;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingJobAvailableTargets;
@@ -46,6 +49,7 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
@@ -117,6 +121,10 @@ public class PickingRestController
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
 		final TUPickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
+		if (target != null && !target.isNewTU())
+		{
+			throw new AdempiereException("Only New-TU targets are allowed");
+		}
 		final WFProcess wfProcess = pickingMobileApplication.setTUPickingTarget(wfProcessId, lineId, target, getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
@@ -195,5 +203,33 @@ public class PickingRestController
 
 		final WFProcess wfProcess = pickingMobileApplication.openLine(request, getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
+	}
+
+	@GetMapping("/hu/byQRCode")
+	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestParam("qrCode") @NonNull final String qrCode)
+	{
+		assertApplicationAccess();
+
+		final List<JsonHU> hus = handlingUnitsService.getHUsByQrCode(
+				JsonGetByQRCodeRequest.builder().qrCode(qrCode).build(),
+				Env.getADLanguageOrBaseLanguage()
+		);
+
+		if (hus.isEmpty())
+		{
+			throw new AdempiereException("No HU found for QRCode: " + qrCode);
+		}
+		else if (hus.size() > 1)
+		{
+			throw new AdempiereException("More than one HU found for QRCode: " + qrCode)
+					.setParameter("hus", hus);
+		}
+
+		final JsonHU hu = hus.get(0);
+		return JsonHUInfo.builder()
+				.id(hu.getId())
+				.unitType(hu.getUnitType())
+				.qtyTUs(hu.getQtyTUs())
+				.build();
 	}
 }

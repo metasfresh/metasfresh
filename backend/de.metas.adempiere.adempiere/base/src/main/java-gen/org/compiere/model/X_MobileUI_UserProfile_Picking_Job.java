@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1993977818L;
+	private static final long serialVersionUID = 1572842256L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final int MobileUI_UserProfile_Picking_Job_ID, @Nullable final String trxName)
@@ -32,6 +32,90 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	/** 
+	 * AllowPickToStructure_CU AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ALLOWPICKTOSTRUCTURE_CU_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ALLOWPICKTOSTRUCTURE_CU_Yes = "Y";
+	/** No = N */
+	public static final String ALLOWPICKTOSTRUCTURE_CU_No = "N";
+	@Override
+	public void setAllowPickToStructure_CU (final @Nullable java.lang.String AllowPickToStructure_CU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_CU, AllowPickToStructure_CU);
+	}
+
+	@Override
+	public java.lang.String getAllowPickToStructure_CU() 
+	{
+		return get_ValueAsString(COLUMNNAME_AllowPickToStructure_CU);
+	}
+
+	/** 
+	 * AllowPickToStructure_LU_CU AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ALLOWPICKTOSTRUCTURE_LU_CU_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ALLOWPICKTOSTRUCTURE_LU_CU_Yes = "Y";
+	/** No = N */
+	public static final String ALLOWPICKTOSTRUCTURE_LU_CU_No = "N";
+	@Override
+	public void setAllowPickToStructure_LU_CU (final @Nullable java.lang.String AllowPickToStructure_LU_CU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_LU_CU, AllowPickToStructure_LU_CU);
+	}
+
+	@Override
+	public java.lang.String getAllowPickToStructure_LU_CU() 
+	{
+		return get_ValueAsString(COLUMNNAME_AllowPickToStructure_LU_CU);
+	}
+
+	/** 
+	 * AllowPickToStructure_LU_TU AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ALLOWPICKTOSTRUCTURE_LU_TU_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ALLOWPICKTOSTRUCTURE_LU_TU_Yes = "Y";
+	/** No = N */
+	public static final String ALLOWPICKTOSTRUCTURE_LU_TU_No = "N";
+	@Override
+	public void setAllowPickToStructure_LU_TU (final @Nullable java.lang.String AllowPickToStructure_LU_TU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_LU_TU, AllowPickToStructure_LU_TU);
+	}
+
+	@Override
+	public java.lang.String getAllowPickToStructure_LU_TU() 
+	{
+		return get_ValueAsString(COLUMNNAME_AllowPickToStructure_LU_TU);
+	}
+
+	/** 
+	 * AllowPickToStructure_TU AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ALLOWPICKTOSTRUCTURE_TU_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ALLOWPICKTOSTRUCTURE_TU_Yes = "Y";
+	/** No = N */
+	public static final String ALLOWPICKTOSTRUCTURE_TU_No = "N";
+	@Override
+	public void setAllowPickToStructure_TU (final @Nullable java.lang.String AllowPickToStructure_TU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_TU, AllowPickToStructure_TU);
+	}
+
+	@Override
+	public java.lang.String getAllowPickToStructure_TU() 
+	{
+		return get_ValueAsString(COLUMNNAME_AllowPickToStructure_TU);
 	}
 
 	/** 
@@ -81,18 +165,6 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public boolean isAllowCompletingPartialPickingJob() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowCompletingPartialPickingJob);
-	}
-
-	@Override
-	public void setIsAllowNewTU (final boolean IsAllowNewTU)
-	{
-		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
-	}
-
-	@Override
-	public boolean isAllowNewTU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewTU);
 	}
 
 	@Override
@@ -186,18 +258,6 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public java.lang.String getIsDisplayPickingSlotSuggestions() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsDisplayPickingSlotSuggestions);
-	}
-
-	@Override
-	public void setIsPickingWithNewLU (final boolean IsPickingWithNewLU)
-	{
-		set_Value (COLUMNNAME_IsPickingWithNewLU, IsPickingWithNewLU);
-	}
-
-	@Override
-	public boolean isPickingWithNewLU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
 	}
 
 	@Override

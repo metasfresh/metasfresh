@@ -19,6 +19,28 @@ public interface I_MD_Available_For_Sales_QueryResult
 
 
 	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *
@@ -134,7 +156,7 @@ public interface I_MD_Available_For_Sales_QueryResult
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setStorageAttributesKey (@Nullable java.lang.String StorageAttributesKey);
+	void setStorageAttributesKey (@Nullable String StorageAttributesKey);
 
 	/**
 	 * Get StorageAttributesKey (technical).
@@ -143,7 +165,7 @@ public interface I_MD_Available_For_Sales_QueryResult
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getStorageAttributesKey();
+	@Nullable String getStorageAttributesKey();
 
 	ModelColumn<I_MD_Available_For_Sales_QueryResult, Object> COLUMN_StorageAttributesKey = new ModelColumn<>(I_MD_Available_For_Sales_QueryResult.class, "StorageAttributesKey", null);
 	String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";

@@ -86,8 +86,6 @@ class JsonPickingJobTest
 						))
 						.build())
 				.allowSkippingRejectedReason(true)
-				.pickWithNewLU(true)
-				.allowNewTU(true)
 				.showPromptWhenOverPicking(true)
 				.build());
 	}

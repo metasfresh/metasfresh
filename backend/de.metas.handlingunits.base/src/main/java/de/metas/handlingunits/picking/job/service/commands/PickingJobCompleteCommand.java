@@ -80,7 +80,7 @@ public class PickingJobCompleteCommand
 		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
 
-		pickingJob = pickingJobService.closeAllLUPickingTargets(pickingJob);
+		pickingJob = pickingJobService.closeLUAndTUPickingTargets(pickingJob);
 
 		final PickingJobId pickingJobId = pickingJob.getId();
 		pickingJob.getPickingSlotId()

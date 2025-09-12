@@ -205,11 +205,11 @@ public class PickingJobRestService
 		return pickingJobService.setTUPickingTarget(pickingJob, lineId, target);
 	}
 
-	public PickingJob closeLUPickingTarget(
+	public PickingJob closeLUAndTUPickingTargets(
 			@NonNull final PickingJob pickingJob,
 			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.closeLUPickingTarget(pickingJob, lineId);
+		return pickingJobService.closeLUAndTUPickingTargets(pickingJob, lineId);
 	}
 
 	public PickingJob closeTUPickingTarget(

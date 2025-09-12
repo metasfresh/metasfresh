@@ -46,7 +46,7 @@ public class MobileUIPickingUserProfile
 			.isAllowPickingAnyCustomer(true)
 			.defaultPickingJobOptions(PickingJobOptions.builder()
 					.aggregationType(PickingJobAggregationType.DEFAULT)
-					.isPickWithNewLU(true)
+					.allowedPickToStructures(AllowedPickToStructures.DEFAULT)
 					.isCatchWeightTUPickingEnabled(false)
 					.considerSalesOrderCapacity(false)
 					.isAllowSkippingRejectedReason(false)

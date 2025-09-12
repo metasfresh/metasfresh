@@ -12,6 +12,7 @@ export const ATTR_productionDate = 'productionDate';
 export const ATTR_lotNo = 'lotNo';
 export const ATTR_displayable = 'displayable';
 export const ATTR_isTUToBePickedAsWhole = 'isTUToBePickedAsWhole';
+export const ATTR_HUUnitType = 'huUnitType';
 
 export const BARCODE_TYPE_GS1 = 'GS1';
 export const BARCODE_TYPE_EAN13 = 'EAN13';

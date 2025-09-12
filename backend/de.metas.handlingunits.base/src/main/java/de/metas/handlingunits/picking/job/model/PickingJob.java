@@ -61,7 +61,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -296,18 +295,18 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return withCurrentPickingTarget(lineId, currentPickingTarget -> currentPickingTarget.withLuPickingTarget(luPickingTargetMapper));
 	}
 
-	public PickingJob withClosedLuPickingTargets(
+	public PickingJob withClosedLUAndTUPickingTargets(
 			boolean isCloseOnHeader,
 			boolean isCloseOnLines,
 			@Nullable PickingJobLineId onlyLineId,
-			@Nullable final Consumer<HuId> closedLuIdCollector)
+			@Nullable final LUIdsAndTopLevelTUIdsCollector closedHuIdCollector)
 	{
 		final PickingJobBuilder builder = toBuilder();
 		boolean hasChanges = false;
 
 		if (isCloseOnHeader)
 		{
-			final CurrentPickingTarget changedCurrentPickingTarget = currentPickingTarget.withClosedLuPickingTarget(closedLuIdCollector);
+			final CurrentPickingTarget changedCurrentPickingTarget = currentPickingTarget.withClosedLUAndTUPickingTarget(closedHuIdCollector);
 			builder.currentPickingTarget(changedCurrentPickingTarget);
 			if (!CurrentPickingTarget.equals(changedCurrentPickingTarget, currentPickingTarget))
 			{
@@ -319,7 +318,7 @@ public final class PickingJob implements PickingJobHeaderOrLine
 			final ImmutableList<PickingJobLine> changedLines = CollectionUtils.map(this.lines, line -> {
 				if (onlyLineId == null || PickingJobLineId.equals(line.getId(), onlyLineId))
 				{
-					return line.withCurrentPickingTarget(currentPickingTarget -> currentPickingTarget.withClosedLuPickingTarget(closedLuIdCollector));
+					return line.withCurrentPickingTarget(currentPickingTarget -> currentPickingTarget.withClosedLUAndTUPickingTarget(closedHuIdCollector));
 				}
 				else
 				{

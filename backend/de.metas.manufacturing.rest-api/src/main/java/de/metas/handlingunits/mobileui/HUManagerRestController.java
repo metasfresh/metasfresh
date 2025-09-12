@@ -27,6 +27,8 @@ import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.mobileui.config.HUManagerProfile;
+import de.metas.handlingunits.mobileui.config.HUManagerProfileLayoutSectionList;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -43,6 +45,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,27 +78,39 @@ public class HUManagerRestController
 		assertApplicationAccess();
 
 		return handlingUnitsService.getByIdSupplier(() -> {
-														final HuId huId = handlingUnitsService.resolveHuId(GlobalQRCode.parse(request.getQrCode()).orThrow());
-														if (huId == null)
-														{
-															return null;
-														}
-														return GetByIdRequest.builder()
-																.huId(huId)
-																.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()))
-																.orderedAttributeCodes(getDisplayedAttributeCodes())
-																.build();
-													}
+					final HuId huId = handlingUnitsService.resolveHuId(GlobalQRCode.parse(request.getQrCode()).orThrow());
+					if (huId == null)
+					{
+						return null;
+					}
+					return GetByIdRequest.builder()
+							.huId(huId)
+							.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()))
+							.orderedAttributeCodes(getDisplayedAttributeCodes())
+							.layoutSections(getLayoutSections())
+							.build();
+				}
 		);
 	}
 
 	private ImmutableList<AttributeCode> getDisplayedAttributeCodes()
 	{
-		final OrgId orgId = Env.getOrgId();
-		final ImmutableList<AttributeId> displayedAttributeIdsInOrder = profileRepository.getProfile(orgId).getDisplayedAttributeIdsInOrder();
+		final HUManagerProfile profile = getProfile();
+		final ImmutableList<AttributeId> displayedAttributeIdsInOrder = profile.getDisplayedAttributeIdsInOrder();
 
 		return displayedAttributeIdsInOrder != null && !displayedAttributeIdsInOrder.isEmpty()
 				? attributeDAO.getOrderedAttributeCodesByIds(displayedAttributeIdsInOrder)
 				: ImmutableList.of();
+	}
+	
+	private @NonNull HUManagerProfileLayoutSectionList getLayoutSections()
+	{
+		return getProfile().getLayoutSections();
+	}
+
+	private @NotNull HUManagerProfile getProfile()
+	{
+		final OrgId orgId = Env.getOrgId();
+		return profileRepository.getProfile(orgId);
 	}
 }

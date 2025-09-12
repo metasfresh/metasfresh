@@ -580,7 +580,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				wfProcessId,
 				(wfProcess, pickingJob) -> {
 					wfProcess.assertHasAccess(callerId);
-					return pickingJobRestService.closeLUPickingTarget(pickingJob, lineId);
+					return pickingJobRestService.closeLUAndTUPickingTargets(pickingJob, lineId);
 				});
 
 	}

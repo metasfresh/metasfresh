@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1187178703L;
+	private static final long serialVersionUID = -1669066319L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -32,6 +32,54 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAllowPickToStructure_CU (final boolean AllowPickToStructure_CU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_CU, AllowPickToStructure_CU);
+	}
+
+	@Override
+	public boolean isAllowPickToStructure_CU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_AllowPickToStructure_CU);
+	}
+
+	@Override
+	public void setAllowPickToStructure_LU_CU (final boolean AllowPickToStructure_LU_CU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_LU_CU, AllowPickToStructure_LU_CU);
+	}
+
+	@Override
+	public boolean isAllowPickToStructure_LU_CU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_AllowPickToStructure_LU_CU);
+	}
+
+	@Override
+	public void setAllowPickToStructure_LU_TU (final boolean AllowPickToStructure_LU_TU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_LU_TU, AllowPickToStructure_LU_TU);
+	}
+
+	@Override
+	public boolean isAllowPickToStructure_LU_TU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_AllowPickToStructure_LU_TU);
+	}
+
+	@Override
+	public void setAllowPickToStructure_TU (final boolean AllowPickToStructure_TU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_TU, AllowPickToStructure_TU);
+	}
+
+	@Override
+	public boolean isAllowPickToStructure_TU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_AllowPickToStructure_TU);
 	}
 
 	/** 
@@ -81,18 +129,6 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isAllowCompletingPartialPickingJob() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowCompletingPartialPickingJob);
-	}
-
-	@Override
-	public void setIsAllowNewTU (final boolean IsAllowNewTU)
-	{
-		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
-	}
-
-	@Override
-	public boolean isAllowNewTU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewTU);
 	}
 
 	@Override
@@ -201,18 +237,6 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isFilterByBarcode() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFilterByBarcode);
-	}
-
-	@Override
-	public void setIsPickingWithNewLU (final boolean IsPickingWithNewLU)
-	{
-		set_Value (COLUMNNAME_IsPickingWithNewLU, IsPickingWithNewLU);
-	}
-
-	@Override
-	public boolean isPickingWithNewLU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
 	}
 
 	@Override

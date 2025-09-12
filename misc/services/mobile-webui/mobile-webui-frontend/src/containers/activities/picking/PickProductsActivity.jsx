@@ -14,7 +14,6 @@ import {
   isAllowPickingAnyHUOnHeaderLevel,
   isUserEditable as isUserEditableFunc,
 } from '../../../utils/picking';
-import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { NEXT_PickingJob } from './PickLineScanScreen';
 import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
@@ -23,6 +22,7 @@ import {
   computeCatchWeightsArrayForLine,
   formatCatchWeightToHumanReadableStr,
 } from '../../../reducers/wfProcesses/picking/catch_weight';
+import { isCurrentTargetEligibleForActivityAndLine } from '../../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
@@ -31,11 +31,6 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
   const isUserEditable = isUserEditableFunc({ activity });
   const isAllowPickingAnyHU = isAllowPickingAnyHUOnHeaderLevel({ activity });
-
-  const { isPickWithNewLU, isLUScanRequiredAndMissing, isAllowNewTU, tuPickingTarget } = useCurrentPickingTargetInfo({
-    wfProcessId,
-    activityId,
-  });
 
   const groupedLines = useMemo(() => {
     const lines = getLinesArrayFromActivity(activity);
@@ -47,31 +42,9 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   };
   const onLineButtonClick = useLineButtonClickHandler({ applicationId, wfProcessId, activity, history });
 
-  const isLineReadOnly = ({ line }) => {
-    const tuTargetIsSetButCurrentLineHasItsOwnPacking = tuPickingTarget && line.pickingUnit === 'TU';
-    const tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs =
-      isPickWithNewLU && isAllowNewTU && !tuPickingTarget && line.pickingUnit === 'CU';
-
-    // noinspection UnnecessaryLocalVariableJS
-    const result =
-      !isUserEditable ||
-      isLUScanRequiredAndMissing ||
-      tuTargetIsSetButCurrentLineHasItsOwnPacking ||
-      tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs;
-    // console.log(`isLineReadOnly: ${result}`, {
-    //   tuPickingTarget,
-    //   isPickWithNewLU,
-    //   isAllowNewTU,
-    //   isUserEditable,
-    //   isLUScanRequiredAndMissing,
-    //   tuTargetIsSetButCurrentLineHasItsOwnPacking,
-    //   tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs,
-    // });
-    return result;
-  };
-
   const isAtLeastOneReadOnlyLine = (groupedLines) => {
-    return groupedLines.some((lines) => lines.some((line) => isLineReadOnly({ line })));
+    if (!isUserEditable) return false;
+    return groupedLines.some((lines) => lines.some((line) => isLineReadOnly({ activity, line })));
   };
 
   return (
@@ -108,7 +81,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
                   key={lineId}
                   caption={line.caption}
                   completeStatus={line.completeStatus || CompleteStatus.NOT_STARTED}
-                  disabled={isLineReadOnly({ line })}
+                  disabled={!isUserEditable || isLineReadOnly({ activity, line })}
                   onClick={() => onLineButtonClick({ line })}
                 >
                   <ButtonQuantityProp
@@ -142,6 +115,16 @@ PickProductsActivity.propTypes = {
 };
 
 export default PickProductsActivity;
+
+//
+//
+//
+//
+//
+
+const isLineReadOnly = ({ activity, line }) => {
+  return !isCurrentTargetEligibleForActivityAndLine({ activity, line });
+};
 
 //
 //

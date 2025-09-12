@@ -23,11 +23,14 @@
 package de.metas.handlingunits.rest_api;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.mobileui.config.HUManagerProfileLayoutSectionList;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.compiere.model.I_MobileUI_HUManager;
+import org.compiere.model.I_MobileUI_HUManager_LayoutSection;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -40,6 +43,9 @@ public class GetByIdRequest
 	@Nullable HUQRCode expectedQRCode;
 
 	@Nullable List<AttributeCode> orderedAttributeCodes;
+	String adLanguage;
 
 	boolean includeAllowedClearanceStatuses;
+
+	@Nullable HUManagerProfileLayoutSectionList layoutSections;
 }

@@ -243,6 +243,7 @@ public class CreateMasterdataCommand
 				.mobileConfigService(services.mobileConfigService)
 				.mobilePickingConfigRepository(services.mobilePickingConfigRepository)
 				.mobileDistributionConfigRepository(services.mobileDistributionConfigRepository)
+				.mobileManufacturingConfigRepository(services.mobileManufacturingConfigRepository)
 				//
 				.context(context)
 				.request(request.getMobileConfig())

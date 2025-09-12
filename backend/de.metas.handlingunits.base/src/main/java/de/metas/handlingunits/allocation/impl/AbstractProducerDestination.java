@@ -263,7 +263,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		if (request.getReference() != null && request.getReference().isOfType(I_M_HU.class))
 		{
 			huQrCodesService.propagateQrForSplitHUs(request.getReference().getIdAssumingTableName(I_M_HU.Table_Name, HuId::ofRepoId),
-													ImmutableList.of(hu));
+					ImmutableList.of(hu));
 		}
 
 		addToCreateHUs0(hu);
@@ -387,6 +387,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 *
 	 * @return true if it was added; false if maximum capacity was reached and no other HUs are allowed
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	protected final boolean addToCreatedHUsIfAllowCreateNewHU(final I_M_HU hu)
 	{
 		if (!isAllowCreateNewHU())
@@ -398,6 +399,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return true;
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	private boolean addToCreateHUs0(@NonNull final I_M_HU hu)
 	{
 		final boolean added = _createdHUs.add(hu);
@@ -496,13 +498,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 					.setParameter("createdHUs", _createdHUs)
 					.setParameter("producer", this);
 		}
-	}
-
-	@Override
-	public final Optional<HuId> getSingleCreatedHuId()
-	{
-		return getSingleCreatedHU()
-				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()));
 	}
 
 	@Override
@@ -671,10 +666,10 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 * gh #460: this implementation handles aggregate HU and updates their PackingMaterial items.
 	 * Afterwards it invokes {@link IMutableAllocationResult#aggregateTransactions()} to combine all trx candidates that belong to the same (aggregate) VHU.
 	 *
-	 * @param result_IGNORED current result (that will be also returned by {@link #load(IAllocationRequest)} method); won't be changed by this method, but maybe by overriding methods.
+	 * @param ignoredResult current result (that will be also returned by {@link #load(IAllocationRequest)} method); won't be changed by this method, but maybe by overriding methods.
 	 */
 	@OverridingMethodsMustInvokeSuper
-	protected void loadFinished(final IMutableAllocationResult result_IGNORED, final IHUContext huContext)
+	protected void loadFinished(final IMutableAllocationResult ignoredResult, final IHUContext huContext)
 	{
 		// TODO: i think we can move this stuff or something better into a model interceptor that is fired when item.qty is changed
 		_createdHUs.forEach(
@@ -795,7 +790,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 				};
 			};
 
-			try (final IAutoCloseable dontDestroyParentLU = getDontDestroyParentLUClosable.get())
+			try (final IAutoCloseable ignored = getDontDestroyParentLUClosable.get())
 			{
 				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
 			}

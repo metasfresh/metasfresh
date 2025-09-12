@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 4878922L;
+	private static final long serialVersionUID = -385561628L;
 
     /** Standard Constructor */
     public X_M_Picking_Job (final Properties ctx, final int M_Picking_Job_ID, @Nullable final String trxName)
@@ -283,6 +283,33 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
+	public de.metas.handlingunits.model.I_M_HU getM_TU_HU()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_TU_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setM_TU_HU(final de.metas.handlingunits.model.I_M_HU M_TU_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_M_TU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_TU_HU);
+	}
+
+	@Override
+	public void setM_TU_HU_ID (final int M_TU_HU_ID)
+	{
+		if (M_TU_HU_ID < 1) 
+			set_Value (COLUMNNAME_M_TU_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_TU_HU_ID, M_TU_HU_ID);
+	}
+
+	@Override
+	public int getM_TU_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_TU_HU_ID);
+	}
+
+	@Override
 	public de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_TU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
@@ -357,6 +384,8 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public static final String PICKINGJOBAGGREGATIONTYPE_Sales_order = "sales_order";
 	/** product = product */
 	public static final String PICKINGJOBAGGREGATIONTYPE_Product = "product";
+	/** delivery_location = delivery_location */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Delivery_location = "delivery_location";
 	@Override
 	public void setPickingJobAggregationType (final java.lang.String PickingJobAggregationType)
 	{
