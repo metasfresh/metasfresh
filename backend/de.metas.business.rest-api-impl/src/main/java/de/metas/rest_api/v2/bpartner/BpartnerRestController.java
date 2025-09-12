@@ -238,8 +238,39 @@ public class BpartnerRestController
 	@GetMapping
 	public ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSince(
 
-			@ApiParam(value = ORG_CODE_PARAMETER_DOC)//
-			@RequestParam(name = "orgCode", required = false) //
+			@ApiParam(SINCE_DOC) //
+			@RequestParam(name = "since", required = false) //
+			@Nullable final Long epochTimestampMillis,
+
+			@ApiParam(NEXT_DOC) //
+			@RequestParam(name = "next", required = false) //
+			@Nullable final String next)
+	{
+		try
+		{
+			final Optional<JsonResponseCompositeList> result = bpartnerEndpointService.retrieveBPartnersSince(null, epochTimestampMillis, next);
+			return okOrNotFound(result);
+		}
+		catch (final Exception ex)
+		{
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(JsonResponseCompositeList.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
+	}
+
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved bpartner(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
+	})
+	@GetMapping("/byOrg/{orgCode}")
+	public ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSinceForOrg(
+
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 
 			@ApiParam(SINCE_DOC) //
