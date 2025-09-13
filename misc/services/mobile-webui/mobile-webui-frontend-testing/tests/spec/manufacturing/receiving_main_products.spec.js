@@ -4,7 +4,6 @@ import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
-import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
 const createMasterdata = async () => {
@@ -50,7 +49,7 @@ const createMasterdata = async () => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Simple manufacturing test', async ({ page }) => {
+test('Receive 1 full LU, 1 half LU', async ({ page }) => {
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -59,19 +58,11 @@ test('Simple manufacturing test', async ({ page }) => {
     await ManufacturingJobsListScreen.waitForScreen();
     const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
-    await ManufacturingJobScreen.clickIssueButton({ index: 1 });
-    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: masterdata.handlingUnits.HU_COMP1.qrCode, expectQtyEntered: '5' });
-    await RawMaterialIssueLineScreen.goBack();
-
-    await ManufacturingJobScreen.clickIssueButton({ index: 2 });
-    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: masterdata.handlingUnits.HU_COMP2.qrCode, expectQtyEntered: '10' });
-    await RawMaterialIssueLineScreen.goBack();
-
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
     await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId })
     await MaterialReceiptLineScreen.receiveQty({
         expectQtyEntered: '5',
-        qtyEntered: '1',
+        qtyEntered: '100',
     })
 
     await ManufacturingJobScreen.complete();
@@ -80,14 +71,21 @@ test('Simple manufacturing test', async ({ page }) => {
         manufacturings: {
             [jobId]: {
                 receivedHUs: [
-                    { lu: 'lu1', qty: '1 PCE' },
+                    { lu: 'lu1', qty: '80 PCE' },
+                    { lu: 'lu2', qty: '20 PCE' },
                 ]
             }
         },
         hus: {
             'lu1': {
                 huStatus: 'A',
-                storages: { 'BOM': '1 PCE' },
+                storages: { 'BOM': '80 PCE' },
+                tus: [{ isAggregatedTU: true, qtyTUs: 20 }],
+            },
+            'lu2': {
+                huStatus: 'A',
+                storages: { 'BOM': '20 PCE' },
+                tus: [{ isAggregatedTU: true, qtyTUs: 5 }],
             },
         }
     });

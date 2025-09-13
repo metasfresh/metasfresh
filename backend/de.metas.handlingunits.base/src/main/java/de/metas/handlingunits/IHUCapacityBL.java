@@ -15,6 +15,10 @@ import java.time.ZonedDateTime;
 
 public interface IHUCapacityBL extends ISingletonService
 {
+	Capacity getCapacity(
+			@NonNull I_M_HU_PI_Item_Product itemDefProduct,
+			@Nullable ProductId productId);
+
 	/**
 	 *
 	 * @param itemDefProduct the packing instruction from which the capacity information is extracted.
