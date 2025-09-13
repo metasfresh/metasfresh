@@ -20,7 +20,6 @@ import java.util.Set;
 
 /**
  * Generates manufacturing receipt candidates ({@link I_PP_Order_Qty}) together with the planning HUs.
- *
  * The generated receipt candidates are not processed.
  *
  * @author metas-dev <dev@metasfresh.com>
