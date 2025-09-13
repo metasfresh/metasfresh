@@ -204,9 +204,11 @@ public class ReceiveGoodsCommand
 			setQRCodeAttribute(lus.get(0));
 		}
 
-		return lus.size() == 1
-				? ReceivingTarget.ofExistingLU(lus.get(0), newLUTarget.getTuPIItemProductId())
-				: null;
+		// NOTE: because we are also respecting the qty TUs/LU it's better to clean up the target after receiving
+		return null;
+		// return lus.size() == 1
+		// 		? ReceivingTarget.ofExistingLU(lus.get(0), newLUTarget.getTuPIItemProductId())
+		// 		: null;
 	}
 
 	private ReceivingTarget receiveToExistingLU(
@@ -231,7 +233,7 @@ public class ReceiveGoodsCommand
 		{
 			HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE, existingLU);
 		}
-		
+
 		return ReceivingTarget.ofExistingLU(existingLU, tuPIItemProductId);
 	}
 
