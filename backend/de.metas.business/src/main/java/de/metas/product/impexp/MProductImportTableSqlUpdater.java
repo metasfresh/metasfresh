@@ -121,8 +121,8 @@ public class MProductImportTableSqlUpdater
 
 	public void updateIPharmaProduct()
 	{
-		dbUpdateProductsByValue(selection);
 		dbUpdateProductsByExternalId(selection);
+		dbUpdateProductsByValue(selection);
 		dbUpdateProductCategoryForIFAProduct(selection);
 
 		dbUpdatePackageUOM(selection);
@@ -199,7 +199,8 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i.").append(valueColumnName).append("=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append(" WHERE i.").append(valueColumnName).append("=p.Value AND i.AD_Client_ID=p.AD_Client_ID AND p.AD_Org_ID IN (0, i.AD_Org_ID) ")
+				.append(" ORDER BY p.AD_Org_ID DESC LIMIT 1) ")
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
@@ -212,8 +213,9 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i." + I_I_Product.COLUMNNAME_ExternalId + "=p.ExternalId AND i.AD_Client_ID=p.AD_Client_ID) ")
-				.append("WHERE M_Product_ID IS NULL")
+				.append(" WHERE i." + I_I_Product.COLUMNNAME_ExternalId + "=p.ExternalId AND i.AD_Client_ID=p.AD_Client_ID AND p.AD_Org_ID IN (0, i.AD_Org_ID) ")
+				.append(" ORDER BY p.AD_Org_ID DESC LIMIT 1) ")
+				.append("WHERE M_Product_ID IS NULL AND " + I_I_Product.COLUMNNAME_ExternalId + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
