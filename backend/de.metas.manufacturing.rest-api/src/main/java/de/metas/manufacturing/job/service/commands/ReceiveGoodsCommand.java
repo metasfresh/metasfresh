@@ -197,18 +197,27 @@ public class ReceiveGoodsCommand
 
 	private ReceivingTarget receiveToNewLU(@NonNull final JsonNewLUTarget newLUTarget)
 	{
-		final List<I_M_HU> lus = createHUProducer().receiveLUs(getQtyToReceive(), newLUTarget.getTuPIItemProductId(), newLUTarget.getLuPIItemId());
+		final Quantity qtyToReceive = getQtyToReceive();
+		final List<I_M_HU> lus = createHUProducer().receiveLUs(qtyToReceive, newLUTarget.getTuPIItemProductId(), newLUTarget.getLuPIItemId());
 		collectReceivedHUs(lus);
 		if (lus.size() == 1)
 		{
 			setQRCodeAttribute(lus.get(0));
 		}
 
-		// NOTE: because we are also respecting the qty TUs/LU it's better to clean up the target after receiving
-		return null;
-		// return lus.size() == 1
-		// 		? ReceivingTarget.ofExistingLU(lus.get(0), newLUTarget.getTuPIItemProductId())
-		// 		: null;
+		//
+		// Case: we received 1 item, usually that's receiving by scanning a QR code
+		// => keep the same LU
+		if (lus.size() == 1 && qtyToReceive.isOne())
+		{
+			return ReceivingTarget.ofExistingLU(lus.get(0), newLUTarget.getTuPIItemProductId());
+		}
+		//
+		// Else, because we are also respecting the qty TUs per LU, it's better to clean up the target after receiving
+		else
+		{
+			return null;
+		}
 	}
 
 	private ReceivingTarget receiveToExistingLU(

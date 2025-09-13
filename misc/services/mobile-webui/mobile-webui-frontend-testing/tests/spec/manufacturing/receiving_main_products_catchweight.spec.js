@@ -6,7 +6,7 @@ import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/M
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({ finishedProductUOMConfigs = {} } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -27,7 +27,8 @@ const createMasterdata = async () => {
                             { product: 'COMP1', qty: 1 },
                             { product: 'COMP2', qty: 2 },
                         ]
-                    }
+                    },
+                    ...finishedProductUOMConfigs,
                 },
             },
             packingInstructions: {
@@ -226,5 +227,63 @@ test('To a new TU, scanning L+M QR codes from 2 manufacturing orders', async ({ 
 
         await ManufacturingJobScreen.complete();
         // await ManufacturingJobScreen.goBack();
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('TO a new LU, scanning 2 x GTIN codes', async ({ page }) => {
+    const masterdata = await createMasterdata({
+        finishedProductUOMConfigs: {
+            uom: "PCE",
+            uomConversions: [
+                { from: "PCE", to: "KGM", multiplyRate: 4, isCatchUOMForProduct: true }
+            ],
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('mfg');
+    await ManufacturingJobsListScreen.waitForScreen();
+    const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.BOM_PI.luPIItemTestId });
+    await MaterialReceiptLineScreen.receiveQtyWithQRCode({
+        catchWeightQRCode: [
+            '019121234559370931030008321004481124',
+        ],
+    });
+
+    await MaterialReceiptLineScreen.expectVisible();
+    await MaterialReceiptLineScreen.receiveQtyWithQRCode({
+        catchWeightQRCode: [
+            '019121234559370931030008321004481124',
+        ],
+    });
+    await MaterialReceiptLineScreen.goBack();
+
+    await ManufacturingJobScreen.complete();
+
+    await Backend.expect({
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [
+                    { lu: 'lu1', qty: '1 PCE' },
+                    { lu: 'lu1', qty: '1 PCE' },
+                ]
+            }
+        },
+        hus: {
+            'lu1': {
+                huStatus: 'A',
+                storages: { 'BOM': '2 PCE' },
+                // FIXME: atm we are loading in 2 separate TUs. We will have to fix this in future.
+                // tus: [
+                //     { storages: { 'BOM': '1 PCE' }, isAggregatedTU: false, qtyTUs: 1 },
+                //     { storages: { 'BOM': '1 PCE' }, isAggregatedTU: false, qtyTUs: 1 },
+                // ],
+            },
+        }
     });
 });
