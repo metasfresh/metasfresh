@@ -1,4 +1,4 @@
-package de.metas.ean13;
+package de.metas.gs1.ean13;
 
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
@@ -71,4 +71,11 @@ public class EAN13Prefix
 	public boolean isVariableWeight() {return this.equals(VariableWeight);}
 
 	public boolean isInternalUseOrVariableMeasure() {return this.equals(InternalUseOrVariableMeasure);}
+
+	/**
+	 * @return true if standard/fixed code (i.e. not starting with prefix 28 nor 29)
+	 */
+	public boolean isFixed() {return !isVariable();}
+
+	public boolean isVariable() {return isVariableWeight() || isInternalUseOrVariableMeasure();}
 }

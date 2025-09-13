@@ -1,4 +1,4 @@
-package de.metas.ean13;
+package de.metas.gs1.ean13;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;

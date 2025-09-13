@@ -13,12 +13,14 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.organization.OrgId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.LogEntriesRepository;
 import org.adempiere.exceptions.AdempiereException;
@@ -172,8 +174,16 @@ public class BPartnerCompositeRepository
 		{
 			Check.assumeNotNull(sinceQuery, "if nextPageId is blank, then sinceQuery shall not be null");
 			final Timestamp timestamp = Timestamp.from(sinceQuery.getSinceInstant());
-			page = queryBL.createQueryBuilder(I_C_BPartner_Recent_V.class)
-					.addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp)
+			final IQueryBuilder<I_C_BPartner_Recent_V> bpartnerRecentQueryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Recent_V.class)
+					.addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp);
+
+			final OrgId orgId = sinceQuery.getOrgId();
+			if (sinceQuery.getOrgId() != null)
+			{
+				bpartnerRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
+			}
+
+			page = bpartnerRecentQueryBuilder
 					.create()
 					.paginate(I_C_BPartner_Recent_V.class, sinceQuery.getPageSize());
 		}
@@ -200,12 +210,20 @@ public class BPartnerCompositeRepository
 		{
 			Check.assumeNotNull(sinceQuery, "if nextPageId is blank, then sinceQuery shall not be null");
 			final Timestamp timestamp = Timestamp.from(sinceQuery.getSinceInstant());
-			page = queryBL
+			final IQueryBuilder<I_AD_User> contactRecentQueryBuilder = queryBL
 					.createQueryBuilder(I_AD_User.class)
 					.addOnlyActiveRecordsFilter()
 					.addOnlyContextClient()
 					.addCompareFilter(I_AD_User.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp)
-					.addNotEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, null)
+					.addNotEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, null);
+
+			final OrgId orgId = sinceQuery.getOrgId();
+			if (sinceQuery.getOrgId() != null)
+			{
+				contactRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
+			}
+
+			page = contactRecentQueryBuilder
 					.create()
 					.paginate(I_AD_User.class, sinceQuery.getPageSize());
 		}

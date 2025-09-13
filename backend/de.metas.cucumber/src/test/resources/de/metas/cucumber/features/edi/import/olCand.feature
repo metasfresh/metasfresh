@@ -3,7 +3,7 @@ Feature: import order candidate to metasfresh
 
   Background:
     Given infrastructure and metasfresh are running
-	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-10-10T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -71,9 +71,9 @@ Feature: import order candidate to metasfresh
       | bpartner2_1 | SubsidiaryBPartner_1 | N            | Y              | ps_1                          |
       | bpartner3_1 | OrgBPartner_1        | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Product
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.UPC       | OPT.IsCurrentVendor |
-      | bpartner1_1              | product                 | 1111111111111 | false               |
-      | bpartner2_1              | product                 | 1111111111111 | false               |
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | GTIN          | OPT.IsCurrentVendor |
+      | bpartner1_1              | product                 | 0575095404663 | false               |
+      | bpartner2_1              | product                 | 0575095404663 | false               |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name             | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier |
       | huItemProduct_1_1                  | huPiItemTU_1               | product                 | 10  | 2022-10-01 | IFCO_Test_1 x 10 PCE | PCE                   | bpartner1_1                  |
@@ -120,11 +120,11 @@ Feature: import order candidate to metasfresh
       <DeliveryViaRule>S</DeliveryViaRule>
       <IsManualPrice>Y</IsManualPrice>
       <M_Product_ID>
-        <UPC>1111111111111</UPC>
+        <UPC>0575095404663</UPC>
         <GLN>1234567890000</GLN>
       </M_Product_ID>
       <M_HU_PI_Item_Product_ID>
-        <UPC>1111111111111</UPC>
+        <UPC>0575095404663</UPC>
         <GLN>1234567890000</GLN>
         <StoreGLN>1234567890001</StoreGLN>
       </M_HU_PI_Item_Product_ID>

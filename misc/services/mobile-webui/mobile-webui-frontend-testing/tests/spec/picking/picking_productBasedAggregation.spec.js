@@ -9,7 +9,14 @@ import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 import { generateEAN13 } from '../../utils/ean13';
 
-const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, displayPickingSlotSuggestions, P1_ean13ProductCode } = {}) => {
+const createMasterdata = async ({
+                                    filterByQRCode,
+                                    anonymousPickHUsOnTheFly,
+                                    displayPickingSlotSuggestions,
+                                    P1_EAN13,
+                                    P1_TU_EAN13,
+                                    P2_CUSTOMER1_EAN13,
+                                } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -47,11 +54,11 @@ const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, disp
                 slot3: {},
             },
             products: {
-                "P1": { price: 1, ean13ProductCode: P1_ean13ProductCode },
-                "P2": { price: 1, bpartners: [{ bpartner: "customer1", cu_ean: '7617027667203' }] },
+                "P1": { price: 1, gtin: P1_EAN13 },
+                "P2": { price: 1, bpartners: [{ bpartner: "customer1", ean13: P2_CUSTOMER1_EAN13 }] },
             },
             packingInstructions: {
-                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4, tu_ean: '7617027667210' },
+                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4, tu_ean: P1_TU_EAN13 },
                 "P2_7x3": { lu: "LU", qtyTUsPerLU: 7, tu: "P2_3CU", product: "P2", qtyCUsPerTU: 3 },
             },
             handlingUnits: {
@@ -242,8 +249,15 @@ test('Product based aggregation', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Filter by EAN13', async ({ page }) => {
-    const P1_ean13 = generateEAN13();
-    const masterdata = await createMasterdata({ filterByQRCode: true, P1_ean13ProductCode: P1_ean13.productCode });
+    const P1_EAN13 = generateEAN13();
+    const P1_TU_EAN13 = generateEAN13();
+    const P2_CUSTOMER1_EAN13 = generateEAN13();
+    const masterdata = await createMasterdata({
+        filterByQRCode: true,
+        P1_EAN13: P1_EAN13.ean13,
+        P1_TU_EAN13: P1_TU_EAN13.ean13,
+        P2_CUSTOMER1_EAN13: P2_CUSTOMER1_EAN13.ean13,
+    });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -255,7 +269,7 @@ test('Filter by EAN13', async ({ page }) => {
     ]);
 
     await test.step('Filter by TU EAN (associated to P1)', async () => {
-        await PickingJobsListScreen.filterByQRCode('7617027667210');
+        await PickingJobsListScreen.filterByQRCode(P1_TU_EAN13.ean13);
         await PickingJobsListScreen.expectJobButtons([
             { qtyToDeliver: 72, productId: masterdata.products.P1.id },
         ])
@@ -270,14 +284,14 @@ test('Filter by EAN13', async ({ page }) => {
     });
 
     await test.step('Filter by CU EAN (associated to P2 and customer1)', async () => {
-        await PickingJobsListScreen.filterByQRCode('7617027667203');
+        await PickingJobsListScreen.filterByQRCode(P2_CUSTOMER1_EAN13.ean13);
         await PickingJobsListScreen.expectJobButtons([
             { qtyToDeliver: 21, productId: masterdata.products.P2.id },
         ]);
     });
 
     await test.step('Filter by EAN13 Product Code', async () => {
-        await PickingJobsListScreen.filterByQRCode(P1_ean13.ean13);
+        await PickingJobsListScreen.filterByQRCode(P1_EAN13.ean13);
         await PickingJobsListScreen.expectJobButtons([
             { qtyToDeliver: 72, productId: masterdata.products.P1.id },
         ]);

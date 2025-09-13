@@ -370,8 +370,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				{
 					// Originally on Credit. The amount must be moved to Debit
 					fl_PaymentBuilder
-							.setCurrencyId(getCurrencyId())
-							.setAmtSourceDrOrCr(allocatedAmt)
+							.setAmtSource(getCurrencyId(), allocatedAmt, null)
 							.alsoAddZeroLine()
 							.buildAndAdd();
 				}

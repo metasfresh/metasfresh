@@ -1414,6 +1414,99 @@ Feature: invoice payment allocation
       | B_PaymentSelect_Acct   | 9 EUR       |             | outboundPayment |
       | B_InTransit_Acct       |             | 9 EUR       | outboundPayment |
 
+    And ---------------------------------------------------------------------------------------------------------------
+    And -- Reverse the inboundPayment
+    And ---------------------------------------------------------------------------------------------------------------
+    And the payment identified by inboundPayment is reversed with a reversal identified by inboundPaymentReversal
+    Then validate payments
+      | C_Payment_ID           | IsAllocated | PayAmt | OpenAmt | DocStatus | IsReceipt |
+      | outboundPayment        | false       | 9.00   | 9.00    | CO        | N         |
+      | inboundPayment         | true        | 5.00   | 0.00    | RE        | Y         |
+      | inboundPaymentReversal | true        | -5.00  | 0.00    | RE        | Y         |
+    And validate C_AllocationLines
+      | C_Payment_ID           | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | outboundPayment        | -5     | -4           | alloc1             |
+      | inboundPayment         | 5      | 0            | alloc1             |
+      # ---------------------------------------------------------------------
+      | outboundPayment        | 5      | 4            | alloc2             |
+      | inboundPayment         | -5     | 0            | alloc2             |
+      # ---------------------------------------------------------------------
+      | inboundPayment         | 5      | 0            | alloc3             |
+      | inboundPaymentReversal | -5     | 0            | alloc3             |
+    And no Fact_Acct records are found for documents alloc3
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID              |
+      | B_InTransit_Acct       | 5 EUR       |             | inboundPayment         |
+      | B_UnallocatedCash_Acct |             | 5 EUR       | inboundPayment         |
+      # ----------------------------------------------------------------
+      | B_InTransit_Acct       | -5 EUR      |             | inboundPaymentReversal |
+      | B_UnallocatedCash_Acct |             | -5 EUR      | inboundPaymentReversal |
+      # ----------------------------------------------------------------
+      | B_UnallocatedCash_Acct | 5 EUR       |             | alloc1                 |
+      | B_PaymentSelect_Acct   |             | 5 EUR       | alloc1                 |
+      # ----------------------------------------------------------------
+      | B_PaymentSelect_Acct   | 9 EUR       |             | outboundPayment        |
+      | B_InTransit_Acct       |             | 9 EUR       | outboundPayment        |
+      # ----------------------------------------------------------------
+      | B_UnallocatedCash_Acct | -5 EUR      |             | alloc2                 |
+      | B_PaymentSelect_Acct   |             | -5 EUR      | alloc2                 |
+      # ----------------------------------------------------------------
+    And Fact_Acct records balances for documents inboundPayment,inboundPaymentReversal,outboundPayment,alloc1,alloc2,alloc3 are matching
+      | AccountConceptualName  | SourceBalance |
+      | B_UnallocatedCash_Acct | 0 EUR         |
+      | B_PaymentSelect_Acct   | 9 EUR         |
+      | B_InTransit_Acct       | -9 EUR        |
+
+    And ---------------------------------------------------------------------------------------------------------------
+    And -- Reverse the outboundPayment
+    And ---------------------------------------------------------------------------------------------------------------
+    And the payment identified by outboundPayment is reversed with a reversal identified by outboundPaymentReversal
+    Then validate payments
+      | C_Payment_ID            | IsAllocated | PayAmt | OpenAmt | DocStatus | IsReceipt |
+      | outboundPayment         | true        | 9.00   | 0.00    | RE        | N         |
+      | outboundPaymentReversal | true        | -9.00  | 0.00    | RE        | N         |
+      | inboundPayment          | true        | 5.00   | 0.00    | RE        | Y         |
+      | inboundPaymentReversal  | true        | -5.00  | 0.00    | RE        | Y         |
+    And validate C_AllocationLines
+      | C_Payment_ID            | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | outboundPayment         | -5     | -4           | alloc1             |
+      | inboundPayment          | 5      | 0            | alloc1             |
+      # ---------------------------------------------------------------------
+      | outboundPayment         | 5      | 4            | alloc2             |
+      | inboundPayment          | -5     | 0            | alloc2             |
+      # ---------------------------------------------------------------------
+      | inboundPayment          | 5      | 0            | alloc3             |
+      | inboundPaymentReversal  | -5     | 0            | alloc3             |
+      # ---------------------------------------------------------------------
+      | outboundPayment         | -9     | 0            | alloc4             |
+      | outboundPaymentReversal | 9      | 0            | alloc4             |
+    And no Fact_Acct records are found for documents alloc3,alloc4
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID               |
+      | B_InTransit_Acct       | 5 EUR       |             | inboundPayment          |
+      | B_UnallocatedCash_Acct |             | 5 EUR       | inboundPayment          |
+      # ----------------------------------------------------------------
+      | B_InTransit_Acct       | -5 EUR      |             | inboundPaymentReversal  |
+      | B_UnallocatedCash_Acct |             | -5 EUR      | inboundPaymentReversal  |
+      # ----------------------------------------------------------------
+      | B_UnallocatedCash_Acct | 5 EUR       |             | alloc1                  |
+      | B_PaymentSelect_Acct   |             | 5 EUR       | alloc1                  |
+      # ----------------------------------------------------------------
+      | B_PaymentSelect_Acct   | 9 EUR       |             | outboundPayment         |
+      | B_InTransit_Acct       |             | 9 EUR       | outboundPayment         |
+      # ----------------------------------------------------------------
+      | B_PaymentSelect_Acct   | -9 EUR      |             | outboundPaymentReversal |
+      | B_InTransit_Acct       |             | -9 EUR      | outboundPaymentReversal |
+      # ----------------------------------------------------------------
+      | B_UnallocatedCash_Acct | -5 EUR      |             | alloc2                  |
+      | B_PaymentSelect_Acct   |             | -5 EUR      | alloc2                  |
+      # ----------------------------------------------------------------
+    And Fact_Acct records balances for documents inboundPayment,inboundPaymentReversal,outboundPayment,outboundPaymentReversal,alloc1,alloc2,alloc3,alloc4 are matching
+      | AccountConceptualName  | SourceBalance |
+      | B_UnallocatedCash_Acct | 0 EUR         |
+      | B_PaymentSelect_Acct   | 0 EUR         |
+      | B_InTransit_Acct       | 0 EUR         |
+    
 
 
 
@@ -2546,7 +2639,7 @@ Feature: invoice payment allocation
   Scenario: allocate payment to purchase invoice with overpayment and negative discount
 
     Given metasfresh contains M_Products:
-      | Identifier  | Name        |
+      | Identifier         | Name               |
       | product_10012025_1 | product_10012025_1 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
@@ -2563,7 +2656,7 @@ Feature: invoice payment allocation
 
     And metasfresh contains C_Payment
       | Identifier         | C_BPartner_ID.Identifier | PayAmt    | OPT.DiscountAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.C_Invoice_ID.Identifier |
-      | payment_10012025_1 | vendor1               | 20.25 EUR | -0.02 EUR       | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
+      | payment_10012025_1 | vendor1                  | 20.25 EUR | -0.02 EUR       | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
     And the payment identified by payment_10012025_1 is completed
 
     Then validate created invoices
