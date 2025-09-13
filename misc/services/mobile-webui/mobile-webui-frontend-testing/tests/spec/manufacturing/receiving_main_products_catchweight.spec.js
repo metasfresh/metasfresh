@@ -78,7 +78,7 @@ test('To a new TU, manual input', async ({ page }) => {
         qtyToReceive: '100 Stk',
         qtyReceived: '9 Stk',
         //catchWeight: '900 g', // not displayed, missing feature
-    })
+    });
     await Backend.expect({
         manufacturings: {
             [jobId]: {
@@ -105,7 +105,7 @@ test('To a new TU, manual input', async ({ page }) => {
                 // attributes: { 'WeightNet': '0.100' }
             },
         }
-    })
+    });
 
     await ManufacturingJobScreen.complete();
 });

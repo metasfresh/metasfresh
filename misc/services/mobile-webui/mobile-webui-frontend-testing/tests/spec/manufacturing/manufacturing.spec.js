@@ -58,7 +58,7 @@ test('Simple manufacturing test', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('mfg');
     await ManufacturingJobsListScreen.waitForScreen();
-    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+    const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
     await ManufacturingJobScreen.clickIssueButton({ index: 1 });
     await RawMaterialIssueLineScreen.scanQRCode({ qrCode: masterdata.handlingUnits.HU_COMP1.qrCode, expectQtyEntered: '5' });
@@ -72,8 +72,30 @@ test('Simple manufacturing test', async ({ page }) => {
     await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId })
     await MaterialReceiptLineScreen.receiveQty({
         expectQtyEntered: '5',
-        qtyEntered: '1',
+        qtyEntered: '100',
     })
+    await Backend.expect({
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [
+                    { lu: 'lu1', qty: '80 PCE' },
+                    { lu: 'lu2', qty: '20 PCE' },
+                ]
+            }
+        },
+        hus: {
+            'lu1': {
+                huStatus: 'A',
+                storages: { 'BOM': '80 PCE' },
+                tus: [{ isAggregatedTU: true, qtyTUs: 20 }],
+            },
+            'lu2': {
+                huStatus: 'A',
+                storages: { 'BOM': '20 PCE' },
+                tus: [{ isAggregatedTU: true, qtyTUs: 5 }],
+            },
+        }
+    });
 
     await ManufacturingJobScreen.complete();
 });
