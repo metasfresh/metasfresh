@@ -27,10 +27,12 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_I_GLJournal;
@@ -64,8 +66,8 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 
 	private void getGLJournalImportProcessParameter()
 	{
-		m_AD_Client_ID = getParameters().getParameterAsInt("AD_Client_ID", -1);
-		m_AD_Org_ID = getParameters().getParameterAsInt("AD_Org_ID", -1);
+		m_AD_Client_ID = getParameters().getParameterAsInt("AD_Client_ID", ClientId.METASFRESH.getRepoId());
+		m_AD_Org_ID = getParameters().getParameterAsInt("AD_Org_ID", OrgId.MAIN.getRepoId());
 		m_C_AcctSchema_ID = getParameters().getParameterAsInt("C_AcctSchema_ID", -1);
 		m_DateAcct = getParameters().getParameterAsTimestamp("DateAcct");
 	}
@@ -104,7 +106,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		sql = new StringBuilder("UPDATE I_GLJournal "
 				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(m_AD_Client_ID).append("),"
 				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(m_AD_Org_ID).append("),");
-		if (m_C_AcctSchema_ID != 0)
+		if (m_C_AcctSchema_ID > 0)
 		{
 			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(m_C_AcctSchema_ID).append("),");
 		}
