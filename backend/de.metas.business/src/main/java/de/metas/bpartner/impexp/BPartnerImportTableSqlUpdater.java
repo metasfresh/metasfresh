@@ -158,7 +158,8 @@ public class BPartnerImportTableSqlUpdater
 	{
 		{
 			final String sql = "UPDATE I_BPartner i "
-					+ "SET GroupValue=(SELECT MAX(Value) FROM C_BP_Group g WHERE g.IsDefault='Y' AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID=i.AD_Org_ID) "
+					+ "SET GroupValue=(SELECT Value FROM C_BP_Group g WHERE g.IsDefault='Y' AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID IN (0, i.AD_Org_ID) "
+					+ " ORDER BY g.AD_Org_ID DESC, g.Value DESC LIMIT 1) "
 					+ " WHERE GroupValue IS NULL AND C_BP_Group_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
 					+ selection.toSqlWhereClause("i");
@@ -170,7 +171,8 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final String sql = "UPDATE I_BPartner i "
 					+ "SET C_BP_Group_ID=(SELECT C_BP_Group_ID FROM C_BP_Group g"
-					+ " WHERE i.GroupValue=g.Value AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID=i.AD_Org_ID) "
+					+ " WHERE i.GroupValue=g.Value AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID IN (0, i.AD_Org_ID) "
+					+ " ORDER BY g.AD_Org_ID DESC LIMIT 1) "
 					+ "WHERE C_BP_Group_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
 					+ selection.toSqlWhereClause("i");
@@ -276,8 +278,9 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 					+ "SET C_Greeting_ID=(SELECT C_Greeting_ID FROM C_Greeting g"
-					+ " WHERE i.BPContactGreeting=g.Name AND g.AD_Client_ID IN (0, i.AD_Client_ID) AND g.AD_Org_ID = i.AD_Org_ID) "
-					+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
+					+ " WHERE i.BPContactGreeting=g.Name AND g.AD_Client_ID IN (0, i.AD_Client_ID) AND g.AD_Org_ID IN (0, i.AD_Org_ID) "
+					+ " ORDER BY g.AD_Org_ID DESC LIMIT 1) "
+					+ " WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
 
