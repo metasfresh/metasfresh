@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job_schedule.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.inout.ShipmentScheduleId;
 import lombok.NonNull;
@@ -50,8 +51,8 @@ public class ShipmentScheduleAndJobScheduleId implements Comparable<ShipmentSche
 				? shipmentScheduleId.getRepoId() + "_" + jobScheduleId.getRepoId()
 				: "" + shipmentScheduleId.getRepoId();
 	}
-
-	@JsonValue
+	
+	@JsonCreator
 	public static ShipmentScheduleAndJobScheduleId ofJsonString(@NonNull final String json)
 	{
 		try
