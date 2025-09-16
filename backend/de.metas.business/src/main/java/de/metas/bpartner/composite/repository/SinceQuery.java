@@ -35,20 +35,16 @@ import static de.metas.util.Check.assumeGreaterThanZero;
 @Value
 public class SinceQuery
 {
-	public static SinceQuery anyEntity(@Nullable final Instant sinceInstant, final int pageSize)
+	public static SinceQuery anyEntity(@Nullable final Instant sinceInstant, final int pageSize, @Nullable final OrgId orgId, @Nullable final String externalSystem)
 	{
-		return new SinceQuery(SinceEntity.ALL, sinceInstant, pageSize,null);
+		return new SinceQuery(SinceEntity.ALL, sinceInstant, pageSize, orgId, externalSystem);
 	}
 
 	public static SinceQuery onlyContacts(@Nullable final Instant sinceInstant, final int pageSize)
 	{
-		return new SinceQuery(SinceEntity.CONTACT_ONLY, sinceInstant, pageSize,null);
+		return new SinceQuery(SinceEntity.CONTACT_ONLY, sinceInstant, pageSize,null, null);
 	}
 
-	public static SinceQuery anyEntityForOrg(@Nullable final Instant sinceInstant, final int pageSize, final OrgId orgId)
-	{
-		return new SinceQuery(SinceEntity.ALL, sinceInstant, pageSize, orgId);
-	}
 
 	SinceEntity sinceEntity;
 
@@ -59,15 +55,20 @@ public class SinceQuery
 	@Nullable
 	OrgId orgId;
 
+	@Nullable
+	String externalSystem;
+
 	private SinceQuery(
 			@NonNull final SinceEntity sinceEntity,
 			@NonNull final Instant sinceInstant,
 			final int pageSize,
-			@Nullable final OrgId orgId)
+			@Nullable final OrgId orgId,
+			@Nullable final String externalSystem)
 	{
 		this.sinceEntity = sinceEntity;
 		this.sinceInstant = sinceInstant;
 		this.pageSize = assumeGreaterThanZero(pageSize, "pageSize");
 		this.orgId = orgId;
+		this.externalSystem = externalSystem;
 	}
 }
