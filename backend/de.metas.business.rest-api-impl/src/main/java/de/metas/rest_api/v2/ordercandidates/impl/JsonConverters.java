@@ -1,6 +1,7 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -13,10 +14,12 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
+import de.metas.error.AdIssueId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.impex.InputDataSourceId;
@@ -183,7 +186,6 @@ public class JsonConverters
 				.map(DocSubType::ofNullableCode)
 				.orElse(DocSubType.ANY);
 
-
 		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
 
 		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());
@@ -193,7 +195,7 @@ public class JsonConverters
 		final int huPIItemProductId = CoalesceUtil.firstGreaterThanZero(
 				JsonMetasfreshId.toValueInt(request.getPackingMaterialId()),
 				HUPIItemProductId.toRepoIdVirtualToZero(productInfo.getHupiItemProductId()));
-		
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -228,7 +230,7 @@ public class JsonConverters
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
 				.uomId(uomId)
-				
+
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
@@ -329,15 +331,33 @@ public class JsonConverters
 				.build();
 	}
 
+	@NonNull
 	public JsonOLCandCreateBulkResponse toJson(
 			@NonNull final List<OLCand> olCands,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		return JsonOLCandCreateBulkResponse.ok(olCands.stream()
+		final List<JsonOLCand> jsonOLCands = olCands.stream()
 				.map(olCand -> toJson(olCand, masterdataProvider))
-				.collect(ImmutableList.toImmutableList()));
+				.collect(ImmutableList.toImmutableList());
+
+		final List<JsonErrorItem> errorItems = olCands.stream()
+				.filter(OLCand::isError)
+				.map(OLCand::getErrorMsgJSON)
+				.filter(Check::isNotBlank)
+				.map(JsonConverters::toJsonErrorItem)
+				.collect(ImmutableList.toImmutableList());
+
+		return Check.isEmpty(errorItems)
+				? JsonOLCandCreateBulkResponse.ok(jsonOLCands)
+				: JsonOLCandCreateBulkResponse.multiStatus(jsonOLCands, errorItems);
 	}
 
+	@NonNull
+	private static JsonErrorItem toJsonErrorItem(@NonNull final String errorMsg)
+	{
+		return JsonObjectMapperHolder.fromJsonNonNull(errorMsg, JsonErrorItem.class);
+	}
+	
 	private JsonOLCand toJson(
 			@NonNull final OLCand olCand,
 			@NonNull final MasterdataProvider masterdataProvider)
@@ -388,6 +408,10 @@ public class JsonConverters
 				.jsonOrderLineGroup(jsonOrderLineGroup)
 
 				.description(olCand.unbox().getDescription())
+				.adIssueId(Optional.ofNullable(olCand.getAdIssueId())
+						.map(AdIssueId::getRepoId)
+						.map(JsonMetasfreshId::of)
+						.orElse(null))
 				.line(olCand.getLine())
 				.build();
 	}
