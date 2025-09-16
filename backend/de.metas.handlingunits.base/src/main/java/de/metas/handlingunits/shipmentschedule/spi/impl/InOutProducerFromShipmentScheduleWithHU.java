@@ -419,10 +419,15 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private int getInoutDoctypeID(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 
-		final I_C_DocType shipmentScheduleDocType = docTypeDAO.getById(DocTypeId.ofRepoId(shipmentSchedule.getC_DocType_ID()));
-		if (shipmentScheduleDocType.getC_DocTypeShipment_ID() > 0)
+		final DocTypeId shipmentScheduleDocTypeId = DocTypeId.ofRepoIdOrNull(shipmentSchedule.getC_DocType_ID());
+		if (shipmentScheduleDocTypeId != null)
 		{
-			return shipmentScheduleDocType.getC_DocTypeShipment_ID();
+			final I_C_DocType shipmentScheduleDocType = docTypeDAO.getById(shipmentScheduleDocTypeId);
+
+			if (shipmentScheduleDocType.getC_DocTypeShipment_ID() > 0)
+			{
+				return shipmentScheduleDocType.getC_DocTypeShipment_ID();
+			}
 		}
 
 		final DocTypeQuery query = DocTypeQuery.builder()
