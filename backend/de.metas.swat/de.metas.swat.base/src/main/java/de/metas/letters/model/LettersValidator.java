@@ -22,6 +22,8 @@ package de.metas.letters.model;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.letters.api.ITextTemplateBL;
@@ -75,7 +77,6 @@ import java.util.regex.Matcher;
 
 /**
  * @author teo_sarca
- *
  */
 public class LettersValidator implements ModelValidator
 {
@@ -92,23 +93,30 @@ public class LettersValidator implements ModelValidator
 	}
 
 	@Override
-	public void initialize(final ModelValidationEngine engine, final MClient client) {
-		if (client != null) {
+	public void initialize(final ModelValidationEngine engine, final MClient client)
+	{
+		if (client != null)
+		{
 			m_AD_Client_ID = client.getAD_Client_ID();
 		}
 
 		Services.registerService(ITextTemplateBL.class, TextTemplateBL.get());
 		engine.addModelChange(I_C_DunningRunEntry.Table_Name, this);
 
-		final Set<String> tableNames = MADBoilerPlateVarEval.getAll(Env.getCtx())
+		final Set<String> tableNames = MADBoilerPlateVarEval.getAll()
 				.stream()
 				.map(timing -> {
 					final I_C_DocType dt = timing.getC_DocType();
 					if (dt == null || dt.getC_DocType_ID() <= 0)
+					{
 						return null;
+					}
+
 					final String tableName = getTableNameByDocBaseType(dt.getDocBaseType());
 					if (tableName == null)
+					{
 						return null;
+					}
 
 					final ArrayKey key = new ArrayKey(
 							timing.getAD_Client_ID(),
@@ -117,12 +125,14 @@ public class LettersValidator implements ModelValidator
 							dt.getC_DocType_ID(),
 							timing.getEvalTime()
 					);
+
 					s_cacheVars.computeIfAbsent(key, k -> new HashSet<>())
 							.add(MADBoilerPlateVar.get(timing.getCtx(), timing.getAD_BoilerPlate_Var_ID()));
+
 					return tableName;
 				})
 				.filter(Objects::nonNull)
-				.collect(java.util.stream.Collectors.toCollection(HashSet::new));
+				.collect(ImmutableSet.toImmutableSet());
 
 		tableNames.forEach(tableName -> engine.addDocValidate(tableName, this));
 	}
@@ -165,39 +175,37 @@ public class LettersValidator implements ModelValidator
 		return null;
 	}
 
-	private static final Map<String, String> s_mapDocBaseTypeToTableName = new HashMap<>(20);
-	static
-	{
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_GLJournal, I_GL_Journal.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_GLDocument, I_GL_Journal.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_APInvoice, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_APPayment, I_C_Payment.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ARInvoice, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ARReceipt, I_C_Payment.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_SalesOrder, I_C_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ARProFormaInvoice, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MaterialDelivery, I_M_InOut.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MaterialReceipt, I_M_InOut.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MaterialMovement, I_M_Movement.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_PurchaseOrder, I_C_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_PurchaseRequisition, I_M_Requisition.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, I_M_Inventory.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_APCreditMemo, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ARCreditMemo, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_BankStatement, I_C_BankStatement.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_CashJournal, I_C_Cash.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_PaymentAllocation, I_C_AllocationHdr.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MatchInvoice, I_M_MatchInv.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MatchPO, I_M_MatchPO.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ProjectIssue, I_C_ProjectIssue.Table_Name);
-		s_mapDocBaseTypeToTableName.put(PPOrderDocBaseType.MAINTENANCE_ORDER.getCode(), I_PP_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(PPOrderDocBaseType.MANUFACTURING_ORDER.getCode(), I_PP_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(PPOrderDocBaseType.QUALITY_ORDER.getCode(), I_PP_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(PPOrderDocBaseType.REPAIR_ORDER.getCode(), I_PP_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_Payroll, I_HR_Process.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_DistributionOrder, I_DD_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector, I_PP_Cost_Collector.Table_Name);
-	}
+	private static final ImmutableMap<String, String> s_mapDocBaseTypeToTableName = ImmutableMap.<String, String>builder()
+			.put(X_C_DocType.DOCBASETYPE_GLJournal, I_GL_Journal.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_GLDocument, I_GL_Journal.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_APInvoice, I_C_Invoice.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_APPayment, I_C_Payment.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_ARInvoice, I_C_Invoice.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_ARReceipt, I_C_Payment.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_SalesOrder, I_C_Order.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_ARProFormaInvoice, I_C_Invoice.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_MaterialDelivery, I_M_InOut.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_MaterialReceipt, I_M_InOut.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_MaterialMovement, I_M_Movement.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_PurchaseOrder, I_C_Order.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_PurchaseRequisition, I_M_Requisition.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, I_M_Inventory.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_APCreditMemo, I_C_Invoice.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_ARCreditMemo, I_C_Invoice.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_BankStatement, I_C_BankStatement.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_CashJournal, I_C_Cash.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_PaymentAllocation, I_C_AllocationHdr.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_MatchInvoice, I_M_MatchInv.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_MatchPO, I_M_MatchPO.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_ProjectIssue, I_C_ProjectIssue.Table_Name)
+			.put(PPOrderDocBaseType.MAINTENANCE_ORDER.getCode(), I_PP_Order.Table_Name)
+			.put(PPOrderDocBaseType.MANUFACTURING_ORDER.getCode(), I_PP_Order.Table_Name)
+			.put(PPOrderDocBaseType.QUALITY_ORDER.getCode(), I_PP_Order.Table_Name)
+			.put(PPOrderDocBaseType.REPAIR_ORDER.getCode(), I_PP_Order.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_Payroll, I_HR_Process.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_DistributionOrder, I_DD_Order.Table_Name)
+			.put(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector, I_PP_Cost_Collector.Table_Name)
+			.build();
 
 	private static String getTableNameByDocBaseType(final String docBaseType)
 	{

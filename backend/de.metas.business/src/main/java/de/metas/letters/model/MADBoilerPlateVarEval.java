@@ -25,6 +25,7 @@ package de.metas.letters.model;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,7 +34,6 @@ import org.compiere.model.MDocType;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -47,28 +47,30 @@ public class MADBoilerPlateVarEval extends X_AD_BoilerPlate_Var_Eval
 	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private static final long serialVersionUID = 6355649371361977481L;
 
-	private static CCache<Integer, List<MADBoilerPlateVarEval>> s_cache = new CCache<>(Table_Name + "#DocTiming", 2);
+	private static final CCache<Integer, ImmutableList<MADBoilerPlateVarEval>> s_cache = new CCache<>(Table_Name + "#DocTiming", 2);
 
-	public static @NotNull List<MADBoilerPlateVarEval> getAll(final Properties ctx)
+	public static @NotNull List<MADBoilerPlateVarEval> getAll()
 	{
-		final List<MADBoilerPlateVarEval> result = s_cache.get(0, (java.util.function.Supplier<List<MADBoilerPlateVarEval>>)() ->
-				queryBL.createQueryBuilder(I_AD_BoilerPlate_Var_Eval.Table_Name)
-						.orderBy()
-						.addColumn(I_AD_BoilerPlate_Var_Eval.COLUMNNAME_AD_BoilerPlate_Var_ID)
-						.addColumn(I_AD_BoilerPlate_Var_Eval.COLUMNNAME_C_DocType_ID)
-						.endOrderBy()
-						.create()
-						.list(MADBoilerPlateVarEval.class)
-		);
-
-		return result != null ? result : Collections.emptyList();
+		//noinspection DataFlowIssue
+		return s_cache.getOrLoad(0, MADBoilerPlateVarEval::retrieveAll);
 	}
 
+	private static ImmutableList<MADBoilerPlateVarEval> retrieveAll()
+	{
+		return queryBL.createQueryBuilder(I_AD_BoilerPlate_Var_Eval.Table_Name)
+				.orderBy(I_AD_BoilerPlate_Var_Eval.COLUMNNAME_AD_BoilerPlate_Var_ID)
+				.orderBy(I_AD_BoilerPlate_Var_Eval.COLUMNNAME_C_DocType_ID)
+				.create()
+				.listImmutable(MADBoilerPlateVarEval.class);
+	}
+
+	@SuppressWarnings("unused")
 	public MADBoilerPlateVarEval(Properties ctx, int AD_BoilerPlate_Var_Eval_ID, String trxName)
 	{
 		super(ctx, AD_BoilerPlate_Var_Eval_ID, trxName);
 	}
 
+	@SuppressWarnings("unused")
 	public MADBoilerPlateVarEval(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
