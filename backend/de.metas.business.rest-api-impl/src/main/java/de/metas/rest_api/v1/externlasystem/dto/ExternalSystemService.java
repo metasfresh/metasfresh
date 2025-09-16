@@ -35,6 +35,7 @@ import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
@@ -50,6 +51,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -64,6 +66,7 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
 
 @Service
+@RequiredArgsConstructor
 public class ExternalSystemService
 {
 	private static final Logger logger = LogManager.getLogger(ExternalSystemService.class);
@@ -75,14 +78,7 @@ public class ExternalSystemService
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo;
 	private final ExternalSystemExportAuditRepo externalSystemExportAuditRepo;
-
-	public ExternalSystemService(
-			final ExternalSystemConfigRepo externalSystemConfigRepo,
-			final ExternalSystemExportAuditRepo externalSystemExportAuditRepo)
-	{
-		this.externalSystemConfigRepo = externalSystemConfigRepo;
-		this.externalSystemExportAuditRepo = externalSystemExportAuditRepo;
-	}
+	private final ExternalSystemRepository externalSystemRepository;
 
 	@NonNull
 	public ProcessExecutionResult invokeExternalSystem(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)

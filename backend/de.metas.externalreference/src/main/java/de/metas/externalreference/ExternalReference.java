@@ -22,6 +22,7 @@
 
 package de.metas.externalreference;
 
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,7 +39,7 @@ public class ExternalReference
 	 */
 	public static final ExternalReference NULL = ExternalReference.builder()
 			.orgId(OrgId.ANY)
-			.externalSystem(NullExternalSystem.NULL)
+			.externalSystem(ExternalSystem.NULL)
 			.externalReferenceType(NullExternalReferenceType.NULL)
 			.externalReference("NULL")
 			.externalReferenceUrl("NULL")
@@ -52,7 +53,7 @@ public class ExternalReference
 	OrgId orgId;
 
 	@NonNull
-	IExternalSystem externalSystem;
+	ExternalSystem externalSystem;
 
 	@NonNull
 	IExternalReferenceType externalReferenceType;

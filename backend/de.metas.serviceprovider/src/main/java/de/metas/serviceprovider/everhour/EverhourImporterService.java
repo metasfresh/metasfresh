@@ -37,7 +37,7 @@ import de.metas.issue.tracking.everhour.api.model.TimeRecord;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.timebooking.TimeBookingId;
@@ -51,6 +51,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.time.LocalDateInterval;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
@@ -69,6 +70,7 @@ import static de.metas.serviceprovider.timebooking.importer.ImportConstants.IMPO
 
 
 @Service
+@RequiredArgsConstructor
 public class EverhourImporterService implements TimeBookingsImporter
 {
 	private static final Logger log = LogManager.getLogger(EverhourImporterService.class);
@@ -81,22 +83,6 @@ public class EverhourImporterService implements TimeBookingsImporter
 	private final FailedTimeBookingRepository failedTimeBookingRepository;
 	private final ObjectMapper objectMapper;
 	private final ITrxManager trxManager;
-
-	public EverhourImporterService(
-			@NonNull final EverhourClient everhourClient,
-			@NonNull final ExternalReferenceRepository externalReferenceRepository,
-			@NonNull final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue,
-			@NonNull final FailedTimeBookingRepository failedTimeBookingRepository,
-			@NonNull final ObjectMapper objectMapper,
-			@NonNull final ITrxManager trxManager)
-	{
-		this.everhourClient = everhourClient;
-		this.externalReferenceRepository = externalReferenceRepository;
-		this.timeBookingImportQueue = timeBookingImportQueue;
-		this.failedTimeBookingRepository = failedTimeBookingRepository;
-		this.objectMapper = objectMapper;
-		this.trxManager = trxManager;
-	}
 
 	public void importTimeBookings(@NonNull final ImportTimeBookingsRequest request)
 	{
@@ -141,7 +127,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 					externalReferenceRepository.getReferencedRecordIdBy(
 							ExternalReferenceQuery.builder()
 									.orgId(orgId)
-									.externalSystem(ExternalSystem.EVERHOUR)
+									.externalSystem(de.metas.externalsystem.ExternalSystem.NULL) // TODO ExternalSystem.EVERHOUR)
 									.externalReference(String.valueOf(timeRecord.getUserId()))
 									.externalReferenceType(ExternalUserReferenceType.USER_ID)
 									.build()));
@@ -150,7 +136,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 					externalReferenceRepository.getReferencedRecordIdBy(
 							ExternalReferenceQuery.builder()
 									.orgId(orgId)
-									.externalSystem(ExternalSystem.GITHUB)
+									.externalSystem(ExternalSystem.NULL) //TODO ExternalSystem.GITHUB
 									.externalReference(extractGithubIssueId(timeRecord.getTask().getId()))
 									.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
 									.build()));
@@ -159,7 +145,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 					externalReferenceRepository.getReferencedRecordIdOrNullBy(
 							ExternalReferenceQuery.builder()
 									.orgId(orgId)
-									.externalSystem(ExternalSystem.EVERHOUR)
+									.externalSystem(de.metas.externalsystem.ExternalSystem.NULL) // TODO ExternalSystem.EVERHOUR)
 									.externalReference(String.valueOf(timeRecord.getId()))
 									.externalReferenceType(ExternalServiceReferenceType.TIME_BOOKING_ID)
 									.build()));
@@ -168,7 +154,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 			final ImportTimeBookingInfo importTimeBookingInfo = ImportTimeBookingInfo
 					.builder()
-					.externalTimeBookingId(ExternalId.of(ExternalSystem.EVERHOUR, timeRecord.getId()))
+					.externalTimeBookingId(ExternalId.of(de.metas.externalsystem.ExternalSystem.NULL, timeRecord.getId())) // TODO ExternalSystem.EVERHOUR
 					.timeBookingId(timeBookingId)
 					.performingUserId(userId)
 					.issueId(issueId)
@@ -239,7 +225,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 				.jsonValue(jsonValue)
 				.orgId(orgId)
 				.externalId(timeRecord.getId())
-				.externalSystem(ExternalSystem.EVERHOUR)
+				.externalSystem(ExternalSystem.NULL) //TODO ExternalSystem.EVERHOUR
 				.errorMsg(errorMessage.toString())
 				.build();
 
@@ -253,7 +239,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 		final Stopwatch stopWatch = Stopwatch.createStarted();
 
-		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(ExternalSystem.EVERHOUR);
+		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(ExternalSystem.NULL); //TODO ExternalSystem.EVERHOUR
 		for(FailedTimeBooking failedTimeBooking:failedTimeBookings)
 		{
 			if(Check.isBlank(failedTimeBooking.getJsonValue()))

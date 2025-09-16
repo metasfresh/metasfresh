@@ -28,11 +28,10 @@ import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
@@ -65,6 +64,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB;
+
 @ExtendWith(AdempiereTestWatcher.class)
 class IssueImporterServiceTest
 {
@@ -82,13 +83,13 @@ class IssueImporterServiceTest
 
 		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 
-		final ExternalSystems externalSystems = new ExternalSystems();
-		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
+		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
+		externalSystemRepository.save(MOCK_EXTERNAL_SYSTEM_GITHUB);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
 
-		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystems, externalReferenceTypes);
+		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystemRepository, externalReferenceTypes);
 
 		issueImporterService = new IssueImporterService(
 				new ImportQueue<>(100, "logPrefix"),
@@ -121,7 +122,7 @@ class IssueImporterServiceTest
 					.externalProjectType(ExternalProjectType.BUDGET)
 					.effortUomId(UomId.ofRepoId(mockUOMRecord.getC_UOM_ID()))
 					.name("test issue")
-					.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, "1"))
+					.externalIssueId(ExternalId.of(MOCK_EXTERNAL_SYSTEM_GITHUB, "1"))
 					.issueLabels(ImmutableList.of())
 					.build();
 

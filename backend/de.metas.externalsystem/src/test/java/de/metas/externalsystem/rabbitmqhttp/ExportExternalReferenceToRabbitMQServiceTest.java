@@ -30,10 +30,11 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.externalreference.AlbertaExternalSystem;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
@@ -86,7 +87,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		final BPartnerCompositeRepository bPartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 
-		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes());
+		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystemRepository(), new ExternalReferenceTypes());
 
 		AdempiereTestHelper.get().init();
 
@@ -127,7 +128,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 
 		final I_S_ExternalReference externalReference = createExternalReferenceBuilder()
 				.externalReference("ref_1")
-				.externalSystem(AlbertaExternalSystem.ALBERTA.getCode())
+				.externalSystem(ExternalSystem.SystemValue.Alberta.getValue())
 				.type(BPLocationExternalReferenceType.BPARTNER_LOCATION.getCode())
 				.recordId(3)
 				.build();

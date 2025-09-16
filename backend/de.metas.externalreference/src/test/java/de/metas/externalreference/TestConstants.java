@@ -22,6 +22,8 @@
 
 package de.metas.externalreference;
 
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.organization.OrgId;
 
 import java.time.Instant;
@@ -35,8 +37,21 @@ public interface TestConstants
 	String MOCK_EXTERNAL_REFERENCE_VERSION = "externalReferenceVersion";
 	IExternalReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = new PlainExternalReferenceType("code", "tableName");
 
-	IExternalSystem MOCK_EXTERNAL_SYSTEM = new PlainExternalSystem("Github");
-	IExternalSystem MOCK_EXTERNAL_SYSTEM_1 = new PlainExternalSystem("Everhour");
+	ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystem.builder()
+			.name("Github")
+			.value("Github")
+			.externalSystemId(ExternalSystemId.ofRepoId(11111))
+			.build();
+	ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = ExternalSystem.builder()
+			.name("Everhour")
+			.value("Everhour")
+			.externalSystemId(ExternalSystemId.ofRepoId(22222))
+			.build();
+	ExternalSystem MOCK_EXTERNAL_SYSTEM = ExternalSystem.builder()
+			.name("System")
+			.value("System")
+			.externalSystemId(ExternalSystemId.ofRepoId(33333))
+			.build();
 	// ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
 	String MOCK_EXTERNAL_ID = "externalId";
 	String MOCK_EXTERNAL_URL = "externalURL";

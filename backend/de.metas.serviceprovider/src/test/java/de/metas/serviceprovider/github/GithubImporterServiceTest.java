@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -35,7 +35,6 @@ import de.metas.issue.tracking.github.api.v3.model.Label;
 import de.metas.issue.tracking.github.api.v3.model.RetrieveIssuesRequest;
 import de.metas.issue.tracking.github.api.v3.service.GithubClient;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.github.label.LabelService;
@@ -68,7 +67,7 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFER
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_INSTANT;
 import static de.metas.serviceprovider.TestConstants.MOCK_ISSUE_URL;
@@ -113,11 +112,11 @@ public class GithubImporterServiceTest
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(MOCK_EXTERNAL_REFERENCE_TYPE);
 
-		final ExternalSystems externalSystems = new ExternalSystems();
+		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
 		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM);
 		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM_1);
 
-		externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystems, externalReferenceTypes);
+		externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystemRepository, externalReferenceTypes);
 	}
 
 	@Test
@@ -154,7 +153,7 @@ public class GithubImporterServiceTest
 		assertEquals(issueInfo.getEstimation(), BigDecimal.valueOf(4.25));
 		assertEquals(issueInfo.getDescription(), MOCK_DESCRIPTION);
 		assertEquals(issueInfo.getExternalIssueId().getId(), MOCK_EXTERNAL_ID);
-		assertEquals(issueInfo.getExternalIssueId().getExternalSystem(), ExternalSystem.GITHUB);
+		assertEquals(issueInfo.getExternalIssueId().getExternalSystem(), MOCK_EXTERNAL_SYSTEM_GITHUB);
 		assertEquals(issueInfo.getExternalIssueNo(), MOCK_EXTERNAL_ISSUE_NO);
 		assertEquals(issueInfo.getExternalIssueURL(), MOCK_EXTERNAL_URL);
 		assertEquals(issueInfo.getName(), MOCK_NAME);
@@ -276,7 +275,7 @@ public class GithubImporterServiceTest
 	{
 		final I_S_ExternalProjectReference projectRecord = InterfaceWrapperHelper.newInstance(I_S_ExternalProjectReference.class);
 		projectRecord.setProjectType(MOCK_EXTERNAL_PROJECT_TYPE.getValue());
-		projectRecord.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getCode());
+		projectRecord.setExternalSystem(MOCK_EXTERNAL_SYSTEM_GITHUB.getValue());
 		projectRecord.setAD_Org_ID(MOCK_ORG_ID.getRepoId());
 		projectRecord.setC_Project_ID(MOCK_PROJECT_ID.getRepoId());
 		projectRecord.setExternalReference(MOCK_EXTERNAL_REFERENCE);
@@ -312,7 +311,7 @@ public class GithubImporterServiceTest
 		assertEquals(parentIssue.getEstimation(), BigDecimal.valueOf(4.25));
 		assertEquals(parentIssue.getDescription(), MOCK_ISSUE_URL);
 		assertEquals(parentIssue.getExternalIssueId().getId(), MOCK_PARENT_EXTERNAL_ID);
-		assertEquals(parentIssue.getExternalIssueId().getExternalSystem(), ExternalSystem.GITHUB);
+		assertEquals(parentIssue.getExternalIssueId().getExternalSystem(), MOCK_EXTERNAL_SYSTEM_GITHUB);
 		assertEquals(parentIssue.getExternalIssueNo(), MOCK_PARENT_ISSUE_NO);
 		assertEquals(parentIssue.getExternalIssueURL(), MOCK_EXTERNAL_URL);
 		assertEquals(parentIssue.getName(), MOCK_NAME);
@@ -328,7 +327,7 @@ public class GithubImporterServiceTest
 		assertEquals(childIssue.getEstimation(), BigDecimal.valueOf(4.25));
 		assertEquals(childIssue.getDescription(), MOCK_PARENT_ISSUE_URL);
 		assertEquals(childIssue.getExternalIssueId().getId(), MOCK_EXTERNAL_ID);
-		assertEquals(childIssue.getExternalIssueId().getExternalSystem(), ExternalSystem.GITHUB);
+		assertEquals(childIssue.getExternalIssueId().getExternalSystem(), MOCK_EXTERNAL_SYSTEM_GITHUB);
 		assertEquals(childIssue.getExternalIssueNo(), MOCK_EXTERNAL_ISSUE_NO);
 		assertEquals(childIssue.getExternalIssueURL(), MOCK_EXTERNAL_URL);
 		assertEquals(childIssue.getName(), MOCK_NAME);
@@ -347,7 +346,7 @@ public class GithubImporterServiceTest
 		assertEquals(milestone.getName(), MOCK_NAME);
 		assertEquals(milestone.getDescription(), MOCK_DESCRIPTION);
 		assertEquals(milestone.getExternalId().getId(), MOCK_EXTERNAL_ID);
-		assertEquals(milestone.getExternalId().getExternalSystem(), ExternalSystem.GITHUB);
+		assertEquals(milestone.getExternalId().getExternalSystem(), MOCK_EXTERNAL_SYSTEM_GITHUB);
 		assertEquals(milestone.getExternalURL(), MOCK_EXTERNAL_URL);
 		assertEquals(milestone.getOrgId(), MOCK_ORG_ID);
 		assertEquals(milestone.getDueDate(), MOCK_INSTANT);

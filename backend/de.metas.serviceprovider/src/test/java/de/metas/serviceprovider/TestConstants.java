@@ -22,15 +22,15 @@
 
 package de.metas.serviceprovider;
 
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.milestone.MilestoneId;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 
 import java.time.Instant;
@@ -42,8 +42,16 @@ public interface TestConstants
 	String MOCK_EXTERNAL_PROJECT_OWNER = "externalProjectOwner";
 	String MOCK_EXTERNAL_REFERENCE = "externalReference";
 	ExternalServiceReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = ExternalServiceReferenceType.ISSUE_ID;
-	ExternalSystem MOCK_EXTERNAL_SYSTEM = ExternalSystem.GITHUB;
-	ExternalSystem MOCK_EXTERNAL_SYSTEM_1 = ExternalSystem.EVERHOUR;
+	ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystem.builder()
+			.externalSystemId(ExternalSystemId.ofRepoId(11111))
+			.name(ExternalSystem.SystemValue.Github.getValue())
+			.value(ExternalSystem.SystemValue.Github.getValue())
+			.build();
+	ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = ExternalSystem.builder()
+		.externalSystemId(ExternalSystemId.ofRepoId(22222))
+		.name(ExternalSystem.SystemValue.Everhour.getValue())
+		.value(ExternalSystem.SystemValue.Everhour.getValue())
+		.build();
 	ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
 	String MOCK_EXTERNAL_ID = "externalId";
 	String MOCK_EXTERNAL_URL = "externalURL";

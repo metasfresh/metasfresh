@@ -42,6 +42,9 @@ import java.util.Arrays;
 
 public enum ExternalSystemType implements ReferenceListAwareEnum
 {
+
+	//TODO replace with ExternalSystem
+
 	Alberta(X_ExternalSystem_Config.TYPE_Alberta, "Alberta", InvokeAlbertaAction.class.getName()),
 	Shopware6(X_ExternalSystem_Config.TYPE_Shopware6, "Shopware6", InvokeShopware6Action.class.getName()),
 	RabbitMQ(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI, "RabbitMQRESTAPI", null),

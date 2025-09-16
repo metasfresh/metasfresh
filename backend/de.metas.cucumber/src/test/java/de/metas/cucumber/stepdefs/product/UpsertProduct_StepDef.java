@@ -35,9 +35,9 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.IExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
@@ -89,12 +89,12 @@ public class UpsertProduct_StepDef
 	private final TestContext testContext;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ProductRepository productRepository;
-	private final ExternalSystems externalSystems;
+	private final ExternalSystemRepository externalSystemRepository;
 
-	public UpsertProduct_StepDef(final TestContext testContext, final ExternalSystems externalSystems)
+	public UpsertProduct_StepDef(final TestContext testContext, final ExternalSystemRepository externalSystemRepository)
 	{
 		this.testContext = testContext;
-		this.externalSystems = externalSystems;
+		this.externalSystemRepository = externalSystemRepository;
 		productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 		externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 	}
@@ -262,7 +262,7 @@ public class UpsertProduct_StepDef
 	{
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(identifier);
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(productIdentifier.asExternalValueAndSystem().getExternalSystem())
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(productIdentifier.asExternalValueAndSystem().getExternalSystem())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", identifier));
 
 		final ExternalReferenceQuery externalReferenceQuery = ExternalReferenceQuery.builder()

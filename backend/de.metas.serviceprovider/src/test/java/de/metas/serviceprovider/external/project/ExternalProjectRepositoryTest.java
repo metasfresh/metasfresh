@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.external.project;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,7 +37,7 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFER
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_PROJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,7 +64,7 @@ public class ExternalProjectRepositoryTest
 		record.setC_Project_ID(MOCK_PROJECT_ID.getRepoId());
 		record.setExternalProjectOwner(MOCK_EXTERNAL_PROJECT_OWNER);
 		record.setExternalReference(MOCK_EXTERNAL_REFERENCE);
-		record.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getCode());
+		record.setExternalSystem(MOCK_EXTERNAL_SYSTEM_GITHUB.getValue());
 		record.setIsActive(isActive);
 		record.setProjectType(MOCK_EXTERNAL_PROJECT_TYPE.getValue());
 		record.setS_ExternalProjectReference_ID(id.getRepoId());
@@ -87,7 +88,7 @@ public class ExternalProjectRepositoryTest
 	@Test
 	public void getByExternalSystem()
 	{
-		final ImmutableList<ExternalProjectReference> records = externalProjectRepository.getByExternalSystem(MOCK_EXTERNAL_SYSTEM);
+		final ImmutableList<ExternalProjectReference> records = externalProjectRepository.getByExternalSystemSystemValue(ExternalSystem.SystemValue.Github);
 
 		assertEquals(records.size(), 1);
 		assertEquals(records.get(0).getOrgId(), MOCK_ORG_ID);

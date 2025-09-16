@@ -22,6 +22,7 @@
 
 package de.metas.externalreference;
 
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
 import lombok.Builder;
@@ -38,7 +39,7 @@ public class ExternalReferenceQuery
 	OrgId orgId;
 
 	@NonNull
-	IExternalSystem externalSystem;
+	ExternalSystem externalSystem;
 
 	@NonNull
 	IExternalReferenceType externalReferenceType;
@@ -52,7 +53,7 @@ public class ExternalReferenceQuery
 	@Builder
 	public ExternalReferenceQuery(
 			@NonNull final OrgId orgId,
-			@NonNull final IExternalSystem externalSystem,
+			@NonNull final ExternalSystem externalSystem,
 			@NonNull final IExternalReferenceType externalReferenceType,
 			@Nullable final String externalReference,
 			@Nullable final MetasfreshId metasfreshId)

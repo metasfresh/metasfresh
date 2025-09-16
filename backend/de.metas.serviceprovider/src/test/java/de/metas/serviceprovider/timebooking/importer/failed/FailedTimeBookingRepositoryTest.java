@@ -23,7 +23,7 @@
 package de.metas.serviceprovider.timebooking.importer.failed;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,8 +34,8 @@ import org.junit.jupiter.api.Test;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_ERROR_MESSAGE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_1;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_EVERHOUR;
 import static de.metas.serviceprovider.TestConstants.MOCK_JSON_VALUE;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,7 +56,7 @@ public class FailedTimeBookingRepositoryTest
 	public void save()
 	{
 		//given
-		final FailedTimeBooking mockFailedTimeBooking = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM);
+		final FailedTimeBooking mockFailedTimeBooking = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_GITHUB);
 
 		//when
 		final FailedTimeBookingId failedTimeBookingId = failedTimeBookingRepository.save(mockFailedTimeBooking);
@@ -74,7 +74,7 @@ public class FailedTimeBookingRepositoryTest
 	public void delete()
 	{
 		//given
-		final FailedTimeBooking mockFailedTimeBooking = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM);
+		final FailedTimeBooking mockFailedTimeBooking = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_GITHUB);
 
 		final FailedTimeBookingId failedTimeBookingId = failedTimeBookingRepository.save(mockFailedTimeBooking);
 
@@ -91,8 +91,8 @@ public class FailedTimeBookingRepositoryTest
 	public void listBySystem()
 	{
 		//given
-		final FailedTimeBooking failedTimeBookingSys = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM);
-		final FailedTimeBooking failedTimeBookingSys1 = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_1);
+		final FailedTimeBooking failedTimeBookingSys = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_GITHUB);
+		final FailedTimeBooking failedTimeBookingSys1 = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_EVERHOUR);
 
 		final FailedTimeBookingId failedTimeBookingIdSys = failedTimeBookingRepository.save(failedTimeBookingSys);
 
@@ -100,7 +100,7 @@ public class FailedTimeBookingRepositoryTest
 		final FailedTimeBooking failedTimeBookingSysWithId = failedTimeBookingSys.toBuilder().failedTimeBookingId(failedTimeBookingIdSys).build();
 
 		//when
-		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(MOCK_EXTERNAL_SYSTEM);
+		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(MOCK_EXTERNAL_SYSTEM_GITHUB);
 
 		//then
 		assertThat(failedTimeBookings)

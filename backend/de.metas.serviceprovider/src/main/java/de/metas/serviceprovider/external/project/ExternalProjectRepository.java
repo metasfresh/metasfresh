@@ -23,9 +23,9 @@
 package de.metas.serviceprovider.external.project;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -46,11 +46,11 @@ public class ExternalProjectRepository
 	}
 
 	@NonNull
-	public ImmutableList<ExternalProjectReference> getByExternalSystem(@NonNull final ExternalSystem externalSystem)
+	public ImmutableList<ExternalProjectReference> getByExternalSystemSystemValue(@NonNull final ExternalSystem.SystemValue externalSystem)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, externalSystem.getCode())
+				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, externalSystem.getValue())
 				.orderBy(I_S_ExternalProjectReference.COLUMNNAME_SeqNo)
 				.create()
 				.list()
@@ -64,7 +64,7 @@ public class ExternalProjectRepository
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, getExternalProjectRequest.getExternalSystem().getCode())
+				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, getExternalProjectRequest.getExternalSystem().getValue())
 
 				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalReference, getExternalProjectRequest.getExternalReference())
 

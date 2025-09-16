@@ -40,10 +40,10 @@ import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.IExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
@@ -95,12 +95,12 @@ public class S_ExternalReference_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ExternalReferenceTypes externalReferenceTypes;
-	private final ExternalSystems externalSystems;
+	private final ExternalSystemRepository externalSystemRepository;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final TestContext testContext;
 
 	public S_ExternalReference_StepDef(
-			@NonNull final ExternalSystems externalSystems,
+			@NonNull final ExternalSystemRepository externalSystemRepository,
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final S_ExternalReference_StepDefData externalRefTable,
 			@NonNull final M_Shipper_StepDefData shipperTable,
@@ -108,7 +108,7 @@ public class S_ExternalReference_StepDef
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final TestContext testContext)
 	{
-		this.externalSystems = externalSystems;
+		this.externalSystemRepository = externalSystemRepository;
 		this.userTable = userTable;
 		this.externalRefTable = externalRefTable;
 		this.shipperTable = shipperTable;
@@ -148,7 +148,7 @@ public class S_ExternalReference_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String externalSystemCode = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalSystem);
-			final IExternalSystem externalSystemType = externalSystems.ofCode(externalSystemCode)
+			final ExternalSystem externalSystemType = externalSystemRepository.getOptionalByValue(externalSystemCode)
 					.orElseThrow(() -> new AdempiereException("Unknown externalSystemCode" + externalSystemCode));
 
 			final String typeCode = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_Type);
@@ -161,14 +161,14 @@ public class S_ExternalReference_StepDef
 					() -> queryBL.createQueryBuilder(I_S_ExternalReference.class)
 							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 							.addEqualsFilter(I_S_ExternalReference.COLUMN_Type, type.getCode())
-							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystemType.getCode())
+							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystemType.getValue())
 							.create()
 							.firstOnlyOrNull(I_S_ExternalReference.class),
 					() -> newInstanceOutOfTrx(I_S_ExternalReference.class));
 
 			assertThat(externalReferenceRecord).isNotNull();
 
-			externalReferenceRecord.setExternalSystem(externalSystemType.getCode());
+			externalReferenceRecord.setExternalSystem(externalSystemType.getValue());
 			externalReferenceRecord.setType(type.getCode());
 			externalReferenceRecord.setExternalReference(externalReference);
 
@@ -310,7 +310,7 @@ public class S_ExternalReference_StepDef
 				throw new AdempiereException("No implementation for external reference type.");
 			}
 
-			final IExternalSystem externalSystem = externalSystems.ofCode(externalSystemName)
+			final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(externalSystemName)
 					.orElseThrow(() -> new InvalidIdentifierException("systemName", externalSystemName));
 
 			final ExternalReference externalReference = ExternalReference.builder()
@@ -332,7 +332,7 @@ public class S_ExternalReference_StepDef
 		final String referenceType = DataTableUtil.extractStringForColumnName(tableRow, "ExternalReferenceType.Code");
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "RecordId.Identifier");
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(externalSystemCode)
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(externalSystemCode)
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", externalSystemCode));
 
 		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(referenceType)

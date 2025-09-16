@@ -23,6 +23,7 @@
 package de.metas.externalreference;
 
 import de.metas.externalreference.model.I_S_ExternalReference;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,11 +46,11 @@ public class ExternalReferenceRepositoryTest
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE);
 
-		final ExternalSystems externalSystems = new ExternalSystems();
-		externalSystems.registerExternalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM);
-		externalSystems.registerExternalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM_1);
+		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
+		externalSystemRepository.save(TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB);
+		externalSystemRepository.save(TestConstants.MOCK_EXTERNAL_SYSTEM_EVERHOUR);
 
-		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
+		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
 	}
 
 	@Test
@@ -111,7 +112,7 @@ public class ExternalReferenceRepositoryTest
 				.orgId(TestConstants.MOCK_ORG_ID)
 				.externalReference(TestConstants.MOCK_EXTERNAL_REFERENCE)
 				.externalReferenceType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE)
-				.externalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM)
+				.externalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB)
 				.recordId(TestConstants.MOCK_RECORD_ID)
 				.version(TestConstants.MOCK_EXTERNAL_REFERENCE_VERSION)
 				.build();
@@ -122,7 +123,7 @@ public class ExternalReferenceRepositoryTest
 		assertEquals(externalReference.getRecordId(), record.getRecord_ID());
 		assertEquals(externalReference.getExternalReference(), record.getExternalReference());
 		assertEquals(externalReference.getExternalReferenceType().getCode(), record.getType());
-		assertEquals(externalReference.getExternalSystem().getCode(), record.getExternalSystem());
+		assertEquals(externalReference.getExternalSystem().getValue(), record.getExternalSystem());
 		assertEquals(externalReference.getVersion(), record.getVersion());
 	}
 }

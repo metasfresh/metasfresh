@@ -46,7 +46,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
@@ -120,10 +120,10 @@ class ContactRestControllerTest
 		recordChangeLogRepository = new MockLogEntriesRepository();
 
 		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes());
+				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystemRepository(), new ExternalReferenceTypes());
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
-				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository());
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();

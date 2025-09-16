@@ -29,7 +29,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
@@ -229,7 +229,7 @@ public class GithubImporterService implements IssueImporter
 				.builder()
 				.externalProjectReferenceId(importIssuesRequest.getExternalProjectReferenceId())
 				.externalProjectType(importIssuesRequest.getExternalProjectType())
-				.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, issue.getId()))
+				.externalIssueId(ExternalId.of(ExternalSystem.NULL, issue.getId())) //TODO ExternalSystem.GITHUB
 				.externalIssueURL(issue.getHtmlUrl())
 				.externalIssueNo(issue.getNumber())
 				.name(issue.getTitle())
@@ -251,14 +251,14 @@ public class GithubImporterService implements IssueImporter
 			);
 		}
 
-		processLabels(issue.getLabelList(), importInfoBuilder, importIssuesRequest.getOrgId());
+		processLabels(issue.getLabelList(), importInfoBuilder.build(), importIssuesRequest.getOrgId());
 
 		if (ResourceState.CLOSED.getValue().equals(issue.getState()))
 		{
 			importInfoBuilder.status(Status.CLOSED);
 		}
 
-		lookForParentIssue(importIssuesRequest, importInfoBuilder, seenExternalIdsByKey, issue.getBody());
+		lookForParentIssue(importIssuesRequest, importInfoBuilder.build(), seenExternalIdsByKey, issue.getBody());
 
 		return Optional.of(importInfoBuilder.build());
 	}
@@ -270,7 +270,7 @@ public class GithubImporterService implements IssueImporter
 				.name(githubMilestone.getTitle())
 				.description(githubMilestone.getDescription())
 				.externalURL(githubMilestone.getHtmlUrl())
-				.externalId(ExternalId.of(ExternalSystem.GITHUB, githubMilestone.getId()))
+				.externalId(ExternalId.of(ExternalSystem.NULL, githubMilestone.getId())) // TODO ExternalSystem.GITHUB
 				.processed(ResourceState.CLOSED.getValue().equals(githubMilestone.getState()))
 				.dueDate(githubMilestone.getDueDate() != null ? Instant.parse(githubMilestone.getDueDate()) : null)
 				.orgId(orgId)
@@ -302,7 +302,7 @@ public class GithubImporterService implements IssueImporter
 		final Integer userId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
 				ExternalReferenceQuery.builder()
 						.orgId(orgId)
-						.externalSystem(ExternalSystem.GITHUB)
+						.externalSystem(ExternalSystem.NULL) //TODO ExternalSystem.GITHUB
 						.externalReference(externalUserId)
 						.externalReferenceType(ExternalUserReferenceType.USER_ID)
 						.build());
@@ -311,10 +311,11 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	private void lookForParentIssue(@NonNull final ImportIssuesRequest importIssuesRequest,
-			                        @NonNull final ImportIssueInfo.ImportIssueInfoBuilder issueInfoBuilder,
+			                        @NonNull final ImportIssueInfo issueInfo,
 			                        @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey,
 			                        @Nullable final String description)
 	{
+		final ImportIssueInfo.ImportIssueInfoBuilder issueInfoBuilder = issueInfo.toBuilder();
 		final GithubIssueLinkMatcher linkMatcher = importIssuesRequest.getGithubIssueLinkMatcher();
 
 		if (linkMatcher == null || Check.isBlank(description))
@@ -368,7 +369,7 @@ public class GithubImporterService implements IssueImporter
 					.addLog(" {} Parent issue found in the current importing queue for searchKey: {}, parentIssueExternalId: {}"
 							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId );
 
-			return Optional.of(ExternalId.of(ExternalSystem.GITHUB, parentExternalId));
+			return Optional.of(ExternalId.of(ExternalSystem.NULL, parentExternalId)); //TODO ExternalSystem.GITHUB
 		}
 		//if it isn't try to import the parent
 		else
@@ -385,7 +386,7 @@ public class GithubImporterService implements IssueImporter
 				.builder()
 				.externalProjectOwner(parentIdSearchKey.getRepositoryOwner())
 				.externalReference(parentIdSearchKey.getRepository())
-				.externalSystem(ExternalSystem.GITHUB)
+				.externalSystem(ExternalSystem.NULL) //TODO ExternalSystem.GITHUB
 				.build();
 
 		final Optional<ExternalProjectReference> externalProjectReference = externalProjectRepository.getByRequestOptional(getExternalProjectRequest);
@@ -419,7 +420,7 @@ public class GithubImporterService implements IssueImporter
 					.addLog(" {} Parent issue retrieved and added in the importing queue for searchKey: {}, parentIssueExternalId: {}"
 							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId );
 
-			return Optional.of(ExternalId.of(ExternalSystem.GITHUB, parentExternalId));
+			return Optional.of(ExternalId.of(ExternalSystem.NULL, parentExternalId)); //TODO ExternalSystem.GITHUB
 		}
 
 		return Optional.empty();
@@ -445,9 +446,10 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	private void processLabels(final List<Label> labelList,
-			@NonNull final ImportIssueInfo.ImportIssueInfoBuilder importIssueInfoBuilder,
+			@NonNull final ImportIssueInfo importIssueInfo,
 			@NonNull final OrgId orgId)
 	{
+		final ImportIssueInfo.ImportIssueInfoBuilder importIssueInfoBuilder = importIssueInfo.toBuilder();
 		final ImmutableList<ProcessedLabel> processedLabels = labelService.processLabels(labelList);
 
 		final List<IssueLabel> issueLabelList = new ArrayList<>();

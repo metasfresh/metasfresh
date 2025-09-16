@@ -23,10 +23,10 @@
 package de.metas.vertical.healthcare.alberta.service;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.externalreference.AlbertaExternalSystem;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
@@ -69,11 +69,11 @@ public class AlbertaProductServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final ExternalSystems externalSystems = new ExternalSystems();
+		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
 		albertaProductService = new AlbertaProductService(new AlbertaProductDAO(),
-														  new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes));
+														  new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes));
 	}
 
 	@Test
@@ -239,7 +239,7 @@ public class AlbertaProductServiceTest
 		externalReference.setRecord_ID(recordId);
 		externalReference.setType(externalReferenceType.getCode());
 		externalReference.setExternalReference("albertaRecord");
-		externalReference.setExternalSystem(AlbertaExternalSystem.ALBERTA.getCode());
+		externalReference.setExternalSystem(ExternalSystem.SystemValue.Alberta.getValue());
 
 		saveRecord(externalReference);
 

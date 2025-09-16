@@ -28,9 +28,10 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.ExternalUserReferenceType;
-import de.metas.externalreference.OtherExternalSystem;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -194,15 +195,19 @@ public class BPartnerRecordsUtil
 
 			{
 				final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
-				final ExternalSystems externalSystems = new ExternalSystems();
+				final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
 
 				final ExternalReferenceRepository externalReferenceRepository =
-						new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
+						new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
 
 				externalReferenceRepository.save(ExternalReference.builder()
 				.externalReference(AD_USER_EXTERNAL_ID)
 				.externalReferenceType(ExternalUserReferenceType.USER_ID)
-				.externalSystem(OtherExternalSystem.OTHER)
+				.externalSystem(ExternalSystem.builder()
+						.name(ExternalSystem.SystemValue.Other.getValue())
+						.value(ExternalSystem.SystemValue.Other.getValue())
+						.externalSystemId(ExternalSystemId.ofRepoId(44444))
+						.build())
 				.orgId(OrgId.ofRepoId(10))
 				.recordId(AD_USER_ID)
 				.build());

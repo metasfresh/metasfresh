@@ -69,7 +69,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
@@ -157,12 +157,12 @@ class BpartnerRestControllerTest
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
-		final ExternalSystems externalSystems = new ExternalSystems();
+		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
 
 		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
+				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
 
-		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);

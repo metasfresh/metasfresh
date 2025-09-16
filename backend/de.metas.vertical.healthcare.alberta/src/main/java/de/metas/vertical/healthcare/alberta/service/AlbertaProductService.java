@@ -23,12 +23,12 @@
 package de.metas.vertical.healthcare.alberta.service;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.externalreference.AlbertaExternalSystem;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -112,7 +112,7 @@ public class AlbertaProductService
 
 		final GetExternalReferenceByRecordIdReq getExternalReferenceByRecordIdReq = GetExternalReferenceByRecordIdReq.builder()
 				.recordId(product.getM_Product_Category_ID())
-				.externalSystem(AlbertaExternalSystem.ALBERTA)
+				.externalSystem(ExternalSystem.NULL) //TODO AlbertaExternalSystem.ALBERTA
 				.externalReferenceType(ProductCategoryExternalReferenceType.PRODUCT_CATEGORY)
 				.build();
 
@@ -125,7 +125,7 @@ public class AlbertaProductService
 	{
 		final GetExternalReferenceByRecordIdReq getExternalReferenceByRecordIdReq = GetExternalReferenceByRecordIdReq.builder()
 				.recordId(productId.getRepoId())
-				.externalSystem(AlbertaExternalSystem.ALBERTA)
+				.externalSystem(ExternalSystem.NULL) //TODO AlbertaExternalSystem.ALBERTA
 				.externalReferenceType(ProductExternalReferenceType.PRODUCT)
 				.build();
 

@@ -41,10 +41,10 @@ import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.IExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -69,16 +69,16 @@ public class ExternalReferenceRestControllerService
 	private static final Logger logger = LogManager.getLogger(ExternalReferenceRestControllerService.class);
 
 	private final ExternalReferenceRepository externalReferenceRepository;
-	private final ExternalSystems externalSystems;
+	private final ExternalSystemRepository externalSystemRepository;
 	private final ExternalReferenceTypes externalReferenceTypes;
 
 	public ExternalReferenceRestControllerService(
 			@NonNull final ExternalReferenceRepository externalReferenceRepository,
-			@NonNull final ExternalSystems externalSystems,
+			@NonNull final ExternalSystemRepository externalSystemRepository,
 			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
-		this.externalSystems = externalSystems;
+		this.externalSystemRepository = externalSystemRepository;
 		this.externalReferenceTypes = externalReferenceTypes;
 	}
 
@@ -163,7 +163,7 @@ public class ExternalReferenceRestControllerService
 	{
 		orgId = orgId != null ? orgId : Env.getOrgId();
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
 		final ImmutableSet<JsonExternalReferenceLookupItem> items = ImmutableSet.copyOf(request.getItems());
@@ -188,7 +188,7 @@ public class ExternalReferenceRestControllerService
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
 		final List<JsonExternalReferenceItem> references = request.getItems();
@@ -282,7 +282,7 @@ public class ExternalReferenceRestControllerService
 		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(request.getExternalReferenceItem().getLookupItem().getType())
 				.orElseThrow(() -> new InvalidIdentifierException("type", request.getExternalReferenceItem().getLookupItem().getType()));
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("externalSystem", request.getSystemName().getName()));
 
 		return ExternalReference.builder()
@@ -319,7 +319,7 @@ public class ExternalReferenceRestControllerService
 	private ImmutableMap<JsonExternalReferenceLookupItem, ExternalReferenceQuery> extractRepoQueries(
 			@NonNull final ImmutableSet<JsonExternalReferenceLookupItem> items,
 			@NonNull final OrgId orgId,
-			@NonNull final IExternalSystem externalSystem)
+			@NonNull final ExternalSystem externalSystem)
 	{
 		final ImmutableMap.Builder<JsonExternalReferenceLookupItem, ExternalReferenceQuery> item2Query = ImmutableMap.builder();
 
@@ -370,7 +370,7 @@ public class ExternalReferenceRestControllerService
 						.externalReference(externalReference.getExternalReference())
 						.version(externalReference.getVersion())
 						.externalReferenceUrl(externalReference.getExternalReferenceUrl())
-						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getCode()))
+						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getValue()))
 						.externalReferenceId(JsonMetasfreshId.of(externalReference.getExternalReferenceId().getRepoId()))
 						.build();
 			}

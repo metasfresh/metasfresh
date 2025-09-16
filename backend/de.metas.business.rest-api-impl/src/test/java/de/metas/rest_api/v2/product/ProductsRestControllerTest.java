@@ -38,7 +38,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
@@ -129,10 +129,10 @@ public class ProductsRestControllerTest
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
 		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), externalReferenceTypes);
+				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystemRepository(), externalReferenceTypes);
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
-				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
 

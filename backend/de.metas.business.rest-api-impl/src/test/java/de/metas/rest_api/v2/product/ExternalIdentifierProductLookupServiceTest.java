@@ -25,7 +25,7 @@ package de.metas.rest_api.v2.product;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -53,10 +53,10 @@ public class ExternalIdentifierProductLookupServiceTest
 		AdempiereTestHelper.get().init();
 		
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
-		final ExternalSystems externalSystems = new ExternalSystems();
+		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
 		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
-		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
+		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
 		
 		productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
 	}

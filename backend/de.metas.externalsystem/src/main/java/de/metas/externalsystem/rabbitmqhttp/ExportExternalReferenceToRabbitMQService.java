@@ -44,7 +44,7 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.IExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
@@ -183,7 +183,7 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 
 		return JsonExternalReferenceLookupRequest.builder()
 				.items(lookupItemCollector.build())
-				.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getCode()))
+				.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getValue()))
 				.build();
 	}
 
@@ -203,7 +203,7 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 	@NonNull
 	private Stream<JsonExternalReferenceLookupItem> getAdditionalExternalReferenceItems(
 			@NonNull final BPartnerId bPartnerId,
-			@NonNull final IExternalSystem externalSystem)
+			@NonNull final ExternalSystem externalSystem)
 	{
 		final ExternalReferenceResolver externalReferenceResolver = ExternalReferenceResolver.of(externalSystem, externalReferenceRepository);
 
@@ -240,7 +240,7 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 	@Value(staticConstructor = "of")
 	private static class ExternalReferenceResolver
 	{
-		IExternalSystem externalSystemType;
+		ExternalSystem externalSystemType;
 		ExternalReferenceRepository externalReferenceRepository;
 
 		public Stream<JsonExternalReferenceLookupItem> getLookupItems(

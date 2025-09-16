@@ -31,9 +31,8 @@ import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.PlainExternalReferenceType;
-import de.metas.externalreference.PlainExternalSystem;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -46,6 +45,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static de.metas.externalreference.TestConstants.MOCK_EXTERNAL_SYSTEM;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_AD_Org_ID;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_ExternalReference;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_ExternalSystem;
@@ -64,19 +64,19 @@ class ExternalReferenceRestControllerServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final ExternalSystems externalSystems = new ExternalSystems();
-		externalSystems.registerExternalSystem(new PlainExternalSystem("system"));
+		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
+		externalSystemRepository.save(MOCK_EXTERNAL_SYSTEM);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(new PlainExternalReferenceType("bpartner", I_C_BPartner.Table_Name));
 
 		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class),
-																										externalSystems,
+				externalSystemRepository,
 																										externalReferenceTypes
 		);
 
 		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository,
-																							externalSystems,
+				externalSystemRepository,
 																							externalReferenceTypes);
 
 		orgId = AdempiereTestHelper.createOrgWithTimeZone("orgCode");
