@@ -183,7 +183,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		try
 		{
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(this)
 					.setExceptionHandler(trxItemExceptionHandler)
@@ -379,7 +379,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
 
-
 				if (orderEmailPropagationSysConfigRepo.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID())))
 				{
 					shipment.setEMail(order.getEMail());
@@ -419,15 +418,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private int getInoutDoctypeID(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		// allow specific inout doctype from order first
-		final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
-		if (order != null && order.getC_Order_ID() > 0)
+
+		final I_C_DocType shipmentScheduleDocType = docTypeDAO.getById(DocTypeId.ofRepoId(shipmentSchedule.getC_DocType_ID()));
+		if (shipmentScheduleDocType.getC_DocTypeShipment_ID() > 0)
 		{
-			final I_C_DocType orderDoctype = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
-			if (orderDoctype.getC_DocTypeShipment_ID() > 0)
-			{
-				return orderDoctype.getC_DocTypeShipment_ID();
-			}
+			return shipmentScheduleDocType.getC_DocTypeShipment_ID();
 		}
 
 		final DocTypeQuery query = DocTypeQuery.builder()
