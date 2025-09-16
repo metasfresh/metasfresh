@@ -72,10 +72,7 @@ SELECT ol.line,
        ol.Description,
        -- in case there is no C_BPartner_Product, fallback to the default ones
        COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                            AS bp_product_no,
-       CASE
-           WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'VendorProductName') = 'N' THEN
-               COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)
-       END                                                                     AS bp_product_name,
+       COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                  AS bp_product_name,
        c.cursymbol,
        p.value                                                                 AS p_value,
        p.description                                                           AS p_description,
