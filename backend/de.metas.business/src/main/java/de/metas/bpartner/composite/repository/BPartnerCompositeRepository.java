@@ -183,6 +183,11 @@ public class BPartnerCompositeRepository
 				bpartnerRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
 			}
 
+			if(sinceQuery.getExternalSystem() != null)
+			{
+				bpartnerRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_ExternalSystem, sinceQuery.getExternalSystem());
+			}
+
 			page = bpartnerRecentQueryBuilder
 					.create()
 					.paginate(I_C_BPartner_Recent_V.class, sinceQuery.getPageSize());
