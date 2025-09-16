@@ -31,7 +31,7 @@ import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
@@ -141,7 +141,7 @@ public abstract class ExportToExternalSystemService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	protected abstract ExternalSystemType getExternalSystemType();
+	protected abstract OLD_ExternalSystemType getExternalSystemType();
 
 	protected abstract Optional<JsonExternalSystemRequest> getExportExternalSystemRequest(
 			IExternalSystemChildConfigId externalSystemChildConfigId,

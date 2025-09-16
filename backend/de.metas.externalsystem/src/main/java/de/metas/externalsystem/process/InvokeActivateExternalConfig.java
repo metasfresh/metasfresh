@@ -26,7 +26,7 @@ import de.metas.externalsystem.ExternalSystemConfigQuery;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -114,7 +114,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 
 	protected abstract void activateRecord();
 
-	protected abstract ExternalSystemType getExternalSystemType();
+	protected abstract OLD_ExternalSystemType getExternalSystemType();
 
 	protected abstract long getSelectedRecordCount(final IProcessPreconditionsContext context);
 }

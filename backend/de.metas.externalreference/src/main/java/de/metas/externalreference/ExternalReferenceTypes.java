@@ -34,14 +34,13 @@ import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ExternalReferenceTypes
 {
-	private final Map<String, IExternalReferenceType> typesByCode = new HashMap<>();
+	private final ConcurrentHashMap<String, IExternalReferenceType> typesByCode = new ConcurrentHashMap<>();
 
 	public ExternalReferenceTypes()
 	{

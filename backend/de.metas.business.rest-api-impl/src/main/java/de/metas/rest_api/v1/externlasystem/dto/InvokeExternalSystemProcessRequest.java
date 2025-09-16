@@ -22,7 +22,7 @@
 
 package de.metas.rest_api.v1.externlasystem.dto;
 
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,7 +32,7 @@ import lombok.Value;
 public class InvokeExternalSystemProcessRequest
 {
 	@NonNull
-	ExternalSystemType externalSystemType;
+	OLD_ExternalSystemType externalSystemType;
 
 	@NonNull
 	String childSystemConfigValue;

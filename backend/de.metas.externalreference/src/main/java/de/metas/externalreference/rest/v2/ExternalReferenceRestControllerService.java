@@ -370,7 +370,7 @@ public class ExternalReferenceRestControllerService
 						.externalReference(externalReference.getExternalReference())
 						.version(externalReference.getVersion())
 						.externalReferenceUrl(externalReference.getExternalReferenceUrl())
-						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getValue()))
+						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getType()))
 						.externalReferenceId(JsonMetasfreshId.of(externalReference.getExternalReferenceId().getRepoId()))
 						.build();
 			}

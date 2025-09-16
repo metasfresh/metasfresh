@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
@@ -70,19 +71,14 @@ public class ExternalSystemId implements RepoIdAware
 		return RepoIdAwares.ofObject(object, ExternalSystemId.class, ExternalSystemId::ofRepoId);
 	}
 
-	public static int toRepoId(@Nullable final ExternalSystemId bpartnerId)
+	public static int toRepoId(@Nullable final ExternalSystemId id)
 	{
-		return toRepoIdOr(bpartnerId, -1);
-	}
-
-	public static int toRepoIdOr(@Nullable final ExternalSystemId bpartnerId, final int defaultValue)
-	{
-		return bpartnerId != null ? bpartnerId.getRepoId() : defaultValue;
+		return id != null ? id.getRepoId() : -1;
 	}
 
 	private ExternalSystemId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BPartner_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, I_ExternalSystem.COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@JsonValue

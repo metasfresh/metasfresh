@@ -101,7 +101,7 @@ public class ExternalSystemConfigRepo
 		this.taxCategoryDAO = taxCategoryDAO;
 	}
 
-	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
+	public boolean isAnyConfigActive(final @NonNull OLD_ExternalSystemType type)
 	{
 		return getActiveByType(type)
 				.stream()
@@ -136,7 +136,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String value)
+	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final OLD_ExternalSystemType type, @NonNull final String value)
 	{
 		switch (type)
 		{
@@ -169,13 +169,13 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	public Optional<IExternalSystemChildConfig> getChildByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
-		final ExternalSystemType type = ExternalSystemType.ofCode(getParentTypeById(id));
+		final OLD_ExternalSystemType type = OLD_ExternalSystemType.ofCode(getParentTypeById(id));
 		return getChildByParentIdAndType(id, type);
 	}
 
 	public Optional<IExternalSystemChildConfig> getChildByParentIdAndType(
 			@NonNull final ExternalSystemParentConfigId id,
-			@NonNull final ExternalSystemType externalSystemType)
+			@NonNull final OLD_ExternalSystemType externalSystemType)
 	{
 		switch (externalSystemType)
 		{
@@ -213,7 +213,7 @@ public class ExternalSystemConfigRepo
 	 * @return the configs if both their parent and child records have {@code IsActive='Y'}
 	 */
 	@NonNull
-	public ImmutableList<ExternalSystemParentConfig> getActiveByType(@NonNull final ExternalSystemType externalSystemType)
+	public ImmutableList<ExternalSystemParentConfig> getActiveByType(@NonNull final OLD_ExternalSystemType externalSystemType)
 	{
 		final ImmutableList<ExternalSystemParentConfig> result;
 
@@ -266,7 +266,7 @@ public class ExternalSystemConfigRepo
 
 	@NonNull
 	public Optional<ExternalSystemParentConfig> getByQuery(
-			@NonNull final ExternalSystemType externalSystemType,
+			@NonNull final OLD_ExternalSystemType externalSystemType,
 			@NonNull final ExternalSystemConfigQuery query)
 	{
 		switch (externalSystemType)
@@ -520,7 +520,7 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
 
 		return ExternalSystemParentConfig.builder()
-				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
+				.type(OLD_ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
 				.name(externalSystemConfigRecord.getName())
 				.orgId(OrgId.ofRepoId(externalSystemConfigRecord.getAD_Org_ID()))

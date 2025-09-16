@@ -24,7 +24,7 @@ package de.metas.externalsystem.woocommerce;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -67,8 +67,8 @@ public class ExternalSystemWooCommerceConfigId implements IExternalSystemChildCo
 	}
 
 	@Override
-	public ExternalSystemType getType()
+	public OLD_ExternalSystemType getType()
 	{
-		return ExternalSystemType.WOO;
+		return OLD_ExternalSystemType.WOO;
 	}
 }

@@ -27,7 +27,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemCreateRequest;
 import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -67,7 +70,6 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFER
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_INSTANT;
 import static de.metas.serviceprovider.TestConstants.MOCK_ISSUE_URL;
@@ -88,26 +90,24 @@ import static org.mockito.Mockito.when;
 public class GithubImporterServiceTest
 {
 	private final GithubClient mockGithubClient = Mockito.mock(GithubClient.class);
-
-	private final ImportQueue<ImportIssueInfo> importIssuesQueue =
-			new ImportQueue<>(ISSUE_QUEUE_CAPACITY,IMPORT_LOG_MESSAGE_PREFIX);
-
+	private final ImportQueue<ImportIssueInfo> importIssuesQueue = new ImportQueue<>(ISSUE_QUEUE_CAPACITY, IMPORT_LOG_MESSAGE_PREFIX);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	private ExternalReferenceRepository externalReferenceRepository;
-
 	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
-
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
-
 	private final LabelService labelService = new LabelService();
+	private final GithubImporterService githubImporterService = new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService);
+	private ExternalSystemRepository externalSystemRepository;
 
-	private final GithubImporterService githubImporterService =
-			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService);
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		externalSystemRepository = new ExternalSystemRepository();
+		MOCK_EXTERNAL_SYSTEM_GITHUB = externalSystem(ExternalSystemType.Github);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(MOCK_EXTERNAL_REFERENCE_TYPE);
@@ -117,6 +117,14 @@ public class GithubImporterServiceTest
 		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM_1);
 
 		externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystemRepository, externalReferenceTypes);
+	}
+
+	private ExternalSystem externalSystem(ExternalSystemType value)
+	{
+		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+				.type(value)
+				.name(value.getValue())
+				.build());
 	}
 
 	@Test
@@ -275,7 +283,7 @@ public class GithubImporterServiceTest
 	{
 		final I_S_ExternalProjectReference projectRecord = InterfaceWrapperHelper.newInstance(I_S_ExternalProjectReference.class);
 		projectRecord.setProjectType(MOCK_EXTERNAL_PROJECT_TYPE.getValue());
-		projectRecord.setExternalSystem(MOCK_EXTERNAL_SYSTEM_GITHUB.getValue());
+		projectRecord.setExternalSystem(MOCK_EXTERNAL_SYSTEM_GITHUB.getType().getValue());
 		projectRecord.setAD_Org_ID(MOCK_ORG_ID.getRepoId());
 		projectRecord.setC_Project_ID(MOCK_PROJECT_ID.getRepoId());
 		projectRecord.setExternalReference(MOCK_EXTERNAL_REFERENCE);

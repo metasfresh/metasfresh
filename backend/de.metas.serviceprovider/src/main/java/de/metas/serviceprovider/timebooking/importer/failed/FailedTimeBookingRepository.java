@@ -60,7 +60,7 @@ public class FailedTimeBookingRepository
 		final I_S_FailedTimeBooking record = InterfaceWrapperHelper.loadOrNew(failedTimeBookingId, I_S_FailedTimeBooking.class);
 
 		record.setExternalId(failedTimeBooking.getExternalId());
-		record.setExternalSystem(failedTimeBooking.getExternalSystem().getValue());
+		record.setExternalSystem(failedTimeBooking.getExternalSystem().getType());
 
 		record.setJSONValue(failedTimeBooking.getJsonValue());
 		record.setImportErrorMsg(failedTimeBooking.getErrorMsg());
@@ -81,7 +81,7 @@ public class FailedTimeBookingRepository
 																	    @NonNull final String externalId)
 	{
 		return queryBL.createQueryBuilder(I_S_FailedTimeBooking.class)
-				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem, externalSystem.getValue() )
+				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem, externalSystem.getType() )
 				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalId, externalId)
 				.create()
 				.firstOnlyOptional(I_S_FailedTimeBooking.class)
@@ -92,7 +92,7 @@ public class FailedTimeBookingRepository
 	{
 		return queryBL.createQueryBuilder(I_S_FailedTimeBooking.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem,externalSystem.getValue() )
+				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem,externalSystem.getType() )
 				.create()
 				.list()
 				.stream()

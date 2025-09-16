@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.process.IProcessDefaultParameter;
@@ -109,7 +109,7 @@ public abstract class S_ExternalReference_SyncTo_ExternalSystem extends JavaProc
 				.iterate(I_S_ExternalReference.class);
 	}
 
-	protected abstract ExternalSystemType getExternalSystemType();
+	protected abstract OLD_ExternalSystemType getExternalSystemType();
 
 	protected abstract IExternalSystemChildConfigId getExternalSystemChildConfigId();
 

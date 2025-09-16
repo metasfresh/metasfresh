@@ -24,7 +24,7 @@ package de.metas.externalsystem.grssignum;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.util.Check;
@@ -62,9 +62,9 @@ public class ExternalSystemGRSSignumConfigId implements IExternalSystemChildConf
 	}
 
 	@Override
-	public ExternalSystemType getType()
+	public OLD_ExternalSystemType getType()
 	{
-		return ExternalSystemType.GRSSignum;
+		return OLD_ExternalSystemType.GRSSignum;
 	}
 
 	@JsonValue

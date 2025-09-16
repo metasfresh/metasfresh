@@ -41,7 +41,7 @@ import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
@@ -223,7 +223,7 @@ public class ExternalSystemService
 	}
 
 	@NonNull
-	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String childConfigValue)
+	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final OLD_ExternalSystemType type, @NonNull final String childConfigValue)
 	{
 		return externalSystemConfigRepo.getByTypeAndValue(type, childConfigValue);
 	}
@@ -231,7 +231,7 @@ public class ExternalSystemService
 	@NonNull
 	public Optional<ExternalSystemExportAudit> getMostRecentByTableReferenceAndSystem(
 			@NonNull final TableRecordReference tableRecordReference,
-			@NonNull final ExternalSystemType externalSystemType)
+			@NonNull final OLD_ExternalSystemType externalSystemType)
 	{
 		return externalSystemExportAuditRepo.getMostRecentByTableReferenceAndSystem(tableRecordReference, externalSystemType);
 	}
@@ -255,7 +255,7 @@ public class ExternalSystemService
 	}
 
 	@NonNull
-	public JsonExternalStatusResponse getStatusInfo(@NonNull final ExternalSystemType externalSystemType)
+	public JsonExternalStatusResponse getStatusInfo(@NonNull final OLD_ExternalSystemType externalSystemType)
 	{
 		return JsonExternalStatusResponse.builder()
 				.externalStatusResponses(externalServices.getStatusInfo(externalSystemType))
@@ -263,7 +263,7 @@ public class ExternalSystemService
 	}
 
 	@NonNull
-	public JsonExternalSystemInfo getExternalSystemInfo(@NonNull final ExternalSystemType externalSystemType, @NonNull final String childConfigValue)
+	public JsonExternalSystemInfo getExternalSystemInfo(@NonNull final OLD_ExternalSystemType externalSystemType, @NonNull final String childConfigValue)
 	{
 		final Optional<ExternalSystemParentConfig> parentConfig = getByTypeAndValue(externalSystemType, childConfigValue);
 

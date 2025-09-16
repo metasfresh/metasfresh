@@ -17,13 +17,12 @@ public class ExternalSystemMap
 	private static final ExternalSystemMap EMPTY = new ExternalSystemMap(ImmutableList.of());
 
 	private final ImmutableMap<ExternalSystemId, ExternalSystem> byId;
-	private final ImmutableMap<String, ExternalSystem> byValue;
+	private final ImmutableMap<ExternalSystemType, ExternalSystem> byValue;
 
 	private ExternalSystemMap(@NonNull final List<ExternalSystem> list)
 	{
-		list.forEach(ExternalSystem::assertIdSet);
-		this.byId = Maps.uniqueIndex(list, ExternalSystem::getExternalSystemId);
-		this.byValue = Maps.uniqueIndex(list, ExternalSystem::getValue);
+		this.byId = Maps.uniqueIndex(list, ExternalSystem::getId);
+		this.byValue = Maps.uniqueIndex(list, ExternalSystem::getType);
 	}
 
 	public static ExternalSystemMap ofList(final List<ExternalSystem> list)
@@ -37,18 +36,18 @@ public class ExternalSystemMap
 	}
 
 	@Nullable
-	public ExternalSystem getByValueOrNull(@NonNull final String value)
+	public ExternalSystem getByValueOrNull(@NonNull final ExternalSystemType value)
 	{
 		return byValue.get(value);
 	}
 
-	public Optional<ExternalSystem> getOptionalByValue(@NonNull final String value)
+	public Optional<ExternalSystem> getOptionalByValue(@NonNull final ExternalSystemType value)
 	{
 		return Optional.ofNullable(getByValueOrNull(value));
 	}
 
 	@NonNull
-	public ExternalSystem getByValue(@NonNull final String value)
+	public ExternalSystem getByValue(@NonNull final ExternalSystemType value)
 	{
 		return getOptionalByValue(value)
 				.orElseThrow(() -> new AdempiereException("Unknown external system value: " + value));

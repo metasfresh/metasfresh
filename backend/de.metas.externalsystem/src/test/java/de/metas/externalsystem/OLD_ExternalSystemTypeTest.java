@@ -26,16 +26,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
-class ExternalSystemTypeTest
+class OLD_ExternalSystemTypeTest
 {
 	@Test
 	void ofCodeOrNameOrNull()
 	{
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("S6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Shopware6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("A")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Alberta")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("WOO")).isEqualTo(ExternalSystemType.WOO);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("blah")).isNull();
+		assertThat(OLD_ExternalSystemType.ofCodeOrNameOrNull("S6")).isEqualTo(OLD_ExternalSystemType.Shopware6);
+		assertThat(OLD_ExternalSystemType.ofCodeOrNameOrNull("Shopware6")).isEqualTo(OLD_ExternalSystemType.Shopware6);
+		assertThat(OLD_ExternalSystemType.ofCodeOrNameOrNull("A")).isEqualTo(OLD_ExternalSystemType.Alberta);
+		assertThat(OLD_ExternalSystemType.ofCodeOrNameOrNull("Alberta")).isEqualTo(OLD_ExternalSystemType.Alberta);
+		assertThat(OLD_ExternalSystemType.ofCodeOrNameOrNull("WOO")).isEqualTo(OLD_ExternalSystemType.WOO);
+		assertThat(OLD_ExternalSystemType.ofCodeOrNameOrNull("blah")).isNull();
 	}
 }

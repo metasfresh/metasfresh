@@ -24,9 +24,9 @@ package de.metas.serviceprovider.github;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import de.metas.externalsystem.ExternalSystem;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
@@ -69,7 +69,7 @@ public class GithubImportProcess extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final ImmutableList<ExternalProjectReference> allActiveGithubProjects =
-				externalProjectRepository.getByExternalSystemSystemValue(ExternalSystem.SystemValue.GRSSignum); // TODO GITHUB);
+				externalProjectRepository.getByExternalSystemSystemValue(ExternalSystemType.GRSSignum); // TODO GITHUB);
 
 		final GithubIssueLinkMatcher githubIssueLinkMatcher = getGithubLinkMatcher(allActiveGithubProjects);
 

@@ -29,8 +29,11 @@ import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemCreateRequest;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
 import de.metas.issue.tracking.everhour.api.model.Task;
@@ -61,8 +64,6 @@ import static de.metas.serviceprovider.TestConstants.MOCK_DATE_2020_03_12;
 import static de.metas.serviceprovider.TestConstants.MOCK_ERROR_MESSAGE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EV_TASK_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_EVERHOUR;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB;
 import static de.metas.serviceprovider.TestConstants.MOCK_GH_TASK_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_ISSUE_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
@@ -76,15 +77,16 @@ public class EverhourImporterServiceTest
 {
 	private ExternalReferenceRepository externalReferenceRepository;
 
-	private final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue =
-			new ImportQueue<>(TIME_BOOKING_QUEUE_CAPACITY, IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
-
-	private final FailedTimeBookingRepository failedTimeBookingRepository =
-			new FailedTimeBookingRepository(Services.get(IQueryBL.class));
+	private final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue = new ImportQueue<>(TIME_BOOKING_QUEUE_CAPACITY, IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
+	private final FailedTimeBookingRepository failedTimeBookingRepository = new FailedTimeBookingRepository(Services.get(IQueryBL.class));
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private ExternalSystemRepository externalSystemRepository;
 	private EverhourClient mockEverhourClient;
+
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = null;
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
 
 	private EverhourImporterService everhourImporterService;
 
@@ -92,21 +94,36 @@ public class EverhourImporterServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		externalSystemRepository = new ExternalSystemRepository();
+
+		MOCK_EXTERNAL_SYSTEM_EVERHOUR = externalSystem(ExternalSystemType.Everhour);
+		MOCK_EXTERNAL_SYSTEM_GITHUB = externalSystem(ExternalSystemType.Github);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(ExternalUserReferenceType.USER_ID);
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
 
-		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
-		externalSystemRepository.save(MOCK_EXTERNAL_SYSTEM_EVERHOUR);
-		externalSystemRepository.save(MOCK_EXTERNAL_SYSTEM_GITHUB);
-
 		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
 
 		mockEverhourClient = Mockito.mock(EverhourClient.class);
 
-		everhourImporterService = new EverhourImporterService(mockEverhourClient, externalReferenceRepository,
-				timeBookingImportQueue, failedTimeBookingRepository, objectMapper, trxManager);
+		everhourImporterService = new EverhourImporterService(
+				mockEverhourClient,
+				externalSystemRepository,
+				externalReferenceRepository,
+				timeBookingImportQueue,
+				failedTimeBookingRepository,
+				objectMapper,
+				trxManager
+		);
+	}
+
+	private ExternalSystem externalSystem(ExternalSystemType value)
+	{
+		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+				.type(value)
+				.name(value.getValue())
+				.build());
 	}
 
 	/**

@@ -32,8 +32,6 @@ import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
@@ -41,6 +39,7 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemTestUtil;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -116,7 +115,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 	{
 		// given
 		final I_ExternalSystem_Config externalSystemParentConfig = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+				.type(OLD_ExternalSystemType.RabbitMQ.getCode())
 				.customParentConfigId(1)
 				.build();
 
@@ -128,7 +127,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 
 		final I_S_ExternalReference externalReference = createExternalReferenceBuilder()
 				.externalReference("ref_1")
-				.externalSystem(ExternalSystem.SystemValue.Alberta.getValue())
+				.externalSystem(ExternalSystemType.Alberta.getValue())
 				.type(BPLocationExternalReferenceType.BPARTNER_LOCATION.getCode())
 				.recordId(3)
 				.build();

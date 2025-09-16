@@ -26,7 +26,7 @@ import de.metas.externalsystem.ExternalSystemConfigQuery;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
@@ -67,7 +67,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 		{
 			final String externalSystemType = externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()));
 
-			final ExternalSystemType type = ExternalSystemType.ofCode(externalSystemType);
+			final OLD_ExternalSystemType type = OLD_ExternalSystemType.ofCode(externalSystemType);
 
 			final ExternalSystemConfigQuery query = ExternalSystemConfigQuery.builder()
 					.parentConfigId(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()))
@@ -90,7 +90,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 
 		final String externalSystemType = externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()));
 
-		final ExternalSystemType type = ExternalSystemType.ofCode(externalSystemType);
+		final OLD_ExternalSystemType type = OLD_ExternalSystemType.ofCode(externalSystemType);
 
 		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(type.getExternalSystemProcessClassName());
 

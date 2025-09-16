@@ -24,7 +24,7 @@ package de.metas.externalsystem.woocommerce.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import lombok.NonNull;
@@ -58,7 +58,7 @@ public class ExternalSystem_Config_WooCommerce
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(woocommerceConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.WOO.getCode().equals(parentType))
+		if (!OLD_ExternalSystemType.WOO.getCode().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

@@ -145,7 +145,7 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+				.type(OLD_ExternalSystemType.RabbitMQ.getCode())
 				.build();
 
 		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = ExternalSystemTestUtil.createRabbitMQConfigBuilder()
@@ -195,7 +195,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(shopware6Uom);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.Shopware6, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -222,7 +222,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Alberta, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.Alberta, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -235,7 +235,7 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+				.type(OLD_ExternalSystemType.RabbitMQ.getCode())
 				.build();
 
 		final String value = "testRabbitMQValue";
@@ -249,7 +249,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.RabbitMQ, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.RabbitMQ, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -276,7 +276,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.Shopware6, value);
 
 		assertThat(externalSystemParentConfig).isEmpty();
 	}
@@ -301,7 +301,7 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Alberta)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, OLD_ExternalSystemType.Alberta)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -359,7 +359,7 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Shopware6)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, OLD_ExternalSystemType.Shopware6)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -373,7 +373,7 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+				.type(OLD_ExternalSystemType.RabbitMQ.getCode())
 				.build();
 
 		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = ExternalSystemTestUtil.createRabbitMQConfigBuilder()
@@ -384,7 +384,7 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.RabbitMQ)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, OLD_ExternalSystemType.RabbitMQ)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -455,7 +455,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.WOO, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.WOO, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -480,7 +480,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.Shopware6, value);
 
 		//then
 		assertThat(externalSystemParentConfig).isEmpty();
@@ -527,7 +527,7 @@ class ExternalSystemConfigRepoTest
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.GRSSignum)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, OLD_ExternalSystemType.GRSSignum)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -554,7 +554,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.GRSSignum, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.GRSSignum, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -579,7 +579,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.Shopware6, value);
 
 		//then
 		assertThat(externalSystemParentConfig).isEmpty();
@@ -622,7 +622,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByQuery(ExternalSystemType.Shopware6, query)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByQuery(OLD_ExternalSystemType.Shopware6, query)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -741,7 +741,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(leichMehlConfig);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.LeichUndMehl, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.LeichUndMehl, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -770,7 +770,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(leichMehlConfig);
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(OLD_ExternalSystemType.Shopware6, value);
 
 		//then
 		assertThat(externalSystemParentConfig).isEmpty();
@@ -798,7 +798,7 @@ class ExternalSystemConfigRepoTest
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.LeichUndMehl)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, OLD_ExternalSystemType.LeichUndMehl)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -843,7 +843,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(configLeichMehlInactive);
 
 		// when
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.LeichUndMehl);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(OLD_ExternalSystemType.LeichUndMehl);
 
 		// then
 		assertThat(result).isNotEmpty();
@@ -856,7 +856,7 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+				.type(OLD_ExternalSystemType.RabbitMQ.getCode())
 				.build();
 
 		ExternalSystemTestUtil.createRabbitMQConfigBuilder()
@@ -864,7 +864,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.RabbitMQ);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(OLD_ExternalSystemType.RabbitMQ);
 
 		// then
 		assertThat(result).isNotEmpty();
@@ -877,7 +877,7 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+				.type(OLD_ExternalSystemType.RabbitMQ.getCode())
 				.build();
 
 		ExternalSystemTestUtil.createRabbitMQConfigBuilder()
@@ -885,7 +885,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.Alberta);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(OLD_ExternalSystemType.Alberta);
 
 		// then
 		assertThat(result).isEmpty();

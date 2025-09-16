@@ -24,7 +24,7 @@ package de.metas.externalsystem.alberta.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -50,7 +50,7 @@ public class ExternalSystem_Config_Alberta
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(albertaConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.Alberta.getCode().equals(parentType))
+		if (!OLD_ExternalSystemType.Alberta.getCode().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

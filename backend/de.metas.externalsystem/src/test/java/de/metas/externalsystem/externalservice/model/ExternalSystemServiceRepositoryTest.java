@@ -24,7 +24,7 @@ package de.metas.externalsystem.externalservice.model;
 
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.externalservice.ExternalSystemServiceTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +53,7 @@ public class ExternalSystemServiceRepositoryTest
 	void givenType_whenGetAllByType_thenReturnMatchingServices()
 	{
 		//given
-		final ExternalSystemType externalSystemType = ExternalSystemType.GRSSignum;
+		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.GRSSignum;
 
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
 				.type(externalSystemType.getCode())
@@ -62,7 +62,7 @@ public class ExternalSystemServiceRepositoryTest
 				.build();
 
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.WOO.getCode())
+				.type(OLD_ExternalSystemType.WOO.getCode())
 				.name("woo_name")
 				.value("woo_service_value")
 				.build();
@@ -81,13 +81,13 @@ public class ExternalSystemServiceRepositoryTest
 	{
 		//given
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.GRSSignum.getCode())
+				.type(OLD_ExternalSystemType.GRSSignum.getCode())
 				.name("grs_name")
 				.value("grs_service_value")
 				.build();
 
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.WOO.getCode())
+				.type(OLD_ExternalSystemType.WOO.getCode())
 				.name("woo_name")
 				.value("woo_service_value")
 				.build();
@@ -105,7 +105,7 @@ public class ExternalSystemServiceRepositoryTest
 	{
 		//given
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.GRSSignum.getCode())
+				.type(OLD_ExternalSystemType.GRSSignum.getCode())
 				.name("grs_name")
 				.value("grs_service_value")
 				.build();

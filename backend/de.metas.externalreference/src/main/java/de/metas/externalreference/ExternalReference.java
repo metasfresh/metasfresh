@@ -39,7 +39,7 @@ public class ExternalReference
 	 */
 	public static final ExternalReference NULL = ExternalReference.builder()
 			.orgId(OrgId.ANY)
-			.externalSystem(ExternalSystem.NULL)
+			.externalSystem(null)
 			.externalReferenceType(NullExternalReferenceType.NULL)
 			.externalReference("NULL")
 			.externalReferenceUrl("NULL")

@@ -24,6 +24,9 @@ package de.metas.serviceprovider.timebooking.importer.failed;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemCreateRequest;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,8 +37,6 @@ import org.junit.jupiter.api.Test;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_ERROR_MESSAGE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_EVERHOUR;
 import static de.metas.serviceprovider.TestConstants.MOCK_JSON_VALUE;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,11 +46,28 @@ public class FailedTimeBookingRepositoryTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final FailedTimeBookingRepository failedTimeBookingRepository = new FailedTimeBookingRepository(queryBL);
+	private ExternalSystemRepository externalSystemRepository;
+
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = null;
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		externalSystemRepository = new ExternalSystemRepository();
+		MOCK_EXTERNAL_SYSTEM_EVERHOUR = externalSystem(ExternalSystemType.Everhour);
+		MOCK_EXTERNAL_SYSTEM_GITHUB = externalSystem(ExternalSystemType.Github);
+
+	}
+
+	private ExternalSystem externalSystem(ExternalSystemType value)
+	{
+		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+				.type(value)
+				.name(value.getValue())
+				.build());
 	}
 
 	@Test
@@ -104,7 +122,6 @@ public class FailedTimeBookingRepositoryTest
 
 		//then
 		assertThat(failedTimeBookings)
-				.isNotNull()
 				.hasSize(1)
 				.containsExactly(failedTimeBookingSysWithId);
 	}

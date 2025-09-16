@@ -35,17 +35,17 @@ import javax.annotation.Nullable;
 @UtilityClass
 public class ExternalSystemProcesses
 {
-	private static final ImmutableMap<ExternalSystem.SystemValue, String> PROCESS_CLASS_NAMES_BY_INTERNAL_NAME = ImmutableMap.<ExternalSystem.SystemValue, String>builder()
-			.put(ExternalSystem.SystemValue.Alberta, InvokeAlbertaAction.class.getName())
-			.put(ExternalSystem.SystemValue.Shopware6, InvokeAlbertaAction.class.getName())
-			.put(ExternalSystem.SystemValue.Other, InvokeOtherAction.class.getName())
-			.put(ExternalSystem.SystemValue.WOO, InvokeWooCommerceAction.class.getName())
-			.put(ExternalSystem.SystemValue.GRSSignum, InvokeGRSSignumAction.class.getName())
-			.put(ExternalSystem.SystemValue.ProCareManagement, InvokePCMAction.class.getName())
+	private static final ImmutableMap<ExternalSystemType, String> PROCESS_CLASS_NAMES_BY_INTERNAL_NAME = ImmutableMap.<ExternalSystemType, String>builder()
+			.put(ExternalSystemType.Alberta, InvokeAlbertaAction.class.getName())
+			.put(ExternalSystemType.Shopware6, InvokeAlbertaAction.class.getName())
+			.put(ExternalSystemType.Other, InvokeOtherAction.class.getName())
+			.put(ExternalSystemType.WOO, InvokeWooCommerceAction.class.getName())
+			.put(ExternalSystemType.GRSSignum, InvokeGRSSignumAction.class.getName())
+			.put(ExternalSystemType.ProCareManagement, InvokePCMAction.class.getName())
 			.build();
 
 	@Nullable
-	public static String getExternalSystemProcessClassName(final ExternalSystem.SystemValue systemValue) {
-		return PROCESS_CLASS_NAMES_BY_INTERNAL_NAME.get(systemValue);
+	public static String getExternalSystemProcessClassName(final ExternalSystemType externalSystemType) {
+		return PROCESS_CLASS_NAMES_BY_INTERNAL_NAME.get(externalSystemType);
 	}
 }

@@ -28,7 +28,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
@@ -63,7 +63,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
+import static de.metas.externalsystem.OLD_ExternalSystemType.LeichUndMehl;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnMaterialReceipt;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnProductionReceipt;
@@ -110,7 +110,7 @@ public class ExternalSystem_Config_StepDef
 	@Then("a new metasfresh AD_PInstance_Log is stored for the external system {string} invocation")
 	public void new_metasfresh_ad_pinstance_log_is_stored_for_external_system_process(final String externalSystemCode) throws JSONException
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemCode);
+		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCode(externalSystemCode);
 		final AdProcessId adProcessId =
 				adProcessDAO.retrieveProcessIdByClassIfUnique(externalSystemType.getExternalSystemProcessClassName());
 
@@ -169,7 +169,7 @@ public class ExternalSystem_Config_StepDef
 			parentConfig.setIsActive(false);
 			InterfaceWrapperHelper.saveRecord(parentConfig);
 
-			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemConfig.getType());
+			final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCode(externalSystemConfig.getType());
 
 			switch (externalSystemType)
 			{
@@ -203,7 +203,7 @@ public class ExternalSystem_Config_StepDef
 		final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_Type);
 		final String externalSystemChildValue = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystemValue);
 
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(typeCode);
+		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCode(typeCode);
 
 		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(externalSystemType, externalSystemChildValue);
 

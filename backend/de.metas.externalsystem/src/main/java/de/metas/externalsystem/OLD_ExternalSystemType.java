@@ -40,7 +40,7 @@ import java.util.Arrays;
  * #L%
  */
 
-public enum ExternalSystemType implements ReferenceListAwareEnum
+public enum OLD_ExternalSystemType implements ReferenceListAwareEnum
 {
 
 	//TODO replace with ExternalSystem
@@ -65,7 +65,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	@Getter
 	private final String externalSystemProcessClassName;
 
-	ExternalSystemType(@NonNull final String code, final String name, @Nullable final String externalSystemProcessClassName)
+	OLD_ExternalSystemType(@NonNull final String code, final String name, @Nullable final String externalSystemProcessClassName)
 	{
 		this.code = code;
 		this.name = name;
@@ -73,27 +73,27 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static ExternalSystemType ofNullableCode(@Nullable final String code)
+	public static OLD_ExternalSystemType ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
 
-	public static ExternalSystemType ofCode(@NonNull final String code)
+	public static OLD_ExternalSystemType ofCode(@NonNull final String code)
 	{
-		final ExternalSystemType type = typesByCode.get(code);
+		final OLD_ExternalSystemType type = typesByCode.get(code);
 		if (type == null)
 		{
-			throw new AdempiereException("No " + ExternalSystemType.class + " found for code: " + code);
+			throw new AdempiereException("No " + OLD_ExternalSystemType.class + " found for code: " + code);
 		}
 		return type;
 	}
 
 	@Nullable
-	public static ExternalSystemType ofCodeOrNameOrNull(@NonNull final String codeOrName)
+	public static OLD_ExternalSystemType ofCodeOrNameOrNull(@NonNull final String codeOrName)
 	{
 		return CoalesceUtil.coalesceSuppliers(() -> typesByCode.get(codeOrName), () -> typesByName.get(codeOrName));
 	}
 
-	private static final ImmutableMap<String, ExternalSystemType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ExternalSystemType::getCode);
-	private static final ImmutableMap<String, ExternalSystemType> typesByName = Maps.uniqueIndex(Arrays.asList(values()), ExternalSystemType::getName);
+	private static final ImmutableMap<String, OLD_ExternalSystemType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), OLD_ExternalSystemType::getCode);
+	private static final ImmutableMap<String, OLD_ExternalSystemType> typesByName = Maps.uniqueIndex(Arrays.asList(values()), OLD_ExternalSystemType::getName);
 }

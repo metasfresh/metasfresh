@@ -30,7 +30,7 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemTestUtil;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -102,7 +102,7 @@ public class ExportBPartnerToRabbitMQServiceTest
 		saveRecord(bpartner);
 
 		final I_ExternalSystem_Config externalSystemParentConfig = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+				.type(OLD_ExternalSystemType.RabbitMQ.getCode())
 				.customParentConfigId(1)
 				.build();
 
@@ -131,7 +131,7 @@ public class ExportBPartnerToRabbitMQServiceTest
 		externalSystemParentConfig.setExternalSystem_Config_ID(1);
 		externalSystemParentConfig.setName("ParentConfig");
 		externalSystemParentConfig.setIsActive(true);
-		externalSystemParentConfig.setType(ExternalSystemType.RabbitMQ.getCode());
+		externalSystemParentConfig.setType(OLD_ExternalSystemType.RabbitMQ.getCode());
 		externalSystemParentConfig.setWriteAudit(true);
 		externalSystemParentConfig.setAuditFileFolder("fileFolder");
 

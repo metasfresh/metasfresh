@@ -24,7 +24,7 @@ package de.metas.externalsystem.grssignum.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.util.Check;
@@ -59,7 +59,7 @@ public class ExternalSystem_Config_GRSSignum
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(grsConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.GRSSignum.getCode().equals(parentType))
+		if (!OLD_ExternalSystemType.GRSSignum.getCode().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

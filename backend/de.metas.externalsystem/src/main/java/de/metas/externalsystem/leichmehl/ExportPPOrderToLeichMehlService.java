@@ -39,7 +39,7 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemLeichConfigProductMappingQuery;
 import de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepository;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
@@ -142,9 +142,9 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 	}
 
 	@Override
-	protected ExternalSystemType getExternalSystemType()
+	protected OLD_ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.LeichUndMehl;
+		return OLD_ExternalSystemType.LeichUndMehl;
 	}
 
 	@NonNull

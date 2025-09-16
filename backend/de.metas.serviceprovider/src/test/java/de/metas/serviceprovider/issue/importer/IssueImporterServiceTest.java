@@ -28,7 +28,10 @@ import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemCreateRequest;
 import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
@@ -64,27 +67,28 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB;
-
 @ExtendWith(AdempiereTestWatcher.class)
 class IssueImporterServiceTest
 {
+	private ExternalSystemRepository externalSystemRepository;
 	private IssueImporterService issueImporterService;
 	private IssueRepository issueRepository;
+
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
+		externalSystemRepository = new ExternalSystemRepository();
+		MOCK_EXTERNAL_SYSTEM_GITHUB = externalSystem(ExternalSystemType.Github);
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ADReferenceService adReferenceService = ADReferenceService.newMocked();
 
 		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
-
-		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
-		externalSystemRepository.save(MOCK_EXTERNAL_SYSTEM_GITHUB);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
@@ -100,6 +104,14 @@ class IssueImporterServiceTest
 				adReferenceService,
 				new IssueLabelRepository(queryBL)
 		);
+	}
+
+	private ExternalSystem externalSystem(ExternalSystemType value)
+	{
+		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+				.type(value)
+				.name(value.getValue())
+				.build());
 	}
 
 	@Nested
@@ -167,9 +179,9 @@ class IssueImporterServiceTest
 			{
 				final List<IssueId> importedIdsCollector = new ArrayList<>();
 				issueImporterService.importIssue(initialImportIssueInfo.toBuilder()
-														 .budget(BigDecimal.TEN)
-														 .build(),
-												 importedIdsCollector);
+								.budget(BigDecimal.TEN)
+								.build(),
+						importedIdsCollector);
 
 				issueId = CollectionUtils.singleElement(importedIdsCollector);
 
@@ -190,10 +202,10 @@ class IssueImporterServiceTest
 				Assertions.assertThat(issueRepository.getById(issueId))
 						.usingRecursiveComparison()
 						.isEqualTo(expectedIssue.toBuilder()
-										   .issueId(issueId)
-										   .roughEstimation(BigDecimal.valueOf(123))
-										   .budgetedEffort(BigDecimal.valueOf(8))
-										   .build());
+								.issueId(issueId)
+								.roughEstimation(BigDecimal.valueOf(123))
+								.budgetedEffort(BigDecimal.valueOf(8))
+								.build());
 			}
 		}
 
@@ -228,9 +240,9 @@ class IssueImporterServiceTest
 				Assertions.assertThat(issueRepository.getById(issueId))
 						.usingRecursiveComparison()
 						.isEqualTo(expectedIssue.toBuilder()
-										   .issueId(issueId)
-										   .processed(true)
-										   .build());
+								.issueId(issueId)
+								.processed(true)
+								.build());
 			}
 		}
 	}

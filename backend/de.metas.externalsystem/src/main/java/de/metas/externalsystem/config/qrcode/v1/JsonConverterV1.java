@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.config.qrcode.v1;
 
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.config.qrcode.ExternalSystemConfigQRCode;
@@ -69,14 +69,14 @@ public class JsonConverterV1
 
 	private static ExternalSystemConfigQRCode fromJson(@NonNull final JsonPayload json)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(json.getExternalSystemType());
+		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCode(json.getExternalSystemType());
 		final int repoId = json.getChildConfigId();
 		return ExternalSystemConfigQRCode.builder()
 				.childConfigId(toExternalSystemChildConfigId(externalSystemType, repoId))
 				.build();
 	}
 
-	private static IExternalSystemChildConfigId toExternalSystemChildConfigId(final ExternalSystemType externalSystemType, final int repoId)
+	private static IExternalSystemChildConfigId toExternalSystemChildConfigId(final OLD_ExternalSystemType externalSystemType, final int repoId)
 	{
 		switch (externalSystemType)
 		{

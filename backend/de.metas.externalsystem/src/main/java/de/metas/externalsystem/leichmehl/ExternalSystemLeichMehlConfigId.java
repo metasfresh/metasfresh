@@ -24,7 +24,7 @@ package de.metas.externalsystem.leichmehl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.util.Check;
@@ -68,8 +68,8 @@ public class ExternalSystemLeichMehlConfigId implements IExternalSystemChildConf
 	}
 
 	@Override
-	public ExternalSystemType getType()
+	public OLD_ExternalSystemType getType()
 	{
-		return ExternalSystemType.LeichUndMehl;
+		return OLD_ExternalSystemType.LeichUndMehl;
 	}
 }

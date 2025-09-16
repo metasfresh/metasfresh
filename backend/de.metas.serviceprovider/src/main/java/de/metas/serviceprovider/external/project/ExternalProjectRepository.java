@@ -23,7 +23,7 @@
 package de.metas.serviceprovider.external.project;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
@@ -46,7 +46,7 @@ public class ExternalProjectRepository
 	}
 
 	@NonNull
-	public ImmutableList<ExternalProjectReference> getByExternalSystemSystemValue(@NonNull final ExternalSystem.SystemValue externalSystem)
+	public ImmutableList<ExternalProjectReference> getByExternalSystemSystemValue(@NonNull final ExternalSystemType externalSystem)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
 				.addOnlyActiveRecordsFilter()
@@ -64,7 +64,7 @@ public class ExternalProjectRepository
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, getExternalProjectRequest.getExternalSystem().getValue())
+				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, getExternalProjectRequest.getExternalSystem().getType())
 
 				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalReference, getExternalProjectRequest.getExternalReference())
 

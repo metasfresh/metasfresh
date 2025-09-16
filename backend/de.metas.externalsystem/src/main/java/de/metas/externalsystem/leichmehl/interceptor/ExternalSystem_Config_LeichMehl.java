@@ -24,7 +24,7 @@ package de.metas.externalsystem.leichmehl.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import lombok.NonNull;
@@ -56,7 +56,7 @@ public class ExternalSystem_Config_LeichMehl
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.LeichUndMehl.getCode().equals(parentType))
+		if (!OLD_ExternalSystemType.LeichUndMehl.getCode().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

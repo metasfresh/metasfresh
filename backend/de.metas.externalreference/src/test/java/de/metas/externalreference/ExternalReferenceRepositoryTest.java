@@ -23,7 +23,10 @@
 package de.metas.externalreference;
 
 import de.metas.externalreference.model.I_S_ExternalReference;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemCreateRequest;
 import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,6 +40,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ExternalReferenceRepositoryTest
 {
 	private ExternalReferenceRepository externalReferenceRepository;
+	private ExternalSystem github;
+	private ExternalSystem everhour;
 
 	@BeforeEach
 	public void init()
@@ -47,8 +52,14 @@ public class ExternalReferenceRepositoryTest
 		externalReferenceTypes.registerType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE);
 
 		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
-		externalSystemRepository.save(TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB);
-		externalSystemRepository.save(TestConstants.MOCK_EXTERNAL_SYSTEM_EVERHOUR);
+		github = externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+				.name("Github")
+				.type(ExternalSystemType.Github)
+				.build());
+		everhour = externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+				.name("Everhour")
+				.type(ExternalSystemType.Everhour)
+				.build());
 
 		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
 	}
@@ -112,7 +123,7 @@ public class ExternalReferenceRepositoryTest
 				.orgId(TestConstants.MOCK_ORG_ID)
 				.externalReference(TestConstants.MOCK_EXTERNAL_REFERENCE)
 				.externalReferenceType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE)
-				.externalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM_GITHUB)
+				.externalSystem(github)
 				.recordId(TestConstants.MOCK_RECORD_ID)
 				.version(TestConstants.MOCK_EXTERNAL_REFERENCE_VERSION)
 				.build();
@@ -123,7 +134,7 @@ public class ExternalReferenceRepositoryTest
 		assertEquals(externalReference.getRecordId(), record.getRecord_ID());
 		assertEquals(externalReference.getExternalReference(), record.getExternalReference());
 		assertEquals(externalReference.getExternalReferenceType().getCode(), record.getType());
-		assertEquals(externalReference.getExternalSystem().getValue(), record.getExternalSystem());
+		assertEquals(externalReference.getExternalSystem().getType(), record.getExternalSystem());
 		assertEquals(externalReference.getVersion(), record.getVersion());
 	}
 }

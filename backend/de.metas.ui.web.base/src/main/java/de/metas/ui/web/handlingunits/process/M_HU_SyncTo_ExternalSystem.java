@@ -25,7 +25,7 @@ package de.metas.ui.web.handlingunits.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.hu.ExportHUToExternalSystemService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -104,7 +104,7 @@ public abstract class M_HU_SyncTo_ExternalSystem extends ViewBasedProcessTemplat
 
 	protected abstract ExportHUToExternalSystemService getExportToHUExternalSystem();
 
-	protected abstract ExternalSystemType getExternalSystemType();
+	protected abstract OLD_ExternalSystemType getExternalSystemType();
 
 	protected abstract String getExternalSystemParam();
 }

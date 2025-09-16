@@ -1,14 +1,8 @@
 package de.metas.externalsystem;
 
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.Arrays;
 
 /*
  * #%L
@@ -36,65 +30,7 @@ import java.util.Arrays;
 @Builder(toBuilder = true)
 public class ExternalSystem
 {
-	public static final ExternalSystem NULL = ExternalSystem.builder()
-			.externalSystemId(null)
-			.name("NULL")
-			.value("NULL")
-			.build();
-
-	@RequiredArgsConstructor
-	@Getter
-	public enum SystemValue
-	{
-		Alberta("Alberta"),
-		RabbitMQ("RabbitMQRESTAPI"),
-		WOO("WOO"),
-		GRSSignum("GRSSignum"),
-		LeichUndMehl("LeichUndMehl"),
-		ProCareManagement("ProCareManagement"),
-		Shopware6("Shopware6"),
-		Other("Other"),
-		PrintingClient("PrintingClient"),
-		Github("Github"),
-		Everhour("Everhour");
-
-		private final String value;
-
-		@Nullable
-		private static SystemValue ofValueOrNull(final String value)
-		{
-			return Arrays.stream(values())
-					.filter(systemValue -> systemValue.getValue().equals(value))
-					.findFirst()
-					.orElse(null);
-		}
-
-		@Nullable
-		private static SystemValue ofValue(final String value)
-		{
-			return Arrays.stream(values())
-					.filter(systemValue -> systemValue.getValue().equals(value))
-					.findFirst()
-					.orElseThrow(() -> new AdempiereException("Unknown SystemValue " + value + " for ExternalSystem"));
-		}
-	}
-
-	@Nullable ExternalSystemId externalSystemId;
+	@NonNull ExternalSystemId id;
+	@NonNull ExternalSystemType type;
 	@NonNull String name;
-	@NonNull String value;
-
-	@Nullable
-	SystemValue getSystemValueOrNull() {return SystemValue.ofValueOrNull(value);}
-
-	@NonNull
-	SystemValue getSystemValue() {return SystemValue.ofValue(value);}
-
-	public void assertIdSet()
-	{
-		if (externalSystemId == null)
-		{
-			throw new AdempiereException("externalSystemId is not set for " + this);
-		}
-
-	}
 }

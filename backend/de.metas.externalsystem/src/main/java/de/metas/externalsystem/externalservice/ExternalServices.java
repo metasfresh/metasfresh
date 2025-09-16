@@ -30,7 +30,7 @@ import de.metas.common.externalsystem.status.JsonExternalStatusResponseItem;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.externalservice.common.ExternalStatus;
 import de.metas.externalsystem.externalservice.externalserviceinstance.CreateServiceInstanceRequest;
 import de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstance;
@@ -99,7 +99,7 @@ public class ExternalServices
 	}
 
 	@NonNull
-	public List<JsonExternalStatusResponseItem> getStatusInfo(@NonNull final ExternalSystemType externalSystemType)
+	public List<JsonExternalStatusResponseItem> getStatusInfo(@NonNull final OLD_ExternalSystemType externalSystemType)
 	{
 		final List<ExternalSystemParentConfig> externalSystemConfigs = externalSystemConfigRepo.getActiveByType(externalSystemType);
 
@@ -135,7 +135,7 @@ public class ExternalServices
 
 	public void initializeServiceInstancesIfRequired(@NonNull final ExternalSystemParentConfigId configId)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemConfigRepo.getParentTypeById(configId));
+		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCode(externalSystemConfigRepo.getParentTypeById(configId));
 
 		serviceRepo.getAllByType(externalSystemType)
 				.stream()
@@ -175,7 +175,7 @@ public class ExternalServices
 	{
 		final String parentConfigType = externalSystemConfigRepo.getParentTypeById(configId);
 
-		getServiceByTypeAndCommand(ExternalSystemType.ofCode(parentConfigType), command)
+		getServiceByTypeAndCommand(OLD_ExternalSystemType.ofCode(parentConfigType), command)
 				.map(service -> CreateServiceInstanceRequest.builder()
 						.configId(configId)
 						.serviceId(service.getId())
@@ -185,7 +185,7 @@ public class ExternalServices
 	}
 
 	@NonNull
-	private Optional<ExternalSystemServiceModel> getServiceByTypeAndCommand(@NonNull final ExternalSystemType type, @NonNull final String command)
+	private Optional<ExternalSystemServiceModel> getServiceByTypeAndCommand(@NonNull final OLD_ExternalSystemType type, @NonNull final String command)
 	{
 		final List<ExternalSystemServiceModel> externalSystemServices = serviceRepo.getAllByType(type)
 				.stream()

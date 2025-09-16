@@ -26,7 +26,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
@@ -92,13 +92,13 @@ public class InvokeWooCommerceAction extends AlterExternalSystemServiceStatusAct
 	@Override
 	protected String getTabName()
 	{
-		return ExternalSystemType.WOO.getName();
+		return OLD_ExternalSystemType.WOO.getName();
 	}
 
 	@Override
-	protected ExternalSystemType getExternalSystemType()
+	protected OLD_ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.WOO;
+		return OLD_ExternalSystemType.WOO;
 	}
 
 	@Override

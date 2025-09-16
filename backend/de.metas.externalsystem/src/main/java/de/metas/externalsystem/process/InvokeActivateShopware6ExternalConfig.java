@@ -24,7 +24,7 @@ package de.metas.externalsystem.process;
 
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.process.IProcessPreconditionsContext;
@@ -70,9 +70,9 @@ public class InvokeActivateShopware6ExternalConfig extends InvokeActivateExterna
 	}
 
 	@Override
-	protected ExternalSystemType getExternalSystemType()
+	protected OLD_ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.Shopware6;
+		return OLD_ExternalSystemType.Shopware6;
 	}
 
 	@Override

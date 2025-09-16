@@ -25,7 +25,7 @@ package de.metas.externalsystem.process;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
@@ -93,12 +93,12 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	@NonNull
 	protected String getTabName()
 	{
-		return ExternalSystemType.Alberta.getName();
+		return OLD_ExternalSystemType.Alberta.getName();
 	}
 
 	@NonNull
-	protected ExternalSystemType getExternalSystemType()
+	protected OLD_ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.Alberta;
+		return OLD_ExternalSystemType.Alberta;
 	}
 }

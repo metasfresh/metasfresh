@@ -26,7 +26,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
@@ -90,9 +90,9 @@ public class InvokePCMAction extends AlterExternalSystemServiceStatusAction
 	}
 
 	@Override
-	protected ExternalSystemType getExternalSystemType()
+	protected OLD_ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.ProCareManagement;
+		return OLD_ExternalSystemType.ProCareManagement;
 	}
 
 	@Override

@@ -23,7 +23,7 @@
 package de.metas.externalsystem.audit;
 
 import de.metas.dlm.model.I_AD_Table;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.process.PInstanceId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
@@ -64,7 +64,7 @@ public class ExternalSystemExportAuditRepoTests
 				.exportUserId(UserId.ofRepoId(1))
 				.exportRoleId(RoleId.ofRepoId(2))
 				.exportParameters("ExportParameters")
-				.externalSystemType(ExternalSystemType.Shopware6)
+				.externalSystemType(OLD_ExternalSystemType.Shopware6)
 				.build();
 
 		//when

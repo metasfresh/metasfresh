@@ -32,7 +32,7 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.EmptyUtil;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
@@ -160,7 +160,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	@NonNull
 	protected String getTabName()
 	{
-		return ExternalSystemType.Shopware6.getName();
+		return OLD_ExternalSystemType.Shopware6.getName();
 	}
 
 	@Override
@@ -173,9 +173,9 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	}
 
 	@NonNull
-	protected ExternalSystemType getExternalSystemType()
+	protected OLD_ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.Shopware6;
+		return OLD_ExternalSystemType.Shopware6;
 	}
 
 	@NonNull

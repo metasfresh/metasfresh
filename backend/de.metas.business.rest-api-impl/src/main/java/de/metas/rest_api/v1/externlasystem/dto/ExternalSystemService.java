@@ -36,7 +36,7 @@ import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
@@ -154,7 +154,7 @@ public class ExternalSystemService
 
 
 	@NonNull
-	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String childConfigValue)
+	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final OLD_ExternalSystemType type, @NonNull final String childConfigValue)
 	{
 		return externalSystemConfigRepo.getByTypeAndValue(type, childConfigValue);
 	}
@@ -162,7 +162,7 @@ public class ExternalSystemService
 	@NonNull
 	public Optional<ExternalSystemExportAudit> getMostRecentByTableReferenceAndSystem(
 			@NonNull final TableRecordReference tableRecordReference,
-			@NonNull final ExternalSystemType externalSystemType)
+			@NonNull final OLD_ExternalSystemType externalSystemType)
 	{
 		return externalSystemExportAuditRepo.getMostRecentByTableReferenceAndSystem(tableRecordReference, externalSystemType);
 	}

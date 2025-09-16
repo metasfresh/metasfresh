@@ -24,7 +24,7 @@ package de.metas.externalsystem.rabbitmqhttp.export.bpartner;
 
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.export.bpartner.C_BPartner_SyncTo_ExternalSystem;
@@ -54,9 +54,9 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends C_BPartner_SyncTo_ExternalS
 	private int externalSystemConfigRabbitMQId;
 
 	@Override
-	protected ExternalSystemType getExternalSystemType()
+	protected OLD_ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.RabbitMQ;
+		return OLD_ExternalSystemType.RabbitMQ;
 	}
 
 	@Override

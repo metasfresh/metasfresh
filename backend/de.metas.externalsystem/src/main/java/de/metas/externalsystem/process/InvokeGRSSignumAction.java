@@ -27,7 +27,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
@@ -90,13 +90,13 @@ public class InvokeGRSSignumAction extends AlterExternalSystemServiceStatusActio
 	@Override
 	protected String getTabName()
 	{
-		return ExternalSystemType.GRSSignum.getName();
+		return OLD_ExternalSystemType.GRSSignum.getName();
 	}
 
 	@Override
-	protected ExternalSystemType getExternalSystemType()
+	protected OLD_ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.GRSSignum;
+		return OLD_ExternalSystemType.GRSSignum;
 	}
 
 	@Override

@@ -24,7 +24,7 @@ package de.metas.externalsystem.shopware6.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -50,7 +50,7 @@ public class ExternalSystem_Config_Shopware6
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.Shopware6.getCode().equals(parentType))
+		if (!OLD_ExternalSystemType.Shopware6.getCode().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

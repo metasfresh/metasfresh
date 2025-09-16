@@ -33,6 +33,7 @@ import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -204,9 +205,9 @@ public class BPartnerRecordsUtil
 				.externalReference(AD_USER_EXTERNAL_ID)
 				.externalReferenceType(ExternalUserReferenceType.USER_ID)
 				.externalSystem(ExternalSystem.builder()
-						.name(ExternalSystem.SystemValue.Other.getValue())
-						.value(ExternalSystem.SystemValue.Other.getValue())
-						.externalSystemId(ExternalSystemId.ofRepoId(44444))
+						.name(ExternalSystemType.Other.getValue())
+						.type(ExternalSystemType.Other.getValue())
+						.id(ExternalSystemId.ofRepoId(44444))
 						.build())
 				.orgId(OrgId.ofRepoId(10))
 				.recordId(AD_USER_ID)

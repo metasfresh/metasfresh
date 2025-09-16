@@ -143,14 +143,14 @@ public class S_ExternalReference_StepDef
 					() -> queryBL.createQueryBuilder(I_S_ExternalReference.class)
 							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 							.addEqualsFilter(I_S_ExternalReference.COLUMN_Type, type.getCode())
-							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystemType.getValue())
+							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystemType.getType())
 							.create()
 							.firstOnlyOrNull(I_S_ExternalReference.class),
 					() -> newInstanceOutOfTrx(I_S_ExternalReference.class));
 
 			assertThat(externalReferenceRecord).isNotNull();
 
-			externalReferenceRecord.setExternalSystem(externalSystemType.getValue());
+			externalReferenceRecord.setExternalSystem(externalSystemType.getType());
 			externalReferenceRecord.setType(type.getCode());
 			externalReferenceRecord.setExternalReference(externalReference);
 

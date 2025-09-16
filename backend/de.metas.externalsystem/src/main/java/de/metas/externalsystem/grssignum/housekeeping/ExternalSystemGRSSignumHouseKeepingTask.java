@@ -24,12 +24,12 @@ package de.metas.externalsystem.grssignum.housekeeping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -60,7 +60,7 @@ public class ExternalSystemGRSSignumHouseKeepingTask implements IStartupHouseKee
 	@Override
 	public void executeTask()
 	{
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemProcesses.getExternalSystemProcessClassName(ExternalSystem.SystemValue.GRSSignum));
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemProcesses.getExternalSystemProcessClassName(ExternalSystemType.GRSSignum));
 
 		if (processId == null)
 		{
@@ -69,7 +69,7 @@ public class ExternalSystemGRSSignumHouseKeepingTask implements IStartupHouseKee
 
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(ExternalSystemType.GRSSignum);
+		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(OLD_ExternalSystemType.GRSSignum);
 
 		parentConfigList
 				.stream()

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.i18n.AdMessageKey;
@@ -131,7 +131,7 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 		return Optional.empty();
 	}
 
-	protected abstract ExternalSystemType getExternalSystemType();
+	protected abstract OLD_ExternalSystemType getExternalSystemType();
 
 	protected abstract IExternalSystemChildConfigId getExternalSystemChildConfigId();
 

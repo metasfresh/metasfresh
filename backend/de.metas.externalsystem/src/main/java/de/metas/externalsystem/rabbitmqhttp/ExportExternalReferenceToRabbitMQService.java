@@ -50,7 +50,7 @@ import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceTy
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.externalreference.ExportExternalReferenceToExternalSystem;
@@ -106,7 +106,7 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 			return Optional.empty();
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> rabbitMQParentConfigs = externalSystemConfigRepo.getActiveByType(ExternalSystemType.RabbitMQ);
+		final ImmutableList<ExternalSystemParentConfig> rabbitMQParentConfigs = externalSystemConfigRepo.getActiveByType(OLD_ExternalSystemType.RabbitMQ);
 
 		return Optional.of(rabbitMQParentConfigs.stream()
 								   .filter(ExternalSystemParentConfig::isActive)
@@ -148,9 +148,9 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 	}
 
 	@Override
-	protected ExternalSystemType getExternalSystemType()
+	protected OLD_ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.RabbitMQ;
+		return OLD_ExternalSystemType.RabbitMQ;
 	}
 
 	@NonNull
@@ -183,7 +183,7 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 
 		return JsonExternalReferenceLookupRequest.builder()
 				.items(lookupItemCollector.build())
-				.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getValue()))
+				.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getType()))
 				.build();
 	}
 

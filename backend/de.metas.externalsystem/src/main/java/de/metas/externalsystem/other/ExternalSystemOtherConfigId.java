@@ -23,7 +23,7 @@
 package de.metas.externalsystem.other;
 
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import lombok.NonNull;
 import lombok.Value;
@@ -56,9 +56,9 @@ public class ExternalSystemOtherConfigId implements IExternalSystemChildConfigId
 	}
 
 	@Override
-	public ExternalSystemType getType()
+	public OLD_ExternalSystemType getType()
 	{
-		return ExternalSystemType.Other;
+		return OLD_ExternalSystemType.Other;
 	}
 
 	@Override

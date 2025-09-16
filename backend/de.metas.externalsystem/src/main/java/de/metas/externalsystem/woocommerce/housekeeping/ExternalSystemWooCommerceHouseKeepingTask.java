@@ -26,7 +26,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.OLD_ExternalSystemType;
 import de.metas.externalsystem.woocommerce.WooCommerceCommand;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -59,7 +59,7 @@ public class ExternalSystemWooCommerceHouseKeepingTask implements IStartupHouseK
 	@Override
 	public void executeTask()
 	{
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemType.WOO.getExternalSystemProcessClassName());
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(OLD_ExternalSystemType.WOO.getExternalSystemProcessClassName());
 
 		if (processId == null)
 		{
@@ -68,7 +68,7 @@ public class ExternalSystemWooCommerceHouseKeepingTask implements IStartupHouseK
 
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(ExternalSystemType.WOO);
+		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(OLD_ExternalSystemType.WOO);
 
 		parentConfigList
 				.stream()

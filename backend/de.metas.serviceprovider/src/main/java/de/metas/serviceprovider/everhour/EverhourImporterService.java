@@ -31,13 +31,15 @@ import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
 import de.metas.issue.tracking.everhour.api.model.TimeRecord;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.externalsystem.ExternalSystem;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.timebooking.TimeBookingId;
@@ -68,7 +70,6 @@ import static de.metas.issue.tracking.everhour.api.EverhourConstants.TaskIdSourc
 import static de.metas.serviceprovider.everhour.EverhourImportConstants.PROCESSING_DATE_INTERVAL_SIZE;
 import static de.metas.serviceprovider.timebooking.importer.ImportConstants.IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX;
 
-
 @Service
 @RequiredArgsConstructor
 public class EverhourImporterService implements TimeBookingsImporter
@@ -78,6 +79,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 	private final ReentrantLock lock = new ReentrantLock();
 
 	private final EverhourClient everhourClient;
+	private final ExternalSystemRepository externalSystemRepository;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue;
 	private final FailedTimeBookingRepository failedTimeBookingRepository;
@@ -101,7 +103,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 					.map(everhourClient::getTeamTimeRecords)
 					.flatMap(List::stream)
 					.filter(timeRecord -> timeRecord.getTask() != null && isGithubID(timeRecord.getTask().getId()))
-					.forEach(timeBooking-> importTimeBooking(timeBooking, request.getOrgId()));
+					.forEach(timeBooking -> importTimeBooking(timeBooking, request.getOrgId()));
 		}
 		catch (final Exception e)
 		{
@@ -123,11 +125,14 @@ public class EverhourImporterService implements TimeBookingsImporter
 	{
 		try
 		{
+			final ExternalSystem everhour = externalSystemRepository.getByValue(ExternalSystemType.Everhour);
+			final ExternalSystem github = externalSystemRepository.getByValue(ExternalSystemType.Github);
+
 			final UserId userId = UserId.ofRepoId(
 					externalReferenceRepository.getReferencedRecordIdBy(
 							ExternalReferenceQuery.builder()
 									.orgId(orgId)
-									.externalSystem(de.metas.externalsystem.ExternalSystem.NULL) // TODO ExternalSystem.EVERHOUR)
+									.externalSystem(everhour)
 									.externalReference(String.valueOf(timeRecord.getUserId()))
 									.externalReferenceType(ExternalUserReferenceType.USER_ID)
 									.build()));
@@ -136,7 +141,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 					externalReferenceRepository.getReferencedRecordIdBy(
 							ExternalReferenceQuery.builder()
 									.orgId(orgId)
-									.externalSystem(ExternalSystem.NULL) //TODO ExternalSystem.GITHUB
+									.externalSystem(github)
 									.externalReference(extractGithubIssueId(timeRecord.getTask().getId()))
 									.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
 									.build()));
@@ -145,7 +150,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 					externalReferenceRepository.getReferencedRecordIdOrNullBy(
 							ExternalReferenceQuery.builder()
 									.orgId(orgId)
-									.externalSystem(de.metas.externalsystem.ExternalSystem.NULL) // TODO ExternalSystem.EVERHOUR)
+									.externalSystem(everhour)
 									.externalReference(String.valueOf(timeRecord.getId()))
 									.externalReferenceType(ExternalServiceReferenceType.TIME_BOOKING_ID)
 									.build()));
@@ -154,7 +159,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 			final ImportTimeBookingInfo importTimeBookingInfo = ImportTimeBookingInfo
 					.builder()
-					.externalTimeBookingId(ExternalId.of(de.metas.externalsystem.ExternalSystem.NULL, timeRecord.getId())) // TODO ExternalSystem.EVERHOUR
+					.externalTimeBookingId(ExternalId.of(everhour, timeRecord.getId()))
 					.timeBookingId(timeBookingId)
 					.performingUserId(userId)
 					.issueId(issueId)
@@ -194,7 +199,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 	}
 
 	private GetTeamTimeRecordsRequest buildGetTeamTimeRecordsRequest(@NonNull final String apiKey,
-			@NonNull final LocalDateInterval interval)
+																	 @NonNull final LocalDateInterval interval)
 	{
 		return GetTeamTimeRecordsRequest.builder()
 				.apiKey(apiKey)
@@ -225,7 +230,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 				.jsonValue(jsonValue)
 				.orgId(orgId)
 				.externalId(timeRecord.getId())
-				.externalSystem(ExternalSystem.NULL) //TODO ExternalSystem.EVERHOUR
+				.externalSystem(externalSystemRepository.getByValue(ExternalSystemType.Everhour))
 				.errorMsg(errorMessage.toString())
 				.build();
 
@@ -239,10 +244,10 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 		final Stopwatch stopWatch = Stopwatch.createStarted();
 
-		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(ExternalSystem.NULL); //TODO ExternalSystem.EVERHOUR
-		for(FailedTimeBooking failedTimeBooking:failedTimeBookings)
+		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(externalSystemRepository.getByValue(ExternalSystemType.Everhour));
+		for (FailedTimeBooking failedTimeBooking : failedTimeBookings)
 		{
-			if(Check.isBlank(failedTimeBooking.getJsonValue()))
+			if (Check.isBlank(failedTimeBooking.getJsonValue()))
 			{
 				continue;
 			}
