@@ -25,16 +25,17 @@ package de.metas.letters.model;
  * #L%
  */
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
-import org.compiere.model.Query;
-import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 
-import de.metas.cache.CCache;
+import java.sql.ResultSet;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Boiler Plate Variable Evaluation Timing
@@ -43,28 +44,24 @@ import de.metas.cache.CCache;
  */
 public class MADBoilerPlateVarEval extends X_AD_BoilerPlate_Var_Eval
 {
-	/**
-	 *
-	 */
+	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private static final long serialVersionUID = 6355649371361977481L;
 
-	private static CCache<Integer, MADBoilerPlateVarEval[]> s_cache = new CCache<>(Table_Name + "_Client", 2);
+	private static CCache<Integer, List<MADBoilerPlateVarEval>> s_cache = new CCache<>(Table_Name + "#DocTiming", 2);
 
-	public static MADBoilerPlateVarEval[] getAll(Properties ctx)
+	public static @NotNull List<MADBoilerPlateVarEval> getAll(final Properties ctx)
 	{
-		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		MADBoilerPlateVarEval[] arr = s_cache.get(AD_Client_ID);
-		if (arr == null)
-		{
-			final String whereClause = I_AD_BoilerPlate_Var_Eval.COLUMNNAME_AD_Client_ID + " IN (0,?)";
-			final List<MADBoilerPlateVarEval> list = new Query(ctx, Table_Name, whereClause, null)
-					.setParameters(new Object[] { AD_Client_ID })
-					.setOrderBy(COLUMNNAME_AD_BoilerPlate_Var_ID + "," + COLUMNNAME_C_DocType_ID)
-					.list(MADBoilerPlateVarEval.class);
-			arr = list.toArray(new MADBoilerPlateVarEval[list.size()]);
-			s_cache.put(AD_Client_ID, arr);
-		}
-		return arr;
+		final List<MADBoilerPlateVarEval> result = s_cache.get(0, (java.util.function.Supplier<List<MADBoilerPlateVarEval>>)() ->
+				queryBL.createQueryBuilder(I_AD_BoilerPlate_Var_Eval.Table_Name)
+						.orderBy()
+						.addColumn(I_AD_BoilerPlate_Var_Eval.COLUMNNAME_AD_BoilerPlate_Var_ID)
+						.addColumn(I_AD_BoilerPlate_Var_Eval.COLUMNNAME_C_DocType_ID)
+						.endOrderBy()
+						.create()
+						.list(MADBoilerPlateVarEval.class)
+		);
+
+		return result != null ? result : Collections.emptyList();
 	}
 
 	public MADBoilerPlateVarEval(Properties ctx, int AD_BoilerPlate_Var_Eval_ID, String trxName)

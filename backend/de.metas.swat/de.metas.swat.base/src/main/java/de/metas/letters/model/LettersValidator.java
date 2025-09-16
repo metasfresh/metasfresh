@@ -29,7 +29,10 @@ import de.metas.letters.api.impl.TextTemplateBL;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
@@ -48,8 +51,6 @@ import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.MClient;
-import org.compiere.model.MColumn;
-import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -65,10 +66,11 @@ import org.eevolution.model.I_PP_Order;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 
 /**
@@ -77,6 +79,8 @@ import java.util.regex.Matcher;
  */
 public class LettersValidator implements ModelValidator
 {
+	private final IADTableDAO tablesRepo = Services.get(IADTableDAO.class);
+
 	private int m_AD_Client_ID = -1;
 
 	private static final Map<ArrayKey, Set<MADBoilerPlateVar>> s_cacheVars = new HashMap<>();
@@ -88,41 +92,39 @@ public class LettersValidator implements ModelValidator
 	}
 
 	@Override
-	public void initialize(final ModelValidationEngine engine, final MClient client)
-	{
-		if (client != null)
+	public void initialize(final ModelValidationEngine engine, final MClient client) {
+		if (client != null) {
 			m_AD_Client_ID = client.getAD_Client_ID();
+		}
 
 		Services.registerService(ITextTemplateBL.class, TextTemplateBL.get());
-
 		engine.addModelChange(I_C_DunningRunEntry.Table_Name, this);
-		//
-		final TreeSet<String> tableNames = new TreeSet<>();
-		for (final MADBoilerPlateVarEval timing : MADBoilerPlateVarEval.getAll(Env.getCtx()))
-		{
-			final I_C_DocType dt = timing.getC_DocType();
-			if (dt == null || dt.getC_DocType_ID() <= 0)
-				continue;
-			final String tableName = getTableNameByDocBaseType(dt.getDocBaseType());
-			if (tableName == null)
-				continue;
 
-			final ArrayKey key = new ArrayKey(timing.getAD_Client_ID(), tableName, dt.getC_DocType_ID(), timing.getEvalTime());
-			Set<MADBoilerPlateVar> list = s_cacheVars.get(key);
-			if (list == null)
-			{
-				list = new TreeSet<>();
-			}
-			final MADBoilerPlateVar var = MADBoilerPlateVar.get(timing.getCtx(), timing.getAD_BoilerPlate_Var_ID());
-			list.add(var);
-			s_cacheVars.put(key, list);
-			tableNames.add(tableName);
-		}
-		//
-		for (final String tableName : tableNames)
-		{
-			engine.addDocValidate(tableName, this);
-		}
+		final Set<String> tableNames = MADBoilerPlateVarEval.getAll(Env.getCtx())
+				.stream()
+				.map(timing -> {
+					final I_C_DocType dt = timing.getC_DocType();
+					if (dt == null || dt.getC_DocType_ID() <= 0)
+						return null;
+					final String tableName = getTableNameByDocBaseType(dt.getDocBaseType());
+					if (tableName == null)
+						return null;
+
+					final ArrayKey key = new ArrayKey(
+							timing.getAD_Client_ID(),
+							timing.getAD_Org_ID(),
+							tableName,
+							dt.getC_DocType_ID(),
+							timing.getEvalTime()
+					);
+					s_cacheVars.computeIfAbsent(key, k -> new HashSet<>())
+							.add(MADBoilerPlateVar.get(timing.getCtx(), timing.getAD_BoilerPlate_Var_ID()));
+					return tableName;
+				})
+				.filter(Objects::nonNull)
+				.collect(java.util.stream.Collectors.toCollection(HashSet::new));
+
+		tableNames.forEach(tableName -> engine.addDocValidate(tableName, this));
 	}
 
 	@Override
@@ -150,9 +152,10 @@ public class LettersValidator implements ModelValidator
 		if (vars.isEmpty())
 			return null;
 		//
-		for (final MColumn c : MTable.get(po.getCtx(), po.get_Table_ID()).getColumns(false))
+		final I_AD_Table poTable = tablesRepo.retrieveTable(po.get_TableName());
+
+		for (final I_AD_Column column : tablesRepo.retrieveColumnsForTable(poTable))
 		{
-			final I_AD_Column column = InterfaceWrapperHelper.create(c, I_AD_Column.class);
 			if (column.isAdvancedText())
 			{
 				parseField(po, column.getColumnName(), vars);
@@ -227,14 +230,15 @@ public class LettersValidator implements ModelValidator
 	private static Set<MADBoilerPlateVar> getVars(final PO po, final int timing)
 	{
 		final int AD_Client_ID = Env.getAD_Client_ID(po.getCtx());
+		final int AD_Org_ID = Env.getAD_Org_ID(po.getCtx());
 		final String tableName = po.get_TableName();
 		final int C_DocType_ID = getC_DocType_ID(po);
 		final String evalTime = getEvalTime(timing);
-		final ArrayKey key = new ArrayKey(AD_Client_ID, tableName, C_DocType_ID, evalTime);
+		final ArrayKey key = new ArrayKey(AD_Client_ID, AD_Org_ID, tableName, C_DocType_ID, evalTime);
 
 		Set<MADBoilerPlateVar> vars = s_cacheVars.get(key);
 		if (vars == null)
-			vars = new TreeSet<>();
+			vars = new HashSet<>();
 		return vars;
 	}
 
@@ -327,4 +331,5 @@ public class LettersValidator implements ModelValidator
 
 		dre.setNote(textParsed);
 	}
+
 }
