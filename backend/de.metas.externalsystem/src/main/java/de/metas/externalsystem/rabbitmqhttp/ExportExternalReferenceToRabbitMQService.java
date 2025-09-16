@@ -183,7 +183,7 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 
 		return JsonExternalReferenceLookupRequest.builder()
 				.items(lookupItemCollector.build())
-				.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getType()))
+				.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getType().getValue()))
 				.build();
 	}
 

@@ -150,7 +150,7 @@ public class S_ExternalReference_StepDef
 
 			assertThat(externalReferenceRecord).isNotNull();
 
-			externalReferenceRecord.setExternalSystem(externalSystemType.getType());
+			externalReferenceRecord.setExternalSystem(externalSystemType.getType().getValue());
 			externalReferenceRecord.setType(type.getCode());
 			externalReferenceRecord.setExternalReference(externalReference);
 

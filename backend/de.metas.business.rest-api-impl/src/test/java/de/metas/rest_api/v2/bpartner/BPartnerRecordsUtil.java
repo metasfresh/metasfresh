@@ -28,11 +28,11 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalreference.ExternalUserReferenceType;
-import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -98,11 +98,11 @@ public class BPartnerRecordsUtil
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 		orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-											 .orgId(OrgId.ofRepoId(AD_ORG_ID))
-											 .build());
+				.orgId(OrgId.ofRepoId(AD_ORG_ID))
+				.build());
 
 		setupTimeSource();
-		try (final IAutoCloseable c = Env.temporaryChangeLoggedUserId(adUserId))
+		try (final IAutoCloseable ignored = Env.temporaryChangeLoggedUserId(adUserId))
 		{
 
 			final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
@@ -123,8 +123,8 @@ public class BPartnerRecordsUtil
 			saveRecord(sinceRecord);
 
 			createExternalReference(C_BPARTNER_EXTERNAL_ID + idOffSetStr,
-									"BPartner",
-									bpartnerRecord.getC_BPartner_ID());
+					"BPartner",
+					bpartnerRecord.getC_BPartner_ID());
 
 			final I_AD_User contactRecord = newInstance(I_AD_User.class);
 			contactRecord.setAD_User_ID(adUserId.getRepoId());
@@ -141,8 +141,8 @@ public class BPartnerRecordsUtil
 			saveRecord(contactRecord);
 
 			createExternalReference(C_CONTACT_EXTERNAL_ID + idOffSetStr,
-									"UserID",
-									contactRecord.getAD_User_ID());
+					"UserID",
+					contactRecord.getAD_User_ID());
 
 			final I_C_Country countryRecord = newInstance(I_C_Country.class);
 			countryRecord.setCountryCode(C_COUNTRY_RECORD_COUNTRY_CODE);
@@ -177,8 +177,8 @@ public class BPartnerRecordsUtil
 			saveRecord(bpartnerLocationRecord);
 
 			createExternalReference(C_BPARTNER_LOCATION_EXTERNAL_ID + idOffSetStr,
-									"BPartnerLocation",
-									C_BBPARTNER_LOCATION_ID + idOffSet);
+					"BPartnerLocation",
+					C_BBPARTNER_LOCATION_ID + idOffSet);
 
 			{
 				final CurrencyRepository currencyRepo = new CurrencyRepository();
@@ -202,16 +202,16 @@ public class BPartnerRecordsUtil
 						new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
 
 				externalReferenceRepository.save(ExternalReference.builder()
-				.externalReference(AD_USER_EXTERNAL_ID)
-				.externalReferenceType(ExternalUserReferenceType.USER_ID)
-				.externalSystem(ExternalSystem.builder()
-						.name(ExternalSystemType.Other.getValue())
-						.type(ExternalSystemType.Other.getValue())
-						.id(ExternalSystemId.ofRepoId(44444))
-						.build())
-				.orgId(OrgId.ofRepoId(10))
-				.recordId(AD_USER_ID)
-				.build());
+						.externalReference(AD_USER_EXTERNAL_ID)
+						.externalReferenceType(ExternalUserReferenceType.USER_ID)
+						.externalSystem(ExternalSystem.builder()
+								.name(ExternalSystemType.Other.getValue())
+								.type(ExternalSystemType.Other)
+								.id(ExternalSystemId.ofRepoId(44444))
+								.build())
+						.orgId(OrgId.ofRepoId(10))
+						.recordId(AD_USER_ID)
+						.build());
 			}
 		}
 		finally

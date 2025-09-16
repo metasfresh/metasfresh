@@ -38,6 +38,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReference;
+import de.metas.externalreference.ExternalReferenceQueriesResult;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -170,7 +171,7 @@ public class ExternalReferenceRestControllerService
 
 		final ImmutableMap<JsonExternalReferenceLookupItem, ExternalReferenceQuery> item2Query = extractRepoQueries(items, orgId, externalSystem);
 
-		final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences = externalReferenceRepository.getExternalReferences(item2Query.values());
+		final ExternalReferenceQueriesResult externalReferences = externalReferenceRepository.getExternalReferences(item2Query.values());
 
 		return createResponseFromRepoResult(item2Query, externalReferences);
 	}
@@ -346,7 +347,7 @@ public class ExternalReferenceRestControllerService
 	@NonNull
 	private JsonExternalReferenceLookupResponse createResponseFromRepoResult(
 			@NonNull final ImmutableMap<JsonExternalReferenceLookupItem, ExternalReferenceQuery> item2Query,
-			@NonNull final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences)
+			@NonNull final ExternalReferenceQueriesResult externalReferences)
 	{
 		final JsonExternalReferenceLookupResponse.JsonExternalReferenceLookupResponseBuilder result = JsonExternalReferenceLookupResponse.builder();
 
@@ -354,11 +355,11 @@ public class ExternalReferenceRestControllerService
 		{
 			final JsonExternalReferenceLookupItem lookupItem = lookupItem2QueryEntry.getKey();
 
-			final ExternalReference externalReference = externalReferences.get(lookupItem2QueryEntry.getValue());
+			final ExternalReference externalReference = externalReferences.get(lookupItem2QueryEntry.getValue()).orElse(null);
 
 			final JsonExternalReferenceItem responseItem;
 
-			if (ExternalReference.NULL.equals(externalReference))
+			if (externalReference == null)
 			{
 				responseItem = JsonExternalReferenceItem.of(lookupItem);
 			}
@@ -370,7 +371,7 @@ public class ExternalReferenceRestControllerService
 						.externalReference(externalReference.getExternalReference())
 						.version(externalReference.getVersion())
 						.externalReferenceUrl(externalReference.getExternalReferenceUrl())
-						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getType()))
+						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getType().getValue()))
 						.externalReferenceId(JsonMetasfreshId.of(externalReference.getExternalReferenceId().getRepoId()))
 						.build();
 			}
