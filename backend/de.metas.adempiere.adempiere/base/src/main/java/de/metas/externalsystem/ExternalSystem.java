@@ -1,6 +1,5 @@
 package de.metas.externalsystem;
 
-import com.google.common.collect.ImmutableMap;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -62,7 +61,8 @@ public class ExternalSystem
 		private final String value;
 
 		@Nullable
-		private static SystemValue ofValueOrNull(final String value) {
+		private static SystemValue ofValueOrNull(final String value)
+		{
 			return Arrays.stream(values())
 					.filter(systemValue -> systemValue.getValue().equals(value))
 					.findFirst()
@@ -84,8 +84,17 @@ public class ExternalSystem
 	@NonNull String value;
 
 	@Nullable
-	SystemValue getSystemValueOrNull(){return SystemValue.ofValueOrNull(value);}
+	SystemValue getSystemValueOrNull() {return SystemValue.ofValueOrNull(value);}
 
 	@NonNull
-	SystemValue getSystemValue(){return SystemValue.ofValue(value);}
+	SystemValue getSystemValue() {return SystemValue.ofValue(value);}
+
+	public void assertIdSet()
+	{
+		if (externalSystemId == null)
+		{
+			throw new AdempiereException("externalSystemId is not set for " + this);
+		}
+
+	}
 }

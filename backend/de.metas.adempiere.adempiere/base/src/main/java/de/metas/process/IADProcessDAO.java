@@ -79,7 +79,7 @@ public interface IADProcessDAO extends ISingletonService
 	AdProcessId retrieveProcessIdByClassIfUnique(Class<?> processClass);
 
 	@Nullable
-	AdProcessId retrieveProcessIdByClassIfUnique(@Nullable String processClassname);
+	AdProcessId retrieveProcessIdByClassIfUnique(@NonNull String processClassname);
 
 	Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(Class<?> processClass);
 
