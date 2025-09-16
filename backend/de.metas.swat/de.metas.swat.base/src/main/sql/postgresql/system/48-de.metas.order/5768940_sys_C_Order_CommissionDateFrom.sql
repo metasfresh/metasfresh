@@ -92,3 +92,17 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Column SET FilterOperator='B', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-09-15 10:13:11.885000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590904
 ;
 
+
+
+
+
+
+
+
+
+-- UI Element: Auftrag(143,D) -> Auftrag(186,D) -> main view -> 20 -> DocType.Auf Kommission bis
+-- Column: C_Order.Commission_DateFrom
+-- 2025-09-16T12:39:23.182Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=170,Updated=TO_TIMESTAMP('2025-09-16 12:39:23.182000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637034
+;
+

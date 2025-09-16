@@ -128,3 +128,40 @@ UPDATE C_DocType SET AD_PrintFormat_ID=1000013,Updated=TO_TIMESTAMP('2025-09-15 
 -- 2025-09-16T10:16:36.202Z
 UPDATE C_DocType SET C_DocTypeShipment_ID=541136,Updated=TO_TIMESTAMP('2025-09-16 10:16:36.196000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_DocType_ID=541135
 ;
+
+
+
+
+-- 2025-09-16T12:28:21.207Z
+UPDATE C_DocType_Trl SET Name='Order on Commission',Updated=TO_TIMESTAMP('2025-09-16 12:28:21.182000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541135
+;
+
+-- 2025-09-16T12:28:21.223Z
+UPDATE C_DocType base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM C_DocType_Trl trl  WHERE trl.C_DocType_ID=base.C_DocType_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-09-16T12:28:22.879Z
+UPDATE C_DocType_Trl SET PrintName='Order on Commission',Updated=TO_TIMESTAMP('2025-09-16 12:28:22.878000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541135
+;
+
+-- 2025-09-16T12:28:22.880Z
+UPDATE C_DocType base SET PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM C_DocType_Trl trl  WHERE trl.C_DocType_ID=base.C_DocType_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+
+
+-- 2025-09-16T12:55:58.417Z
+UPDATE C_DocType_Trl SET Name='Delivery on Commission',Updated=TO_TIMESTAMP('2025-09-16 12:55:58.417000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541136
+;
+
+-- 2025-09-16T12:55:58.423Z
+UPDATE C_DocType base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM C_DocType_Trl trl  WHERE trl.C_DocType_ID=base.C_DocType_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-09-16T12:55:59.949Z
+UPDATE C_DocType_Trl SET PrintName='Delivery on Commission',Updated=TO_TIMESTAMP('2025-09-16 12:55:59.949000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541136
+;
+
+-- 2025-09-16T12:55:59.950Z
+UPDATE C_DocType base SET PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM C_DocType_Trl trl  WHERE trl.C_DocType_ID=base.C_DocType_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
