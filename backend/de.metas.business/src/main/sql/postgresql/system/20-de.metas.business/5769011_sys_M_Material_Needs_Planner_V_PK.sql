@@ -80,7 +80,7 @@ SELECT COALESCE(demand.Total_Qty_One_Week_Ago, 0)            AS Total_Qty_One_We
        product.m_product_id                                  AS M_Product_ID,
        wc.m_warehouse_id                                     AS M_Warehouse_ID,
        hupi.m_hu_pi_item_product_id                          AS M_HU_PI_Item_Product_ID,
-       (product.m_product_id + COALESCE(wc.m_warehouse_id * 3, 0)) AS M_Material_Needs_Planner_V_ID,
+       ROW_NUMBER() over (order by product.created) AS M_Material_Needs_Planner_V_ID,
 
        -- Standard columns
        product.AD_Client_ID,
@@ -89,7 +89,8 @@ SELECT COALESCE(demand.Total_Qty_One_Week_Ago, 0)            AS Total_Qty_One_We
        product.CreatedBy,
        product.Updated,
        product.UpdatedBy,
-       product.IsActive
+       product.IsActive,
+       product.isbom
 
 FROM m_product product
          LEFT JOIN product_warehouse_combinations wc ON wc.m_product_id = product.m_product_id
