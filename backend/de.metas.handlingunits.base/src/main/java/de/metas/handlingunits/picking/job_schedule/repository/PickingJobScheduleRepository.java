@@ -3,11 +3,11 @@ package de.metas.handlingunits.picking.job_schedule.repository;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
 import de.metas.handlingunits.picking.job_schedule.model.PickingJobSchedule;
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleId;
 import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleQuery;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -48,6 +48,7 @@ public class PickingJobScheduleRepository
 		record.setC_Workplace_ID(request.getWorkplaceId().getRepoId());
 		record.setC_UOM_ID(request.getQtyToPick().getUomId().getRepoId());
 		record.setQtyToPick(request.getQtyToPick().toBigDecimal());
+		record.setProcessed(false);
 		InterfaceWrapperHelper.saveRecord(record);
 		return fromRecord(record);
 	}
@@ -65,6 +66,7 @@ public class PickingJobScheduleRepository
 		record.setC_Workplace_ID(from.getWorkplaceId().getRepoId());
 		record.setC_UOM_ID(from.getQtyToPick().getUomId().getRepoId());
 		record.setQtyToPick(from.getQtyToPick().toBigDecimal());
+		record.setProcessed(from.isProcessed());
 	}
 
 	private static PickingJobSchedule fromRecord(final I_M_Picking_Job_Schedule record)
@@ -74,6 +76,7 @@ public class PickingJobScheduleRepository
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.workplaceId(WorkplaceId.ofRepoId(record.getC_Workplace_ID()))
 				.qtyToPick(Quantitys.of(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.processed(record.isProcessed())
 				.build();
 	}
 
@@ -172,6 +175,11 @@ public class PickingJobScheduleRepository
 		if (!query.getExcludeJobScheduleIds().isEmpty())
 		{
 			queryBuilder.addNotInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID, query.getExcludeJobScheduleIds());
+		}
+
+		if (!query.getOnlyShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, query.getOnlyShipmentScheduleIds());
 		}
 
 		return queryBuilder.create();

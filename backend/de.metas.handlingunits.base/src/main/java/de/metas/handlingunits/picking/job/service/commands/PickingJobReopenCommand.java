@@ -37,10 +37,10 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -138,7 +138,6 @@ public class PickingJobReopenCommand
 	private void reactivateStepIfNeeded(@NonNull final PickingJobStep step)
 	{
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(step.getScheduleId().getShipmentScheduleId());
 
 		step.getPickFroms().getKeys()
 				.stream()
@@ -149,17 +148,19 @@ public class PickingJobReopenCommand
 				.flatMap(List::stream)
 				.filter(pickStepHu -> huIdsToPick.containsKey(pickStepHu.getActualPickedHU().getId()))
 				.forEach(pickStepHU -> {
-					final I_M_HU hu = handlingUnitsBL.getById(pickStepHU.getActualPickedHU().getId());
-					huShipmentScheduleBL.addQtyPickedAndUpdateHU(
-							shipmentSchedule,
-							CatchWeightHelper.extractQtys(
+					final HuId huId = pickStepHU.getActualPickedHU().getId();
+					final I_M_HU hu = handlingUnitsBL.getById(huId);
+					huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
+							.scheduleId(step.getScheduleId())
+							.qtyPicked(CatchWeightHelper.extractQtys(
 									huContext,
 									step.getProductId(),
 									pickStepHU.getQtyPicked(),
-									hu),
-							hu,
-							huContext,
-							huIdsToPick.get(pickStepHU.getActualPickedHU().getId()).isAnonymousHuPickedOnTheFly());
+									hu))
+							.tuOrVHU(hu)
+							.huContext(huContext)
+							.anonymousHuPickedOnTheFly(huIdsToPick.get(huId).isAnonymousHuPickedOnTheFly())
+							.build());
 				});
 	}
 }

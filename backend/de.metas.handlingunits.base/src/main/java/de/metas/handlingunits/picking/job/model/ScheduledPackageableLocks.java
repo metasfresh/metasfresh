@@ -3,7 +3,7 @@ package de.metas.handlingunits.picking.job.model;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.lock.spi.ExistingLockInfo;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;

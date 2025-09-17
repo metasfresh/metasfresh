@@ -50,7 +50,7 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -59,6 +59,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.CatchWeightHelper;
@@ -794,40 +795,27 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)
 	{
-		final IMutableHUContext huContext = HUContextHolder.getCurrent();
-		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
-		final ProductId productId = shipmentScheduleInfo.getProductId();
-		final boolean anonymousHuPickedOnTheFly = false;
-
-		shipmentScheduleBL.addQtyPickedAndUpdateHU(
-				shipmentScheduleInfo.getRecord(),
-				CatchWeightHelper.extractQtys(
-						huContext,
-						productId,
-						qtyPicked,
-						tu.toHU()),
-				tu.toHU(),
-				huContext,
-				anonymousHuPickedOnTheFly);
+		addShipmentScheduleQtyPicked(tu.toHU(), qtyPicked);
 	}
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TUPart cu, @NonNull final Quantity qtyPicked)
 	{
+		addShipmentScheduleQtyPicked(cu.toHU(), qtyPicked);
+	}
+
+	private void addShipmentScheduleQtyPicked(@NonNull final I_M_HU hu, @NonNull final Quantity qtyPicked)
+	{
 		final IMutableHUContext huContext = HUContextHolder.getCurrent();
 		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
-		final ProductId productId = shipmentScheduleInfo.getProductId();
-		final boolean anonymousHuPickedOnTheFly = false;
 
-		shipmentScheduleBL.addQtyPickedAndUpdateHU(
-				shipmentScheduleInfo.getRecord(),
-				CatchWeightHelper.extractQtys(
-						huContext,
-						productId,
-						qtyPicked,
-						cu.toHU()),
-				cu.toHU(),
-				huContext,
-				anonymousHuPickedOnTheFly);
+		shipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
+				.scheduleId(getScheduleId())
+				.cachedShipmentSchedule(shipmentScheduleInfo.getRecord())
+				.qtyPicked(CatchWeightHelper.extractQtys(huContext, getProductId(), qtyPicked, hu))
+				.tuOrVHU(hu)
+				.huContext(huContext)
+				.anonymousHuPickedOnTheFly(false)
+				.build());
 	}
 
 	private PickingJobStep updateStepFromPickedHUs(

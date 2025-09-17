@@ -85,12 +85,10 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	public void dump()
 	{
 		System.out.println("\n\n\n LOCKS (" + getClass() + ") ------------------------------------------------------------ ");
-		locks.values()
-				.stream()
-				.forEach(lock -> System.out.println(lock));
+		locks.values().forEach(System.out::println);
 	}
 
-	private final LockKey createKey(final int adTableId, final int recordId)
+	private LockKey createKey(final int adTableId, final int recordId)
 	{
 		Check.assume(adTableId > 0, "adTableId > 0");
 		Check.assume(recordId > 0, "recordId > 0");
@@ -107,7 +105,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	public boolean isLocked(final int adTableId, final int recordId, final LockOwner lockOwner)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final LockKey key = createKey(adTableId, recordId);
 			final RecordLocks recordLock = locks.get(key);
@@ -205,7 +203,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	{
 		final LockKey recordKey = createKeyForRecord(record);
 
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final RecordLocks recordLock = locks.computeIfAbsent(recordKey, RecordLocks::new);
 			return recordLock.addLock(new LockInfo(recordKey, lockCommand));
@@ -217,7 +215,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	{
 		final LockKey recordKey = createKeyForRecord(record);
 
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final RecordLocks recordLock = locks.get(recordKey);
 			if (recordLock == null)
@@ -254,7 +252,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	private boolean unlockForKey(final LockOwner ownerRequired, final LockKey recordKey)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final RecordLocks recordLock = locks.get(recordKey);
 			if (recordLock == null)
@@ -283,9 +281,9 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return countUnlocked;
 	}
 
-	private final int updateRecordLocks(final ToIntFunction<RecordLocks> processor)
+	private int updateRecordLocks(final ToIntFunction<RecordLocks> processor)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			int countAffected = 0;
 
@@ -349,7 +347,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	public List<LockKey> getLocks()
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			return new ArrayList<>(locks.keySet());
 		}
@@ -391,7 +389,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	public String getLockedObjectsInfo()
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final StringBuilder sb = new StringBuilder();
 			for (final LockKey key : locks.keySet())
@@ -414,7 +412,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	public int getLocksCount()
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			return locks.size();
 		}
@@ -670,7 +668,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
 		Check.assumeNotNull(lockOwner.isRealOwner(), "Lock owner shall be real owner but it was {}", lockOwner);
 
-		try (CloseableReentrantLock l = mainLock.open())
+		try (CloseableReentrantLock ignored = mainLock.open())
 		{
 			final List<RecordLocks> recordLocksList = locks.values().stream()
 					.filter(recordLocks -> recordLocks.hasOwner(lockOwner))

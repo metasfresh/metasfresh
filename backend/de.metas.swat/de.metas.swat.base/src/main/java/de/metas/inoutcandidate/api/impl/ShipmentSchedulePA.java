@@ -641,6 +641,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final Class<T> clazz)
 	{
+		if (ids.isEmpty()) {return ImmutableMap.of();}
+		
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
 				.create()

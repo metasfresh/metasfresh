@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job_schedule.model;
+package de.metas.picking.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -16,7 +16,7 @@ public class ShipmentScheduleAndJobScheduleId implements Comparable<ShipmentSche
 {
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@Nullable PickingJobScheduleId jobScheduleId;
-
+	
 	@Nullable
 	public static ShipmentScheduleAndJobScheduleId ofRepoIdsOrNull(final int shipmentScheduleRepoId, final int pickingJobScheduleRepoId)
 	{
@@ -40,6 +40,11 @@ public class ShipmentScheduleAndJobScheduleId implements Comparable<ShipmentSche
 		return id;
 	}
 
+	public static ShipmentScheduleAndJobScheduleId ofShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return of(shipmentScheduleId, null);
+	}
+
 	@Override
 	@Deprecated
 	public String toString() {return toJsonString();}
@@ -51,7 +56,7 @@ public class ShipmentScheduleAndJobScheduleId implements Comparable<ShipmentSche
 				? shipmentScheduleId.getRepoId() + "_" + jobScheduleId.getRepoId()
 				: "" + shipmentScheduleId.getRepoId();
 	}
-	
+
 	@JsonCreator
 	public static ShipmentScheduleAndJobScheduleId ofJsonString(@NonNull final String json)
 	{

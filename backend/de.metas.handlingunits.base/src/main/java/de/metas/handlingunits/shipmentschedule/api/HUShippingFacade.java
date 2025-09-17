@@ -5,12 +5,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
@@ -194,12 +194,12 @@ public class HUShippingFacade
 			return;
 		}
 
-		final ImmutableSet<ShipmentScheduleId> candidatesIds = candidates.stream()
-				.map(ShipmentScheduleWithHU::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
+		final ShipmentScheduleAndJobScheduleIdSet scheduleIds = candidates.stream()
+				.map(ShipmentScheduleWithHU::getScheduleId)
+				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
 
 		final GenerateShipmentsForSchedulesRequest request = GenerateShipmentsForSchedulesRequest.builder()
-				.scheduleIds(candidatesIds)
+				.scheduleIds(scheduleIds)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY)
 				.isShipDateToday(true)
 				.isCompleteShipment(completeShipments)

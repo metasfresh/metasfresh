@@ -25,7 +25,7 @@ package de.metas.handlingunits.picking.plan.model;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateSnapshot;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;

@@ -23,7 +23,7 @@
 package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;

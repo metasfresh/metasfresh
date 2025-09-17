@@ -45,7 +45,6 @@ public interface IUnlockCommand
 	/**
 	 * Release the locks after given transaction is commited.
 	 *
-	 * @param trxName
 	 * @return how many records were unlocked
 	 */
 	Future<Integer> releaseAfterTrxCommit(String trxName);

@@ -3,7 +3,7 @@ package de.metas.handlingunits.picking.job.model;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;

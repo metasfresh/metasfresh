@@ -39,6 +39,7 @@ import java.util.concurrent.Future;
  * @author tsa
  *
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface ILockCommand
 {
 	/**

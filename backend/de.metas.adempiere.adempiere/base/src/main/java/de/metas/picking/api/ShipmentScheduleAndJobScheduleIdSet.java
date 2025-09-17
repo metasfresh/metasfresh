@@ -1,9 +1,10 @@
-package de.metas.handlingunits.picking.job_schedule.model;
+package de.metas.picking.api;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
@@ -12,9 +13,12 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,7 +28,7 @@ public class ShipmentScheduleAndJobScheduleIdSet implements Iterable<ShipmentSch
 {
 	public static final ShipmentScheduleAndJobScheduleIdSet EMPTY = new ShipmentScheduleAndJobScheduleIdSet(ImmutableSet.of());
 	@NonNull private final ImmutableSet<ShipmentScheduleAndJobScheduleId> ids;
-	
+
 	private static final Splitter JSON_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
 
 	private ShipmentScheduleAndJobScheduleIdSet(@NonNull final ImmutableSet<ShipmentScheduleAndJobScheduleId> ids)
@@ -42,9 +46,14 @@ public class ShipmentScheduleAndJobScheduleIdSet implements Iterable<ShipmentSch
 		return new ShipmentScheduleAndJobScheduleIdSet(ImmutableSet.of(id));
 	}
 
-	public static ShipmentScheduleAndJobScheduleIdSet of(@NonNull final ShipmentScheduleId id)
+	public static ShipmentScheduleAndJobScheduleIdSet of(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return new ShipmentScheduleAndJobScheduleIdSet(ImmutableSet.of(ShipmentScheduleAndJobScheduleId.of(id, null)));
+		return new ShipmentScheduleAndJobScheduleIdSet(ImmutableSet.of(ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(shipmentScheduleId)));
+	}
+
+	public static ShipmentScheduleAndJobScheduleIdSet ofShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return shipmentScheduleIds.stream().map(ShipmentScheduleAndJobScheduleId::ofShipmentScheduleId).collect(collect());
 	}
 
 	public static Collector<ShipmentScheduleAndJobScheduleId, ?, ShipmentScheduleAndJobScheduleIdSet> collect()
@@ -106,9 +115,14 @@ public class ShipmentScheduleAndJobScheduleIdSet implements Iterable<ShipmentSch
 
 	public Set<ShipmentScheduleId> getShipmentScheduleIds()
 	{
+		return streamShipmentScheduleIds().collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Stream<ShipmentScheduleId> streamShipmentScheduleIds()
+	{
 		return ids.stream()
 				.map(ShipmentScheduleAndJobScheduleId::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
+				.distinct();
 	}
 
 	public Set<ShipmentScheduleId> getShipmentScheduleIdsWithoutJobSchedules()
@@ -125,5 +139,45 @@ public class ShipmentScheduleAndJobScheduleIdSet implements Iterable<ShipmentSch
 				.map(ShipmentScheduleAndJobScheduleId::getJobScheduleId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Set<PickingJobScheduleId> getJobScheduleIds(final @NonNull ShipmentScheduleId shipmentScheduleId)
+	{
+		return ids.stream()
+				.filter(id -> ShipmentScheduleId.equals(id.getShipmentScheduleId(), shipmentScheduleId))
+				.map(ShipmentScheduleAndJobScheduleId::getJobScheduleId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public void forEachShipmentScheduleId(@NonNull final BiConsumer<ShipmentScheduleId, Set<PickingJobScheduleId>> consumer)
+	{
+		final LinkedHashMap<ShipmentScheduleId, HashSet<PickingJobScheduleId>> map = new LinkedHashMap<>();
+
+		ids.forEach(id -> {
+			final HashSet<PickingJobScheduleId> jobScheduleIds = map.computeIfAbsent(id.getShipmentScheduleId(), key -> new HashSet<>());
+			final PickingJobScheduleId jobScheduleId = id.getJobScheduleId();
+			if (jobScheduleId != null)
+			{
+				jobScheduleIds.add(jobScheduleId);
+			}
+		});
+
+		map.forEach(consumer);
+	}
+
+	public ShipmentScheduleAndJobScheduleIdSet retainOnlyShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (isEmpty()) {return this;}
+
+		Check.assumeNotEmpty(shipmentScheduleIds, "shipmentScheduleIds is not empty");
+
+		final ImmutableSet<ShipmentScheduleAndJobScheduleId> retainedIds = ids.stream()
+				.filter(id -> shipmentScheduleIds.contains(id.getShipmentScheduleId()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return Objects.equals(this.ids, retainedIds)
+				? this
+				: ofCollection(retainedIds);
 	}
 }

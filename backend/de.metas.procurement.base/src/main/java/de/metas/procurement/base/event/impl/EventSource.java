@@ -84,7 +84,7 @@ public class EventSource<ET> implements Iterator<ET>, IAutoCloseable
 		getCreateIterator().remove();
 	}
 
-	private final void assertNotClosed()
+	private void assertNotClosed()
 	{
 		Check.assume(!_closed.get(), "Source is not already closed");
 	}
@@ -111,7 +111,7 @@ public class EventSource<ET> implements Iterator<ET>, IAutoCloseable
 		return _iterator;
 	}
 
-	private final ILock getOrAcquireLock()
+	private ILock getOrAcquireLock()
 	{
 		assertNotClosed();
 		if (_lock == null)
@@ -132,12 +132,11 @@ public class EventSource<ET> implements Iterator<ET>, IAutoCloseable
 
 	protected IQueryFilter<ET> createFilter()
 	{
-		final IQueryFilter<ET> filter = queryBL.createCompositeQueryFilter(eventTypeClass)
+		return queryBL.createCompositeQueryFilter(eventTypeClass)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.addEqualsFilter(COLUMNNAME_Processed, false)
 				.addFilter(lockManager.getNotLockedFilter(eventTypeClass));
-		return filter;
 	}
 
 	@Override

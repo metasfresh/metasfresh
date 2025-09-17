@@ -67,6 +67,7 @@ public class EmptyUtilTest
 
 		private PlainIterable(@NonNull final List<T> list) {this.list = list;}
 
+		@SafeVarargs
 		public static <T> PlainIterable<T> of(@NonNull final T... items) {return new PlainIterable<>(Arrays.asList(items));}
 
 		@Override

@@ -32,7 +32,7 @@ import de.metas.gs1.GS1ProductCodes;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotId;

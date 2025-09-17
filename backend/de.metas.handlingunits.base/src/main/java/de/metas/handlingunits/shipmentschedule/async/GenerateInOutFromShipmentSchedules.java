@@ -9,43 +9,45 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedulesCollection;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
- * This usually happens on the server site, in an asynchronous manner.<br>
+ * This usually happens on the server site, asynchronously.<br>
  * See {@link #processWorkPackage(I_C_Queue_WorkPackage, String)}.
- * Note: the enqeueing part is done by {@link de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer ShipmentScheduleEnqueuer}.
+ * Note: the enqueueing part is done by {@link de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer ShipmentScheduleEnqueuer}.
  *
  * @author metas-dev <dev@metasfresh.com>
  * @implSpec <a href="http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary">task</a>
@@ -58,8 +60,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
+	private final PickingJobScheduleService pickingJobScheduleService = SpringContextHolder.instance.getBean(PickingJobScheduleService.class);
 
-	private ImmutableList<I_M_ShipmentSchedule> _shipmentSchedules = null; // lazy
+	private ShipmentScheduleAndJobSchedulesCollection _shipmentScheduleAndJobSchedulesCollection = null; // lazy
 
 	@NonNull
 	public static CalculateShippingDateRule computeShippingDateRule(@Nullable final Boolean isShipDateToday)
@@ -116,7 +119,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final boolean isCloseShipmentSchedules = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
 		if (isCloseShipmentSchedules)
 		{
-			shipmentScheduleBL.closeShipmentSchedules(getShipmentScheduleIds());
+			closeSchedules();
 		}
 
 		return Result.SUCCESS;
@@ -159,8 +162,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 */
 	private List<ShipmentScheduleWithHU> retrieveCandidates(@NonNull final QtyToDeliverMap scheduleId2QtyToDeliverOverride)
 	{
-		final ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
-		if (shipmentSchedules.isEmpty())
+		final ShipmentScheduleAndJobSchedulesCollection schedules = getShipmentScheduleAndJobSchedulesCollection();
+		if (schedules.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -169,15 +172,13 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
-		final boolean onTheFlyPickToPackingInstructions = getParameters()
-				.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
-
+		final boolean onTheFlyPickToPackingInstructions = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
 		final boolean isCloseShipmentSchedules = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
 		final boolean isFailIfNoPickedHUs = !isCloseShipmentSchedules;
 
 		return shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
 				PrepareForShipmentSchedulesRequest.builder()
-						.shipmentSchedules(shipmentSchedules)
+						.schedules(schedules)
 						.onlyLUIds(getOnlyLUIds())
 						.quantityTypeToUse(quantityTypeToUse)
 						.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
@@ -187,41 +188,28 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		);
 	}
 
-	private ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
+	private ShipmentScheduleAndJobSchedulesCollection getShipmentScheduleAndJobSchedulesCollection()
 	{
-		return getShipmentSchedules().stream().map(sched -> ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID())).collect(ImmutableSet.toImmutableSet());
-	}
-
-	private ImmutableList<I_M_ShipmentSchedule> getShipmentSchedules()
-	{
-		ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = this._shipmentSchedules;
-		if (shipmentSchedules == null)
+		ShipmentScheduleAndJobSchedulesCollection result = this._shipmentScheduleAndJobSchedulesCollection;
+		if (result == null)
 		{
-			shipmentSchedules = this._shipmentSchedules = retrieveShipmentSchedules();
+			result = this._shipmentScheduleAndJobSchedulesCollection = retrieveShipmentScheduleAndJobSchedulesCollection();
 		}
-		return shipmentSchedules;
+		return result;
 	}
 
-	private ImmutableList<I_M_ShipmentSchedule> retrieveShipmentSchedules()
+	private ShipmentScheduleAndJobSchedulesCollection retrieveShipmentScheduleAndJobSchedulesCollection()
 	{
-		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
 		final boolean skipAlreadyProcessedItems = false; // yes, we want items whose queue packages were already processed! This is a workaround, but we need it that way.
-		// Background: otherwise, after we did a partial delivery on a shipment schedule, we cannot deliver the rest, because the sched is already within a processed work package.
+		// Background: otherwise, after we did a partial delivery on a shipment schedule, we cannot deliver the rest, because the shipment schedule is already within a processed work package.
 		// Note that it's the customer's declared responsibility to to verify the shipments
 		// FIXME: find a better solution. If nothing else, then "split" the undelivered remainder of a partially delivered schedule off into a new schedule (we do that with ICs too).
-		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queueDAO.createElementsQueryBuilder(
-				workpackage,
-				I_M_ShipmentSchedule.class,
-				skipAlreadyProcessedItems,
-				ITrx.TRXNAME_ThreadInherited);
+		final TableRecordReferenceSet recordRefs = queueDAO.retrieveQueueElementRecordRefs(getQueueWorkPackageId(), skipAlreadyProcessedItems);
 
-		queryBuilder.orderBy()
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, Direction.Ascending, Nulls.Last)
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = recordRefs.getRecordIdsByTableName(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId);
+		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = recordRefs.getRecordIdsByTableName(I_M_Picking_Job_Schedule.Table_Name, PickingJobScheduleId::ofRepoId);
 
-		return queryBuilder
-				.create()
-				.listImmutable(I_M_ShipmentSchedule.class);
+		return pickingJobScheduleService.getShipmentScheduleAndJobSchedulesCollection(shipmentScheduleIds, jobScheduleIds);
 	}
 
 	private Set<HuId> getOnlyLUIds()
@@ -232,4 +220,18 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				HuId.class
 		);
 	}
+
+	private void closeSchedules()
+	{
+		final ShipmentScheduleAndJobSchedulesCollection schedules = getShipmentScheduleAndJobSchedulesCollection();
+
+		pickingJobScheduleService.markAsProcessed(schedules.getJobScheduleIds());
+
+		final HashSet<ShipmentScheduleId> shipmentScheduleIdsToClose = new HashSet<>();
+		shipmentScheduleIdsToClose.addAll(schedules.getShipmentScheduleIdsWithoutJobSchedules());
+		shipmentScheduleIdsToClose.addAll(pickingJobScheduleService.getShipmentScheduleIdsWithAllJobSchedulesProcessedOrMissing(schedules.getShipmentScheduleIdsWithJobSchedules()));
+
+		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIdsToClose);
+	}
+
 }

@@ -4,7 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
-import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -21,7 +22,7 @@ public class PickingShipmentCandidate
 	@NonNull @Getter private final ImmutableSet<HuId> onlyLUIds;
 	@NonNull @Getter private final CreateShipmentPolicy createShipmentPolicy;
 
-	@NonNull private final HashSet<ShipmentScheduleId> shipmentScheduleIds = new HashSet<>();
+	@NonNull private final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIds = new HashSet<>();
 
 	@Builder
 	private PickingShipmentCandidate(
@@ -40,11 +41,11 @@ public class PickingShipmentCandidate
 
 	public void addLine(@NonNull final PickingJobLine line)
 	{
-		shipmentScheduleIds.add(line.getScheduleId().getShipmentScheduleId());
+		scheduleIds.add(line.getScheduleId());
 	}
 
-	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
+	public ShipmentScheduleAndJobScheduleIdSet getScheduleIds()
 	{
-		return ImmutableSet.copyOf(shipmentScheduleIds);
+		return ShipmentScheduleAndJobScheduleIdSet.ofCollection(scheduleIds);
 	}
 }

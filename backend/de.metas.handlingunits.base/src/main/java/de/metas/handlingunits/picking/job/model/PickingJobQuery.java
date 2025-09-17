@@ -28,7 +28,7 @@ import com.google.common.collect.Streams;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocumentNoFilter;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.picking.api.PackageableQuery.PackageableQueryBuilder;
 import de.metas.product.ResolvedScannedProductCodes;
