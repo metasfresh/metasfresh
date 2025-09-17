@@ -28,14 +28,17 @@ import de.metas.externalsystem.process.InvokeGRSSignumAction;
 import de.metas.externalsystem.process.InvokeOtherAction;
 import de.metas.externalsystem.process.InvokePCMAction;
 import de.metas.externalsystem.process.InvokeWooCommerceAction;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @UtilityClass
 public class ExternalSystemProcesses
 {
-	private static final ImmutableMap<ExternalSystemType, String> PROCESS_CLASS_NAMES_BY_INTERNAL_NAME = ImmutableMap.<ExternalSystemType, String>builder()
+	private static final ImmutableMap<ExternalSystemType, String> PROCESS_CLASS_NAMES_BY_TYPE = ImmutableMap.<ExternalSystemType, String>builder()
 			.put(ExternalSystemType.Alberta, InvokeAlbertaAction.class.getName())
 			.put(ExternalSystemType.Shopware6, InvokeAlbertaAction.class.getName())
 			.put(ExternalSystemType.Other, InvokeOtherAction.class.getName())
@@ -44,8 +47,9 @@ public class ExternalSystemProcesses
 			.put(ExternalSystemType.ProCareManagement, InvokePCMAction.class.getName())
 			.build();
 
-	@Nullable
+	@NonNull
 	public static String getExternalSystemProcessClassName(final ExternalSystemType externalSystemType) {
-		return PROCESS_CLASS_NAMES_BY_INTERNAL_NAME.get(externalSystemType);
+		return Optional.ofNullable(PROCESS_CLASS_NAMES_BY_TYPE.get(externalSystemType))
+				.orElseThrow(() -> new AdempiereException("ExternalSystemType doesn't have a process class"));
 	}
 }

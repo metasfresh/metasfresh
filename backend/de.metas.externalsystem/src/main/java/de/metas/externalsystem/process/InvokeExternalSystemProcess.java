@@ -30,7 +30,7 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
@@ -104,7 +104,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
-				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
+				.externalSystemName(JsonExternalSystemName.of(config.getType().getValue()))
 				.parameters(extractParameters(config))
 				.orgCode(getOrgCode(config))
 				.command(externalRequest)
@@ -202,7 +202,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 	protected abstract String getTabName();
 
-	protected abstract OLD_ExternalSystemType getExternalSystemType();
+	protected abstract ExternalSystemType getExternalSystemType();
 
 	protected abstract long getSelectedRecordCount(final IProcessPreconditionsContext context);
 

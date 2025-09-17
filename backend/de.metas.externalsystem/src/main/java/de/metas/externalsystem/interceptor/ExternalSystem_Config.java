@@ -24,7 +24,7 @@ package de.metas.externalsystem.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.i18n.AdMessageKey;
@@ -55,7 +55,7 @@ public class ExternalSystem_Config
 	public void check(final I_ExternalSystem_Config config)
 	{
 		final I_ExternalSystem_Config oldParent = InterfaceWrapperHelper.createOld(config, I_ExternalSystem_Config.class);
-		final OLD_ExternalSystemType oldParentType = OLD_ExternalSystemType.ofCode(oldParent.getType());
+		final ExternalSystemType oldParentType = ExternalSystemType.ofLegacyCode(oldParent.getType());
 
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 

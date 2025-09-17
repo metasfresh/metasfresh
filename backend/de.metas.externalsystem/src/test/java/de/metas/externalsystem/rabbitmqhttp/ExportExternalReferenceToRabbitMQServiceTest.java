@@ -39,7 +39,7 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemTestUtil;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -86,7 +86,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		final BPartnerCompositeRepository bPartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 
-		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystemRepository(), new ExternalReferenceTypes());
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
 
 		AdempiereTestHelper.get().init();
 
@@ -115,7 +115,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 	{
 		// given
 		final I_ExternalSystem_Config externalSystemParentConfig = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(OLD_ExternalSystemType.RabbitMQ.getCode())
+				.type(ExternalSystemType.RabbitMQ.getLegacyCode())
 				.customParentConfigId(1)
 				.build();
 
@@ -127,7 +127,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 
 		final I_S_ExternalReference externalReference = createExternalReferenceBuilder()
 				.externalReference("ref_1")
-				.externalSystem(ExternalSystemType.Alberta.getValue())
+				.externalSystem(ExternalSystemType.Alberta.getLegacyCode())
 				.type(BPLocationExternalReferenceType.BPARTNER_LOCATION.getCode())
 				.recordId(3)
 				.build();

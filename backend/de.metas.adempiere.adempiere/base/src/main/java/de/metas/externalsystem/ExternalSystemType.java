@@ -1,16 +1,17 @@
 package de.metas.externalsystem;
 
+import com.google.common.collect.ImmutableBiMap;
 import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-@Getter
 public class ExternalSystemType
 {
 	public static final ExternalSystemType Alberta = new ExternalSystemType("Alberta");
@@ -21,7 +22,7 @@ public class ExternalSystemType
 	public static final ExternalSystemType ProCareManagement = new ExternalSystemType("ProCareManagement");
 	public static final ExternalSystemType Shopware6 = new ExternalSystemType("Shopware6");
 	public static final ExternalSystemType Other = new ExternalSystemType("Other");
-	public static final ExternalSystemType PrintingClient = new ExternalSystemType("PrintingClient");
+	public static final ExternalSystemType PrintClient = new ExternalSystemType("PrintingClient");
 	public static final ExternalSystemType Github = new ExternalSystemType("Github");
 	public static final ExternalSystemType Everhour = new ExternalSystemType("Everhour");
 
@@ -29,10 +30,23 @@ public class ExternalSystemType
 
 	static
 	{
-		Stream.of(Alberta, RabbitMQ, WOO, GRSSignum, LeichUndMehl, ProCareManagement, Shopware6, Other, PrintingClient, Github, Everhour)
+		Stream.of(Alberta, RabbitMQ, WOO, GRSSignum, LeichUndMehl, ProCareManagement, Shopware6, Other, PrintClient, Github, Everhour)
 				.forEach(systemValue -> interner.put(systemValue.getValue(), systemValue));
 	}
 
+	public static final ImmutableBiMap<ExternalSystemType, String> LEGACY_CODES = ImmutableBiMap.<ExternalSystemType, String>builder()
+			.put(Alberta, "A")
+			.put(Shopware6, "S6")
+			.put(Other, "Other")
+			.put(WOO, "WOO")
+			.put(RabbitMQ, "RabbitMQ")
+			.put(GRSSignum, "GRS")
+			.put(LeichUndMehl, "LM")
+			.put(PrintClient, "PC")
+			.put(ProCareManagement, "PCM")
+			.build();
+
+	@Getter
 	private final String value;
 
 	@Nullable
@@ -48,4 +62,38 @@ public class ExternalSystemType
 		final String valueNorm = StringUtils.trimBlankToNull(value);
 		return interner.computeIfAbsent(valueNorm, ExternalSystemType::new);
 	}
+
+	@NonNull
+	public static ExternalSystemType ofLegacyCode(@NonNull final String code)
+	{
+		return ofValue(LEGACY_CODES.inverse().get(code).getValue());
+	}
+
+	@NonNull
+	public String getLegacyCode()
+	{
+		return LEGACY_CODES.inverse().get(value).getValue();
+	}
+
+	public boolean isAlberta() {return Alberta.equals(this);}
+
+	public boolean isRabbitMQ() {return RabbitMQ.equals(this);}
+
+	public boolean isWOO() {return WOO.equals(this);}
+
+	public boolean isGRSSignum() {return GRSSignum.equals(this);}
+
+	public boolean isLeichUndMehl() {return LeichUndMehl.equals(this);}
+
+	public boolean isProCareManagement() {return ProCareManagement.equals(this);}
+
+	public boolean isShopware6() {return Shopware6.equals(this);}
+
+	public boolean isOther() {return Other.equals(this);}
+
+	public boolean isGithub() {return Github.equals(this);}
+
+	public boolean isEverhour() {return Everhour.equals(this);}
+
+	public boolean equals(final ExternalSystemType externalSystemType){return Objects.equals(this, externalSystemType);}
 }

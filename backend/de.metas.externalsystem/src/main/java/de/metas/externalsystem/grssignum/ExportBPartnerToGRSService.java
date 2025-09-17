@@ -35,7 +35,7 @@ import de.metas.common.util.Check;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.bpartner.ExportBPartnerToExternalSystem;
@@ -98,9 +98,9 @@ public class ExportBPartnerToGRSService extends ExportBPartnerToExternalSystem
 	}
 
 	@Override
-	protected OLD_ExternalSystemType getExternalSystemType()
+	protected ExternalSystemType getExternalSystemType()
 	{
-		return OLD_ExternalSystemType.GRSSignum;
+		return ExternalSystemType.GRSSignum;
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public class ExportBPartnerToGRSService extends ExportBPartnerToExternalSystem
 			return Optional.empty();
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> grsParentConfigs = externalSystemConfigRepo.getActiveByType(OLD_ExternalSystemType.GRSSignum);
+		final ImmutableList<ExternalSystemParentConfig> grsParentConfigs = externalSystemConfigRepo.getActiveByType(ExternalSystemType.GRSSignum);
 
 		return Optional.of(grsParentConfigs.stream()
 							.filter(ExternalSystemParentConfig::isActive)

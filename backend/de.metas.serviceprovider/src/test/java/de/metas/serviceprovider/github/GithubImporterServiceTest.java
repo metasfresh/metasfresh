@@ -96,8 +96,9 @@ public class GithubImporterServiceTest
 	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 	private final LabelService labelService = new LabelService();
-	private final GithubImporterService githubImporterService = new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService);
 	private ExternalSystemRepository externalSystemRepository;
+	private final GithubImporterService githubImporterService = new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService, externalSystemRepository);
+
 
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
 
@@ -112,11 +113,11 @@ public class GithubImporterServiceTest
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(MOCK_EXTERNAL_REFERENCE_TYPE);
 
-		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
+		//TODO check
 		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM);
 		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM_1);
 
-		externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystemRepository, externalReferenceTypes);
+		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
 	}
 
 	private ExternalSystem externalSystem(ExternalSystemType value)

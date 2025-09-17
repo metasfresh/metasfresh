@@ -125,8 +125,8 @@ public class EverhourImporterService implements TimeBookingsImporter
 	{
 		try
 		{
-			final ExternalSystem everhour = externalSystemRepository.getByValue(ExternalSystemType.Everhour);
-			final ExternalSystem github = externalSystemRepository.getByValue(ExternalSystemType.Github);
+			final ExternalSystem everhour = externalSystemRepository.getByType(ExternalSystemType.Everhour);
+			final ExternalSystem github = externalSystemRepository.getByType(ExternalSystemType.Github);
 
 			final UserId userId = UserId.ofRepoId(
 					externalReferenceRepository.getReferencedRecordIdBy(
@@ -230,7 +230,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 				.jsonValue(jsonValue)
 				.orgId(orgId)
 				.externalId(timeRecord.getId())
-				.externalSystem(externalSystemRepository.getByValue(ExternalSystemType.Everhour))
+				.externalSystem(externalSystemRepository.getByType(ExternalSystemType.Everhour))
 				.errorMsg(errorMessage.toString())
 				.build();
 
@@ -244,7 +244,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 		final Stopwatch stopWatch = Stopwatch.createStarted();
 
-		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(externalSystemRepository.getByValue(ExternalSystemType.Everhour));
+		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(externalSystemRepository.getByType(ExternalSystemType.Everhour));
 		for (FailedTimeBooking failedTimeBooking : failedTimeBookings)
 		{
 			if (Check.isBlank(failedTimeBooking.getJsonValue()))

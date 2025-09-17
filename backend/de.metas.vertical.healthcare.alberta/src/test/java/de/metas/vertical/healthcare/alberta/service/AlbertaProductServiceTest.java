@@ -68,12 +68,7 @@ public class AlbertaProductServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
-		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
-		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
-
-		albertaProductService = new AlbertaProductService(new AlbertaProductDAO(),
-														  new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes));
+		albertaProductService = AlbertaProductService.newInstanceForUnitTesting();
 	}
 
 	@Test

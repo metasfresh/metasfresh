@@ -38,7 +38,7 @@ import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.organization.IOrgDAO;
@@ -115,7 +115,7 @@ public class InvokeAlbertaService
 
 		final GetExternalReferenceByRecordIdReq getExternalRefRequest = GetExternalReferenceByRecordIdReq.builder()
 				.externalReferenceType(BPartnerExternalReferenceType.BPARTNER)
-				.externalSystem(externalSystemRepository.getByValue(ExternalSystemType.Alberta.getValue()))
+				.externalSystem(externalSystemRepository.getByType(ExternalSystemType.Alberta))
 				.recordId(albertaRole.getBPartnerId().getRepoId())
 				.build();
 
@@ -135,7 +135,7 @@ public class InvokeAlbertaService
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
-				.externalSystemName(JsonExternalSystemName.of(OLD_ExternalSystemType.Alberta.getName()))
+				.externalSystemName(JsonExternalSystemName.of(ExternalSystemType.Alberta.getValue()))
 				.parameters(extractParameters(config, albertaBPartnerReference))
 				.orgCode(orgDAO.getById(orgId).getValue())
 				.command(EXTERNAL_SYSTEM_COMMAND_SYNC_BPARTNER)

@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.audit;
 
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_ExportAudit;
 import de.metas.process.PInstanceId;
 import de.metas.security.RoleId;
@@ -45,7 +45,7 @@ public class ExternalSystemExportAuditRepo
 	@NonNull
 	public Optional<ExternalSystemExportAudit> getMostRecentByTableReferenceAndSystem(
 			@NonNull final TableRecordReference tableRecordReference,
-			@NonNull final OLD_ExternalSystemType externalSystemType)
+			@NonNull final ExternalSystemType externalSystemType)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_ExportAudit.class)
 				.addOnlyActiveRecordsFilter()
@@ -76,7 +76,7 @@ public class ExternalSystemExportAuditRepo
 		}
 
 		record.setExternalSystemType(request.getExternalSystemType() != null
-											 ? request.getExternalSystemType().getCode()
+											 ? request.getExternalSystemType().getValue()
 											 : null);
 
 		InterfaceWrapperHelper.saveRecord(record);
@@ -95,7 +95,7 @@ public class ExternalSystemExportAuditRepo
 				.tableRecordReference(TableRecordReference.of(exportAudit.getAD_Table_ID(), exportAudit.getRecord_ID()))
 				.exportTime(TimeUtil.asInstant(exportAudit.getExportTime()))
 				.exportParameters(exportAudit.getExportParameters())
-				.externalSystemType(OLD_ExternalSystemType.ofNullableCode(exportAudit.getExternalSystemType()))
+				.externalSystemType(ExternalSystemType.ofValueOrNull(exportAudit.getExternalSystemType()))
 				.build();
 	}
 }

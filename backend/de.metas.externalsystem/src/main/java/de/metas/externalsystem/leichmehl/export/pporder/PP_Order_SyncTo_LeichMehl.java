@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.leichmehl.export.pporder;
 
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.export.pporder.PP_Order_SyncTo_ExternalSystem;
@@ -41,9 +41,9 @@ public class PP_Order_SyncTo_LeichMehl extends PP_Order_SyncTo_ExternalSystem
 	private int externalSystemConfigLeichMehlId;
 
 	@Override
-	protected OLD_ExternalSystemType getExternalSystemType()
+	protected ExternalSystemType getExternalSystemType()
 	{
-		return OLD_ExternalSystemType.LeichUndMehl;
+		return ExternalSystemType.LeichUndMehl;
 	}
 
 	@Override

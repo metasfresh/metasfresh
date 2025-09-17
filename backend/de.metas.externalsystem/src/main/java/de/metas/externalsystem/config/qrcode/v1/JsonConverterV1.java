@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.config.qrcode.v1;
 
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.config.qrcode.ExternalSystemConfigQRCode;
@@ -41,6 +41,13 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 
+import static de.metas.externalsystem.ExternalSystemType.Alberta;
+import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
+import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
+import static de.metas.externalsystem.ExternalSystemType.RabbitMQ;
+import static de.metas.externalsystem.ExternalSystemType.Shopware6;
+import static de.metas.externalsystem.ExternalSystemType.WOO;
+
 public class JsonConverterV1
 {
 	public static final GlobalQRCodeVersion GLOBAL_QRCODE_VERSION = GlobalQRCodeVersion.ofInt(1);
@@ -55,7 +62,7 @@ public class JsonConverterV1
 		final IExternalSystemChildConfigId childConfigId = qrCode.getChildConfigId();
 
 		return JsonPayload.builder()
-				.externalSystemType(childConfigId.getType().getCode())
+				.externalSystemType(childConfigId.getType().getValue())
 				.childConfigId(childConfigId.getRepoId())
 				.build();
 	}
@@ -69,34 +76,44 @@ public class JsonConverterV1
 
 	private static ExternalSystemConfigQRCode fromJson(@NonNull final JsonPayload json)
 	{
-		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCode(json.getExternalSystemType());
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCode(json.getExternalSystemType());
 		final int repoId = json.getChildConfigId();
 		return ExternalSystemConfigQRCode.builder()
 				.childConfigId(toExternalSystemChildConfigId(externalSystemType, repoId))
 				.build();
 	}
 
-	private static IExternalSystemChildConfigId toExternalSystemChildConfigId(final OLD_ExternalSystemType externalSystemType, final int repoId)
+	private static IExternalSystemChildConfigId toExternalSystemChildConfigId(final ExternalSystemType externalSystemType, final int repoId)
 	{
-		switch (externalSystemType)
+		if (externalSystemType.isAlberta())
 		{
-			case Alberta:
-				return ExternalSystemAlbertaConfigId.ofRepoId(repoId);
-			case Shopware6:
-				return ExternalSystemShopware6ConfigId.ofRepoId(repoId);
-			// case Other:
-			// 	return ExternalSystemOtherConfigId.ofRepoId(repoId);
-			case RabbitMQ:
-				return ExternalSystemRabbitMQConfigId.ofRepoId(repoId);
-			case WOO:
-				return ExternalSystemWooCommerceConfigId.ofRepoId(repoId);
-			case GRSSignum:
-				return ExternalSystemGRSSignumConfigId.ofRepoId(repoId);
-			case LeichUndMehl:
-				return ExternalSystemLeichMehlConfigId.ofRepoId(repoId);
-			default:
-				throw new AdempiereException("Unsupported externalSystemType: " + externalSystemType);
+			return ExternalSystemAlbertaConfigId.ofRepoId(repoId);
 		}
+		else if (externalSystemType.isShopware6())
+		{
+			return ExternalSystemShopware6ConfigId.ofRepoId(repoId);
+		}
+		// else if (externalSystemType.isOther())
+		// {
+		// 	return ExternalSystemOtherConfigId.ofRepoId(repoId);
+		// }
+		else if (externalSystemType.isRabbitMQ())
+		{
+			return ExternalSystemRabbitMQConfigId.ofRepoId(repoId);
+		}
+		else if (externalSystemType.isWOO())
+		{
+			return ExternalSystemWooCommerceConfigId.ofRepoId(repoId);
+		}
+		else if (externalSystemType.isGRSSignum())
+		{
+			return ExternalSystemGRSSignumConfigId.ofRepoId(repoId);
+		}
+		else if (externalSystemType.isLeichUndMehl())
+		{
+			return ExternalSystemLeichMehlConfigId.ofRepoId(repoId);
+		}
+		throw new AdempiereException("Unsupported externalSystemType: " + externalSystemType);
 	}
 
 	//

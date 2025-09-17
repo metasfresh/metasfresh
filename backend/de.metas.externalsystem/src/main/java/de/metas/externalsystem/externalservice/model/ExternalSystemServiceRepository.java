@@ -23,7 +23,7 @@
 package de.metas.externalsystem.externalservice.model;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Service;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -52,11 +52,11 @@ public class ExternalSystemServiceRepository implements ISingletonService
 
 	@NonNull
 	@Cached(cacheName = I_ExternalSystem_Service.Table_Name + "#by#" + I_ExternalSystem_Service.COLUMNNAME_Type)
-	public List<ExternalSystemServiceModel> getAllByType(@NonNull final OLD_ExternalSystemType systemType)
+	public List<ExternalSystemServiceModel> getAllByType(@NonNull final ExternalSystemType systemType)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Service.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ExternalSystem_Service.COLUMNNAME_Type, systemType.getCode())
+				.addEqualsFilter(I_ExternalSystem_Service.COLUMNNAME_Type, systemType.getValue())
 				.create()
 				.stream()
 				.map(ExternalSystemServiceRepository::ofServiceRecord)
@@ -83,7 +83,7 @@ public class ExternalSystemServiceRepository implements ISingletonService
 				.name(record.getName())
 				.description(record.getDescription())
 				.serviceValue(record.getValue())
-				.externalSystemType(OLD_ExternalSystemType.ofCode(record.getType()))
+				.externalSystemType(ExternalSystemType.ofValue(record.getType()))
 				.disableCommand(record.getDisableCommand())
 				.enableCommand(record.getEnableCommand())
 				.build();

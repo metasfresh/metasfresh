@@ -22,6 +22,7 @@
 
 package de.metas.vertical.healthcare.alberta.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -29,6 +30,8 @@ import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -38,6 +41,8 @@ import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaDataQuery;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
@@ -49,20 +54,23 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Service
+@RequiredArgsConstructor
 public class AlbertaProductService
 {
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-	private final ExternalReferenceRepository externalReferenceRepository;
-	private final AlbertaProductDAO albertaProductDAO;
+	@NonNull private final ExternalReferenceRepository externalReferenceRepository;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final AlbertaProductDAO albertaProductDAO;
 
-	public AlbertaProductService(
-			@NonNull final AlbertaProductDAO albertaProductDAO,
-			@NonNull final ExternalReferenceRepository externalReferenceRepository)
+	@VisibleForTesting
+	public static AlbertaProductService newInstanceForUnitTesting()
 	{
-		this.albertaProductDAO = albertaProductDAO;
-		this.externalReferenceRepository = externalReferenceRepository;
+		Adempiere.assertUnitTestMode();
+		return new AlbertaProductService(ExternalReferenceRepository.newInstanceForUnitTesting(),
+				new ExternalSystemRepository(),
+				new AlbertaProductDAO());
 	}
 
 	@NonNull
@@ -109,10 +117,11 @@ public class AlbertaProductService
 	private Optional<String> getProductGroupIdentifierByProductId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = productDAO.getById(productId);
+		final ExternalSystem externalSystem = externalSystemRepository.getByType(ExternalSystemType.Alberta);
 
 		final GetExternalReferenceByRecordIdReq getExternalReferenceByRecordIdReq = GetExternalReferenceByRecordIdReq.builder()
 				.recordId(product.getM_Product_Category_ID())
-				.externalSystem(ExternalSystem.NULL) //TODO AlbertaExternalSystem.ALBERTA
+				.externalSystem(externalSystem)
 				.externalReferenceType(ProductCategoryExternalReferenceType.PRODUCT_CATEGORY)
 				.build();
 
@@ -123,9 +132,11 @@ public class AlbertaProductService
 	@NonNull
 	private Optional<String> getAlbertaArticleIdByProductId(@NonNull final ProductId productId)
 	{
+		final ExternalSystem externalSystem = externalSystemRepository.getByType(ExternalSystemType.Alberta);
+
 		final GetExternalReferenceByRecordIdReq getExternalReferenceByRecordIdReq = GetExternalReferenceByRecordIdReq.builder()
 				.recordId(productId.getRepoId())
-				.externalSystem(ExternalSystem.NULL) //TODO AlbertaExternalSystem.ALBERTA
+				.externalSystem(externalSystem)
 				.externalReferenceType(ProductExternalReferenceType.PRODUCT)
 				.build();
 

@@ -38,18 +38,6 @@ import java.util.Optional;
 @Repository
 public class ExternalSystemRepository
 {
-	private static final ImmutableBiMap<ExternalSystemType, String> LEGACY_CODES = ImmutableBiMap.<ExternalSystemType, String>builder()
-			.put(ExternalSystemType.Alberta, "A")
-			.put(ExternalSystemType.Shopware6, "S6")
-			.put(ExternalSystemType.Other, "Other")
-			.put(ExternalSystemType.WOO, "WOO")
-			.put(ExternalSystemType.RabbitMQ, "RabbitMQ")
-			.put(ExternalSystemType.GRSSignum, "GRS")
-			.put(ExternalSystemType.LeichUndMehl, "LM")
-			.put(ExternalSystemType.PrintingClient, "PC")
-			.put(ExternalSystemType.ProCareManagement, "PCM")
-			.build();
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<Integer, ExternalSystemMap> cache = CCache.<Integer, ExternalSystemMap>builder()
@@ -68,19 +56,19 @@ public class ExternalSystemRepository
 				.collect(ExternalSystemMap.collect());
 	}
 
-	public ExternalSystem getByValue(@NonNull final ExternalSystemType value)
+	public ExternalSystem getByType(@NonNull final ExternalSystemType type)
 	{
-		return getMap().getByValue(value);
+		return getMap().getByType(type);
 	}
 
-	public Optional<ExternalSystem> getOptionalByValue(@NonNull final ExternalSystemType value)
+	public Optional<ExternalSystem> getOptionalByType(@NonNull final ExternalSystemType type)
 	{
-		return getMap().getOptionalByValue(value);
+		return getMap().getOptionalByType(type);
 	}
 
 	public Optional<ExternalSystem> getOptionalByValue(@NonNull final String value)
 	{
-		return getMap().getOptionalByValue(ExternalSystemType.ofValue(value));
+		return getMap().getOptionalByType(ExternalSystemType.ofValue(value));
 	}
 
 	@NonNull
@@ -112,10 +100,10 @@ public class ExternalSystemRepository
 	{
 		final ExternalSystemMap map = getMap();
 		return CoalesceUtil.coalesceSuppliers(
-				() -> map.getByValueOrNull(ExternalSystemType.ofValue(value)),
+				() -> map.getByTypeOrNull(ExternalSystemType.ofValue(value)),
 				() -> {
-					final ExternalSystemType externalSystemType = LEGACY_CODES.inverse().get(value);
-					return externalSystemType != null ? map.getByValueOrNull(externalSystemType) : null;
+					final ExternalSystemType externalSystemType = ExternalSystemType.LEGACY_CODES.inverse().get(value);
+					return externalSystemType != null ? map.getByTypeOrNull(externalSystemType) : null;
 				}
 		);
 	}

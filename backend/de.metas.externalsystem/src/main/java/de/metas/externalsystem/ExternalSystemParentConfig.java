@@ -40,7 +40,7 @@ import javax.annotation.Nullable;
 public class ExternalSystemParentConfig
 {
 	ExternalSystemParentConfigId id;
-	OLD_ExternalSystemType type;
+	ExternalSystemType type;
 	String name;
 	boolean active;
 	OrgId orgId;
@@ -53,7 +53,7 @@ public class ExternalSystemParentConfig
 	@Builder(toBuilder = true)
 	public ExternalSystemParentConfig(
 			@NonNull final ExternalSystemParentConfigId id,
-			@NonNull final OLD_ExternalSystemType type,
+			@NonNull final ExternalSystemType type,
 			@NonNull final String name,
 			@NonNull final Boolean active,
 			@NonNull final OrgId orgId,

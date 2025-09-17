@@ -30,7 +30,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.hu.ExportHUCandidate;
@@ -79,7 +79,7 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 
 	public void exportHUToGRS(final I_M_HU_Trace huTrace)
 	{
-		if (!externalSystemConfigRepo.isAnyConfigActive(OLD_ExternalSystemType.GRSSignum))
+		if (!externalSystemConfigRepo.isAnyConfigActive(ExternalSystemType.GRSSignum))
 		{
 			return;
 		}
@@ -97,9 +97,9 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 	}
 
 	@Override
-	protected OLD_ExternalSystemType getExternalSystemType()
+	protected ExternalSystemType getExternalSystemType()
 	{
-		return OLD_ExternalSystemType.GRSSignum;
+		return ExternalSystemType.GRSSignum;
 	}
 
 	@Override
@@ -157,7 +157,7 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 
 	private void directlyExportToAllMatchingConfigs(@NonNull final I_M_HU_Trace huTrace)
 	{
-		final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigRepo.getActiveByType(OLD_ExternalSystemType.GRSSignum);
+		final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigRepo.getActiveByType(ExternalSystemType.GRSSignum);
 
 		for (final ExternalSystemParentConfig config : configs)
 		{

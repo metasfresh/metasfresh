@@ -195,11 +195,7 @@ public class BPartnerRecordsUtil
 			}
 
 			{
-				final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
-				final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
-
-				final ExternalReferenceRepository externalReferenceRepository =
-						new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
+				final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
 
 				externalReferenceRepository.save(ExternalReference.builder()
 						.externalReference(AD_USER_EXTERNAL_ID)

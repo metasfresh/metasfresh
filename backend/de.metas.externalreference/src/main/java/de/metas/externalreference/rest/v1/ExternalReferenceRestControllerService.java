@@ -176,7 +176,7 @@ public class ExternalReferenceRestControllerService
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
-		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(ExternalSystemType.ofValue(request.getSystemName().getName()))
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByType(ExternalSystemType.ofValue(request.getSystemName().getName()))
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
 		final List<JsonExternalReferenceItem> references = request.getItems();
@@ -337,7 +337,7 @@ public class ExternalReferenceRestControllerService
 		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(request.getExternalReferenceItem().getLookupItem().getType())
 				.orElseThrow(() -> new InvalidIdentifierException("type", request.getExternalReferenceItem().getLookupItem().getType()));
 
-		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(ExternalSystemType.ofValue(request.getSystemName().getName()))
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByType(ExternalSystemType.ofValue(request.getSystemName().getName()))
 				.orElseThrow(() -> new InvalidIdentifierException("externalSystem", request.getSystemName().getName()));
 
 		return ExternalReference.builder()

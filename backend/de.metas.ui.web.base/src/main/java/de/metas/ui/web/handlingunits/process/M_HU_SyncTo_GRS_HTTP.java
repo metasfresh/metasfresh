@@ -23,7 +23,7 @@
 package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.hu.ExportHUToExternalSystemService;
 import de.metas.externalsystem.grssignum.ExportHUToGRSService;
@@ -50,9 +50,9 @@ public class M_HU_SyncTo_GRS_HTTP extends M_HU_SyncTo_ExternalSystem
 	private int externalSystemConfigGRSSignumId;
 
 	@Override
-	protected OLD_ExternalSystemType getExternalSystemType()
+	protected ExternalSystemType getExternalSystemType()
 	{
-		return OLD_ExternalSystemType.GRSSignum;
+		return ExternalSystemType.GRSSignum;
 	}
 
 	@Override

@@ -31,7 +31,7 @@ import de.metas.common.util.Check;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.bpartner.ExportBPartnerToExternalSystem;
@@ -49,7 +49,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Service to export BPartners (on future maybe other sorts of data) to external systems via {@link OLD_ExternalSystemType#RabbitMQ}.
+ * Service to export BPartners (on future maybe other sorts of data) to external systems via {@link ExternalSystemType#RabbitMQ}.
  */
 @Service
 public class ExportBPartnerToRabbitMQService extends ExportBPartnerToExternalSystem
@@ -123,9 +123,9 @@ public class ExportBPartnerToRabbitMQService extends ExportBPartnerToExternalSys
 	}
 
 	@Override
-	protected OLD_ExternalSystemType getExternalSystemType()
+	protected ExternalSystemType getExternalSystemType()
 	{
-		return OLD_ExternalSystemType.RabbitMQ;
+		return ExternalSystemType.RabbitMQ;
 	}
 
 	@Override

@@ -51,13 +51,10 @@ public class ExternalIdentifierProductLookupServiceTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
-		
-		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
-		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
-		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
+
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
-		
+
 		productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
 	}
 

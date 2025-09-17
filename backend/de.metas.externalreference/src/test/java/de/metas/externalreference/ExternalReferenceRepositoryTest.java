@@ -61,7 +61,7 @@ public class ExternalReferenceRepositoryTest
 				.type(ExternalSystemType.Everhour)
 				.build());
 
-		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
+		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
 	}
 
 	@Test

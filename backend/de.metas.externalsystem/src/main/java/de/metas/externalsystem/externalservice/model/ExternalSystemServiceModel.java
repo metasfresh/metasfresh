@@ -23,7 +23,7 @@
 package de.metas.externalsystem.externalservice.model;
 
 import de.metas.common.externalsystem.IExternalSystemService;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.common.ExternalStatus;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -41,7 +41,7 @@ public class ExternalSystemServiceModel implements IExternalSystemService
 	ExternalSystemServiceId id;
 
 	@NonNull
-	OLD_ExternalSystemType externalSystemType;
+	ExternalSystemType externalSystemType;
 
 	@NonNull
 	String serviceValue;
@@ -61,7 +61,7 @@ public class ExternalSystemServiceModel implements IExternalSystemService
 	@Builder
 	ExternalSystemServiceModel(
 			@NonNull final ExternalSystemServiceId id,
-			@NonNull final OLD_ExternalSystemType externalSystemType,
+			@NonNull final ExternalSystemType externalSystemType,
 			@NonNull final String serviceValue,
 			@NonNull final String name,
 			@Nullable final String description,
@@ -80,7 +80,7 @@ public class ExternalSystemServiceModel implements IExternalSystemService
 	@Override
 	public String getExternalSystemTypeCode()
 	{
-		return externalSystemType.getCode();
+		return externalSystemType.getValue();
 	}
 
 

@@ -24,7 +24,7 @@ package de.metas.externalsystem.other.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Other_ConfigParameter;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -50,7 +50,7 @@ public class ExternalSystem_Other_ConfigParameter
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(record.getExternalSystem_Config_ID()));
 
-		if (!OLD_ExternalSystemType.Other.getCode().equals(parentType))
+		if (!ExternalSystemType.Other.getValue().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

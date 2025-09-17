@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.audit;
 
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.process.PInstanceId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
@@ -51,7 +51,7 @@ public class CreateExportAuditRequest
 	RoleId exportRoleId;
 
 	@Nullable
-	OLD_ExternalSystemType externalSystemType;
+	ExternalSystemType externalSystemType;
 
 	@Nullable
 	PInstanceId pInstanceId;

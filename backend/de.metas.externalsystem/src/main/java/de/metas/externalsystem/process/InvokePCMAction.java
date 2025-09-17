@@ -26,7 +26,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
@@ -86,13 +86,13 @@ public class InvokePCMAction extends AlterExternalSystemServiceStatusAction
 	@Override
 	protected String getTabName()
 	{
-		return getExternalSystemType().getName();
+		return getExternalSystemType().getValue();
 	}
 
 	@Override
-	protected OLD_ExternalSystemType getExternalSystemType()
+	protected ExternalSystemType getExternalSystemType()
 	{
-		return OLD_ExternalSystemType.ProCareManagement;
+		return ExternalSystemType.ProCareManagement;
 	}
 
 	@Override

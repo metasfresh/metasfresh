@@ -45,7 +45,6 @@ import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingsRequest;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBooking;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBookingRepository;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,7 +77,7 @@ public class EverhourImporterServiceTest
 	private ExternalReferenceRepository externalReferenceRepository;
 
 	private final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue = new ImportQueue<>(TIME_BOOKING_QUEUE_CAPACITY, IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
-	private final FailedTimeBookingRepository failedTimeBookingRepository = new FailedTimeBookingRepository(Services.get(IQueryBL.class));
+	private FailedTimeBookingRepository failedTimeBookingRepository;
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -103,7 +102,8 @@ public class EverhourImporterServiceTest
 		externalReferenceTypes.registerType(ExternalUserReferenceType.USER_ID);
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
 
-		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystemRepository, externalReferenceTypes);
+		failedTimeBookingRepository = FailedTimeBookingRepository.newInstanceForUnitTesting();
+		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
 
 		mockEverhourClient = Mockito.mock(EverhourClient.class);
 
@@ -118,11 +118,11 @@ public class EverhourImporterServiceTest
 		);
 	}
 
-	private ExternalSystem externalSystem(ExternalSystemType value)
+	private ExternalSystem externalSystem(ExternalSystemType type)
 	{
 		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
-				.type(value)
-				.name(value.getValue())
+				.type(type)
+				.name(type.getValue())
 				.build());
 	}
 

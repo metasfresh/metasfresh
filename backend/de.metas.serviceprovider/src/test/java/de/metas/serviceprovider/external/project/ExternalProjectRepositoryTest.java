@@ -29,6 +29,7 @@ import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -64,11 +65,11 @@ public class ExternalProjectRepositoryTest
 		prepareMockExternalProjectRecord(MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE, false);
 	}
 
-	private ExternalSystem externalSystem(ExternalSystemType value)
+	private ExternalSystem externalSystem(@NonNull final ExternalSystemType type)
 	{
 		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
-				.type(value)
-				.name(value.getValue())
+				.type(type)
+				.name(type.getValue())
 				.build());
 	}
 

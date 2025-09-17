@@ -121,19 +121,19 @@ public class ProductsRestControllerTest
 		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
 		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
-																					  new ExternalSystemExportAuditRepo(),
-																					  new RuntimeParametersRepository(),
-																					  externalServices,
-																					  new JsonExternalSystemRetriever());
-		final ProductRepository productRepository = new ProductRepository();
-		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+				new ExternalSystemExportAuditRepo(),
+				new RuntimeParametersRepository(),
+				externalServices,
+				new JsonExternalSystemRetriever(),
+				new ExternalSystemRepository());
 
-		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystemRepository(), externalReferenceTypes);
+		final ProductRepository productRepository = new ProductRepository();
+
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
-		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
+		final AlbertaProductService albertaProductService = AlbertaProductService.newInstanceForUnitTesting();
 
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());

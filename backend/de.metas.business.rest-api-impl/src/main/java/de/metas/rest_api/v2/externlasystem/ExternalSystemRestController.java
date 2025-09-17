@@ -33,7 +33,8 @@ import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.issue.JsonCreateIssueResponse;
 import de.metas.error.AdIssueId;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.common.ExternalStatus;
 import de.metas.externalsystem.externalservice.status.StoreExternalSystemStatusRequest;
 import de.metas.process.PInstanceId;
@@ -89,7 +90,7 @@ public class ExternalSystemRestController
 			@ApiParam("The actual request like `getOrders` of the external system invocation process") @PathVariable final String request,
 			@RequestBody @Nullable final JsonInvokeExternalSystemParams externalSystemParams)
 	{
-		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
 		{
 			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);
@@ -169,8 +170,7 @@ public class ExternalSystemRestController
 			@ApiParam("Used to identify an IExternalSystemChildConfig together with 'externalSystemConfigType'.") @PathVariable @NonNull final String externalSystemChildConfigValue,
 			@ApiParam("Used to identify an ExternalSystemService. Translates to 'ExternalSystem_Service.Value'.") @PathVariable @NonNull final String serviceValue)
 	{
-		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
-
+		final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
 		{
 			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);
@@ -195,7 +195,7 @@ public class ExternalSystemRestController
 	@GetMapping(path = "/service/{externalSystemConfigType}/status")
 	public ResponseEntity<?> getExternalSystemStatus(@PathVariable @NonNull final String externalSystemConfigType)
 	{
-		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
 		{
 			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);
@@ -217,7 +217,7 @@ public class ExternalSystemRestController
 			@PathVariable @NonNull final String externalSystemConfigType,
 			@PathVariable @NonNull final String externalSystemChildConfigValue)
 	{
-		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 		if (externalSystemType == null)
 		{
 			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);

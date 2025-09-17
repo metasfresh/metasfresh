@@ -28,7 +28,8 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemProcesses;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
@@ -63,7 +64,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.externalsystem.OLD_ExternalSystemType.LeichUndMehl;
+import static de.metas.externalsystem.ExternalSystemType.Alberta;
+import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
+import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
+import static de.metas.externalsystem.ExternalSystemType.RabbitMQ;
+import static de.metas.externalsystem.ExternalSystemType.Shopware6;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnMaterialReceipt;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnProductionReceipt;
@@ -110,9 +115,9 @@ public class ExternalSystem_Config_StepDef
 	@Then("a new metasfresh AD_PInstance_Log is stored for the external system {string} invocation")
 	public void new_metasfresh_ad_pinstance_log_is_stored_for_external_system_process(final String externalSystemCode) throws JSONException
 	{
-		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCode(externalSystemCode);
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCode(externalSystemCode);
 		final AdProcessId adProcessId =
-				adProcessDAO.retrieveProcessIdByClassIfUnique(externalSystemType.getExternalSystemProcessClassName());
+				adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemProcesses.getExternalSystemProcessClassName(externalSystemType));
 
 		final JSONObject result = new JSONObject(testContext.getApiResponse().getContent());
 		final int pInstanceId = result.getInt("pinstanceID");
@@ -169,30 +174,31 @@ public class ExternalSystem_Config_StepDef
 			parentConfig.setIsActive(false);
 			InterfaceWrapperHelper.saveRecord(parentConfig);
 
-			final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCode(externalSystemConfig.getType());
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCode(externalSystemConfig.getType());
 
-			switch (externalSystemType)
+			if (externalSystemType.isRabbitMQ())
 			{
-				case RabbitMQ:
-					final I_ExternalSystem_Config_RabbitMQ_HTTP configRabbitMQHttp = queryBL.createQueryBuilder(I_ExternalSystem_Config_RabbitMQ_HTTP.class)
-							.addEqualsFilter(I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystem_Config_ID, parentConfig.getExternalSystem_Config_ID())
-							.create()
-							.firstOnlyNotNull(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
+				final I_ExternalSystem_Config_RabbitMQ_HTTP configRabbitMQHttp = queryBL.createQueryBuilder(I_ExternalSystem_Config_RabbitMQ_HTTP.class)
+						.addEqualsFilter(I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystem_Config_ID, parentConfig.getExternalSystem_Config_ID())
+						.create()
+						.firstOnlyNotNull(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
 
-					configRabbitMQHttp.setIsActive(false);
-					InterfaceWrapperHelper.saveRecord(configRabbitMQHttp);
-					break;
-				case GRSSignum:
-					final I_ExternalSystem_Config_GRSSignum configGrsSignum = queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
-							.addEqualsFilter(I_ExternalSystem_Config_GRSSignum.COLUMNNAME_ExternalSystem_Config_ID, parentConfig.getExternalSystem_Config_ID())
-							.create()
-							.firstOnlyNotNull(I_ExternalSystem_Config_GRSSignum.class);
+				configRabbitMQHttp.setIsActive(false);
+				InterfaceWrapperHelper.saveRecord(configRabbitMQHttp);
+			}
+			else if (externalSystemType.isGRSSignum())
+			{
+				final I_ExternalSystem_Config_GRSSignum configGrsSignum = queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
+						.addEqualsFilter(I_ExternalSystem_Config_GRSSignum.COLUMNNAME_ExternalSystem_Config_ID, parentConfig.getExternalSystem_Config_ID())
+						.create()
+						.firstOnlyNotNull(I_ExternalSystem_Config_GRSSignum.class);
 
-					configGrsSignum.setIsActive(false);
-					InterfaceWrapperHelper.saveRecord(configGrsSignum);
-					break;
-				default:
-					throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+				configGrsSignum.setIsActive(false);
+				InterfaceWrapperHelper.saveRecord(configGrsSignum);
+			}
+			else
+			{
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 			}
 		}
 	}
@@ -203,7 +209,7 @@ public class ExternalSystem_Config_StepDef
 		final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_Type);
 		final String externalSystemChildValue = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystemValue);
 
-		final OLD_ExternalSystemType externalSystemType = OLD_ExternalSystemType.ofCode(typeCode);
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCode(typeCode);
 
 		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(externalSystemType, externalSystemChildValue);
 
@@ -224,104 +230,106 @@ public class ExternalSystem_Config_StepDef
 		}
 
 		final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config.class);
-		externalSystemParentConfigEntity.setType(externalSystemType.getCode());
+		externalSystemParentConfigEntity.setType(externalSystemType.getLegacyCode());
 		externalSystemParentConfigEntity.setName("notImportant");
 		externalSystemParentConfigEntity.setIsActive(true);
 		InterfaceWrapperHelper.save(externalSystemParentConfigEntity);
 
 		configTable.put(configIdentifier, externalSystemParentConfigEntity);
 
-		switch (externalSystemType)
+		if (externalSystemType.isAlberta())
 		{
-			case Alberta:
-				final I_ExternalSystem_Config_Alberta externalSystemConfigAlberta = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_Alberta.class);
-				externalSystemConfigAlberta.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
-				externalSystemConfigAlberta.setExternalSystemValue(externalSystemChildValue);
-				externalSystemConfigAlberta.setApiKey("notImportant");
-				externalSystemConfigAlberta.setBaseURL("notImportant.com");
-				externalSystemConfigAlberta.setTenant("notImportant");
-				externalSystemConfigAlberta.setIsActive(true);
-				InterfaceWrapperHelper.save(externalSystemConfigAlberta);
-				break;
-			case Shopware6:
-				final I_ExternalSystem_Config_Shopware6 externalSystemConfigShopware6 = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_Shopware6.class);
-				externalSystemConfigShopware6.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
-				externalSystemConfigShopware6.setExternalSystemValue(externalSystemChildValue);
-				externalSystemConfigShopware6.setClient_Secret("notImportant");
-				externalSystemConfigShopware6.setClient_Id("notImportant");
-				externalSystemConfigShopware6.setBaseURL("notImportant.com");
-				externalSystemConfigShopware6.setIsActive(true);
-				InterfaceWrapperHelper.save(externalSystemConfigShopware6);
-				break;
-			case RabbitMQ:
-				final I_ExternalSystem_Config_RabbitMQ_HTTP externalSystemConfigRabbitMQ = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
-				externalSystemConfigRabbitMQ.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
-				externalSystemConfigRabbitMQ.setExternalSystemValue(externalSystemChildValue);
-				externalSystemConfigRabbitMQ.setAuthToken("notImportant");
-				externalSystemConfigRabbitMQ.setRemoteURL("notImportant");
-				externalSystemConfigRabbitMQ.setRouting_Key("notImportant");
-				externalSystemConfigRabbitMQ.setIsActive(true);
+			final I_ExternalSystem_Config_Alberta externalSystemConfigAlberta = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_Alberta.class);
+			externalSystemConfigAlberta.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
+			externalSystemConfigAlberta.setExternalSystemValue(externalSystemChildValue);
+			externalSystemConfigAlberta.setApiKey("notImportant");
+			externalSystemConfigAlberta.setBaseURL("notImportant.com");
+			externalSystemConfigAlberta.setTenant("notImportant");
+			externalSystemConfigAlberta.setIsActive(true);
+			InterfaceWrapperHelper.save(externalSystemConfigAlberta);
+		}
+		else if (externalSystemType.isShopware6())
+		{
+			final I_ExternalSystem_Config_Shopware6 externalSystemConfigShopware6 = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_Shopware6.class);
+			externalSystemConfigShopware6.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
+			externalSystemConfigShopware6.setExternalSystemValue(externalSystemChildValue);
+			externalSystemConfigShopware6.setClient_Secret("notImportant");
+			externalSystemConfigShopware6.setClient_Id("notImportant");
+			externalSystemConfigShopware6.setBaseURL("notImportant.com");
+			externalSystemConfigShopware6.setIsActive(true);
+			InterfaceWrapperHelper.save(externalSystemConfigShopware6);
+		}
+		else if (externalSystemType.isRabbitMQ())
+		{
+			final I_ExternalSystem_Config_RabbitMQ_HTTP externalSystemConfigRabbitMQ = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
+			externalSystemConfigRabbitMQ.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
+			externalSystemConfigRabbitMQ.setExternalSystemValue(externalSystemChildValue);
+			externalSystemConfigRabbitMQ.setAuthToken("notImportant");
+			externalSystemConfigRabbitMQ.setRemoteURL("notImportant");
+			externalSystemConfigRabbitMQ.setRouting_Key("notImportant");
+			externalSystemConfigRabbitMQ.setIsActive(true);
 
-				final boolean isSyncBPartnersToRabbitMQ = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncBPartnersToRabbitMQ, false);
-				externalSystemConfigRabbitMQ.setIsSyncBPartnersToRabbitMQ(isSyncBPartnersToRabbitMQ);
+			final boolean isSyncBPartnersToRabbitMQ = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncBPartnersToRabbitMQ, false);
+			externalSystemConfigRabbitMQ.setIsSyncBPartnersToRabbitMQ(isSyncBPartnersToRabbitMQ);
 
-				final boolean isAutoSendWhenCreatedByUserGroup = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAutoSendWhenCreatedByUserGroup, false);
-				externalSystemConfigRabbitMQ.setIsAutoSendWhenCreatedByUserGroup(isAutoSendWhenCreatedByUserGroup);
-				final String userGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_SubjectCreatedByUserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
-				if(Check.isNotBlank(userGroupIdentifier))
-				{
-					final I_AD_UserGroup userGroup = userGroupTable.get(userGroupIdentifier);
-					assertThat(userGroup).isNotNull();
-					externalSystemConfigRabbitMQ.setSubjectCreatedByUserGroup_ID(userGroup.getAD_UserGroup_ID());
-				}
+			final boolean isAutoSendWhenCreatedByUserGroup = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAutoSendWhenCreatedByUserGroup, false);
+			externalSystemConfigRabbitMQ.setIsAutoSendWhenCreatedByUserGroup(isAutoSendWhenCreatedByUserGroup);
+			final String userGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_SubjectCreatedByUserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(userGroupIdentifier))
+			{
+				final I_AD_UserGroup userGroup = userGroupTable.get(userGroupIdentifier);
+				assertThat(userGroup).isNotNull();
+				externalSystemConfigRabbitMQ.setSubjectCreatedByUserGroup_ID(userGroup.getAD_UserGroup_ID());
+			}
 
-				final boolean isSyncExternalReferencesToRabbitMQ = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncExternalReferencesToRabbitMQ, false);
-				externalSystemConfigRabbitMQ.setIsSyncExternalReferencesToRabbitMQ(isSyncExternalReferencesToRabbitMQ);
+			final boolean isSyncExternalReferencesToRabbitMQ = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncExternalReferencesToRabbitMQ, false);
+			externalSystemConfigRabbitMQ.setIsSyncExternalReferencesToRabbitMQ(isSyncExternalReferencesToRabbitMQ);
 
-				InterfaceWrapperHelper.save(externalSystemConfigRabbitMQ);
-				break;
-			case GRSSignum:
-				final boolean isSyncHUsOnMaterialReceipt = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncHUsOnMaterialReceipt, false);
-				final boolean isSyncHUsOnProductionReceipt = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncHUsOnProductionReceipt, false);
+			InterfaceWrapperHelper.save(externalSystemConfigRabbitMQ);
+		}
+		else if (externalSystemType.isGRSSignum())
+		{
+			final boolean isSyncHUsOnMaterialReceipt = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncHUsOnMaterialReceipt, false);
+			final boolean isSyncHUsOnProductionReceipt = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsSyncHUsOnProductionReceipt, false);
 
-				final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_GRSSignum.class);
-				externalSystemConfigGrsSignum.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
-				externalSystemConfigGrsSignum.setExternalSystemValue(externalSystemChildValue);
-				externalSystemConfigGrsSignum.setBaseURL("notImportant");
-				externalSystemConfigGrsSignum.setAuthToken("notImportant");
-				externalSystemConfigGrsSignum.setTenantId("tenantId");
-				externalSystemConfigGrsSignum.setIsSyncBPartnersToRestEndpoint(true);
-				externalSystemConfigGrsSignum.setIsActive(true);
-				externalSystemConfigGrsSignum.setIsSyncHUsOnMaterialReceipt(isSyncHUsOnMaterialReceipt);
-				externalSystemConfigGrsSignum.setIsSyncHUsOnProductionReceipt(isSyncHUsOnProductionReceipt);
-				InterfaceWrapperHelper.save(externalSystemConfigGrsSignum);
-				break;
+			final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_GRSSignum.class);
+			externalSystemConfigGrsSignum.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
+			externalSystemConfigGrsSignum.setExternalSystemValue(externalSystemChildValue);
+			externalSystemConfigGrsSignum.setBaseURL("notImportant");
+			externalSystemConfigGrsSignum.setAuthToken("notImportant");
+			externalSystemConfigGrsSignum.setTenantId("tenantId");
+			externalSystemConfigGrsSignum.setIsSyncBPartnersToRestEndpoint(true);
+			externalSystemConfigGrsSignum.setIsActive(true);
+			externalSystemConfigGrsSignum.setIsSyncHUsOnMaterialReceipt(isSyncHUsOnMaterialReceipt);
+			externalSystemConfigGrsSignum.setIsSyncHUsOnProductionReceipt(isSyncHUsOnProductionReceipt);
+			InterfaceWrapperHelper.save(externalSystemConfigGrsSignum);
+		}
+		else if (externalSystemType.isLeichUndMehl())
+		{
+			final int portNumber = DataTableUtil.extractIntForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_PortNumber);
+			final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
+			final String pluTemplateFile_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
 
-			case LeichUndMehl:
-				final int portNumber = DataTableUtil.extractIntForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_PortNumber);
-				final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
-				final String pluTemplateFile_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
+			final PLUType pluType = PLUType.ofCodeOptional(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_LeichMehl.COLUMNNAME_CU_TU_PLU))
+					.orElse(PLUType.CU);
 
-				final PLUType pluType = PLUType.ofCodeOptional(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_LeichMehl.COLUMNNAME_CU_TU_PLU))
-						.orElse(PLUType.CU);
+			final I_ExternalSystem_Config_LeichMehl leichMehlConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_LeichMehl.class);
+			leichMehlConfig.setTCP_PortNumber(portNumber);
+			leichMehlConfig.setTCP_Host(host);
+			leichMehlConfig.setProduct_BaseFolderName(pluTemplateFile_BaseFolderName);
+			leichMehlConfig.setExternalSystemValue(externalSystemChildValue);
+			leichMehlConfig.setIsActive(true);
+			leichMehlConfig.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
+			leichMehlConfig.setCU_TU_PLU(pluType.getCode());
+			InterfaceWrapperHelper.saveRecord(leichMehlConfig);
 
-				final I_ExternalSystem_Config_LeichMehl leichMehlConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_LeichMehl.class);
-				leichMehlConfig.setTCP_PortNumber(portNumber);
-				leichMehlConfig.setTCP_Host(host);
-				leichMehlConfig.setProduct_BaseFolderName(pluTemplateFile_BaseFolderName);
-				leichMehlConfig.setExternalSystemValue(externalSystemChildValue);
-				leichMehlConfig.setIsActive(true);
-				leichMehlConfig.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
-				leichMehlConfig.setCU_TU_PLU(pluType.getCode());
-				InterfaceWrapperHelper.saveRecord(leichMehlConfig);
-
-				final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
-						+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-				leichMehlConfigTable.putOrReplace(leichMehlConfigIdentifier, leichMehlConfig);
-
-				break;
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+			final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
+					+ "." + TABLECOLUMN_IDENTIFIER);
+			leichMehlConfigTable.putOrReplace(leichMehlConfigIdentifier, leichMehlConfig);
+		}
+		else
+		{
+			throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
 	}
 }

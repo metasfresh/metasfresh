@@ -27,7 +27,7 @@ import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemConfigService;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_PrintingClient;
 import de.metas.externalsystem.model.X_ExternalSystem_Config_PrintingClient;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
@@ -83,7 +83,7 @@ public class PrintingClientExternalSystemService
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(childConfigRecord.getExternalSystem_Config_ID()))
-				.externalSystemName(JsonExternalSystemName.of(OLD_ExternalSystemType.PrintClient.getName()))
+				.externalSystemName(JsonExternalSystemName.of(ExternalSystemType.PrintClient.getValue()))
 				.parameters(parameters)
 				.orgCode(orgDAO.getById(OrgId.ofRepoId(request.getOrgId())).getValue())
 				.command(EXTERNAL_SYSTEM_COMMAND_PRINTING_CLIENT)

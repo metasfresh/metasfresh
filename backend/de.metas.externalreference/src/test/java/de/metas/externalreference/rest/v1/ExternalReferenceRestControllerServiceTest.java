@@ -76,10 +76,7 @@ class ExternalReferenceRestControllerServiceTest
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(new PlainExternalReferenceType("bpartner", I_C_BPartner.Table_Name));
 
-		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class),
-				externalSystemRepository,
-				externalReferenceTypes
-		);
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
 
 		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository,
 				externalSystemRepository,

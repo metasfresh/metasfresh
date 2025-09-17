@@ -66,6 +66,7 @@ import org.compiere.model.I_M_Product;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -135,6 +136,7 @@ public class UpsertProduct_StepDef
 
 				final ExternalReference externalReference =
 						getExternalReference("bpartner", jsonRequestBPartnerProductUpsert.getBpartnerIdentifier());
+				assertThat(externalReference).isNotNull();
 
 				final BPartnerProduct bPartnerProduct = bPartnerProducts.get(BPartnerId.ofRepoId(externalReference.getRecordId()));
 
@@ -258,6 +260,7 @@ public class UpsertProduct_StepDef
 		assertThat(externalReference).isNotNull();
 	}
 
+	@Nullable
 	private ExternalReference getExternalReference(final String type, final String identifier)
 	{
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(identifier);
@@ -275,7 +278,8 @@ public class UpsertProduct_StepDef
 		final Set<ExternalReferenceQuery> querySet = new HashSet<>();
 		querySet.add(externalReferenceQuery);
 
-		return externalReferenceRepository.getExternalReferences(querySet).get(externalReferenceQuery);
+		return externalReferenceRepository.getExternalReferences(querySet).get(externalReferenceQuery)
+				.orElse(null);
 	}
 
 	private IExternalReferenceType getExternalReferenceType(final String type)

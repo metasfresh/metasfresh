@@ -26,5 +26,5 @@ import de.metas.util.lang.RepoIdAware;
 
 public interface IExternalSystemChildConfigId extends RepoIdAware
 {
-	OLD_ExternalSystemType getType();
+	ExternalSystemType getType();
 }

@@ -23,7 +23,7 @@
 package de.metas.rest_api.v2.externlasystem.dto;
 
 import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 public class InvokeExternalSystemProcessRequest
 {
 	@NonNull
-	OLD_ExternalSystemType externalSystemType;
+	ExternalSystemType externalSystemType;
 
 	@NonNull
 	String childSystemConfigValue;

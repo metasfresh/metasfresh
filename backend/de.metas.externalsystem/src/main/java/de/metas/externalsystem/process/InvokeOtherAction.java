@@ -24,7 +24,7 @@ package de.metas.externalsystem.process;
 
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
@@ -63,13 +63,13 @@ public class InvokeOtherAction extends InvokeExternalSystemProcess
 	@Override
 	protected String getTabName()
 	{
-		return OLD_ExternalSystemType.Other.getName();
+		return ExternalSystemType.Other.getValue();
 	}
 
 	@Override
-	protected OLD_ExternalSystemType getExternalSystemType()
+	protected ExternalSystemType getExternalSystemType()
 	{
-		return OLD_ExternalSystemType.Other;
+		return ExternalSystemType.Other;
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class InvokeOtherAction extends InvokeExternalSystemProcess
 
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId());
 
-		if (!OLD_ExternalSystemType.Other.getCode().equals(externalSystemConfigDAO.getParentTypeById(parentConfigId)))
+		if (!ExternalSystemType.Other.getValue().equals(externalSystemConfigDAO.getParentTypeById(parentConfigId)))
 		{
 			return ProcessPreconditionsResolution.reject();
 		}

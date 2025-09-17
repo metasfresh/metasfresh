@@ -39,7 +39,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -107,7 +107,7 @@ public class GetProductsCommand
 	@Nullable
 	private final String orgCode;
 
-	private final OLD_ExternalSystemType externalSystemType;
+	private final ExternalSystemType externalSystemType;
 	private final String externalSystemConfigValue;
 	private final ExternalIdentifier productIdentifier;
 
@@ -131,7 +131,7 @@ public class GetProductsCommand
 			@NonNull final String adLanguage,
 			@Nullable final Instant since,
 			@Nullable final String orgCode,
-			@Nullable final OLD_ExternalSystemType externalSystemType,
+			@Nullable final ExternalSystemType externalSystemType,
 			@Nullable final String externalSystemConfigValue,
 			@Nullable final ExternalIdentifier productIdentifier)
 	{
@@ -442,12 +442,12 @@ public class GetProductsCommand
 	@Nullable
 	private PriceListId getPharmacyPriceListIdOrNull()
 	{
-		if (!OLD_ExternalSystemType.Alberta.equals(externalSystemType) || Check.isBlank(externalSystemConfigValue))
+		if (!externalSystemType.isAlberta() || Check.isBlank(externalSystemConfigValue))
 		{
 			return null;
 		}
 
-		return externalSystemService.getByTypeAndValue(OLD_ExternalSystemType.Alberta, externalSystemConfigValue)
+		return externalSystemService.getByTypeAndValue(ExternalSystemType.Alberta, externalSystemConfigValue)
 				.map(ExternalSystemParentConfig::getChildConfig)
 				.map(ExternalSystemAlbertaConfig::cast)
 				.map(ExternalSystemAlbertaConfig::getPharmacyPriceListId)
@@ -467,7 +467,7 @@ public class GetProductsCommand
 			@NonNull final ImmutableList.Builder<I_M_Product> productRecordsBuilder,
 			@NonNull final HashSet<ProductId> loadedProductIds)
 	{
-		if (!OLD_ExternalSystemType.Alberta.equals(externalSystemType))
+		if (!externalSystemType.isAlberta())
 		{
 			return;
 		}

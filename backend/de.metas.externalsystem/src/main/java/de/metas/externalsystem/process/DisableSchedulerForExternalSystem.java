@@ -26,7 +26,8 @@ import de.metas.externalsystem.ExternalSystemConfigQuery;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemProcesses;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
@@ -67,7 +68,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 		{
 			final String externalSystemType = externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()));
 
-			final OLD_ExternalSystemType type = OLD_ExternalSystemType.ofCode(externalSystemType);
+			final ExternalSystemType type = ExternalSystemType.ofValue(externalSystemType);
 
 			final ExternalSystemConfigQuery query = ExternalSystemConfigQuery.builder()
 					.parentConfigId(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()))
@@ -77,7 +78,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 
 			if (!config.isPresent())
 			{
-				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, type.getName()));
+				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, type.getValue()));
 			}
 		}
 		return ProcessPreconditionsResolution.accept();
@@ -90,11 +91,11 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 
 		final String externalSystemType = externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()));
 
-		final OLD_ExternalSystemType type = OLD_ExternalSystemType.ofCode(externalSystemType);
+		final ExternalSystemType type = ExternalSystemType.ofValue(externalSystemType);
 
-		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(type.getExternalSystemProcessClassName());
+		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemProcesses.getExternalSystemProcessClassName(type));
 
-		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + type.getExternalSystemProcessClassName());
+		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + ExternalSystemProcesses.getExternalSystemProcessClassName(type));
 
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
 													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))

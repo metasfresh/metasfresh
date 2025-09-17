@@ -23,7 +23,7 @@
 package de.metas.externalsystem.externalservice.status;
 
 import de.metas.error.AdIssueId;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.common.ExternalStatus;
 import de.metas.process.PInstanceId;
 import lombok.Builder;
@@ -40,7 +40,7 @@ public class StoreExternalSystemStatusRequest
 	ExternalStatus status;
 
 	@NonNull
-	OLD_ExternalSystemType systemType;
+	ExternalSystemType systemType;
 
 	@NonNull
 	String childSystemConfigValue;

@@ -22,6 +22,7 @@
 
 package de.metas.externalreference;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystem;
@@ -31,12 +32,15 @@ import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -49,21 +53,19 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 @Repository
+@RequiredArgsConstructor
 public class ExternalReferenceRepository
 {
-	private final IQueryBL queryBL;
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ExternalReferenceTypes externalReferenceTypes;
 	private final ExternalSystemRepository externalSystemRepository;
 
-	public ExternalReferenceRepository(
-			@NonNull final IQueryBL queryBL,
-			@NonNull final ExternalSystemRepository externalSystemRepository,
-			@NonNull final ExternalReferenceTypes externalReferenceTypes)
+	@VisibleForTesting
+	public static ExternalReferenceRepository newInstanceForUnitTesting()
 	{
-		this.queryBL = queryBL;
-		this.externalReferenceTypes = externalReferenceTypes;
-		this.externalSystemRepository = externalSystemRepository;
+		Adempiere.assertUnitTestMode();
+		return new ExternalReferenceRepository(new ExternalReferenceTypes(), new ExternalSystemRepository());
 	}
 
 	public int getReferencedRecordIdBy(@NonNull final ExternalReferenceQuery query)
@@ -274,7 +276,7 @@ public class ExternalReferenceRepository
 	private ExternalSystem extractSystem(@NonNull final I_S_ExternalReference record)
 	{
 		final ExternalSystemType value = ExternalSystemType.ofValue(record.getExternalSystem());
-		return externalSystemRepository.getOptionalByValue(value).orElseThrow(() ->
+		return externalSystemRepository.getOptionalByType(value).orElseThrow(() ->
 				new AdempiereException("Unknown ExternalSystem=" + value)
 						.appendParametersToMessage()
 						.setParameter("system", value)

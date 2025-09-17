@@ -29,6 +29,7 @@ import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -44,8 +45,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class FailedTimeBookingRepositoryTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final FailedTimeBookingRepository failedTimeBookingRepository = new FailedTimeBookingRepository(queryBL);
+	private final FailedTimeBookingRepository failedTimeBookingRepository = FailedTimeBookingRepository.newInstanceForUnitTesting();
 	private ExternalSystemRepository externalSystemRepository;
 
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = null;
@@ -59,10 +59,9 @@ public class FailedTimeBookingRepositoryTest
 		externalSystemRepository = new ExternalSystemRepository();
 		MOCK_EXTERNAL_SYSTEM_EVERHOUR = externalSystem(ExternalSystemType.Everhour);
 		MOCK_EXTERNAL_SYSTEM_GITHUB = externalSystem(ExternalSystemType.Github);
-
 	}
 
-	private ExternalSystem externalSystem(ExternalSystemType value)
+	private ExternalSystem externalSystem(@NonNull final ExternalSystemType value)
 	{
 		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
 				.type(value)

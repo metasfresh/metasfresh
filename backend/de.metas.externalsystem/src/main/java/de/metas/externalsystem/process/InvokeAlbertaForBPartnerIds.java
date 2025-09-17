@@ -28,7 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.i18n.AdMessageKey;
@@ -79,7 +79,7 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 	{
 		if (PARAM_EXTERNAL_SYSTEM_CONFIG_ALBERTA_ID.equals(parameter.getColumnName()))
 		{
-			final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getActiveByType(OLD_ExternalSystemType.Alberta);
+			final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getActiveByType(ExternalSystemType.Alberta);
 
 			return configs.size() == 1
 					? configs.get(0).getChildConfig().getId().getRepoId()
@@ -91,13 +91,13 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getActiveByType(OLD_ExternalSystemType.Alberta);
+		final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getActiveByType(ExternalSystemType.Alberta);
 
 		if (configs.size() > 0)
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
-		return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_PROCESS_NOT_AVAILABLE, OLD_ExternalSystemType.Alberta.getName()));
+		return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_PROCESS_NOT_AVAILABLE, ExternalSystemType.Alberta.getValue()));
 	}
 
 	@Override

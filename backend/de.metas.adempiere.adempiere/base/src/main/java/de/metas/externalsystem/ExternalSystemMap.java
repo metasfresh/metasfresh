@@ -17,12 +17,12 @@ public class ExternalSystemMap
 	private static final ExternalSystemMap EMPTY = new ExternalSystemMap(ImmutableList.of());
 
 	private final ImmutableMap<ExternalSystemId, ExternalSystem> byId;
-	private final ImmutableMap<ExternalSystemType, ExternalSystem> byValue;
+	private final ImmutableMap<ExternalSystemType, ExternalSystem> byType;
 
 	private ExternalSystemMap(@NonNull final List<ExternalSystem> list)
 	{
 		this.byId = Maps.uniqueIndex(list, ExternalSystem::getId);
-		this.byValue = Maps.uniqueIndex(list, ExternalSystem::getType);
+		this.byType = Maps.uniqueIndex(list, ExternalSystem::getType);
 	}
 
 	public static ExternalSystemMap ofList(final List<ExternalSystem> list)
@@ -36,21 +36,21 @@ public class ExternalSystemMap
 	}
 
 	@Nullable
-	public ExternalSystem getByValueOrNull(@NonNull final ExternalSystemType value)
+	public ExternalSystem getByTypeOrNull(@NonNull final ExternalSystemType type)
 	{
-		return byValue.get(value);
+		return byType.get(type);
 	}
 
-	public Optional<ExternalSystem> getOptionalByValue(@NonNull final ExternalSystemType value)
+	public Optional<ExternalSystem> getOptionalByType(@NonNull final ExternalSystemType type)
 	{
-		return Optional.ofNullable(getByValueOrNull(value));
+		return Optional.ofNullable(getByTypeOrNull(type));
 	}
 
 	@NonNull
-	public ExternalSystem getByValue(@NonNull final ExternalSystemType value)
+	public ExternalSystem getByType(@NonNull final ExternalSystemType type)
 	{
-		return getOptionalByValue(value)
-				.orElseThrow(() -> new AdempiereException("Unknown external system value: " + value));
+		return getOptionalByType(type)
+				.orElseThrow(() -> new AdempiereException("Unknown external system type: " + type));
 	}
 
 	public @NonNull ExternalSystem getById(final @NonNull ExternalSystemId id)

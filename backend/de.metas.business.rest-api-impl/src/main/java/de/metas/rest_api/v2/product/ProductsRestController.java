@@ -27,7 +27,9 @@ import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -98,9 +100,7 @@ public class ProductsRestController
 
 		try
 		{
-			final OLD_ExternalSystemType externalSystemType = externalSystemConfigType != null
-					? OLD_ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType)
-					: null;
+			final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 
 			final JsonGetProductsResponse response = GetProductsCommand.builder()
 					.servicesFacade(productsServicesFacade)
@@ -194,7 +194,7 @@ public class ProductsRestController
 
 	private void logExportedProducts(
 			@Nullable final Map<String, String> queryParameters,
-			@Nullable final OLD_ExternalSystemType externalSystemType,
+			@Nullable final ExternalSystemType externalSystemType,
 			@Nullable final Integer pInstanceId,
 			@NonNull final JsonGetProductsResponse products)
 	{

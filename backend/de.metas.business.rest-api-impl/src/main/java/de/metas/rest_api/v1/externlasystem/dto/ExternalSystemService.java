@@ -33,10 +33,12 @@ import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponseItem;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalsystem.OLD_ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
@@ -58,6 +60,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -91,9 +94,9 @@ public class ExternalSystemService
 						.appendParametersToMessage()
 						.setParameter("invokeExternalSystemProcessRequest", invokeExternalSystemProcessRequest));
 
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(invokeExternalSystemProcessRequest
-																							.getExternalSystemType()
-																							.getExternalSystemProcessClassName());
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(
+				ExternalSystemProcesses.getExternalSystemProcessClassName(invokeExternalSystemProcessRequest.getExternalSystemType())
+		);
 
 		// note: when the AD_PInstance is created by the schedule, it's also stored as string
 		final String configIdAsString = Integer.toString(externalSystemParentConfig.getChildConfig().getId().getRepoId());
@@ -154,7 +157,7 @@ public class ExternalSystemService
 
 
 	@NonNull
-	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final OLD_ExternalSystemType type, @NonNull final String childConfigValue)
+	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String childConfigValue)
 	{
 		return externalSystemConfigRepo.getByTypeAndValue(type, childConfigValue);
 	}
@@ -162,7 +165,7 @@ public class ExternalSystemService
 	@NonNull
 	public Optional<ExternalSystemExportAudit> getMostRecentByTableReferenceAndSystem(
 			@NonNull final TableRecordReference tableRecordReference,
-			@NonNull final OLD_ExternalSystemType externalSystemType)
+			@NonNull final ExternalSystemType externalSystemType)
 	{
 		return externalSystemExportAuditRepo.getMostRecentByTableReferenceAndSystem(tableRecordReference, externalSystemType);
 	}
@@ -187,4 +190,17 @@ public class ExternalSystemService
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.build();
 	}
+
+	@Nullable
+	public ExternalSystemType getExternalSystemTypeByCodeOrNameOrNull(@Nullable final String value)
+	{
+		final ExternalSystem externalSystem = value != null
+				? externalSystemRepository.getByLegacyCodeOrValueOrNull(value)
+				: null;
+
+		return externalSystem != null
+				? externalSystem.getType()
+				: null;
+	}
+
 }
