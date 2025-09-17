@@ -108,10 +108,10 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
             qrCode: masterdata.handlingUnits.HU3.qrCode,
             expectQtyEntered: 17,
         });
-        
+
         await PickingJobScreen.complete();
         // await PickingJobScreen.goBack();
-        
+
         await PickingJobListScreen.goBack();
 
         await ApplicationsListScreen.logout();
@@ -128,7 +128,25 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '' })
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '9 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '' })
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '' })
-        await PickingJobScreen.goBack();
+
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
+            expectQtyEntered: 3,
+        });
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU2.qrCode,
+            expectQtyEntered: 9,
+        });
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU3.qrCode,
+            expectQtyEntered: 13,
+        });
+
+        await PickingJobScreen.complete();
+        // await PickingJobScreen.goBack();
+
         await PickingJobListScreen.goBack();
     });
 });
