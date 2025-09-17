@@ -12,7 +12,7 @@ INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy
 ;
 
 -- 2025-09-17T14:43:36.976Z
-INSERT INTO ExternalSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_ID,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,TO_TIMESTAMP('2025-09-17 14:43:36.975000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,540001,'Y','Alberta',TO_TIMESTAMP('2025-09-17 14:43:36.975000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Alberta')
+INSERT INTO ExternalSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_ID,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,TO_TIMESTAMP('2025-09-17 14:43:36.975000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,540001,'Y','Alberta',TO_TIMESTAMP('2025-09-17 14:43:36.975000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'ALBERTA')
 ;
 
 -- 2025-09-17T14:44:02.463Z
@@ -57,9 +57,4 @@ INSERT INTO ExternalSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSys
 
 -- 2025-09-17T14:46:08.812Z
 INSERT INTO ExternalSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_ID,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,TO_TIMESTAMP('2025-09-17 14:46:08.811000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,540011,'Y','Everhour',TO_TIMESTAMP('2025-09-17 14:46:08.811000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Everhour')
-;
-
-UPDATE ExternalSystem
-SET value = UPPER(value)
-WHERE TRUE
 ;
