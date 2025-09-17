@@ -52,6 +52,7 @@ public class PickingJobLockService
 	{
 		shipmentScheduleLockRepository.lock(
 				ShipmentScheduleLockRequest.builder()
+						// TODO: consider locking/unlocking per schedule too?
 						.shipmentScheduleIds(scheduleIds.getShipmentScheduleIds())
 						.lockType(ShipmentScheduleLockType.PICKING)
 						.lockedBy(lockedBy)
@@ -74,6 +75,7 @@ public class PickingJobLockService
 	{
 		shipmentScheduleLockRepository.unlock(
 				ShipmentScheduleUnLockRequest.builder()
+						// TODO: consider locking/unlocking per schedule too?
 						.shipmentScheduleIds(scheduleIds.getShipmentScheduleIds())
 						.lockType(ShipmentScheduleLockType.PICKING)
 						.lockedBy(lockedBy)

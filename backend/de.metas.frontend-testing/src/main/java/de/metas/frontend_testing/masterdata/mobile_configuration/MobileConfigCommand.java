@@ -87,7 +87,8 @@ public class MobileConfigCommand
 		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
 				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
 				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
-				.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode());
+				.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode())
+				.isConsiderOnlyJobScheduledToWorkplace(picking.getConsiderOnlyJobScheduledToWorkplace() != null ? picking.getConsiderOnlyJobScheduledToWorkplace() : false);
 
 		if (picking.getAllowPickingAnyCustomer() != null)
 		{
@@ -122,6 +123,7 @@ public class MobileConfigCommand
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
 				.displayPickingSlotSuggestions(profile.getDefaultPickingJobOptions().getDisplayPickingSlotSuggestions().toBooleanOrNull())
+				.considerOnlyJobScheduledToWorkplace(profile.isConsiderOnlyJobScheduledToWorkplace())
 				.build();
 	}
 

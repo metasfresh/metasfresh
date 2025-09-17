@@ -169,6 +169,11 @@ public class PickingJobScheduleRepository
 			queryBuilder.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID, query.getWorkplaceIds());
 		}
 
+		if (!query.getExcludeJobScheduleIds().isEmpty())
+		{
+			queryBuilder.addNotInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID, query.getExcludeJobScheduleIds());
+		}
+
 		return queryBuilder.create();
 	}
 }

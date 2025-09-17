@@ -14,11 +14,7 @@ public class PickingJobScheduleQuery
 	public static final PickingJobScheduleQuery ANY = builder().build();
 
 	@NonNull @Singular ImmutableSet<WorkplaceId> workplaceIds;
-
-	public static PickingJobScheduleQuery ofWorkplaceId(@NonNull final WorkplaceId workplaceId)
-	{
-		return builder().workplaceId(workplaceId).build();
-	}
+	@NonNull @Singular ImmutableSet<PickingJobScheduleId> excludeJobScheduleIds;
 
 	public boolean isAny()
 	{

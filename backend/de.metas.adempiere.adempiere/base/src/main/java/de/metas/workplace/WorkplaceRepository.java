@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Workplace;
 import org.springframework.stereotype.Repository;
@@ -66,9 +67,20 @@ public class WorkplaceRepository
 
 	public List<Workplace> getAllActive() {return getMap().getAllActive();}
 
+	public Workplace create(@NonNull final WorkplaceCreateRequest request)
+	{
+		final I_C_Workplace record = InterfaceWrapperHelper.newInstance(I_C_Workplace.class);
+		record.setName(request.getName());
+		record.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
+		InterfaceWrapperHelper.save(record);
+		return fromRecord(record);
+	}
+
 	@NonNull
 	private WorkplacesMap getMap()
 	{
+		//noinspection DataFlowIssue
 		return cache.getOrLoad(0, this::retrieveMap);
 	}
 
@@ -95,6 +107,12 @@ public class WorkplaceRepository
 				.pickingSlotId(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
 				.build();
 	}
+
+	//
+	//
+	//
+	//
+	//
 
 	private static class WorkplacesMap
 	{

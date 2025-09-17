@@ -100,8 +100,7 @@ public class PickingWorkflowLaunchersProvider
 		}
 
 		ResolvedScannedProductCodes scannedProductCodes = null;
-		if (!returnNoResult
-				&& query.getFilterByQRCode() != null)
+		if (!returnNoResult && query.getFilterByQRCode() != null)
 		{
 			scannedProductCodes = scannedProductCodeResolver.resolve(query.getFilterByQRCode())
 					.orElse(null);
@@ -115,24 +114,31 @@ public class PickingWorkflowLaunchersProvider
 
 		//
 		// Already started launchers
-		final PickingJobQuery.Facets facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
-		final WarehouseId warehouseId = workplace != null ? workplace.getWarehouseId() : null;
-		final PickingJobReferenceList existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
-						PickingJobReferenceQuery.builder()
-								.pickerId(userId)
-								.onlyCustomerIds(profile.getPickOnlyCustomerIds())
-								.warehouseId(warehouseId)
-								.salesOrderDocumentNo(query.getFilterByDocumentNo())
-								.build())
-				.filter(facets::isMatching)
-				.collect(PickingJobReferenceList.collect());
-
 		final DisplayValueProvider displayValueProvider = displayValueProviderService.newDisplayValueProvider(profile);
-		displayValueProvider.cacheWarmUpForPickingJobReferences(existingPickingJobs);
+		final PickingJobQuery.Facets facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
+		final PickingJobReferenceList existingPickingJobs;
+		if (workplace != null || !profile.isConsiderOnlyJobScheduledToWorkplace())
+		{
+			final WarehouseId warehouseId = workplace != null ? workplace.getWarehouseId() : null;
+			existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
+							PickingJobReferenceQuery.builder()
+									.pickerId(userId)
+									.onlyCustomerIds(profile.getPickOnlyCustomerIds())
+									.warehouseId(warehouseId)
+									.salesOrderDocumentNo(query.getFilterByDocumentNo())
+									.build())
+					.filter(facets::isMatching)
+					.collect(PickingJobReferenceList.collect());
 
-		existingPickingJobs.streamNotInProcessing()
-				.map(pickingJobReference -> toExistingWorkflowLauncher(pickingJobReference, displayValueProvider))
-				.forEach(currentResult::add);
+			displayValueProvider.cacheWarmUpForPickingJobReferences(existingPickingJobs);
+			existingPickingJobs.streamNotInProcessing()
+					.map(pickingJobReference -> toExistingWorkflowLauncher(pickingJobReference, displayValueProvider))
+					.forEach(currentResult::add);
+		}
+		else
+		{
+			existingPickingJobs = PickingJobReferenceList.EMPTY;
+		}
 
 		//
 		// New launchers
@@ -146,7 +152,7 @@ public class PickingWorkflowLaunchersProvider
 							.facets(facets)
 							.onlyCustomerIds(profile.getPickOnlyCustomerIds())
 							.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() ? workplace.getId() : null)
-							.warehouseId(warehouseId)
+							.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
 							.salesOrderDocumentNo(query.getFilterByDocumentNo())
 							.scannedProductCodes(scannedProductCodes)
 							.build())
@@ -154,7 +160,6 @@ public class PickingWorkflowLaunchersProvider
 					.collect(ImmutableList.toImmutableList());
 
 			displayValueProvider.cacheWarmUpForPickingJobCandidates(newPickingJobCandidates);
-
 			newPickingJobCandidates.stream()
 					.map(pickingJobCandidate -> toNewWorkflowLauncher(pickingJobCandidate, displayValueProvider))
 					.forEach(currentResult::add);

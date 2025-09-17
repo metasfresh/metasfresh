@@ -26,12 +26,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -89,14 +87,6 @@ public final class PackageableList implements Iterable<Packageable>
 	}
 
 	public Optional<BPartnerId> getSingleCustomerId() {return getSingleValue(Packageable::getCustomerId);}
-
-	public Quantity getQtyToPick()
-	{
-		return list.stream()
-				.map(Packageable::getQtyToPick)
-				.reduce(Quantity::add)
-				.orElseThrow(() -> new AdempiereException("No QtyToPick found in " + list));
-	}
 
 	public <T> Optional<T> getSingleValue(@NonNull final Function<Packageable, T> mapper)
 	{

@@ -45,7 +45,12 @@ public class PickingJobCandidateRetrieveCommand
 		if (query.getScheduledForWorkplaceId() != null)
 		{
 			final Map<ShipmentScheduleId, PickingJobSchedule> onlyPickingJobSchedules = Maps.uniqueIndex(
-					pickingJobScheduleService.list(PickingJobScheduleQuery.ofWorkplaceId(query.getScheduledForWorkplaceId())),
+					pickingJobScheduleService.list(
+							PickingJobScheduleQuery.builder()
+									.workplaceId(query.getScheduledForWorkplaceId())
+									.excludeJobScheduleIds(query.getExcludeScheduleIds().getJobScheduleIds())
+									.build()
+					),
 					PickingJobSchedule::getShipmentScheduleId
 			);
 			if (onlyPickingJobSchedules.isEmpty())

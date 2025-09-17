@@ -205,6 +205,7 @@ public class MobileUIPickingUserProfileRepository
 			profileRecord.setName(profile.getName());
 			profileRecord.setIsAllowAnyCustomer(profile.isAllowPickingAnyCustomer());
 			profileRecord.setIsFilterByBarcode(profile.isFilterByBarcode());
+			profileRecord.setIsConsideredOnlyScheduledJobs(profile.isConsiderOnlyJobScheduledToWorkplace());
 			updateRecord(profileRecord, profile.getDefaultPickingJobOptions());
 			InterfaceWrapperHelper.saveRecord(profileRecord);
 			profileId = MobileUIPickingUserProfileId.ofRepoId(profileRecord.getMobileUI_UserProfile_Picking_ID());

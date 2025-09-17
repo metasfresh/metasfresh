@@ -50,6 +50,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean showLastPickedBestBeforeDateForLines;
 		@Nullable Boolean anonymousPickHUsOnTheFly;
 		@Nullable Boolean displayPickingSlotSuggestions;
+		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
 
 		@Nullable List<Customer> customers;
 

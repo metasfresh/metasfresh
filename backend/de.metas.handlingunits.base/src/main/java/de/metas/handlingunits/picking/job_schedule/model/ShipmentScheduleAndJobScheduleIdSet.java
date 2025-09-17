@@ -24,7 +24,7 @@ public class ShipmentScheduleAndJobScheduleIdSet implements Iterable<ShipmentSch
 {
 	public static final ShipmentScheduleAndJobScheduleIdSet EMPTY = new ShipmentScheduleAndJobScheduleIdSet(ImmutableSet.of());
 	@NonNull private final ImmutableSet<ShipmentScheduleAndJobScheduleId> ids;
-
+	
 	private static final Splitter JSON_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
 
 	private ShipmentScheduleAndJobScheduleIdSet(@NonNull final ImmutableSet<ShipmentScheduleAndJobScheduleId> ids)
@@ -40,6 +40,11 @@ public class ShipmentScheduleAndJobScheduleIdSet implements Iterable<ShipmentSch
 	public static ShipmentScheduleAndJobScheduleIdSet of(@NonNull final ShipmentScheduleAndJobScheduleId id)
 	{
 		return new ShipmentScheduleAndJobScheduleIdSet(ImmutableSet.of(id));
+	}
+
+	public static ShipmentScheduleAndJobScheduleIdSet of(@NonNull final ShipmentScheduleId id)
+	{
+		return new ShipmentScheduleAndJobScheduleIdSet(ImmutableSet.of(ShipmentScheduleAndJobScheduleId.of(id, null)));
 	}
 
 	public static Collector<ShipmentScheduleAndJobScheduleId, ?, ShipmentScheduleAndJobScheduleIdSet> collect()

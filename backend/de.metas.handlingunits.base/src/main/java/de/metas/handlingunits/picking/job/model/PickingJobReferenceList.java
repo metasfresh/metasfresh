@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 @ToString
 public class PickingJobReferenceList
 {
-	private static final PickingJobReferenceList EMPTY = new PickingJobReferenceList(ImmutableList.of());
+	public static final PickingJobReferenceList EMPTY = new PickingJobReferenceList(ImmutableList.of());
 	private final ImmutableList<PickingJobReference> list;
 
 	private PickingJobReferenceList(@NonNull final List<PickingJobReference> list)
