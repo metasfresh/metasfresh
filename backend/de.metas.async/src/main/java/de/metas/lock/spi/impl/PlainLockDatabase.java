@@ -32,6 +32,7 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.AbstractLockDatabase;
+import de.metas.lock.api.impl.LockRecordsByFilter;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.logging.LogManager;
@@ -137,7 +138,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected int lockBySelection(final ILockCommand lockCommand)
 	{
-		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
+		final AdTableId adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
 		final PInstanceId adPInstanceId = lockCommand.getSelectionToLock_AD_PInstance_ID();
 
 		int countLocked = 0;
@@ -159,33 +160,35 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected int lockByFilters(final ILockCommand lockCommand)
 	{
-		@SuppressWarnings("unchecked") final IQueryFilter<Object> selectionToLockFilters = (IQueryFilter<Object>)lockCommand.getSelectionToLock_Filters();
+		final List<LockRecordsByFilter> lockRecordsByFilterList = lockCommand.getSelectionToLock_Filters();
 
 		final LockOwner lockOwner = lockCommand.getOwner();
 		assertValidLockOwner(lockOwner);
 
-		//
-		// Retrieve records to lock
-		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final String tableName = adTableDAO.retrieveTableName(adTableId);
-		final Comparator<Object> orderByComparator = null; // don't care
-		final List<Object> recordsToLock = POJOLookupMap.get().getRecords(tableName, Object.class, selectionToLockFilters, orderByComparator);
-
 		int countLocked = 0;
-		for (final Object recordToLock : recordsToLock)
+		for (final LockRecordsByFilter lockRecordsByFilter : lockRecordsByFilterList)
 		{
-			final TableRecordReference recordToLockRef = TableRecordReference.of(recordToLock);
-			final boolean locked = lockRecord(lockCommand, recordToLockRef);
-			if (!locked)
-			{
-				throw new LockFailedException("Record already locked: " + recordToLock)
-						.setLockCommand(lockCommand);
-			}
+			//
+			// Retrieve records to lock
+			final String tableName = adTableDAO.retrieveTableName(lockRecordsByFilter.getTableId());
+			final IQueryFilter<Object> filters = (IQueryFilter<Object>)lockRecordsByFilter.getFilters();
+			final Comparator<Object> orderByComparator = null; // don't care
+			final List<Object> recordsToLock = POJOLookupMap.get().getRecords(tableName, Object.class, filters, orderByComparator);
 
-			if (locked)
+			for (final Object recordToLock : recordsToLock)
 			{
-				countLocked++;
+				final TableRecordReference recordToLockRef = TableRecordReference.of(recordToLock);
+				final boolean locked = lockRecord(lockCommand, recordToLockRef);
+				if (locked)
+				{
+					countLocked++;
+				}
+				else
+				{
+					throw new LockFailedException("Record already locked: " + recordToLock)
+							.setLockCommand(lockCommand);
+				}
 			}
 		}
 
@@ -306,7 +309,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected int unlockBySelection(final IUnlockCommand unlockCommand)
 	{
-		final int adTableId = unlockCommand.getSelectionToUnlock_AD_Table_ID();
+		final AdTableId adTableId = unlockCommand.getSelectionToUnlock_AD_Table_ID();
 		final PInstanceId adPInstanceId = unlockCommand.getSelectionToUnlock_AD_PInstance_ID();
 
 		int countUnlocked = 0;
@@ -322,7 +325,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return countUnlocked;
 	}
 
-	private List<TableRecordReference> retrieveSelection(final int adTableId, final PInstanceId pinstanceId)
+	private List<TableRecordReference> retrieveSelection(final AdTableId adTableId, final PInstanceId pinstanceId)
 	{
 		// NOTE: below comes a fucked up, not optimum implementation shit which shall do the work for testing
 

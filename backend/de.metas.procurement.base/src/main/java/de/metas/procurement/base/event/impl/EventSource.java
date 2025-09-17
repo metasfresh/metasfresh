@@ -123,7 +123,7 @@ public class EventSource<ET> implements Iterator<ET>, IAutoCloseable
 					.setOwner(lockOwner)
 					.setAutoCleanup(true)
 					.setFailIfNothingLocked(false)
-					.setSetRecordsByFilter(eventTypeClass, filter)
+					.setRecordsByFilter(eventTypeClass, filter)
 					.acquire();
 		}
 

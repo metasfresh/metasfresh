@@ -10,31 +10,30 @@ package de.metas.lock.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.process.PInstanceId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.Future;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import de.metas.process.PInstanceId;
-
 /**
  * Lock release command
- * 
- * @author tsa
  *
+ * @author tsa
  */
 public interface IUnlockCommand
 {
@@ -45,7 +44,7 @@ public interface IUnlockCommand
 
 	/**
 	 * Release the locks after given transaction is commited.
-	 * 
+	 *
 	 * @param trxName
 	 * @return how many records were unlocked
 	 */
@@ -53,7 +52,9 @@ public interface IUnlockCommand
 
 	IUnlockCommand setOwner(LockOwner owner);
 
-	/** @return lock owner; never returns null */
+	/**
+	 * @return lock owner; never returns null
+	 */
 	LockOwner getOwner();
 
 	IUnlockCommand setRecordByModel(Object model);
@@ -68,7 +69,7 @@ public interface IUnlockCommand
 
 	IUnlockCommand setRecordsBySelection(Class<?> modelClass, PInstanceId adPIstanceId);
 
-	int getSelectionToUnlock_AD_Table_ID();
+	AdTableId getSelectionToUnlock_AD_Table_ID();
 
 	PInstanceId getSelectionToUnlock_AD_PInstance_ID();
 
