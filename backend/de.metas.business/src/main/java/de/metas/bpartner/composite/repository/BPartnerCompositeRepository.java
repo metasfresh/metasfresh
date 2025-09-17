@@ -13,6 +13,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.organization.OrgId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -21,10 +22,15 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.LogEntriesRepository;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Recent_V;
 import org.springframework.stereotype.Repository;
 
@@ -64,6 +70,8 @@ public class BPartnerCompositeRepository
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
+
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	public BPartnerCompositeRepository(
 			@NonNull final IBPartnerBL bpartnerBL,
@@ -177,15 +185,60 @@ public class BPartnerCompositeRepository
 			final IQueryBuilder<I_C_BPartner_Recent_V> bpartnerRecentQueryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Recent_V.class)
 					.addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp);
 
+			if (sinceQuery.getExternalSystem() != null)
+			{
+
+				// search by BPartner external reference
+				final IQuery<I_S_ExternalReference> extRefBPartnerQuery = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+						.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Referenced_AD_Table_ID, adTableDAO.retrieveAdTableId(I_C_BPartner.Table_Name))
+						.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, sinceQuery.getExternalSystem())
+						.create();
+
+				final IQueryFilter<I_C_BPartner> bpartnerFilter = queryBL.createCompositeQueryFilter(I_C_BPartner.class)
+						.addInSubQueryFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_S_ExternalReference.COLUMNNAME_Record_ID, extRefBPartnerQuery);
+
+				// search by BPartner location external reference
+				final IQuery<I_S_ExternalReference> extRefBPartnerLocationQuery = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+						.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Referenced_AD_Table_ID, adTableDAO.retrieveAdTableId(I_C_BPartner_Location.Table_Name))
+						.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, sinceQuery.getExternalSystem())
+						.create();
+
+
+				final IQuery<I_C_BPartner_Location> locationQuery = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+						.addInSubQueryFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, I_S_ExternalReference.COLUMNNAME_Record_ID, extRefBPartnerLocationQuery)
+						.create();
+
+				final IQueryFilter<I_C_BPartner> locationFilter = queryBL.createCompositeQueryFilter(I_C_BPartner.class)
+						.addInSubQueryFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, locationQuery);
+
+				// search by user external reference
+				final IQuery<I_S_ExternalReference> extRefUserQuery = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+						.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Referenced_AD_Table_ID, adTableDAO.retrieveAdTableId(I_AD_User.Table_Name))
+						.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, sinceQuery.getExternalSystem())
+						.create();
+
+				final IQuery<I_AD_User> userQuery = queryBL.createQueryBuilder(I_AD_User.class)
+						.addInSubQueryFilter(I_AD_User.COLUMNNAME_AD_User_ID, I_S_ExternalReference.COLUMNNAME_Record_ID, extRefUserQuery)
+						.create();
+
+				final IQueryFilter<I_C_BPartner> userFilter = queryBL.createCompositeQueryFilter(I_C_BPartner.class)
+						.addInSubQueryFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_AD_User.COLUMNNAME_C_BPartner_ID, userQuery);
+
+				final IQuery<I_C_BPartner> bpartnerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
+						.setJoinOr()
+						.addFilter(bpartnerFilter)
+						.addFilter(locationFilter)
+						.addFilter(userFilter)
+						.create();
+
+				bpartnerRecentQueryBuilder
+						.addInSubQueryFilter(I_C_BPartner_Recent_V.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerQuery);
+			}
+
 			final OrgId orgId = sinceQuery.getOrgId();
 			if (sinceQuery.getOrgId() != null)
 			{
 				bpartnerRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
-			}
-
-			if(sinceQuery.getExternalSystem() != null)
-			{
-				bpartnerRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_ExternalSystem, sinceQuery.getExternalSystem());
 			}
 
 			page = bpartnerRecentQueryBuilder
@@ -292,6 +345,6 @@ public class BPartnerCompositeRepository
 	public void save(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
 	{
 		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL);
-		saver.save(bpartnerComposite, validatePermissions );
+		saver.save(bpartnerComposite, validatePermissions);
 	}
 }

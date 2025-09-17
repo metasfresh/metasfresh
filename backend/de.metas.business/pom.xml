@@ -59,6 +59,14 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+        <dependency>
+            <groupId>de.metas.externalreference</groupId>
+            <artifactId>de.metas.externalreference</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+
 		<!-- metasfresh/metasfresh#523 -->
 		<!-- needed because we want to create ProductDescriptors with AttributeKeys that are derived from ASIs -->
 		<dependency>

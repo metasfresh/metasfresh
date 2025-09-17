@@ -314,7 +314,7 @@ public class BpartnerRestController
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
 			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
 	})
-	@GetMapping("/byExtSystem /{extSystem}")
+	@GetMapping("/byExtSystem/{extSystem}")
 	public ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSinceForExtSystem(
 
 			@ApiParam(required = true, value = EXTERNAL_SYSTEM_NAME)
