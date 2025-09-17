@@ -127,6 +127,12 @@
             <version>1.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.report.jasper</groupId>
+            <artifactId>nimbus-fonts</artifactId>
+            <version>1.00</version>
+        </dependency>
+                
         <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
         <!-- 
             ..but don't include them here, because the endcustomer project might require different fonts 

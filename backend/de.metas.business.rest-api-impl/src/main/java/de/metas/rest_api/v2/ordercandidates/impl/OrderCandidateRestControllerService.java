@@ -46,6 +46,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.utils.IdentifierString;
@@ -60,6 +61,7 @@ import de.metas.vertical.healthcare.alberta.order.AlbertaOrderInfo;
 import de.metas.vertical.healthcare.alberta.order.AlbertaOrderLineInfo;
 import de.metas.vertical.healthcare.alberta.order.service.AlbertaOrderService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
@@ -74,6 +76,7 @@ import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ProcessO
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Service
+@RequiredArgsConstructor
 public class OrderCandidateRestControllerService
 {
 	private static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestController.class.getName();
@@ -81,31 +84,14 @@ public class OrderCandidateRestControllerService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 
-	private final JsonConverters jsonConverters;
-	private final OLCandRepository olCandRepo;
-	private final AlbertaOrderService albertaOrderService;
-	private final JsonInvoiceService jsonInvoiceService;
-	private final JsonShipmentService jsonShipmentService;
-	private final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer;
-	private final AsyncBatchService asyncBatchService;
-
-	public OrderCandidateRestControllerService(
-			@NonNull final JsonConverters jsonConverters,
-			@NonNull final OLCandRepository olCandRepo,
-			@NonNull final AlbertaOrderService albertaOrderService,
-			@NonNull final JsonShipmentService jsonShipmentService,
-			@NonNull final JsonInvoiceService jsonInvoiceService,
-			@NonNull final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer,
-			@NonNull final AsyncBatchService asyncBatchService)
-	{
-		this.jsonConverters = jsonConverters;
-		this.olCandRepo = olCandRepo;
-		this.albertaOrderService = albertaOrderService;
-		this.jsonShipmentService = jsonShipmentService;
-		this.jsonInvoiceService = jsonInvoiceService;
-		this.processOLCandsWorkpackageEnqueuer = processOLCandsWorkpackageEnqueuer;
-		this.asyncBatchService = asyncBatchService;
-	}
+	@NonNull private final JsonConverters jsonConverters;
+	@NonNull private final OLCandRepository olCandRepo;
+	@NonNull private final AlbertaOrderService albertaOrderService;
+	@NonNull private final JsonInvoiceService jsonInvoiceService;
+	@NonNull private final JsonShipmentService jsonShipmentService;
+	@NonNull private final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer;
+	@NonNull private final AsyncBatchService asyncBatchService;
+	@NonNull private final OLCandValidatorService olCandValidatorService;
 
 	public JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
@@ -113,12 +99,12 @@ public class OrderCandidateRestControllerService
 	{
 		final HashMap<OLCandQuery, List<OLCand>> query2OLCandList = new HashMap<>();
 
-		final List<OLCand> olCandidates = bulkRequest
+		final List<OLCand> olCandidates = olCandValidatorService.validateOLCands(bulkRequest
 				.getRequests()
 				.stream()
 				.filter(request -> !wasOLCandAlreadyCreated(request, query2OLCandList))
 				.map(request -> createOrderLineCandidate(request, masterdataProvider))
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableList.toImmutableList()));
 
 		return jsonConverters.toJson(olCandidates, masterdataProvider);
 	}
@@ -231,9 +217,9 @@ public class OrderCandidateRestControllerService
 		}
 
 		return BPartnerId.ofRepoId(masterdataProvider
-										   .getBPartnerInfoByExternalIdentifier(externalBPartnerIdentifier, orgCode)
-										   .getMetasfreshId()
-										   .getValue());
+				.getBPartnerInfoByExternalIdentifier(externalBPartnerIdentifier, orgCode)
+				.getMetasfreshId()
+				.getValue());
 	}
 
 	private void assertCanCreate(

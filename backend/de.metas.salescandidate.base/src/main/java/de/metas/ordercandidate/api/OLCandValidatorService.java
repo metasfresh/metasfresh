@@ -94,19 +94,18 @@ public class OLCandValidatorService
 	public void sendNotificationAfterCommit(@NonNull final TableRecordReference candidateRecordReference)
 	{
 		trxManager.runAfterCommit(() -> notificationBL.send(UserNotificationRequest.builder()
-																	.recipientUserId(Env.getLoggedUserId())
-																	.contentADMessage(MSG_OL_CAND_VALIDATION_ERROR)
-																	.contentADMessageParam(candidateRecordReference)
-																	.targetAction(UserNotificationRequest.TargetRecordAction.of(candidateRecordReference))
-																	.build()));
+				.recipientUserId(Env.getLoggedUserId())
+				.contentADMessage(MSG_OL_CAND_VALIDATION_ERROR)
+				.contentADMessageParam(candidateRecordReference)
+				.targetAction(UserNotificationRequest.TargetRecordAction.of(candidateRecordReference))
+				.build()));
 	}
-
 
 	public List<OLCandValidationResult> clearOLCandidates(
 			@NonNull final List<I_C_OLCand> olCandList,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		final List<OLCandValidationResult> olCandValidationResults = validateOLCands(olCandList);
+		final List<OLCandValidationResult> olCandValidationResults = validateOLCandRecords(olCandList);
 
 		final boolean allFine = olCandValidationResults.stream().allMatch(OLCandValidationResult::isOk);
 
@@ -137,7 +136,34 @@ public class OLCandValidatorService
 	}
 
 	@NonNull
-	private List<OLCandValidationResult> validateOLCands(@NonNull final List<I_C_OLCand> olCandList)
+	public ImmutableList<OLCand> validateOLCands(@NonNull final List<OLCand> olCandList)
+	{
+		setValidationProcessInProgress(true); // avoid the InterfaceWrapperHelper.save to trigger another validation from a MV.
+		final OLCandFactory olCandFactory = new OLCandFactory();
+		final ImmutableList.Builder<OLCand> validatedOlCands = ImmutableList.builder();
+
+		try
+		{
+			for (final OLCand cand : olCandList)
+			{
+				final I_C_OLCand olCandRecord = cand.unbox();
+
+				validate(olCandRecord);
+				InterfaceWrapperHelper.save(olCandRecord); // will only access the DB is there are changes in cand
+
+				validatedOlCands.add(olCandFactory.toOLCand(olCandRecord));
+			}
+
+			return validatedOlCands.build();
+		}
+		finally
+		{
+			setValidationProcessInProgress(false);
+		}
+	}
+
+	@NonNull
+	private List<OLCandValidationResult> validateOLCandRecords(@NonNull final List<I_C_OLCand> olCandList)
 	{
 		setValidationProcessInProgress(true); // avoid the InterfaceWrapperHelper.save to trigger another validation from a MV.
 
@@ -150,8 +176,8 @@ public class OLCandValidatorService
 				InterfaceWrapperHelper.save(cand); // will only access the DB is there are changes in cand
 
 				olCandValidationResultBuilder.add(cand.isError()
-														  ? OLCandValidationResult.error(OLCandId.ofRepoId(cand.getC_OLCand_ID()))
-														  : OLCandValidationResult.ok(OLCandId.ofRepoId(cand.getC_OLCand_ID())));
+						? OLCandValidationResult.error(OLCandId.ofRepoId(cand.getC_OLCand_ID()))
+						: OLCandValidationResult.ok(OLCandId.ofRepoId(cand.getC_OLCand_ID())));
 			}
 
 			return olCandValidationResultBuilder.build();

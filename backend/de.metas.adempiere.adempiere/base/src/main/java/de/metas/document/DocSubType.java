@@ -67,6 +67,7 @@ public enum DocSubType implements ReferenceListAwareEnum
 	LICENSE_COMMISSION (X_C_DocType.DOCSUBTYPE_LS),
 	PaymentServiceProviderInvoice(X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice),
 	CallOrder(X_C_DocType.DOCSUBTYPE_CallOrder),
+	OrderOnCommission(X_C_DocType.DOCSUBTYPE_OrderOnCommission)
 	;
 
 	public static final ReferenceId AD_REFERENCE_ID = ReferenceId.ofRepoId(X_C_DocType.DOCSUBTYPE_AD_Reference_ID);
