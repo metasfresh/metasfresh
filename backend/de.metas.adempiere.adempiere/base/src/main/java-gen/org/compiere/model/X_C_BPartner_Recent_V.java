@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Recent_V extends org.compiere.model.PO implements I_C_BPartner_Recent_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1566851913L;
+	private static final long serialVersionUID = 481788612L;
 
     /** Standard Constructor */
     public X_C_BPartner_Recent_V (final Properties ctx, final int C_BPartner_Recent_V_ID, @Nullable final String trxName)
@@ -62,17 +62,5 @@ public class X_C_BPartner_Recent_V extends org.compiere.model.PO implements I_C_
 	public int getC_BPartner_Recent_V_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Recent_V_ID);
-	}
-
-	@Override
-	public void setExternalSystem (final @Nullable java.lang.String ExternalSystem)
-	{
-		set_ValueNoCheck (COLUMNNAME_ExternalSystem, ExternalSystem);
-	}
-
-	@Override
-	public java.lang.String getExternalSystem() 
-	{
-		return get_ValueAsString(COLUMNNAME_ExternalSystem);
 	}
 }
