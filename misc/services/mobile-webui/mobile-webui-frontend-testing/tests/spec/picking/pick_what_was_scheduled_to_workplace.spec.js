@@ -88,7 +88,7 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
         await ApplicationsListScreen.startPickingApplication();
         await PickingJobsListScreen.waitForScreen();
         await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '7 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '' });
@@ -113,8 +113,38 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
         await PickingJobScreen.complete();
         // await PickingJobScreen.goBack();
 
-        await PickingJobListScreen.goBack();
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [
+                                { qtyPicked: "7 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu11', tu: 'tu11', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line1' }
+                            ]
+                        },
+                        P2: {
+                            qtyPicked: [
+                                { qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu12', tu: 'tu12', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line2' }
+                            ]
+                        },
+                        P3: {
+                            qtyPicked: [
+                                { qtyPicked: "17 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu13', tu: 'tu13', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line3' }
+                            ]
+                        },
+                    }
+                }
+            },
+            pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU is not yet closed
+            hus: {
+                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '993 PCE' } },
+                [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '989 PCE' } },
+                [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '983 PCE' } },
+                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' } },
+            }
+        });
 
+        await PickingJobListScreen.goBack();
         await ApplicationsListScreen.logout();
     });
 
@@ -123,7 +153,7 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
 
         await ApplicationsListScreen.startPickingApplication();
         await PickingJobsListScreen.waitForScreen();
-        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '' })
@@ -148,6 +178,40 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
         await PickingJobScreen.complete();
         // await PickingJobScreen.goBack();
 
-        await PickingJobListScreen.goBack();
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [
+                                { qtyPicked: "7 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu11', tu: 'tu11', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line1' },
+                                { qtyPicked: "3 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu21', tu: 'tu21', lu: 'lu2', processed: true, shipmentLineId: 'shipment2_line1' },
+                            ]
+                        },
+                        P2: {
+                            qtyPicked: [
+                                { qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu12', tu: 'tu12', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line2' },
+                                { qtyPicked: "9 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu22', tu: 'tu22', lu: 'lu2', processed: true, shipmentLineId: 'shipment2_line2' },
+                            ]
+                        },
+                        P3: {
+                            qtyPicked: [
+                                { qtyPicked: "17 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu13', tu: 'tu13', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line3' },
+                                { qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu23', tu: 'tu23', lu: 'lu2', processed: true, shipmentLineId: 'shipment2_line3' },
+                            ]
+                        },
+                    }
+                }
+            },
+            pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU is not yet closed
+            hus: {
+                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '990 PCE' } },
+                [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '980 PCE' } },
+                [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '970 PCE' } },
+                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' } },
+                lu2: { huStatus: 'E', storages: { P1: '3 PCE', P2: '9 PCE', P3: '13 PCE' } },
+            }
+        });
+
     });
 });
