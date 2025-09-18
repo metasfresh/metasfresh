@@ -265,6 +265,7 @@ public class BPartnerQuickInputService
 	public BPartnerLocationId createBPartnerLocationFromTemplate(@NonNull final I_C_BPartner_Location_QuickInput template,
 														 @NonNull final NewRecordContext newRecordContext)
 	{
+		final BPartnerLocation locationFromBPartnerLocationTemplate = getLocationFromBPartnerLocationTemplate(template);
 		//TODO implement me
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
@@ -587,6 +588,29 @@ public class BPartnerQuickInputService
 				.mobile(template.getC_BPartner_Location_Mobile())
 				.fax(template.getC_BPartner_Location_Fax())
 				.email(template.getC_BPartner_Location_Email())
+				.existingLocationId(uniqueLocationIdOfBPartnerTemplate)
+				.build();
+	}
+
+	private @Nullable
+	BPartnerLocation getLocationFromBPartnerLocationTemplate(final I_C_BPartner_Location_QuickInput template)
+	{
+		final LocationId uniqueLocationIdOfBPartnerTemplate = LocationId.ofRepoIdOrNull(template.getC_Location_ID());
+
+		if (uniqueLocationIdOfBPartnerTemplate == null)
+		{
+			return null;
+		}
+
+		return BPartnerLocation.builder()
+				.locationType(BPartnerLocationType.builder()
+						.billTo(template.isBillTo())
+						.billToDefault(template.isBillToDefault())
+						.shipTo(template.isShipTo())
+						.shipToDefault(template.isShipToDefault())
+						.build())
+				.name(".")
+				.ephemeral(template.isOneTime())
 				.existingLocationId(uniqueLocationIdOfBPartnerTemplate)
 				.build();
 	}

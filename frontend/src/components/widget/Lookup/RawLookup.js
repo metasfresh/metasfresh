@@ -1,22 +1,19 @@
-import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import TetherComponent from 'react-tether';
-import ReactDOM from 'react-dom';
-import classnames from 'classnames';
-import { debounce } from 'throttle-debounce';
-import counterpart from 'counterpart';
-import { LOOKUP_SHOW_MORE_PIXEL_NO } from '../../../constants/Constants';
+import PropTypes from "prop-types";
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import TetherComponent from "react-tether";
+import ReactDOM from "react-dom";
+import classnames from "classnames";
+import { debounce } from "throttle-debounce";
+import counterpart from "counterpart";
+import { LOOKUP_SHOW_MORE_PIXEL_NO } from "../../../constants/Constants";
 
-import {
-  autocompleteModalRequest,
-  autocompleteRequest,
-} from '../../../actions/GenericActions';
-import { getViewAttributeTypeahead } from '../../../api';
-import { openModal } from '../../../actions/WindowActions';
-import SelectionDropdown from '../SelectionDropdown';
-import { isBlank } from '../../../utils';
-import { getViewFieldTypeahead } from '../../../api/view';
+import { autocompleteModalRequest, autocompleteRequest } from "../../../actions/GenericActions";
+import { getViewAttributeTypeahead } from "../../../api";
+import { openModal } from "../../../actions/WindowActions";
+import SelectionDropdown from "../SelectionDropdown";
+import { isBlank } from "../../../utils";
+import { getViewFieldTypeahead } from "../../../api/view";
 
 const KEY_None = null;
 const KEY_New = 'NEW';
@@ -171,12 +168,16 @@ export class RawLookup extends Component {
   handleSelect_AddNew = () => {
     const {
       dispatch,
-      newRecordWindowId,
-      newRecordCaption,
+      newRecordWindowId: parentWindowId,
+      newRecordCaption: parentCaption,
       filterWidget,
       parameterName,
       mainProperty,
     } = this.props;
+    // Prioritize values from `this.props.item` over those directly in `this.props`
+    const newRecordWindowId =
+      this.props.item?.newRecordWindowId || parentWindowId;
+    const newRecordCaption = this.props.item?.newRecordCaption || parentCaption;
 
     this.handleDropdownBlur();
 
@@ -533,7 +534,7 @@ export class RawLookup extends Component {
   };
 
   getNewRecordKeyCaptionIfAvailable = () => {
-    const { newRecordCaption } = this.props;
+    const { newRecordCaption } = this.props.item;
     return newRecordCaption != null
       ? { key: KEY_New, caption: newRecordCaption }
       : null;

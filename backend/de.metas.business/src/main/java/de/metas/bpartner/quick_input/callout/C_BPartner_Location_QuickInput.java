@@ -22,7 +22,6 @@
 
 package de.metas.bpartner.quick_input.callout;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.quick_input.service.BPartnerQuickInputRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -33,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.I_C_Location;
@@ -68,7 +66,12 @@ public class C_BPartner_Location_QuickInput
 	@CalloutMethod(columnNames = I_C_BPartner_Location_QuickInput.COLUMNNAME_C_Location_ID)
 	public void onLocationChanged(@NonNull final I_C_BPartner_Location_QuickInput record)
 	{
-		final I_C_Location locationRecord = locationDAO.getById(LocationId.ofRepoIdOrNull(record.getC_Location_ID()));
+		final LocationId id = LocationId.ofRepoIdOrNull(record.getC_Location_ID());
+		if (id == null)
+		{
+			return;
+		}
+		final I_C_Location locationRecord = locationDAO.getById(id);
 
 		if (locationRecord == null)
 		{
@@ -82,7 +85,7 @@ public class C_BPartner_Location_QuickInput
 		final String name = MakeUniqueLocationNameCommand.builder()
 				.name(record.getName())
 				.address(locationRecord)
-				.companyName(getCompanyName(record))
+				.companyName(getCompanyNameOrNull(record))
 				.existingNames(repo.getOtherLocationNames(record.getC_BPartner_QuickInput_ID(), record.getC_BPartner_Location_QuickInput_ID()))
 				.maxLength(poInfo.getFieldLength(I_C_BPartner_Location_QuickInput.COLUMNNAME_Name))
 				.build()
@@ -92,22 +95,14 @@ public class C_BPartner_Location_QuickInput
 	}
 
 	@Nullable
-	private String getCompanyName(@NonNull final I_C_BPartner_Location_QuickInput record)
+	private String getCompanyNameOrNull(@NonNull final I_C_BPartner_Location_QuickInput record)
 	{
 		final BPartnerQuickInputId bpartnerQuickInputId = BPartnerQuickInputId.ofRepoIdOrNull(record.getC_BPartner_QuickInput_ID());
-		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
 		if (bpartnerQuickInputId != null)
 		{
 			final I_C_BPartner_QuickInput bpartnerQuickInputRecord = repo.getById(bpartnerQuickInputId);
 			return bpartnerQuickInputRecord.getCompanyname();
 		}
-		else if (bPartnerId != null)
-		{
-			return bpartnerDAO.getById(bPartnerId).getCompanyName();
-		}
-		else
-		{
-			throw new AdempiereException("No BPartnerQuickInputId nor BPartnerId found for " + record);
-		}
+		return null;
 	}
 }
