@@ -1,6 +1,6 @@
 package de.metas.ui.web.pickingJobSchedule.process;
 
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleId;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.process.ProcessPreconditionsResolution;
 
 import java.util.Set;

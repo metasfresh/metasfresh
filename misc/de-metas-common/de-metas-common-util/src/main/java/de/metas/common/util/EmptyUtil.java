@@ -44,21 +44,26 @@ public class EmptyUtil
 		{
 			return true;
 		}
-
-		if (value instanceof String)
+		else if (value instanceof String)
 		{
 			return isBlank((String)value);
 		}
-		if (value instanceof Object[])
+		else if (value instanceof Object[])
 		{
 			return isEmpty((Object[])value);
 		}
-		if (value instanceof Collection<?>)
+		else if (value instanceof Collection<?>)
 		{
 			return isEmpty((Collection<?>)value);
 		}
-
-		return false;
+		else if (value instanceof Iterable<?>)
+		{
+			return !((Iterable<?>)value).iterator().hasNext();
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	@Contract("null -> true")

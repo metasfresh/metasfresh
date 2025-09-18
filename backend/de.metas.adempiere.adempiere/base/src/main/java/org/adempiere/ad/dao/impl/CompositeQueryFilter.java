@@ -111,7 +111,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 		}
 	};
 
-	public CompositeQueryFilter(final Class<T> modelClass)
+	private CompositeQueryFilter(final Class<T> modelClass)
 	{
 		this(InterfaceWrapperHelper.getTableName(modelClass));
 	}
@@ -126,6 +126,10 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 	{
 		this.tableName = null; // N/A
 	}
+
+	public static <T> CompositeQueryFilter<T> newInstance(@NonNull final Class<T> modelClass) {return new CompositeQueryFilter<>(modelClass);}
+
+	public static <T> CompositeQueryFilter<T> newInstance(@NonNull final String tableName) {return new CompositeQueryFilter<>(tableName);}
 
 	@Override
 	public String toString()
@@ -688,6 +692,5 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 		this._allowSqlFilters = allowSqlFilters;
 		_compiled = false;
 		return this;
-
 	}
 }

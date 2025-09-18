@@ -570,7 +570,7 @@ public class M_ShipmentSchedule_StepDef
 
 		final Set<InOutId> inOutIds = shipmentService.generateShipmentsForScheduleIds(
 				GenerateShipmentsForSchedulesRequest.builder()
-						.scheduleIds(ImmutableSet.of(shipmentScheduleId))
+						.shipmentScheduleIds(ImmutableSet.of(shipmentScheduleId))
 						.quantityTypeToUse(qtyTypeToUse)
 						.isCompleteShipment(isCompleteShipment)
 						.build()

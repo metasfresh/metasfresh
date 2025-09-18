@@ -75,6 +75,7 @@ import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -107,7 +108,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -224,7 +225,7 @@ public class JsonShipmentService
 			if (request.getCloseShipmentSchedule())
 			{
 				loggable.addLog("processShipmentSchedules - start closing shipmentSchedules");
-				generateShipmentRequest.getScheduleIds().forEach(shipmentScheduleBL::closeShipmentSchedule);
+				shipmentScheduleBL.closeShipmentSchedules(generateShipmentRequest.getScheduleIds().getShipmentScheduleIds());
 				loggable.addLog("processShipmentSchedules - finished closing shipmentSchedules");
 			}
 		}
@@ -460,7 +461,7 @@ public class JsonShipmentService
 		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new ImmutableMap.Builder<>();
 		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> scheduleToQuantityToDeliver = new ImmutableMap.Builder<>();
 
-		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIdsBuilder = new ImmutableSet.Builder<>();
+		final HashSet<ShipmentScheduleId> shipmentScheduleIds = new HashSet<>();
 
 		final ShippingInfoCache cache = newShippingInfoCache();
 		cache.warmUpForShipmentScheduleIds(createShipmentInfoList, CreateShipmentInfoCandidate::getShipmentScheduleId);
@@ -470,7 +471,7 @@ public class JsonShipmentService
 			final ShipmentScheduleId shipmentScheduleId = createShipmentCandidate.getShipmentScheduleId();
 			final JsonCreateShipmentInfo createShipmentInfo = createShipmentCandidate.getCreateShipmentInfo();
 
-			shipmentScheduleIdsBuilder.add(shipmentScheduleId);
+			shipmentScheduleIds.add(shipmentScheduleId);
 
 			if (Check.isNotBlank(createShipmentInfo.getDocumentNo()))
 			{
@@ -491,7 +492,7 @@ public class JsonShipmentService
 
 		return GenerateShipmentsRequest.builder()
 				.asyncBatchId(asyncBatchId)
-				.scheduleIds(shipmentScheduleIdsBuilder.build())
+				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(shipmentScheduleIds))
 				.scheduleToExternalInfo(scheduleId2ExternalInfo.build())
 				.scheduleToQuantityToDeliverOverride(QtyToDeliverMap.ofMap(scheduleToQuantityToDeliver.build()))
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
@@ -666,15 +667,21 @@ public class JsonShipmentService
 
 		final Map<ShipmentScheduleId, CreateShipmentInfoCandidate> candidateInfoById = Maps.uniqueIndex(createShipmentCandidates, CreateShipmentInfoCandidate::getShipmentScheduleId);
 
-		final Map<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleIds = shipmentService.getShipmentScheduleIdByAsyncBatchId(candidateInfoById.keySet());
+		final ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> asyncBatchId2ScheduleIds = shipmentService.groupSchedulesByAsyncBatch(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(candidateInfoById.keySet()));
 
 		return asyncBatchId2ScheduleIds.entrySet()
 				.stream()
-				.collect(Collectors.toMap(Map.Entry::getKey,
-						entry -> entry.getValue()
-								.stream()
-								.map(candidateInfoById::get)
-								.collect(ImmutableList.toImmutableList())));
+				.collect(
+						Collectors.toMap(
+								Map.Entry::getKey,
+								entry -> {
+									final Set<ShipmentScheduleId> shipmentScheduleIds = entry.getValue().getShipmentScheduleIds();
+									return shipmentScheduleIds.stream()
+											.map(candidateInfoById::get)
+											.collect(ImmutableList.toImmutableList());
+								}
+						)
+				);
 	}
 
 	@NonNull

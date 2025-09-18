@@ -39,10 +39,17 @@ public interface IShipmentScheduleAllocBL extends ISingletonService
 	 */
 	I_M_ShipmentSchedule_QtyPicked createNewQtyPickedRecord(I_M_ShipmentSchedule sched, StockQtyAndUOMQty stockQtyAndCatchQty);
 
+	<T extends I_M_ShipmentSchedule_QtyPicked> T createNewQtyPickedRecordNoSave(
+			@NonNull I_M_ShipmentSchedule sched,
+			@NonNull StockQtyAndUOMQty stockQtyAndCatchQty,
+			@NonNull Class<T> type);
+
+	;
+
 	/**
 	 * @return true if given alloc was already delivered (i.e. {@link I_M_ShipmentSchedule_QtyPicked#getM_InOutLine_ID()} is set).
-	 *         Note: task 08959
-	 *         Only the allocations made on inout lines that belong to a completed inouts are considered Delivered.
+	 * Note: task 08959
+	 * Only the allocations made on inout lines that belong to a completed inouts are considered Delivered.
 	 */
 	boolean isDelivered(I_M_ShipmentSchedule_QtyPicked alloc);
 

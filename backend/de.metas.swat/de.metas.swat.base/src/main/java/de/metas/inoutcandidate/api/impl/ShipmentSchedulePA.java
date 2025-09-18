@@ -166,15 +166,22 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public I_M_ShipmentSchedule getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return getByOrderLineIdQuery(orderLineId)
+		return getByOrderLineIdsQuery(orderLineId)
 				.create()
 				.firstOnly(I_M_ShipmentSchedule.class);
 	}
 
 	@Override
+	public List<I_M_ShipmentSchedule> getByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty()) {return ImmutableList.of();}
+		return getByOrderLineIdsQuery(orderLineIds).list();
+	}
+
+	@Override
 	public ShipmentScheduleId getShipmentScheduleIdByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return getByOrderLineIdQuery(orderLineId)
+		return getByOrderLineIdsQuery(orderLineId)
 				.create()
 				.firstIdOnly(ShipmentScheduleId::ofRepoIdOrNull);
 	}
@@ -192,13 +199,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.anyMatch();
 	}
 
-	private IQueryBuilder<I_M_ShipmentSchedule> getByOrderLineIdQuery(@NonNull final OrderLineId orderLineId)
+	private IQueryBuilder<I_M_ShipmentSchedule> getByOrderLineIdsQuery(@NonNull final OrderLineId... orderLineIds)
+	{
+		return getByOrderLineIdsQuery(ImmutableSet.copyOf(orderLineIds));
+	}
+
+	private IQueryBuilder<I_M_ShipmentSchedule> getByOrderLineIdsQuery(@NonNull final Set<OrderLineId> orderLineIds)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, orderLineId)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, orderLineIds)
 				.orderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
@@ -629,6 +641,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final Class<T> clazz)
 	{
+		if (ids.isEmpty()) {return ImmutableMap.of();}
+		
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
 				.create()

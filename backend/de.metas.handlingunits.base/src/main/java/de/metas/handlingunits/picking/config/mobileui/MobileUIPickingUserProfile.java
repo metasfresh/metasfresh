@@ -89,6 +89,8 @@ public class MobileUIPickingUserProfile
 	@NonNull String name;
 	boolean isAllowPickingAnyCustomer;
 	boolean isFilterByBarcode;
+	boolean isActiveWorkplaceRequired;
+	boolean isConsiderOnlyJobScheduledToWorkplace;
 	@Getter @NonNull PickingCustomerConfigsCollection customerConfigs;
 	@NonNull PickingJobOptions defaultPickingJobOptions;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
@@ -101,7 +103,9 @@ public class MobileUIPickingUserProfile
 	private MobileUIPickingUserProfile(
 			final @NonNull String name,
 			final boolean isAllowPickingAnyCustomer,
-			final boolean isFilterByBarcode,
+			final boolean isFilterByBarcode, 
+			final boolean isActiveWorkplaceRequired,
+			final boolean isConsiderOnlyJobScheduledToWorkplace,
 			final @Nullable PickingCustomerConfigsCollection customerConfigs,
 			final @NonNull PickingJobOptions defaultPickingJobOptions,
 			final @Nullable PickingFiltersList filters,
@@ -110,6 +114,8 @@ public class MobileUIPickingUserProfile
 		this.name = name;
 		this.isAllowPickingAnyCustomer = isAllowPickingAnyCustomer;
 		this.isFilterByBarcode = isFilterByBarcode;
+		this.isActiveWorkplaceRequired = isActiveWorkplaceRequired;
+		this.isConsiderOnlyJobScheduledToWorkplace = isConsiderOnlyJobScheduledToWorkplace;
 		this.customerConfigs = customerConfigs != null ? customerConfigs : PickingCustomerConfigsCollection.EMPTY;
 		this.defaultPickingJobOptions = defaultPickingJobOptions;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;

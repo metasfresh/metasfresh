@@ -32,8 +32,8 @@ import de.metas.gs1.GS1ProductCodes;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
@@ -76,7 +76,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	@NonNull String salesOrderDocumentNo;
 	int orderLineSeqNo;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
-	@NonNull ShipmentScheduleId shipmentScheduleId;
+	@NonNull ShipmentScheduleAndJobScheduleId scheduleId;
 	@Nullable UomId catchUomId;
 	@Nullable PPOrderId pickFromManufacturingOrderId;
 	@NonNull ImmutableList<PickingJobStep> steps;
@@ -113,7 +113,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 			@NonNull final String salesOrderDocumentNo,
 			@NonNull final Integer orderLineSeqNo,
 			@NonNull final BPartnerLocationId deliveryBPLocationId,
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ShipmentScheduleAndJobScheduleId scheduleId,
 			@Nullable final UomId catchUomId,
 			@Nullable final PPOrderId pickFromManufacturingOrderId,
 			@NonNull final ImmutableList<PickingJobStep> steps,
@@ -134,7 +134,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 		this.salesOrderDocumentNo = salesOrderDocumentNo;
 		this.orderLineSeqNo = orderLineSeqNo;
 		this.deliveryBPLocationId = deliveryBPLocationId;
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.scheduleId = scheduleId;
 		this.catchUomId = catchUomId;
 		this.pickFromManufacturingOrderId = pickFromManufacturingOrderId;
 		this.steps = steps;
@@ -184,11 +184,11 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 
 	public I_C_UOM getUOM() {return qtyToPick.getUOM();}
 
-	Stream<ShipmentScheduleId> streamShipmentScheduleId()
+	Stream<ShipmentScheduleAndJobScheduleId> streamScheduleIds()
 	{
 		return Stream.concat(
-						Stream.of(shipmentScheduleId),
-						streamSteps().map(PickingJobStep::getShipmentScheduleId)
+						Stream.of(scheduleId),
+						streamSteps().map(PickingJobStep::getScheduleId)
 				)
 				.filter(Objects::nonNull);
 	}
@@ -229,7 +229,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 				.id(request.getNewStepId())
 				.isGeneratedOnFly(request.isGeneratedOnFly())
 				.salesOrderAndLineId(salesOrderAndLineId)
-				.shipmentScheduleId(shipmentScheduleId)
+				.scheduleId(scheduleId)
 				.productId(productId)
 				.productName(productName)
 				.qtyToPick(request.getQtyToPick())

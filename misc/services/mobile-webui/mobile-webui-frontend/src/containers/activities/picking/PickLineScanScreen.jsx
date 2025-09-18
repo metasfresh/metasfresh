@@ -50,6 +50,7 @@ import { toNumberOrZero } from '../../../utils/numbers';
 import { isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
 
 export const NEXT_PickingJob = 'pickingJob';
 export const NEXT_NextPickingLine = 'nextPickingLine';
@@ -92,8 +93,9 @@ const PickLineScanScreen = () => {
         scannedBarcode,
         expectedProductId: productId,
         customQRCodeFormats,
+        pickingUnit,
       }),
-    [productId, customQRCodeFormats]
+    [productId, customQRCodeFormats, pickingUnit]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
@@ -122,8 +124,8 @@ const PickLineScanScreen = () => {
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       scannedBarcode={qrCode}
       qtyTargetCaption={trl('general.QtyToPick')}
-      qtyCaption={trl(pickingUnit === 'TU' ? 'general.QtyTU' : 'general.Qty')}
-      packingItemName={pickingUnit === 'TU' ? packingItemName : null}
+      qtyCaption={trl(pickingUnit === PICKING_UNIT_TU ? 'general.QtyTU' : 'general.Qty')}
+      packingItemName={pickingUnit === PICKING_UNIT_TU ? packingItemName : null}
       qtyMax={qtyToPickRemaining}
       qtyTarget={qtyToPickRemaining}
       uom={uom}
@@ -170,46 +172,51 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 };
 
 // @VisibleForTesting
-export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId, customQRCodeFormats }) => {
+export const convertScannedBarcodeToResolvedResult = ({
+  scannedBarcode,
+  expectedProductId,
+  customQRCodeFormats,
+  pickingUnit,
+}) => {
   const parsedQRCode = parseQRCodeString({ string: scannedBarcode, customQRCodeFormats });
 
   if (expectedProductId != null && parsedQRCode.productId != null && parsedQRCode.productId !== expectedProductId) {
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  return convertQRCodeObjectToResolvedResult(parsedQRCode);
+  return convertQRCodeObjectToResolvedResult({ parsedQRCode, pickingUnit });
 };
 
-const convertQRCodeObjectToResolvedResult = async (qrCodeObj) => {
+const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit }) => {
   const result = {
-    qrCode: qrCodeObj,
+    qrCode: parsedQRCode,
   };
 
-  if (qrCodeObj.weightNet != null) {
-    result['catchWeight'] = qrCodeObj.weightNet;
+  if (parsedQRCode.weightNet != null) {
+    result['catchWeight'] = parsedQRCode.weightNet;
   }
 
-  if (qrCodeObj.isTUToBePickedAsWhole === true) {
+  if (parsedQRCode.isTUToBePickedAsWhole === true) {
     result['isTUToBePickedAsWhole'] = true;
   }
 
-  result['bestBeforeDate'] = qrCodeObj.bestBeforeDate;
-  result['productionDate'] = qrCodeObj.productionDate;
-  result['lotNo'] = qrCodeObj.lotNo;
+  result['bestBeforeDate'] = parsedQRCode.bestBeforeDate;
+  result['productionDate'] = parsedQRCode.productionDate;
+  result['lotNo'] = parsedQRCode.lotNo;
 
   result.scannedHU = {
-    huUnitType: qrCodeObj.huUnitType,
+    huUnitType: parsedQRCode.huUnitType,
   };
-  if (qrCodeObj.huUnitType === 'LU') {
+  if (parsedQRCode.huUnitType === 'LU' && pickingUnit === PICKING_UNIT_TU) {
     try {
-      const huInfo = await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(qrCodeObj) });
+      const huInfo = await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(parsedQRCode) });
       result.scannedHU.qtyTUs = huInfo.qtyTUs;
     } catch (error) {
       console.warn('Failed to get LU info. Ignored', error);
     }
   }
 
-  console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj });
+  console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj: parsedQRCode, pickingUnit });
   return result;
 };
 

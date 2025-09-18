@@ -100,13 +100,13 @@ public class QueryBL implements IQueryBL
 	@Override
 	public <T> ICompositeQueryFilter<T> createCompositeQueryFilter(final Class<T> modelClass)
 	{
-		return new CompositeQueryFilter<>(modelClass);
+		return CompositeQueryFilter.newInstance(modelClass);
 	}
 
 	@Override
 	public ICompositeQueryFilter<Object> createCompositeQueryFilter(final String modelTableName)
 	{
-		return new CompositeQueryFilter<>(modelTableName);
+		return CompositeQueryFilter.newInstance(modelTableName);
 	}
 
 	@Override

@@ -21,8 +21,8 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.util.CatchWeightHelper;
@@ -37,7 +37,6 @@ import de.metas.picking.service.PackingSlot;
 import de.metas.picking.service.PickedHuAndQty;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
@@ -50,7 +49,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -282,14 +280,11 @@ public class HU2PackingItemsAllocator
 	}
 
 	/**
-	 * Allocates the given <code>hus</code> to this instance's current item to pack (see {@link #getItemToPack()}).
+	 * Allocates the given <code>hus</code> to this instance's current item to pack.
 	 * <p>
 	 * The allocated qty will be the HUs' qty for the product that is currently packed (i.e. the qty will be defined by the handling units, not e.g. by the underlying shipment schedule's
 	 * QtyToDeliver).
 	 * <p>
-	 * The quantity that was allocated on HUs will be subtracted from {@link #getItemToPack()}.
-	 *
-	 * @return
 	 */
 	private HU2PackingItemsAllocator allocate()
 	{
@@ -546,11 +541,15 @@ public class HU2PackingItemsAllocator
 	private void pickFromVHU_pickDirectly(final @NonNull I_M_HU pickFromVHU, final @NonNull PackingItemPart packedPart, final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final Quantity qtyPacked = packedPart.getQty();
-		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU);
 
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
-		final boolean anonymousHuPickedOnTheFly = false;
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, pickFromVHU, _huContext, anonymousHuPickedOnTheFly);
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
+				.shipmentSchedule(shipmentSchedule)
+				.qtyPicked(CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU))
+				.tuOrVHU(pickFromVHU)
+				.huContext(_huContext)
+				.anonymousHuPickedOnTheFly(false)
+				.build());
 
 		// Transfer the qtyPicked from vhu to our target HU (if any)
 		packFromVHUToDestination(pickFromVHU, packedPart);
@@ -583,12 +582,14 @@ public class HU2PackingItemsAllocator
 																							 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
 																							 .build()));
 
-		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huReceived);
-
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesSupplier.getShipmentScheduleById(packedPart.getShipmentScheduleId());
-		final boolean anonymousHuPickedOnTheFly = false;
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, huReceived, _huContext, anonymousHuPickedOnTheFly);
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
+				.shipmentSchedule(shipmentSchedulesSupplier.getShipmentScheduleById(packedPart.getShipmentScheduleId()))
+				.qtyPicked(CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huReceived))
+				.tuOrVHU(huReceived)
+				.huContext(_huContext)
+				.anonymousHuPickedOnTheFly(false)
+				.build());
 
 		// Transfer the qtyPicked from vhu to our target HU (if any)
 		if (hasPackToDestination())

@@ -1,6 +1,6 @@
 package de.metas.handlingunits.picking.job_schedule.service.commands;
 
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.NonNull;
