@@ -35,20 +35,11 @@ import javax.annotation.Nullable;
 @Value
 public class ExternalReferenceQuery
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	ExternalSystem externalSystem;
-
-	@NonNull
-	IExternalReferenceType externalReferenceType;
-
-	@Nullable
-	String externalReference;
-
-	@Nullable
-	MetasfreshId metasfreshId;
+	@NonNull OrgId orgId;
+	@NonNull ExternalSystem externalSystem;
+	@NonNull IExternalReferenceType externalReferenceType;
+	@Nullable String externalReference;
+	@Nullable MetasfreshId metasfreshId;
 
 	@Builder
 	public ExternalReferenceQuery(

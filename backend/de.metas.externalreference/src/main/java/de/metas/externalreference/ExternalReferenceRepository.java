@@ -219,18 +219,10 @@ public class ExternalReferenceRepository
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
 				.addOnlyActiveRecordsFilter()
-
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID,
-						query.getOrgId())
-
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID,
-						query.getExternalSystem().getId())
-
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type,
-						query.getExternalReferenceType().getCode())
-
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference,
-						query.getExternalReference())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID, query.getOrgId())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, query.getExternalSystem().getId())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, query.getExternalReferenceType().getCode())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, query.getExternalReference())
 				.create()
 				.setRequiredAccess(Access.READ)
 				.firstOnlyOptional(I_S_ExternalReference.class)

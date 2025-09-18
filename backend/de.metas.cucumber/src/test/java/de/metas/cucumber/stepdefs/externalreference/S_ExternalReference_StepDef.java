@@ -109,14 +109,15 @@ public class S_ExternalReference_StepDef
 		final List<Map<String, String>> externalReferencesTableList = dataTable.asMaps();
 		for (final Map<String, String> dataTableRow : externalReferencesTableList)
 		{
-			final String externalSystem = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalSystem");
-			final String type = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "Type");
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(DataTableUtil.extractStringForColumnName(dataTableRow, "ExternalSystem"));
+			final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
+			final IExternalReferenceType type = externalReferenceTypes.ofCodeNotNull(DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "Type"));
 			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
 			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
 
 			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
-					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem)
-					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId())
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
 					.create()
