@@ -55,7 +55,8 @@ Feature:bpartner get using metasfresh api
     Then the metasfresh REST-API responds with
     """
    {
-  "resultTimestamp": 2461507318000,
+  "resultTimestamp": 2461561200000
+,
   "totalSize": 1,
   "pageSize": 1,
   "items": [
@@ -76,7 +77,7 @@ Feature:bpartner get using metasfresh api
         "vatId": null,
         "metasfreshUrl": "http://localhost:3000/window/123/2156426",
         "changeInfo": {
-          "createdMillis": 1758046415281,
+          "createdMillis": 2461561200000,
           "createdBy": 100,
           "lastUpdatedMillis": 2461561200000,
           "lastUpdatedBy": 100
