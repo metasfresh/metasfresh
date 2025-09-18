@@ -33,7 +33,7 @@ public class ExternalSystemType
 				.forEach(systemValue -> interner.put(systemValue.getValue(), systemValue));
 	}
 
-	public static final ImmutableBiMap<ExternalSystemType, String> LEGACY_CODES = ImmutableBiMap.<ExternalSystemType, String>builder()
+	private static final ImmutableBiMap<ExternalSystemType, String> LEGACY_CODES = ImmutableBiMap.<ExternalSystemType, String>builder()
 			.put(Alberta, "A")
 			.put(Shopware6, "S6")
 			.put(Other, "Other")
@@ -62,10 +62,10 @@ public class ExternalSystemType
 		return interner.computeIfAbsent(valueNorm, ExternalSystemType::new);
 	}
 
-	@NonNull
-	public static ExternalSystemType ofLegacyCode(@NonNull final String code)
+	@Nullable
+	public static ExternalSystemType ofLegacyCodeOrNull(@NonNull final String code)
 	{
-		return ofValue(LEGACY_CODES.inverse().get(code).getValue());
+		return LEGACY_CODES.inverse().get(code);
 	}
 
 	@NonNull

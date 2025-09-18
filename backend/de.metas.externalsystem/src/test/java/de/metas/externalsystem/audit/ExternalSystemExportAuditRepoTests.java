@@ -45,7 +45,7 @@ public class ExternalSystemExportAuditRepoTests
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemExportAuditRepo = new ExternalSystemExportAuditRepo();
+		externalSystemExportAuditRepo = ExternalSystemExportAuditRepo.newInstanceForUnitTesting();
 	}
 
 	@Test

@@ -46,7 +46,7 @@ public class ExternalSystemServiceRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemServiceRepo = new ExternalSystemServiceRepository();
+		externalSystemServiceRepo = ExternalSystemServiceRepository.newInstanceForUnitTesting();
 	}
 
 	@Test

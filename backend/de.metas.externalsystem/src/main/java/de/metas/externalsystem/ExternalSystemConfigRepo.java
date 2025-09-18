@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -75,10 +76,12 @@ import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -96,18 +99,20 @@ import static de.metas.externalsystem.ExternalSystemType.Shopware6;
 import static de.metas.externalsystem.ExternalSystemType.WOO;
 
 @Repository
+@RequiredArgsConstructor
 public class ExternalSystemConfigRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
 	private final TaxCategoryDAO taxCategoryDAO;
+	private final ExternalSystemRepository externalSystemRepository;
 
-	public ExternalSystemConfigRepo(
-			@NonNull final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository,
-			@NonNull final TaxCategoryDAO taxCategoryDAO)
+	@VisibleForTesting
+	public static ExternalSystemConfigRepo newInstanceForUnitTesting()
 	{
-		this.externalSystemOtherConfigRepository = externalSystemOtherConfigRepository;
-		this.taxCategoryDAO = taxCategoryDAO;
+		Adempiere.assertUnitTestMode();
+		return new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO(),
+			ExternalSystemRepository.newInstanceForUnitTesting());
 	}
 
 	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
@@ -249,8 +254,7 @@ public class ExternalSystemConfigRepo
 	public String getParentTypeById(final @NonNull ExternalSystemParentConfigId id)
 	{
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
-
-		return externalSystemConfigRecord.getType();
+		return externalSystemRepository.getById(ExternalSystemId.ofRepoId(externalSystemConfigRecord.getExternalSystem_ID())).getType().getValue();
 	}
 
 	/**
@@ -570,7 +574,7 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
 
 		return ExternalSystemParentConfig.builder()
-				.type(ExternalSystemType.ofValue(externalSystemConfigRecord.getType()))
+				.type(externalSystemRepository.getById(ExternalSystemId.ofRepoId(externalSystemConfigRecord.getExternalSystem_ID())).getType())
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
 				.name(externalSystemConfigRecord.getName())
 				.orgId(OrgId.ofRepoId(externalSystemConfigRecord.getAD_Org_ID()))
@@ -764,7 +768,7 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config record = InterfaceWrapperHelper.loadOrNew(config.getId(), I_ExternalSystem_Config.class);
 
 		record.setName(config.getName());
-		record.setType(config.getType().getValue());
+		record.setExternalSystem_ID(externalSystemRepository.getByType(config.getType()).getId().getRepoId());
 		record.setIsActive(config.isActive());
 
 		return record;

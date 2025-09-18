@@ -27,8 +27,10 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
@@ -64,11 +66,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.externalsystem.ExternalSystemType.Alberta;
-import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
-import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
-import static de.metas.externalsystem.ExternalSystemType.RabbitMQ;
-import static de.metas.externalsystem.ExternalSystemType.Shopware6;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnMaterialReceipt;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnProductionReceipt;
@@ -83,6 +80,7 @@ public class ExternalSystem_Config_StepDef
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	private final ExternalSystem_Config_StepDefData configTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
@@ -115,7 +113,7 @@ public class ExternalSystem_Config_StepDef
 	@Then("a new metasfresh AD_PInstance_Log is stored for the external system {string} invocation")
 	public void new_metasfresh_ad_pinstance_log_is_stored_for_external_system_process(final String externalSystemCode) throws JSONException
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCode(externalSystemCode);
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCodeOrNull(externalSystemCode);
 		final AdProcessId adProcessId =
 				adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemProcesses.getExternalSystemProcessClassName(externalSystemType));
 
@@ -174,7 +172,7 @@ public class ExternalSystem_Config_StepDef
 			parentConfig.setIsActive(false);
 			InterfaceWrapperHelper.saveRecord(parentConfig);
 
-			final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCode(externalSystemConfig.getType());
+			final ExternalSystemType externalSystemType = externalSystemRepository.getById(ExternalSystemId.ofRepoId(parentConfig.getExternalSystem_ID())).getType();
 
 			if (externalSystemType.isRabbitMQ())
 			{
@@ -206,10 +204,10 @@ public class ExternalSystem_Config_StepDef
 	private void saveExternalSystemConfig(@NonNull final Map<String, String> tableRow)
 	{
 		final String configIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_ExternalSystem_Config_ID + ".Identifier");
-		final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config.COLUMNNAME_Type);
+		final String typeCode = DataTableUtil.extractStringForColumnName(tableRow, "Type");
 		final String externalSystemChildValue = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystemValue);
 
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCode(typeCode);
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCodeOrNull(typeCode);
 
 		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(externalSystemType, externalSystemChildValue);
 
@@ -218,7 +216,7 @@ public class ExternalSystem_Config_StepDef
 			final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.load(externalSystemParentConfig.get().getId().getRepoId(), I_ExternalSystem_Config.class);
 			configTable.put(configIdentifier, externalSystemParentConfigEntity);
 
-			if (externalSystemType.equals(LeichUndMehl))
+			if (externalSystemType.isLeichUndMehl())
 			{
 				final I_ExternalSystem_Config_LeichMehl leichMehlConfig = InterfaceWrapperHelper.load(externalSystemParentConfig.get().getChildConfig().getId(), I_ExternalSystem_Config_LeichMehl.class);
 
@@ -230,7 +228,7 @@ public class ExternalSystem_Config_StepDef
 		}
 
 		final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config.class);
-		externalSystemParentConfigEntity.setType(externalSystemType.getLegacyCode());
+		externalSystemParentConfigEntity.setExternalSystem_ID(externalSystemRepository.getByType(externalSystemType).getId().getRepoId());
 		externalSystemParentConfigEntity.setName("notImportant");
 		externalSystemParentConfigEntity.setIsActive(true);
 		InterfaceWrapperHelper.save(externalSystemParentConfigEntity);

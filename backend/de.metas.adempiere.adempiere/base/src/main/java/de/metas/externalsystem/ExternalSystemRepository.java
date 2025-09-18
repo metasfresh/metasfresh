@@ -110,7 +110,7 @@ public class ExternalSystemRepository
 		return CoalesceUtil.coalesceSuppliers(
 				() -> map.getByTypeOrNull(ExternalSystemType.ofValue(value)),
 				() -> {
-					final ExternalSystemType externalSystemType = ExternalSystemType.LEGACY_CODES.inverse().get(value);
+					final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCodeOrNull(value);
 					return externalSystemType != null ? map.getByTypeOrNull(externalSystemType) : null;
 				}
 		);

@@ -117,8 +117,8 @@ public class ProductsRestControllerTest
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
 		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
-				new ExternalSystemExportAuditRepo(),
+		final ExternalSystemService externalSystemService = new ExternalSystemService(ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+				ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
 				new RuntimeParametersRepository(),
 				externalServices,
 				new JsonExternalSystemRetriever(),

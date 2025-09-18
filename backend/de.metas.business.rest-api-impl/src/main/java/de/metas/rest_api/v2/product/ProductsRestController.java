@@ -27,8 +27,6 @@ import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.logging.LogManager;

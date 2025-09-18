@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.util.Optional;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -76,7 +77,7 @@ public class ExportHUToGRSServiceTest
 
 		exportHUToGRSService = new ExportHUToGRSService(new DataExportAuditRepository(),
 														new DataExportAuditLogRepository(),
-														new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
+														ExternalSystemConfigRepo.newInstanceForUnitTesting(),
 														new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 														externalSystemConfigServiceMock);
 		createPrerequisites();
@@ -92,7 +93,7 @@ public class ExportHUToGRSServiceTest
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.build();
 
 		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
@@ -118,7 +119,7 @@ public class ExportHUToGRSServiceTest
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.build();
 
 		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
@@ -144,7 +145,7 @@ public class ExportHUToGRSServiceTest
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.build();
 
 		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()

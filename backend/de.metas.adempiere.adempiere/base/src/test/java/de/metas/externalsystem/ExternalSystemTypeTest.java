@@ -29,17 +29,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ExternalSystemTypeTest
 {
 	@Test
-	void ofLegacyCode()
+	void ofLegacyCodeOrNull()
 	{
-		assertThat(ExternalSystemType.ofLegacyCode("S6").isShopware6()).isTrue();
-		assertThat(ExternalSystemType.ofLegacyCode("A").isAlberta()).isTrue();
-		assertThat(ExternalSystemType.ofLegacyCode("WOO").isWOO()).isTrue();
-		assertThat(ExternalSystemType.ofLegacyCode("Other").isOther()).isTrue();
-		assertThat(ExternalSystemType.ofLegacyCode("RabbitMQ").isRabbitMQ()).isTrue();
-		assertThat(ExternalSystemType.ofLegacyCode("GRS").isGRSSignum()).isTrue();
-		assertThat(ExternalSystemType.ofLegacyCode("LM").isLeichUndMehl()).isTrue();
-		assertThat(ExternalSystemType.ofLegacyCode("PC").isPrintClient()).isTrue();
-		assertThat(ExternalSystemType.ofLegacyCode("PCM").isProCareManagement()).isTrue();
+		//noinspection DataFlowIssue
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("S6").isShopware6()).isTrue();
+		//noinspection DataFlowIssue
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("A").isAlberta()).isTrue();
+		//noinspection DataFlowIssue
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("WOO").isWOO()).isTrue();
+		//noinspection DataFlowIssue
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("Other").isOther()).isTrue();
+		//noinspection DataFlowIssue
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("RabbitMQ").isRabbitMQ()).isTrue();
+		//noinspection DataFlowIssue
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("GRS").isGRSSignum()).isTrue();
+		//noinspection DataFlowIssue
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("LM").isLeichUndMehl()).isTrue();
+		//noinspection DataFlowIssue
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("PC").isPrintClient()).isTrue();
+		//noinspection DataFlowIssue
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("PCM").isProCareManagement()).isTrue();
+		assertThat(ExternalSystemType.ofLegacyCodeOrNull("IDK")).isNull();
 	}
 
 	@Test

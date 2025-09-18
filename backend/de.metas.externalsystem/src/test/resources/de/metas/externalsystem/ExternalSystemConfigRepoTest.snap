@@ -13,7 +13,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "id": 100001,
     "name": "name",
     "orgId": 0,
-    "type": "Alberta",
+    "type": "ALBERTA",
     "writeAudit": true
   }
 ]
@@ -46,7 +46,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "id": 100001,
     "name": "name",
     "orgId": 0,
-    "type": "Alberta",
+    "type": "ALBERTA",
     "writeAudit": true
   }
 ]

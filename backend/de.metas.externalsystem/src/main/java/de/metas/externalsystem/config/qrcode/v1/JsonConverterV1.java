@@ -41,13 +41,6 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 
-import static de.metas.externalsystem.ExternalSystemType.Alberta;
-import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
-import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
-import static de.metas.externalsystem.ExternalSystemType.RabbitMQ;
-import static de.metas.externalsystem.ExternalSystemType.Shopware6;
-import static de.metas.externalsystem.ExternalSystemType.WOO;
-
 public class JsonConverterV1
 {
 	public static final GlobalQRCodeVersion GLOBAL_QRCODE_VERSION = GlobalQRCodeVersion.ofInt(1);
@@ -76,7 +69,7 @@ public class JsonConverterV1
 
 	private static ExternalSystemConfigQRCode fromJson(@NonNull final JsonPayload json)
 	{
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCode(json.getExternalSystemType());
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(json.getExternalSystemType());
 		final int repoId = json.getChildConfigId();
 		return ExternalSystemConfigQRCode.builder()
 				.childConfigId(toExternalSystemChildConfigId(externalSystemType, repoId))

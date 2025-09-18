@@ -93,7 +93,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 		exportExternalReferenceToRabbitMQService = new ExportExternalReferenceToRabbitMQService(
 				new DataExportAuditRepository(),
 				new DataExportAuditLogRepository(),
-				new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
+				ExternalSystemConfigRepo.newInstanceForUnitTesting(),
 				new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 				externalReferenceRepository,
 				new UserGroupRepository(),
