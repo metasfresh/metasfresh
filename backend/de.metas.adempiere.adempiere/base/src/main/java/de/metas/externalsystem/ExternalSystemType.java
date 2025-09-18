@@ -1,7 +1,10 @@
 package de.metas.externalsystem;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableBiMap;
 import de.metas.util.StringUtils;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public class ExternalSystemType
+@EqualsAndHashCode
+public final class ExternalSystemType
 {
 	public static final ExternalSystemType Alberta = new ExternalSystemType("ALBERTA");
 	public static final ExternalSystemType RabbitMQ = new ExternalSystemType("RabbitMQRESTAPI");
@@ -49,6 +53,7 @@ public class ExternalSystemType
 	private final String value;
 
 	@Nullable
+	@JsonCreator
 	public static ExternalSystemType ofValueOrNull(@Nullable final String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
@@ -67,6 +72,12 @@ public class ExternalSystemType
 	{
 		return LEGACY_CODES.inverse().get(code);
 	}
+
+	@Override
+	public String toString() {return getValue();}
+
+	@JsonValue
+	public String toJson() {return getValue();}
 
 	@NonNull
 	public String getLegacyCode()
