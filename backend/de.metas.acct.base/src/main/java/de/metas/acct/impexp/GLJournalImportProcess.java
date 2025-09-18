@@ -427,7 +427,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set AccountFrom from Value=" + no);
 		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account, '"
+				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account From, '"
 				+ " WHERE (AccountFrom_ID IS NULL OR AccountFrom_ID=0)"
 				+ " AND AccountValueFrom IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
@@ -435,7 +435,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warn("Invalid Account=" + no);
+			log.warn("Invalid Account From=" + no);
 		}
 
 		// Set AccountTo
@@ -451,7 +451,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set AccountTo from Value=" + no);
 		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account, '"
+				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account To, '"
 				+ " WHERE (AccountTo_ID IS NULL OR AccountTo_ID=0)"
 				+ " AND AccountValueTo IS NOT NULL "
 				+ " AND I_IsImported<>'Y'")
@@ -459,7 +459,19 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warn("Invalid Account=" + no);
+			log.warn("Invalid Account To=" + no);
+		}
+
+		//  make sure that at least one account is set
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=At least one account shall be set, '"
+				+ " WHERE AccountValueTo IS NULL AND AccountValueFrom IS NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		if (no != 0)
+		{
+			log.warn("At least one account shall be set=" + no);
 		}
 
 		// Set BPartner
