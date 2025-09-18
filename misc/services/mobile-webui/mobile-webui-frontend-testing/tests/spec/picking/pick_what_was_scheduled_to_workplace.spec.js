@@ -22,6 +22,7 @@ const createMasterdata = async () => {
                     pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'],
                     shipOnCloseLU: false,
                     allowCompletingPartialPickingJob: true,
+                    activeWorkplaceRequired: true,
                     considerOnlyJobScheduledToWorkplace: true,
                 }
             },

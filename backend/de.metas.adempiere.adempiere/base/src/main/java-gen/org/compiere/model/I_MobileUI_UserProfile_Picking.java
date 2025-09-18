@@ -206,6 +206,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Active Workplace required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActiveWorkplaceRequired (boolean IsActiveWorkplaceRequired);
+
+	/**
+	 * Get Active Workplace required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActiveWorkplaceRequired();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsActiveWorkplaceRequired = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsActiveWorkplaceRequired", null);
+	String COLUMNNAME_IsActiveWorkplaceRequired = "IsActiveWorkplaceRequired";
+
+	/**
 	 * Set Allow any Customer.
 	 *
 	 * <br>Type: YesNo

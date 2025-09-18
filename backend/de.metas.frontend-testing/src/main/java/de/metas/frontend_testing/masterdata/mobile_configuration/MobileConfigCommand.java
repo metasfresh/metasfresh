@@ -88,6 +88,7 @@ public class MobileConfigCommand
 				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
 				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
 				.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode())
+				.isActiveWorkplaceRequired(picking.getActiveWorkplaceRequired() != null ? picking.getActiveWorkplaceRequired() : false)
 				.isConsiderOnlyJobScheduledToWorkplace(picking.getConsiderOnlyJobScheduledToWorkplace() != null ? picking.getConsiderOnlyJobScheduledToWorkplace() : false);
 
 		if (picking.getAllowPickingAnyCustomer() != null)
@@ -123,6 +124,7 @@ public class MobileConfigCommand
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
 				.displayPickingSlotSuggestions(profile.getDefaultPickingJobOptions().getDisplayPickingSlotSuggestions().toBooleanOrNull())
+				.activeWorkplaceRequired(profile.isActiveWorkplaceRequired())
 				.considerOnlyJobScheduledToWorkplace(profile.isConsiderOnlyJobScheduledToWorkplace())
 				.build();
 	}

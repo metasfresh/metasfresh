@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1669066319L;
+	private static final long serialVersionUID = 1115945405L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -105,6 +105,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public java.lang.String getCreateShipmentPolicy() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreateShipmentPolicy);
+	}
+
+	@Override
+	public void setIsActiveWorkplaceRequired (final boolean IsActiveWorkplaceRequired)
+	{
+		set_Value (COLUMNNAME_IsActiveWorkplaceRequired, IsActiveWorkplaceRequired);
+	}
+
+	@Override
+	public boolean isActiveWorkplaceRequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsActiveWorkplaceRequired);
 	}
 
 	@Override
