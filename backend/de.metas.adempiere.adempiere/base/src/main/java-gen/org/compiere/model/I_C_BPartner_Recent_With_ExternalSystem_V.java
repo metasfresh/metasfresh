@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner_Recent_V 
+public interface I_C_BPartner_Recent_With_ExternalSystem_V 
 {
 
 	String Table_Name = "C_BPartner_Recent_V";
@@ -77,8 +77,32 @@ public interface I_C_BPartner_Recent_V
 	 */
 	int getC_BPartner_Recent_V_ID();
 
-	ModelColumn<I_C_BPartner_Recent_V, Object> COLUMN_C_BPartner_Recent_V_ID = new ModelColumn<>(I_C_BPartner_Recent_V.class, "C_BPartner_Recent_V_ID", null);
+	ModelColumn<I_C_BPartner_Recent_With_ExternalSystem_V, Object> COLUMN_C_BPartner_Recent_V_ID = new ModelColumn<>(I_C_BPartner_Recent_With_ExternalSystem_V.class, "C_BPartner_Recent_V_ID", null);
 	String COLUMNNAME_C_BPartner_Recent_V_ID = "C_BPartner_Recent_V_ID";
+
+	/**
+	 * Set External system.
+	 * Name of an external system (e.g. Github )
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem (@Nullable java.lang.String ExternalSystem);
+
+	/**
+	 * Get External system.
+	 * Name of an external system (e.g. Github )
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalSystem();
+
+	ModelColumn<I_C_BPartner_Recent_V, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_C_BPartner_Recent_V.class, "ExternalSystem", null);
+	String COLUMNNAME_ExternalSystem = "ExternalSystem";
+
 
 	/**
 	 * Get Updated.
@@ -90,6 +114,6 @@ public interface I_C_BPartner_Recent_V
 	 */
 	@Nullable java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_BPartner_Recent_V, Object> COLUMN_Updated = new ModelColumn<>(I_C_BPartner_Recent_V.class, "Updated", null);
+	ModelColumn<I_C_BPartner_Recent_With_ExternalSystem_V, Object> COLUMN_Updated = new ModelColumn<>(I_C_BPartner_Recent_With_ExternalSystem_V.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 }

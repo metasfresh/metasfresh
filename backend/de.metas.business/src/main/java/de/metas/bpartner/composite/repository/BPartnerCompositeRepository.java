@@ -26,6 +26,7 @@ import org.adempiere.ad.table.LogEntriesRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Recent_V;
+import org.compiere.model.I_C_BPartner_Recent_With_ExternalSystem_V;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -60,6 +61,7 @@ import java.util.Set;
 public class BPartnerCompositeRepository
 {
 	private final IBPartnerBL bpartnerBL;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
@@ -167,40 +169,78 @@ public class BPartnerCompositeRepository
 			@Nullable final SinceQuery sinceQuery,
 			@Nullable final String nextPageId)
 	{
-		final QueryResultPage<I_C_BPartner_Recent_V> page;
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		if (Check.isBlank(nextPageId))
 		{
 			Check.assumeNotNull(sinceQuery, "if nextPageId is blank, then sinceQuery shall not be null");
 			final Timestamp timestamp = Timestamp.from(sinceQuery.getSinceInstant());
-			final IQueryBuilder<I_C_BPartner_Recent_V> bpartnerRecentQueryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Recent_V.class)
-					.addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp);
 
-			final OrgId orgId = sinceQuery.getOrgId();
-			if (sinceQuery.getOrgId() != null)
+			if (Check.isBlank(sinceQuery.getExternalSystem()))
 			{
-				bpartnerRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
+				return retrieveIdsWithoutExternalSystem(sinceQuery, timestamp);
 			}
-
-			if(sinceQuery.getExternalSystem() != null)
+			else
 			{
-				bpartnerRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_ExternalSystem, sinceQuery.getExternalSystem());
+				return retrieveIdsWithExternalSystem(sinceQuery, timestamp);
 			}
-
-			page = bpartnerRecentQueryBuilder
-					.create()
-					.paginate(I_C_BPartner_Recent_V.class, sinceQuery.getPageSize());
 		}
 		else
 		{
-			page = queryBL.retrieveNextPage(I_C_BPartner_Recent_V.class, nextPageId);
+			// doesn't matter if we create the page from I_C_BPartner_Recent_V or from I_C_BPartner_Recent_With_ExternalSystem_V
+			return queryBL
+					.retrieveNextPage(I_C_BPartner_Recent_V.class, nextPageId)
+					.mapTo(this::extractBPartnerId);
 		}
+	}
+
+	private QueryResultPage<BPartnerId> retrieveIdsWithoutExternalSystem(
+			@NonNull final SinceQuery sinceQuery,
+			@NonNull final Timestamp timestamp)
+	{
+		final IQueryBuilder<I_C_BPartner_Recent_V> bpartnerRecentQueryBuilder = queryBL
+				.createQueryBuilder(I_C_BPartner_Recent_V.class)
+				.addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp);
+
+		final OrgId orgId = sinceQuery.getOrgId();
+		if (sinceQuery.getOrgId() != null)
+		{
+			bpartnerRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
+		final QueryResultPage<I_C_BPartner_Recent_V> page = bpartnerRecentQueryBuilder
+				.create()
+				.paginate(I_C_BPartner_Recent_V.class, sinceQuery.getPageSize());
 
 		return page.mapTo(this::extractBPartnerId);
 	}
 
-	private BPartnerId extractBPartnerId(final I_C_BPartner_Recent_V record)
+	private QueryResultPage<BPartnerId> retrieveIdsWithExternalSystem(
+			@NonNull final SinceQuery sinceQuery,
+			@NonNull final Timestamp timestamp)
+	{
+		final IQueryBuilder<I_C_BPartner_Recent_With_ExternalSystem_V> queryBuilder = queryBL
+				.createQueryBuilder(I_C_BPartner_Recent_With_ExternalSystem_V.class)
+				.addEqualsFilter(I_C_BPartner_Recent_With_ExternalSystem_V.COLUMNNAME_ExternalSystem, sinceQuery.getExternalSystem())
+				.addCompareFilter(I_C_BPartner_Recent_With_ExternalSystem_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp);
+
+		final OrgId orgId = sinceQuery.getOrgId();
+		if (sinceQuery.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
+		final QueryResultPage<I_C_BPartner_Recent_With_ExternalSystem_V> page = queryBuilder
+				.create()
+				.paginate(I_C_BPartner_Recent_With_ExternalSystem_V.class, sinceQuery.getPageSize());
+
+		return page.mapTo(this::extractBPartnerId);
+	}
+
+	private BPartnerId extractBPartnerId(@NonNull final I_C_BPartner_Recent_V record)
+	{
+		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
+	}
+
+	private BPartnerId extractBPartnerId(@NonNull final I_C_BPartner_Recent_With_ExternalSystem_V record)
 	{
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
@@ -292,6 +332,6 @@ public class BPartnerCompositeRepository
 	public void save(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
 	{
 		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL);
-		saver.save(bpartnerComposite, validatePermissions );
+		saver.save(bpartnerComposite, validatePermissions);
 	}
 }

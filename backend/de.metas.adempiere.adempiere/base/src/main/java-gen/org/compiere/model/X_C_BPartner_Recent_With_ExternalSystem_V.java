@@ -9,19 +9,19 @@ import java.util.Properties;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_BPartner_Recent_V extends org.compiere.model.PO implements I_C_BPartner_Recent_V, org.compiere.model.I_Persistent 
+public class X_C_BPartner_Recent_With_ExternalSystem_V extends PO implements I_C_BPartner_Recent_With_ExternalSystem_V, I_Persistent 
 {
 
 	private static final long serialVersionUID = 1566851913L;
 
     /** Standard Constructor */
-    public X_C_BPartner_Recent_V (final Properties ctx, final int C_BPartner_Recent_V_ID, @Nullable final String trxName)
+    public X_C_BPartner_Recent_With_ExternalSystem_V(final Properties ctx, final int C_BPartner_Recent_V_ID, @Nullable final String trxName)
     {
       super (ctx, C_BPartner_Recent_V_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_BPartner_Recent_V (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_BPartner_Recent_With_ExternalSystem_V(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,9 +29,9 @@ public class X_C_BPartner_Recent_V extends org.compiere.model.PO implements I_C_
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	protected POInfo initPO(final Properties ctx)
 	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+		return POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
@@ -62,5 +62,17 @@ public class X_C_BPartner_Recent_V extends org.compiere.model.PO implements I_C_
 	public int getC_BPartner_Recent_V_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Recent_V_ID);
+	}
+
+	@Override
+	public void setExternalSystem (final @Nullable String ExternalSystem)
+	{
+		set_ValueNoCheck (COLUMNNAME_ExternalSystem, ExternalSystem);
+	}
+
+	@Override
+	public String getExternalSystem() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalSystem);
 	}
 }
