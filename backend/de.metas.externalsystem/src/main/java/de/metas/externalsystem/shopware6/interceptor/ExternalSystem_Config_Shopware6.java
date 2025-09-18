@@ -52,7 +52,7 @@ public class ExternalSystem_Config_Shopware6
 
 		if (!ExternalSystemType.Shopware6.getValue().equals(parentType))
 		{
-			throw new AdempiereException("Invalid external system type!");
+			throw new AdempiereException("Invalid external system type: " + parentType);
 		}
 	}
 }
