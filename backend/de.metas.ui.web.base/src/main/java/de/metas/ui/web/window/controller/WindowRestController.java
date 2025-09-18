@@ -64,6 +64,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
+import de.metas.ui.web.window.datatypes.json.JSONProcessNewRecordRequest;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.datatypes.json.JsonWindowsHealthResponse;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
@@ -912,19 +913,20 @@ public class WindowRestController
 	/**
 	 * task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
-	@GetMapping("/{windowId}/{documentId}/processNewRecord")
-	public int processRecord(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-	)
+	@PostMapping("/{windowId}/{documentId}/processNewRecord")
+	public int processNewRecord(
+			@PathVariable("windowId") @NonNull final String windowIdStr,
+			@PathVariable("documentId") @NonNull final String documentIdStr,
+			@RequestBody @NonNull JSONProcessNewRecordRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+
+		final TableRecordReference triggeringRecordRef = request.getTriggeringWindowId() != null && request.getTriggeringDocumentId() != null
+				? documentCollection.getTableRecordReference(DocumentPath.rootDocumentPath(request.getTriggeringWindowId(), request.getTriggeringDocumentId()))
+				: null;
 
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
@@ -938,12 +940,13 @@ public class WindowRestController
 					.loginOrgId(userSession.getOrgId())
 					.loggedUserId(userSession.getLoggedUserId())
 					.loginLanguage(userSession.getAD_Language())
+					.triggeringRecordRef(triggeringRecordRef)
+					.triggeringField(request.getTriggeringField())
 					.build();
 
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
-					.processNewRecordDocument(document,
-							newRecordContext);
+					.processNewRecordDocument(document, newRecordContext);
 		}));
 	}
 

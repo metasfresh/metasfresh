@@ -97,8 +97,8 @@ public class NewRecordDescriptorsProvider
 					WindowId.of(bpartnerLocationQuickInputAdWindowId),
 					(document, newRecordContext) -> {
 						final I_C_BPartner_Location_QuickInput template = InterfaceWrapperHelper.getPO(document);
-						final BPartnerLocationId bpartnerId = bpartnerQuickInputService.createBPartnerLocationFromTemplate(template, newRecordContext);
-						return bpartnerId.getRepoId();
+						final BPartnerLocationId bpLocationId = bpartnerQuickInputService.createBPartnerLocationFromTemplate(template, newRecordContext);
+						return bpLocationId.getRepoId();
 					}));
 		}
 		else

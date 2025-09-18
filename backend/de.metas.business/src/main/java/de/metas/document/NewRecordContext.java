@@ -27,15 +27,18 @@ import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
 public class NewRecordContext
 {
-	@NonNull
-	final OrgId loginOrgId;
-	@NonNull
-	final UserId loggedUserId;
-	@NonNull
-	final String loginLanguage;
+	@NonNull OrgId loginOrgId;
+	@NonNull UserId loggedUserId;
+	@NonNull String loginLanguage;
+	@Nullable TableRecordReference triggeringRecordRef;
+	@Nullable String triggeringField;
+
 }

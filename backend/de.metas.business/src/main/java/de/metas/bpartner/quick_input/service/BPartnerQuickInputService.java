@@ -262,8 +262,9 @@ public class BPartnerQuickInputService
 		return requestBuilder.build();
 	}
 
-	public BPartnerLocationId createBPartnerLocationFromTemplate(@NonNull final I_C_BPartner_Location_QuickInput template,
-														 @NonNull final NewRecordContext newRecordContext)
+	public BPartnerLocationId createBPartnerLocationFromTemplate(
+			@NonNull final I_C_BPartner_Location_QuickInput template,
+			@NonNull final NewRecordContext newRecordContext)
 	{
 		final BPartnerLocation locationFromBPartnerLocationTemplate = getLocationFromBPartnerLocationTemplate(template);
 		//TODO implement me
