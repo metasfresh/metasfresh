@@ -37,8 +37,8 @@ export ORG_CODE="${ORG_CODE:-001}"                  # need to be provided, unles
 export BP_BODY_FILES="${BP_BODY_FILES:-../test-data/extracted-bpartner-requests.json}"
 
 # If VUS and DURATION are not specified, k6 wil use a ramping-vus plan. See bpartner-load-test.js
-export VUS="100" # (VU=concurrent virtual user)
-export DURATION="3600s"
+export VUS="${VUS:-100}" # (VU=concurrent virtual user)
+export DURATION="${DURATION:-500s}"
 
 echo "Running k6 with:"
 echo "  BASE_URL=${BASE_URL}"

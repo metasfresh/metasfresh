@@ -69,7 +69,7 @@ const PickLineScanScreen = () => {
     caption,
     productId,
     productNo,
-    ean13ProductCode,
+    gs1ProductCodes,
     pickingUnit,
     packingItemName,
     qtyToPick,
@@ -103,7 +103,7 @@ const PickLineScanScreen = () => {
     activityId,
     lineId,
     expectedProductNo: productNo,
-    expectedEAN13ProductCode: ean13ProductCode,
+    expectedGS1ProductCodes: gs1ProductCodes,
     onClose,
   });
 
@@ -155,7 +155,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     caption: line?.caption,
     productId: line.productId,
     productNo: line.productNo,
-    ean13ProductCode: line.ean13ProductCode,
+    gs1ProductCodes: line.gs1ProductCodes,
     pickingUnit: line?.pickingUnit,
     packingItemName: line?.packingItemName,
     qtyToPick: getQtyToPickForLine({ line }),
@@ -258,7 +258,7 @@ const usePostQtyPicked = ({
   activityId,
   lineId: lineIdParam = null,
   expectedProductNo,
-  expectedEAN13ProductCode,
+  expectedGS1ProductCodes,
   onClose,
 }) => {
   const dispatch = useDispatch();
@@ -307,14 +307,14 @@ const usePostQtyPicked = ({
     if (
       !isBarcodeProductNoMatching({
         expectedProductNo,
-        expectedEAN13ProductCode,
+        expectedGS1ProductCodes,
         barcodeProductNo: productNo,
         barcodeType,
       })
     ) {
       throw {
         messageKey: 'activities.picking.qrcode.differentProduct',
-        context: { expectedProductNo, expectedEAN13ProductCode, productNo, barcodeType },
+        context: { expectedProductNo, expectedGS1ProductCodes, productNo, barcodeType },
       };
     }
 

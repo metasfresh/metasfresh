@@ -19,7 +19,7 @@ const createMasterdata = async () => {
                     allowPickingAnyCustomer: true,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
-                    pickTo: [ 'LU_TU', 'TU', 'LU_CU', 'CU'],
+                    pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'],
                     shipOnCloseLU: false,
                     allowCompletingPartialPickingJob: true,
                 }
@@ -28,9 +28,9 @@ const createMasterdata = async () => {
             warehouses: { "wh": {} },
             pickingSlots: { slot1: {} },
             products: {
-                "P1": { price: 1, ean13ProductCode: generateEAN13().productCode },
-                "P2": { price: 1, ean13ProductCode: generateEAN13().productCode },
-                "P3": { price: 1, ean13ProductCode: generateEAN13().productCode },
+                "P1": { price: 1, gtin: generateEAN13().ean13 },
+                "P2": { price: 1, gtin: generateEAN13().ean13 },
+                "P3": { price: 1, gtin: generateEAN13().ean13 },
             },
             packingInstructions: {
                 "PI1": { tu: "TU", product: "P1", qtyCUsPerTU: 100, lu: "LU", qtyTUsPerLU: 20 },
@@ -75,19 +75,19 @@ test('LU/CU -> top level TU', async ({ page }) => {
 
     await test.step("Pick all 3 lines", async () => {
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P1.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P1.gtin,
             expectQtyEntered: 11
         });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P2.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P2.gtin,
             expectQtyEntered: 12
         });
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P3.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P3.gtin,
             expectQtyEntered: 13
         });
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
@@ -162,13 +162,13 @@ test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
         await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
 
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P1.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P1.gtin,
             expectQtyEntered: 11
         });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P2.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P2.gtin,
             expectQtyEntered: 12
         });
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
@@ -180,7 +180,7 @@ test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
         await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
 
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P3.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P3.gtin,
             expectQtyEntered: 13
         });
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
@@ -256,19 +256,19 @@ test('LU/CU -> LU/CU', async ({ page }) => {
 
     await test.step("Pick all 3 lines", async () => {
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P1.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P1.gtin,
             expectQtyEntered: 11
         });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P2.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P2.gtin,
             expectQtyEntered: 12
         });
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P3.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P3.gtin,
             expectQtyEntered: 13
         });
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
@@ -346,19 +346,19 @@ test('LU/CU -> top level CUs', async ({ page }) => {
 
     await test.step("Pick all 3 lines", async () => {
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P1.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P1.gtin,
             expectQtyEntered: 11
         });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P2.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P2.gtin,
             expectQtyEntered: 12
         });
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
-            qrCode: generateEAN13({ productCode: masterdata.products.P3.ean13ProductCode }).ean13,
+            qrCode: masterdata.products.P3.gtin,
             expectQtyEntered: 13
         });
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });

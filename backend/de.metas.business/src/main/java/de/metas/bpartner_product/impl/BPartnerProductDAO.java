@@ -33,7 +33,8 @@ import de.metas.bpartner_product.ProductExclude;
 import de.metas.bpartner_product.ProductExclude.ProductExcludeBuilder;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
@@ -68,7 +69,6 @@ import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /**
  * @author cg
- *
  */
 public class BPartnerProductDAO implements IBPartnerProductDAO
 {
@@ -264,8 +264,8 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 	@Override
 	public I_C_BPartner_Product retrieveBPProductForCustomer(
-			@NonNull final I_C_BPartner partner, 
-			@NonNull final I_M_Product product, 
+			@NonNull final I_C_BPartner partner,
+			@NonNull final I_M_Product product,
 			@NonNull final OrgId orgId)
 	{
 
@@ -465,14 +465,29 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	@NonNull
-	public List<I_C_BPartner_Product> retrieveByEAN13ProductCode(@NonNull final EAN13ProductCode ean13ProductCode, @NonNull final BPartnerId bpartnerId)
+	public @NonNull List<I_C_BPartner_Product> retrieveByEAN13ProductCode(@NonNull final EAN13ProductCode ean13ProductCode, @NonNull final BPartnerId bpartnerId)
 	{
-		return queryBL
-				.createQueryBuilder(I_C_BPartner_Product.class)
+		return queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
+				.create()
+				.listImmutable(I_C_BPartner_Product.class);
+	}
+
+	@Override
+	public @NonNull List<I_C_BPartner_Product> retrieveByGTIN(@NonNull GTIN gtin, @NonNull final BPartnerId bpartnerId)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addFilter(
+						queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
+								.setJoinOr()
+								.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, gtin.getAsString())
+								.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtin.getAsString())
+						// NOTE: don't check the EAN13_ProductCode
+				)
 				.create()
 				.listImmutable(I_C_BPartner_Product.class);
 	}

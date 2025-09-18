@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -76,12 +77,14 @@ class JsonRetrieverServiceTest
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
-
+		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
+		
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
-				new BPGroupRepository(),
+				bpGroupRepository,
+				new BPGroupService(bpGroupRepository),
 				new GreetingRepository(),
 				new CurrencyRepository(),
 				Mockito.mock(ExternalReferenceRestControllerService.class));

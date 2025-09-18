@@ -6,9 +6,10 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
+import de.metas.common.util.Check;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
-import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
@@ -112,7 +113,9 @@ public class OrderCandidatesRestController
 			final JsonOLCandCreateBulkResponse response = trxManager
 					.callInNewTrx(() -> orderCandidateRestControllerService.creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
 
-			return new ResponseEntity<>(response, HttpStatus.CREATED);
+			return Check.isEmpty(response.getErrors())
+					? new ResponseEntity<>(response, HttpStatus.CREATED)
+					: new ResponseEntity<>(response, HttpStatus.MULTI_STATUS);
 		}
 		catch (final Exception ex)
 		{

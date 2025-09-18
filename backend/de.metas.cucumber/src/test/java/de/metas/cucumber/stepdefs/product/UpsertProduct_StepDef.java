@@ -41,6 +41,8 @@ import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -58,7 +60,6 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
@@ -77,7 +78,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class UpsertProduct_StepDef
 {
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final MultiValueMap<String, JsonRequestBPartnerProductUpsert> bPartnerProductsByProductCode = new MultiValueMap<>();
@@ -98,7 +98,7 @@ public class UpsertProduct_StepDef
 		productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 		externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 	}
-		
+
 	@Then("verify if data is persisted correctly for each product")
 	public void verifyIfDataIsPersistedCorrectlyForProductCodeCode()
 	{
@@ -127,7 +127,6 @@ public class UpsertProduct_StepDef
 					.stream()
 					.collect(Collectors.toMap(BPartnerProduct::getBPartnerId, bPartnerProduct -> bPartnerProduct));
 
-			assertThat(bPartnerProducts).isNotNull();
 			assertThat(bPartnerProducts).isNotEmpty();
 
 			final List<JsonRequestBPartnerProductUpsert> bPartnerProductUpsertList = bPartnerProductsByProductCode.get(productCode);
@@ -143,8 +142,8 @@ public class UpsertProduct_StepDef
 				assertThat(bPartnerProduct.getActive()).isTrue();
 				assertThat(bPartnerProduct.getProductNo()).isEqualTo(jsonRequestBPartnerProductUpsert.getProductNo());
 				assertThat(bPartnerProduct.getSeqNo()).isEqualTo(jsonRequestBPartnerProductUpsert.getSeqNo());
-				assertThat(bPartnerProduct.getCuEAN()).isEqualTo(jsonRequestBPartnerProductUpsert.getCuEAN());
-				assertThat(bPartnerProduct.getGtin()).isEqualTo(jsonRequestBPartnerProductUpsert.getGtin());
+				assertThat(bPartnerProduct.getCuEAN()).isEqualTo(EAN13.ofNullableString(jsonRequestBPartnerProductUpsert.getCuEAN()));
+				assertThat(bPartnerProduct.getGtin()).isEqualTo(GTIN.ofNullableString(jsonRequestBPartnerProductUpsert.getGtin()));
 				assertThat(bPartnerProduct.getCustomerLabelName()).isEqualTo(jsonRequestBPartnerProductUpsert.getCustomerLabelName());
 				assertThat(bPartnerProduct.getIngredients()).isEqualTo(jsonRequestBPartnerProductUpsert.getIngredients());
 			});
@@ -173,7 +172,7 @@ public class UpsertProduct_StepDef
 			bPartnerProductsByProductCode.add(productCode, mapBpartnerProductRequestItem(dataTableEntry));
 		});
 	}
-	
+
 	private JsonRequestBPartnerProductUpsert mapBpartnerProductRequestItem(final Map<String, String> dataTableEntries)
 	{
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableEntries, "bpartnerIdentifier");

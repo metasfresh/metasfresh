@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.allocation;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.PaymentAllocationLineId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -37,10 +38,12 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 
+import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,10 +62,12 @@ public class C_AllocationLine_StepDef
 	@And("validate C_AllocationLines")
 	public void validate_C_AllocationLines(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::validate_C_AllocationLine);
+		final HashSet<PaymentAllocationLineId> alreadyCheckedLineIds = new HashSet<>();
+		DataTableRows.of(dataTable)
+				.forEach(row -> validate_C_AllocationLine(row, alreadyCheckedLineIds));
 	}
 
-	private void validate_C_AllocationLine(final DataTableRow row)
+	private void validate_C_AllocationLine(@NonNull final DataTableRow row, @NonNull final HashSet<PaymentAllocationLineId> alreadyCheckedLineIds)
 	{
 		final InvoiceId invoiceId = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
 				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
@@ -73,14 +78,20 @@ public class C_AllocationLine_StepDef
 				.map(paymentTable::getId)
 				.orElse(null);
 
-		final I_C_AllocationLine singleAllocationLine = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+		final IQueryBuilder<I_C_AllocationLine> queryBuilder = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.orderBy(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
-				.create()
-				.firstOnlyNotNull(I_C_AllocationLine.class);
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId);
+		if (!alreadyCheckedLineIds.isEmpty())
+		{
+			queryBuilder.addNotInArrayFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationLine_ID, alreadyCheckedLineIds);
+		}
+		final I_C_AllocationLine allocationLine = queryBuilder.create().firstNotNull(I_C_AllocationLine.class);
 
-		validateAllocationLine(singleAllocationLine, row);
+		validateAllocationLine(allocationLine, row);
+
+		alreadyCheckedLineIds.add(PaymentAllocationLineId.ofRepoId(allocationLine.getC_AllocationHdr_ID(), allocationLine.getC_AllocationLine_ID()));
 	}
 
 	@And("^validate C_AllocationLines for invoice (.*)$")

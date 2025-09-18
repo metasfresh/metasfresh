@@ -8,7 +8,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
-import de.metas.ean13.EAN13;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -290,9 +291,9 @@ public class ProductRepository
 				.seqNo(record.getSeqNo())
 				.productNo(record.getProductNo())
 				.description(record.getDescription())
-				.cuEAN(record.getEAN_CU())
+				.gtin(GTIN.ofNullableString(record.getGTIN()))
+				.cuEAN(EAN13.ofNullableString(record.getEAN_CU()))
 				.customerLabelName(record.getCustomerLabelName())
-				.gtin(record.getGTIN())
 				.ingredients(record.getIngredients())
 				.currentVendor(record.isCurrentVendor())
 				.isExcludedFromSales(record.isExcludedFromSale())
@@ -443,9 +444,9 @@ public class ProductRepository
 		record.setSeqNo(from.getSeqNo() != null ? from.getSeqNo() : record.getSeqNo());
 		record.setProductNo(from.getProductNo());
 		record.setDescription(from.getDescription());
-		record.setEAN_CU(from.getCuEAN());
+		record.setEAN_CU(from.getCuEAN() != null ? from.getCuEAN().getAsString() : null);
 		record.setCustomerLabelName(from.getCustomerLabelName());
-		record.setGTIN(from.getGtin());
+		record.setGTIN(from.getGtin() != null ? from.getGtin().getAsString() : null);
 		record.setIngredients(from.getIngredients());
 		record.setIsCurrentVendor(from.getCurrentVendor() != null ? from.getCurrentVendor() : record.isCurrentVendor());
 		record.setIsExcludedFromSale(from.getIsExcludedFromSales() != null ? from.getIsExcludedFromSales() : record.isExcludedFromSale());

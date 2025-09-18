@@ -226,7 +226,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | olCand_Customer_location_11092025 | olCand_Customer_11092025 | CH           | 1234543215432 |
 
     # we create 1 OLCand with externalHeaderId `11092025`
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '207' status code
   """
 {
     "requests": [
@@ -260,5 +260,5 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | C_OLCand_ID.Identifier |
       | olCand_1               |
     And validate C_OLCand is with error
-      | C_OLCand_ID.Identifier | ErrorMsg                    |
-      | olCand_1               | Preisliste * Nicht gefunden |
+      | C_OLCand_ID.Identifier | ErrorMsg                  |
+      | olCand_1               | Preisliste nicht gefunden |

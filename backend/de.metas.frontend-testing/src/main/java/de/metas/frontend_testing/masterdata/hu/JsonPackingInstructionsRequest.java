@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.hu;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
@@ -23,7 +24,7 @@ public class JsonPackingInstructionsRequest
 	@Nullable Identifier tu;
 	@Nullable Identifier product;
 	@Nullable BigDecimal qtyCUsPerTU;
-	@Nullable String tu_ean;
+	@Nullable EAN13 tu_ean;
 
 	//
 	// LU

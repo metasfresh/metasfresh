@@ -111,6 +111,7 @@ public class ExternalIdentifierProductLookupService
 					HUPIItemProductId.ofRepoId(hupi.getM_HU_PI_Item_Product_ID()));
 		}
 
+		// TODO refactor this logic and use some BPartnerProductDAO methods
 		final ICompositeQueryFilter<I_C_BPartner_Product> bppFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
 				.setJoinOr()
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, gtin)
