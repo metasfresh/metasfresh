@@ -1,6 +1,8 @@
 package de.metas.ui.web.window.descriptor.factory;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.quick_input.service.BPartnerLocationQuickInputService;
 import de.metas.bpartner.quick_input.service.BPartnerQuickInputService;
 import de.metas.document.NewRecordContext;
 import de.metas.logging.LogManager;
@@ -12,7 +14,10 @@ import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Location_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -54,16 +59,24 @@ public class NewRecordDescriptorsProvider
 	@NonNull private static final Logger logger = LogManager.getLogger(NewRecordDescriptorsProvider.class);
 	@NonNull private final DocumentDescriptorFactory documentDescriptors;
 	@NonNull private final BPartnerQuickInputService bpartnerQuickInputService;
+	@NonNull private final BPartnerLocationQuickInputService bPartnerLocationQuickInputService;
 
 	private final ConcurrentHashMap<String, NewRecordDescriptor> newRecordDescriptorsByTableName = new ConcurrentHashMap<>();
 
 	NewRecordDescriptorsProvider(
 			@NonNull final DocumentDescriptorFactory documentDescriptors,
-			@NonNull final BPartnerQuickInputService bpartnerQuickInputService)
+			@NonNull final BPartnerQuickInputService bpartnerQuickInputService, final @NonNull BPartnerLocationQuickInputService bPartnerLocationQuickInputService)
 	{
 		this.documentDescriptors = documentDescriptors;
 		this.bpartnerQuickInputService = bpartnerQuickInputService;
+		this.bPartnerLocationQuickInputService = bPartnerLocationQuickInputService;
 
+		addBpartnerRecordDescriptor();
+		addBpartnerLocationRecordDescriptor();
+	}
+
+	private void addBpartnerRecordDescriptor()
+	{
 		final AdWindowId bpartnerQuickInputAdWindowId = bpartnerQuickInputService.getNewBPartnerWindowId().orElse(null);
 		if (bpartnerQuickInputAdWindowId != null)
 		{
@@ -91,6 +104,30 @@ public class NewRecordDescriptorsProvider
 		);
 
 		return bpartnerId.getRepoId();
+	}
+
+	private void addBpartnerLocationRecordDescriptor()
+	{
+		final AdWindowId bpartnerLocationQuickInputAdWindowId = bPartnerLocationQuickInputService.getNewBPartnerLocationWindowId().orElse(null);
+		if (bpartnerLocationQuickInputAdWindowId != null)
+		{
+			addNewRecordDescriptor(NewRecordDescriptor.of(
+					I_C_BPartner_Location.Table_Name,
+					WindowId.of(bpartnerLocationQuickInputAdWindowId),
+					this::handleNewBpartnerLocationRequest));
+		}
+		else
+		{
+			logger.warn("No window found for " + I_C_BPartner_QuickInput.Table_Name);
+		}
+	}
+
+	private int handleNewBpartnerLocationRequest(final @NonNull NewRecordDescriptor.ProcessNewRecordDocumentRequest request)
+	{
+		final TableRecordReference tableRecordReference = documentDescriptors.getTableRecordReference(request.getTriggeringDocumentPath());
+		final I_C_BPartner_Location_QuickInput template = InterfaceWrapperHelper.getPO(request.getDocument());
+		final BPartnerLocationId bpartnerId = bPartnerLocationQuickInputService.createBPartnerLocationFromTemplateOrNull(template, tableRecordReference, request.getTriggeringField());
+		return BPartnerLocationId.toRepoId(bpartnerId);
 	}
 
 	public void addNewRecordDescriptor(@NonNull final NewRecordDescriptor newRecordDescriptor)

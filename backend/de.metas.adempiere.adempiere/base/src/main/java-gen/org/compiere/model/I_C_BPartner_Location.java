@@ -572,27 +572,6 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsNameReadWrite = "IsNameReadWrite";
 
 	/**
-	 * Set One time transaction.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsOneTime (boolean IsOneTime);
-
-	/**
-	 * Get One time transaction.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isOneTime();
-
-	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsOneTime = new ModelColumn<>(I_C_BPartner_Location.class, "IsOneTime", null);
-	String COLUMNNAME_IsOneTime = "IsOneTime";
-
-	/**
 	 * Set Pay-From Address.
 	 * Business Partner pays from that address and we'll send dunning letters there
 	 *
