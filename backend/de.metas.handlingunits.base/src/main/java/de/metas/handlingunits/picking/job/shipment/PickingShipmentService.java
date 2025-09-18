@@ -100,7 +100,7 @@ public class PickingShipmentService
 		}
 
 		shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
-				.scheduleIds(shipmentCandidate.getShipmentScheduleIds())
+				.scheduleIds(shipmentCandidate.getScheduleIds())
 				.quantityTypeToUse(TYPE_PICKED_QTY)
 				.onlyLUIds(shipmentCandidate.getOnlyLUIds())
 				.onTheFlyPickToPackingInstructions(true)

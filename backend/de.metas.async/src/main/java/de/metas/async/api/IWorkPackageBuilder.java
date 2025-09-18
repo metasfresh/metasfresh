@@ -13,6 +13,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -135,6 +136,8 @@ public interface IWorkPackageBuilder
 	 * @see #addElement(Object)
 	 */
 	IWorkPackageBuilder addElements(Iterable<?> models);
+
+	IWorkPackageBuilder addElements(TableRecordReferenceSet recordRefs);
 
 	/**
 	 * Ask the builder to "bind" the new workpackage to given transaction.

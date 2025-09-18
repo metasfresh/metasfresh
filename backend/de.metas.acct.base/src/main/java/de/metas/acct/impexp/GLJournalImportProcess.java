@@ -427,14 +427,15 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set AccountFrom from Value=" + no);
 		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account, '"
+				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account From, '"
 				+ " WHERE (AccountFrom_ID IS NULL OR AccountFrom_ID=0)"
+				+ " AND AccountValueFrom IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warn("Invalid Account=" + no);
+			log.warn("Invalid Account From=" + no);
 		}
 
 		// Set AccountTo
@@ -450,14 +451,27 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set AccountTo from Value=" + no);
 		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account, '"
+				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account To, '"
 				+ " WHERE (AccountTo_ID IS NULL OR AccountTo_ID=0)"
+				+ " AND AccountValueTo IS NOT NULL "
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
-			log.warn("Invalid Account=" + no);
+			log.warn("Invalid Account To=" + no);
+		}
+
+		//  make sure that at least one account is set
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=At least one account shall be set, '"
+				+ " WHERE AccountValueTo IS NULL AND AccountValueFrom IS NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		if (no != 0)
+		{
+			log.warn("At least one account shall be set=" + no);
 		}
 
 		// Set BPartner
@@ -571,14 +585,15 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		sql = new StringBuilder("UPDATE I_GLJournal "
 				+ "SET AmtAcctDr = ROUND(AmtSourceDr * CurrencyRate, 2) "    // HARDCODED rounding
 				+ "WHERE AmtAcctDr IS NULL OR AmtAcctDr=0"
-				+ " AND I_IsImported='N'")
+				+ " AND I_IsImported <>'Y'")
 				.append(selection.toSqlWhereClause());
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Calculate Acct Dr=" + no);
+
 		sql = new StringBuilder("UPDATE I_GLJournal "
 				+ "SET AmtAcctCr = ROUND(AmtSourceCr * CurrencyRate, 2) "
 				+ "WHERE AmtAcctCr IS NULL OR AmtAcctCr=0"
-				+ " AND I_IsImported='N'")
+				+ " AND I_IsImported <> 'Y'")
 				.append(selection.toSqlWhereClause());
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Calculate Acct Cr=" + no);
@@ -796,7 +811,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		line.setDateAcct(importRecord.getDateAcct());
 		//
 		// Set/Get Account Combination
-		if (importRecord.getC_ValidCombinationFrom_ID() == 0)
+		if (importRecord.getC_ValidCombinationFrom_ID() == 0 && importRecord.getAccountFrom_ID() > 0)
 		{
 			final AccountDimension acctDim = newMinimalAccountDimension(importRecord, importRecord.getAccountFrom_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
@@ -817,7 +832,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		}
 
 		// Set/Get Account Combination
-		if (importRecord.getC_ValidCombinationTo_ID() == 0)
+		if (importRecord.getC_ValidCombinationTo_ID() == 0 && importRecord.getAccountTo_ID() > 0)
 		{
 			final AccountDimension acctDim = newMinimalAccountDimension(importRecord, importRecord.getAccountTo_ID());
 			final MAccount acct = MAccount.get(getCtx(), acctDim);
@@ -842,6 +857,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		//
 		line.setC_UOM_ID(importRecord.getC_UOM_ID());
 		line.setQty(importRecord.getQty());
+		line.setDescription(importRecord.getDescription());
 		//
 
 		if (line.save())

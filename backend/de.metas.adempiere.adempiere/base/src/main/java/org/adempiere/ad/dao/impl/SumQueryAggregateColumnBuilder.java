@@ -44,7 +44,7 @@ public class SumQueryAggregateColumnBuilder<SourceModelType, TargetModelType> im
 {
 	private final ICompositeQueryFilter<SourceModelType> filters;
 	private ModelDynAttributeAccessor<TargetModelType, BigDecimal> dynAttribute;
-	private ModelColumn<SourceModelType, ?> _amountColumn;
+	private final ModelColumn<SourceModelType, ?> _amountColumn;
 
 	/* package */SumQueryAggregateColumnBuilder(final ModelColumn<SourceModelType, ?> amountColumn)
 	{
@@ -52,10 +52,10 @@ public class SumQueryAggregateColumnBuilder<SourceModelType, TargetModelType> im
 		Check.assumeNotNull(amountColumn, "amountColumn not null");
 		this._amountColumn = amountColumn;
 
-		filters = new CompositeQueryFilter<>(amountColumn.getModelClass());
+		filters = CompositeQueryFilter.newInstance(amountColumn.getModelClass());
 	}
 
-	private final String getAmountColumnName()
+	private String getAmountColumnName()
 	{
 		return _amountColumn.getColumnName();
 	}
@@ -74,13 +74,12 @@ public class SumQueryAggregateColumnBuilder<SourceModelType, TargetModelType> im
 
 		final String sqlWhereClause = filters.getSqlFiltersWhereClause();
 
-		final StringBuilder sql = new StringBuilder()
-				.append("COALESCE(SUM(CASE WHEN (").append(sqlWhereClause).append(") THEN " + getAmountColumnName() + " ELSE 0 END), 0)");
+		final String sql = "COALESCE(SUM(CASE WHEN (" + sqlWhereClause + ") THEN " + getAmountColumnName() + " ELSE 0 END), 0)";
 
 		final List<Object> sqlWhereClauseParams = filters.getSqlFiltersParams(ctx);
 		sqlParamsOut.addAll(sqlWhereClauseParams);
 
-		return sql.toString();
+		return sql;
 	}
 
 	@Override
@@ -105,7 +104,7 @@ public class SumQueryAggregateColumnBuilder<SourceModelType, TargetModelType> im
 		return new IAggregator<BigDecimal, SourceModelType>()
 		{
 			private final ICompositeQueryFilter<SourceModelType> filters = SumQueryAggregateColumnBuilder.this.filters.copy();
-			private ModelDynAttributeAccessor<TargetModelType, BigDecimal> dynAttribute = SumQueryAggregateColumnBuilder.this.dynAttribute;
+			private final ModelDynAttributeAccessor<TargetModelType, BigDecimal> dynAttribute = SumQueryAggregateColumnBuilder.this.dynAttribute;
 			private BigDecimal sum = BigDecimal.ZERO;
 
 			@Override

@@ -37,6 +37,7 @@ import de.metas.common.shipping.v1.shipment.JsonCreateShipmentRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedulesCollection;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
@@ -111,8 +112,9 @@ public class ShipmentService
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
 	private final AttributeSetHelper attributeSetHelper;
 
-	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService,
-						   final AttributeSetHelper attributeSetHelper)
+	public ShipmentService(
+			final ShipmentScheduleWithHUService shipmentScheduleWithHUService,
+			final AttributeSetHelper attributeSetHelper)
 	{
 		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
 		this.attributeSetHelper = attributeSetHelper;
@@ -344,11 +346,9 @@ public class ShipmentService
 
 	private InOutGenerateResult generateShipments(@NonNull final GenerateShipmentsRequest request)
 	{
-		final ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = ImmutableList.copyOf(shipmentScheduleBL.getByIds(request.getScheduleIds()).values());
-
 		final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
 				PrepareForShipmentSchedulesRequest.builder()
-						.shipmentSchedules(shipmentSchedules)
+						.schedules(ShipmentScheduleAndJobSchedulesCollection.ofShipmentSchedules(shipmentScheduleBL.getByIds(request.getScheduleIds()).values()))
 						.quantityTypeToUse(request.getQuantityTypeToUse())
 						.onTheFlyPickToPackingInstructions(false) // backwards compatibility: on-the-fly-pick to (anonymous) CUs
 						.qtyToDeliverOverrides(QtyToDeliverMap.EMPTY)

@@ -5,6 +5,7 @@ import {
   PICKTO_STRUCTURE_TU,
 } from './PickToStructure';
 import { getCurrentPickingTargetInfoFromActivity } from './useCurrentPickTarget';
+import { PICKING_UNIT_TU } from './PickingUnit';
 
 export const isCurrentTargetEligibleForActivityAndLine = ({ activity, line }) => {
   const lineId = line?.pickingLineId;
@@ -73,7 +74,7 @@ const isCurrentTargetEligibleForLine_LU_TU = ({ luPickingTarget, tuPickingTarget
   if (luPickingTarget == null) return false; // expect LU target to be set
 
   // console.log('isCurrentTargetEligibleForLine_LU_TU', { luPickingTarget, tuPickingTarget, linePickingUnit });
-  return linePickingUnit === 'TU'
+  return linePickingUnit === PICKING_UNIT_TU
     ? tuPickingTarget == null // expect TU target to not be set because the line is bringing TUs directly
     : tuPickingTarget != null; // expect TU target to be set because the line is bringing CUs
 };
@@ -85,7 +86,7 @@ const isCurrentTargetEligibleForLine_TU = ({ luPickingTarget /*, tuPickingTarget
   // so in that case linePickingUnit is 'CU' but we still want to be able to scan that custom QR code and pick the entire TU.
   // For that reason we are not enforcing tuPickingTarget to be set
   return true;
-  // return linePickingUnit === 'TU'
+  // return linePickingUnit === PICKING_UNIT_TU
   //   ? tuPickingTarget == null // expect TU target to not be set because the line is bringing TUs directly
   //   : tuPickingTarget != null; // expect TU target to be set because the line is bringing CUs
 };
@@ -93,7 +94,7 @@ const isCurrentTargetEligibleForLine_TU = ({ luPickingTarget /*, tuPickingTarget
 const isCurrentTargetEligibleForLine_LU_CU = ({ luPickingTarget, tuPickingTarget, linePickingUnit }) => {
   if (luPickingTarget == null) return false; // expect LU target to be set
 
-  return linePickingUnit === 'TU'
+  return linePickingUnit === PICKING_UNIT_TU
     ? false // LU/CU structure is not supported if the line is bringing TUs
     : tuPickingTarget == null; // expect TU target to not be set because we want to load directly to LU/CUs
 };

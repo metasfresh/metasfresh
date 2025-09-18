@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -10,6 +10,7 @@ import { PickFromHUScanScreen } from './PickFromHUScanScreen';
 import { expect } from '@playwright/test';
 import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
+import { test } from '../../../../playwright.config';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -65,7 +66,7 @@ export const PickingJobScreen = {
             await PickingJobScreen.expectPickingSlotButtonGreen();
         } else if (expectNextScreen === 'PickLineScanScreen') {
             await PickLineScanScreen.waitForScreen();
-            if(gotoPickingJobScreen) {
+            if (gotoPickingJobScreen) {
                 await step('Go back from PickLineScanScreen to PickingJobScreen', async () => {
                     await PickLineScanScreen.goBack();
                     await PickingJobLineScreen.goBack();
@@ -74,7 +75,7 @@ export const PickingJobScreen = {
         } else if (expectNextScreen === 'PickingSlotScanScreen') {
             await PickingSlotScanScreen.waitForScreen();
             await PickingSlotScanScreen.waitForInputFieldToGetEmpty();
-            if(gotoPickingJobScreen) {
+            if (gotoPickingJobScreen) {
                 throw new Error("GO back from PickingSlotScanScreen to PickingJobScreen is not implemented yet.");
             }
         } else {
@@ -87,7 +88,7 @@ export const PickingJobScreen = {
     }),
     setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
         if (!lu) throw new Error("No LU specified.");
-        
+
         await PickingJobScreen.clickLUTargetButton();
         await SelectPickTargetLUScreen.waitForScreen();
         await SelectPickTargetLUScreen.clickLUButton({ lu });
@@ -159,6 +160,12 @@ export const PickingJobScreen = {
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
         await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await PickingJobScreen.waitForScreen();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await PickingJobsListScreen.waitForScreen();
     }),
 };
 

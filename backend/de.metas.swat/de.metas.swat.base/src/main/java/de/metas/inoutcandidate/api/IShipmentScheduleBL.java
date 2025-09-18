@@ -46,8 +46,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -185,6 +187,10 @@ public interface IShipmentScheduleBL extends ISingletonService
 	Quantity getQtyDelivered(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId);
+
+	void setAsyncBatchByIds(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull AsyncBatchId asyncBatchId);
+
+	void setAsyncBatchAndSave(@NonNull Collection<I_M_ShipmentSchedule> shipmentSchedules, @NotNull AsyncBatchId asyncBatchId);
 
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
 
