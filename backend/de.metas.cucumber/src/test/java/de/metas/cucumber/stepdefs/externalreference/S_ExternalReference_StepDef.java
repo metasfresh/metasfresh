@@ -102,7 +102,7 @@ public class S_ExternalReference_StepDef
 	private final ExternalReferenceRepository externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 
 	private final TestContext testContext;
-	
+
 	@Then("verify that S_ExternalReference was created")
 	public void verifyExists(@NonNull final DataTable dataTable)
 	{
@@ -203,7 +203,7 @@ public class S_ExternalReference_StepDef
 		final List<JsonExternalReferenceItem> referenceItems = jsonExternalReferenceLookupResponse.getItems();
 		final List<Map<String, String>> rows = table.asMaps();
 
-		assertThat(referenceItems.size()).isEqualTo(rows.size());
+		assertThat(referenceItems).hasSameSizeAs(rows);
 
 		for (final Map<String, String> row : rows)
 		{
@@ -361,17 +361,12 @@ public class S_ExternalReference_StepDef
 
 	private void removeExternalReferenceIfExists(@NonNull final Map<String, String> tableRow)
 	{
-		final String externalSystem = DataTableUtil.extractStringForColumnName(tableRow, "ExternalSystem");
 		final String externalReference = DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_ExternalReference);
-		final String referenceType = DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_Type);
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(DataTableUtil.extractStringForColumnName(tableRow, "ExternalSystem"));
+		final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
+		final IExternalReferenceType referenceType = externalReferenceTypes.ofCodeNotNull(DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_Type));
 
-		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_S_ExternalReference.class)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, referenceType)
-				.create()
-				.delete();
+		externalReferenceRepository.deleteByReference(externalReference, externalSystem.getId(), referenceType);
 	}
 
 	private IExternalReferenceType getExternalReferenceType(final String type)

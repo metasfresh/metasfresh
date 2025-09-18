@@ -117,6 +117,19 @@ public class ExternalReferenceRepository
 		listIncludingInactiveBy(recordId, type).forEach(InterfaceWrapperHelper::delete);
 	}
 
+	public void deleteByReference(
+			@NonNull final String externalReference,
+			@NonNull final ExternalSystemId externalSystemId,
+			@NonNull final IExternalReferenceType referenceType)
+	{
+		queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystemId)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, referenceType.getCode())
+				.create()
+				.delete();
+	}
+
 	/**
 	 * If and when the externally referenced record switches orgs, we also need to change the reference-record to follow.
 	 * That's because the org is relevant when we look up external references.

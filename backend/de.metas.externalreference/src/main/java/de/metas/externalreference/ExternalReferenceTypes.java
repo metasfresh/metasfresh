@@ -32,6 +32,7 @@ import de.metas.externalreference.productprice.ProductPriceExternalReferenceType
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
 import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -69,4 +70,16 @@ public class ExternalReferenceTypes
 		final IExternalReferenceType externalReferenceType = typesByCode.get(code);
 		return Optional.ofNullable(externalReferenceType);
 	}
+
+	@NonNull
+	public IExternalReferenceType ofCodeNotNull(@NonNull final String code)
+	{
+		final IExternalReferenceType type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("Unknown Type: " + code);
+		}
+		return type;
+	}
+
 }
