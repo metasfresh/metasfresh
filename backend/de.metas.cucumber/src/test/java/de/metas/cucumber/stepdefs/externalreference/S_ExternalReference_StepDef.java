@@ -32,6 +32,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -45,6 +46,7 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
@@ -64,6 +66,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 
@@ -74,9 +77,11 @@ import java.util.stream.Collectors;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_S_ExternalReference_ID;
+import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_BPartnerLocation;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Bpartner;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Product;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_ProductCategory;
+import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_UserID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
@@ -91,6 +96,7 @@ public class S_ExternalReference_StepDef
 	private final M_Shipper_StepDefData shipperTable;
 	private final M_Product_StepDefData productTable;
 	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -106,6 +112,7 @@ public class S_ExternalReference_StepDef
 			@NonNull final M_Shipper_StepDefData shipperTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final TestContext testContext)
 	{
 		this.externalSystems = externalSystems;
@@ -114,6 +121,7 @@ public class S_ExternalReference_StepDef
 		this.shipperTable = shipperTable;
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
 		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
@@ -350,6 +358,17 @@ public class S_ExternalReference_StepDef
 			final I_C_BPartner bPartner = bpartnerTable.get(recordIdentifier);
 			recordId = bPartner.getC_BPartner_ID();
 		}
+		else if (externalReferenceType.equals(BPLocationExternalReferenceType.BPARTNER_LOCATION))
+		{
+			final I_C_BPartner_Location bpartnerLocation = bpartnerLocationTable.get(recordIdentifier);
+			recordId = bpartnerLocation.getC_BPartner_Location_ID();
+		}
+		else if (externalReferenceType.equals(ExternalUserReferenceType.USER_ID))
+		{
+			final I_AD_User user = userTable.get(recordIdentifier);
+			recordId = user.getAD_User_ID();
+		}
+
 		else
 		{
 			throw new RuntimeException("External reference type not covered by this step def!");
@@ -391,6 +410,10 @@ public class S_ExternalReference_StepDef
 				return BPartnerExternalReferenceType.BPARTNER;
 			case TYPE_ProductCategory:
 				return ProductCategoryExternalReferenceType.PRODUCT_CATEGORY;
+			case TYPE_BPartnerLocation:
+				return BPLocationExternalReferenceType.BPARTNER_LOCATION;
+			case TYPE_UserID:
+				return ExternalUserReferenceType.USER_ID;
 			default:
 				throw new AdempiereException("Bad external reference type: " + type);
 		}

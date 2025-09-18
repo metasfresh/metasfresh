@@ -22,6 +22,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;
@@ -1962,7 +1963,7 @@ public abstract class PO
 	{
 		final Properties ctx = getCtx();
 		final UserId loggedUserId = Env.getLoggedUserIdIfExists(ctx).orElse(UserId.SYSTEM);
-		final Timestamp now = new Timestamp(System.currentTimeMillis());
+		final Timestamp now = new Timestamp(SystemTime.millis());
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 
