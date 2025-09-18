@@ -845,6 +845,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		//
 		line.setC_UOM_ID(importRecord.getC_UOM_ID());
 		line.setQty(importRecord.getQty());
+		line.setDescription(importRecord.getDescription());
 		//
 
 		if (line.save())
