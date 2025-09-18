@@ -124,27 +124,26 @@ public class DemandCandiateHandler implements CandidateHandler
 				.createStockCandidate(savedCandidate.withNegatedQuantity())
 				.withCandidateId(preExistingChildStockId);
 
-		final Candidate savedStockCandidate;
+		final CandidateSaveResult savedStockCandidate;
 		if (preExistingChildStockCandidate.isPresent())
 		{
 			savedStockCandidate = candidateRepositoryWriteService
-					.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
-					.getCandidate();
+					.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate().withParentId(savedCandidate.getId()));
 		}
 		else
 		{
 			savedStockCandidate = candidateRepositoryWriteService
-					.add(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
-					.getCandidate();
+					.add(stockCandidate.getCandidate().withParentId(savedCandidate.getId()));
 		}
 
-		final CandidateSaveResult deltaToApplyToLaterStockCandidates = candidateSaveResult.withNegatedQuantity();
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandidates);
+		candidateRepositoryWriteService.getCurrentAtpAndUpdateQtyDetails(savedCandidate, savedStockCandidate.getCandidate(), null);
+
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(savedStockCandidate);
 
 		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
 		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
 		{
-			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
+			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate());
 		}
 
 		if (candidateSaveResult.getQtyDelta().signum() < 0)

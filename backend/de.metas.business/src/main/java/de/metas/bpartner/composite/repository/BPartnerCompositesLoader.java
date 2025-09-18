@@ -47,6 +47,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
@@ -380,6 +381,7 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.vatTaxId(VATIdentifier.ofNullable(bPartnerLocationRecord.getVATaxID()))
 				.build();
 
 		bpartnerLocation.setFromAddress(address);

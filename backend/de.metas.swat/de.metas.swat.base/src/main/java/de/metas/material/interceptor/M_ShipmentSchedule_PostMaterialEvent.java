@@ -21,6 +21,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -148,9 +149,10 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.toMinMaxDescriptor();
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID());
+		final UserId updatedBy = UserId.ofRepoId(shipmentSchedule.getUpdatedBy());
 
 		return ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(clientAndOrgId))
+				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, updatedBy))
 				.materialDescriptor(materialDescriptor)
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
 						.orderedQuantity(shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule))
@@ -286,6 +288,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.date(preparationDate.toInstant())
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
+				.locatorId(shipmentScheduleEffectiveBL.getDefaultLocatorId(shipmentSchedule))
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.quantity(orderedQuantity.subtract(getDeliveredQtyFromHUs(shipmentSchedule)))
 				.build();

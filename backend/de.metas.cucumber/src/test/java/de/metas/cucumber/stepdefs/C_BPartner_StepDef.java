@@ -33,6 +33,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -57,7 +58,14 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.*;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import java.sql.Timestamp;
@@ -74,7 +82,24 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
 import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.compiere.model.I_C_BPartner.*;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_DeliveryRule;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRule;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
@@ -90,6 +115,7 @@ public class C_BPartner_StepDef
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
 	private final AD_Org_StepDefData orgTable;
 	private final C_Aggregation_StepDefData aggregationTable;
+	private final @NonNull TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -324,6 +350,12 @@ public class C_BPartner_StepDef
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(recordIdentifier -> bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord));
+		restTestContext.setIntVariableFromRow(row, bPartnerRecord::getC_BPartner_ID);
+
+		row.getAsOptionalIdentifier("REST.Context.Value")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getValue()));
+		row.getAsOptionalIdentifier("REST.Context.Name")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getName()));
 	}
 
 	private void changeBPartner(@NonNull final DataTableRow row)

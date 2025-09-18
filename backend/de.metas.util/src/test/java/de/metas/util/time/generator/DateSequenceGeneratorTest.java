@@ -1,6 +1,13 @@
 package de.metas.util.time.generator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import de.metas.util.GuavaCollectors;
+import org.assertj.core.api.ListAssert;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -10,29 +17,6 @@ import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-
-/*
- * #%L
- * de.metas.util
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,24 +28,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.assertj.core.api.ListAssert;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
-
-import de.metas.util.GuavaCollectors;
-import de.metas.util.time.generator.DateSequenceGenerator;
-import de.metas.util.time.generator.DaysOfMonthExploder;
-import de.metas.util.time.generator.DaysOfWeekExploder;
-import de.metas.util.time.generator.Frequency;
-import de.metas.util.time.generator.FrequencyType;
-import de.metas.util.time.generator.IDateShifter;
-import de.metas.util.time.generator.WeekDayCalendarIncrementor;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DateSequenceGeneratorTest
 {
@@ -223,7 +191,7 @@ public class DateSequenceGeneratorTest
 	}
 
 	@Test
-	@Ignore // known as not working
+	@Disabled // known as not working
 	public void test_Each2Weeks_EachDayOfWeek_generatePrevious()
 	{
 		final LocalDate date_2014_08_31 = LocalDate.of(2014, 8, 31);
@@ -473,7 +441,7 @@ public class DateSequenceGeneratorTest
 	{
 		final Set<LocalDate> expectedDatesSet = new TreeSet<>(expectedDates);
 		final Set<LocalDate> actualDatesSet = generator.generate();
-		Assert.assertEquals("Invalid generator result: " + generator, expectedDatesSet, actualDatesSet);
+		assertEquals(expectedDatesSet, actualDatesSet, "Invalid generator result: " + generator);
 	}
 
 	private final void testGeneratePrevious(final DateSequenceGenerator generator, final LocalDate firstDate, final List<LocalDate> expectedDates)

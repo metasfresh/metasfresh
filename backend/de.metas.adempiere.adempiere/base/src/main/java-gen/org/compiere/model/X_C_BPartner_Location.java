@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1341313327L;
+	private static final long serialVersionUID = 208495014L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -41,7 +41,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getAddress()
+	public java.lang.String getAddress() 
 	{
 		return get_ValueAsString(COLUMNNAME_Address);
 	}
@@ -308,7 +308,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isEphemeral()
+	public boolean isEphemeral() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEphemeral);
 	}
@@ -374,6 +374,17 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsShipperHasRoutingcode (final boolean IsShipperHasRoutingcode)
+	{
+		throw new IllegalArgumentException ("IsShipperHasRoutingcode is virtual column");	}
+
+	@Override
+	public boolean isShipperHasRoutingcode() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipperHasRoutingcode);
+	}
+
+	@Override
 	public void setIsShipTo (final boolean IsShipTo)
 	{
 		set_Value (COLUMNNAME_IsShipTo, IsShipTo);
@@ -419,6 +430,60 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isSubscriptionToDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSubscriptionToDefault);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	@Override
+	public void setM_Shipper_ID (final int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
+	}
+
+	@Override
+	public int getM_Shipper_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper_RoutingCode getM_Shipper_RoutingCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_RoutingCode_ID, org.compiere.model.I_M_Shipper_RoutingCode.class);
+	}
+
+	@Override
+	public void setM_Shipper_RoutingCode(final org.compiere.model.I_M_Shipper_RoutingCode M_Shipper_RoutingCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_RoutingCode_ID, org.compiere.model.I_M_Shipper_RoutingCode.class, M_Shipper_RoutingCode);
+	}
+
+	@Override
+	public void setM_Shipper_RoutingCode_ID (final int M_Shipper_RoutingCode_ID)
+	{
+		if (M_Shipper_RoutingCode_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_RoutingCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_RoutingCode_ID, M_Shipper_RoutingCode_ID);
+	}
+
+	@Override
+	public int getM_Shipper_RoutingCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_RoutingCode_ID);
 	}
 
 	@Override
@@ -494,6 +559,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.sql.Timestamp getValidFrom() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
+	}
+
+	@Override
+	public void setVATaxID (final @Nullable java.lang.String VATaxID)
+	{
+		set_Value (COLUMNNAME_VATaxID, VATaxID);
+	}
+
+	@Override
+	public java.lang.String getVATaxID() 
+	{
+		return get_ValueAsString(COLUMNNAME_VATaxID);
 	}
 
 	@Override

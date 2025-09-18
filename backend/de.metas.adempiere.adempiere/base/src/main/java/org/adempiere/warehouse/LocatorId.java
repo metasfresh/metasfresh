@@ -1,5 +1,7 @@
 package org.adempiere.warehouse;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
@@ -35,6 +37,7 @@ import java.util.Set;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 public class LocatorId implements RepoIdAware
 {
@@ -140,5 +143,18 @@ public class LocatorId implements RepoIdAware
 	public String toJson()
 	{
 		return warehouseId.getRepoId() + "_" + repoId;
+	}
+
+	@JsonCreator
+	public static LocatorId fromJson(final String json)
+	{
+		final String[] parts = json.split("_");
+		if (parts.length != 2)
+		{
+			throw new IllegalArgumentException("Invalid json: " + json);
+		}
+		final int warehouseId = Integer.parseInt(parts[0]);
+		final int locatorId = Integer.parseInt(parts[1]);
+		return ofRepoId(warehouseId, locatorId);
 	}
 }

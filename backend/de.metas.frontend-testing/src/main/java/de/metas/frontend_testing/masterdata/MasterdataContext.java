@@ -1,5 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -10,16 +12,20 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceTypeId;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -51,7 +57,7 @@ public class MasterdataContext
 	{
 		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(id.getClass(), identifier);
 		final RepoIdAware prevId = identifiers.get(typeAndIdentifier);
-		if (prevId != null)
+		if (prevId != null && !RepoIdAwares.equals(prevId, id))
 		{
 			throw new IllegalArgumentException("Identifier already exists: " + typeAndIdentifier
 					+ "\n prevId=" + prevId
@@ -177,6 +183,54 @@ public class MasterdataContext
 		}
 	}
 
+	public Map<String, Object> toJson()
+	{
+		final HashMap<String, Object> result = new HashMap<>();
+
+		identifiers.forEach((typeAndIdentifier, id) -> result.put(typeAndIdentifier.toJsonString(), id.getRepoId()));
+
+		return result;
+	}
+
+	public void putFromJson(@Nullable Map<String, Object> json)
+	{
+		if (json == null || json.isEmpty())
+		{
+			return;
+		}
+
+		json.forEach((key, value) -> {
+			final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.ofJsonString(key);
+			final RepoIdAware id = RepoIdAwares.ofObject(value, typeAndIdentifier.getType());
+			putIdentifier(typeAndIdentifier.getIdentifier(), id);
+		});
+	}
+
+	public <T extends RepoIdAware> String describeId(@Nullable final T id)
+	{
+		if (id == null)
+		{
+			return "<null>";
+		}
+
+		final List<TypeAndIdentifier> keys = identifiers.entrySet()
+				.stream()
+				.filter(entry -> Objects.equals(entry.getValue(), id))
+				.map(Map.Entry::getKey)
+				.distinct()
+				.collect(Collectors.toList());
+
+		if (keys.size() == 1)
+		{
+			final Identifier identifier = keys.get(0).getIdentifier();
+			return identifier.getAsString() + "/" + id.getRepoId();
+		}
+		else
+		{
+			return id.toString();
+		}
+	}
+
 	//
 	//
 	//
@@ -192,6 +246,35 @@ public class MasterdataContext
 		public boolean isTypeMatch(@NonNull final Class<? extends RepoIdAware> type)
 		{
 			return this.type.equals(type);
+		}
+
+		@NonNull
+		@JsonCreator
+		public static TypeAndIdentifier ofJsonString(@NonNull final String json)
+		{
+			final int idx = json.indexOf(":");
+			if (idx <= 0)
+			{
+				throw new IllegalArgumentException("Invalid json string: " + json);
+			}
+
+			try
+			{
+				final String className = json.substring(0, idx);
+				final Identifier identifier = Identifier.ofString(json.substring(idx + 1));
+				final Class<? extends RepoIdAware> type = Util.loadClass(RepoIdAware.class, className);
+				return of(type, identifier);
+			}
+			catch (Exception ex)
+			{
+				throw new IllegalArgumentException("Invalid json string: " + json, ex);
+			}
+		}
+
+		@JsonValue
+		public String toJsonString()
+		{
+			return type.getName() + ":" + identifier.getAsString();
 		}
 	}
 }

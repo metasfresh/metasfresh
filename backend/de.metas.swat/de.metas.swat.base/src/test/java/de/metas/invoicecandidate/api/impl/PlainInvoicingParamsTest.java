@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -10,7 +12,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.junit.Test;
 
 /*
  * #%L

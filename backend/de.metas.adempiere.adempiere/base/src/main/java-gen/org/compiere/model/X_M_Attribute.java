@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Attribute
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 353596514L;
+	private static final long serialVersionUID = 1893394617L;
 
     /** Standard Constructor */
     public X_M_Attribute (final Properties ctx, final int M_Attribute_ID, @Nullable final String trxName)
@@ -75,6 +75,27 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	public int getAD_Val_Rule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Val_Rule_ID);
+	}
+
+	/** 
+	 * AttributeValuesOrderBy AD_Reference_ID=541970
+	 * Reference name: AttributeValuesOrderBy
+	 */
+	public static final int ATTRIBUTEVALUESORDERBY_AD_Reference_ID=541970;
+	/** Suchschlüssel = V */
+	public static final String ATTRIBUTEVALUESORDERBY_Suchschluessel = "V";
+	/** Name = N */
+	public static final String ATTRIBUTEVALUESORDERBY_Name = "N";
+	@Override
+	public void setAttributeValuesOrderBy (final java.lang.String AttributeValuesOrderBy)
+	{
+		set_Value (COLUMNNAME_AttributeValuesOrderBy, AttributeValuesOrderBy);
+	}
+
+	@Override
+	public java.lang.String getAttributeValuesOrderBy() 
+	{
+		return get_ValueAsString(COLUMNNAME_AttributeValuesOrderBy);
 	}
 
 	/** 

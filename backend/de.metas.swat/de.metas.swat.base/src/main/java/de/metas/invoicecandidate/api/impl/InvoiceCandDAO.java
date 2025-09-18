@@ -15,6 +15,7 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
@@ -84,6 +85,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -200,7 +202,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.iterate(I_C_Invoice_Candidate.class);
 	}
 
-
 	public Iterator<I_C_Invoice_Candidate> retrieveIcForSelectionStableOrdering(@NonNull final PInstanceId pInstanceId)
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
@@ -238,7 +239,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		return retrieveInvoiceCandidatesForRecordQuery(reference)
 				.create()
-				.listIds(InvoiceCandidateId::ofRepoId);
+				.idsAsSet(InvoiceCandidateId::ofRepoId);
 	}
 
 	@Override
@@ -1241,11 +1242,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		if(invoiceCandidateIdsSelection.isEmpty())
+		if (invoiceCandidateIdsSelection.isEmpty())
 		{
 			return false;
 		}
-		
+
 		// Without the newOutOfTrx-context, we had InvoiceCandBL.waitForInvoiceCandidatesUpdated consistently hit the 1hr-timeout on one instance,
 		// although multiple UpdateInvalidInvoiceCandidatesWorkpackageProcessors executed successfully during that hour.
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, PlainContextAware.newOutOfTrx());
@@ -1999,6 +2000,40 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, headerIdAsString)
 					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, lineIdsAsString);
 			filter.addFilter(invoiceCandidatesFilter);
+		}
+
+		final DocTypeId orderDocTypeId = query.getOrderDocTypeId();
+		final String orderDocumentNo = query.getOrderDocumentNo();
+		if (Check.isNotBlank(orderDocumentNo) || orderDocTypeId != null)
+		{
+			final IQueryBuilder<I_C_Order> orderQueryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
+					.addOnlyActiveRecordsFilter();
+
+			if (orderDocTypeId != null)
+			{
+				orderQueryBuilder.addCoalesceEqualsFilter(orderDocTypeId, I_C_Order.COLUMNNAME_C_DocType_ID, I_C_Order.COLUMNNAME_C_DocTypeTarget_ID);
+			}
+
+			if (Check.isNotBlank(orderDocumentNo))
+			{
+				orderQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, orderDocumentNo);
+			}
+
+			final Set<Integer> orderLines = query.getOrderLines();
+			if (Check.isEmpty(orderLines))
+			{
+				filter.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, orderQueryBuilder.create());
+			}
+			else
+			{
+				final IQuery<I_C_OrderLine> orderLineQuery = queryBL.createQueryBuilder(I_C_OrderLine.class)
+						.addOnlyActiveRecordsFilter()
+						.addInArrayOrAllFilter(I_C_OrderLine.COLUMNNAME_Line, orderLines)
+						.addInSubQueryFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, orderQueryBuilder.create())
+						.create();
+
+				filter.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineQuery);
+			}
 		}
 
 		return filter;

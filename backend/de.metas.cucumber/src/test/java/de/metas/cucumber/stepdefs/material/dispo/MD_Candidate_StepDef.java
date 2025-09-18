@@ -348,7 +348,6 @@ public class MD_Candidate_StepDef
 				throw new AdempiereException("Event type not handled: " + eventType);
 		}
 
-		//noinspection deprecation
 		postMaterialEventService.enqueueEventNow(event);
 	}
 

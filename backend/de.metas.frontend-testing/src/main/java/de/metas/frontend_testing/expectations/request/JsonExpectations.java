@@ -14,8 +14,10 @@ import java.util.Map;
 public class JsonExpectations
 {
 	@Nullable JsonCreateMasterdataResponse masterdata;
+	@Nullable Map<String, Object> context;
 
 	@Nullable Map<String, JsonPickingExpectation> pickings;
+	@Nullable Map<String, JsonManufacturingExpectation> manufacturings;
 	@Nullable Map<String, JsonPickingSlotExpectation> pickingSlots;
 	@Nullable Map<String, JsonHUExpectation> hus;
 }

@@ -15,7 +15,7 @@ public class PickingSlotQueueRepository
 {
 	@NonNull private final IHUPickingSlotDAO dao = Services.get(IHUPickingSlotDAO.class);
 
-	public PickingSlotQueuesSummary getNotEmptyQueuesSummary(@NonNull final PickingSlotQuery query)
+	public PickingSlotQueuesSummary getNotEmptyQueuesSummary(@NonNull final PickingSlotQueueQuery query)
 	{
 		// TODO: improve performance by really running the aggregates in database
 		// i.e. we need to implement something like org.adempiere.ad.dao.IQueryBuilder.aggregateOnColumn(java.lang.String, java.lang.Class<TargetModelType>)
@@ -30,7 +30,7 @@ public class PickingSlotQueueRepository
 				.collect(PickingSlotQueuesSummary.collect());
 	}
 
-	public PickingSlotQueues getNotEmptyQueues(@NonNull final PickingSlotQuery query)
+	public PickingSlotQueues getNotEmptyQueues(@NonNull final PickingSlotQueueQuery query)
 	{
 		final ImmutableListMultimap<PickingSlotId, PickingSlotQueueItem> items = dao.retrieveAllPickingSlotHUs(query)
 				.stream()

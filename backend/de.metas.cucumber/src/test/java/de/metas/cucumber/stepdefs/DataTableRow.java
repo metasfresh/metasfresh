@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
@@ -37,13 +38,16 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.util.text.tabular.Row;
 import de.metas.util.text.tabular.Table;
 import io.cucumber.datatable.DataTable;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
@@ -56,6 +60,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,17 +73,47 @@ public class DataTableRow
 {
 	@Getter private final int lineNo; // introduced to improve logging/debugging
 	@NonNull
-	private final Map<String, String> map;
+	private final LinkedHashMap<String, String> map;
 	@Nullable
 	@Setter
 	private String additionalRowIdentifierColumnName;
 
-	DataTableRow(
+	@Builder
+	private DataTableRow(
 			final int lineNo,
-			@NonNull final Map<String, String> map)
+			@NonNull @Singular("_value") final Map<String, String> values)
 	{
 		this.lineNo = lineNo;
-		this.map = map;
+		this.map = new LinkedHashMap<>(values);
+	}
+
+	@SuppressWarnings("unused")
+	public static class DataTableRowBuilder
+	{
+		public DataTableRowBuilder value(final String name, String value)
+		{
+			return _value(name, value);
+		}
+
+		public DataTableRowBuilder value(final String name, int value)
+		{
+			return value(name, Integer.toString(value));
+		}
+
+		public DataTableRowBuilder value(final String name, BigDecimal value)
+		{
+			return value(name, value != null ? value.toPlainString() : null);
+		}
+
+		public DataTableRowBuilder value(final String name, RepoIdAware value)
+		{
+			return value(name, value != null ? Integer.toString(value.getRepoId()) : null);
+		}
+
+		public DataTableRowBuilder value(final String name, boolean value)
+		{
+			return value(name, StringUtils.ofBoolean(value));
+		}
 	}
 
 	@Override
@@ -152,7 +187,7 @@ public class DataTableRow
 		final String columnNameEffective = findEffectiveColumnName(columnName);
 		if (columnNameEffective == null)
 		{
-			return Optional.empty(); // column is missing
+			return Optional.empty(); // the column is missing
 		}
 
 		final String value = map.get(columnNameEffective);
@@ -187,12 +222,24 @@ public class DataTableRow
 		return nameResolved;
 	}
 
-	public ValueAndName suggestValueAndName()
+	public ValueAndName suggestValueAndName(@Nullable final Supplier<String> defaultValueSupplier, @Nullable final Supplier<String> defaultNameSupplier)
 	{
 		final ValueAndName valueAndName = getOptionalValueAndName().orElse(null);
 		if (valueAndName != null)
 		{
 			return valueAndName;
+		}
+
+		if (defaultNameSupplier != null || defaultValueSupplier != null)
+		{
+			final String name = defaultNameSupplier != null ? defaultNameSupplier.get() : null;
+			final String value = defaultValueSupplier != null ? defaultValueSupplier.get() : null;
+
+			final Optional<ValueAndName> valueAndNameFromSupplier = ValueAndName.ofNullableValueAndName(value, name);
+			if (valueAndNameFromSupplier.isPresent())
+			{
+				return valueAndNameFromSupplier.get();
+			}
 		}
 
 		final StepDefDataIdentifier recordIdentifier = getAsOptionalIdentifier().orElse(null);
@@ -202,6 +249,11 @@ public class DataTableRow
 		}
 
 		return ValueAndName.unique();
+	}
+
+	public ValueAndName suggestValueAndName()
+	{
+		return suggestValueAndName(null, null);
 	}
 
 	public ExplainedOptional<ValueAndName> getOptionalValueAndName()
@@ -582,11 +634,25 @@ public class DataTableRow
 		return getAsOptionalInstant(columnName).map(Timestamp::from);
 	}
 
+	/**
+	 * Convert the given string. Examples:
+	 * <ul>
+	 *     <li>2007-12-03</li>
+	 *     <li>2007-12-03Z</li>
+	 *     <li>2007-12-03T10:15:30</li>
+	 *     <li>2007-12-03T10:15:30Z</li>
+	 * </ul>
+	 * Append the prefix {@code Z} to indicate that no timezone-conversion shall be done.
+	 * Otherwise, the code assumes the given time is in the TZ returned by {@link ZoneId#systemDefault()} and converts it to UTC from there.
+	 */
 	public Instant getAsInstant(@NonNull final String columnName)
 	{
 		return parseInstant(getAsString(columnName), columnName);
 	}
 
+	/**
+	 * Similar to {@link #getAsInstant(String)}.
+	 */
 	public Optional<Instant> getAsOptionalInstant(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseInstant(valueStr, columnName));
@@ -603,18 +669,20 @@ public class DataTableRow
 		try
 		{
 			if (valueStr.contains("T"))
-			{
+			{ // we have a date+time
 				if (valueStr.endsWith("Z"))
 				{
 					return Instant.parse(valueStr);
 				}
-				else
-				{
-					return toInstant(LocalDateTime.parse(valueStr));
-				}
+				return toInstant(LocalDateTime.parse(valueStr));
 			}
 			else
-			{
+			{ // we have a date
+				if (valueStr.endsWith("Z"))
+				{
+					final String effectiveString = valueStr.replace("Z", "T00:00:00.00Z");
+					return Instant.parse(effectiveString);
+				}
 				return toInstant(LocalDate.parse(valueStr).atStartOfDay());
 			}
 		}
@@ -640,8 +708,8 @@ public class DataTableRow
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
-		// because that's the timezone java.sql.Timestamp would use it too,
-		// and because most of currently logic is silently assuming that
+		// because the timezone java.sql.Timestamp would use it too,
+		// and because most of currently the logic is silently assuming that
 		final ZoneId jvmTimeZone = ZoneId.systemDefault();
 		return ldt.atZone(jvmTimeZone).toInstant();
 	}
@@ -707,5 +775,22 @@ public class DataTableRow
 		row.putAll(map);
 		return row;
 
+	}
+
+	public List<String> getColumnNames()
+	{
+		return ImmutableList.copyOf(map.keySet());
+	}
+
+	public void setValueIfMissing(@NonNull String columnName, @NonNull Supplier<String> valueSupplier)
+	{
+		final String existingValue = map.get(columnName);
+		if (existingValue != null)
+		{
+			return;
+		}
+
+		final String newValue = valueSupplier.get();
+		map.put(columnName, newValue);
 	}
 }

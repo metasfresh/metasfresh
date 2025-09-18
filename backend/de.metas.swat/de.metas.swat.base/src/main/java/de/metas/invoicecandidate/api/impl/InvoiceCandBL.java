@@ -91,8 +91,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
-import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
-import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
@@ -148,7 +146,6 @@ import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -2010,9 +2007,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 			final String msgAskForRegeneration = Services.get(IMsgBL.class).getMsg(ctx, MSG_FixProblemDeleteWaitForRegeneration);
-			errorMessageToUse = new StringBuilder(errorMsg)
-					.append("\n").append(msgAskForRegeneration)
-					.toString();
+			errorMessageToUse = errorMsg
+					+ "\n" + msgAskForRegeneration;
 		}
 
 		ic.setIsError(true);
@@ -2129,7 +2125,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void updatePOReferenceFromOrder(final I_C_Invoice_Candidate candidate)
 	{
-		if (candidate.isProcessed() == true)
+		if (candidate.isProcessed())
 		{
 			return; // do nothing in case of processed ICs
 		}
@@ -2335,7 +2331,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						final AggregationId aggregationId = AggregationId.ofRepoIdOrNull(candidate.getHeaderAggregationKeyBuilder_ID());
 						if (aggregationId != null)
 						{
-							final Aggregation aggregation = aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId.getRepoId());
+							final Aggregation aggregation = aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId);
 							if (aggregation.hasInvoicePerShipmentAttribute())
 							{
 								logger.debug("Has aggregation attribute: InvoicePerShipment ; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
@@ -2533,18 +2529,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	@Override
 	public int createSelectionForInvoiceCandidates(
-			@NonNull final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds,
+			@NonNull final InvoiceCandidateMultiQuery multiQuery,
 			@NonNull final PInstanceId pInstanceId)
 	{
-		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
-		for (final ExternalHeaderIdWithExternalLineIds headerWithLineIds : headerAndLineIds)
-		{
-			multiQuery.query(InvoiceCandidateQuery.builder()
-									 .externalIds(headerWithLineIds)
-									 .build());
-		}
-
-		return invoiceCandDAO.createSelectionByQuery(multiQuery.build(), pInstanceId);
+		return invoiceCandDAO.createSelectionByQuery(multiQuery, pInstanceId);
 	}
 
 	@Override

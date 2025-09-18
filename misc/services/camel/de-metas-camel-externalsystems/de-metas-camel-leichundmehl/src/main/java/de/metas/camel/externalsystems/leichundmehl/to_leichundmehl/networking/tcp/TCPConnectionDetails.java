@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-leichundmehl
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,11 +27,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-// TODO rename to TCPConnectionDetails 
 @Value
 public class TCPConnectionDetails
 {
-	@NonNull
 	@JsonProperty("tcpPort")
 	int tcpPort;
 
@@ -41,7 +39,7 @@ public class TCPConnectionDetails
 
 	@Builder
 	public TCPConnectionDetails(
-			@JsonProperty("tcpPort") @NonNull final int tcpPort,
+			@JsonProperty("tcpPort") final int tcpPort,
 			@JsonProperty("tcpHost") @NonNull final String tcpHost)
 	{
 		this.tcpPort = tcpPort;

@@ -24,7 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import io.cucumber.datatable.DataTable;

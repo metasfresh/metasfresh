@@ -61,5 +61,5 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess }) 
 
   //
   //
-  return { isPending, data };
+  return { isPending, data, setData };
 };

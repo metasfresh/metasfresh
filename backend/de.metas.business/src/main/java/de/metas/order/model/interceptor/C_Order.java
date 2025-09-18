@@ -53,6 +53,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -102,6 +103,7 @@ public class C_Order
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
+	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -111,12 +113,14 @@ public class C_Order
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
+			@NonNull final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
+		this.purchaseOrderToShipperTransportationService = purchaseOrderToShipperTransportationService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -239,7 +243,7 @@ public class C_Order
 		order.setC_Incoterms_ID(c_Incoterms);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{
 		final DeliveryViaRule deliveryViaRule = orderBL.findDeliveryViaRule(order).orElse(null);
@@ -351,6 +355,15 @@ public class C_Order
 	{
 		checkPaymentRuleWithReservation(order);
 		orderLinePricingConditions.failForMissingPricingConditions(order);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void createMPackages(final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			purchaseOrderToShipperTransportationService.addPurchaseOrderToCurrentShipperTransportation(order);
+		}
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_PaymentRule)
@@ -483,7 +496,7 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_DropShip_Location_ID
+			I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID
 	})
 	public void onDropShipLocation(final I_C_Order order)
 	{
@@ -494,6 +507,8 @@ public class C_Order
 		}
 
 		orderBL.setPriceList(order);
+
+		orderBL.setShipperId(order);
 	}
 
 	@ModelChange(timings = {

@@ -183,7 +183,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.createQueryBuilder(I_C_Payment.class)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(PaymentId::ofRepoId)
+				.idsAsSet(PaymentId::ofRepoId)
 				.stream();
 	}
 
@@ -237,7 +237,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		return queryBuilder
 				.setLimit(query.getLimit())
 				.create()
-				.listIds(PaymentId::ofRepoId);
+				.idsAsSet(PaymentId::ofRepoId);
 	}
 
 	@Override

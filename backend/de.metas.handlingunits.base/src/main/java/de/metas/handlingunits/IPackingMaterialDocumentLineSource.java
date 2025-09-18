@@ -10,26 +10,28 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.product.ProductId;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-
 /**
  * Implementations of this interface are handling document lines which are NOT about packing materials but which provide packing material informations.
- *
+ * <p>
  * Based on these (regular) lines, the {@link IPackingMaterialDocumentLine} will be created
  *
  * @author tsa
@@ -47,5 +49,16 @@ public interface IPackingMaterialDocumentLineSource
 	 * @return amount of packing materials
 	 */
 	BigDecimal getQty();
+
+	/**
+	 * @return the LU packing instructions of this source line
+	 */
+	@Nullable
+	ProductId getLUProductId();
+
+	/**
+	 * @return amount of LUs
+	 */
+	BigDecimal getQtyLU();
 
 }

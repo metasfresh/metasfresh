@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1416296865L;
+	private static final long serialVersionUID = 247353525L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -412,6 +412,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getCity() 
 	{
 		return get_ValueAsString(COLUMNNAME_City);
+	}
+
+	@Override
+	public void setCommercialRegisterNumber (final @Nullable java.lang.String CommercialRegisterNumber)
+	{
+		set_Value (COLUMNNAME_CommercialRegisterNumber, CommercialRegisterNumber);
+	}
+
+	@Override
+	public java.lang.String getCommercialRegisterNumber() 
+	{
+		return get_ValueAsString(COLUMNNAME_CommercialRegisterNumber);
 	}
 
 	@Override
@@ -1145,6 +1157,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsShipmentPricePrinted (final boolean IsShipmentPricePrinted)
+	{
+		set_Value (COLUMNNAME_IsShipmentPricePrinted, IsShipmentPricePrinted);
+	}
+
+	@Override
+	public boolean isShipmentPricePrinted() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipmentPricePrinted);
+	}
+
+	@Override
 	public void setIsShippingNotificationEmail (final boolean IsShippingNotificationEmail)
 	{
 		set_Value (COLUMNNAME_IsShippingNotificationEmail, IsShippingNotificationEmail);
@@ -1265,6 +1289,30 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getLogo_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Logo_ID);
+	}
+
+	@Override
+	public void setLookup_Label (final @Nullable java.lang.String Lookup_Label)
+	{
+		set_Value (COLUMNNAME_Lookup_Label, Lookup_Label);
+	}
+
+	@Override
+	public java.lang.String getLookup_Label() 
+	{
+		return get_ValueAsString(COLUMNNAME_Lookup_Label);
+	}
+
+	@Override
+	public void setMaterialReceiptInfo (final @Nullable java.lang.String MaterialReceiptInfo)
+	{
+		set_Value (COLUMNNAME_MaterialReceiptInfo, MaterialReceiptInfo);
+	}
+
+	@Override
+	public java.lang.String getMaterialReceiptInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_MaterialReceiptInfo);
 	}
 
 	@Override
@@ -1577,9 +1625,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	/** Rückerstattung = E */
-	public static final String PAYMENTRULE_Reimbursement = "E";
+	public static final String PAYMENTRULE_Rueckerstattung = "E";
 	/** Verrechnung = F */
-	public static final String PAYMENTRULE_Settlement = "F";
+	public static final String PAYMENTRULE_Verrechnung = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
@@ -1590,6 +1638,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getPaymentRule() 
 	{
 		return get_ValueAsString(COLUMNNAME_PaymentRule);
+	}
+
+	@Override
+	public void setPaymentRuleInfo (final @Nullable java.lang.String PaymentRuleInfo)
+	{
+		set_Value (COLUMNNAME_PaymentRuleInfo, PaymentRuleInfo);
+	}
+
+	@Override
+	public java.lang.String getPaymentRuleInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRuleInfo);
 	}
 
 	/** 
@@ -1619,6 +1679,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String PAYMENTRULEPO_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULEPO_Sofortueberweisung = "R";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULEPO_Rueckerstattung = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULEPO_Verrechnung = "F";
 	@Override
 	public void setPaymentRulePO (final java.lang.String PaymentRulePO)
 	{
@@ -1629,6 +1693,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getPaymentRulePO() 
 	{
 		return get_ValueAsString(COLUMNNAME_PaymentRulePO);
+	}
+
+	@Override
+	public void setPaymentRulePOInfo (final @Nullable java.lang.String PaymentRulePOInfo)
+	{
+		set_Value (COLUMNNAME_PaymentRulePOInfo, PaymentRulePOInfo);
+	}
+
+	@Override
+	public java.lang.String getPaymentRulePOInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRulePOInfo);
 	}
 
 	@Override

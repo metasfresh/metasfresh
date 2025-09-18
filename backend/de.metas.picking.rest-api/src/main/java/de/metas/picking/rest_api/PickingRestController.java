@@ -97,6 +97,8 @@ public class PickingRestController
 			@RequestParam(value = "lineId", required = false) @Nullable final String lineIdStr,
 			@RequestBody(required = false) @Nullable final JsonLUPickingTarget jsonTarget)
 	{
+		assertApplicationAccess();
+
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
 		final LUPickingTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
@@ -124,6 +126,8 @@ public class PickingRestController
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
 			@RequestParam(value = "lineId", required = false) @Nullable final String lineIdStr)
 	{
+		assertApplicationAccess();
+
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
 		final List<HuId> luIds = pickingMobileApplication.getClosedLUs(wfProcessId, lineId, getLoggedUserId());
@@ -148,6 +152,8 @@ public class PickingRestController
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
 			@RequestParam(value = "lineId", required = false) @Nullable final String lineIdStr)
 	{
+		assertApplicationAccess();
+
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
 		final WFProcess wfProcess = pickingMobileApplication.closeTUPickingTarget(wfProcessId, lineId, getLoggedUserId());

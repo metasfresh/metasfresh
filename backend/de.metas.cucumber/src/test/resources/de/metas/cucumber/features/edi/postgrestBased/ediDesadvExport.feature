@@ -69,9 +69,12 @@ Feature: EDI DESADV export via postgREST
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
       | salesPLV               | product_S0468_010 | 5.00     | PCE      |
 
+    # C_Order.DatePromised has type "timestamp with timezone", The DB runs on timezone UTC. 
+    # When I set it to 2025-04-18, it would end up as 2025-04-17 22:00 in the DB, because DataTableRow converts it from the current JVM's timezone.
+    # Therefore I set it to 2025-04-18Z, to indicate that this already is in UTC and therefore not to be converted
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.POReference |
-      | o_1        | true    | customer1     | 2025-04-17  | testReference   |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | OPT.POReference |
+      | o_1        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | testReference   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID      | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_1       | o_1                   | product_S0468_010 | 100        | huAuditProductTU_S0468_010             |
@@ -85,7 +88,7 @@ Feature: EDI DESADV export via postgREST
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
        
-         # This controls the SSCC18 value such that our LU and desc-pack get SSCC18-value 012345670010000005
+    # This controls the SSCC18 value such that our LU and desc-pack get SSCC18-value 012345670010000005
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -96,7 +99,7 @@ Feature: EDI DESADV export via postgREST
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo       |
       | s_s_1                            | s_1                   | shipment_S0468_010_ID   | shipment_S0468_010_DocumentNo |
 
-        # cleanup; otherwise, all HUs with an SSCC18 will have the same SSCC18-value for the remainder of this test-run
+    # cleanup; otherwise, all HUs with an SSCC18 will have the same SSCC18-value for the remainder of this test-run
     And reset the SSCC18 code generator's next sequence number back to its actual sequence.
 
     And EDI_Desadv is found:
@@ -124,78 +127,29 @@ Feature: EDI DESADV export via postgREST
     """
     Then the metasfresh REST-API responds with
     """
-[{
-    "metasfresh_DESADV": {
+{
+  "metasfresh_DESADV": {
+    "Parties": {
       "Buyer": {
         "Name": "desadvReceiverName",
         "Name2": null,
         "Value": "desadvReceiverValue"
       },
-      "Packing": [
-        {
-          "SeqNo": 1,
-          "Line_Item": [
-            {
-              "Line": 10,
-              "QtyTU": 10,
-              "LotNumber": null,
-              "DesadvLine": {
-                "Product": {
-                  "UPC": null,
-                  "Name": "postgRESTExportProductName",
-                  "Value": "postgRESTExportProductValue",
-                  "GTIN_CU": "bPartnerProductGTIN",
-                  "GTIN_TU": null,
-                  "NetWeight": 0,
-                  "ProductNo": null,
-                  "Description": "postgRESTExportProductDescription",
-                  "GrossWeight": null,
-                  "GrossWeightUOM;": {
-                    "Name": null,
-                    "X12DE355": null
-                  }
-                },
-                "OrderLine": 10,
-                "DesadvLine": 10,
-                "QtyEntered": 100,
-                "MovementQty": 100,
-                "ShipmentLine": 10,
-                "DesadvLineUOM": {
-                  "Name": "Stück",
-                  "X12DE355": "PCE"
-                },
-                "OrderDocumentNo": "@o_1_DocumentNo@",
-                "OrderPOReference": "testReference"
-              },
-              "QtyCUsPerLU": 100,
-              "QtyCUsPerTU": 10,
-              "BestBeforeDate": null,
-              "GTIN_TU_PackingMaterial": "bPartnerProductGTIN",
-              "QtyCUsPerLU_InInvoiceUOM": 100,
-              "QtyCUsPerTU_InInvoiceUOM": 10,
-              "M_HU_PackagingCode_TU_Text": "ISO1"
-            }
-          ],
-          "IPA_SSCC18": "012345670010000005",
-          "GTIN_PackingMaterial": "gtinPiItemProduct",
-          "M_HU_PackagingCode_Text": "ISO1"
-        }
-      ],
-      "Currency": {
-        "ISO_Code": "EUR",
-        "CurSymbol": "€"
+      "Invoicee": {
+        "Name": "desadvReceiverName",
+        "Name2": null,
+        "Value": "desadvReceiverValue"
       },
-      "M_InOut_ID": @shipment_S0468_010_ID@,
-      "DateOrdered": "2025-04-17T00:00:00",
-      "POReference": "testReference",
-      "DatePromised": "2025-05-15T00:00:00",
-      "MovementDate": "2025-05-15T00:00:00",
+      "Supplier": {
+        "Name": "metasfresh AG",
+        "Name2": null,
+        "Value": "metasfresh"
+      },
       "DeliveryParty": {
         "Name": "desadvReceiverName",
         "Name2": null,
         "Value": "desadvReceiverValue"
       },
-      "EDI_Desadv_ID": @d_1@,
       "Buyer_Location": {
         "GLN": "1234567890123",
         "City": null,
@@ -204,7 +158,6 @@ Feature: EDI DESADV export via postgREST
         "Address2": null,
         "CountryCode": "DE"
       },
-      "DeliveryViaRule": "P",
       "Invoicee_Location": {
         "GLN": "1234567890123",
         "City": null,
@@ -213,13 +166,19 @@ Feature: EDI DESADV export via postgREST
         "Address2": null,
         "CountryCode": "DE"
       },
+      "Supplier_Location": {
+        "GLN": null,
+        "City": "Bonn",
+        "Postal": "53179",
+        "Address1": "Am Nossbacher Weg 2",
+        "Address2": null,
+        "CountryCode": "DE"
+      },
       "UltimateConsignee": {
         "Name": "desadvReceiverName",
         "Name2": null,
         "Value": "desadvReceiverValue"
       },
-      "ShipmentDocumentNo": "@shipment_S0468_010_DocumentNo@",
-      "InvoicableQtyBasedOn": "Nominal",
       "DeliveryParty_Location": {
         "GLN": "1234567890123",
         "City": null,
@@ -228,7 +187,6 @@ Feature: EDI DESADV export via postgREST
         "Address2": null,
         "CountryCode": "DE"
       },
-      "DesadvLineWithNoPacking": [],
       "UltimateConsignee_Location": {
         "GLN": "1234567890123",
         "City": null,
@@ -237,9 +195,76 @@ Feature: EDI DESADV export via postgREST
         "Address2": null,
         "CountryCode": "DE"
       }
-    }
+    },
+    "Version": "0.2",
+    "Currency": {
+      "ISO_Code": "EUR",
+      "CurSymbol": "€"
+    },
+    "Packings": [
+      {
+        "SeqNo": 1,
+        "LineItems": [
+          {
+            "Line": 10,
+            "QtyTU": 10,
+            "LotNumber": null,
+            "DesadvLine": {
+              "Product": {
+                "Name": "postgRESTExportProductName",
+                "GTIN_CU": "bPartnerProductGTIN",
+                "GTIN_TU": null,
+                "NetWeight": 0,
+                "Description": "postgRESTExportProductDescription",
+                "GrossWeight": null,
+                "BuyerProductNo": null,
+                "GrossWeightUOM": {},
+                "SupplierProductNo": "postgRESTExportProductValue"
+              },
+              "OrderLine": 10,
+              "DesadvLine": 10,
+              "InvoicingUOM": {
+                "Name": "Stück",
+                "X12DE355": "PCE"
+              },
+              "ShipmentLine": 10,
+              "DesadvLineUOM": {
+                "Name": "Stück",
+                "X12DE355": "PCE"
+              },
+              "OrderDocumentNo": "@o_1_DocumentNo@",
+              "OrderPOReference": "testReference",
+              "QtyOrderedInDesadvLineUOM": 100,
+              "QtyDeliveredInInvoicingUOM": 100,
+              "QtyDeliveredInDesadvLineUOM": 100
+            },
+            "QtyCUsPerLU": 100,
+            "QtyCUsPerTU": 10,
+            "BestBeforeDate": null,
+            "GTIN_TU_PackingMaterial": "bPartnerProductGTIN",
+            "QtyCUsPerLU_InInvoiceUOM": 100,
+            "QtyCUsPerTU_InInvoiceUOM": 10,
+            "M_HU_PackagingCode_TU_Text": "ISO1"
+          }
+        ],
+        "IPA_SSCC18": "012345670010000005",
+        "GTIN_PackingMaterial": "gtinPiItemProduct",
+        "M_HU_PackagingCode_Text": "ISO1"
+      }
+    ],
+    "M_InOut_ID": @shipment_S0468_010_ID@,
+    "DateOrdered": "2025-04-17T00:00:00",
+    "POReference": "testReference",
+    "DatePromised": "2025-04-18T00:00:00+00:00",
+    "MovementDate": "2025-05-15T00:00:00",
+    "EDI_Desadv_ID": @d_1@,
+    "DeliveryViaRule": "P",
+    "ShipmentDocumentNo": "@shipment_S0468_010_DocumentNo@",
+    "InvoicableQtyBasedOn": "Nominal",
+    "TechnicalRecipientGLN": "1234567890",
+    "DesadvLineWithNoPacking": []
   }
-]
+}
     """
 
 #   no need to wait. the process runs synchronously

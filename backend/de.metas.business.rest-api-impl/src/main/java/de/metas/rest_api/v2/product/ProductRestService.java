@@ -48,6 +48,7 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -71,10 +72,10 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
@@ -90,6 +91,7 @@ import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
+@RequiredArgsConstructor
 @Service
 public class ProductRestService
 {
@@ -103,28 +105,13 @@ public class ProductRestService
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final ProductRepository productRepository;
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final @NonNull ExternalIdentifierProductLookupService productLookupService;
+	private final @NonNull ProductRepository productRepository;
+	private final @NonNull ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final @NonNull ProductPriceRestService productPriceRestService;
+	private final @NonNull ProductTaxCategoryService productTaxCategoryService;
+	private final @NonNull UomConversionRestService uomConversionRestService;
 
-	private final ProductPriceRestService productPriceRestService;
-
-	private final ProductTaxCategoryService productTaxCategoryService;
-
-	private final UomConversionRestService uomConversionRestService;
-
-	public ProductRestService(
-			final ProductRepository productRepository,
-			final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			final ProductPriceRestService productPriceRestService,
-			final ProductTaxCategoryService productTaxCategoryService,
-			final UomConversionRestService uomConversionRestService)
-	{
-		this.productRepository = productRepository;
-		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
-		this.productPriceRestService = productPriceRestService;
-		this.productTaxCategoryService = productTaxCategoryService;
-		this.uomConversionRestService = uomConversionRestService;
-	}
 
 	@NonNull
 	public JsonResponseUpsert upsertProducts(
@@ -132,35 +119,6 @@ public class ProductRestService
 			@NonNull final JsonRequestProductUpsert request)
 	{
 		return trxManager.callInNewTrx(() -> upsertProductsWithinTrx(orgCode, request));
-	}
-
-	@NonNull
-	public Optional<ProductId> resolveProductExternalIdentifier(
-			@NonNull final ExternalIdentifier productIdentifier,
-			@NonNull final OrgId orgId)
-	{
-		switch (productIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return Optional.of(ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue()));
-
-			case EXTERNAL_REFERENCE:
-				return externalReferenceRestControllerService
-						.getJsonMetasfreshIdFromExternalReference(orgId, productIdentifier, ProductExternalReferenceType.PRODUCT)
-						.map(JsonMetasfreshId::getValue)
-						.map(ProductId::ofRepoId);
-
-			case VALUE:
-				final IProductDAO.ProductQuery query = IProductDAO.ProductQuery.builder()
-						.value(productIdentifier.asValue())
-						.orgId(orgId)
-						.includeAnyOrg(true)
-						.build();
-
-				return Optional.ofNullable(productDAO.retrieveProductIdBy(query));
-			default:
-				throw new InvalidIdentifierException(productIdentifier.getRawValue());
-		}
 	}
 
 	@NonNull
@@ -196,7 +154,11 @@ public class ProductRestService
 
 		final SyncAdvise effectiveSyncAdvise = jsonRequestProduct.getSyncAdvise() != null ? jsonRequestProduct.getSyncAdvise() : parentSyncAdvise;
 
-		final Optional<Product> existingProduct = getProductId(jsonRequestProductUpsertItem.getProductIdentifier(), org, jsonRequestProduct.getCode())
+		final Optional<Product> existingProduct = getProductId(
+				jsonRequestProductUpsertItem.getProductIdentifier(),
+				org,
+				jsonRequestProduct.getCode())
+				.map(ProductAndHUPIItemProductId::getProductId)
 				.flatMap(productRepository::getOptionalById);
 
 		final ProductId productId;
@@ -234,10 +196,10 @@ public class ProductRestService
 		}
 
 		handleProductExternalReference(org,
-									   jsonRequestProductUpsertItem.getProductIdentifier(),
-									   JsonMetasfreshId.of(productId.getRepoId()),
-									   jsonRequestProductUpsertItem.getExternalVersion(),
-									   jsonRequestProductUpsertItem.getExternalReferenceUrl());
+				jsonRequestProductUpsertItem.getProductIdentifier(),
+				JsonMetasfreshId.of(productId.getRepoId()),
+				jsonRequestProductUpsertItem.getExternalVersion(),
+				jsonRequestProductUpsertItem.getExternalReferenceUrl());
 
 		return JsonResponseUpsertItem.builder()
 				.syncOutcome(syncOutcome)
@@ -320,7 +282,6 @@ public class ProductRestService
 		{
 			case METASFRESH_ID:
 				return ProductCategoryId.ofRepoId(externalIdentifier.asMetasfreshId().getValue());
-
 			case EXTERNAL_REFERENCE:
 				final Optional<ProductCategoryId> productCategoryId =
 						getJsonMetasfreshIdFromExternalReference(org.getValue(), externalIdentifier, ProductCategoryExternalReferenceType.PRODUCT_CATEGORY)
@@ -341,7 +302,10 @@ public class ProductRestService
 	}
 
 	@NonNull
-	private Optional<ProductId> getProductId(@NonNull final String productIdentifier, @NonNull final I_AD_Org org, @Nullable final String code)
+	private Optional<ProductAndHUPIItemProductId> getProductId(
+			@NonNull final String productIdentifier,
+			@NonNull final I_AD_Org org,
+			@Nullable final String code)
 	{
 		if (code != null)
 		{
@@ -351,11 +315,15 @@ public class ProductRestService
 
 			if (matchedProductId != null)
 			{
-				return Optional.of(matchedProductId);
+				return Optional.of(new ProductAndHUPIItemProductId(
+						matchedProductId,
+						HUPIItemProductId.VIRTUAL_HU));
 			}
 		}
 
-		return resolveProductExternalIdentifier(ExternalIdentifier.of(productIdentifier), OrgId.ofRepoId(org.getAD_Org_ID()));
+		return productLookupService.resolveProductExternalIdentifier(
+				ExternalIdentifier.of(productIdentifier),
+				OrgId.ofRepoId(org.getAD_Org_ID()));
 	}
 
 	private void createOrUpdateBpartnerProducts(
@@ -367,10 +335,10 @@ public class ProductRestService
 		if (jsonRequestBPartnerProductsUpsert != null)
 		{
 			jsonRequestBPartnerProductsUpsert.forEach(jsonRequestBPartnerProductUpsert ->
-															  createOrUpdateBpartnerProduct(jsonRequestBPartnerProductUpsert,
-																							effectiveSyncAdvise,
-																							productId,
-																							org.getValue()));
+					createOrUpdateBpartnerProduct(jsonRequestBPartnerProductUpsert,
+							effectiveSyncAdvise,
+							productId,
+							org.getValue()));
 		}
 
 	}
@@ -383,9 +351,9 @@ public class ProductRestService
 		if (productTaxCategories != null)
 		{
 			productTaxCategories.forEach(productTaxCategory ->
-												 createOrUpdateProductTaxCategory(productTaxCategory,
-																				  productId,
-																				  effectiveSyncAdvise));
+					createOrUpdateProductTaxCategory(productTaxCategory,
+							productId,
+							effectiveSyncAdvise));
 		}
 	}
 
@@ -494,9 +462,9 @@ public class ProductRestService
 		final JsonExternalReferenceLookupRequest lookupRequest = JsonExternalReferenceLookupRequest.builder()
 				.systemName(externalSystemName)
 				.item(JsonExternalReferenceLookupItem.builder()
-							  .type(externalReferenceType.getCode())
-							  .id(externalIdentifier.asExternalValueAndSystem().getValue())
-							  .build())
+						.type(externalReferenceType.getCode())
+						.id(externalIdentifier.asExternalValueAndSystem().getValue())
+						.build())
 				.build();
 
 		final JsonExternalReferenceLookupResponse lookupResponse = externalReferenceRestControllerService.performLookup(orgCode, lookupRequest);
@@ -1019,3 +987,4 @@ public class ProductRestService
 		}
 	}
 }
+

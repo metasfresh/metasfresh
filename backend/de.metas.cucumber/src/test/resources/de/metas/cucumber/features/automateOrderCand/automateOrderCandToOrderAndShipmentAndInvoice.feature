@@ -17,6 +17,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_100
+  @Id:S0469_100
+  @Id:S0472
   Scenario: Order candidate to shipment and invoice flow and closed order
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -70,12 +72,12 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | ol_1                      | order_1               | 2021-07-20      | product_1               | 10           | 10         | 10          | 5     | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
-      | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | po_ref_mock     | true      | CO        | Shopware                               |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalId |
+      | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | po_ref_mock     | true      | CO        | Shopware                               | 1444       |
 
     And validate the created shipment lines
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipmentLine_1            | shipment_1            | product_1               | 10          | true      |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | ExternalId |
+      | shipmentLine_1            | shipment_1            | product_1               | 10          | true      | 1555       |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
@@ -89,6 +91,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_110
+  @Id:S0469_110
   Scenario: Order candidate to shipment and invoice flow and unclosed order, with qtyShipped = 0!
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -145,6 +148,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_120
+  @Id:S0469_120
   Scenario: Order candidate to shipment in first step and then invoice with close order
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -239,6 +243,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_130
+  @Id:S0469_130
   Scenario: Order candidate to complete order, then shipment endpoint to complete shipment, invoice and close shipment
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -351,6 +356,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_140
+  @Id:S0469_140
   Scenario: Order candidate to complete order and partial shipment, then shipment endpoint to complete shipment, invoice and close shipment
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -482,6 +488,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_150
+  @Id:S0469_150
   Scenario: Order candidate to shipment and invoice flow and closed order for AUTO_SHIP_AND_INVOICE
     And set sys config boolean value true for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh contains M_Inventories:
@@ -559,6 +566,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_160
+  @Id:S0469_160
   Scenario: Order candidate to shipment in first step and then invoice with close order for AUTO_SHIP_AND_INVOICE
     And set sys config boolean value true for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh contains M_Inventories:

@@ -17,7 +17,9 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Inout_Details
                 incotermlocation character varying,
                 additionaltext   text,
                 deliveryrule     character varying,
-                deliveryviarule  character varying
+                deliveryviarule  character varying,
+                shipper          character varying,
+                shipper_routeno   character varying
             )
 
 AS
@@ -25,7 +27,9 @@ $$
 
 SELECT footer.*,
        COALESCE(o_dr_trl.name, o_dr.name)   AS deliveryrule,
-       COALESCE(o_dvr_trl.name, o_dvr.name) AS deliveryviarule
+       COALESCE(o_dvr_trl.name, o_dvr.name) AS deliveryviarule,
+       shipper.name AS shipper,
+       srno.name as shipper_routeno
 FROM (
          --Docnote DE
          SELECT NULL                                                                                        AS textleft,
@@ -72,7 +76,7 @@ FROM (
          --Descriptionbottom
          SELECT io.descriptionbottom             AS textleft,
                 NULL                             AS textcenter,
-                NULL                             AS language,
+                (SELECT l.AD_Language FROM AD_Language l WHERE l.IsBaseLanguage = 'Y' AND l.isActive = 'Y') AS language,
                 io.m_inout_id                    AS m_inout_id,
                 'descr'                          AS tag,
                 2                                AS pozition,
@@ -82,11 +86,17 @@ FROM (
          FROM m_inout io
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
                   LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language) AS footer
+
+
          INNER JOIN m_inout io ON io.m_inout_id = footer.m_inout_id
          LEFT JOIN AD_Ref_List o_dr ON o_dr.AD_Reference_ID = 151 AND o_dr.value = io.deliveryrule
          LEFT JOIN AD_Ref_List_Trl o_dr_trl ON o_dr.ad_ref_list_id = o_dr_trl.ad_ref_list_id AND o_dr_trl.ad_language = p_Language
          LEFT JOIN AD_Ref_List o_dvr ON o_dvr.AD_Reference_ID = 152 AND o_dvr.value = io.deliveryviarule
          LEFT JOIN AD_Ref_List_Trl o_dvr_trl ON o_dvr.ad_ref_list_id = o_dvr_trl.ad_ref_list_id AND o_dvr_trl.ad_language = p_Language
+
+        LEFT JOIN M_shipper shipper ON io.m_shipper_id = shipper.m_shipper_id
+        LEFT JOIN C_BPartner_location bpl ON io.c_bpartner_location_id = bpl.c_bpartner_location_id
+         LEFT JOIN M_Shipper_RoutingCode srno ON bpl.M_Shipper_RoutingCode_ID = srno.M_Shipper_RoutingCode_ID
 
 WHERE footer.m_inout_id = p_InOut_ID
   AND footer.language = p_Language

@@ -1,12 +1,10 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.currency.CurrencyRepository;
-import de.metas.distribution.config.MobileUIDistributionConfigRepository;
-import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
 import de.metas.frontend_testing.masterdata.dd_order.DDOrderCommand;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
@@ -16,6 +14,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.huQRCodes.GenerateHUQRCodeCommand;
+import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
+import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
@@ -42,11 +43,6 @@ import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
-import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.mobile.MobileConfigService;
-import de.metas.product.ProductRepository;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -58,14 +54,7 @@ import java.util.function.BiFunction;
 @Builder
 public class CreateMasterdataCommand
 {
-	@NonNull private final ProductRepository productRepository; // for C_BPartner_Product
-	@NonNull private final MobileConfigService mobileConfigService;
-	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
-	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
-	@NonNull private final InventoryService inventoryService;
-	@NonNull private final HUQRCodesService huQRCodesService;
-	@NonNull private final CurrencyRepository currencyRepository;
-	@NonNull private final DDOrderService ddOrderService;
+	@NonNull private final CreateMasterdataCommandSupportingServices services;
 
 	@NonNull private final JsonCreateMasterdataRequest request;
 
@@ -86,9 +75,11 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
+		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
+		createCustomQRCodeFormats();
 
 		return JsonCreateMasterdataResponse.builder()
 				.mobileConfig(mobileConfig)
@@ -101,6 +92,7 @@ public class CreateMasterdataCommand
 				.warehouses(warehouses)
 				.packingInstructions(packingInstructions)
 				.handlingUnits(hus)
+				.generatedHUQRCodes(generatedHUQRCodes)
 				.salesOrders(salesOrders)
 				.distributionOrders(distributionOrders)
 				.manufacturingOrders(manufacturingOrders)
@@ -128,6 +120,7 @@ public class CreateMasterdataCommand
 	private JsonLoginUserResponse createLoginUser(final String identifier, final JsonLoginUserRequest request)
 	{
 		return LoginUserCommand.builder()
+				.userAuthTokenService(services.userAuthTokenService)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
@@ -142,7 +135,7 @@ public class CreateMasterdataCommand
 	private JsonCreateBPartnerResponse createBPartner(String identifier, JsonCreateBPartnerRequest request)
 	{
 		return CreateBPartnerCommand.builder()
-				.currencyRepository(currencyRepository)
+				.currencyRepository(services.currencyRepository)
 				.context(context)
 				.request(request)
 				.identifier(identifier)
@@ -158,7 +151,7 @@ public class CreateMasterdataCommand
 	private JsonCreateProductResponse createProduct(String identifier, JsonCreateProductRequest request)
 	{
 		return CreateProductCommand.builder()
-				.productRepository(productRepository)
+				.productRepository(services.productRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
@@ -247,9 +240,10 @@ public class CreateMasterdataCommand
 		}
 
 		return MobileConfigCommand.builder()
-				.mobileConfigService(mobileConfigService)
-				.mobilePickingConfigRepository(mobilePickingConfigRepository)
-				.mobileDistributionConfigRepository(mobileDistributionConfigRepository)
+				.mobileConfigService(services.mobileConfigService)
+				.mobilePickingConfigRepository(services.mobilePickingConfigRepository)
+				.mobileDistributionConfigRepository(services.mobileDistributionConfigRepository)
+				.mobileManufacturingConfigRepository(services.mobileManufacturingConfigRepository)
 				//
 				.context(context)
 				.request(request.getMobileConfig())
@@ -265,11 +259,27 @@ public class CreateMasterdataCommand
 	private JsonCreateHUResponse createHU(final String identifier, final JsonCreateHURequest request)
 	{
 		return CreateHUCommand.builder()
-				.inventoryService(inventoryService)
-				.huQRCodesService(huQRCodesService)
+				.inventoryService(services.inventoryService)
+				.huQRCodesService(services.huQRCodesService)
 				.context(context)
 				.request(request)
 				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonGenerateHUQRCodeResponse> generateHUQRCodes()
+	{
+		return process(request.getGeneratedHUQRCodes(), this::generateHUQRCode);
+	}
+
+	private JsonGenerateHUQRCodeResponse generateHUQRCode(final String identifier, final JsonGenerateHUQRCodeRequest request)
+	{
+		return GenerateHUQRCodeCommand.builder()
+				.huQRCodesService(services.huQRCodesService)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}
@@ -296,7 +306,7 @@ public class CreateMasterdataCommand
 	private JsonDDOrderResponse createDistributionOrder(String identifier, JsonDDOrderRequest request)
 	{
 		return DDOrderCommand.builder()
-				.ddOrderService(ddOrderService)
+				.ddOrderService(services.ddOrderService)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
@@ -318,4 +328,21 @@ public class CreateMasterdataCommand
 				.build()
 				.execute();
 	}
+
+	private void createCustomQRCodeFormats()
+	{
+		if (request.getCustomQRCodeFormats() == null)
+		{
+			return;
+		}
+
+		CustomQRCodeFormatCommand.builder()
+				.scannableCodeFormatService(services.scannableCodeFormatService)
+				.context(context)
+				.requests(request.getCustomQRCodeFormats())
+				.build()
+				.execute();
+
+	}
+
 }

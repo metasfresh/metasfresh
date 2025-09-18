@@ -432,4 +432,19 @@ public class C_OrderLine
 
 		saveRecord(order);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge, I_C_OrderLine.COLUMNNAME_PriceActual, I_C_OrderLine.COLUMNNAME_PriceEntered })
+	public void updatePriceToZero(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.isWithoutCharge())
+		{
+			orderLine.setPriceActual(BigDecimal.ZERO);
+			orderLine.setPriceEntered(BigDecimal.ZERO);
+			orderLine.setIsManualPrice(true);
+
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+		}
+	}
 }

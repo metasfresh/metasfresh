@@ -26,12 +26,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.api.PickingSlotQuery;
+import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +75,17 @@ public class PickingSlotService
 	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final Set<PickingSlotId> pickingSlotIds)
 	{
 		return pickingSlotRepository.getPickingSlotIdAndCaptions(pickingSlotIds);
+	}
+
+	public List<I_M_PickingSlot> list(@NonNull final PickingSlotQuery query)
+	{
+		return pickingSlotRepository.list(query);
+	}
+
+	public PickingSlotQRCode getPickingSlotQRCode(@NonNull final PickingSlotId pickingSlotId)
+	{
+		final PickingSlotIdAndCaption pickingSlotIdAndCaption = pickingSlotRepository.getPickingSlotIdAndCaption(pickingSlotId);
+		return PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption);
 	}
 
 	public BooleanWithReason allocatePickingSlotIfPossible(@NonNull final PickingSlotAllocateRequest request)
@@ -143,7 +156,7 @@ public class PickingSlotService
 		pickingSlotRepository.save(pickingSlot);
 	}
 
-	public PickingSlotQueues getNotEmptyQueues(@NonNull final PickingSlotQuery query)
+	public PickingSlotQueues getNotEmptyQueues(@NonNull final PickingSlotQueueQuery query)
 	{
 		return pickingSlotQueueRepository.getNotEmptyQueues(query);
 	}
@@ -188,7 +201,7 @@ public class PickingSlotService
 		huPickingSlotBL.addToPickingSlotQueue(pickingSlotId, huIds);
 	}
 
-	public PickingSlotQueuesSummary getNotEmptyQueuesSummary(@NonNull final PickingSlotQuery query)
+	public PickingSlotQueuesSummary getNotEmptyQueuesSummary(@NonNull final PickingSlotQueueQuery query)
 	{
 		return pickingSlotQueueRepository.getNotEmptyQueuesSummary(query);
 	}

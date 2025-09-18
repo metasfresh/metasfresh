@@ -42,6 +42,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -71,6 +72,7 @@ import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_S
 import static de.metas.common.product.v2.response.ProductsQueryParams.SINCE;
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 
+@RequiredArgsConstructor
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/products" })
 @RestController
@@ -78,22 +80,12 @@ import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 public class ProductsRestController
 {
 	private static final Logger logger = LogManager.getLogger(ProductsRestController.class);
-	private final ProductsServicesFacade productsServicesFacade;
-	private final AlbertaProductService albertaProductService;
-	private final ExternalSystemService externalSystemService;
-	private final ProductRestService productRestService;
 
-	public ProductsRestController(
-			@NonNull final ProductsServicesFacade productsServicesFacade,
-			@NonNull final AlbertaProductService albertaProductService,
-			@NonNull final ExternalSystemService externalSystemService,
-			@NonNull final ProductRestService productRestService)
-	{
-		this.productsServicesFacade = productsServicesFacade;
-		this.albertaProductService = albertaProductService;
-		this.externalSystemService = externalSystemService;
-		this.productRestService = productRestService;
-	}
+	private final @NonNull ProductsServicesFacade productsServicesFacade;
+	private final @NonNull AlbertaProductService albertaProductService;
+	private final @NonNull ExternalSystemService externalSystemService;
+	private final @NonNull ProductRestService productRestService;
+	private final @NonNull ExternalIdentifierProductLookupService productLookupService;
 
 	@GetMapping
 	public ResponseEntity<?> getProducts(
@@ -114,7 +106,7 @@ public class ProductsRestController
 					.servicesFacade(productsServicesFacade)
 					.albertaProductService(albertaProductService)
 					.externalSystemService(externalSystemService)
-					.productRestService(productRestService)
+					.productLookupService(productLookupService)
 					.externalSystemType(externalSystemType)
 					.externalSystemConfigValue(externalSystemChildConfigValue)
 					.adLanguage(adLanguage)
@@ -180,7 +172,7 @@ public class ProductsRestController
 					.servicesFacade(productsServicesFacade)
 					.albertaProductService(albertaProductService)
 					.externalSystemService(externalSystemService)
-					.productRestService(productRestService)
+					.productLookupService(productLookupService)
 					.adLanguage(adLanguage)
 					.orgCode(orgCode)
 					.productIdentifier(productIdentifier)

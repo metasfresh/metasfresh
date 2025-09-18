@@ -321,6 +321,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
 
 	/**
+	 * Set Show Picking Tray Suggestions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDisplayPickingSlotSuggestions (boolean IsDisplayPickingSlotSuggestions);
+
+	/**
+	 * Get Show Picking Tray Suggestions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDisplayPickingSlotSuggestions();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsDisplayPickingSlotSuggestions = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsDisplayPickingSlotSuggestions", null);
+	String COLUMNNAME_IsDisplayPickingSlotSuggestions = "IsDisplayPickingSlotSuggestions";
+
+	/**
 	 * Set Filter by Barcode.
 	 *
 	 * <br>Type: YesNo

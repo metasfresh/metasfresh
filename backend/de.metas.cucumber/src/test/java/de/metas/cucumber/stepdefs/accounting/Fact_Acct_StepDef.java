@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.money.MoneyService;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.IUOMDAO;

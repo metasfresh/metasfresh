@@ -37,6 +37,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
@@ -102,8 +103,7 @@ public class CreateProductCommand
 	{
 		renamePreviousEAN13ProductCodes();
 
-		final String valuePrefix = StringUtils.trimBlankToNull(request.getValuePrefix());
-		final String value = valuePrefix != null ? Identifier.ofString(valuePrefix).toUniqueString() : identifier.toUniqueString();
+		final String value = generateValue();
 
 		final I_M_Product productRecord = newInstanceOutOfTrx(I_M_Product.class);
 		final UomId productUomId = Optional.ofNullable(request.getUom()).map(uomDAO::getUomIdByX12DE355).orElse(UomId.EACH);
@@ -125,6 +125,39 @@ public class CreateProductCommand
 		context.putIdentifier(identifier, productId);
 
 		return productRecord;
+	}
+
+	private String generateValue()
+	{
+		final String valuePrefix = StringUtils.trimBlankToNull(request.getValuePrefix());
+		final JsonCreateProductRequest.RandomValueSpec randomValueSpec = request.getRandomValue();
+		if (valuePrefix != null && randomValueSpec != null)
+		{
+			throw new AdempiereException("Cannot specify both valuePrefix and randomValue");
+		}
+
+		if (valuePrefix != null)
+		{
+			return Identifier.ofString(valuePrefix).toUniqueString();
+		}
+		else if (randomValueSpec != null)
+		{
+			return newRandom(randomValueSpec).next();
+		}
+		else
+		{
+			return identifier.toUniqueString();
+		}
+	}
+
+	private RandomProductValueGenerator newRandom(@NonNull final JsonCreateProductRequest.RandomValueSpec randomValueSpec)
+	{
+		return RandomProductValueGenerator.builder()
+				.size(randomValueSpec.getSize())
+				.isIncludeLetters(randomValueSpec.isIncludeLetters())
+				.isIncludeDigits(randomValueSpec.isIncludeDigits())
+				.validPredicate(randomValue -> !productBL.isExistingValue(randomValue, ClientId.METASFRESH))
+				.build();
 	}
 
 	private void createUOMConversions(@NonNull final ProductId productId)

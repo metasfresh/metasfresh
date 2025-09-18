@@ -38,7 +38,6 @@ import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
-import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -81,7 +80,6 @@ import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -120,11 +118,10 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 /* package */class GridTabVOBasedDocumentEntityDescriptorFactory
 {
 	// Services
-	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
-	private final LookupDataSourceFactory lookupDataSourceFactory;
+	@NonNull private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
+	@NonNull private final ISysConfigBL sysConfigBL;
+	@NonNull private final SqlDocumentsRepository documentsRepository;
+	@NonNull private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	private final ImmutableMap<AdFieldId, String> _adFieldId2columnName;
 	private final DefaultValueExpressionsFactory defaultValueExpressionsFactory;
@@ -144,16 +141,17 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 
 	@lombok.Builder
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
+			@NonNull final LayoutFactorySupportingServices services,
 			@NonNull final GridTabVO gridTabVO,
-			@NonNull final Collection<IDocumentDecorator> documentDecorators,
 			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
 			@NonNull final List<I_AD_UI_Element> labelsUIElements,
 			@NonNull final AttributesUIElementTypeFactory attributesUIElementTypeFactory)
 	{
-		this.lookupDataSourceFactory = lookupDataSourceFactory;
-		this.documentDecorators = ImmutableList.copyOf(documentDecorators);
+		this.sysConfigBL = services.getSysConfigBL();
+		this.documentsRepository = services.getDocumentsRepository();
+		this.lookupDataSourceFactory = services.getLookupDataSourceFactory();
+		this.documentDecorators = ImmutableList.copyOf(services.getDocumentDecorators());
 
 		final boolean rootEntity = parentTabVO == null;
 
@@ -194,9 +192,9 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		return documentEntity().getDisplayLogic();
 	}
 
-	private static ILogicExpression extractTabReadonlyLogic(final GridTabVO gridTabVO)
+	private ILogicExpression extractTabReadonlyLogic(final GridTabVO gridTabVO)
 	{
-		if (gridTabVO.isView())
+		if (documentsRepository.isReadonly(gridTabVO))
 		{
 			return ConstantLogicExpression.TRUE;
 		}

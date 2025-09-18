@@ -28,7 +28,6 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
@@ -53,6 +52,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -98,25 +98,40 @@ public class M_InOut_Line_StepDef
 	private final M_AttributeSetInstance_StepDefData asiTable;
 
 	@And("^validate the created (shipment|material receipt) lines$")
-	public void validate_created_M_InOutLines(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validate_created_M_InOutLines(@NonNull final String ignoredModel, @NonNull final DataTable table)
 	{
-		DataTableRows.of(table).forEach(this::validateAndLoadInOutLine);
+		DataTableRows.of(table).forEach(this::loadAndValidateAInOutLine);
 	}
 
-	private void validateAndLoadInOutLine(final DataTableRow row)
+	private void loadAndValidateAInOutLine(final DataTableRow row)
+	{
+		final I_M_InOutLine inoutLine = loadInOutLine(row);
+		validateInOutLine(inoutLine, row);
+	}
+
+	private static void validateInOutLine(final I_M_InOutLine inoutLine, final DataTableRow row)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+		row.getAsOptionalBoolean("processed").ifPresent(processed -> softly.assertThat(inoutLine.isProcessed()).as("Processed").isEqualTo(processed));
+		row.getAsOptionalBigDecimal("movementqty").ifPresent(movementQty -> softly.assertThat(inoutLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementQty));
+		row.getAsOptionalString(I_M_InOutLine.COLUMNNAME_ExternalId).ifPresent(externalId -> softly.assertThat(inoutLine.getExternalId()).as("ExternalId").isEqualTo(externalId));
+		softly.assertAll();
+	}
+
+	public I_M_InOutLine loadInOutLine(final DataTableRow row)
 	{
 		final InOutId inoutId = inoutTable.getId(row.getAsIdentifier("M_InOut_ID"));
 
-		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
-		final int expectedProductId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(productIdentifier::getAsInt);
-
 		//dev-note: we assume the tests are not using the same product on different lines
 		final IQueryBuilder<I_M_InOutLine> lineQueryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inoutId)
-				.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inoutId);
 
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+				.ifPresent(productIdentifier -> {
+					final ProductId expectedProductId = productTable.getIdOptional(productIdentifier)
+							.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+					lineQueryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
+				});
 		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID)
 				.map(orderLineTable::getId)
 				.ifPresent(orderLineId -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineId));
@@ -125,17 +140,16 @@ public class M_InOut_Line_StepDef
 
 		final I_M_InOutLine inoutLine = getSingleInOutLine(lineQueryBuilder.create());
 
-		final SoftAssertions softly = new SoftAssertions();
-		row.getAsOptionalBoolean("processed").ifPresent(processed -> softly.assertThat(inoutLine.isProcessed()).as("Processed").isEqualTo(processed));
-		row.getAsOptionalBigDecimal("movementqty").ifPresent(movementQty -> softly.assertThat(inoutLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementQty));
-		softly.assertAll();
+		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).ifPresent(inoutLineIdentifier -> inoutLineTable.putOrReplace(inoutLineIdentifier, inoutLine));
 
-		row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(inoutLineTable, inoutLine);
+		return inoutLine;
 	}
 
 	private static I_M_InOutLine getSingleInOutLine(@NonNull final IQuery<I_M_InOutLine> query)
 	{
-		final List<I_M_InOutLine> lines = query.list();
+		final List<I_M_InOutLine> lines = query
+				.setLimit(QueryLimit.ofInt(10))
+				.list();
 		if (lines.isEmpty())
 		{
 			throw new AdempiereException("No shipment lines found")
@@ -156,7 +170,7 @@ public class M_InOut_Line_StepDef
 	}
 
 	@And("^validate the created (shipment|material receipt) lines by id$")
-	public void validateInOutLinesById(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validateInOutLinesById(@NonNull final String ignoredModel, @NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach((row) -> {
 			final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.create(row.getAsIdentifier().lookupIn(inoutLineTable), I_M_InOutLine.class);
@@ -167,7 +181,7 @@ public class M_InOut_Line_StepDef
 	}
 
 	@And("^validate the (shipment|material receipt) lines do not exist$")
-	public void validate_not_created_M_InOutLine(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validate_not_created_M_InOutLine(@NonNull final String ignoredModel, @NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)

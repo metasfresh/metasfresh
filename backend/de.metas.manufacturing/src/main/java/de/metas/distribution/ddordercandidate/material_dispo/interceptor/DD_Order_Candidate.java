@@ -11,7 +11,9 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateDeletedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateUpdatedEvent;
+import de.metas.material.replenish.ReplenishInfo;
 import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -33,25 +35,28 @@ public class DD_Order_Candidate
 	public void afterNew(final I_DD_Order_Candidate record)
 	{
 		final DDOrderCandidateData data = toDDOrderCandidateData(record);
-		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateCreatedEvent.of(data));
+		final UserId userId = UserId.ofRepoId(record.getUpdatedBy());
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateCreatedEvent.of(data, userId));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterChange(final I_DD_Order_Candidate record)
 	{
 		final DDOrderCandidateData data = toDDOrderCandidateData(record);
-		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateUpdatedEvent.of(data));
+		final UserId userId = UserId.ofRepoId(record.getUpdatedBy());
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateUpdatedEvent.of(data, userId));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_DD_Order_Candidate record)
 	{
 		ddOrderCandidateAllocRepository.deleteByQuery(DeleteDDOrderCandidateAllocQuery.builder()
-															  .ddOrderCandidateId(DDOrderCandidateId.ofRepoId(record.getDD_Order_Candidate_ID()))
-															  .build());
+				.ddOrderCandidateId(DDOrderCandidateId.ofRepoId(record.getDD_Order_Candidate_ID()))
+				.build());
 
 		final DDOrderCandidateData data = toDDOrderCandidateData(record);
-		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateDeletedEvent.of(data));
+		final UserId userId = UserId.ofRepoId(record.getUpdatedBy());
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateDeletedEvent.of(data, userId));
 	}
 
 	private DDOrderCandidateData toDDOrderCandidateData(final I_DD_Order_Candidate record)
@@ -65,6 +70,6 @@ public class DD_Order_Candidate
 
 	private MinMaxDescriptor getFromWarehouseMinMaxDescriptor(final DDOrderCandidate candidate)
 	{
-		return replenishInfoRepository.getBy(candidate.getSourceWarehouseId(), candidate.getProductId()).toMinMaxDescriptor();
+		return replenishInfoRepository.getBy(ReplenishInfo.Identifier.of(candidate.getSourceWarehouseId(), candidate.getSourceLocatorId(), candidate.getProductId())).toMinMaxDescriptor();
 	}
 }

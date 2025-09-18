@@ -4,13 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import org.junit.Test;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.JsonObjectMapperHolder;
 import de.metas.shipper.gateway.derkurier.DerKurierTestTools;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

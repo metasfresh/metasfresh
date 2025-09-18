@@ -71,7 +71,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final ImportRecordsSelection selection = getImportRecordsSelection();
@@ -693,7 +693,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			context.BatchDocumentNo = impBatchDocumentNo;    // cannot compare real DocumentNo
 			context.batch = new MJournalBatch(ctx, 0, null);
 			context.batch.setClientOrg(importRecord.getAD_Client_ID(), importRecord.getAD_OrgDoc_ID());
-			if (importRecord.getBatchDocumentNo() != null && importRecord.getBatchDocumentNo().length() > 0)
+			if (importRecord.getBatchDocumentNo() != null && !importRecord.getBatchDocumentNo().isEmpty())
 			{
 				context.batch.setDocumentNo(importRecord.getBatchDocumentNo());
 			}
@@ -702,7 +702,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			context.batch.setC_DocType_ID(importRecord.getC_DocType_ID());
 			context.batch.setPostingType(importRecord.getPostingType());
 			String description = importRecord.getBatchDescription();
-			if (description == null || description.length() == 0)
+			if (description == null || description.isEmpty())
 			{
 				description = "*Import-";
 			}
@@ -896,7 +896,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	}
 
 	@Override
-	protected I_I_GLJournal retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
+	public I_I_GLJournal retrieveImportRecord(Properties ctx, ResultSet rs)
 	{
 		return new X_I_GLJournal(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

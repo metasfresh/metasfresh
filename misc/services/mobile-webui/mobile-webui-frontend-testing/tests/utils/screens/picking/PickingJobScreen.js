@@ -40,19 +40,35 @@ export const PickingJobScreen = {
         await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    scanPickingSlot: async ({ qrCode, expectScanHUScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
-        const button = page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`);
+    clickPickingSlotButton: async () => await step(`${NAME} - Click Picking Slot button`, async () => {
+        const button = pickingSlotButton();
         await button.waitFor();
         await expect(button).toBeEnabled();
         await button.tap();
+
         await PickingSlotScanScreen.waitForScreen();
+    }),
+
+    expectPickingSlotButtonGreen: async () => await step(`${NAME} - Expect Picking Slot button to be green`, async () => {
+        const button = pickingSlotButton();
+        await button.waitFor();
+        await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    scanPickingSlot: async ({ qrCode, expectNextScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
+        await PickingJobScreen.clickPickingSlotButton();
         await PickingSlotScanScreen.typeQRCode(qrCode);
-        if (expectScanHUScreen) {
-            await PickLineScanScreen.waitForScreen();
-        } else {
+
+        if (!expectNextScreen || expectNextScreen === 'PickingJobScreen') {
             await PickingJobScreen.waitForScreen();
-            await button.waitFor();
-            await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+            await PickingJobScreen.expectPickingSlotButtonGreen();
+        } else if (expectNextScreen === 'PickLineScanScreen') {
+            await PickLineScanScreen.waitForScreen();
+        } else if (expectNextScreen === 'PickingSlotScanScreen') {
+            await PickingSlotScanScreen.waitForScreen();
+            await PickingSlotScanScreen.waitForInputFieldToGetEmpty();
+        } else {
+            throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
         }
     }),
 
@@ -86,11 +102,11 @@ export const PickingJobScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
-    pickHU: async ({ qrCode, qtyEntered, expectQtyEntered, catchWeightQRCode, qtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
+    pickHU: async ({ qrCode, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
         await PickingJobScanHUScreen.waitForScreen();
         await PickingJobScanHUScreen.typeQRCode(qrCode);
-        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered, catchWeightQRCode, qtyNotFoundReason });
+        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason });
         await PickingJobScreen.waitForScreen();
     }),
 
@@ -137,6 +153,10 @@ export const PickingJobScreen = {
 //
 //
 //
+
+const pickingSlotButton = () => {
+    return page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`);
+}
 
 const locateLineButton = ({ index }) => {
     return page.locator(`#line-0-${index - 1}-button`);

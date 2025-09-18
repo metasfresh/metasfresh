@@ -1,32 +1,8 @@
 package de.metas.handlingunits.storage;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
 import java.math.BigDecimal;
 
-import org.hamcrest.Matchers;
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * {@link IProductStorage} expectation
@@ -57,32 +33,35 @@ public class ProductStorageExpectation
 				+ "\nProduct storage: " + productStorage
 				+ "\n\nInvalid: ";
 
-		Assert.assertNotNull(prefix + "productStorage is null", productStorage);
+		assertThat(productStorage)
+			.as(prefix + "productStorage is null")
+			.isNotNull();
 
 		if (qtyCapacity != null)
 		{
-			Assert.assertThat(prefix + "QtyCapacity",
-					productStorage.getQtyCapacity(),
-					Matchers.comparesEqualTo(qtyCapacity));
+			assertThat(productStorage.getQtyCapacity())
+				.as(prefix + "QtyCapacity")
+				.isEqualByComparingTo(qtyCapacity);
 		}
 		if (qty != null)
 		{
-			Assert.assertThat(prefix + "Qty",
-					productStorage.getQty().toBigDecimal(),
-					Matchers.comparesEqualTo(qty));
+			assertThat(productStorage.getQty().toBigDecimal())
+				.as(prefix + "Qty")
+				.isEqualByComparingTo(qty);
 		}
 
 		if (qtyFree != null)
 		{
-			Assert.assertThat(prefix + "QtyFree",
-					productStorage.getQtyFree(),
-					Matchers.comparesEqualTo(qtyFree));
+			assertThat(productStorage.getQtyFree())
+				.as(prefix + "QtyFree")
+				.isEqualByComparingTo(qtyFree);
 		}
 		else
 		{
-			Assert.assertThat(prefix + "QtyFree = QtyCapacity - Qty",
-					productStorage.getQtyFree(),
-					Matchers.comparesEqualTo(productStorage.getQtyCapacity().subtract(productStorage.getQty().toBigDecimal())));
+			assertThat(productStorage.getQtyFree())
+				.as(prefix + "QtyFree = QtyCapacity - Qty")
+				.isEqualByComparingTo(
+					productStorage.getQtyCapacity().subtract(productStorage.getQty().toBigDecimal()));
 		}
 
 		return this;

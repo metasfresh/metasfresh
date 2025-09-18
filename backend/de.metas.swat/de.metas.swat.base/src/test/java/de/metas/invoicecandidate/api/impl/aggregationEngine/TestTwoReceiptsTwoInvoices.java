@@ -22,21 +22,6 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
@@ -46,11 +31,19 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * => Expectation: one invoice, one line; on the purchase side we want to aggregate inoutLines over different InOuts, as long as they don't differ in their "invoice-relevant" ASI-values.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTests
 {
@@ -75,26 +68,34 @@ public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTests
 	{
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
-		assertThat(invoices.size(), is(1));
+		assertThat(invoices).hasSize(1);
 
 		//
 		// Assume that the invoices are OK
 		{
 			//final IInvoiceHeader invoice1 = removeInvoiceHeaderForInOutId(invoices, inOut1.getM_InOut_ID());
 			final IInvoiceHeader invoice1 = invoices.remove(0);
-			assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
+			assertThat(invoice1.isSOTrx()).isEqualTo(config_IsSOTrx());
 			validateInvoiceHeader("Invoice", invoice1, ic);
 
 			final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
-			assertEquals("We are expecting one invoice line: " + invoiceLines1, 1, invoiceLines1.size());
+			assertThat(invoiceLines1)
+				.as("We are expecting one invoice line: %s", invoiceLines1)
+				.hasSize(1);
 
 			final BigDecimal fullQty = partialQty1_32.add(partialQty2_8).add(partialQty3_4);
 
 			final IInvoiceLineRW invoiceLine1 = getSingleForInOutLine(invoiceLines1, iol11);
-			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(3));
-			assertEquals("Invalid PriceActual", 1, invoiceLine1.getPriceActual().toBigDecimal().intValueExact());
-			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(fullQty));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(fullQty.multiply(TEN)) /* because price=1 and uomQty is stockQty x 10 */);
+			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs()).hasSize(3);
+			assertThat(invoiceLine1.getPriceActual().toBigDecimal().intValueExact())
+				.as("Invalid PriceActual")
+				.isEqualTo(1);
+			assertThat(invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal())
+				.as("Invalid QtyToInvoice")
+				.isEqualByComparingTo(fullQty);
+			assertThat(invoiceLine1.getNetLineAmt().toBigDecimal())
+				.as("Invalid NetLineAmt")
+				.isEqualByComparingTo(fullQty.multiply(TEN)) /* because price=1 and uomQty is stockQty x 10 */;
 
 			// validate the IC<->IL qty allocation
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullQty);
@@ -102,6 +103,8 @@ public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTests
 
 		//
 		// Make sure all invoices were evaluated
-		assertEquals("All generated invoices should be evaluated", Collections.emptyList(), invoices);
+		assertThat(invoices)
+			.as("All generated invoices should be evaluated")
+			.isEmpty();
 	}
 }

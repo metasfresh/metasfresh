@@ -3,6 +3,7 @@ package de.metas.product.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.bpartner.BPartnerId;
@@ -64,7 +65,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -566,11 +569,37 @@ public final class ProductBL implements IProductBL
 	public String getProductName(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
+		return buildProductName(product, productId);
+	}
+
+	private static String buildProductName(@Nullable final I_M_Product product, @NonNull final ProductId productId)
+	{
 		if (product == null)
 		{
 			return "<" + productId + ">";
 		}
 		return product.getName();
+	}
+
+	@Override
+	public Map<ProductId, String> getProductNames(@NonNull final Set<ProductId> productIds)
+	{
+		final List<I_M_Product> products = getByIds(productIds);
+		if (products.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap<ProductId, I_M_Product> productsById = Maps.uniqueIndex(products, product -> ProductId.ofRepoId(product.getM_Product_ID()));
+
+		final HashMap<ProductId, String> result = new HashMap<>();
+		for (final ProductId productId : productIds)
+		{
+			final I_M_Product product = productsById.get(productId);
+			result.put(productId, buildProductName(product, productId));
+		}
+
+		return result;
 	}
 
 	@Override
@@ -788,4 +817,11 @@ public final class ProductBL implements IProductBL
 	{
 		return productsRepo.getByIds(productIds);
 	}
+
+	@Override
+	public boolean isExistingValue(@NonNull final String value, @NonNull final ClientId clientId)
+	{
+		return productsRepo.isExistingValue(value, clientId);
+	}
+
 }

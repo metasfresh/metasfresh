@@ -52,7 +52,7 @@ public class MembershipContractRepository
 			@NonNull final OrgId orgId)
 	{
 		return queryMembershipRunningSubscription(bpartnerId, orgChangeDate, orgId)
-				.listIds(FlatrateTermId::ofRepoId);
+				.idsAsSet(FlatrateTermId::ofRepoId);
 	}
 
 	public IQuery<I_C_Flatrate_Term> queryMembershipRunningSubscription(
@@ -99,6 +99,6 @@ public class MembershipContractRepository
 				.andCollect(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, I_C_Order.class)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
-				.listIds(OrderId::ofRepoId);
+				.idsAsSet(OrderId::ofRepoId);
 	}
 }

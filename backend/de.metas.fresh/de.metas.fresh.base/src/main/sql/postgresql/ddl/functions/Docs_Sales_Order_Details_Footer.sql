@@ -19,7 +19,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 textsnippet       character varying,
                 Incoterms         character varying,
                 incotermlocation  character varying,
-                additionaltext    text
+                additionaltext    text,
+                isoffer           character
             )
 AS
 $$
@@ -41,7 +42,12 @@ SELECT COALESCE(reft.name, ref.name)                          AS paymentrule,
        otb.textsnippet,
        COALESCE(inc_trl.name, inc.name)                       AS Incoterms,
        o.incotermlocation,
-       report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)  AS AdditionalText
+       report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)  AS AdditionalText,
+       CASE
+           WHEN dt.docbasetype = 'SOO' AND dt.docsubtype IN ('ON', 'OB')
+               THEN 'Y'
+               ELSE 'N'
+       END                                       AS isoffer
 FROM C_Order o
 
          LEFT OUTER JOIN C_PaymentTerm pt ON o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
@@ -64,7 +70,7 @@ FROM C_Order o
          LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
          LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
 
-WHERE o.C_Order_ID = p_Order_ID;
+WHERE o.C_Order_ID = p_Order_ID
 
 $$
     LANGUAGE sql STABLE

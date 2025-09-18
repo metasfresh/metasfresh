@@ -1,8 +1,9 @@
 package de.metas.inoutcandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -251,8 +252,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
 
 	/**
-	 * Set Order.
-	 * Order
+	 * Set Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -261,8 +261,7 @@ public interface I_M_Packageable_V
 	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
-	 * Get Order.
-	 * Order
+	 * Get Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -306,7 +305,7 @@ public interface I_M_Packageable_V
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -316,7 +315,7 @@ public interface I_M_Packageable_V
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -346,6 +345,29 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_DateOrdered = new ModelColumn<>(I_M_Packageable_V.class, "DateOrdered", null);
 	String COLUMNNAME_DateOrdered = "DateOrdered";
+
+	/**
+	 * Set Date Promised.
+	 * Date Order was promised
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDatePromised (@Nullable java.sql.Timestamp DatePromised);
+
+	/**
+	 * Get Date Promised.
+	 * Date Order was promised
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDatePromised();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_DatePromised = new ModelColumn<>(I_M_Packageable_V.class, "DatePromised", null);
+	String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
 	 * Set Shipmentdate.
@@ -543,6 +565,52 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsDisplayed = new ModelColumn<>(I_M_Packageable_V.class, "IsDisplayed", null);
 	String COLUMNNAME_IsDisplayed = "IsDisplayed";
+
+	/**
+	 * Set Ship After Date.
+	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedDatePromised (boolean IsFixedDatePromised);
+
+	/**
+	 * Get Ship After Date.
+	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedDatePromised();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsFixedDatePromised = new ModelColumn<>(I_M_Packageable_V.class, "IsFixedDatePromised", null);
+	String COLUMNNAME_IsFixedDatePromised = "IsFixedDatePromised";
+
+	/**
+	 * Set Picking After Date.
+	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedPreparationDate (boolean IsFixedPreparationDate);
+
+	/**
+	 * Get Picking After Date.
+	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedPreparationDate();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsFixedPreparationDate = new ModelColumn<>(I_M_Packageable_V.class, "IsFixedPreparationDate", null);
+	String COLUMNNAME_IsFixedPreparationDate = "IsFixedPreparationDate";
 
 	/**
 	 * Set Line Net Amount.

@@ -41,7 +41,7 @@ public enum PaymentRule implements ReferenceListAwareEnum
 	DirectDeposit(X_C_Order.PAYMENTRULE_DirectDeposit), // T
 	Check(X_C_Order.PAYMENTRULE_Check), // S
 	OnCredit(X_C_Order.PAYMENTRULE_OnCredit), // P
-	DirectDebit(X_C_Order.PAYMENTRULE_DirectDebit), //
+	DirectDebit(X_C_Order.PAYMENTRULE_DirectDebit), // D
 	Mixed(X_C_Order.PAYMENTRULE_Mixed), // M
 	PayPal(X_C_Order.PAYMENTRULE_PayPal), // L
 	PayPalExtern(X_C_Order.PAYMENTRULE_PayPalExtern), // V

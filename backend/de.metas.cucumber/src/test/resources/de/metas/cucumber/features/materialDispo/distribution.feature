@@ -341,6 +341,9 @@ Feature: create distribution to balance demand
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |
       | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |
       | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And the order identified by SO is completed
 
     And after not more than 60s, following DD_Order_Candidates are found
@@ -407,6 +410,9 @@ Feature: create distribution to balance demand
       # DD_Order:
       | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 14                     | targetWH       |                       | ddOrderLine1    |
       | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And the order identified by SO is completed
 
     And after not more than 60s, following DD_Order_Candidates are found

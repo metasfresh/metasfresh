@@ -216,4 +216,6 @@ public interface IInOutBL extends ISingletonService
 			@NonNull AcctSchemaId acctSchemaId);
 
 	ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull OrderId orderId);
+
+	void setShipperId(@NonNull I_M_InOut inout);
 }

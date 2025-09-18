@@ -24,9 +24,9 @@ package org.adempiere.ad.trx.api.impl;
 
 
 import org.compiere.util.TrxRunnable2;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class MockedTrxRunnable2 implements TrxRunnable2
 {
 	// Config

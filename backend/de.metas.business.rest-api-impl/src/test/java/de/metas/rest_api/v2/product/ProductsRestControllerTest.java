@@ -152,6 +152,8 @@ public class ProductsRestControllerTest
 
 		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
 
+		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
+		
 		final ProductTaxCategoryRepository productTaxCategoryRepository = new ProductTaxCategoryRepository();
 		final ProductTaxCategoryService productTaxCategoryService = new ProductTaxCategoryService(productTaxCategoryRepository);
 		final ProductPriceRepository productPriceRepository = new ProductPriceRepository(productTaxCategoryService);
@@ -167,14 +169,15 @@ public class ProductsRestControllerTest
 																						   jsonServiceFactory);
 
 		final UomConversionRestService uomConversionRestService = new UomConversionRestService();
-		
-		final ProductRestService productRestService = new ProductRestService(productRepository,
+
+		final ProductRestService productRestService = new ProductRestService(productLookupService,
+																			 productRepository,
 																			 externalReferenceRestControllerService,
 																			 productPriceRestService,
 																			 productTaxCategoryService,
 																			 uomConversionRestService);
 
-		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
+		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService, productLookupService);
 	}
 
 	private void createMasterData()

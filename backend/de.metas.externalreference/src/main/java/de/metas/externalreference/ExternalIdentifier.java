@@ -68,6 +68,7 @@ public class ExternalIdentifier
 		this.externalReferenceValueAndSystem = externalReferenceValueAndSystem;
 	}
 
+	@Nullable
 	public static ExternalIdentifier ofOrNull(@Nullable final String rawIdentifierString)
 	{
 		if (isEmpty(rawIdentifierString, true))
@@ -75,24 +76,6 @@ public class ExternalIdentifier
 			return null;
 		}
 		return of(rawIdentifierString);
-	}
-
-	@NonNull
-	public static Optional<ExternalIdentifier> ofOptional(@Nullable final String identifier)
-	{
-		if (Check.isBlank(identifier))
-		{
-			return Optional.empty();
-		}
-
-		try
-		{
-			return Optional.of(of(identifier));
-		}
-		catch (final Exception exception)
-		{
-			return Optional.empty();
-		}
 	}
 
 	@NonNull
@@ -107,7 +90,6 @@ public class ExternalIdentifier
 
 		if (externalReferenceMatcher.matches())
 		{
-
 			final ExternalReferenceValueAndSystem valueAndSystem = ExternalReferenceValueAndSystem.builder()
 					.externalSystem(externalReferenceMatcher.group(1))
 					.value(externalReferenceMatcher.group(2))
@@ -126,6 +108,12 @@ public class ExternalIdentifier
 		if (valMatcher.matches())
 		{
 			return Optional.of(new ExternalIdentifier(Type.VALUE, identifier, null));
+		}
+
+		final Matcher gtinMatcher = Type.GTIN.pattern.matcher(identifier);
+		if (gtinMatcher.matches())
+		{
+			return Optional.of(new ExternalIdentifier(Type.GTIN, identifier, null));
 		}
 		
 		return Optional.empty();
@@ -193,14 +181,31 @@ public class ExternalIdentifier
 		return valueMatcher.group(1);
 	}
 
+	@NonNull
+	public String asGTIN()
+	{
+		Check.assume(Type.GTIN.equals(type),
+				"The type of this instance needs to be {}; this={}", Type.GTIN, this);
+
+		final Matcher gtinMatcher = Type.GTIN.pattern.matcher(rawValue);
+
+		if (!gtinMatcher.matches())
+		{
+			throw new AdempiereException("External identifier of Value parsing failed. External Identifier:" + rawValue);
+		}
+
+		return gtinMatcher.group(1);
+	}
+	
 	@AllArgsConstructor
 	@Getter
 	public enum Type
 	{
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
-		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)")),
-		GLN(Pattern.compile("(?:^gln)-(.+)")),
-		VALUE(Pattern.compile("(?:^val)-(.+)"));
+		EXTERNAL_REFERENCE(Pattern.compile("^ext-([a-zA-Z0-9]+)-(.+)")),
+		GLN(Pattern.compile("^gln-(.+)")),
+		GTIN(Pattern.compile("^gtin-(.+)")),
+		VALUE(Pattern.compile("^val-(.+)"));
 
 		private final Pattern pattern;
 	}

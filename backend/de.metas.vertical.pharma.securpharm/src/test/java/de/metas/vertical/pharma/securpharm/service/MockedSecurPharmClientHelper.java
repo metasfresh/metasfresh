@@ -1,14 +1,5 @@
 package de.metas.vertical.pharma.securpharm.service;
 
-import static org.mockito.ArgumentMatchers.any;
-
-import java.time.Instant;
-import java.util.Optional;
-
-import org.junit.Ignore;
-import org.mockito.Mockito;
-import org.springframework.http.HttpMethod;
-
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.client.DecodeDataMatrixClientResponse;
 import de.metas.vertical.pharma.securpharm.client.DecommissionClientResponse;
@@ -25,6 +16,14 @@ import de.metas.vertical.pharma.securpharm.product.ProductDetails;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.junit.jupiter.api.Disabled;
+import org.mockito.Mockito;
+import org.springframework.http.HttpMethod;
+
+import java.time.Instant;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
 
 /*
  * #%L
@@ -48,7 +47,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Ignore
+@Disabled
 public class MockedSecurPharmClientHelper
 {
 	public static final String RESULT_CODE_OK = "OK_Code";

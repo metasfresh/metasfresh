@@ -139,7 +139,7 @@ public class InOutDAO implements IInOutDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, shipperTransportationId)
 				.create()
-				.listIds(InOutId::ofRepoId)
+				.idsAsSet(InOutId::ofRepoId)
 				.asList();
 	}
 
@@ -176,7 +176,7 @@ public class InOutDAO implements IInOutDAO
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inoutIds)
 				.create()
-				.listIds(InOutLineId::ofRepoId);
+				.idsAsSet(InOutLineId::ofRepoId);
 
 	}
 
@@ -367,7 +367,7 @@ public class InOutDAO implements IInOutDAO
 		return queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(InOutId::ofRepoId)
+				.idsAsSet(InOutId::ofRepoId)
 				.stream();
 	}
 
@@ -533,7 +533,7 @@ public class InOutDAO implements IInOutDAO
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, null)
 				.create()
-				.listIds(InOutId::ofRepoId)
+				.idsAsSet(InOutId::ofRepoId)
 				.asList();
 	}
 

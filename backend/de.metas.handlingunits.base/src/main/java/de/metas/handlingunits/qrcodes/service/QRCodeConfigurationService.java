@@ -36,6 +36,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
@@ -46,13 +47,21 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class QRCodeConfigurationService
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final QRCodeConfigurationRepository repository;
 
-	@NonNull
-	private final QRCodeConfigurationRepository repository;
+	public static QRCodeConfigurationService newInstanceForUnitTesting()
+	{
+		SpringContextHolder.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(
+				QRCodeConfigurationService.class,
+				() -> new QRCodeConfigurationService(new QRCodeConfigurationRepository())
+		);
+	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isOneQrCodeForAggregatedHUsEnabledFor(@NonNull final I_M_HU hu)
 	{
 		if (!handlingUnitsBL.isTransportUnitOrAggregate(hu))

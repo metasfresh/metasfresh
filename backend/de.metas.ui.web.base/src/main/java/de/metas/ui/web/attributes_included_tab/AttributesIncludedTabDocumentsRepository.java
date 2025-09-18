@@ -15,6 +15,7 @@ import de.metas.ui.web.window.model.OrderedDocumentsList;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -113,7 +114,7 @@ public class AttributesIncludedTabDocumentsRepository implements DocumentsReposi
 	}
 
 	@Override
-	public void refresh(final Document document)
+	public void refresh(final @NotNull Document document)
 	{
 		final AttributesIncludedTabDataKey key = extractKey(document);
 		final AttributesIncludedTabData data = attributesIncludedTabService.getData(key);
@@ -121,7 +122,7 @@ public class AttributesIncludedTabDocumentsRepository implements DocumentsReposi
 	}
 
 	@Override
-	public SaveResult save(final Document document)
+	public SaveResult save(final @NotNull Document document)
 	{
 		final AttributesIncludedTabEntityBinding entityBinding = extractEntityBinding(document);
 
@@ -166,7 +167,7 @@ public class AttributesIncludedTabDocumentsRepository implements DocumentsReposi
 	}
 
 	@Override
-	public void delete(final Document document)
+	public void delete(final @NotNull Document document)
 	{
 		throw new UnsupportedOperationException();
 	}

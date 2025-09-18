@@ -6,9 +6,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import org.junit.Test;
 
 import de.metas.util.time.generator.WeekDayCalendarIncrementor;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

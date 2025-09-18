@@ -71,22 +71,22 @@ import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
-import org.junit.Ignore;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@Ignore // COMMENT IT OUT IF YOU WANT TO RUN THIS TEST MANUALLY
-@RunWith(SpringRunner.class)
+@Disabled // COMMENT IT OUT IF YOU WANT TO RUN THIS TEST MANUALLY
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
 		StartupListener.class,
 		ShutdownListener.class,
 		ADReferenceService.class, AdRefListRepositoryOverJdbc.class, AdRefTableRepositoryOverJdbc.class,
-		ModelCacheInvalidationService.class,
 })
 public class PostDocumentNow_ManualTest
 {
@@ -94,7 +94,7 @@ public class PostDocumentNow_ManualTest
 	private AcctDocRequiredServicesFacade acctDocRequiredServicesFacade;
 	private List<AcctSchema> acctSchemas;
 
-	@org.junit.Test
+	@Test
 	public void run()
 	{
 		AdempiereToolsHelper.getInstance().startupMinimal();
@@ -188,7 +188,7 @@ public class PostDocumentNow_ManualTest
 				)
 		);
 
-		final ModelCacheInvalidationService modelCacheInvalidationService = new ModelCacheInvalidationService(Optional.empty());
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.newInstanceForUnitTesting();
 
 		return new AcctDocRequiredServicesFacade(
 				modelCacheInvalidationService,

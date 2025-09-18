@@ -1,4 +1,6 @@
-DROP FUNCTION IF EXISTS getInvoicePaymentAllocations_Report(date, date);
+DROP FUNCTION IF EXISTS getInvoicePaymentAllocations_Report(date,
+                                                            date)
+;
 
 CREATE OR REPLACE FUNCTION getInvoicePaymentAllocations_Report(
     DateInvoicedFrom date,
@@ -14,7 +16,7 @@ CREATE OR REPLACE FUNCTION getInvoicePaymentAllocations_Report(
                 GrandTotal             numeric,
                 InvoiceCurrency        varchar,
                 paymentrule            varchar,
-                PaymentDate            timestamp,
+                PaymentDate            timestamp with time zone,
                 PaymentDocumentNo      varchar,
                 Payment_BPartner_Value varchar,
                 Payment_BPartner_Name  varchar,

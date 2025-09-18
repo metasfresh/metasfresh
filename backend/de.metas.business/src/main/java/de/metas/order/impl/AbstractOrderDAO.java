@@ -314,7 +314,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return createQueryBuilder()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(OrderId::ofRepoId)
+				.idsAsSet(OrderId::ofRepoId)
 				.stream();
 	}
 

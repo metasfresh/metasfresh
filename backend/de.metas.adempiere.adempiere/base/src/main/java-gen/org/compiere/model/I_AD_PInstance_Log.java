@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for AD_PInstance_Log
  *  @author metasfresh (generated) 
@@ -16,6 +17,26 @@ public interface I_AD_PInstance_Log
 //	/** AD_Table_ID=578 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+
+	/**
+	 * Set Issues.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get Issues.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Issue_ID();
+
+	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
 	/**
 	 * Set Process Instance.
@@ -64,6 +85,28 @@ public interface I_AD_PInstance_Log
 
 	ModelColumn<I_AD_PInstance_Log, Object> COLUMN_AD_PInstance_Log_ID = new ModelColumn<>(I_AD_PInstance_Log.class, "AD_PInstance_Log_ID", null);
 	String COLUMNNAME_AD_PInstance_Log_ID = "AD_PInstance_Log_ID";
+
+	/**
+	 * Set Table.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get Table.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Table_ID();
+
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
 	 * Set Protokoll.
@@ -152,6 +195,29 @@ public interface I_AD_PInstance_Log
 
 	ModelColumn<I_AD_PInstance_Log, Object> COLUMN_P_Number = new ModelColumn<>(I_AD_PInstance_Log.class, "P_Number", null);
 	String COLUMNNAME_P_Number = "P_Number";
+
+	/**
+	 * Set Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRecord_ID();
+
+	ModelColumn<I_AD_PInstance_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_AD_PInstance_Log.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set Warnings.

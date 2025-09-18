@@ -61,7 +61,7 @@ public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -75,7 +75,7 @@ public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected I_I_Replenish retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Replenish retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_Replenish(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

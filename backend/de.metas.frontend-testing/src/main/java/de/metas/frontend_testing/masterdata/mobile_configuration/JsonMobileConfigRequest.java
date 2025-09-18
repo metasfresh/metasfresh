@@ -20,6 +20,7 @@ public class JsonMobileConfigRequest
 	@Nullable MobileAuthMethod defaultAuthMethod;
 	@Nullable Picking picking;
 	@Nullable Distribution distribution;
+	@Nullable Manufacturing manufacturing;
 
 	//
 	//
@@ -43,6 +44,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean showLastPickedBestBeforeDateForLines;
 		@Nullable Boolean anonymousPickHUsOnTheFly;
+		@Nullable Boolean displayPickingSlotSuggestions;
 
 		@Nullable List<Customer> customers;
 
@@ -65,5 +67,18 @@ public class JsonMobileConfigRequest
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Manufacturing
+	{
+		@Nullable Boolean isScanResourceRequired;
+		@Nullable Boolean isAllowIssuingAnyHU;
 	}
 }

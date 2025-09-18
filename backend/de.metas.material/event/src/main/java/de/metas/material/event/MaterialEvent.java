@@ -42,7 +42,6 @@ import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
 import de.metas.material.event.simulation.SimulatedDemandCreatedEvent;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
-import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.NoSupplyAdviceEvent;
@@ -53,6 +52,7 @@ import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -128,7 +128,6 @@ import javax.annotation.Nullable;
 		@JsonSubTypes.Type(name = TransactionCreatedEvent.TYPE, value = TransactionCreatedEvent.class),
 		@JsonSubTypes.Type(name = TransactionDeletedEvent.TYPE, value = TransactionDeletedEvent.class),
 
-		@JsonSubTypes.Type(name = StockCandidateChangedEvent.TYPE, value = StockCandidateChangedEvent.class),
 		@JsonSubTypes.Type(name = MaterialCandidateChangedEvent.TYPE, value = MaterialCandidateChangedEvent.class),
 
 		@JsonSubTypes.Type(name = SimulatedDemandCreatedEvent.TYPE, value = SimulatedDemandCreatedEvent.class),
@@ -164,6 +163,9 @@ public interface MaterialEvent
 	@NonNull
 	@JsonIgnore
 	default ClientAndOrgId getClientAndOrgId() {return getEventDescriptor().getClientAndOrgId();}
+
+	@JsonIgnore
+	default UserId getUserId() {return getEventDescriptor().getUserId(); }
 
 	@Nullable
 	@JsonIgnore

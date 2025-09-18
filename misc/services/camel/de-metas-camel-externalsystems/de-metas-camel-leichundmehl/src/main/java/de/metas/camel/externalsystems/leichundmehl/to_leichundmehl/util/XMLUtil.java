@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-leichundmehl
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,9 +22,12 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
 
-import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.apache.camel.RuntimeCamelException;
+import org.glassfish.jaxb.core.marshaller.NoEscapeHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -34,8 +37,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -87,28 +88,34 @@ public class XMLUtil
 		final StringWriter buffer = new StringWriter();
 
 		transformer.transform(new DOMSource(document.getDocumentElement()),
-							  new StreamResult(buffer));
+				new StreamResult(buffer));
 
 		return buffer.toString();
 	}
 
 	@NonNull
-	public static String convertToXML(@NonNull final Object object, @NonNull final Class<?> clazz) throws Exception
+	public static String convertToXML(@NonNull final Object object, @NonNull final Class<?> clazz)
 	{
-		final JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
+		try
+		{
+			final JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
 
-		final Marshaller marshaller = jaxbContext.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		marshaller.setProperty(Marshaller.JAXB_ENCODING, XML_PROPERTY_FILE_ENCODING_VALUE);
+			final Marshaller marshaller = jaxbContext.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			marshaller.setProperty(Marshaller.JAXB_ENCODING, XML_PROPERTY_FILE_ENCODING_VALUE);
 
-		final CharacterEscapeHandler escapeHandler = NoEscapeHandler.INSTANCE;
-		marshaller.setProperty("com.sun.xml.bind.characterEscapeHandler", escapeHandler);
+			marshaller.setProperty("org.glassfish.jaxb.characterEscapeHandler", NoEscapeHandler.theInstance);
 
-		final StringWriter sw = new StringWriter();
+			final StringWriter sw = new StringWriter();
 
-		marshaller.marshal(object, sw);
+			marshaller.marshal(object, sw);
 
-		return sw.toString();
+			return sw.toString();
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeCamelException(e);
+		}
 	}
 
 	public static boolean hasAttribute(
@@ -144,5 +151,22 @@ public class XMLUtil
 		final Node childNode = nodeList.item(0);
 
 		return (Element)childNode;
+	}
+
+	@NonNull
+	public static String addXMLDeclarationIfNeeded(@NonNull final String payload)
+	{
+		if (payload.trim().startsWith("<?xml")) {
+			// Payload already contains XML declaration
+			return payload;
+		}
+
+		final String xmlDeclaration = String.format(
+				"<?xml version=\"1.0\" encoding=\"%s\" standalone=\"%s\"?>\n",
+				XML_PROPERTY_FILE_ENCODING_VALUE,
+				XML_PROPERTY_VALUE_YES
+		);
+
+		return xmlDeclaration + payload;
 	}
 }

@@ -1536,7 +1536,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		// Execute
 		final ImmutableSet<BPartnerId> bpartnerIds = queryBuilder
 				.create()
-				.listIds(BPartnerId::ofRepoId);
+				.idsAsSet(BPartnerId::ofRepoId);
 
 		if (bpartnerIds.isEmpty() && query.isFailIfNotExists())
 		{
@@ -1632,7 +1632,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, salesRepBPartnerId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(BPartnerId::ofRepoId)
+				.idsAsSet(BPartnerId::ofRepoId)
 				.stream();
 	}
 
@@ -1979,5 +1979,24 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		return bpLocation != null ? SalesRegionId.optionalOfRepoId(bpLocation.getC_SalesRegion_ID()) : Optional.empty();
+	}
+
+	@Override
+	@NonNull
+	public List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bPartnerLocationId)
+				.create()
+				.listDistinct(I_C_BPartner_Location.COLUMNNAME_Name, String.class);
+	}
+
+	@Override
+	public Optional<ShipperId> getShipperIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		return bpLocation != null ? ShipperId.optionalOfRepoId(bpLocation.getM_Shipper_ID()) : Optional.empty();
 	}
 }

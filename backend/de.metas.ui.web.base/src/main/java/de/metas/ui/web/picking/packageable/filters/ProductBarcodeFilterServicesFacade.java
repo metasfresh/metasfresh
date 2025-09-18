@@ -30,8 +30,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.product.ResolvedScannedProductCode;
 import de.metas.handlingunits.edi.EDIProductLookupService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -41,6 +39,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ResolvedScannedProductCode;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -50,6 +49,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
@@ -132,7 +132,7 @@ public class ProductBarcodeFilterServicesFacade
 		final I_M_HU hu = handlingUnitsDAO.createHUQueryBuilder()
 				.setHUStatus(X_M_HU.HUSTATUS_Active)
 				// match SSCC18 attribute
-				.addOnlyWithAttribute(HUAttributeConstants.ATTR_SSCC18_Value, sscc18)
+				.addOnlyWithAttribute(AttributeConstants.ATTR_SSCC18_Value, sscc18)
 				// only HU's with BPartner set shall be considered (06821)
 				.setOnlyIfAssignedToBPartner(true)
 				.firstOnly();

@@ -42,7 +42,7 @@ import java.util.Optional;
  */
 /* package */final class NullParams implements IParams
 {
-	public static final transient NullParams instance = new NullParams();
+	public static final NullParams instance = new NullParams();
 
 	private NullParams()
 	{

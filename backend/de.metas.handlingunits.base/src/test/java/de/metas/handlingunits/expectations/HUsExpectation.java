@@ -22,16 +22,15 @@ package de.metas.handlingunits.expectations;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.model.PlainContextAware;
-import org.compiere.util.Env;
-import org.junit.Assert;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.util.Check;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.Assertions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Allows a tester to declare HU related expectations.
@@ -63,7 +62,7 @@ public class HUsExpectation extends AbstractHUExpectation<Object>
 		final int count = hus.size();
 		final int expectedCount = expectations.size();
 
-		Assert.assertEquals(message + " HUs count", expectedCount, count);
+		Assertions.assertEquals( expectedCount, count,message + " HUs count");
 
 		for (int i = 0; i < count; i++)
 		{
@@ -82,7 +81,7 @@ public class HUsExpectation extends AbstractHUExpectation<Object>
 	{
 		if (expectations == null || expectations.isEmpty())
 		{
-			Assert.fail("Cannot create HUs because there are no expectations defined");
+			Assertions.fail("Cannot create HUs because there are no expectations defined");
 		}
 
 		//

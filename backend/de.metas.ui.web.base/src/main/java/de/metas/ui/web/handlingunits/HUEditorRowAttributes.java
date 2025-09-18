@@ -350,12 +350,12 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	public Optional<String> getSSCC18()
 	{
-		if (!attributesStorage.hasAttribute(HUAttributeConstants.ATTR_SSCC18_Value))
+		if (!attributesStorage.hasAttribute(AttributeConstants.ATTR_SSCC18_Value))
 		{
 			return Optional.empty();
 		}
 
-		final String sscc18 = attributesStorage.getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value);
+		final String sscc18 = attributesStorage.getValueAsString(AttributeConstants.ATTR_SSCC18_Value);
 		if (Check.isEmpty(sscc18, true))
 		{
 			return Optional.empty();

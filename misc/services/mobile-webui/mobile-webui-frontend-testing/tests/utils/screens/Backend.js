@@ -1,7 +1,5 @@
-import { test } from "../../../playwright.config";
+import { test, testContext } from "../../../playwright.config";
 import { FRONTEND_BASE_URL, page } from "../common";
-
-let lastMasterdata = null;
 
 export const Backend = {
     createMasterdata: async ({
@@ -26,7 +24,7 @@ export const Backend = {
 
         console.log(`Created master data (${language}):\n` + JSON.stringify(responseBody, null, 2));
 
-        lastMasterdata = responseBody;
+        testContext.lastMasterdata = responseBody;
 
         return responseBody;
     }),
@@ -36,15 +34,40 @@ export const Backend = {
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting/expect`, {
             data: {
                 ...expectations,
-                masterdata: lastMasterdata
+                masterdata: testContext.lastMasterdata,
+                context: testContext.lastExpectContext,
             },
             headers: {
                 'Content-Type': 'application/json',
             }
         });
+
+        const responseBody = await response.json();
+        if (responseBody?.context != null) {
+            testContext.lastExpectContext = responseBody.context;
+        }
+
+        assertNoErrors({ responseBody });
+
+        return {
+            ...responseBody,
+            context: stripTypePrefix(responseBody.context)
+        };
+    }),
+
+    getWFProcess: async ({ wfProcessId }) => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': getAuthToken(),
+            }
+        });
         const responseBody = await response.json();
         assertNoErrors({ responseBody });
-    }),
+
+        return responseBody;
+    },
 }
 
 //
@@ -87,4 +110,22 @@ const assertNoErrors = ({ responseBody }) => {
         || responseBody.failure) {
         throw Error("Got error on last backend call:\n" + JSON.stringify(responseBody, null, 2));
     }
+};
+
+const getAuthToken = () => {
+    const token = lastMasterdata?.login?.user?.token;
+    if (!token) {
+        throw new Error('No token found in masterdata:\n' + JSON.stringify(lastMasterdata, null, 2));
+    }
+    return token;
+}
+
+const stripTypePrefix = (context) => {
+    if (!context) return {};
+    const result = {};
+    for (const key in context) {
+        const [, identifier] = key.split(':');
+        result[identifier] = context[key];
+    }
+    return result;
 };

@@ -133,11 +133,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
 
-	/**
-	 * @param hu may not be {@code null}
-	 * @return parent M_HU_ID or -1
-	 */
-	int retrieveParentId(I_M_HU hu);
+	@Nullable HuId retrieveParentId(@NonNull I_M_HU hu);
 
 	/**
 	 * Actually returns {@link I_M_HU#getM_HU_Item_Parent()}, but in a potentially DB decoupled fashion.
@@ -224,6 +220,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
 
+	@NonNull
 	I_M_HU_PI_Version retrievePICurrentVersion(HuPackingInstructionsId piId);
 
 	/**
@@ -286,6 +283,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, BPartnerId bpartnerId);
+
+	I_M_HU_PackingMaterial retrievePackingMaterialByPIVersionID(@NonNull HuPackingInstructionsVersionId versionId, @Nullable BPartnerId bpartnerId);
 
 	List<I_M_HU> retrieveVirtualHUs(I_M_HU_Item itemMaterial);
 
@@ -364,4 +363,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	<T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper);
 
 	void createTUPackingInstructions(CreateTUPackingInstructionsRequest request);
+
+	Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(@Nullable final BPartnerId bpartnerId, @NonNull final HuPackingInstructionsId luPIId, @NonNull final HUPIItemProductId piItemProductId);
 }

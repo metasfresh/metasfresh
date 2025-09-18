@@ -132,7 +132,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Ite
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -696,7 +696,7 @@ public class M_HU_StepDef
 			row.getAsOptionalIdentifier("Parent")
 					.ifPresent(parentHUIdentifier -> {
 						final HuId expectedParentId = parentHUIdentifier.isNullPlaceholder() ? null : huTable.getId(parentHUIdentifier);
-						final HuId actualParentId = HuId.ofRepoIdOrNull(handlingUnitsDAO.retrieveParentId(huRecord));
+						final HuId actualParentId = handlingUnitsDAO.retrieveParentId(huRecord);
 						softly.assertThat(actualParentId).as("Parent").isEqualTo(expectedParentId);
 					});
 
@@ -735,7 +735,7 @@ public class M_HU_StepDef
 			@NonNull final List<String> husIdentifiers,
 			@NonNull final Map<String, Map<String, String>> huIdentifierToRow)
 	{
-		assertThat(jsonHUs.size()).isEqualTo(husIdentifiers.size());
+		assertThat(jsonHUs).hasSameSizeAs(husIdentifiers);
 
 		for (final String huIdentifier : husIdentifiers)
 		{
@@ -800,9 +800,7 @@ public class M_HU_StepDef
 			if (EmptyUtil.isNotBlank(includedHus))
 			{
 				final List<String> includedHusIdentifiers = StepDefUtil.splitIdentifiers(includedHus);
-				assertThat(jsonHU.getIncludedHUs()).isNotNull();
-				assertThat(jsonHU.getIncludedHUs().size()).isEqualTo(includedHusIdentifiers.size());
-
+				assertThat(jsonHU.getIncludedHUs()).hasSameSizeAs(includedHusIdentifiers);
 				validateHU(jsonHU.getIncludedHUs(), includedHusIdentifiers, huIdentifierToRow);
 			}
 		}

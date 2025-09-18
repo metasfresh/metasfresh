@@ -50,11 +50,11 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchemaBreak;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -67,7 +67,7 @@ import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -91,7 +91,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PaymentTermService.class })
 public class PurchaseDemandWithCandidatesServiceTest
 {
@@ -123,7 +123,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 	private I_C_PaymentTerm paymentTermRecord;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -221,7 +221,6 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				new ReferenceGenerator(),
-				bpPurchaseScheduleService,
 				dimensionService
 		);
 

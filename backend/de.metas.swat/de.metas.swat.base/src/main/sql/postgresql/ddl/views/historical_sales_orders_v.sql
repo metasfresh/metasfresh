@@ -19,6 +19,11 @@ SELECT o.C_Order_ID
                 THEN o.DatePromised
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END)                                    AS DatePromised
+     , o.externalid                             AS ExternalId
+     , (CASE
+            WHEN dsource.internalname IS NOT NULL
+                THEN 'int-' || dsource.internalname
+        END)                                    AS DataSource
      , rbp.C_BPartner_ID
      , rbp.value                                AS BPartnerValue
      , rbp.name                                 AS BPartnerName
@@ -42,6 +47,7 @@ FROM C_Order o
          LEFT JOIN C_BPartner dbp ON dbp.C_BPartner_ID = o.dropship_bpartner_id
          LEFT JOIN C_Currency c ON c.C_Currency_ID = o.C_Currency_ID
          LEFT JOIN C_PaymentTerm pterm ON pterm.c_paymentterm_id = o.c_paymentterm_id
+         LEFT JOIN AD_InputDataSource dsource ON dsource.ad_inputdatasource_id = o.ad_inputdatasource_id
 WHERE dt.docbasetype = 'SOO'
   AND dt.docsubtype = 'SO'
   AND o.DocStatus IN ('CO')

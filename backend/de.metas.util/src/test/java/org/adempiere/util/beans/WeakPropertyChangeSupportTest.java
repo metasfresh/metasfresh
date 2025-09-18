@@ -28,8 +28,8 @@ import java.beans.PropertyChangeListenerProxy;
 import java.util.Arrays;
 
 import org.adempiere.util.beans.WeakPropertyChangeSupportTest.MockedPropertyChangeListener;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class WeakPropertyChangeSupportTest
 {
@@ -57,21 +57,21 @@ public class WeakPropertyChangeSupportTest
 
 		public void assertExecuted()
 		{
-			Assert.assertTrue("Listener " + this + " should have been executed", executed);
+			Assertions.assertTrue(executed, "Listener " + this + " should have been executed");
 		}
 
 		public void assertNotExecuted()
 		{
-			Assert.assertFalse("Listener " + this + " shouldn't have been executed", executed);
+			Assertions.assertFalse(executed, "Listener " + this + " shouldn't have been executed");
 		}
 	}
 
 	private void assertEmpty(final WeakPropertyChangeSupport pcs)
 	{
-		Assert.assertNotNull("pcs not null", pcs);
+		Assertions.assertNotNull(pcs, "pcs not null");
 
 		final PropertyChangeListener[] listeners = pcs.getPropertyChangeListeners();
-		Assert.assertTrue("No listeners shall be registered but they are: " + Arrays.toString(listeners), listeners == null || listeners.length == 0);
+		Assertions.assertTrue(listeners == null || listeners.length == 0, "No listeners shall be registered but they are: " + Arrays.toString(listeners));
 	}
 
 	@Test
@@ -143,8 +143,8 @@ public class WeakPropertyChangeSupportTest
 
 		// Take a snapshot of currently registered listeners
 		final PropertyChangeListener[] pcsListeners = pcs.getPropertyChangeListeners();
-		Assert.assertEquals("Invalid listeners length", 1, pcsListeners.length);
-		Assert.assertTrue("Listener shall be a proxy: " + pcsListeners[0], pcsListeners[0] instanceof PropertyChangeListenerProxy);
+		Assertions.assertEquals(1, pcsListeners.length, "Invalid listeners length");
+		Assertions.assertTrue(pcsListeners[0] instanceof PropertyChangeListenerProxy, "Listener shall be a proxy: " + pcsListeners[0]);
 
 		//
 		// Remove all listeners

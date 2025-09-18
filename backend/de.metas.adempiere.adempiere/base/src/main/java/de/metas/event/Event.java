@@ -581,7 +581,7 @@ public class Event
 			return this;
 		}
 
-		public Builder putPropertyFromObject(final String name, final Object value)
+		public Builder putPropertyFromObject(final String name, @Nullable final Object value)
 		{
 			if (value == null)
 			{
@@ -598,9 +598,9 @@ public class Event
 			}
 			else if (value instanceof Double)
 			{
-				final Double doubleValue = (Double)value;
-				final int intValue = doubleValue.intValue();
-				if (doubleValue.doubleValue() == intValue)
+				final double doubleValue = (Double)value;
+				final int intValue = (int)doubleValue;
+				if (doubleValue == intValue)
 				{
 					return putProperty(name, intValue);
 				}

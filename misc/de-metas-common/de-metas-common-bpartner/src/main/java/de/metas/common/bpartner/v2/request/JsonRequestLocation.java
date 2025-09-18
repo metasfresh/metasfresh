@@ -190,6 +190,13 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean visitorsAddressSet;
 
+	@ApiModelProperty(position = 270, //
+			value = "Translates to C_BPartner_Location.VATaxId")
+	private String vatId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean vatIdSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -320,5 +327,11 @@ public class JsonRequestLocation
 	{
 		this.visitorsAddress = visitorsAddress;
 		this.visitorsAddressSet = true;
+	}
+
+	public void setVatId(final String vatId)
+	{
+		this.vatId = vatId;
+		this.vatIdSet = true;
 	}
 }

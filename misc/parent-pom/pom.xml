@@ -1,3 +1,25 @@
+<!--
+  ~ #%L
+  ~ de.metas.parent.general
+  ~ %%
+  ~ Copyright (C) 2025 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -36,7 +58,7 @@
         <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
         <jackson.version>2.14.1</jackson.version>
         <amqp-client.version>5.10.0</amqp-client.version>
-        
+
         <jasperreports.version>6.21.2</jasperreports.version>
 
         <itextpdf.version>5.5.13.3</itextpdf.version>
@@ -51,7 +73,7 @@
         <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
         <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
         <springfox-enum-plugin.version>3.0.0</springfox-enum-plugin.version>
-        
+
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
         <slf4j-api.version>1.7.25</slf4j-api.version>
 
@@ -68,13 +90,11 @@
         <byte-buddy.version>1.12.20</byte-buddy.version>
         <objenesis.version>3.3</objenesis.version>
 
-        <!-- please keep junit jupiter and platform versions synched up -->
-        <junit-jupiter.version>5.9.3</junit-jupiter.version>
-        <junit-platform.version>1.9.3</junit-platform.version>
-
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>30.1.1-jre</guava.version>
+
+        <surefire-plugin.version>3.5.3</surefire-plugin.version>
     </properties>
 
     <modules>
@@ -95,7 +115,7 @@
             <version>4.0.2</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- 
         dependency of org.skyscreamer:jsonassert which is a dependency of json-snapshot
         I get a ClassNotFoundException JSONException, despite ofc it *should* be there transitively 
@@ -112,28 +132,7 @@
             <version>0.0.20131108.vaadin1</version>
             <scope>test</scope>
         </dependency>
-        
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-runner</artifactId>
-            <version>${junit-platform.version}</version>
-            <scope>test</scope>
-        </dependency>
-        
     </dependencies>
-
     <dependencyManagement>
         <dependencies>
 
@@ -187,7 +186,7 @@
                 <artifactId>jsr305</artifactId>
                 <version>3.0.2</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
@@ -205,19 +204,19 @@
                 <artifactId>jp.osdn.ocrb</artifactId>
                 <version>0.2.1</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
                 <version>${logstash-logback-encoder.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>17.0.0</version>
             </dependency>
-            
+
         </dependencies>
 
     </dependencyManagement>
@@ -404,23 +403,23 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>${surefire-plugin.version}</version>
                     <dependencies>
                         <!-- Declaring these explicitly to allow go-offline-maven-plugin to pick it up -->
                         <dependency>
                             <groupId>org.apache.maven.surefire</groupId>
                             <artifactId>surefire-junit-platform</artifactId>
-                            <version>3.1.0</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>junit</groupId>
-                            <artifactId>junit</artifactId>
-                            <version>4.10</version>
+                            <version>${surefire-plugin.version}</version>
                         </dependency>
                         <dependency>
                             <groupId>org.apache.tomcat</groupId>
                             <artifactId>tomcat-annotations-api</artifactId>
                             <version>9.0.70</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-utils</artifactId>
+                            <version>1.1</version>
                         </dependency>
                     </dependencies>
                     <configuration>
@@ -560,14 +559,14 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
-				<!-- https://github.com/qaware/go-offline-maven-plugin
-					enables our docker builds to resolve dependencies in a separate layer
-					and therefore cache it. -->
-				<plugin>
-					<groupId>de.qaware.maven</groupId>
-					<artifactId>go-offline-maven-plugin</artifactId>
-					<version>1.2.8</version>
-				</plugin>
+                <!-- https://github.com/qaware/go-offline-maven-plugin
+                    enables our docker builds to resolve dependencies in a separate layer
+                    and therefore cache it. -->
+                <plugin>
+                    <groupId>de.qaware.maven</groupId>
+                    <artifactId>go-offline-maven-plugin</artifactId>
+                    <version>1.2.8</version>
+                </plugin>
 
             </plugins>
         </pluginManagement>
@@ -615,120 +614,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                     <unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin
                                     </unCheckedPluginList>
                                 </requirePluginVersions>
-
-                                <!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
-                                <!--                                <dependencyConvergence/>-->
-
-                                <!--
-                                    metas 10.x.x dependencies are only for local use (i.e. just in your local workspace).
-                                    We can't allow them to be build on jenkins, because then they would be deployed to the maven repos and shadow the "actual" builds with correct build numbers.
-                                    Also see http://maven.apache.org/enforcer/enforcer-rules/bannedDependencies.html
-                                -->
-                                <!--
-                                                                <bannedDependencies>
-                                                                    <excludes>
-                                                                        <exclude>de.metas*:*:[10,)</exclude>
-                                                                    </excludes>
-                                                                </bannedDependencies>
-                                -->
-                                <!--                                <banDuplicateClasses>-->
-                                <!--                                    <ignoreClasses>-->
-
-                                <!--                                        &lt;!&ndash; https://github.com/mojohaus/extra-enforcer-rules/issues/42 &ndash;&gt;-->
-                                <!--                                        <ignoreClass>*.module-info</ignoreClass>-->
-
-                                <!--                                        &lt;!&ndash; itext-2.1.7 has two different versions as dependences &ndash;&gt;-->
-                                <!--                                        <ignoreClass>org.bouncycastle.*</ignoreClass>-->
-
-                                <!--                                        <ignoreClass>javax.activation.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>javax.annotation.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>javax.ejb.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>javax.el.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>javax.management.j2ee.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>javax.transaction.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>javax.xml.*</ignoreClass>-->
-
-                                <!--                                        <ignoreClass>org.apache.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>org.codehaus.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>hidden.org.codehaus.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>org.junit.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>org.w3c.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>org.xml.*</ignoreClass>-->
-
-                                <!--                                        &lt;!&ndash; the following are camel/servicemix related dependencies &ndash;&gt;-->
-                                <!--                                        &lt;!&ndash; Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile-->
-                                <!--                                            net.sf.opencsv:opencsv:jar:2.1:compile &ndash;&gt;-->
-                                <!--                                        <ignoreClass>au.com.bytecode.*</ignoreClass>-->
-
-                                <!--                                        <ignoreClass>com.microsoft.schemas.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>org.etsi.uri.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>org.openxmlformats.schemas.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>org.w3.x2000.*</ignoreClass>-->
-
-                                <!--                                        &lt;!&ndash; Found in: xmlpull:xmlpull:jar:1.1.3.1:compile xpp3:xpp3_min:jar:1.1.4c:compile &ndash;&gt;-->
-                                <!--                                        <ignoreClass>org.xmlpull.*</ignoreClass>-->
-
-                                <!--                                        &lt;!&ndash; Found in: org.apache.xmlbeans:xmlbeans:jar:2.3.0:compile org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:jar:3.12_1:compile &ndash;&gt;-->
-                                <!--                                        <ignoreClass>schemaorg_apache_xmlbeans.system.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>repackage.Repackager</ignoreClass>-->
-                                <!--                                        <ignoreClass>repackage.Repackage</ignoreClass>-->
-                                <!--                                        <ignoreClass>repackage.EditBuildScript</ignoreClass>-->
-
-                                <!--                                        &lt;!&ndash; Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile-->
-                                <!--                                            javax.servlet:javax.servlet-api:jar:3.1.0:provided &ndash;&gt;-->
-                                <!--                                        <ignoreClass>javax.servlet.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>org.milyn.*</ignoreClass>-->
-                                <!--                                        <ignoreClass>com.sun.xml.bind.*</ignoreClass>-->
-
-                                <!--                                        &lt;!&ndash;  Found in: net.jcip:jcip-annotations:jar:1.0:compile-->
-                                <!--                                             com.google.code.findbugs:annotations:jar:3.0.1:compile &ndash;&gt;-->
-                                <!--                                        <ignoreClass>net.jcip.annotations.*</ignoreClass>-->
-                                <!--                                    </ignoreClasses>-->
-
-                                <!--                                    <dependencies>-->
-                                <!--                                        &lt;!&ndash; See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM-->
-                                <!--                                            ("JUnit classes in JMockit jar") for background info &ndash;&gt;-->
-                                <!--                                        <dependency>-->
-                                <!--                                            <artifactId>jmockit</artifactId>-->
-                                <!--                                            <ignoreClasses>-->
-                                <!--                                                <ignoreClass>org.junit.runner.Runner</ignoreClass>-->
-                                <!--                                            </ignoreClasses>-->
-                                <!--                                        </dependency>-->
-
-                                <!--                                        &lt;!&ndash; this is a dependency of spring-boot-starter-test 1.4.1 the error-->
-                                <!--                                            message we are avoiding this was goes like this: ================= Duplicate-->
-                                <!--                                            classes found: Found in: org.ow2.asm:asm:jar:5.0.3:test net.minidev:accessors-smart:jar:1.1:test-->
-                                <!--                                            Duplicate classes: org/objectweb/asm/Type.class [...] ================= &ndash;&gt;-->
-                                <!--                                        <dependency>-->
-                                <!--                                            <groupId>net.minidev</groupId>-->
-                                <!--                                            <artifactId>accessors-smart</artifactId>-->
-                                <!--                                            <ignoreClasses>-->
-                                <!--                                                <ignoreClass>org.objectweb.asm.*</ignoreClass>-->
-                                <!--                                            </ignoreClasses>-->
-                                <!--                                        </dependency>-->
-
-                                <!--                                        &lt;!&ndash; see also https://www.elastic.co/blog/to-shade-or-not-to-shade &ndash;&gt;-->
-                                <!--                                        <dependency>-->
-                                <!--                                            <groupId>org.elasticsearch</groupId>-->
-                                <!--                                            <artifactId>elasticsearch</artifactId>-->
-                                <!--                                            <ignoreClasses>-->
-                                <!--                                                <ignoreClass>org.joda.*</ignoreClass>-->
-                                <!--                                            </ignoreClasses>-->
-                                <!--                                        </dependency>-->
-
-                                <!--                                        &lt;!&ndash; the embedded tomcat of spring-boot 1.5.3.RELEASE come with baked-in javax.persistance api classes.. &ndash;&gt;-->
-                                <!--                                        <dependency>-->
-                                <!--                                            <groupId>org.apache.tomcat.embed</groupId>-->
-                                <!--                                            <artifactId>tomcat-embed-core</artifactId>-->
-                                <!--                                            <ignoreClasses>-->
-                                <!--                                                <ignoreClass>javax.persistence.*</ignoreClass>-->
-                                <!--                                            </ignoreClasses>-->
-                                <!--                                        </dependency>-->
-
-                                <!--                                    </dependencies>-->
-
-                                <!--                                    <findAllDuplicates>true</findAllDuplicates>-->
-                                <!--                                </banDuplicateClasses>-->
                             </rules>
                             <fail>true</fail>
                         </configuration>

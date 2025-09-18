@@ -33,6 +33,7 @@ import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateDeletedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -201,8 +202,11 @@ public class PP_Order_Candidate
 	private void fireMaterialCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
-
-		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgAndTraceId(ppOrderCandidatePojo.getPpOrderData().getClientAndOrgId(),
+		final UserId userId = UserId.ofRepoId(ppOrderCandidateRecord.getUpdatedBy());
+		
+		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgUserIdAndTraceId(
+				ppOrderCandidatePojo.getPpOrderData().getClientAndOrgId(),
+				userId,
 				getMaterialDispoTraceId(ppOrderCandidateRecord));
 
 		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()

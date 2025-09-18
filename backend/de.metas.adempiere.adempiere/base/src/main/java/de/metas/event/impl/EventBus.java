@@ -281,7 +281,7 @@ final class EventBus implements IEventBus
 
 			try
 			{
-				if (EventBusConfig.isMonitorIncomingEvents())
+				if (eventBusMonitoringService.isMonitorIncomingEvents())
 				{
 					eventBusMonitoringService.addInfosAndMonitorSpan(eventToEnqueue, topic, this::enqueueEvent0);
 				}

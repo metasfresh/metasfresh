@@ -19,6 +19,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -182,7 +183,7 @@ public class RepoIdAwares
 		{
 			return "";
 		}
-		
+
 		return ids.stream()
 				.map(id -> Integer.toString(id.getRepoId()))
 				.collect(Collectors.joining(","));
@@ -303,4 +304,6 @@ public class RepoIdAwares
 	{
 		return Comparator.comparing(keyMapper, Comparator.nullsLast(Comparator.naturalOrder()));
 	}
+
+	public static <T extends RepoIdAware> boolean equals(@Nullable final T id1, @Nullable final T id2) {return Objects.equals(id1, id2);}
 }

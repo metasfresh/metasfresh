@@ -22,12 +22,11 @@ package org.compiere.util;
  * #L%
  */
 
+import org.adempiere.util.lang.EqualsBuilder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-
-import org.adempiere.util.lang.EqualsBuilder;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class EqualsBuilderTest
 {
@@ -40,8 +39,8 @@ public class EqualsBuilderTest
 	{
 		BigDecimal bd1 = new BigDecimal("10.0");
 		BigDecimal bd2 = new BigDecimal("10.00000");
-		Assert.assertNotEquals(bd1, bd2);
-		Assert.assertTrue(new EqualsBuilder()
+		Assertions.assertNotEquals(bd1, bd2);
+		Assertions.assertTrue(new EqualsBuilder()
 				.append(bd1, bd2)
 				.isEqual());
 	}

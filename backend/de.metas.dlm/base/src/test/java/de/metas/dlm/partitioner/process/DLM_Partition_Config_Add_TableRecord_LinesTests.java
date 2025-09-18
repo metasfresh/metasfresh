@@ -1,33 +1,8 @@
-package de.metas.dlm.partitioner.process;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
-import org.adempiere.ad.table.TableRecordIdDescriptor;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_ChangeLog;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_Tab;
-import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_AD_Window;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
-import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.logging.LogManager;
-
 /*
  * #%L
- * metasfresh-dlm
+ * metasfresh-dlm-base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -45,9 +20,31 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
+package de.metas.dlm.partitioner.process;
+
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.dlm.partitioner.config.PartitionConfig;
+import de.metas.logging.LogManager;
+import org.adempiere.ad.table.TableRecordIdDescriptor;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_ChangeLog;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_AD_Window;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class DLM_Partition_Config_Add_TableRecord_LinesTests
 {
-	@Before
+	@BeforeEach
 	public void before()
 	{
 		AdempiereTestHelper.get().init();
@@ -72,7 +69,7 @@ public class DLM_Partition_Config_Add_TableRecord_LinesTests
 
 		final List<TableRecordIdDescriptor> relevantDescriptors = new DLM_Partition_Config_Add_TableRecord_Lines().retainRelevantDescriptors(config, descriptors);
 
-		assertThat(relevantDescriptors.size(), is(4));
+		assertThat(relevantDescriptors).hasSize(4);
 
 	}
 }

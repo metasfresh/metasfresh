@@ -22,17 +22,15 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-
-import java.util.UUID;
-
+import de.metas.util.Check;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-import de.metas.util.Check;
+import java.util.UUID;
 
-@Ignore
+@Disabled
 public class MockedCalloutInstance implements ICalloutInstance
 {
 	private final String id;

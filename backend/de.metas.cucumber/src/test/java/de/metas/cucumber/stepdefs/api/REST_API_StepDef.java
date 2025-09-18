@@ -240,7 +240,10 @@ public class REST_API_StepDef
 		}
 		catch (final AssertionError e)
 		{ // JSONAssert doesn't give us the actual response
-			throw new AssertionError("Actual response:\n" + testContext.getApiResponseBodyAsString(), e);
+			throw new AssertionError(
+					"Actual response:\n" + testContext.getApiResponseBodyAsString()
+							+ "\n=================="
+							+ "Expected response:\n" + expectedResponseResolved, /*we include*/e);
 		}
 	}
 

@@ -1,12 +1,11 @@
 package org.compiere.apps.search;
 
-import org.junit.Ignore;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.junit.jupiter.api.Disabled;
 
 /*
  * #%L
@@ -30,7 +29,7 @@ import lombok.Value;
  * #L%
  */
 
-@Ignore
+@Disabled
 @Value
 @Builder
 final class PlainUserQueryField implements IUserQueryField

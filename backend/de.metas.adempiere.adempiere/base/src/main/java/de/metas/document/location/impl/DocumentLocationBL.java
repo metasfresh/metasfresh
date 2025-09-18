@@ -22,6 +22,7 @@
 
 package de.metas.document.location.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -51,6 +52,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class DocumentLocationBL implements IDocumentLocationBL
@@ -215,63 +217,89 @@ public class DocumentLocationBL implements IDocumentLocationBL
 	public void updateRenderedAddressAndCapturedLocation(final IDocumentLocationAdapter locationAdapter)
 	{
 		toPlainDocumentLocation(locationAdapter)
+				.map(this::withUpdatedLocationId)
 				.map(this::computeRenderedAddress)
 				.ifPresent(locationAdapter::setRenderedAddressAndCapturedLocation);
 	}
 
 	@Override
-	public void updateCapturedLocation(final IDocumentLocationAdapter locationAdapter)
+	public void updateRenderedAddress(final IDocumentLocationAdapter locationAdapter)
 	{
 		toPlainDocumentLocation(locationAdapter)
-				.map(this::withUpdatedLocationId)
-				.ifPresent(location -> locationAdapter.setC_BPartner_Location_Value_ID(LocationId.toRepoId(location.getLocationId())));
+				.map(this::computeRenderedAddress)
+				.ifPresent(locationAdapter::setRenderedAddress);
+	}
+
+	@Override
+	public void updateRenderedAddress(final IDocumentBillLocationAdapter locationAdapter)
+	{
+		toPlainDocumentLocation(locationAdapter)
+				.map(this::computeRenderedAddress)
+				.ifPresent(locationAdapter::setRenderedAddress);
 	}
 
 	@Override
 	public void updateRenderedAddressAndCapturedLocation(final IDocumentBillLocationAdapter locationAdapter)
 	{
 		toPlainDocumentLocation(locationAdapter)
+				.map(this::withUpdatedLocationId)
 				.map(this::computeRenderedAddress)
 				.ifPresent(locationAdapter::setRenderedAddressAndCapturedLocation);
-	}
-
-	@Override
-	public void updateCapturedLocation(final IDocumentBillLocationAdapter locationAdapter)
-	{
-		toPlainDocumentLocation(locationAdapter)
-				.map(this::withUpdatedLocationId)
-				.ifPresent(location -> locationAdapter.setBill_Location_Value_ID(LocationId.toRepoId(location.getLocationId())));
 	}
 
 	@Override
 	public void updateRenderedAddressAndCapturedLocation(final IDocumentDeliveryLocationAdapter locationAdapter)
 	{
 		toPlainDocumentLocation(locationAdapter)
+				.map(this::withUpdatedLocationId)
 				.map(this::computeRenderedAddress)
 				.ifPresent(locationAdapter::setRenderedAddressAndCapturedLocation);
 	}
 
 	@Override
-	public void updateCapturedLocation(final IDocumentDeliveryLocationAdapter locationAdapter)
+	public void updateRenderedAddress(final IDocumentDeliveryLocationAdapter locationAdapter)
 	{
 		toPlainDocumentLocation(locationAdapter)
-				.map(this::withUpdatedLocationId)
-				.ifPresent(location -> locationAdapter.setDropShip_Location_Value_ID(LocationId.toRepoId(location.getLocationId())));
+				.map(this::computeRenderedAddress)
+				.ifPresent(locationAdapter::setRenderedAddress);
 	}
 
 	@Override
 	public void updateRenderedAddressAndCapturedLocation(final IDocumentHandOverLocationAdapter locationAdapter)
 	{
 		toPlainDocumentLocation(locationAdapter)
+				.map(this::withUpdatedLocationId)
 				.map(this::computeRenderedAddress)
 				.ifPresent(locationAdapter::setRenderedAddressAndCapturedLocation);
 	}
 
 	@Override
-	public void updateCapturedLocation(final IDocumentHandOverLocationAdapter locationAdapter)
+	public void updateRenderedAddress(final IDocumentHandOverLocationAdapter locationAdapter)
 	{
 		toPlainDocumentLocation(locationAdapter)
-				.map(this::withUpdatedLocationId)
-				.ifPresent(location -> locationAdapter.setHandOver_Location_Value_ID(LocationId.toRepoId(location.getLocationId())));
+				.map(this::computeRenderedAddress)
+				.ifPresent(locationAdapter::setRenderedAddress);
+	}
+
+	@Override
+	public Set<DocumentLocation> getDocumentLocations(@NonNull final Set<BPartnerLocationId> bpartnerLocationIds)
+	{
+		if (bpartnerLocationIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return bpartnerLocationIds
+				.stream()
+				.map(this::getDocumentLocation)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public DocumentLocation getDocumentLocation(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		DocumentLocation documentLocation = DocumentLocation.ofBPartnerLocationId(bpartnerLocationId);
+		final RenderedAddressAndCapturedLocation renderedAddress = computeRenderedAddress(documentLocation);
+		return documentLocation.withRenderedAddress(renderedAddress);
 	}
 }

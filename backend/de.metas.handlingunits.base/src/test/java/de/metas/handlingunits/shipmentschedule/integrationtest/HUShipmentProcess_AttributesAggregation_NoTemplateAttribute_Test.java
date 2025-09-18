@@ -1,17 +1,16 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
-import java.util.List;
-
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.X_M_Attribute;
-import org.junit.Assert;
-
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inout.IInOutDAO;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.X_M_Attribute;
+import org.junit.jupiter.api.Assertions;
+
+import java.util.List;
 
 /*
  * #%L
@@ -84,13 +83,13 @@ public class HUShipmentProcess_AttributesAggregation_NoTemplateAttribute_Test
 	{
 		//
 		// Get generated shipment
-		Assert.assertEquals("Invalid generated shipments count", 1, generatedShipments.size());
+		Assertions.assertEquals( 1,  generatedShipments.size(), "Invalid generated shipments count");
 		final I_M_InOut shipment = generatedShipments.get(0);
 
 		//
 		// Retrieve generated shipment lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
-		Assert.assertEquals("Invalid generated shipment lines count", 1, shipmentLines.size());
+		Assertions.assertEquals( 1,  shipmentLines.size(), "Invalid generated shipment lines count");
 		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
 
 		assertShipmentLineDoesNotHaveAttribute(shipmentLine1, attribute);

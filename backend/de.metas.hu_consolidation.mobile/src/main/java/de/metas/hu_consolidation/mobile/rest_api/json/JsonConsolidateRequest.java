@@ -1,6 +1,8 @@
 package de.metas.hu_consolidation.mobile.rest_api.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.handlingunits.HuId;
+import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.util.Check;
@@ -20,11 +22,18 @@ public class JsonConsolidateRequest
 {
 	@Nullable WFProcessId wfProcessId;
 	@NonNull String fromPickingSlotQRCode;
+	@Nullable HuId huId;
 
+	@JsonIgnore
+	@NonNull
 	public WFProcessId getWfProcessIdNotNull()
 	{
 		return Check.assumeNotNull(wfProcessId, "wfProcessId not null");
 	}
+
+	@JsonIgnore
+	@NonNull
+	public HUConsolidationJobId getJobId() {return HUConsolidationJobId.ofWFProcessId(getWfProcessIdNotNull());}
 
 	public JsonConsolidateRequest withWFProcessId(@NonNull final String wfProcessIdStr)
 	{

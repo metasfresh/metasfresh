@@ -22,27 +22,25 @@ package org.adempiere.ad.persistence;
  * #L%
  */
 
+import de.metas.cache.CacheMgt;
+import org.adempiere.ad.persistence.EntityTypesCache.EntityTypeEntry;
+import org.compiere.model.I_AD_EntityType;
+import org.junit.jupiter.api.Disabled;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.ad.persistence.EntityTypesCache.EntityTypeEntry;
-import org.compiere.model.I_AD_EntityType;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Ignore;
-
-import de.metas.cache.CacheMgt;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Helper class used to test {@link TableModelClassLoader}.
- *
+ * <p>
  * Use it to make sure the right model classes are loaded by table name.
  *
  * @author tsa
- *
  */
-@Ignore
+@Disabled
 public class TableModelClassLoaderTester
 {
 	private Map<String, String> tableName2EntityType = new HashMap<>();
@@ -52,7 +50,9 @@ public class TableModelClassLoaderTester
 		String getEntityTypeForTableName(String tableName)
 		{
 			return tableName2EntityType.get(tableName);
-		};
+		}
+
+		;
 	};
 
 	private Map<String, EntityTypeEntry> entityTypeEntries = new HashMap<>();
@@ -62,7 +62,9 @@ public class TableModelClassLoaderTester
 		public EntityTypesMap retrieveEntityTypesMap()
 		{
 			return EntityTypesMap.of(entityTypeEntries.values());
-		};
+		}
+
+		;
 
 	};
 
@@ -84,9 +86,6 @@ public class TableModelClassLoaderTester
 
 	/**
 	 * Sets the entity type to be considered for given table name.
-	 *
-	 * @param tableName
-	 * @param entityType
 	 */
 	public TableModelClassLoaderTester setTableNameEntityType(final String tableName, final String entityType)
 	{
@@ -104,16 +103,12 @@ public class TableModelClassLoaderTester
 
 	/**
 	 * Asserts the expected class is loaded for given tableName.
-	 *
-	 * @param tableName
-	 * @param expectedClass
 	 */
 	public TableModelClassLoaderTester assertClass(final String tableName, final Class<?> expectedClass)
 	{
+		
 		final Class<?> clazz = mockedModelClassLoader.getClass(tableName);
-		Assert.assertSame("Invalid class was loaded for " + tableName,
-				expectedClass,
-				clazz);
+		assertThat(clazz).as("Invalid class was loaded for %s",tableName).isSameAs(expectedClass);
 
 		return this;
 	}
@@ -121,14 +116,14 @@ public class TableModelClassLoaderTester
 	public TableModelClassLoaderTester assertEntityTypeExists(final String entityType)
 	{
 		final Set<String> entityTypeNames = entityTypesCache.getEntityTypeNames();
-		Assert.assertThat(entityTypeNames, Matchers.hasItem(entityType));
+		assertThat(entityTypeNames).contains(entityType);
 		return this;
 	}
 
 	public TableModelClassLoaderTester assertEntityTypeNotExists(final String entityType)
 	{
 		final Set<String> entityTypeNames = entityTypesCache.getEntityTypeNames();
-		Assert.assertThat(entityTypeNames, Matchers.not(Matchers.hasItem(entityType)));
+		assertThat(entityTypeNames).doesNotContain(entityType);
 		return this;
 	}
 

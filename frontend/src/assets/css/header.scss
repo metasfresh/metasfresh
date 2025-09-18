@@ -2,7 +2,7 @@
 @import './layers.scss';
 
 .header-sticky-distance {
-  padding-top: 55px;
+  padding-top: $header-height;
 }
 
 .header {
@@ -11,7 +11,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 55px;
+  height: $header-height;
   z-index: $z-index-header-menu;
 }
 
@@ -85,7 +85,7 @@
 @media (max-width: $breakpoint) {
   .header-breadcrumb {
     top: 25px;
-    left: -55px;
+    left: -$header-height;
     position: absolute;
     background-color: #fff;
     width: calc(100vw);
@@ -178,17 +178,17 @@
   position: absolute;
   top: 0;
   z-index: $z-index-header-menu;
-  margin-top: 55px;
+  margin-top: $header-height;
   background-color: $brand-bright-color;
 
-  height: calc(100% - 55px);
+  height: calc(100% - $header-height);
 }
 
 @media (max-width: $breakpoint) {
   .subheader-container {
     width: 100%;
     z-index: $z-index-header-menu;
-    max-height: calc(100vh - 55px);
+    max-height: calc(100vh - $header-height);
     overflow: scroll;
   }
   .subheader-column {
@@ -316,12 +316,12 @@
 }
 
 .btn-square {
-  min-width: 55px;
+  min-width: $header-height;
 }
 
 .header-left-side {
   width: calc(50% - 75px);
-  padding-left: 55px;
+  padding-left: $header-height;
   align-items: center;
 
   > .tooltip-parent {
@@ -497,8 +497,8 @@
   border-bottom-width: 0;
   color: $brand-link-color;
   pointer-events: visible;
-  width: 55px;
-  height: 55px;
+  width: $header-height;
+  height: $header-height;
   padding-bottom: 6px;
 }
 
@@ -615,8 +615,8 @@
 }
 
 .header-item-container {
-  min-width: 55px;
-  height: 55px;
+  min-width: $header-height;
+  height: $header-height;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -627,7 +627,7 @@
 }
 
 .header-item-container-static {
-  width: 55px;
+  width: $header-height;
 }
 
 .header-item-container:hover {
