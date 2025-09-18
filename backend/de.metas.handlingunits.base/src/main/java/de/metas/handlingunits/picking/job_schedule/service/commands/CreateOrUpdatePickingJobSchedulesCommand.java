@@ -1,11 +1,11 @@
 package de.metas.handlingunits.picking.job_schedule.service.commands;
 
 import com.google.common.collect.Sets;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.picking.job_schedule.repository.PickingJobScheduleCreateRepoRequest;
 import de.metas.handlingunits.picking.job_schedule.repository.PickingJobScheduleRepository;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.quantity.Quantity;
 import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
@@ -19,7 +19,7 @@ import java.util.Set;
 public class CreateOrUpdatePickingJobSchedulesCommand
 {
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
-	@NonNull private final IShipmentScheduleBL shipmentScheduleBL;
+	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL;
 
 	@NonNull private final CreateOrUpdatePickingJobSchedulesRequest request;
 

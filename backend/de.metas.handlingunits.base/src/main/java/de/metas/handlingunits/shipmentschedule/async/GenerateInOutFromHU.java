@@ -6,7 +6,7 @@ import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.util.Check;
 import de.metas.util.Loggables;

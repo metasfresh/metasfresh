@@ -206,6 +206,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Active Workplace required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActiveWorkplaceRequired (boolean IsActiveWorkplaceRequired);
+
+	/**
+	 * Get Active Workplace required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActiveWorkplaceRequired();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsActiveWorkplaceRequired = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsActiveWorkplaceRequired", null);
+	String COLUMNNAME_IsActiveWorkplaceRequired = "IsActiveWorkplaceRequired";
+
+	/**
 	 * Set Allow any Customer.
 	 *
 	 * <br>Type: YesNo
@@ -359,6 +380,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsCatchWeightTUPickingEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsCatchWeightTUPickingEnabled", null);
 	String COLUMNNAME_IsCatchWeightTUPickingEnabled = "IsCatchWeightTUPickingEnabled";
+
+	/**
+	 * Set Consider only scheduled jobs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsConsideredOnlyScheduledJobs (boolean IsConsideredOnlyScheduledJobs);
+
+	/**
+	 * Get Consider only scheduled jobs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isConsideredOnlyScheduledJobs();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsConsideredOnlyScheduledJobs = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsConsideredOnlyScheduledJobs", null);
+	String COLUMNNAME_IsConsideredOnlyScheduledJobs = "IsConsideredOnlyScheduledJobs";
 
 	/**
 	 * Set Consider sales order capacity.

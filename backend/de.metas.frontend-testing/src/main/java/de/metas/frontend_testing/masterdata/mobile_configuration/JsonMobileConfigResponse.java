@@ -42,6 +42,8 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean isAnonymousPickHUsOnTheFly;
 		@Nullable Boolean displayPickingSlotSuggestions;
+		@Nullable Boolean activeWorkplaceRequired;
+		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
 	}
 
 	//

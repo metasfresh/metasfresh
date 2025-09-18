@@ -134,7 +134,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
 
 		return applicationInfo.toBuilder()
-				.requiresWorkplace(true)
+				.requiresWorkplace(profile.isActiveWorkplaceRequired())
 				.showFilterByDocumentNo(true)
 				.showFilters(true)
 				.showFilterByQRCode(profile.isFilterByBarcode())

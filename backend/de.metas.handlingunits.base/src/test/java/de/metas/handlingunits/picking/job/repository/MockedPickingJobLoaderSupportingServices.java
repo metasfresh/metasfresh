@@ -1,7 +1,5 @@
 package de.metas.handlingunits.picking.job.repository;
 
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.gs1.GS1ProductCodes;
 import de.metas.handlingunits.HUPIItemProduct;
@@ -11,15 +9,15 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableLocks;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductCategoryId;
@@ -46,7 +44,7 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return MobileUIPickingUserProfile.DEFAULT.getDefaultPickingJobOptions();}
 
 	@Override
-	public void warmUpCachesFrom(@NonNull final PackageableList items)
+	public void warmUpCachesFrom(@NonNull final ScheduledPackageableList items)
 	{
 		// do nothing
 	}
@@ -151,9 +149,9 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
-	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	public ScheduledPackageableLocks getLocks(final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
 	{
-		return ImmutableSetMultimap.of();
+		return ScheduledPackageableLocks.EMPTY;
 	}
 
 	public void mockQRCode(@NonNull final HuId huId, @NonNull final HUQRCode qrCode)

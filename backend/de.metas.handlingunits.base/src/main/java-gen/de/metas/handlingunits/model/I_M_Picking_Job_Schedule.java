@@ -188,6 +188,27 @@ public interface I_M_Picking_Job_Schedule
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_M_Picking_Job_Schedule, Object> COLUMN_Processed = new ModelColumn<>(I_M_Picking_Job_Schedule.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
 	 * Set Qty To Pick.
 	 *
 	 * <br>Type: Quantity
