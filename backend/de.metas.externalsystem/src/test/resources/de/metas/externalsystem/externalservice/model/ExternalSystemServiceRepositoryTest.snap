@@ -3,8 +3,21 @@ de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTes
     "description": "Description",
     "disableCommand": "DisableCommand",
     "enableCommand": "EnableCommand",
-    "externalSystemType": "GRSSignum",
-    "id": 100001,
+    "externalSystemType": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": true,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "GRSSignum",
+      "woo": false
+    },
+    "id": 100002,
     "name": "grs_name",
     "serviceValue": "grs_service_value"
   }
@@ -17,8 +30,21 @@ de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTes
       "description": "Description",
       "disableCommand": "DisableCommand",
       "enableCommand": "EnableCommand",
-      "externalSystemType": "GRSSignum",
-      "id": 100001,
+      "externalSystemType": {
+        "alberta": false,
+        "everhour": false,
+        "github": false,
+        "grssignum": true,
+        "leichUndMehl": false,
+        "other": false,
+        "printClient": false,
+        "proCareManagement": false,
+        "rabbitMQ": false,
+        "shopware6": false,
+        "value": "GRSSignum",
+        "woo": false
+      },
+      "id": 100002,
       "name": "grs_name",
       "serviceValue": "grs_service_value"
     }

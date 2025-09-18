@@ -56,13 +56,13 @@ public class ExternalSystemServiceRepositoryTest
 		final ExternalSystemType externalSystemType = ExternalSystemType.GRSSignum;
 
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(externalSystemType.getLegacyCode())
+				.type(externalSystemType.getValue())
 				.name("grs_name")
 				.value("grs_service_value")
 				.build();
 
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.WOO.getLegacyCode())
+				.type(ExternalSystemType.WOO.getValue())
 				.name("woo_name")
 				.value("woo_service_value")
 				.build();
@@ -81,13 +81,13 @@ public class ExternalSystemServiceRepositoryTest
 	{
 		//given
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.GRSSignum.getLegacyCode())
+				.type(ExternalSystemType.GRSSignum.getValue())
 				.name("grs_name")
 				.value("grs_service_value")
 				.build();
 
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.WOO.getLegacyCode())
+				.type(ExternalSystemType.WOO.getValue())
 				.name("woo_name")
 				.value("woo_service_value")
 				.build();
@@ -105,7 +105,7 @@ public class ExternalSystemServiceRepositoryTest
 	{
 		//given
 		ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(ExternalSystemType.GRSSignum.getLegacyCode())
+				.type(ExternalSystemType.GRSSignum.getValue())
 				.name("grs_name")
 				.value("grs_service_value")
 				.build();

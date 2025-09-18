@@ -30,7 +30,6 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
-import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
@@ -202,11 +201,7 @@ public class BPartnerRecordsUtil
 				externalReferenceRepository.save(ExternalReference.builder()
 						.externalReference(AD_USER_EXTERNAL_ID)
 						.externalReferenceType(ExternalUserReferenceType.USER_ID)
-						.externalSystem(ExternalSystem.builder()
-								.name(ExternalSystemType.Other.getValue())
-								.type(ExternalSystemType.Other)
-								.id(ExternalSystemId.ofRepoId(44444))
-								.build())
+						.externalSystem(ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Other))
 						.orgId(OrgId.ofRepoId(10))
 						.recordId(AD_USER_ID)
 						.build());

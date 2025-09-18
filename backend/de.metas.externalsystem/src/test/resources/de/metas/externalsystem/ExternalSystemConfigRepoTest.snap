@@ -5,15 +5,28 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "childConfig": {
       "apiKey": "apiKey",
       "baseUrl": "baseUrl",
-      "id": 100002,
-      "parentId": 100001,
+      "id": 100003,
+      "parentId": 100002,
       "tenant": "tenant",
       "value": "testAlbertaValue"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "ALBERTA",
+    "type": {
+      "alberta": true,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "ALBERTA",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -23,8 +36,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   {
     "apiKey": "apiKey",
     "baseUrl": "baseUrl",
-    "id": 100002,
-    "parentId": 100001,
+    "id": 100003,
+    "parentId": 100002,
     "tenant": "tenant",
     "value": "testAlbertaValue"
   }
@@ -38,15 +51,28 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "childConfig": {
       "apiKey": "apiKey",
       "baseUrl": "baseUrl",
-      "id": 100002,
-      "parentId": 100001,
+      "id": 100003,
+      "parentId": 100002,
       "tenant": "tenant",
       "value": "testAlbertaValue"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "ALBERTA",
+    "type": {
+      "alberta": true,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "ALBERTA",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -62,18 +88,31 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "baseUrl": "baseUrl",
       "camelHttpResourceAuthKey": "authKey",
       "createBPartnerFolders": false,
-      "id": 100002,
-      "parentId": 100001,
+      "id": 100003,
+      "parentId": 100002,
       "syncBPartnersToRestEndpoint": true,
       "syncHUsOnMaterialReceipt": false,
       "syncHUsOnProductionReceipt": false,
       "tenantId": "tenantId",
       "value": "testGRSSignumValue"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "GRSSignum",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": true,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "GRSSignum",
+      "woo": false
+    },
     "writeAudit": false
   }
 ]
@@ -87,8 +126,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
     "baseUrl": "baseUrl",
     "camelHttpResourceAuthKey": "authKey",
     "createBPartnerFolders": false,
-    "id": 100002,
-    "parentId": 100001,
+    "id": 100003,
+    "parentId": 100002,
     "syncBPartnersToRestEndpoint": false,
     "syncHUsOnMaterialReceipt": false,
     "syncHUsOnProductionReceipt": false,
@@ -108,18 +147,31 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "baseUrl": "baseUrl",
       "camelHttpResourceAuthKey": "authKey",
       "createBPartnerFolders": false,
-      "id": 100002,
-      "parentId": 100001,
+      "id": 100003,
+      "parentId": 100002,
       "syncBPartnersToRestEndpoint": true,
       "syncHUsOnMaterialReceipt": false,
       "syncHUsOnProductionReceipt": false,
       "tenantId": "tenantId",
       "value": "testGRSSignumValue"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "GRSSignum",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": true,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "GRSSignum",
+      "woo": false
+    },
     "writeAudit": false
   }
 ]
@@ -131,8 +183,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "active": true,
       "auditFileFolder": "auditFileFolder",
       "childConfig": {
-        "id": 100002,
-        "parentId": 100001,
+        "id": 100003,
+        "parentId": 100002,
         "pluFileDestination": "TCP",
         "pluFileExportAuditEnabled": false,
         "pluType": "CU",
@@ -141,10 +193,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "tcpPort": 8080,
         "value": "testLeichMehlValue"
       },
-      "id": 100001,
+      "id": 100002,
       "name": "name",
       "orgId": 0,
-      "type": "LeichUndMehl",
+      "type": {
+        "alberta": false,
+        "everhour": false,
+        "github": false,
+        "grssignum": false,
+        "leichUndMehl": true,
+        "other": false,
+        "printClient": false,
+        "proCareManagement": false,
+        "rabbitMQ": false,
+        "shopware6": false,
+        "value": "LeichUndMehl",
+        "woo": false
+      },
       "writeAudit": true
     }
   ]
@@ -153,8 +218,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getByTypeAndParent=[
   {
-    "id": 100002,
-    "parentId": 100001,
+    "id": 100003,
+    "parentId": 100002,
     "pluFileDestination": "TCP",
     "pluFileExportAuditEnabled": false,
     "pluType": "CU",
@@ -171,8 +236,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "active": true,
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
+      "id": 100003,
+      "parentId": 100002,
       "pluFileDestination": "TCP",
       "pluFileExportAuditEnabled": false,
       "pluType": "CU",
@@ -181,10 +246,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "tcpPort": 8080,
       "value": "testLeichMehlValue"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "LeichUndMehl",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": true,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "LeichUndMehl",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -197,21 +275,34 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "childConfig": {
       "authToken": "authToken",
       "autoSendSubjectWhenCreatedByUserGroup": false,
-      "id": 100002,
+      "id": 100003,
       "isAutoSendWhenCreatedByUserGroup": false,
       "isSyncBPartnerToRabbitMQ": true,
       "isSyncExternalReferencesToRabbitMQ": false,
-      "parentId": 100001,
+      "parentId": 100002,
       "remoteUrl": "remoteURL",
       "routingKey": "routingKey",
       "syncBPartnerToRabbitMQ": true,
       "syncExternalReferencesToRabbitMQ": false,
       "value": "testRabbitMQValue"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "RabbitMQ",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": true,
+      "shopware6": false,
+      "value": "RabbitMQRESTAPI",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -221,11 +312,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
   {
     "authToken": "authToken",
     "autoSendSubjectWhenCreatedByUserGroup": false,
-    "id": 100002,
+    "id": 100003,
     "isAutoSendWhenCreatedByUserGroup": false,
     "isSyncBPartnerToRabbitMQ": true,
     "isSyncExternalReferencesToRabbitMQ": false,
-    "parentId": 100001,
+    "parentId": 100002,
     "remoteUrl": "remoteURL",
     "routingKey": "routingKey",
     "syncBPartnerToRabbitMQ": true,
@@ -242,11 +333,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "childConfig": {
       "authToken": "authToken",
       "autoSendSubjectWhenCreatedByUserGroup": true,
-      "id": 100002,
+      "id": 100003,
       "isAutoSendWhenCreatedByUserGroup": true,
       "isSyncBPartnerToRabbitMQ": true,
       "isSyncExternalReferencesToRabbitMQ": false,
-      "parentId": 100001,
+      "parentId": 100002,
       "remoteUrl": "remoteURL",
       "routingKey": "routingKey",
       "syncBPartnerToRabbitMQ": true,
@@ -254,10 +345,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "userGroupId": 1,
       "value": "testRabbitMQValue"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "RabbitMQ",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": true,
+      "shopware6": false,
+      "value": "RabbitMQRESTAPI",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -272,25 +376,38 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId": "id",
       "clientSecret": "secret",
       "externalSystemShopware6ConfigMappingList": [ ],
-      "id": 100002,
+      "id": 100003,
       "isActive": true,
-      "parentId": 100001,
+      "parentId": 100002,
       "priceListId": 1,
       "productLookup": "ProductNumber",
       "salesRepJSONPath": "/test/salesrep",
       "uomShopwareMappingList": [
         {
-          "externalSystemShopware6ConfigId": 100002,
+          "externalSystemShopware6ConfigId": 100003,
           "shopwareCode": "shopwareCode",
-          "uomId": 100003
+          "uomId": 100004
         }
       ],
       "value": "testShopware6Value"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "Shopware6",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": true,
+      "value": "Shopware6",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -305,25 +422,38 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId": "id",
       "clientSecret": "secret",
       "externalSystemShopware6ConfigMappingList": [ ],
-      "id": 100002,
+      "id": 100003,
       "isActive": false,
-      "parentId": 100001,
+      "parentId": 100002,
       "priceListId": 1,
       "productLookup": "ProductNumber",
       "salesRepJSONPath": "/test/salesrep",
       "uomShopwareMappingList": [
         {
-          "externalSystemShopware6ConfigId": 100002,
+          "externalSystemShopware6ConfigId": 100003,
           "shopwareCode": "shopwareCode",
-          "uomId": 100003
+          "uomId": 100004
         }
       ],
       "value": "testShopware6Value"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "Shopware6",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": true,
+      "value": "Shopware6",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -350,17 +480,17 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "sw6PaymentMethod": "test"
       }
     ],
-    "id": 100002,
+    "id": 100003,
     "isActive": true,
-    "parentId": 100001,
+    "parentId": 100002,
     "priceListId": 1,
     "productLookup": "ProductNumber",
     "salesRepJSONPath": "/test/salesrep",
     "uomShopwareMappingList": [
       {
-        "externalSystemShopware6ConfigId": 100002,
+        "externalSystemShopware6ConfigId": 100003,
         "shopwareCode": "shopwareCode",
-        "uomId": 100004
+        "uomId": 100005
       }
     ],
     "value": "testShopware6Value"
@@ -377,25 +507,38 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId": "id",
       "clientSecret": "secret",
       "externalSystemShopware6ConfigMappingList": [ ],
-      "id": 100002,
+      "id": 100003,
       "isActive": true,
-      "parentId": 100001,
+      "parentId": 100002,
       "priceListId": 1,
       "productLookup": "ProductNumber",
       "salesRepJSONPath": "/test/salesrep",
       "uomShopwareMappingList": [
         {
-          "externalSystemShopware6ConfigId": 100002,
+          "externalSystemShopware6ConfigId": 100003,
           "shopwareCode": "shopwareCode",
-          "uomId": 100003
+          "uomId": 100004
         }
       ],
       "value": "testShopware6Value"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "Shopware6",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": true,
+      "value": "Shopware6",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -410,19 +553,32 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId": "new-clientId",
       "clientSecret": "new-clientSecret",
       "externalSystemShopware6ConfigMappingList": [ ],
-      "id": 100002,
+      "id": 100003,
       "isActive": true,
-      "parentId": 100001,
+      "parentId": 100002,
       "priceListId": 2,
       "productLookup": "ProductNumber",
       "salesRepJSONPath": "/test/salesrep",
       "uomShopwareMappingList": [ ],
       "value": "new-value"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "Shopware6",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": true,
+      "value": "Shopware6",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -434,14 +590,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
       "camelHttpResourceAuthKey": "authKey",
-      "id": 100002,
-      "parentId": 100001,
+      "id": 100003,
+      "parentId": 100002,
       "value": "testWoocommerceValue"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "WOO",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "WOO",
+      "woo": true
+    },
     "writeAudit": true
   }
 ]
@@ -452,14 +621,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "active": true,
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
+      "id": 100003,
+      "parentId": 100002,
       "value": "testWoocommerceValue"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "WOO",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "WOO",
+      "woo": true
+    },
     "writeAudit": true
   }
 ]
@@ -473,21 +655,34 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
       "childConfig": {
         "authToken": "authToken",
         "autoSendSubjectWhenCreatedByUserGroup": false,
-        "id": 100002,
+        "id": 100003,
         "isAutoSendWhenCreatedByUserGroup": false,
         "isSyncBPartnerToRabbitMQ": false,
         "isSyncExternalReferencesToRabbitMQ": false,
-        "parentId": 100001,
+        "parentId": 100002,
         "remoteUrl": "remoteURL",
         "routingKey": "routingKey",
         "syncBPartnerToRabbitMQ": false,
         "syncExternalReferencesToRabbitMQ": false,
         "value": "notImportant"
       },
-      "id": 100001,
+      "id": 100002,
       "name": "name",
       "orgId": 0,
-      "type": "RabbitMQ",
+      "type": {
+        "alberta": false,
+        "everhour": false,
+        "github": false,
+        "grssignum": false,
+        "leichUndMehl": false,
+        "other": false,
+        "printClient": false,
+        "proCareManagement": false,
+        "rabbitMQ": true,
+        "shopware6": false,
+        "value": "RabbitMQRESTAPI",
+        "woo": false
+      },
       "writeAudit": true
     }
   ]
@@ -499,8 +694,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
     "active": true,
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
+      "id": 100003,
+      "parentId": 100002,
       "pluFileDestination": "DISK",
       "pluFileExportAuditEnabled": false,
       "pluFileServerFolder": "/serverFolder",
@@ -510,10 +705,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
       "tcpPort": 8080,
       "value": "LeichMehl"
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "LeichUndMehl",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": true,
+      "other": false,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "LeichUndMehl",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
@@ -525,25 +733,38 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
       "id": {
-        "externalSystemParentConfigId": 100001
+        "externalSystemParentConfigId": 100002
       },
       "parameters": [
         {
-          "id": 100002,
+          "id": 100003,
           "name": "name1",
           "value": "value1"
         },
         {
-          "id": 100003,
+          "id": 100004,
           "name": "name2",
           "value": "value2"
         }
       ]
     },
-    "id": 100001,
+    "id": 100002,
     "name": "name",
     "orgId": 0,
-    "type": "Other",
+    "type": {
+      "alberta": false,
+      "everhour": false,
+      "github": false,
+      "grssignum": false,
+      "leichUndMehl": false,
+      "other": true,
+      "printClient": false,
+      "proCareManagement": false,
+      "rabbitMQ": false,
+      "shopware6": false,
+      "value": "Other",
+      "woo": false
+    },
     "writeAudit": true
   }
 ]
