@@ -61,7 +61,7 @@ public class ExternalSystem_Config_GRSSignum
 
 		if (!ExternalSystemType.GRSSignum.getValue().equals(parentType))
 		{
-			throw new AdempiereException("Invalid external system type!");
+			throw new AdempiereException("Invalid external system type: " + parentType);
 		}
 	}
 
