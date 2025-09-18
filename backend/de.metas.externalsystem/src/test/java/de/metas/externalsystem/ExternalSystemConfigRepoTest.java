@@ -33,22 +33,20 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
-import de.metas.externalsystem.model.X_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
-import de.metas.externalsystem.model.X_ExternalSystem_Config;
+import de.metas.externalsystem.model.X_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
-import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
-import de.metas.pricing.tax.TaxCategoryDAO;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,6 +78,7 @@ class ExternalSystemConfigRepoTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier_PerTableSequence();
 		externalSystemConfigRepo = ExternalSystemConfigRepo.newInstanceForUnitTesting();
 	}
 
