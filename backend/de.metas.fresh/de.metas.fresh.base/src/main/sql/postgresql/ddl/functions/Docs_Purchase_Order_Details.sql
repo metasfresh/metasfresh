@@ -110,9 +110,7 @@ FROM C_OrderLine ol
                                     ol.C_OrderLine_ID
                              FROM Report.fresh_Attributes(ol.M_AttributeSetInstance_ID, p_ad_language) att
                              WHERE att.IsPrintedInDocument = 'Y'
-                             GROUP BY att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID) att ON TRUE
-
-                          GROUP BY att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
+                             GROUP BY att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
 
          LEFT JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
 
