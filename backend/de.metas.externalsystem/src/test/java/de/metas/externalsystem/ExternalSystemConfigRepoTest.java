@@ -862,7 +862,7 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(RabbitMQ.getLegacyCode())
+				.type(RabbitMQ.getValue())
 				.build();
 
 		ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
@@ -883,7 +883,7 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(RabbitMQ.getLegacyCode())
+				.type(RabbitMQ.getValue())
 				.build();
 
 		ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()

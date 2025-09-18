@@ -48,6 +48,8 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemTestHelper;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.job.JobRepository;
@@ -117,10 +119,10 @@ class ContactRestControllerTest
 
 		recordChangeLogRepository = new MockLogEntriesRepository();
 
-		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
+		ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Other);
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
-				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
+				new ExternalReferenceRestControllerService(ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes()), ExternalSystemRepository.newInstanceForUnitTesting(), new ExternalReferenceTypes());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository());
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
