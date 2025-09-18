@@ -7,14 +7,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class ExternalSystemType
 {
-	public static final ExternalSystemType Alberta = new ExternalSystemType("Alberta");
+	public static final ExternalSystemType Alberta = new ExternalSystemType("ALBERTA");
 	public static final ExternalSystemType RabbitMQ = new ExternalSystemType("RabbitMQRESTAPI");
 	public static final ExternalSystemType WOO = new ExternalSystemType("WOO");
 	public static final ExternalSystemType GRSSignum = new ExternalSystemType("GRSSignum");
@@ -72,7 +71,7 @@ public class ExternalSystemType
 	@NonNull
 	public String getLegacyCode()
 	{
-		return LEGACY_CODES.inverse().get(value).getValue();
+		return LEGACY_CODES.get(this);
 	}
 
 	public boolean isAlberta() {return Alberta.equals(this);}
@@ -85,6 +84,8 @@ public class ExternalSystemType
 
 	public boolean isLeichUndMehl() {return LeichUndMehl.equals(this);}
 
+	public boolean isPrintClient() {return PrintClient.equals(this);}
+
 	public boolean isProCareManagement() {return ProCareManagement.equals(this);}
 
 	public boolean isShopware6() {return Shopware6.equals(this);}
@@ -94,6 +95,4 @@ public class ExternalSystemType
 	public boolean isGithub() {return Github.equals(this);}
 
 	public boolean isEverhour() {return Everhour.equals(this);}
-
-	public boolean equals(final ExternalSystemType externalSystemType){return Objects.equals(this, externalSystemType);}
 }

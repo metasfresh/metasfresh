@@ -31,14 +31,13 @@ import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalsystem.ExternalSystemCreateRequest;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.PlainExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
@@ -49,7 +48,7 @@ import java.util.List;
 
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_AD_Org_ID;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_ExternalReference;
-import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_ExternalSystem;
+import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_Record_ID;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_Type;
 import static org.assertj.core.api.Assertions.*;
@@ -59,25 +58,22 @@ class ExternalReferenceRestControllerServiceTest
 {
 	ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private OrgId orgId;
+	private ExternalSystem externalSystem;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
-		externalSystemRepository.create(ExternalSystemCreateRequest.builder()
-				.name("System")
-				.type(ExternalSystemType.ofValue("System"))
-				.build());
+		externalSystem = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.ofValue("System"));
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(new PlainExternalReferenceType("bpartner", I_C_BPartner.Table_Name));
 
-		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(externalReferenceTypes);
 
 		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository,
-				externalSystemRepository,
+				ExternalSystemRepository.newInstanceForUnitTesting(),
 																							externalReferenceTypes);
 
 		orgId = AdempiereTestHelper.createOrgWithTimeZone("orgCode");
@@ -88,7 +84,7 @@ class ExternalReferenceRestControllerServiceTest
 	{
 		// given
 		final JsonExternalReferenceCreateRequest request = JsonExternalReferenceCreateRequest.builder()
-				.systemName(JsonExternalSystemName.of("system"))
+				.systemName(JsonExternalSystemName.of("System"))
 				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
 														   .id("id1")
 														   .type("bpartner")
@@ -108,10 +104,10 @@ class ExternalReferenceRestControllerServiceTest
 		// firstly, verify the the data is ok in our DB
 		final List<I_S_ExternalReference> records = POJOLookupMap.get().getRecords(I_S_ExternalReference.class);
 		assertThat(records)
-				.extracting(COLUMNNAME_AD_Org_ID, COLUMNNAME_ExternalSystem, COLUMNNAME_ExternalReference, COLUMNNAME_Type, COLUMNNAME_Record_ID)
+				.extracting(COLUMNNAME_AD_Org_ID, COLUMNNAME_ExternalSystem_ID, COLUMNNAME_ExternalReference, COLUMNNAME_Type, COLUMNNAME_Record_ID)
 				.containsExactly(
-						tuple(orgId.getRepoId(), "system", "id1", "bpartner", 23),
-						tuple(orgId.getRepoId(), "system", "id2", "bpartner", 24));
+						tuple(orgId.getRepoId(), externalSystem.getId().getRepoId(), "id1", "bpartner", 23),
+						tuple(orgId.getRepoId(), externalSystem.getId().getRepoId(), "id2", "bpartner", 24));
 
 		// secondly, also verify that the service's response is OK as well
 		final JsonExternalReferenceLookupItem lookupItem1 = JsonExternalReferenceLookupItem.builder()
@@ -129,7 +125,7 @@ class ExternalReferenceRestControllerServiceTest
 
 		final JsonExternalReferenceLookupResponse response = externalReferenceRestControllerService.performLookup("orgCode",
 																												  JsonExternalReferenceLookupRequest.builder()
-																														  .systemName(JsonExternalSystemName.of("system"))
+																														  .systemName(JsonExternalSystemName.of("System"))
 																														  .item(lookupItem1)
 																														  .item(lookupItem2)
 																														  .item(lookupItem3)
@@ -154,7 +150,7 @@ class ExternalReferenceRestControllerServiceTest
 	{
 		// given
 		final JsonExternalReferenceCreateRequest request = JsonExternalReferenceCreateRequest.builder()
-				.systemName(JsonExternalSystemName.of("system"))
+				.systemName(JsonExternalSystemName.of("System"))
 				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
 														   .id("id1")
 														   .type("bpartner")
@@ -174,10 +170,10 @@ class ExternalReferenceRestControllerServiceTest
 		// firstly, verify the the data is ok in our DB
 		final List<I_S_ExternalReference> records = POJOLookupMap.get().getRecords(I_S_ExternalReference.class);
 		assertThat(records)
-				.extracting(COLUMNNAME_AD_Org_ID, COLUMNNAME_ExternalSystem, COLUMNNAME_ExternalReference, COLUMNNAME_Type, COLUMNNAME_Record_ID)
+				.extracting(COLUMNNAME_AD_Org_ID, COLUMNNAME_ExternalSystem_ID, COLUMNNAME_ExternalReference, COLUMNNAME_Type, COLUMNNAME_Record_ID)
 				.containsExactly(
-						tuple(orgId.getRepoId(), "system", "id1", "bpartner", 25),
-						tuple(orgId.getRepoId(), "system", "id2", "bpartner", 26));
+						tuple(orgId.getRepoId(), externalSystem.getId().getRepoId(), "id1", "bpartner", 25),
+						tuple(orgId.getRepoId(), externalSystem.getId().getRepoId(), "id2", "bpartner", 26));
 
 		// secondly, also verify that the service's response is OK as well
 		final JsonExternalReferenceLookupItem lookupItem1 = JsonExternalReferenceLookupItem.builder()
@@ -187,7 +183,7 @@ class ExternalReferenceRestControllerServiceTest
 
 		final JsonExternalReferenceLookupResponse response = externalReferenceRestControllerService.performLookup("orgCode",
 																												  JsonExternalReferenceLookupRequest.builder()
-																														  .systemName(JsonExternalSystemName.of("system"))
+																														  .systemName(JsonExternalSystemName.of("System"))
 																														  .item(lookupItem1)
 																														  .build());
 

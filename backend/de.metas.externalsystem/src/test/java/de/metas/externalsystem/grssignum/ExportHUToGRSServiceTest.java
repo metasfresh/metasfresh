@@ -29,7 +29,7 @@ import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
-import de.metas.externalsystem.ExternalSystemTestUtil;
+import de.metas.externalsystem.ExternalSystemConfigTestUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
@@ -90,12 +90,12 @@ public class ExportHUToGRSServiceTest
 	public void givenGRSConfig_syncHUsOnMaterialReceipt_whenGetExportExternalSystemRequest_thenReturnExternalSystemRequest()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
 				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
 				.build();
 
-		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("grsValue")
 				.syncHUsOnMaterialReceipt(true)
@@ -116,12 +116,12 @@ public class ExportHUToGRSServiceTest
 	public void givenGRSConfig_syncHUsOneEnabled_whenGetExportExternalSystemRequest_thenReturnExternalSystemRequest()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
 				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
 				.build();
 
-		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("grsValue")
 				.syncHUsOnMaterialReceipt(true)
@@ -142,12 +142,12 @@ public class ExportHUToGRSServiceTest
 	public void givenGRSConfig_syncHUsBothDisabled_whenGetExportExternalSystemRequest_thenReturnNoExternalSystemRequest()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
 				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
 				.build();
 
-		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("grsValue")
 				.build();

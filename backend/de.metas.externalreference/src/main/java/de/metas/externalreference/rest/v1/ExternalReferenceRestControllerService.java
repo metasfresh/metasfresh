@@ -53,6 +53,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -66,6 +67,7 @@ import java.util.Optional;
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
 @Component
+@RequiredArgsConstructor
 public class ExternalReferenceRestControllerService
 {
 	private static final Logger logger = LogManager.getLogger(ExternalReferenceRestControllerService.class);
@@ -73,16 +75,6 @@ public class ExternalReferenceRestControllerService
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ExternalSystemRepository externalSystemRepository;
 	private final ExternalReferenceTypes externalReferenceTypes;
-
-	public ExternalReferenceRestControllerService(
-			@NonNull final ExternalReferenceRepository externalReferenceRepository,
-			@NonNull final ExternalSystemRepository externalSystemRepository,
-			@NonNull final ExternalReferenceTypes externalReferenceTypes)
-	{
-		this.externalReferenceRepository = externalReferenceRepository;
-		this.externalSystemRepository = externalSystemRepository;
-		this.externalReferenceTypes = externalReferenceTypes;
-	}
 
 	@NonNull
 	public JsonExternalReferenceLookupResponse performLookup(

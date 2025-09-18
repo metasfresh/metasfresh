@@ -69,7 +69,7 @@ public class GithubImportProcess extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final ImmutableList<ExternalProjectReference> allActiveGithubProjects =
-				externalProjectRepository.getByExternalSystemSystemValue(ExternalSystemType.GRSSignum); // TODO GITHUB);
+				externalProjectRepository.getByExternalSystemType(ExternalSystemType.Github);
 
 		final GithubIssueLinkMatcher githubIssueLinkMatcher = getGithubLinkMatcher(allActiveGithubProjects);
 

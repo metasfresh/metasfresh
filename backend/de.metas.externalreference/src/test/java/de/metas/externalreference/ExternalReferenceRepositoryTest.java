@@ -24,11 +24,8 @@ package de.metas.externalreference;
 
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemCreateRequest;
-import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.Assertions;
@@ -41,7 +38,6 @@ public class ExternalReferenceRepositoryTest
 {
 	private ExternalReferenceRepository externalReferenceRepository;
 	private ExternalSystem github;
-	private ExternalSystem everhour;
 
 	@BeforeEach
 	public void init()
@@ -51,17 +47,9 @@ public class ExternalReferenceRepositoryTest
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE);
 
-		final ExternalSystemRepository externalSystemRepository = new ExternalSystemRepository();
-		github = externalSystemRepository.create(ExternalSystemCreateRequest.builder()
-				.name("Github")
-				.type(ExternalSystemType.Github)
-				.build());
-		everhour = externalSystemRepository.create(ExternalSystemCreateRequest.builder()
-				.name("Everhour")
-				.type(ExternalSystemType.Everhour)
-				.build());
+		github = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 
-		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
+		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(externalReferenceTypes);
 	}
 
 	@Test
@@ -134,7 +122,7 @@ public class ExternalReferenceRepositoryTest
 		assertEquals(externalReference.getRecordId(), record.getRecord_ID());
 		assertEquals(externalReference.getExternalReference(), record.getExternalReference());
 		assertEquals(externalReference.getExternalReferenceType().getCode(), record.getType());
-		assertEquals(externalReference.getExternalSystem().getType(), record.getExternalSystem());
+		assertEquals(externalReference.getExternalSystem().getId().getRepoId(), record.getExternalSystem_ID());
 		assertEquals(externalReference.getVersion(), record.getVersion());
 	}
 }

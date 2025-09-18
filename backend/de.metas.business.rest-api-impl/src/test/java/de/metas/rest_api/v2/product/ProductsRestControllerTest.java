@@ -69,13 +69,10 @@ import de.metas.title.TitleRepository;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
-import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
-import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
@@ -129,11 +126,11 @@ public class ProductsRestControllerTest
 
 		final ProductRepository productRepository = new ProductRepository();
 
-		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
-		final AlbertaProductService albertaProductService = AlbertaProductService.newInstanceForUnitTesting();
+		final AlbertaProductService albertaProductService = AlbertaProductService.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());

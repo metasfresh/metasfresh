@@ -24,13 +24,9 @@ package de.metas.serviceprovider.timebooking.importer.failed;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemCreateRequest;
-import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +42,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class FailedTimeBookingRepositoryTest
 {
 	private final FailedTimeBookingRepository failedTimeBookingRepository = FailedTimeBookingRepository.newInstanceForUnitTesting();
-	private ExternalSystemRepository externalSystemRepository;
 
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = null;
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
@@ -55,18 +50,9 @@ public class FailedTimeBookingRepositoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
-		externalSystemRepository = new ExternalSystemRepository();
-		MOCK_EXTERNAL_SYSTEM_EVERHOUR = externalSystem(ExternalSystemType.Everhour);
-		MOCK_EXTERNAL_SYSTEM_GITHUB = externalSystem(ExternalSystemType.Github);
-	}
 
-	private ExternalSystem externalSystem(@NonNull final ExternalSystemType value)
-	{
-		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
-				.type(value)
-				.name(value.getValue())
-				.build());
+		MOCK_EXTERNAL_SYSTEM_EVERHOUR = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Everhour);
+		MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 	}
 
 	@Test

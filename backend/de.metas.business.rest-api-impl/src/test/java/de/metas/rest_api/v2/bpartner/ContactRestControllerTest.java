@@ -56,11 +56,9 @@ import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
-import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -119,7 +117,7 @@ class ContactRestControllerTest
 
 		recordChangeLogRepository = new MockLogEntriesRepository();
 
-		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());

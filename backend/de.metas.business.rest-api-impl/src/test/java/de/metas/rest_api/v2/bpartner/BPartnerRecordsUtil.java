@@ -32,7 +32,7 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemId;
-import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -53,6 +53,8 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -195,7 +197,7 @@ public class BPartnerRecordsUtil
 			}
 
 			{
-				final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
+				final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
 				externalReferenceRepository.save(ExternalReference.builder()
 						.externalReference(AD_USER_EXTERNAL_ID)
@@ -228,21 +230,25 @@ public class BPartnerRecordsUtil
 		externalReference.setAD_Org_ID(AD_ORG_ID);
 		externalReference.setType(externalReferenceType);
 		externalReference.setIsActive(true);
-		externalReference.setExternalSystem(EXTERNAL_SYSTEM_NAME);
+		externalReference.setExternalSystem_ID(ExternalSystemTestHelper.createExternalSystemIfNotExists(
+				ExternalSystemType.ofValue(EXTERNAL_SYSTEM_NAME)).getId().getRepoId());
 		externalReference.setVersion("test");
 		externalReference.setReferenced_Record_ID(metasfreshId);
 
 		saveRecord(externalReference);
 	}
 
+	@Nullable
 	public static I_S_ExternalReference getExternalReference(final String externalId, final String externalReferenceType)
 	{
+		final ExternalSystemId externalSystemId = ExternalSystemTestHelper.createExternalSystemIfNotExists(
+			ExternalSystemType.ofValue(EXTERNAL_SYSTEM_NAME)).getId();
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_S_ExternalReference.class)
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalId)
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, externalReferenceType)
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID, AD_ORG_ID)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, EXTERNAL_SYSTEM_NAME)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystemId)
 				.create()
 				.firstOnly(I_S_ExternalReference.class);
 	}

@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
@@ -65,10 +66,10 @@ public class AlbertaProductService
 	@NonNull private final AlbertaProductDAO albertaProductDAO;
 
 	@VisibleForTesting
-	public static AlbertaProductService newInstanceForUnitTesting()
+	public static AlbertaProductService newInstanceForUnitTesting(@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
 		Adempiere.assertUnitTestMode();
-		return new AlbertaProductService(ExternalReferenceRepository.newInstanceForUnitTesting(),
+		return new AlbertaProductService(ExternalReferenceRepository.newInstanceForUnitTesting(externalReferenceTypes),
 				new ExternalSystemRepository(),
 				new AlbertaProductDAO());
 	}

@@ -31,16 +31,30 @@ class ExternalSystemTypeTest
 	@Test
 	void ofLegacyCode()
 	{
-		assertThat(ExternalSystemType.ofLegacyCode("S6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofLegacyCode("Shopware6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofLegacyCode("A")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofLegacyCode("Alberta")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofLegacyCode("WOO")).isEqualTo(ExternalSystemType.WOO);
-		assertThat(ExternalSystemType.ofLegacyCode("Other")).isEqualTo(ExternalSystemType.Other);
-		assertThat(ExternalSystemType.ofLegacyCode("RabbitMQ")).isEqualTo(ExternalSystemType.RabbitMQ);
-		assertThat(ExternalSystemType.ofLegacyCode("GRS")).isEqualTo(ExternalSystemType.WOO);
-		assertThat(ExternalSystemType.ofLegacyCode("LM")).isEqualTo(ExternalSystemType.LeichUndMehl);
-		assertThat(ExternalSystemType.ofLegacyCode("PC")).isEqualTo(ExternalSystemType.PrintClient);
-		assertThat(ExternalSystemType.ofLegacyCode("PCM")).isEqualTo(ExternalSystemType.ProCareManagement);
+		assertThat(ExternalSystemType.ofLegacyCode("S6").isShopware6()).isTrue();
+		assertThat(ExternalSystemType.ofLegacyCode("A").isAlberta()).isTrue();
+		assertThat(ExternalSystemType.ofLegacyCode("WOO").isWOO()).isTrue();
+		assertThat(ExternalSystemType.ofLegacyCode("Other").isOther()).isTrue();
+		assertThat(ExternalSystemType.ofLegacyCode("RabbitMQ").isRabbitMQ()).isTrue();
+		assertThat(ExternalSystemType.ofLegacyCode("GRS").isGRSSignum()).isTrue();
+		assertThat(ExternalSystemType.ofLegacyCode("LM").isLeichUndMehl()).isTrue();
+		assertThat(ExternalSystemType.ofLegacyCode("PC").isPrintClient()).isTrue();
+		assertThat(ExternalSystemType.ofLegacyCode("PCM").isProCareManagement()).isTrue();
+	}
+
+	@Test
+	void ofValue()
+	{
+		assertThat(ExternalSystemType.ofValue("Shopware6").isShopware6()).isTrue();
+		assertThat(ExternalSystemType.ofValue("ALBERTA").isAlberta()).isTrue();
+		assertThat(ExternalSystemType.ofValue("WOO").isWOO()).isTrue();
+		assertThat(ExternalSystemType.ofValue("Other").isOther()).isTrue();
+		assertThat(ExternalSystemType.ofValue("RabbitMQRESTAPI").isRabbitMQ()).isTrue();
+		assertThat(ExternalSystemType.ofValue("GRSSignum").isGRSSignum()).isTrue();
+		assertThat(ExternalSystemType.ofValue("LeichUndMehl").isLeichUndMehl()).isTrue();
+		assertThat(ExternalSystemType.ofValue("PrintingClient").isPrintClient()).isTrue();
+		assertThat(ExternalSystemType.ofValue("ProCareManagement").isProCareManagement()).isTrue();
+		assertThat(ExternalSystemType.ofValue("Github").isGithub()).isTrue();
+		assertThat(ExternalSystemType.ofValue("Everhour").isEverhour()).isTrue();
 	}
 }

@@ -32,13 +32,12 @@ import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
-import de.metas.externalsystem.ExternalSystemTestUtil;
-import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemConfigTestUtil;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
@@ -49,10 +48,8 @@ import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -83,12 +80,12 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 	@BeforeEach
 	public void init() throws IOException
 	{
+		AdempiereTestHelper.get().init();
+
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		final BPartnerCompositeRepository bPartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 
-		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
-
-		AdempiereTestHelper.get().init();
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
 		final ExternalSystemConfigService externalSystemConfigServiceMock = Mockito.mock(ExternalSystemConfigService.class);
 		Mockito.when(externalSystemConfigServiceMock.getTraceId()).thenReturn("traceId");
@@ -114,12 +111,12 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 	public void given_whenGetExportExternalSystemRequest_thenReturnExternalSystemRequest()
 	{
 		// given
-		final I_ExternalSystem_Config externalSystemParentConfig = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getLegacyCode())
+		final I_ExternalSystem_Config externalSystemParentConfig = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.RabbitMQ.getValue())
 				.customParentConfigId(1)
 				.build();
 
-		final I_ExternalSystem_Config_RabbitMQ_HTTP configRabbitMQHttp = ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+		final I_ExternalSystem_Config_RabbitMQ_HTTP configRabbitMQHttp = ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
 				.externalSystemConfigId(externalSystemParentConfig.getExternalSystem_Config_ID())
 				.isSyncExternalReferencesToRabbitMQ(true)
 				.customChildConfigId(2)
@@ -127,7 +124,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 
 		final I_S_ExternalReference externalReference = createExternalReferenceBuilder()
 				.externalReference("ref_1")
-				.externalSystem(ExternalSystemType.Alberta.getLegacyCode())
+				.externalSystem(ExternalSystemType.Alberta.getValue())
 				.type(BPLocationExternalReferenceType.BPARTNER_LOCATION.getCode())
 				.recordId(3)
 				.build();
@@ -154,7 +151,8 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 	{
 		final I_S_ExternalReference externalReferenceRecord = newInstance(I_S_ExternalReference.class);
 		externalReferenceRecord.setExternalReference(externalReference);
-		externalReferenceRecord.setExternalSystem(externalSystem);
+		externalReferenceRecord.setExternalSystem_ID(ExternalSystemTestHelper.createExternalSystemIfNotExists(
+				ExternalSystemType.ofValue(externalSystem)).getId().getRepoId() );
 		externalReferenceRecord.setType(type);
 		externalReferenceRecord.setRecord_ID(recordId);
 		externalReferenceRecord.setAD_Org_ID(OrgId.MAIN.getRepoId());

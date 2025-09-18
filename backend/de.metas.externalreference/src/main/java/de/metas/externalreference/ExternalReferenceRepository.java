@@ -26,8 +26,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalsystem.ExternalSystemType;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
@@ -62,10 +62,10 @@ public class ExternalReferenceRepository
 	private final ExternalSystemRepository externalSystemRepository;
 
 	@VisibleForTesting
-	public static ExternalReferenceRepository newInstanceForUnitTesting()
+	public static ExternalReferenceRepository newInstanceForUnitTesting(@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
 		Adempiere.assertUnitTestMode();
-		return new ExternalReferenceRepository(new ExternalReferenceTypes(), new ExternalSystemRepository());
+		return new ExternalReferenceRepository(externalReferenceTypes, new ExternalSystemRepository());
 	}
 
 	public int getReferencedRecordIdBy(@NonNull final ExternalReferenceQuery query)
@@ -101,7 +101,7 @@ public class ExternalReferenceRepository
 
 		record.setAD_Org_ID(externalReference.getOrgId().getRepoId());
 		record.setExternalReference(externalReference.getExternalReference());
-		record.setExternalSystem(externalReference.getExternalSystem().getType().getValue());
+		record.setExternalSystem_ID(externalReference.getExternalSystem().getId().getRepoId());
 		record.setType(externalReference.getExternalReferenceType().getCode());
 		record.setRecord_ID(externalReference.getRecordId());
 		record.setVersion(externalReference.getVersion());
@@ -176,7 +176,7 @@ public class ExternalReferenceRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, request.getRecordId())
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, request.getExternalReferenceType().getCode())
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, request.getExternalSystem().getType())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, request.getExternalSystem().getId())
 				.create()
 				.firstOnlyOptional(I_S_ExternalReference.class)
 				.map(this::buildExternalReference);
@@ -210,8 +210,8 @@ public class ExternalReferenceRepository
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID,
 						query.getOrgId())
 
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem,
-						query.getExternalSystem().getType())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID,
+						query.getExternalSystem().getId())
 
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type,
 						query.getExternalReferenceType().getCode())
@@ -229,7 +229,7 @@ public class ExternalReferenceRepository
 	{
 		final ICompositeQueryFilter<I_S_ExternalReference> queryFilter = queryBL.createCompositeQueryFilter(I_S_ExternalReference.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, query.getExternalSystem().getType())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, query.getExternalSystem().getId())
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, query.getExternalReferenceType().getCode())
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID, query.getOrgId());
 
@@ -275,12 +275,7 @@ public class ExternalReferenceRepository
 
 	private ExternalSystem extractSystem(@NonNull final I_S_ExternalReference record)
 	{
-		final ExternalSystemType value = ExternalSystemType.ofValue(record.getExternalSystem());
-		return externalSystemRepository.getOptionalByType(value).orElseThrow(() ->
-				new AdempiereException("Unknown ExternalSystem=" + value)
-						.appendParametersToMessage()
-						.setParameter("system", value)
-						.setParameter("S_ExternalReference", record));
+		return externalSystemRepository.getById(ExternalSystemId.ofRepoId(record.getExternalSystem_ID()));
 	}
 
 	private IExternalReferenceType extractType(@NonNull final I_S_ExternalReference record)

@@ -142,7 +142,6 @@ class BpartnerRestControllerTest
 
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 	private CurrencyRepository currencyRepository;
-	private ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
 	private Expect expect;
 
@@ -153,9 +152,9 @@ class BpartnerRestControllerTest
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
-		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
+		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);

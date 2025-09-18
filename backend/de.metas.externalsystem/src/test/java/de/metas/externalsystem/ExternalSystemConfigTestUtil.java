@@ -36,7 +36,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @UtilityClass
-public class ExternalSystemTestUtil
+public class ExternalSystemConfigTestUtil
 {
 	@NonNull
 	@Builder(builderMethodName = "createI_ExternalSystem_ConfigBuilder", builderClassName = "I_ExternalSystem_ConfigBuilder")

@@ -29,8 +29,7 @@ import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemCreateRequest;
-import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -70,7 +69,6 @@ import java.util.List;
 @ExtendWith(AdempiereTestWatcher.class)
 class IssueImporterServiceTest
 {
-	private ExternalSystemRepository externalSystemRepository;
 	private IssueImporterService issueImporterService;
 	private IssueRepository issueRepository;
 
@@ -81,8 +79,7 @@ class IssueImporterServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		externalSystemRepository = new ExternalSystemRepository();
-		MOCK_EXTERNAL_SYSTEM_GITHUB = externalSystem(ExternalSystemType.Github);
+		MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -93,7 +90,7 @@ class IssueImporterServiceTest
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
 
-		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
 		issueImporterService = new IssueImporterService(
 				new ImportQueue<>(100, "logPrefix"),
@@ -104,14 +101,6 @@ class IssueImporterServiceTest
 				adReferenceService,
 				new IssueLabelRepository(queryBL)
 		);
-	}
-
-	private ExternalSystem externalSystem(ExternalSystemType value)
-	{
-		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
-				.type(value)
-				.name(value.getValue())
-				.build());
 	}
 
 	@Nested

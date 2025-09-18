@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem;
 
-import com.google.common.collect.ImmutableBiMap;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.I_ExternalSystem;
@@ -30,6 +30,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -38,6 +39,13 @@ import java.util.Optional;
 @Repository
 public class ExternalSystemRepository
 {
+	@VisibleForTesting
+	public static ExternalSystemRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ExternalSystemRepository();
+	}
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<Integer, ExternalSystemMap> cache = CCache.<Integer, ExternalSystemMap>builder()

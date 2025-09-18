@@ -23,34 +23,43 @@
 package de.metas.serviceprovider.external.project;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class ExternalProjectRepository
 {
-	private final IQueryBL queryBL;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ExternalSystemRepository externalSystemRepository;
 
-	public ExternalProjectRepository(final IQueryBL queryBL)
+	public static ExternalProjectRepository newInstanceForUnitTesting()
 	{
-		this.queryBL = queryBL;
+		Adempiere.assertUnitTestMode();
+		return new ExternalProjectRepository(ExternalSystemRepository.newInstanceForUnitTesting());
 	}
 
 	@NonNull
-	public ImmutableList<ExternalProjectReference> getByExternalSystemSystemValue(@NonNull final ExternalSystemType externalSystem)
+	public ImmutableList<ExternalProjectReference> getByExternalSystemType(@NonNull final ExternalSystemType externalSystemType)
 	{
+		final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, externalSystem.getValue())
+				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId().getRepoId())
 				.orderBy(I_S_ExternalProjectReference.COLUMNNAME_SeqNo)
 				.create()
 				.list()
@@ -64,7 +73,7 @@ public class ExternalProjectRepository
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, getExternalProjectRequest.getExternalSystem().getType())
+				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalSystem_ID, getExternalProjectRequest.getExternalSystem().getId().getRepoId())
 
 				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalReference, getExternalProjectRequest.getExternalReference())
 

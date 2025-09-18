@@ -28,8 +28,8 @@ import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemCreateRequest;
 import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
@@ -90,14 +90,11 @@ import static org.mockito.Mockito.when;
 public class GithubImporterServiceTest
 {
 	private final GithubClient mockGithubClient = Mockito.mock(GithubClient.class);
-	private final ImportQueue<ImportIssueInfo> importIssuesQueue = new ImportQueue<>(ISSUE_QUEUE_CAPACITY, IMPORT_LOG_MESSAGE_PREFIX);
+	private ImportQueue<ImportIssueInfo> importIssuesQueue;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private ExternalReferenceRepository externalReferenceRepository;
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
-	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 	private final LabelService labelService = new LabelService();
-	private ExternalSystemRepository externalSystemRepository;
-	private final GithubImporterService githubImporterService = new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService, externalSystemRepository);
+	private GithubImporterService githubImporterService;
 
 
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
@@ -106,26 +103,17 @@ public class GithubImporterServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		externalSystemRepository = new ExternalSystemRepository();
-		MOCK_EXTERNAL_SYSTEM_GITHUB = externalSystem(ExternalSystemType.Github);
+		final ExternalProjectRepository externalProjectRepository = ExternalProjectRepository.newInstanceForUnitTesting();
+		importIssuesQueue = new ImportQueue<>(ISSUE_QUEUE_CAPACITY, IMPORT_LOG_MESSAGE_PREFIX);
+		githubImporterService = new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository,
+				new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting()), externalProjectRepository,
+				labelService, ExternalSystemRepository.newInstanceForUnitTesting());
+		MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(MOCK_EXTERNAL_REFERENCE_TYPE);
 
-		//TODO check
-		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM);
-		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM_1);
-
-		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
-	}
-
-	private ExternalSystem externalSystem(ExternalSystemType value)
-	{
-		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
-				.type(value)
-				.name(value.getValue())
-				.build());
+		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(externalReferenceTypes);
 	}
 
 	@Test
@@ -284,7 +272,7 @@ public class GithubImporterServiceTest
 	{
 		final I_S_ExternalProjectReference projectRecord = InterfaceWrapperHelper.newInstance(I_S_ExternalProjectReference.class);
 		projectRecord.setProjectType(MOCK_EXTERNAL_PROJECT_TYPE.getValue());
-		projectRecord.setExternalSystem(MOCK_EXTERNAL_SYSTEM_GITHUB.getType().getValue());
+		projectRecord.setExternalSystem_ID(MOCK_EXTERNAL_SYSTEM_GITHUB.getId().getRepoId());
 		projectRecord.setAD_Org_ID(MOCK_ORG_ID.getRepoId());
 		projectRecord.setC_Project_ID(MOCK_PROJECT_ID.getRepoId());
 		projectRecord.setExternalReference(MOCK_EXTERNAL_REFERENCE);

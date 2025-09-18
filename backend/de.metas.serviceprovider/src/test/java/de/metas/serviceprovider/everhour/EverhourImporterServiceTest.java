@@ -31,8 +31,8 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemCreateRequest;
 import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
@@ -81,7 +81,6 @@ public class EverhourImporterServiceTest
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private ExternalSystemRepository externalSystemRepository;
 	private EverhourClient mockEverhourClient;
 
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = null;
@@ -93,37 +92,28 @@ public class EverhourImporterServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemRepository = new ExternalSystemRepository();
 
-		MOCK_EXTERNAL_SYSTEM_EVERHOUR = externalSystem(ExternalSystemType.Everhour);
-		MOCK_EXTERNAL_SYSTEM_GITHUB = externalSystem(ExternalSystemType.Github);
+		MOCK_EXTERNAL_SYSTEM_EVERHOUR = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Everhour);
+		MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(ExternalUserReferenceType.USER_ID);
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
 
 		failedTimeBookingRepository = FailedTimeBookingRepository.newInstanceForUnitTesting();
-		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting();
+		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(externalReferenceTypes);
 
 		mockEverhourClient = Mockito.mock(EverhourClient.class);
 
 		everhourImporterService = new EverhourImporterService(
 				mockEverhourClient,
-				externalSystemRepository,
+				ExternalSystemRepository.newInstanceForUnitTesting(),
 				externalReferenceRepository,
 				timeBookingImportQueue,
 				failedTimeBookingRepository,
 				objectMapper,
 				trxManager
 		);
-	}
-
-	private ExternalSystem externalSystem(ExternalSystemType type)
-	{
-		return externalSystemRepository.create(ExternalSystemCreateRequest.builder()
-				.type(type)
-				.name(type.getValue())
-				.build());
 	}
 
 	/**
