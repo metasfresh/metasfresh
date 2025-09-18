@@ -35,7 +35,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "countryCode": "countryRecord.countryCode",
         "ephemeral": false,
         "handoverLocation": false,
-        "metasfreshId": 100017,
+        "metasfreshId": 1000000,
         "poBox": "poBox",
         "postal": "5040",
         "remitTo": false,
@@ -65,7 +65,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "C_BPartner_ID"
           ],
           "keysByColumnName": {
-            "C_BPartner_ID": 100018
+            "C_BPartner_ID": 1000000
           }
         },
         "tableName": "C_BPartner"
@@ -75,7 +75,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "customer": false,
       "excludeFromPromotions": false,
       "groupId": 15,
-      "id": 100018,
+      "id": 1000000,
       "identifiedByExternalReference": false,
       "language": {
         "_mediaSize": {
@@ -115,7 +115,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
               "AD_User_ID"
             ],
             "keysByColumnName": {
-              "AD_User_ID": 100023
+              "AD_User_ID": 1000000
             }
           },
           "tableName": "AD_User"
@@ -131,7 +131,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "email": "c1_email@email.net",
         "handles": [ ],
-        "id": "100018-100023",
+        "id": "1000000-1000000",
         "invoiceEmailEnabled": true,
         "membershipContact": false,
         "name": "c1_name",
@@ -153,7 +153,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
               "AD_User_ID"
             ],
             "keysByColumnName": {
-              "AD_User_ID": 100024
+              "AD_User_ID": 1000001
             }
           },
           "tableName": "AD_User"
@@ -169,7 +169,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "email": "c2_email@email.net",
         "handles": [ ],
-        "id": "100018-100024",
+        "id": "1000000-1000001",
         "invoiceEmailEnabled": true,
         "membershipContact": false,
         "name": "c2_name",
@@ -195,7 +195,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName": {
-              "C_BPartner_Location_ID": 100020
+              "C_BPartner_Location_ID": 1000000
             }
           },
           "tableName": "C_BPartner_Location"
@@ -203,13 +203,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "city": "l1_city",
         "countryCode": "CH",
         "ephemeral": false,
-        "existingLocationId": 100019,
+        "existingLocationId": 1000001,
         "gln": "l1_gln",
         "handOverLocation": false,
         "handles": [ ],
         "id": {
-          "bpartnerId": 100018,
-          "repoId": 100020
+          "bpartnerId": 1000000,
+          "repoId": 1000000
         },
         "locationType": {
           "billTo": false,
@@ -240,7 +240,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName": {
-              "C_BPartner_Location_ID": 100022
+              "C_BPartner_Location_ID": 1000001
             }
           },
           "tableName": "C_BPartner_Location"
@@ -248,13 +248,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "city": "l2_city",
         "countryCode": "DE",
         "ephemeral": false,
-        "existingLocationId": 100021,
+        "existingLocationId": 1000002,
         "gln": "l2_gln",
         "handOverLocation": false,
         "handles": [ ],
         "id": {
-          "bpartnerId": 100018,
-          "repoId": 100022
+          "bpartnerId": 1000000,
+          "repoId": 1000001
         },
         "locationType": {
           "billTo": false,
@@ -297,7 +297,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 100014,
+        "currencyId": 1000000,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -389,7 +389,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
               "AD_User_ID"
             ],
             "keysByColumnName": {
-              "AD_User_ID": 100016
+              "AD_User_ID": 1000000
             }
           },
           "tableName": "AD_User"
@@ -405,7 +405,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         },
         "email": "newContact_email@email.net",
         "handles": [ ],
-        "id": "20-100016",
+        "id": "20-1000000",
         "invoiceEmailEnabled": true,
         "membershipContact": false,
         "name": "newContact_name",
@@ -440,7 +440,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "countryCode": "countryRecord.countryCode",
         "district": "postalRecord.district",
         "ephemeral": false,
-        "existingLocationId": 100012,
+        "existingLocationId": 1000000,
         "gln": "bpartnerLocationRecord.gln",
         "handOverLocation": false,
         "handles": [ ],
@@ -489,7 +489,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 100014,
+        "currencyId": 1000000,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -581,7 +581,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
               "AD_User_ID"
             ],
             "keysByColumnName": {
-              "AD_User_ID": 100016
+              "AD_User_ID": 1000000
             }
           },
           "tableName": "AD_User"
@@ -596,7 +596,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault": false
         },
         "handles": [ ],
-        "id": "20-100016",
+        "id": "20-1000000",
         "membershipContact": false,
         "name": "jsonContact.name-UPDATED",
         "newsletter": false,
@@ -629,7 +629,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "countryCode": "countryRecord.countryCode",
         "district": "postalRecord.district",
         "ephemeral": false,
-        "existingLocationId": 100012,
+        "existingLocationId": 1000000,
         "gln": "bpartnerLocationRecord.gln",
         "handOverLocation": false,
         "handles": [ ],
@@ -678,7 +678,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 100014,
+        "currencyId": 1000000,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -783,7 +783,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "countryCode": "countryRecord.countryCode",
         "district": "postalRecord.district",
         "ephemeral": false,
-        "existingLocationId": 100012,
+        "existingLocationId": 1000000,
         "gln": "bpartnerLocationRecord.gln",
         "handOverLocation": false,
         "handles": [ ],
@@ -832,7 +832,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 100014,
+        "currencyId": 1000000,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -937,7 +937,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "countryCode": "countryRecord.countryCode",
         "district": "postalRecord.district",
         "ephemeral": false,
-        "existingLocationId": 100012,
+        "existingLocationId": 1000000,
         "gln": "bpartnerLocationRecord.gln",
         "handOverLocation": false,
         "handles": [ ],
@@ -974,7 +974,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName": {
-              "C_BPartner_Location_ID": 100018
+              "C_BPartner_Location_ID": 1000000
             }
           },
           "tableName": "C_BPartner_Location"
@@ -982,13 +982,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "city": "newLocation_city",
         "countryCode": "DE",
         "ephemeral": false,
-        "existingLocationId": 100017,
+        "existingLocationId": 1000001,
         "gln": "newLocation_gln",
         "handOverLocation": false,
         "handles": [ ],
         "id": {
           "bpartnerId": 20,
-          "repoId": 100018
+          "repoId": 1000000
         },
         "locationType": {
           "billTo": false,
@@ -1183,7 +1183,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
-        "currencyId": 100014,
+        "currencyId": 1000000,
         "iban": "INITIAL-IBAN-1",
         "metasfreshBPartnerId": 20,
         "metasfreshId": 50
@@ -1283,7 +1283,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
-        "currencyId": 100014,
+        "currencyId": 1000000,
         "iban": "INITIAL-IBAN-1",
         "metasfreshBPartnerId": 20,
         "metasfreshId": 50
@@ -1383,7 +1383,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
-        "currencyId": 100014,
+        "currencyId": 1000000,
         "iban": "INITIAL-IBAN-1",
         "metasfreshBPartnerId": 20,
         "metasfreshId": 50
@@ -1504,7 +1504,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 100014,
+            "currencyId": 1000000,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 20,
             "metasfreshId": 50
@@ -1600,7 +1600,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 100014,
+            "currencyId": 1000000,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 21,
             "metasfreshId": 51
@@ -1709,7 +1709,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 100014,
+            "currencyId": 1000000,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 22,
             "metasfreshId": 52
@@ -1805,7 +1805,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 100014,
+            "currencyId": 1000000,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 23,
             "metasfreshId": 53
@@ -1914,7 +1914,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 100014,
+            "currencyId": 1000000,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 24,
             "metasfreshId": 54
