@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
@@ -164,7 +165,7 @@ public class StepDefUtil
 
 		try
 		{
-			while (deadLineMillis > System.currentTimeMillis())
+			while (deadLineMillis > SystemTime.millis())// replaced System.currentTimeMillis())
 			{
 				//noinspection BusyWait
 				Thread.sleep(checkingIntervalMs);
