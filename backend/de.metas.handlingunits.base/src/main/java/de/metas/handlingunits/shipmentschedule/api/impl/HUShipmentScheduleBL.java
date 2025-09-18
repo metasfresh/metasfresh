@@ -54,7 +54,6 @@ import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBu
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
-import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -192,7 +191,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		// Create ShipmentSchedule Qty Picked record
 		final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = shipmentScheduleAllocBL.createNewQtyPickedRecordNoSave(shipmentSchedule, request.getQtyPicked(), I_M_ShipmentSchedule_QtyPicked.class);
-		qtyPickedRecord.setM_Picking_Job_Schedule_ID(PickingJobScheduleId.toRepoId(scheduleId.getJobScheduleId()));
+		if (scheduleId.getJobScheduleId() != null)
+		{
+			qtyPickedRecord.setM_Picking_Job_Schedule_ID(scheduleId.getJobScheduleId().getRepoId());
+		}
 		qtyPickedRecord.setIsAnonymousHuPickedOnTheFly(request.isAnonymousHuPickedOnTheFly()); // mark this as an 'anonymousOnTheFly` pick
 		setHUs(qtyPickedRecord, husPair); // Set HU specific stuff
 		ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPickedRecord, huContext).updateQtyTUAndQtyLU();
