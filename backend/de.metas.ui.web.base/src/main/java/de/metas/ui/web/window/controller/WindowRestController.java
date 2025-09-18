@@ -73,6 +73,7 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.NewRecordDescriptor.ProcessNewRecordDocumentRequest;
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
@@ -924,10 +925,6 @@ public class WindowRestController
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 
-		final TableRecordReference triggeringRecordRef = request.getTriggeringWindowId() != null && request.getTriggeringDocumentId() != null
-				? documentCollection.getTableRecordReference(DocumentPath.rootDocumentPath(request.getTriggeringWindowId(), request.getTriggeringDocumentId()))
-				: null;
-
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
 			document.saveIfValidAndHasChanges();
@@ -936,17 +933,16 @@ public class WindowRestController
 				throw new AdempiereException("Not saved");
 			}
 
-			final NewRecordContext newRecordContext = NewRecordContext.builder()
-					.loginOrgId(userSession.getOrgId())
-					.loggedUserId(userSession.getLoggedUserId())
-					.loginLanguage(userSession.getAD_Language())
-					.triggeringRecordRef(triggeringRecordRef)
-					.triggeringField(request.getTriggeringField())
-					.build();
-
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
-					.processNewRecordDocument(document, newRecordContext);
+					.processNewRecordDocument(ProcessNewRecordDocumentRequest.builder()
+							.document(document)
+							.loginOrgId(userSession.getOrgId())
+							.loggedUserId(userSession.getLoggedUserId())
+							.loginLanguage(userSession.getAD_Language())
+							.triggeringDocumentPath(request.getTriggeringDocumentPath())
+							.triggeringField(request.getTriggeringField())
+							.build());
 		}));
 	}
 
