@@ -22,4 +22,3 @@ FROM MD_Available_For_Sales availableForSales
                     GROUP BY e.record_id) externalReference ON externalReference.record_id = product.m_product_id
 ORDER BY availableForSales.m_product_id
 ;
-
