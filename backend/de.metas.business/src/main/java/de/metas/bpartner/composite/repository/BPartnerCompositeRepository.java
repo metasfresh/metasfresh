@@ -67,10 +67,7 @@ public class BPartnerCompositeRepository
 	private final UserRoleRepository userRoleRepository;
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
 
-	public BPartnerCompositeRepository(
-			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final LogEntriesRepository recordChangeLogRepository,
-			@NonNull final UserRoleRepository userRoleRepository)
+	public BPartnerCompositeRepository(@NonNull final IBPartnerBL bpartnerBL, @NonNull final LogEntriesRepository recordChangeLogRepository, @NonNull final UserRoleRepository userRoleRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.recordChangeLogRepository = recordChangeLogRepository;
@@ -139,9 +136,7 @@ public class BPartnerCompositeRepository
 	{
 		final ImmutableSet<BPartnerContactId> contactIdsToReturn = ImmutableSet.copyOf(page.getItems());
 
-		final Set<BPartnerId> bpartnerIds = contactIdsToReturn.stream()
-				.map(BPartnerContactId::getBpartnerId)
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<BPartnerId> bpartnerIds = contactIdsToReturn.stream().map(BPartnerContactId::getBpartnerId).collect(ImmutableSet.toImmutableSet());
 		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(bpartnerIds);
 
 		for (final BPartnerComposite bpartnerComposite : bpartnerComposites)
@@ -165,9 +160,7 @@ public class BPartnerCompositeRepository
 		return extractContactFilteredBPartnerComposites(page);
 	}
 
-	private QueryResultPage<BPartnerId> retrievePageAllEntities(
-			@Nullable final SinceQuery sinceQuery,
-			@Nullable final String nextPageId)
+	private QueryResultPage<BPartnerId> retrievePageAllEntities(@Nullable final SinceQuery sinceQuery, @Nullable final String nextPageId)
 	{
 		if (Check.isBlank(nextPageId))
 		{
@@ -186,19 +179,13 @@ public class BPartnerCompositeRepository
 		else
 		{
 			// doesn't matter if we create the page from I_C_BPartner_Recent_V or from I_C_BPartner_Recent_With_ExternalSystem_V
-			return queryBL
-					.retrieveNextPage(I_C_BPartner_Recent_V.class, nextPageId)
-					.mapTo(this::extractBPartnerId);
+			return queryBL.retrieveNextPage(I_C_BPartner_Recent_V.class, nextPageId).mapTo(this::extractBPartnerId);
 		}
 	}
 
-	private QueryResultPage<BPartnerId> retrieveIdsWithoutExternalSystem(
-			@NonNull final SinceQuery sinceQuery,
-			@NonNull final Timestamp timestamp)
+	private QueryResultPage<BPartnerId> retrieveIdsWithoutExternalSystem(@NonNull final SinceQuery sinceQuery, @NonNull final Timestamp timestamp)
 	{
-		final IQueryBuilder<I_C_BPartner_Recent_V> bpartnerRecentQueryBuilder = queryBL
-				.createQueryBuilder(I_C_BPartner_Recent_V.class)
-				.addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp);
+		final IQueryBuilder<I_C_BPartner_Recent_V> bpartnerRecentQueryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Recent_V.class).addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp);
 
 		final OrgId orgId = sinceQuery.getOrgId();
 		if (sinceQuery.getOrgId() != null)
@@ -206,31 +193,7 @@ public class BPartnerCompositeRepository
 			bpartnerRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
 		}
 
-		final QueryResultPage<I_C_BPartner_Recent_V> page = bpartnerRecentQueryBuilder
-				.create()
-				.paginate(I_C_BPartner_Recent_V.class, sinceQuery.getPageSize());
-
-		return page.mapTo(this::extractBPartnerId);
-	}
-
-	private QueryResultPage<BPartnerId> retrieveIdsWithExternalSystem(
-			@NonNull final SinceQuery sinceQuery,
-			@NonNull final Timestamp timestamp)
-	{
-		final IQueryBuilder<I_C_BPartner_Recent_With_ExternalSystem_V> queryBuilder = queryBL
-				.createQueryBuilder(I_C_BPartner_Recent_With_ExternalSystem_V.class)
-				.addEqualsFilter(I_C_BPartner_Recent_With_ExternalSystem_V.COLUMNNAME_ExternalSystem, sinceQuery.getExternalSystem())
-				.addCompareFilter(I_C_BPartner_Recent_With_ExternalSystem_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp);
-
-		final OrgId orgId = sinceQuery.getOrgId();
-		if (sinceQuery.getOrgId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
-		}
-
-		final QueryResultPage<I_C_BPartner_Recent_With_ExternalSystem_V> page = queryBuilder
-				.create()
-				.paginate(I_C_BPartner_Recent_With_ExternalSystem_V.class, sinceQuery.getPageSize());
+		final QueryResultPage<I_C_BPartner_Recent_V> page = bpartnerRecentQueryBuilder.create().paginate(I_C_BPartner_Recent_V.class, sinceQuery.getPageSize());
 
 		return page.mapTo(this::extractBPartnerId);
 	}
@@ -240,14 +203,27 @@ public class BPartnerCompositeRepository
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
 
+	private QueryResultPage<BPartnerId> retrieveIdsWithExternalSystem(@NonNull final SinceQuery sinceQuery, @NonNull final Timestamp timestamp)
+	{
+		final IQueryBuilder<I_C_BPartner_Recent_With_ExternalSystem_V> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Recent_With_ExternalSystem_V.class).addEqualsFilter(I_C_BPartner_Recent_With_ExternalSystem_V.COLUMNNAME_ExternalSystem, sinceQuery.getExternalSystem()).addCompareFilter(I_C_BPartner_Recent_With_ExternalSystem_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp);
+
+		final OrgId orgId = sinceQuery.getOrgId();
+		if (sinceQuery.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
+		final QueryResultPage<I_C_BPartner_Recent_With_ExternalSystem_V> page = queryBuilder.create().paginate(I_C_BPartner_Recent_With_ExternalSystem_V.class, sinceQuery.getPageSize());
+
+		return page.mapTo(this::extractBPartnerId);
+	}
+
 	private BPartnerId extractBPartnerId(@NonNull final I_C_BPartner_Recent_With_ExternalSystem_V record)
 	{
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
 
-	private QueryResultPage<BPartnerContactId> retrievePageOnlyContactEntities(
-			@Nullable final SinceQuery sinceQuery,
-			@Nullable final String nextPageId)
+	private QueryResultPage<BPartnerContactId> retrievePageOnlyContactEntities(@Nullable final SinceQuery sinceQuery, @Nullable final String nextPageId)
 	{
 		final QueryResultPage<I_AD_User> page;
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -255,12 +231,7 @@ public class BPartnerCompositeRepository
 		{
 			Check.assumeNotNull(sinceQuery, "if nextPageId is blank, then sinceQuery shall not be null");
 			final Timestamp timestamp = Timestamp.from(sinceQuery.getSinceInstant());
-			final IQueryBuilder<I_AD_User> contactRecentQueryBuilder = queryBL
-					.createQueryBuilder(I_AD_User.class)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient()
-					.addCompareFilter(I_AD_User.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp)
-					.addNotEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, null);
+			final IQueryBuilder<I_AD_User> contactRecentQueryBuilder = queryBL.createQueryBuilder(I_AD_User.class).addOnlyActiveRecordsFilter().addOnlyContextClient().addCompareFilter(I_AD_User.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp).addNotEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, null);
 
 			final OrgId orgId = sinceQuery.getOrgId();
 			if (sinceQuery.getOrgId() != null)
@@ -268,9 +239,7 @@ public class BPartnerCompositeRepository
 				contactRecentQueryBuilder.addEqualsFilter(I_C_BPartner_Recent_V.COLUMNNAME_AD_Org_ID, orgId);
 			}
 
-			page = contactRecentQueryBuilder
-					.create()
-					.paginate(I_AD_User.class, sinceQuery.getPageSize());
+			page = contactRecentQueryBuilder.create().paginate(I_AD_User.class, sinceQuery.getPageSize());
 		}
 		else
 		{
@@ -291,9 +260,7 @@ public class BPartnerCompositeRepository
 		final ImmutableList<BPartnerComposite> byQuery = getByQuery(query);
 		if (byQuery.size() > 1)
 		{
-			throw new AdempiereException("The given query needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
-					.appendParametersToMessage()
-					.setParameter("query", query);
+			throw new AdempiereException("The given query needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size()).appendParametersToMessage().setParameter("query", query);
 		}
 		return Optional.ofNullable(CollectionUtils.singleElementOrNull(byQuery));
 	}
@@ -318,10 +285,7 @@ public class BPartnerCompositeRepository
 
 	private ImmutableMap<BPartnerId, BPartnerComposite> retrieveByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
 	{
-		final BPartnerCompositesLoader loader = BPartnerCompositesLoader.builder()
-				.recordChangeLogRepository(recordChangeLogRepository)
-				.userRoleRepository(userRoleRepository)
-				.build();
+		final BPartnerCompositesLoader loader = BPartnerCompositesLoader.builder().recordChangeLogRepository(recordChangeLogRepository).userRoleRepository(userRoleRepository).build();
 
 		return loader.retrieveByIds(bpartnerIds);
 	}
