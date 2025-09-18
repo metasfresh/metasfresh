@@ -28,10 +28,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.ExternalId;
-import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.ExternalReferenceQuery;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
@@ -256,14 +255,14 @@ public class GithubImporterService implements IssueImporter
 			);
 		}
 
-		processLabels(issue.getLabelList(), importInfoBuilder.build(), importIssuesRequest.getOrgId());
+		processLabels(issue.getLabelList(), importInfoBuilder, importIssuesRequest.getOrgId());
 
 		if (ResourceState.CLOSED.getValue().equals(issue.getState()))
 		{
 			importInfoBuilder.status(Status.CLOSED);
 		}
 
-		lookForParentIssue(importIssuesRequest, importInfoBuilder.build(), seenExternalIdsByKey, issue.getBody());
+		lookForParentIssue(importIssuesRequest, importInfoBuilder, seenExternalIdsByKey, issue.getBody());
 
 		return Optional.of(importInfoBuilder.build());
 	}
@@ -316,11 +315,10 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	private void lookForParentIssue(@NonNull final ImportIssuesRequest importIssuesRequest,
-			                        @NonNull final ImportIssueInfo issueInfo,
+			                        @NonNull final ImportIssueInfo.ImportIssueInfoBuilder issueInfoBuilder,
 			                        @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey,
 			                        @Nullable final String description)
 	{
-		final ImportIssueInfo.ImportIssueInfoBuilder issueInfoBuilder = issueInfo.toBuilder();
 		final GithubIssueLinkMatcher linkMatcher = importIssuesRequest.getGithubIssueLinkMatcher();
 
 		if (linkMatcher == null || Check.isBlank(description))
@@ -451,10 +449,9 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	private void processLabels(final List<Label> labelList,
-			@NonNull final ImportIssueInfo importIssueInfo,
+			@NonNull final ImportIssueInfo.ImportIssueInfoBuilder importIssueInfoBuilder,
 			@NonNull final OrgId orgId)
 	{
-		final ImportIssueInfo.ImportIssueInfoBuilder importIssueInfoBuilder = importIssueInfo.toBuilder();
 		final ImmutableList<ProcessedLabel> processedLabels = labelService.processLabels(labelList);
 
 		final List<IssueLabel> issueLabelList = new ArrayList<>();
