@@ -58,7 +58,7 @@ public class ExternalSystem_Config_LeichMehl
 
 		if (!ExternalSystemType.LeichUndMehl.getValue().equals(parentType))
 		{
-			throw new AdempiereException("Invalid external system type!");
+			throw new AdempiereException("Invalid external system type: " + parentType);
 		}
 	}
 }
