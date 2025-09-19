@@ -31,10 +31,7 @@ import lombok.Value;
 @Builder
 public class GetExternalReferenceByRecordIdReq
 {
-	@NonNull
-	Integer recordId;
-	@NonNull
-	IExternalReferenceType externalReferenceType;
-	@NonNull
-	ExternalSystem externalSystem;
+	@NonNull Integer recordId;
+	@NonNull IExternalReferenceType externalReferenceType;
+	@NonNull ExternalSystem externalSystem;
 }

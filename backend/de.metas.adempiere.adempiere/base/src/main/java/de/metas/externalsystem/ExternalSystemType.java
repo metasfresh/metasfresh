@@ -79,12 +79,6 @@ public final class ExternalSystemType
 	@JsonValue
 	public String toJson() {return getValue();}
 
-	@NonNull
-	public String getLegacyCode()
-	{
-		return LEGACY_CODES.get(this);
-	}
-
 	public boolean isAlberta() {return Alberta.equals(this);}
 
 	public boolean isRabbitMQ() {return RabbitMQ.equals(this);}

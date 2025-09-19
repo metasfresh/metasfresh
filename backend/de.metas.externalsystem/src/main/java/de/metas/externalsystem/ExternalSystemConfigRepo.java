@@ -89,15 +89,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static de.metas.externalsystem.ExternalSystemType.Alberta;
-import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
-import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
-import static de.metas.externalsystem.ExternalSystemType.Other;
-import static de.metas.externalsystem.ExternalSystemType.ProCareManagement;
-import static de.metas.externalsystem.ExternalSystemType.RabbitMQ;
-import static de.metas.externalsystem.ExternalSystemType.Shopware6;
-import static de.metas.externalsystem.ExternalSystemType.WOO;
-
 @Repository
 @RequiredArgsConstructor
 public class ExternalSystemConfigRepo
