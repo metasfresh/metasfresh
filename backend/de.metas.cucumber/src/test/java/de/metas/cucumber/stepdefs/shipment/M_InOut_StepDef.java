@@ -54,6 +54,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -66,6 +67,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -99,6 +101,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -218,11 +221,11 @@ public class M_InOut_StepDef
 	{
 		DataTableRows.of(table).forEach(tableRow ->
 				{
-					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
-					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
+					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
+					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 
-					invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.ofRows(ImmutableList.of(tableRow)));
+					invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.of(tableRow));
 				}
 		);
 	}
@@ -244,7 +247,7 @@ public class M_InOut_StepDef
 			@NonNull final DataTableRows dataTable)
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> qtysToDeliverOverride = ImmutableMap.builder();
-		final ImmutableList.Builder<ShipmentScheduleId> schedIdsToEnqueue = ImmutableList.builder();
+		final ArrayList<ShipmentScheduleId> schedIdsToEnqueue = new ArrayList<>();
 		dataTable.forEach(tableRow ->
 				{
 					final StepDefDataIdentifier shipmentScheduleIdentifier = tableRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
@@ -252,7 +255,7 @@ public class M_InOut_StepDef
 					final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 					schedIdsToEnqueue.add(shipmentScheduleId);
 
-					tableRow.getAsOptionalBigDecimal(ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override)
+					tableRow.getAsOptionalBigDecimal(ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override)
 							.ifPresent(qtyToDeliverOverride ->
 							{
 								final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
@@ -261,20 +264,15 @@ public class M_InOut_StepDef
 				}
 		);
 
-		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, schedIdsToEnqueue.build());
-
-		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
+		final ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(pinstanceDAO.createSelectionId())
-				.queryFilters(queryFilter)
+				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(schedIdsToEnqueue))
 				.qtysToDeliverOverride(QtyToDeliverMap.ofMap(qtysToDeliverOverride.build()))
 				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
 				.completeShipments(StringUtils.toBoolean(isCompleteShipments))
 				.isShipmentDateToday(StringUtils.toBoolean(isShipToday));
 
-		final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
-				.setContext(Env.getCtx(), Trx.TRXNAME_None)
+		final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance()
 				.createWorkpackages(workPackageParametersBuilder.build());
 
 		assertThat(result.getEnqueuedPackagesCount()).isGreaterThanOrEqualTo(1);

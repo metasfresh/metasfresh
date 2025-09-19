@@ -3,7 +3,6 @@ package de.metas.handlingunits.picking.plan.generator;
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -13,6 +12,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -22,7 +23,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.Packageable;
-import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class CreatePickingPlanCommand_UsingCUs_Test
@@ -138,7 +139,9 @@ class CreatePickingPlanCommand_UsingCUs_Test
 				.huReservationService(huReservationService)
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.request(CreatePickingPlanRequest.builder()
-						.packageables(PackageableList.ofCollection(ImmutableList.copyOf(packageables)))
+						.packageables(Stream.of(packageables)
+								.map(ScheduledPackageable::ofPackageable)
+								.collect(ScheduledPackageableList.collect()))
 						.build())
 				.fallbackLotNumberToHUValue(false) // keep lotNumbers null, just to keep our test assertions short
 				.build().execute();

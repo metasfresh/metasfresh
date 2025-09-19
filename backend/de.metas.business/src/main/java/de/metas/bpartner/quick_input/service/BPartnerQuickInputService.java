@@ -260,6 +260,7 @@ public class BPartnerQuickInputService
 	 * <p>
 	 * Task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
+
 	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template,
 												 @NonNull final NewRecordContext newRecordContext)
 	{
@@ -573,6 +574,29 @@ public class BPartnerQuickInputService
 				.fax(template.getC_BPartner_Location_Fax())
 				.email(template.getC_BPartner_Location_Email())
 				.existingLocationId(uniqueLocationIdOfBPartnerTemplate)
+				.build();
+	}
+
+	private @Nullable
+	BPartnerLocation getLocationFromBPartnerLocationTemplate(final I_C_BPartner_Location_QuickInput template)
+	{
+		final LocationId locationId = LocationId.ofRepoIdOrNull(template.getC_Location_ID());
+
+		if (locationId == null)
+		{
+			return null;
+		}
+
+		return BPartnerLocation.builder()
+				.locationType(BPartnerLocationType.builder()
+						.billTo(template.isBillTo())
+						.billToDefault(template.isBillToDefault())
+						.shipTo(template.isShipTo())
+						.shipToDefault(template.isShipToDefault())
+						.build())
+				.name(".")
+				.ephemeral(template.isOneTime())
+				.existingLocationId(locationId)
 				.build();
 	}
 

@@ -2916,6 +2916,10 @@ public class DB
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}
+		catch (final DBException ex)
+		{
+			throw ex.setSqlIfAbsent(sql.toString(), sqlParams);
+		}
 		finally
 		{
 			close(rs, pstmt);

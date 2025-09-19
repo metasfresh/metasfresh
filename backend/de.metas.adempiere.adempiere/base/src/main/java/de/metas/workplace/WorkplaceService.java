@@ -41,6 +41,8 @@ public class WorkplaceService
 	@NonNull
 	private final WorkplaceUserAssignRepository workplaceUserAssignRepository;
 
+	public Workplace create(@NonNull final WorkplaceCreateRequest request) {return workplaceRepository.create(request);}
+
 	@NonNull
 	public Workplace getById(@NonNull final WorkplaceId id)
 	{

@@ -11,19 +11,20 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -58,42 +59,105 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleAllocDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	/**
-	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not),
-	 * for given shipment schedule, which are <b>not</b> referenced by a shipment line.
-	 */
-	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createNotOnShipmentLineFilter(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	@Override
+	public IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsQuery(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final boolean onShipmentLine = false; // NOT delivered ONLY
-		return createShipmentLineFilter(ImmutableSet.of(shipmentScheduleId), onShipmentLine);
+		return toSqlQuery(
+				ShipmentScheduleAllocQuery.builder()
+						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(shipmentScheduleId))
+						.alreadyShipped(true)
+						.build()
+		);
 	}
 
-	/**
-	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not), for given shipment schedule <b>AND</b> which were already delivered.
-	 */
-	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createOnShipmentLineFilter(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	@Override
+	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final Class<T> clazz)
 	{
-		final boolean onShipmentLine = true; // ONLY delivered
-		return createShipmentLineFilter(ImmutableSet.of(shipmentScheduleId), onShipmentLine);
+		return list(
+				clazz,
+				ShipmentScheduleAllocQuery.builder()
+						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(shipmentScheduleId))
+						.alreadyShipped(false)
+						.build()
+		);
 	}
 
-	/**
-	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not), for given shipment schedule, which were:
-	 * <ul>
-	 * <li>already referenced by a shipment line, if <code>onShipmentLine</code> is true
-	 * <li>or NOT referenced by a shipment line, if <code>onShipmentLine</code> is false
-	 */
-	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createShipmentLineFilter(
-			@Nullable final Set<ShipmentScheduleId> shipmentScheduleIds,
-			final boolean onShipmentLine)
+	@Override
+	public Stream<I_M_ShipmentSchedule_QtyPicked> stream(@NonNull final ShipmentScheduleAllocQuery query)
 	{
-		final ICompositeQueryFilter<I_M_ShipmentSchedule_QtyPicked> filter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule_QtyPicked.class);
+		return stream(I_M_ShipmentSchedule_QtyPicked.class, query);
+	}
 
-		// For given shipment schedules
-		if (shipmentScheduleIds != null && !shipmentScheduleIds.isEmpty())
+	@Override
+	public <T extends I_M_ShipmentSchedule_QtyPicked> Stream<T> stream(@NonNull Class<T> type, @NonNull final ShipmentScheduleAllocQuery query)
+	{
+		return toSqlQuery(query).create().stream(type);
+	}
+
+	public List<I_M_ShipmentSchedule_QtyPicked> list(@NonNull final ShipmentScheduleAllocQuery query)
+	{
+		return list(I_M_ShipmentSchedule_QtyPicked.class, query);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> list(@NonNull Class<T> type, @NonNull final ShipmentScheduleAllocQuery query)
+	{
+		return toSqlQuery(query).create().list(type);
+	}
+
+	private IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> toSqlQuery(final @NonNull ShipmentScheduleAllocQuery query)
+	{
+		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_Picking_Job_Schedule_ID)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
+				.addOnlyActiveRecordsFilter();
+
+		addFilterByShipmentScheduleAndJobScheduleIds(sqlQueryBuilder.getCompositeFilter(), query.getScheduleIds());
+		addAlreadyShippedFilter(sqlQueryBuilder.getCompositeFilter(), query.getAlreadyShipped());
+
+		if (query.getOnlyLUIds() != null && !query.getOnlyLUIds().isEmpty())
 		{
-			filter.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds);
+			sqlQueryBuilder.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_LU_HU_ID, query.getOnlyLUIds());
 		}
+
+		return sqlQueryBuilder;
+	}
+
+	private static void addFilterByShipmentScheduleAndJobScheduleIds(
+			@NonNull final ICompositeQueryFilter<I_M_ShipmentSchedule_QtyPicked> mainFilter,
+			@Nullable final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
+	{
+		if (scheduleIds == null || scheduleIds.isEmpty()) {return;}
+
+		final ICompositeQueryFilter<I_M_ShipmentSchedule_QtyPicked> scheduleFilters = mainFilter.addCompositeQueryFilter()
+				.setJoinOr();
+		final HashSet<ShipmentScheduleId> entireShipmentScheduleIds = new HashSet<>();
+
+		scheduleIds.forEachShipmentScheduleId((shipmentScheduleId, jobScheduleIds) -> {
+			if (jobScheduleIds == null || jobScheduleIds.isEmpty())
+			{
+				entireShipmentScheduleIds.add(shipmentScheduleId);
+			}
+			else
+			{
+				scheduleFilters.addCompositeQueryFilter()
+						.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+						.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleIds);
+			}
+		});
+
+		if (!entireShipmentScheduleIds.isEmpty())
+		{
+			scheduleFilters.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, entireShipmentScheduleIds);
+		}
+	}
+
+	private static void addAlreadyShippedFilter(@NonNull final ICompositeQueryFilter<I_M_ShipmentSchedule_QtyPicked> filter, @Nullable final Boolean onShipmentLine)
+	{
+		if (onShipmentLine == null) {return;}
 
 		// Case: only delivered (i.e., M_InOutLine_ID set)
 		if (onShipmentLine)
@@ -105,63 +169,23 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		{
 			filter.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, null);
 		}
-
-		return filter;
-	}
-
-	@Override
-	public IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsQuery(@NonNull final ShipmentScheduleId shipmentScheduleId)
-	{
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(createOnShipmentLineFilter(shipmentScheduleId))
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID);
-	}
-
-	@Override
-	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final Class<T> clazz)
-	{
-		return queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.filter(createNotOnShipmentLineFilter(shipmentScheduleId))
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID)
-				.create()
-				.list(clazz);
-	}
-
-	@Override
-	public Stream<I_M_ShipmentSchedule_QtyPicked> stream(@NonNull final ShipmentScheduleAllocQuery query)
-	{
-		return toSqlQuery(query).stream();
-	}
-
-	private IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> toSqlQuery(final @NonNull ShipmentScheduleAllocQuery query)
-	{
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID)
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID)
-				.addOnlyActiveRecordsFilter()
-				.filter(createShipmentLineFilter(query.getShipmentScheduleIds(), query.isAlreadyShipped()));
-
-		if (query.getOnlyLUIds() != null && !query.getOnlyLUIds().isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_LU_HU_ID, query.getOnlyLUIds());
-		}
-
-		return queryBuilder;
 	}
 
 	@NonNull
 	@Override
 	public BigDecimal retrieveNotOnShipmentLineQty(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final BigDecimal qty = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.filter(createNotOnShipmentLineFilter(shipmentScheduleId))
-				.addOnlyActiveRecordsFilter()
+		return retrieveQtyPicked(
+				ShipmentScheduleAllocQuery.builder()
+						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(shipmentScheduleId))
+						.alreadyShipped(false)
+						.build()
+		);
+	}
+
+	private BigDecimal retrieveQtyPicked(@NonNull final ShipmentScheduleAllocQuery query)
+	{
+		final BigDecimal qty = toSqlQuery(query)
 				.create()
 				.aggregate(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, Aggregate.SUM, BigDecimal.class);
 
@@ -303,17 +327,29 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 			@NonNull final Set<ShipmentScheduleId> scheduleIds,
 			@NonNull Class<T> type)
 	{
-		return retrieveRecordsByScheduleIds(scheduleIds, false, type);
+		return retrieveRecordsByScheduleIds(
+				ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(scheduleIds),
+				false,
+				type);
 	}
 
 	@Override
 	public ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsByScheduleIds(@NonNull final Set<ShipmentScheduleId> scheduleIds)
 	{
-		return retrieveRecordsByScheduleIds(scheduleIds, true, I_M_ShipmentSchedule_QtyPicked.class);
+		return retrieveOnShipmentLineRecordsByScheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(scheduleIds));
+	}
+
+	@Override
+	public ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsByScheduleIds(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
+	{
+		return retrieveRecordsByScheduleIds(
+				scheduleIds,
+				true,
+				I_M_ShipmentSchedule_QtyPicked.class);
 	}
 
 	private <T extends I_M_ShipmentSchedule_QtyPicked> ImmutableListMultimap<ShipmentScheduleId, T> retrieveRecordsByScheduleIds(
-			@NonNull final Set<ShipmentScheduleId> scheduleIds,
+			@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds,
 			final boolean onShipmentLine,
 			@NonNull final Class<T> type)
 	{
@@ -322,48 +358,17 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 			return ImmutableListMultimap.of();
 		}
 
-		return queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(createOnShipmentLineFilter(scheduleIds, onShipmentLine))
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID)
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
-				.create()
-				.stream(type)
+		return stream(
+				type,
+				ShipmentScheduleAllocQuery.builder()
+						.scheduleIds(scheduleIds)
+						.alreadyShipped(onShipmentLine)
+						.build()
+		)
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()),
 						record -> record
 				));
-	}
-
-	/**
-	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not), for the given shipment schedule ids, which were:
-	 * <ul>
-	 * <li>already referenced by a shipment line, if <code>onShipmentLine</code> is true
-	 * <li>or NOT referenced by a shipment line, if <code>onShipmentLine</code> is false
-	 * </ul>
-	 */
-	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createOnShipmentLineFilter(
-			@NonNull final Set<ShipmentScheduleId> scheduleIds,
-			final boolean onShipmentLine)
-	{
-		final ICompositeQueryFilter<I_M_ShipmentSchedule_QtyPicked> filter = queryBL
-				.createCompositeQueryFilter(I_M_ShipmentSchedule_QtyPicked.class)
-				// For given shipment schedule ids
-				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID, scheduleIds);
-
-		// Case: only delivered (i.e., M_InOutLine_ID set)
-		if (onShipmentLine)
-		{
-			filter.addNotEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, null);
-		}
-		// Case: only NOT delivered (i.e., M_InOutLine_ID is NOT set)
-		else
-		{
-			filter.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, null);
-		}
-
-		return filter;
 	}
 
 	@NonNull

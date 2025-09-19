@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.shipmentschedule.api;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -29,8 +30,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsRequest.GenerateShipmentsRequestBuilder;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -43,33 +43,29 @@ import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
@@ -95,7 +91,7 @@ public class ShipmentService implements IShipmentService
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository())));
+			return ShipmentServiceTestImpl.newInstanceForUnitTesting();
 		}
 		else
 		{
@@ -110,7 +106,7 @@ public class ShipmentService implements IShipmentService
 	@NonNull
 	public ShipmentScheduleEnqueuer.Result generateShipments(@NonNull final GenerateShipmentsRequest request)
 	{
-		if (Check.isEmpty(request.getScheduleIds()))
+		if (request.getScheduleIds().isEmpty())
 		{
 			throw new AdempiereException("No shipmentScheduleIds found on request!")
 					.appendParametersToMessage()
@@ -139,54 +135,63 @@ public class ShipmentService implements IShipmentService
 	@NonNull
 	public Set<InOutId> generateShipmentsForScheduleIds(@NonNull final GenerateShipmentsForSchedulesRequest request)
 	{
-		final Set<ShipmentScheduleId> allShipmentScheduleIds = getEffectiveShipmentScheduleIdsToBeShipped(request);
-		if (allShipmentScheduleIds.isEmpty())
+		final ShipmentScheduleAndJobScheduleIdSet allScheduleIds = getEffectiveScheduleIdsToBeShipped(request);
+		if (allScheduleIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final ImmutableMap<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleId = getShipmentScheduleIdByAsyncBatchId(allShipmentScheduleIds);
+		final GenerateShipmentsRequestBuilder generateShipmentsRequestTemplate = GenerateShipmentsRequest.builder()
+				.onlyLUIds(request.getOnlyLUIds())
+				.scheduleToExternalInfo(ImmutableMap.of())
+				.scheduleToQuantityToDeliverOverride(QtyToDeliverMap.EMPTY)
+				.quantityTypeToUse(request.getQuantityTypeToUse())
+				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
+				.isShipDateToday(request.getIsShipDateToday())
+				.isCompleteShipment(request.getIsCompleteShipment())
+				.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
+				.waitForShipments(request.isWaitForShipments())
+				// .asyncBatchId()
+				// .scheduleIds()
+				;
 
-		return asyncBatchId2ScheduleId.keySet()
-				.stream()
-				.map(asyncBatchId -> {
-					final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = ImmutableSet.copyOf(asyncBatchId2ScheduleId.get(asyncBatchId));
+		groupSchedulesByAsyncBatch(allScheduleIds)
+				.forEach((asyncBatchId, scheduleIds) -> generateShipments(
+						generateShipmentsRequestTemplate
+								.asyncBatchId(asyncBatchId)
+								.scheduleIds(scheduleIds)
+								.build()
+				));
 
-					generateShipments(
-							GenerateShipmentsRequest.builder()
-									.asyncBatchId(asyncBatchId)
-									.scheduleIds(shipmentScheduleIds)
-									.onlyLUIds(request.getOnlyLUIds())
-									.scheduleToExternalInfo(ImmutableMap.of())
-									.scheduleToQuantityToDeliverOverride(QtyToDeliverMap.EMPTY)
-									.quantityTypeToUse(request.getQuantityTypeToUse())
-									.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
-									.isShipDateToday(request.getIsShipDateToday())
-									.isCompleteShipment(request.getIsCompleteShipment())
-									.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
-									.waitForShipments(request.isWaitForShipments())
-									.build()
-					);
-
-					return retrieveInOutIdsByScheduleIds(shipmentScheduleIds);
-				})
-				.flatMap(Set::stream)
-				.collect(ImmutableSet.toImmutableSet());
+		return retrieveInOutIdsByScheduleIds(allScheduleIds.getShipmentScheduleIds());
 	}
 
-	private Set<ShipmentScheduleId> getEffectiveShipmentScheduleIdsToBeShipped(@NonNull final GenerateShipmentsForSchedulesRequest request)
+	private ShipmentScheduleAndJobScheduleIdSet getEffectiveScheduleIdsToBeShipped(@NonNull final GenerateShipmentsForSchedulesRequest request)
 	{
+		final ShipmentScheduleAndJobScheduleIdSet scheduleIds = request.getScheduleIds();
 		if (request.getQuantityTypeToUse().isOnlyUsePicked())
 		{
-			return shipmentScheduleWithHUService.retrieveNotShippedRecords(request.getScheduleIds(), request.getOnlyLUIds())
+			final ImmutableSet<ShipmentScheduleId> selectedShipmentScheduleIds = shipmentScheduleWithHUService.retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds())
 					.stream()
 					.map(record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 					.collect(ImmutableSet.toImmutableSet());
+
+			if (selectedShipmentScheduleIds.isEmpty())
+			{
+				return ShipmentScheduleAndJobScheduleIdSet.EMPTY;
+			}
+			else if (scheduleIds != null)
+			{
+				return scheduleIds.retainOnlyShipmentScheduleIds(selectedShipmentScheduleIds);
+			}
+			else
+			{
+				return ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(selectedShipmentScheduleIds);
+			}
 		}
 		else
 		{
-			final Set<ShipmentScheduleId> scheduleIds = request.getScheduleIds();
-			return scheduleIds != null ? scheduleIds : ImmutableSet.of();
+			return scheduleIds != null ? scheduleIds : ShipmentScheduleAndJobScheduleIdSet.EMPTY;
 		}
 	}
 
@@ -220,9 +225,15 @@ public class ShipmentService implements IShipmentService
 	}
 
 	@NonNull
-	public Set<InOutId> retrieveInOutIdsByScheduleIds(@NonNull final Set<ShipmentScheduleId> ids)
+	public Set<InOutId> retrieveInOutIdsByScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		return retrieveInOutLineByShipScheduleId(ids)
+		return retrieveInOutIdsByScheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(shipmentScheduleIds));
+	}
+
+	@NonNull
+	public Set<InOutId> retrieveInOutIdsByScheduleIds(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
+	{
+		return retrieveInOutLineByShipScheduleId(scheduleIds)
 				.stream()
 				.map(I_M_InOutLine::getM_InOut_ID)
 				.map(InOutId::ofRepoId)
@@ -232,14 +243,14 @@ public class ShipmentService implements IShipmentService
 	@NonNull
 	public List<I_M_InOutLine> retrieveInOutLineByShipScheduleId(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		final Set<InOutLineId> inOutLineIds = shipmentScheduleWithHUService.retrieveInOuLineIdByShipScheduleId(shipmentScheduleIds);
-		return inOutDAO.getLinesByIds(inOutLineIds, I_M_InOutLine.class);
+		return retrieveInOutLineByShipScheduleId(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(shipmentScheduleIds));
 	}
 
 	@NonNull
-	public ImmutableMap<AsyncBatchId, ArrayList<ShipmentScheduleId>> getShipmentScheduleIdByAsyncBatchId(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	public List<I_M_InOutLine> retrieveInOutLineByShipScheduleId(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
 	{
-		return trxManager.callInNewTrx(() -> groupSchedulesByAsyncBatch(scheduleIds));
+		final Set<InOutLineId> inOutLineIds = shipmentScheduleWithHUService.retrieveInOuLineIdByShipScheduleId(scheduleIds);
+		return inOutDAO.getLinesByIds(inOutLineIds, I_M_InOutLine.class);
 	}
 
 	@NonNull
@@ -261,10 +272,10 @@ public class ShipmentService implements IShipmentService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private void validateAsyncBatchAssignment(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final AsyncBatchId asyncBatchId)
+	private void validateAsyncBatchAssignment(@NonNull ShipmentScheduleAndJobScheduleIdSet scheduleIds, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final int unassignedScheduleCount = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds.getShipmentScheduleIds())
 				.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
 				.create()
 				.count();
@@ -273,20 +284,16 @@ public class ShipmentService implements IShipmentService
 		{
 			throw new AdempiereException("All given ids should be assigned to C_Async_Batch_ID=" + AsyncBatchId.toRepoId(asyncBatchId) + ", but there are " + unassignedScheduleCount + " unassigned scheduleIds.")
 					.appendParametersToMessage()
-					.setParameter("scheduleIds", ids);
+					.setParameter("scheduleIds", scheduleIds);
 		}
 	}
 
 	@NonNull
 	private ShipmentScheduleEnqueuer.Result enqueueShipmentSchedules(@NonNull final GenerateShipmentsRequest request)
 	{
-		final ICompositeQueryFilter<I_M_ShipmentSchedule> queryFilters = queryBL
-				.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, request.getScheduleIds());
-
-		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
+		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
-				.queryFilters(queryFilters)
+				.scheduleIds(request.getScheduleIds())
 				.onlyLUIds(request.getOnlyLUIds())
 				.quantityType(request.getQuantityTypeToUse())
 				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
@@ -297,61 +304,67 @@ public class ShipmentService implements IShipmentService
 				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
 				.build();
 
-		return new ShipmentScheduleEnqueuer()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		return ShipmentScheduleEnqueuer.newInstance()
 				.createWorkpackages(workPackageParameters);
 	}
 
 	@NonNull
-	private ImmutableMap<AsyncBatchId, ArrayList<ShipmentScheduleId>> groupSchedulesByAsyncBatch(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	public ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
 	{
-		final Map<ShipmentScheduleId, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules2Ids = shipmentScheduleBL.getByIds(scheduleIds);
-
-		final Map<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleId = new HashMap<>();
-
-		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules2Ids.values())
-		{
-			final ArrayList<ShipmentScheduleId> currentShipmentSchedulesIds = new ArrayList<>();
-			currentShipmentSchedulesIds.add(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
-
-			final AsyncBatchId currentAsyncBatchId = AsyncBatchId.ofRepoIdOrNone(shipmentSchedule.getC_Async_Batch_ID());
-
-			asyncBatchId2ScheduleId.merge(currentAsyncBatchId, currentShipmentSchedulesIds, CollectionUtils::mergeLists);
-		}
-
-		final ArrayList<ShipmentScheduleId> shipmentSchedulesIdsWithNoAsyncBatchId = asyncBatchId2ScheduleId.get(AsyncBatchId.NONE_ASYNC_BATCH_ID);
-
-		Optional.ofNullable(shipmentSchedulesIdsWithNoAsyncBatchId)
-				.flatMap(this::assignNewAsyncBatch)
-				.ifPresent(batchId -> {
-					asyncBatchId2ScheduleId.put(batchId, shipmentSchedulesIdsWithNoAsyncBatchId);
-					asyncBatchId2ScheduleId.remove(AsyncBatchId.NONE_ASYNC_BATCH_ID);
-				});
-
-		return ImmutableMap.copyOf(asyncBatchId2ScheduleId);
+		return trxManager.callInNewTrx(() -> groupSchedulesByAsyncBatch0(scheduleIds));
 	}
 
 	@NonNull
-	private Optional<AsyncBatchId> assignNewAsyncBatch(@NonNull final List<ShipmentScheduleId> shipmentScheduleIds)
+	private ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch0(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds2)
 	{
-		if (shipmentScheduleIds.isEmpty())
+		final Map<ShipmentScheduleId, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedulesById = shipmentScheduleBL.getByIds(scheduleIds2.getShipmentScheduleIds());
+
+		final ArrayListMultimap<AsyncBatchId, ShipmentScheduleAndJobScheduleId> scheduleIdsByAsyncBatchId = ArrayListMultimap.create();
+		final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIdsWithoutAsyncBatchId = new HashSet<>();
+		final ArrayList<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedulesWithoutAsyncBatchId = new ArrayList<>();
+
+		for (final ShipmentScheduleAndJobScheduleId shipmentScheduleAndJobScheduleId : scheduleIds2)
 		{
-			return Optional.empty();
+			final ShipmentScheduleId shipmentScheduleId = shipmentScheduleAndJobScheduleId.getShipmentScheduleId();
+			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesById.get(shipmentScheduleId);
+			if (shipmentSchedule == null)
+			{
+				continue;
+			}
+
+			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID());
+			if (asyncBatchId == null)
+			{
+				scheduleIdsWithoutAsyncBatchId.add(shipmentScheduleAndJobScheduleId);
+				shipmentSchedulesWithoutAsyncBatchId.add(shipmentSchedule);
+			}
+			else
+			{
+				scheduleIdsByAsyncBatchId.put(asyncBatchId, shipmentScheduleAndJobScheduleId);
+			}
 		}
 
-		final ImmutableSet<ShipmentScheduleId> scheduleIds = shipmentScheduleIds.stream()
-				.collect(ImmutableSet.toImmutableSet());
+		//
+		// If there are shipment schedules without async batch assignment,
+		// then create a new async batch and assign those
+		if (!shipmentSchedulesWithoutAsyncBatchId.isEmpty())
+		{
+			final AsyncBatchId newAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
+			shipmentScheduleBL.setAsyncBatchAndSave(shipmentSchedulesWithoutAsyncBatchId, newAsyncBatchId);
+			scheduleIdsByAsyncBatchId.putAll(newAsyncBatchId, scheduleIdsWithoutAsyncBatchId);
 
-		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
+			shipmentSchedulesWithoutAsyncBatchId.clear();
+			scheduleIdsWithoutAsyncBatchId.clear();
+		}
 
-		assignAsyncBatchIdToShipmentSchedules(scheduleIds, asyncBatchId);
-
-		return Optional.of(asyncBatchId);
-	}
-
-	private void assignAsyncBatchIdToShipmentSchedules(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final AsyncBatchId asyncBatchId)
-	{
-		ids.forEach(id -> shipmentScheduleBL.setAsyncBatch(id, asyncBatchId));
+		//
+		// Build up and return the result
+		final ImmutableMap.Builder<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> result = ImmutableMap.builder();
+		for (final AsyncBatchId asyncBatchId : scheduleIdsByAsyncBatchId.keySet())
+		{
+			result.put(asyncBatchId, ShipmentScheduleAndJobScheduleIdSet.ofCollection(scheduleIdsByAsyncBatchId.get(asyncBatchId)));
+		}
+		return result.build();
 	}
 
 	@NonNull
@@ -362,7 +375,7 @@ public class ShipmentService implements IShipmentService
 			return ImmutableSet.of();
 		}
 
-		QtyToDeliverMap qtyToDeliverMap = getShipmentScheduleId2QtyToDeliver(olCandIds, olCandsAsyncBatchId);
+		final QtyToDeliverMap qtyToDeliverMap = getShipmentScheduleId2QtyToDeliver(olCandIds, olCandsAsyncBatchId);
 
 		if (qtyToDeliverMap.isEmpty())
 		{
@@ -372,7 +385,7 @@ public class ShipmentService implements IShipmentService
 		//dev-note: if we came this far, we know all shipment schedules are assigned to the async batch identified by the input param:"asyncBatchId"
 		final GenerateShipmentsRequest generateShipmentsRequest = GenerateShipmentsRequest.builder()
 				.asyncBatchId(olCandsAsyncBatchId)
-				.scheduleIds(qtyToDeliverMap.getShipmentScheduleIds())
+				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(qtyToDeliverMap.getShipmentScheduleIds()))
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(qtyToDeliverMap)
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
