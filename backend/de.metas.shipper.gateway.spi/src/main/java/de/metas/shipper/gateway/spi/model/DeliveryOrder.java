@@ -109,8 +109,7 @@ public class DeliveryOrder
 	/**
 	 * The Shipper Product
 	 */
-	@NonNull
-	ShipperProduct shipperProduct;
+	@Nullable ShipperProduct shipperProduct;
 
 	/**
 	 * ID in external repository

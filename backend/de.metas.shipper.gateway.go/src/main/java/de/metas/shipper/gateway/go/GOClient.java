@@ -95,7 +95,7 @@ public class GOClient implements ShipperGatewayClient
 		final HttpComponentsMessageSender messageSender = createMessageSender(config.getAuthUsername(), config.getAuthPassword());
 
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setPackagesToScan(de.metas.shipper.gateway.go.schema.ObjectFactory.class.getPackage().getName());
+		marshaller.setPackagesToScan(ObjectFactory.class.getPackage().getName());
 
 		webServiceTemplate = new WebServiceTemplate();
 		webServiceTemplate.setDefaultUri(config.getUrl());
@@ -137,7 +137,6 @@ public class GOClient implements ShipperGatewayClient
 	}
 
 	@Deprecated
-	@Override
 	@VisibleForTesting
 	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder)
 	{
@@ -310,7 +309,7 @@ public class GOClient implements ShipperGatewayClient
 		goRequest.setZustelldatum(createGODeliveryDateOrNull(request.getDeliveryDate())); // Delivery date (not mandatory)
 		goRequest.setZustellhinweise(request.getDeliveryNote()); // Delivery note (an128, not mandatory)
 
-		goRequest.setService(request.getShipperProduct().getCode()); // Service type (mandatory)
+		goRequest.setService(request.getShipperProduct() != null ? request.getShipperProduct().getCode() : null); // Service type (mandatory)
 		goRequest.setUnfrei(goDeliveryOrderData.getPaidMode().getCode()); // Flag unpaid (mandatory)
 		goRequest.setSelbstanlieferung(goDeliveryOrderData.getSelfDelivery().getCode()); // Flag self delivery (mandatory)
 		goRequest.setSelbstabholung(goDeliveryOrderData.getSelfPickup().getCode()); // Flag self pickup (mandatory)

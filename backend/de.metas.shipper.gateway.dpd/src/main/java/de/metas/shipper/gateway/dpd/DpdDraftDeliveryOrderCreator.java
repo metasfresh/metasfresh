@@ -56,6 +56,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -73,7 +74,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	@NonNull private final DpdClientConfigRepository clientConfigRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public @NotNull String getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -83,7 +84,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 */
 	@NonNull
 	@Override
-	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 

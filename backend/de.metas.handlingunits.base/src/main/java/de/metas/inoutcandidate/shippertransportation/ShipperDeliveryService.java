@@ -44,15 +44,14 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -67,26 +66,18 @@ import java.util.Set;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 @Service
+@RequiredArgsConstructor
 public class ShipperDeliveryService
 {
-	private final static Logger logger = LogManager.getLogger(ShipperDeliveryService.class);
-
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-
-	private final InOutToTransportationOrderService inOutToTransportationOrderService;
-	private final ShipperGatewayFacade shipperGatewayFacade;
-
-	public ShipperDeliveryService(
-			@NonNull final ShipperGatewayFacade shipperGatewayFacade,
-			@NonNull final InOutToTransportationOrderService inOutToTransportationOrderService)
-	{
-		this.shipperGatewayFacade = shipperGatewayFacade;
-		this.inOutToTransportationOrderService = inOutToTransportationOrderService;
-	}
+	@NonNull private final static Logger logger = LogManager.getLogger(ShipperDeliveryService.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final InOutToTransportationOrderService inOutToTransportationOrderService;
+	@NonNull private final ShipperGatewayFacade shipperGatewayFacade;
 
 	public void addToDailyTransportationOrder(@NonNull final InOutId inOutId)
 	{
@@ -160,10 +151,9 @@ public class ShipperDeliveryService
 			@NonNull final Collection<I_M_Package> packages,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
-		final String shipperGatewayId = shipper.getShipperGateway();
+		final String shipperGatewayId = shipperDAO.getShipperGatewayId(shipperId).orElse(null);
 		// no ShipperGateway, so no API to call/no courier to request
-		if (Check.isBlank(shipperGatewayId))
+		if (shipperGatewayId == null)
 		{
 			return;
 		}

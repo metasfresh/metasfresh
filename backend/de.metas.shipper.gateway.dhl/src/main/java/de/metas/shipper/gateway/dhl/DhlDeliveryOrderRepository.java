@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.location.CountryCode;
+import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
@@ -100,7 +101,7 @@ public class DhlDeliveryOrderRepository
 	/**
 	 * Read the DHL specific PO and return a DTO.
 	 * <p>
-	 * keep in sync with {@link #createShipmentOrderRequestPO(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
+	 * keep in sync with {@link #createShipmentOrderRequestPO(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
 	@NonNull
 	private DeliveryOrder toDeliveryOrderFromPO(final @NonNull DeliveryOrderId deliveryOrderId)
@@ -189,7 +190,7 @@ public class DhlDeliveryOrderRepository
 	 * Persists the shipper-dependant DeliveryOrder details
 	 * <p>
 	 * keep in sync with {@link #toDeliveryOrderFromPO(DeliveryOrderId)}
-	 * and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
+	 * and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
 	@NonNull
 	private I_DHL_ShipmentOrderRequest createShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
@@ -217,7 +218,7 @@ public class DhlDeliveryOrderRepository
 
 			{
 				// (2.2.1) Shipment Details aka PackageDetails
-				shipmentOrder.setDHL_Product(deliveryOrder.getShipperProduct().getCode());
+				shipmentOrder.setDHL_Product(deliveryOrder.getShipperProduct() != null ? deliveryOrder.getShipperProduct().getCode() : null);
 				//noinspection ConstantConditions
 				shipmentOrder.setCustomerReference(deliveryOrder.getCustomerReference());
 				shipmentOrder.setDHL_ShipmentDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));

@@ -3,12 +3,14 @@ package de.metas.shipping.impl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -141,5 +143,15 @@ public class ShipperDAO implements IShipperDAO
 				.list();
 
 		return Maps.uniqueIndex(shipperList, I_M_Shipper::getInternalName);
+	}
+
+	@Override
+	public ExplainedOptional<String> getShipperGatewayId(@NonNull final ShipperId shipperId)
+	{
+		final I_M_Shipper shipper = getById(shipperId);
+		final String shipperGatewayId = StringUtils.trimBlankToNull(shipper.getShipperGateway());
+		return shipperGatewayId != null
+				? ExplainedOptional.of(shipperGatewayId)
+				: ExplainedOptional.emptyBecause("Shipper " + shipper.getName() + " has no gateway configured");
 	}
 }

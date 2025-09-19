@@ -136,7 +136,7 @@ public class GODeliveryOrderRepository
 		orderPO.setGO_OrderStatus(orderStatus != null ? orderStatus.getCode() : null);
 		orderPO.setProcessed(orderStatus != null && orderStatus.isFinalState());
 
-		orderPO.setGO_ServiceType(order.getShipperProduct().getCode());
+		orderPO.setGO_ServiceType(order.getShipperProduct() != null ? order.getShipperProduct().getCode() : null);
 		orderPO.setGO_PaidMode(goDeliveryOrderData.getPaidMode().getCode());
 
 		//

@@ -149,7 +149,7 @@ public class DpdDeliveryOrderRepository
 			// General Shipment Data
 			// dpdStoreOrder.identification number // there's no identification number saved. it needs to be created in the client during the request creation!
 			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-			orderPO.setDpdProduct(deliveryOrder.getShipperProduct().getCode());
+			orderPO.setDpdProduct(deliveryOrder.getShipperProduct() != null ? deliveryOrder.getShipperProduct().getCode() : null);
 			orderPO.setDpdOrderType(customDeliveryData.getOrderType());
 			orderPO.setSendingDepot(customDeliveryData.getSendingDepot());
 			orderPO.setPaperFormat(customDeliveryData.getPaperFormat().getCode());

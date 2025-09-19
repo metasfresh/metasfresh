@@ -38,6 +38,7 @@ import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
+import com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
@@ -88,7 +89,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 	// dpd webservice data
 	private final WebServiceTemplate webServiceTemplate;
-	private final com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory loginServiceOF;
+	private final ObjectFactory loginServiceOF;
 	private final com.dpd.common.service.types.shipmentservice._3.ObjectFactory shipmentServiceOF;
 
 	@Builder
@@ -98,7 +99,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		this.databaseLogger = databaseLogger;
 
 		webServiceTemplate = DpdClientUtil.createWebServiceTemplate();
-		loginServiceOF = new com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory();
+		loginServiceOF = new ObjectFactory();
 		shipmentServiceOF = new com.dpd.common.service.types.shipmentservice._3.ObjectFactory();
 	}
 
@@ -107,13 +108,6 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 	public String getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	@Deprecated
-	public DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
-	{
-		throw new ShipperGatewayException("(DRAFT) Delivery Orders shall never be created.");
 	}
 
 	@NonNull
@@ -128,8 +122,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		final StoreOrders storeOrders = createStoreOrdersFromDeliveryOrder(deliveryOrder, login.getDepot());
 
 		final JAXBElement<StoreOrders> storeOrdersElement = shipmentServiceOF.createStoreOrders(storeOrders);
-		@SuppressWarnings("unchecked")
-		final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement = (JAXBElement<StoreOrdersResponse>)doActualRequest(config.getShipmentServiceApiUrl(), storeOrdersElement, login, deliveryOrder.getId());
+		@SuppressWarnings("unchecked") final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement = (JAXBElement<StoreOrdersResponse>)doActualRequest(config.getShipmentServiceApiUrl(), storeOrdersElement, login, deliveryOrder.getId());
 
 		final StoreOrdersResponseType storeOrdersResponse = storeOrdersResponseElement.getValue().getOrderResult();
 
@@ -263,7 +256,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			generalShipmentData.setMpsCustomerReferenceNumber1(deliveryOrder.getCustomerReference()); // what is this? optional?
 			generalShipmentData.setIdentificationNumber(String.valueOf(deliveryOrder.getId().getRepoId())); // unique metasfresh number for this shipment
 			//			generalShipmentData.setSendingDepot(); // not set here, as it's taken from login info
-			generalShipmentData.setProduct(deliveryOrder.getShipperProduct().getCode()); // this is the DPD product
+			generalShipmentData.setProduct(deliveryOrder.getShipperProduct() != null ? deliveryOrder.getShipperProduct().getCode() : null); // this is the DPD product
 
 			{
 				// Sender aka Pickup
@@ -408,8 +401,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		epicLogger.addLog("Creating login request");
 
 		final JAXBElement<GetAuth> getAuthElement = loginServiceOF.createGetAuth(getAuthValue);
-		@SuppressWarnings("unchecked")
-		final JAXBElement<GetAuthResponse> authenticationElement = (JAXBElement<GetAuthResponse>)doActualRequest(config.getLoginApiUrl(), getAuthElement, null, null);
+		@SuppressWarnings("unchecked") final JAXBElement<GetAuthResponse> authenticationElement = (JAXBElement<GetAuthResponse>)doActualRequest(config.getLoginApiUrl(), getAuthElement, null, null);
 
 		final Login login = authenticationElement.getValue().getReturn();
 

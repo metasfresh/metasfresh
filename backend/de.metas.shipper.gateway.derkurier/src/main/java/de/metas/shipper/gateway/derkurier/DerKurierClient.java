@@ -93,12 +93,6 @@ public class DerKurierClient implements ShipperGatewayClient
 		return DerKurierConstants.SHIPPER_GATEWAY_ID;
 	}
 
-	@Override
-	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
-	{
-		throw new UnsupportedOperationException("DerKurierClient.createDeliveryOrder is not implemented");
-	}
-
 	@VisibleForTesting
 	Routing postRoutingRequest(@NonNull final RoutingRequest routingRequest)
 	{

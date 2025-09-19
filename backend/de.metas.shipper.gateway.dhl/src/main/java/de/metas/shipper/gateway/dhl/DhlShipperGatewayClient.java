@@ -29,7 +29,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderRequest;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderResponse;
 import de.metas.shipper.gateway.dhl.json.JsonDHLItem;
@@ -59,6 +58,7 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -114,12 +114,6 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	public String getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	public DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
-	{
-		throw new ShipperGatewayException("(DRAFT) Delivery Orders shall never be created.");
 	}
 
 	@NonNull
@@ -216,7 +210,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 			final String customerReference = getCustomerReference(deliveryOrder);
 			final JsonDhlShipment.JsonDhlShipmentBuilder shipmentBuilder = JsonDhlShipment.builder()
 					.billingNumber(config.getAccountNumber())
-					.product(deliveryOrder.getShipperProduct().getCode())
+					.product(deliveryOrder.getShipperProduct() != null ? deliveryOrder.getShipperProduct().getCode() : null)
 					.shipDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
 					.shipper(DhlAddressMapper.getShipperAddress(deliveryOrder.getPickupAddress()))
 					.consignee(DhlAddressMapper.getConsigneeAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))

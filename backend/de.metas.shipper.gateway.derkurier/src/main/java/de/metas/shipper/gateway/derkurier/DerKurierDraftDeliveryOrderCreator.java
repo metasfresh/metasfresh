@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -58,13 +59,13 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 	@NonNull private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public @NotNull String getShipperGatewayId()
 	{
 		return DerKurierConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override
-	public DeliveryOrder createDraftDeliveryOrder(
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(
 			@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();

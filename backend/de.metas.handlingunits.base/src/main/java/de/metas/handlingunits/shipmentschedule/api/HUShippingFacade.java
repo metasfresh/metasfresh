@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
@@ -20,6 +19,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
@@ -37,8 +37,8 @@ import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -84,6 +83,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class HUShippingFacade
 {
 	private static final Logger logger = LogManager.getLogger(HUShippingFacade.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -94,8 +94,7 @@ public class HUShippingFacade
 
 	private final IShipmentService shipmentService = ShipmentService.getInstance();
 
-	private final Supplier<ShipperGatewayFacade> shipperGatewayFacadeSupplier = //
-			() -> SpringContextHolder.instance.getBean(ShipperGatewayFacade.class);
+	private final Lazy<ShipperGatewayFacade> shipperGatewayFacadeHolder = SpringContextHolder.lazyBean(ShipperGatewayFacade.class);
 
 	//
 	// Parameters
@@ -275,14 +274,13 @@ public class HUShippingFacade
 			final ShipperId shipperId,
 			@NonNull final Collection<I_M_Package> mPackages)
 	{
-		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
-		final String shipperGatewayId = shipper.getShipperGateway();
-		if (Check.isEmpty(shipperGatewayId, true))
+		final String shipperGatewayId = shipperDAO.getShipperGatewayId(shipperId).orElse(null);
+		if (shipperGatewayId == null)
 		{
 			return;
 		}
 
-		final ShipperGatewayFacade shipperGatewayFacade = shipperGatewayFacadeSupplier.get();
+		final ShipperGatewayFacade shipperGatewayFacade = shipperGatewayFacadeHolder.get();
 		if (!shipperGatewayFacade.hasServiceSupport(shipperGatewayId))
 		{
 			return;

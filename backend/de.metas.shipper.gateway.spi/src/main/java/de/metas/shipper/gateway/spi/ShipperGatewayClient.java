@@ -35,14 +35,6 @@ public interface ShipperGatewayClient
 	String getShipperGatewayId();
 
 	/**
-	 * Create a delivery order on the remote endpoint. The remote order is drafted and can still be changed.
-	 *
-	 * @deprecated we don't need this.
-	 */
-	@Deprecated
-	DeliveryOrder createDeliveryOrder(DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException;
-
-	/**
 	 * Effectively place the given order on the remote endpoint.
 	 */
 	@NonNull
