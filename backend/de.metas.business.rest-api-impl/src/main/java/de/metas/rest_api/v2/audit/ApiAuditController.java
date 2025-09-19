@@ -81,9 +81,8 @@ public class ApiAuditController
 
 			final HttpStatus httpStatus = parseHttpStatus(apiResponse.getHttpCode());
 			final HttpHeaders headers = reconstructHeaders(apiResponse.getHttpHeaders());
-			final Object responseBody = reconstructResponseBody(apiResponse.getBody());
 
-			return new ResponseEntity<>(responseBody, headers, httpStatus);
+			return new ResponseEntity<>(apiResponse.getBody(), headers, httpStatus);
 		}
 		catch (final Exception e)
 		{
@@ -130,24 +129,5 @@ public class ApiAuditController
 		}
 
 		return headers;
-	}
-
-	@Nullable
-	private Object reconstructResponseBody(@Nullable final String bodyJson)
-	{
-		if (Check.isEmpty(bodyJson))
-		{
-			return null;
-		}
-
-		try
-		{
-			return JsonObjectMapperHolder.sharedJsonObjectMapper()
-					.readTree(bodyJson);
-		}
-		catch (final Exception e)
-		{
-			return bodyJson;
-		}
 	}
 }
