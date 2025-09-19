@@ -237,3 +237,18 @@ INSERT INTO t_alter_column values('m_packagelicensing_productgroup','Value',null
 -- 2025-09-18T18:09:17.085Z
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-09-18 18:09:17.085000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590965
 ;
+
+-- Column: M_PackageLicensing_ProductGroup.C_Country_ID
+-- 2025-09-19T10:27:55.780Z
+UPDATE AD_Column SET IsIdentifier='Y', SeqNo=10,Updated=TO_TIMESTAMP('2025-09-19 10:27:55.780000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590965
+;
+
+-- Column: M_PackageLicensing_ProductGroup.Value
+-- 2025-09-19T10:28:21.227Z
+UPDATE AD_Column SET IsIdentifier='Y', SeqNo=20,Updated=TO_TIMESTAMP('2025-09-19 10:28:21.227000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590962
+;
+
+-- Column: M_PackageLicensing_ProductGroup.Name
+-- 2025-09-19T10:29:12.123Z
+UPDATE AD_Column SET SeqNo=30,Updated=TO_TIMESTAMP('2025-09-19 10:29:12.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590963
+;

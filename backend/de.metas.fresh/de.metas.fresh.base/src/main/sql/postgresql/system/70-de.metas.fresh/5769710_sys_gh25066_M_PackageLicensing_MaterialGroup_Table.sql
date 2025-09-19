@@ -242,3 +242,18 @@ INSERT INTO t_alter_column values('m_packagelicensing_materialgroup','Name','VAR
 -- 2025-09-18T17:39:41.201Z
 INSERT INTO t_alter_column values('m_packagelicensing_materialgroup','Name',null,'NOT NULL',null)
 ;
+
+-- Column: M_PackageLicensing_MaterialGroup.C_Country_ID
+-- 2025-09-19T10:34:13.746Z
+UPDATE AD_Column SET IsIdentifier='Y', SeqNo=10,Updated=TO_TIMESTAMP('2025-09-19 10:34:13.745000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590953
+;
+
+-- Column: M_PackageLicensing_MaterialGroup.Value
+-- 2025-09-19T10:34:41.515Z
+UPDATE AD_Column SET IsIdentifier='Y', SeqNo=20,Updated=TO_TIMESTAMP('2025-09-19 10:34:41.515000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590950
+;
+
+-- Column: M_PackageLicensing_MaterialGroup.Name
+-- 2025-09-19T10:35:04.727Z
+UPDATE AD_Column SET SeqNo=30,Updated=TO_TIMESTAMP('2025-09-19 10:35:04.727000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590951
+;
