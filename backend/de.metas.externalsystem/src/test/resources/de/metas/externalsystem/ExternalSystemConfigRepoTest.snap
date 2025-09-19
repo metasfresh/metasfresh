@@ -441,7 +441,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "id": 1000000,
     "name": "name",
     "orgId": 0,
-    "type": "WOOCommerce",
+    "type": "WooCommerce",
     "writeAudit": true
   }
 ]
@@ -459,7 +459,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "id": 1000000,
     "name": "name",
     "orgId": 0,
-    "type": "WOOCommerce",
+    "type": "WooCommerce",
     "writeAudit": true
   }
 ]
