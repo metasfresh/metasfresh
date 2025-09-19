@@ -151,6 +151,52 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+	 * Set Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
+
+	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
+
+	ModelColumn<I_M_Picking_Job_Step, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
+
+	/**
+	 * Set Date Ready.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateReady (@Nullable java.sql.Timestamp DateReady);
+
+	/**
+	 * Get Date Ready.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateReady();
+
+	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_DateReady = new ModelColumn<>(I_M_Picking_Job_Step.class, "DateReady", null);
+	String COLUMNNAME_DateReady = "DateReady";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -174,6 +220,29 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Approved.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsApproved (boolean IsApproved);
+
+	/**
+	 * Get Approved.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isApproved();
+
+	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_IsApproved = new ModelColumn<>(I_M_Picking_Job_Step.class, "IsApproved", null);
+	String COLUMNNAME_IsApproved = "IsApproved";
+
+	/**
 	 * Set Is Dynamic.
 	 *
 	 * <br>Type: YesNo
@@ -193,6 +262,27 @@ public interface I_M_Picking_Job_Step
 
 	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_IsDynamic = new ModelColumn<>(I_M_Picking_Job_Step.class, "IsDynamic", null);
 	String COLUMNNAME_IsDynamic = "IsDynamic";
+
+	/**
+	 * Set Marketplace.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setmarketplace (@Nullable java.lang.String marketplace);
+
+	/**
+	 * Get Marketplace.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getmarketplace();
+
+	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_marketplace = new ModelColumn<>(I_M_Picking_Job_Step.class, "marketplace", null);
+	String COLUMNNAME_marketplace = "marketplace";
 
 	/**
 	 * Set Picking Job.
@@ -245,6 +335,31 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_M_Picking_Job_Line_ID = "M_Picking_Job_Line_ID";
 
 	/**
+	 * Set Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_Schedule_ID (int M_Picking_Job_Schedule_ID);
+
+	/**
+	 * Get Picking Job Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_Schedule_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Schedule getM_Picking_Job_Schedule();
+
+	void setM_Picking_Job_Schedule(@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Schedule M_Picking_Job_Schedule);
+
+	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_Picking_Job_Schedule> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_Picking_Job_Schedule_ID", de.metas.handlingunits.model.I_M_Picking_Job_Schedule.class);
+	String COLUMNNAME_M_Picking_Job_Schedule_ID = "M_Picking_Job_Schedule_ID";
+
+	/**
 	 * Set Picking Job Step.
 	 *
 	 * <br>Type: ID
@@ -285,6 +400,32 @@ public interface I_M_Picking_Job_Step
 
 	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_M_PickingSlot_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_PickingSlot_ID", null);
 	String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
+
+	/**
+	 * Set Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setM_Product_Category_ID (int M_Product_Category_ID);
+
+	/**
+	 * Get Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getM_Product_Category_ID();
+
+	String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
 	/**
 	 * Set Product.
@@ -328,6 +469,33 @@ public interface I_M_Picking_Job_Step
 
 	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_ShipmentSchedule_ID", null);
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
+
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
+
+	ModelColumn<I_M_Picking_Job_Step, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Pick To Packing Instructions.
@@ -440,6 +608,33 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_PickFrom_Warehouse_ID = "PickFrom_Warehouse_ID";
 
 	/**
+	 * Set Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setPriorityRule (@Nullable java.lang.String PriorityRule);
+
+	/**
+	 * Get Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getPriorityRule();
+
+	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_PriorityRule = new ModelColumn<>(I_M_Picking_Job_Step.class, "PriorityRule", null);
+	String COLUMNNAME_PriorityRule = "PriorityRule";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -524,6 +719,27 @@ public interface I_M_Picking_Job_Step
 	String COLUMNNAME_RejectReason = "RejectReason";
 
 	/**
+	 * Set Single package.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSinglePackage (boolean SinglePackage);
+
+	/**
+	 * Get Single package.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSinglePackage();
+
+	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_SinglePackage = new ModelColumn<>(I_M_Picking_Job_Step.class, "SinglePackage", null);
+	String COLUMNNAME_SinglePackage = "SinglePackage";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
@@ -547,4 +763,29 @@ public interface I_M_Picking_Job_Step
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Workplace indicator.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setWorkplaceIndicator_ID (int WorkplaceIndicator_ID);
+
+	/**
+	 * Get Workplace indicator.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getWorkplaceIndicator_ID();
+
+	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_WorkplaceIndicator_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "WorkplaceIndicator_ID", null);
+	String COLUMNNAME_WorkplaceIndicator_ID = "WorkplaceIndicator_ID";
 }

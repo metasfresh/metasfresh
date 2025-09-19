@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.ordercandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OLCand
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2054107940L;
+	private static final long serialVersionUID = 2089460464L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -1851,5 +1851,17 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setErrorMsgJSON (final @Nullable String ErrorMsgJSON)
+	{
+		set_Value (COLUMNNAME_ErrorMsgJSON, ErrorMsgJSON);
+	}
+
+	@Override
+	public String getErrorMsgJSON()
+	{
+		return get_ValueAsString(COLUMNNAME_ErrorMsgJSON);
 	}
 }

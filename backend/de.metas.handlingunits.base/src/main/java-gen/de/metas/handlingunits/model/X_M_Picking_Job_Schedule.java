@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Schedule extends org.compiere.model.PO implements I_M_Picking_Job_Schedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -156272813L;
+	private static final long serialVersionUID = -1390288523L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Schedule (final Properties ctx, final int M_Picking_Job_Schedule_ID, @Nullable final String trxName)
@@ -105,6 +105,18 @@ public class X_M_Picking_Job_Schedule extends org.compiere.model.PO implements I
 	public int getM_ShipmentSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override

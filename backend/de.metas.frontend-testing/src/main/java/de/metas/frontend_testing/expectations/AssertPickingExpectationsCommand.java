@@ -66,7 +66,7 @@ class AssertPickingExpectationsCommand
 
 		if (pickingExpectation.getShipmentSchedules() != null)
 		{
-			final Collection<I_M_ShipmentSchedule> shipmentSchedules = services.getShipmentSchedulesByIds(pickingJob.getShipmentScheduleIds());
+			final Collection<I_M_ShipmentSchedule> shipmentSchedules = services.getShipmentSchedulesByIds(pickingJob.getScheduleIds().getShipmentScheduleIds());
 			assertShipmentSchedules(pickingExpectation.getShipmentSchedules(), shipmentSchedules);
 		}
 	}

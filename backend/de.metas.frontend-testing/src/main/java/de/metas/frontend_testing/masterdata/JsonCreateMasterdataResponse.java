@@ -15,6 +15,7 @@ import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
+import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,6 +37,7 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonCreateProductPlanningResponse> productPlannings;
 	@NonNull Map<String, JsonPickingSlotCreateResponse> pickingSlots;
 	@NonNull Map<String, JsonWarehouseResponse> warehouses;
+	@NonNull Map<String, JsonWorkplaceResponse> workplaces;
 	@NonNull Map<String, JsonPackingInstructionsResponse> packingInstructions;
 	@NonNull Map<String, JsonCreateHUResponse> handlingUnits;
 	@Nullable Map<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes;
