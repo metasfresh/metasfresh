@@ -252,3 +252,12 @@ UPDATE AD_Column SET IsIdentifier='Y', SeqNo=20,Updated=TO_TIMESTAMP('2025-09-19
 -- 2025-09-19T10:29:12.123Z
 UPDATE AD_Column SET SeqNo=30,Updated=TO_TIMESTAMP('2025-09-19 10:29:12.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590963
 ;
+
+-- Column: M_PackageLicensing_ProductGroup.Name
+-- 2025-09-19T13:37:42.835Z
+UPDATE AD_Column SET FieldLength=256,Updated=TO_TIMESTAMP('2025-09-19 13:37:42.835000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590963
+;
+
+-- 2025-09-19T13:37:58.679Z
+INSERT INTO t_alter_column values('m_packagelicensing_productgroup','Name','VARCHAR(256)',null,null)
+;
