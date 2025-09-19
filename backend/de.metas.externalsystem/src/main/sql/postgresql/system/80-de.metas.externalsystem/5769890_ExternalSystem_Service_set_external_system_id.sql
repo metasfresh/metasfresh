@@ -34,6 +34,6 @@ FROM ExternalSystem_Service ess_source
     OR (e.value = 'ProCareManagement' AND ess_source.type = 'PCM')
     OR (e.value = 'RabbitMQRESTAPI' AND ess_source.type = 'RabbitMQ')
     OR (e.value = 'Shopware6' AND ess_source.type = 'S6')
-    OR (e.value = 'WOOCommerce' AND ess_source.type = 'WOO'))
+    OR (e.value = 'WooCommerce' AND ess_source.type = 'WOO'))
 WHERE ess.ExternalSystem_Service_id = ess_source.ExternalSystem_Service_id
 ;

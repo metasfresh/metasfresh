@@ -34,7 +34,7 @@ FROM ExternalSystem_Config esc_source
     OR (e.value = 'ProCareManagement' AND esc_source.type = 'PCM')
     OR (e.value = 'RabbitMQRESTAPI' AND esc_source.type = 'RabbitMQ')
     OR (e.value = 'Shopware6' AND esc_source.type = 'S6')
-    OR (e.value = 'WOOCommerce' AND esc_source.type = 'WOO'))
+    OR (e.value = 'WooCommerce' AND esc_source.type = 'WOO'))
 WHERE esc.ExternalSystem_Config_id = esc_source.ExternalSystem_Config_id
 ;
 
