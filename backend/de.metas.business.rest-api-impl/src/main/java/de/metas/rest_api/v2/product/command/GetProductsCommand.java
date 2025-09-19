@@ -107,7 +107,7 @@ public class GetProductsCommand
 	@Nullable
 	private final String orgCode;
 
-	private final ExternalSystemType externalSystemType;
+	@Nullable private final ExternalSystemType externalSystemType;
 	private final String externalSystemConfigValue;
 	private final ExternalIdentifier productIdentifier;
 
@@ -442,7 +442,7 @@ public class GetProductsCommand
 	@Nullable
 	private PriceListId getPharmacyPriceListIdOrNull()
 	{
-		if (!externalSystemType.isAlberta() || Check.isBlank(externalSystemConfigValue))
+		if (externalSystemType == null || !externalSystemType.isAlberta() || Check.isBlank(externalSystemConfigValue))
 		{
 			return null;
 		}
@@ -467,7 +467,7 @@ public class GetProductsCommand
 			@NonNull final ImmutableList.Builder<I_M_Product> productRecordsBuilder,
 			@NonNull final HashSet<ProductId> loadedProductIds)
 	{
-		if (!externalSystemType.isAlberta())
+		if (externalSystemType == null || !externalSystemType.isAlberta())
 		{
 			return;
 		}

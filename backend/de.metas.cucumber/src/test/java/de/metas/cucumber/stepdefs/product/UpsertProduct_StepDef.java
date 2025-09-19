@@ -60,6 +60,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
@@ -76,6 +77,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class UpsertProduct_StepDef
 {
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -88,17 +90,9 @@ public class UpsertProduct_StepDef
 	private final OrgId defaultOrgId = OrgId.ofRepoId(1000000);
 
 	private final TestContext testContext;
-	private final ExternalReferenceRepository externalReferenceRepository;
-	private final ProductRepository productRepository;
-	private final ExternalSystemRepository externalSystemRepository;
-
-	public UpsertProduct_StepDef(final TestContext testContext, final ExternalSystemRepository externalSystemRepository)
-	{
-		this.testContext = testContext;
-		this.externalSystemRepository = externalSystemRepository;
-		productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
-		externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
-	}
+	private final ExternalReferenceRepository externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
+	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	@Then("verify if data is persisted correctly for each product")
 	public void verifyIfDataIsPersistedCorrectlyForProductCodeCode()
