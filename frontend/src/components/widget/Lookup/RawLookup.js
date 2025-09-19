@@ -171,12 +171,16 @@ export class RawLookup extends Component {
   handleSelect_AddNew = () => {
     const {
       dispatch,
-      newRecordWindowId,
-      newRecordCaption,
+      newRecordWindowId: parentWindowId,
+      newRecordCaption: parentCaption,
       filterWidget,
       parameterName,
       mainProperty,
     } = this.props;
+    // Prioritize values from `this.props.item` over those directly in `this.props`
+    const newRecordWindowId =
+      this.props.item?.newRecordWindowId || parentWindowId;
+    const newRecordCaption = this.props.item?.newRecordCaption || parentCaption;
 
     this.handleDropdownBlur();
 
@@ -533,7 +537,7 @@ export class RawLookup extends Component {
   };
 
   getNewRecordKeyCaptionIfAvailable = () => {
-    const { newRecordCaption } = this.props;
+    const { newRecordCaption } = this.props.item;
     return newRecordCaption != null
       ? { key: KEY_New, caption: newRecordCaption }
       : null;
