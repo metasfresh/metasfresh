@@ -11,40 +11,36 @@ Feature:bpartner get using metasfresh api
 
     And remove external reference if exists:
       | ExternalSystem    | ExternalReference | Type             |
-      | WooCommerce       | 1234              | BPartner         |
-      | ProCareManagement | 2345              | BPartnerLocation |
-      | Other             | 3456              | UserID           |
+      | WooCommerce       | bp1234            | BPartner         |
+      | ProCareManagement | pbl2345           | BPartnerLocation |
+      | Other             | u3456             | UserID           |
 
+    And metasfresh contains AD_Org:
+      | AD_Org_ID.Identifier | Name | Value |
+      | 001                  | 001  | 001   |
 
+    And  metasfresh contains C_BPartners without locations:
+      | Identifier | Name | AD_Org_ID.Identifier | REST.Context.C_BPartner_ID |
+      | 1234       | 1234 | 001                  | BPartner_1234_ID           |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | C_BPartner_ID.Identifier | AD_Org_ID.Identifier | REST.Context.C_BPartner_Location_ID |
+      | 2345       | 1234                     | 001                  | BPartnerLocation_1234_ID            |
+
+    And metasfresh contains AD_Users:
+      | AD_User_ID.Identifier | Name | OPT.C_BPartner_ID.Identifier | AD_Org_ID.Identifier | OPT.EMail  | REST.Context.AD_User_ID |
+      | 3456                  | 3456 | 1234                         | 001                  | 3456_email | AD_User_1234_ID         |
 
   @from:cucumber
   Scenario: get Partner request by external system as a REST-API invoker
   I want to be able to get partners updated since a timestamp for a external system
 
-    Given metasfresh contains AD_Org:
-      | AD_Org_ID.Identifier | Name | Value |
-      | 001                  | 001  | 001   |
-
-    And  metasfresh contains C_BPartners without locations:
-      | Identifier | Name         | AD_Org_ID.Identifier |
-      | 1234       | 1234 | 001                  |
-
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier | C_BPartner_ID.Identifier | AD_Org_ID.Identifier |
-      | 2345       | 1234                     | 001                  |
-
-
-    And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name | OPT.C_BPartner_ID.Identifier | AD_Org_ID.Identifier |
-      | 3456                  | 3456 | 1234                     | 001                  |
-
-
     And metasfresh contains S_ExternalReferences:
       | ExternalSystem.Code | ExternalReference | ExternalReferenceType.Code | RecordId.Identifier |
       | WooCommerce         | bp1234            | BPartner                   | 1234                |
       | ProCareManagement   | pbl2345           | BPartnerLocation           | 2345                |
-      | Other               | u34565            | UserID                     | 3456                |
-
+      | Other               | u3456             | UserID                     | 3456                |
+    
     When the metasfresh REST-API endpoint path 'api/v2/bpartner/byExtSystem/WooCommerce/?since=2461507318000' receives a 'GET' request
 
     Then the metasfresh REST-API responds with
@@ -57,7 +53,7 @@ Feature:bpartner get using metasfresh api
   "items": [
     {
       "bpartner": {
-        "metasfreshId": 2156426,
+        "metasfreshId": @BPartner_1234_ID@,
         "code": "1234",
         "globalId": null,
         "active": true,
@@ -68,7 +64,7 @@ Feature:bpartner get using metasfresh api
         "paymentRule": "OnCredit",
         "company": true,
         "vatId": null,
-        "metasfreshUrl": "http://localhost:3000/window/123/2156426",
+        "metasfreshUrl": "http://localhost:3000/window/123/@BPartner_1234_ID@",
         "changeInfo": {
           "createdMillis": 2461561200000,
           "createdBy": 100,
@@ -78,7 +74,7 @@ Feature:bpartner get using metasfresh api
       },
       "locations": [
         {
-          "metasfreshId": 2205176,
+          "metasfreshId": @BPartnerLocation_1234_ID@,
           "name": "1234",
           "bpartnerName": null,
           "active": true,
@@ -106,8 +102,8 @@ Feature:bpartner get using metasfresh api
       ],
       "contacts": [
         {
-          "metasfreshId": 2188224,
-          "metasfreshBPartnerId": 2156426,
+          "metasfreshId": @AD_User_1234_ID@,
+          "metasfreshBPartnerId": @BPartner_1234_ID@,
           "active": true,
           "name": "3456",
           "newsletter": false,
@@ -127,8 +123,8 @@ Feature:bpartner get using metasfresh api
   ]
 }
     """
-
-
+# cleanup
+    And metasfresh has current date and time
 
   @from:cucumber
   Scenario: get Partner request by org as a REST-API invoker
@@ -141,12 +137,12 @@ Feature:bpartner get using metasfresh api
    {
   "resultTimestamp": 2461561200000
 ,
-  "totalSize": 3,
+  "totalSize": 1,
   "pageSize": 1,
   "items": [
-    {
+    { 
       "bpartner": {
-        "metasfreshId": 2156426,
+        "metasfreshId": @BPartner_1234_ID@,
         "code": "1234",
         "globalId": null,
         "active": true,
@@ -167,7 +163,7 @@ Feature:bpartner get using metasfresh api
       },
       "locations": [
         {
-          "metasfreshId": 2205176,
+          "metasfreshId": @BPartnerLocation_1234_ID@,
           "name": "1234",
           "bpartnerName": null,
           "active": true,
@@ -195,8 +191,8 @@ Feature:bpartner get using metasfresh api
       ],
       "contacts": [
         {
-          "metasfreshId": 2188224,
-          "metasfreshBPartnerId": 2156426,
+          "metasfreshId": @AD_User_1234_ID@,
+          "metasfreshBPartnerId": @BPartner_1234_ID@,
           "active": true,
           "name": "3456",
           "newsletter": false,
@@ -216,3 +212,5 @@ Feature:bpartner get using metasfresh api
   ]
 }
     """
+# cleanup
+    And metasfresh has current date and time
