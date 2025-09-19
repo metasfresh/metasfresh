@@ -1,6 +1,6 @@
 {
   "orgCode": "orgCode",
-  "externalSystemName": "WOO",
+  "externalSystemName": "WOOCommerce",
   "externalSystemChildConfigValue": "childValue",
   "command": "enableRestAPI",
   "adPInstanceId": 123,
