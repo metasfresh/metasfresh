@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_ExportAudit
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_ExportAudit extends org.compiere.model.PO implements I_ExternalSystem_ExportAudit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2053147346L;
+	private static final long serialVersionUID = -1501839373L;
 
     /** Standard Constructor */
     public X_ExternalSystem_ExportAudit (final Properties ctx, final int ExternalSystem_ExportAudit_ID, @Nullable final String trxName)
@@ -77,13 +77,13 @@ public class X_ExternalSystem_ExportAudit extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public void setExportParameters (final @Nullable String ExportParameters)
+	public void setExportParameters (final @Nullable java.lang.String ExportParameters)
 	{
 		set_Value (COLUMNNAME_ExportParameters, ExportParameters);
 	}
 
 	@Override
-	public String getExportParameters()
+	public java.lang.String getExportParameters() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExportParameters);
 	}
@@ -157,25 +157,31 @@ public class X_ExternalSystem_ExportAudit extends org.compiere.model.PO implemen
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ExportAudit_ID);
 	}
 
-	/** 
-	 * ExternalSystemType AD_Reference_ID=541255
-	 * Reference name: Type
-	 */
-	public static final int EXTERNALSYSTEMTYPE_AD_Reference_ID=541255;
-	/** Alberta = A */
-	public static final String EXTERNALSYSTEMTYPE_Alberta = "A";
-	/** Shopware6 = S6 */
-	public static final String EXTERNALSYSTEMTYPE_Shopware6 = "S6";
 	@Override
-	public void setExternalSystemType (final @Nullable String ExternalSystemType)
+	public de.metas.externalsystem.model.I_ExternalSystem getExternalSystem()
 	{
-		set_Value (COLUMNNAME_ExternalSystemType, ExternalSystemType);
+		return get_ValueAsPO(COLUMNNAME_ExternalSystem_ID, de.metas.externalsystem.model.I_ExternalSystem.class);
 	}
 
 	@Override
-	public String getExternalSystemType()
+	public void setExternalSystem(final de.metas.externalsystem.model.I_ExternalSystem ExternalSystem)
 	{
-		return get_ValueAsString(COLUMNNAME_ExternalSystemType);
+		set_ValueFromPO(COLUMNNAME_ExternalSystem_ID, de.metas.externalsystem.model.I_ExternalSystem.class, ExternalSystem);
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override

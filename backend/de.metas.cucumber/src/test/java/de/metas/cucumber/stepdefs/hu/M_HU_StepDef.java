@@ -51,6 +51,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -110,9 +111,11 @@ import org.compiere.util.DB;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -203,8 +206,9 @@ public class M_HU_StepDef
 					assertThat(hu).isNotNull();
 
 					row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PI_Version_ID)
-							.map(huPiVersionTable::get)
-							.ifPresent(piVersion -> assertThat(hu.getM_HU_PI_Version_ID()).isEqualTo(piVersion.getM_HU_PI_Version_ID()));
+							.map(identifier -> huPiVersionTable.getIdOptional(identifier)
+									.orElseGet(() -> identifier.getAsId(HuPackingInstructionsVersionId.class)))
+							.ifPresent(piVersionId -> assertThat(hu.getM_HU_PI_Version_ID()).isEqualTo(piVersionId.getRepoId()));
 
 					row.getAsOptionalIdentifier(COLUMNNAME_M_Locator_ID)
 							.ifPresent(locatorIdentifier -> {
@@ -750,8 +754,6 @@ public class M_HU_StepDef
 
 			final String jsonHUType = DataTableUtil.extractStringForColumnName(row, "jsonHUType");
 			final String attrLotNo = DataTableUtil.extractStringOrNullForColumnName(row, "attributes." + HU_ATTR_LOT_NUMBER);
-			final String productName = DataTableUtil.extractStringForColumnName(row, "products.productName");
-			final String productValue = DataTableUtil.extractStringForColumnName(row, "products.productValue");
 			final String productQty = DataTableUtil.extractStringForColumnName(row, "products.qty");
 			final String uom = DataTableUtil.extractStringOrNullForColumnName(row, "products.uom");
 			final int numberOfAggregatedHUs = DataTableUtil.extractIntForColumnName(row, "numberOfAggregatedHUs");
@@ -786,9 +788,9 @@ public class M_HU_StepDef
 			}
 
 			assertThat(jsonHU.getUnitType()).isEqualTo(JsonHUType.valueOf(jsonHUType));
-			assertThat(jsonHU.getAttributes().getAttributes().get(HU_ATTR_LOT_NUMBER)).isEqualTo(attrLotNo);
-			assertThat(jsonHU.getProducts().get(0).getProductName()).isEqualTo(productName);
-			assertThat(jsonHU.getProducts().get(0).getProductValue()).isEqualTo(productValue);
+			assertThat(jsonHU.getAttributes().getAttributes()).containsEntry(HU_ATTR_LOT_NUMBER, attrLotNo);
+			assertThat(jsonHU.getProducts().get(0).getProductName()).as("products.productName").isIn(extractProductNames(row));
+			assertThat(jsonHU.getProducts().get(0).getProductValue()).isIn(extractProductValues(row));
 			assertThat(jsonHU.getProducts().get(0).getQty()).isEqualTo(productQty);
 			assertThat(jsonHU.getProducts().get(0).getUom()).isEqualTo(uom);
 			assertThat(jsonHU.getNumberOfAggregatedHUs()).isEqualTo(numberOfAggregatedHUs);
@@ -804,6 +806,28 @@ public class M_HU_StepDef
 				validateHU(jsonHU.getIncludedHUs(), includedHusIdentifiers, huIdentifierToRow);
 			}
 		}
+	}
+
+	private Set<String> extractProductNames(final Map<String, String> row)
+	{
+		final HashSet<String> result = new HashSet<>();
+		final String productName = DataTableUtil.extractStringForColumnName(row, "products.productName");
+		result.add(productName);
+
+		productTable.getOptional(productName).map(I_M_Product::getName).ifPresent(result::add);
+
+		return result;
+	}
+
+	private Set<String> extractProductValues(final Map<String, String> row)
+	{
+		final HashSet<String> result = new HashSet<>();
+		final String productValue = DataTableUtil.extractStringForColumnName(row, "products.productValue");
+		result.add(productValue);
+
+		productTable.getOptional(productValue).map(I_M_Product::getValue).ifPresent(result::add);
+
+		return result;
 	}
 
 	@And("return hu from customer")

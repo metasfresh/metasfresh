@@ -1,10 +1,15 @@
 package de.metas.ui.web.window.descriptor;
 
-import de.metas.document.NewRecordContext;
+import de.metas.organization.OrgId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
+import de.metas.user.UserId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -36,13 +41,30 @@ import lombok.Value;
 @Value(staticConstructor = "of")
 public class NewRecordDescriptor
 {
-	public interface NewRecordProcessor
-	{
-		int processNewRecordDocument(Document document,
-				NewRecordContext newRecordContext);
-	}
-
 	@NonNull String tableName;
 	@NonNull WindowId newRecordWindowId;
 	@NonNull NewRecordProcessor processor;
+
+	//
+	//
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	public static class ProcessNewRecordDocumentRequest
+	{
+		@NonNull Document document;
+		@NonNull OrgId loginOrgId;
+		@NonNull UserId loggedUserId;
+		@NonNull String loginLanguage;
+		@Nullable DocumentPath triggeringDocumentPath;
+		@Nullable String triggeringField;
+	}
+
+	public interface NewRecordProcessor
+	{
+		int processNewRecordDocument(@NonNull ProcessNewRecordDocumentRequest request);
+	}
 }

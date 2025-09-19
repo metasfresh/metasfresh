@@ -22,6 +22,7 @@
 
 package de.metas.externalreference;
 
+import de.metas.externalsystem.ExternalSystem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,10 +31,7 @@ import lombok.Value;
 @Builder
 public class GetExternalReferenceByRecordIdReq
 {
-	@NonNull
-	Integer recordId;
-	@NonNull
-	IExternalReferenceType externalReferenceType;
-	@NonNull
-	IExternalSystem externalSystem;
+	@NonNull Integer recordId;
+	@NonNull IExternalReferenceType externalReferenceType;
+	@NonNull ExternalSystem externalSystem;
 }

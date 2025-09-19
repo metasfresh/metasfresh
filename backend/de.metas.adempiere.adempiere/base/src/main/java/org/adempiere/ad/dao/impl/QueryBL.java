@@ -58,7 +58,7 @@ public class QueryBL implements IQueryBL
 	}
 
 	@Override
-	public <T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, String tableName, Object contextProvider)
+	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final String tableName, final Object contextProvider)
 	{
 		return new QueryBuilder<>(modelClass, tableName)
 				.setContext(contextProvider);
@@ -104,7 +104,7 @@ public class QueryBL implements IQueryBL
 	}
 
 	@Override
-	public ICompositeQueryFilter<Object> createCompositeQueryFilter(final String modelTableName)
+	public ICompositeQueryFilter<Object> createCompositeQueryFilter(@Nullable final String modelTableName)
 	{
 		return CompositeQueryFilter.newInstance(modelTableName);
 	}

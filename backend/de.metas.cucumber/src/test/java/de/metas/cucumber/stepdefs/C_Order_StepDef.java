@@ -44,9 +44,9 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -351,6 +351,9 @@ public class C_Order_StepDef
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
 		restTestContext.setIntVariableFromRow(tableRow, order::getC_Order_ID);
 
+		tableRow.getAsOptionalIdentifier("REST.Context.DocumentNo")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), order.getDocumentNo()));
+
 		return order;
 	}
 
@@ -481,6 +484,16 @@ public class C_Order_StepDef
 		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
 
 		assertThat(salesOrder.getDocStatus()).isEqualTo(IDocument.STATUS_Closed);
+	}
+
+	@Then("the sales order identified by {string} is reversed")
+	public void salesOrderIsReversed(
+			@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		assertThat(salesOrder.getDocStatus()).isEqualTo(IDocument.STATUS_Reversed);
 	}
 
 	@Then("the sales order identified by {string} is not closed")
