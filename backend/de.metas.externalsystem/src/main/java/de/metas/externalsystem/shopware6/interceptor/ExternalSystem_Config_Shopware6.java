@@ -50,9 +50,9 @@ public class ExternalSystem_Config_Shopware6
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.Shopware6.getCode().equals(parentType))
+		if (!ExternalSystemType.Shopware6.getValue().equals(parentType))
 		{
-			throw new AdempiereException("Invalid external system type!");
+			throw new AdempiereException("Invalid external system type: " + parentType);
 		}
 	}
 }

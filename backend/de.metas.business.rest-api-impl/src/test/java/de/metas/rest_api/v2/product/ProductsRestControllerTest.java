@@ -38,7 +38,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
@@ -69,13 +69,10 @@ import de.metas.title.TitleRepository;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
-import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
-import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
@@ -120,20 +117,20 @@ public class ProductsRestControllerTest
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
 		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
-																					  new ExternalSystemExportAuditRepo(),
-																					  new RuntimeParametersRepository(),
-																					  externalServices,
-																					  new JsonExternalSystemRetriever());
-		final ProductRepository productRepository = new ProductRepository();
-		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+		final ExternalSystemService externalSystemService = new ExternalSystemService(ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+				ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
+				new RuntimeParametersRepository(),
+				externalServices,
+				new JsonExternalSystemRetriever(),
+				new ExternalSystemRepository());
 
-		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), externalReferenceTypes);
+		final ProductRepository productRepository = new ProductRepository();
+
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
-				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
-		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
+				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
+		final AlbertaProductService albertaProductService = AlbertaProductService.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());

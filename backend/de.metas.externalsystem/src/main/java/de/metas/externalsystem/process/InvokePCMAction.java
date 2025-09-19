@@ -86,7 +86,7 @@ public class InvokePCMAction extends AlterExternalSystemServiceStatusAction
 	@Override
 	protected String getTabName()
 	{
-		return getExternalSystemType().getName();
+		return getExternalSystemType().getValue();
 	}
 
 	@Override

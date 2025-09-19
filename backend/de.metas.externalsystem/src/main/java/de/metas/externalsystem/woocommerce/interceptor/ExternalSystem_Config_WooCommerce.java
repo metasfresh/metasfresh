@@ -58,7 +58,7 @@ public class ExternalSystem_Config_WooCommerce
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(woocommerceConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.WOO.getCode().equals(parentType))
+		if (!ExternalSystemType.WOO.getValue().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

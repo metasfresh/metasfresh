@@ -29,7 +29,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum RestServiceAuthority
 {
-	WOO("WOO"),
+	WOO("WooCommerce"),
 	GRS("GRSSignum");
 
 	private final String value;

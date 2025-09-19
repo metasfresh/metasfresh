@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,20 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.externalsystem;
 
-import lombok.NonNull;
-import lombok.Value;
+import lombok.experimental.UtilityClass;
 
-/**
- * Intended for testing only. "Real" instances of {@link IExternalSystem} should be enum values.
- */
-@Value
-public class PlainExternalSystem implements IExternalSystem
+@UtilityClass
+public class ExternalSystemTestHelper
 {
-	String code;
-
-	public PlainExternalSystem(@NonNull final String code)
+	public static ExternalSystem createExternalSystemIfNotExists(final ExternalSystemType externalSystemType)
 	{
-		this.code = code;
+		final ExternalSystemRepository externalSystemRepository = ExternalSystemRepository.newInstanceForUnitTesting();
+		return externalSystemRepository.getOptionalByType(externalSystemType).orElseGet(
+				() -> externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+						.name(externalSystemType.getValue())
+						.type(externalSystemType)
+						.build()));
 	}
 }

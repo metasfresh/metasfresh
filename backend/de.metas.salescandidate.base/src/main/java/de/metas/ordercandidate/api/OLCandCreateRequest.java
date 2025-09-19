@@ -5,7 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
-import de.metas.impex.InputDataSourceId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;

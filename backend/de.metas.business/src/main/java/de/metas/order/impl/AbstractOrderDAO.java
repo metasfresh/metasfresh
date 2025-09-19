@@ -3,11 +3,14 @@ package de.metas.order.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocSubType;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -19,7 +22,6 @@ import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -29,6 +31,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
@@ -36,6 +39,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.PPCostCollectorId;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
@@ -354,6 +358,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		InterfaceWrapperHelper.save(orderLine);
 	}
 
+	@NonNull
 	public Optional<I_C_Order> retrieveByOrderCriteria(@NonNull final OrderQuery query)
 	{
 		if (query.getOrderId() != null)
@@ -362,7 +367,11 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		}
 		if (Check.isNotBlank(query.getDocumentNo()))
 		{
-			return Optional.ofNullable(getOrderByDocumentNumberQuery(query));
+			return Optional.ofNullable(getOrderByDocumentNumberAndDocType(query));
+		}
+		if (query.getExternalId() != null)
+		{
+			return getOrderByExternalId(query);
 		}
 		return Optional.empty();
 	}
@@ -389,17 +398,31 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return orderRecord;
 	}
 
-	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)
+	@Nullable
+	private I_C_Order getOrderByDocumentNumberAndDocType(@NonNull final OrderQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
 		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
+		final DocSubType docSubType = docType.getDocSubType();
 
-		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
+		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docType.getDocBaseType());
+		if (docSubType.isNone())
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+		else if (!docSubType.isAny())
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
+		}
+
+		final IQueryBuilder<I_C_Order> queryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
+				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, docTypeQueryBuilder.create());
 
 		return queryBuilder.create().firstOnly(I_C_Order.class);
 	}
@@ -460,7 +483,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
 		return Optional.ofNullable(PPCostCollectorId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId)));
 	}
-	
+
 	public boolean hasDeliveredItems(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
@@ -469,5 +492,26 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyDelivered, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
 				.create()
 				.anyMatch();
+	}
+
+	@NonNull
+	private Optional<I_C_Order> getOrderByExternalId(@NonNull final OrderQuery orderQuery)
+	{
+		final OrgId orgId = assumeNotNull(orderQuery.getOrgId(), "Param query needs to have a non-null orgId; query={}", orderQuery);
+		final ExternalId externalId = assumeNotNull(orderQuery.getExternalId(), "Param query needs to have a non-null externalId; query={}", orderQuery);
+
+		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue());
+
+		final InputDataSourceId dataSourceId = orderQuery.getInputDataSourceId();
+		if (dataSourceId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_AD_InputDataSource_ID, dataSourceId);
+		}
+
+		return queryBuilder
+				.create()
+				.firstOnlyOptional();
 	}
 }

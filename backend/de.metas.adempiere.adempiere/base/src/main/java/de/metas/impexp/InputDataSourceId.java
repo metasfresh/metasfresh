@@ -1,4 +1,4 @@
-package de.metas.impex;
+package de.metas.impexp;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;

@@ -16,7 +16,7 @@ import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
-import de.metas.impex.InputDataSourceId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;

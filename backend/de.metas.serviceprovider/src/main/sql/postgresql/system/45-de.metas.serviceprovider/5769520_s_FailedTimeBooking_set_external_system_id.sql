@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,12 @@
  * #L%
  */
 
-package de.metas.externalreference;
+SELECT backup_table('s_failedtimebooking', '_ref_list_drop')
+;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.adempiere.exceptions.AdempiereException;
-
-@AllArgsConstructor
-@Getter
-public enum NullExternalSystem implements IExternalSystem
-{
-	NULL("NULL");
-
-	public String code;
-
-	public static NullExternalSystem ofCode(final String code)
-	{
-		if ("NULL" .equals(code))
-		{
-			return NULL;
-		}
-		throw new AdempiereException("Unsupported code " + code + " for NullExternalSystem. Hint: only 'NULL' is allowed");
-	}
-}
+UPDATE s_failedtimebooking ftb
+SET externalsystem_id = e.externalsystem_id
+FROM s_failedtimebooking ftb_source
+         JOIN externalsystem e ON e.value = ftb_source.externalsystem
+WHERE ftb.s_failedtimebooking_id = ftb_source.s_failedtimebooking_id
+;

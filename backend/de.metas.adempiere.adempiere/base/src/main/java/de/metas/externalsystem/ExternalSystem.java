@@ -1,8 +1,14 @@
+package de.metas.externalsystem;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
- * de.metas.externalreference
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +26,11 @@
  * #L%
  */
 
-package de.metas.externalreference;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.adempiere.exceptions.AdempiereException;
-
-import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_Other;
-
-@AllArgsConstructor
-@Getter
-public enum OtherExternalSystem implements IExternalSystem
+@Value
+@Builder(toBuilder = true)
+public class ExternalSystem
 {
-	OTHER(EXTERNALSYSTEM_Other);
-
-	public String code;
-
-	public static OtherExternalSystem ofCode(final String code)
-	{
-		if (OTHER.getCode().equals(code))
-		{
-			return OTHER;
-		}
-		throw new AdempiereException("Unsupported code " + code + " for Shopware6ExternalSystem. Hint: only 'Shopware6' is allowed");
-	}
+	@NonNull ExternalSystemId id;
+	@NonNull ExternalSystemType type;
+	@NonNull String name;
 }

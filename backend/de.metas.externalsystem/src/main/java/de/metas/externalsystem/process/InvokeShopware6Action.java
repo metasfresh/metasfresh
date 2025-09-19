@@ -160,7 +160,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	@NonNull
 	protected String getTabName()
 	{
-		return ExternalSystemType.Shopware6.getName();
+		return ExternalSystemType.Shopware6.getValue();
 	}
 
 	@Override
