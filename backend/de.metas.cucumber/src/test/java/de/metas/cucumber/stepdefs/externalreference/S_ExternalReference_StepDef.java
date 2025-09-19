@@ -40,15 +40,17 @@ import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemCreateRequest;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -57,6 +59,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.exceptions.AdempiereException;
@@ -78,10 +81,11 @@ import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Bpartn
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Product;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_ProductCategory;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
+@RequiredArgsConstructor
 public class S_ExternalReference_StepDef
 {
 	private final OrgId defaultOrgId = OrgId.ofRepoId(1000000);
@@ -93,31 +97,11 @@ public class S_ExternalReference_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ExternalReferenceTypes externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
+	private final ExternalReferenceRepository externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 
-	private final ExternalReferenceTypes externalReferenceTypes;
-	private final ExternalSystems externalSystems;
-	private final ExternalReferenceRepository externalReferenceRepository;
 	private final TestContext testContext;
-
-	public S_ExternalReference_StepDef(
-			@NonNull final ExternalSystems externalSystems,
-			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final S_ExternalReference_StepDefData externalRefTable,
-			@NonNull final M_Shipper_StepDefData shipperTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final TestContext testContext)
-	{
-		this.externalSystems = externalSystems;
-		this.userTable = userTable;
-		this.externalRefTable = externalRefTable;
-		this.shipperTable = shipperTable;
-		this.productTable = productTable;
-		this.bpartnerTable = bpartnerTable;
-		this.testContext = testContext;
-		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
-		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
-	}
 
 	@Then("verify that S_ExternalReference was created")
 	public void verifyExists(@NonNull final DataTable dataTable)
@@ -125,14 +109,15 @@ public class S_ExternalReference_StepDef
 		final List<Map<String, String>> externalReferencesTableList = dataTable.asMaps();
 		for (final Map<String, String> dataTableRow : externalReferencesTableList)
 		{
-			final String externalSystem = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalSystem");
-			final String type = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "Type");
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(DataTableUtil.extractStringForColumnName(dataTableRow, "ExternalSystem"));
+			final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
+			final IExternalReferenceType type = externalReferenceTypes.ofCodeNotNull(DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "Type"));
 			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
 			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
 
 			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
-					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystem)
-					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId())
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
 					.create()
@@ -147,9 +132,12 @@ public class S_ExternalReference_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String externalSystemCode = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalSystem);
-			final IExternalSystem externalSystemType = externalSystems.ofCode(externalSystemCode)
-					.orElseThrow(() -> new AdempiereException("Unknown externalSystemCode" + externalSystemCode));
+			final String externalSystemValue = DataTableUtil.extractStringForColumnName(row, "ExternalSystem");
+			final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(externalSystemValue)
+					.orElseGet(() -> externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+							.name(externalSystemValue)
+							.type(ExternalSystemType.ofValue(externalSystemValue))
+							.build()));
 
 			final String typeCode = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_Type);
 			final IExternalReferenceType type = externalReferenceTypes.ofCode(typeCode)
@@ -161,14 +149,14 @@ public class S_ExternalReference_StepDef
 					() -> queryBL.createQueryBuilder(I_S_ExternalReference.class)
 							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 							.addEqualsFilter(I_S_ExternalReference.COLUMN_Type, type.getCode())
-							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystemType.getCode())
+							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId())
 							.create()
 							.firstOnlyOrNull(I_S_ExternalReference.class),
 					() -> newInstanceOutOfTrx(I_S_ExternalReference.class));
 
 			assertThat(externalReferenceRecord).isNotNull();
 
-			externalReferenceRecord.setExternalSystem(externalSystemType.getCode());
+			externalReferenceRecord.setExternalSystem_ID(externalSystem.getId().getRepoId());
 			externalReferenceRecord.setType(type.getCode());
 			externalReferenceRecord.setExternalReference(externalReference);
 
@@ -216,16 +204,16 @@ public class S_ExternalReference_StepDef
 		final List<JsonExternalReferenceItem> referenceItems = jsonExternalReferenceLookupResponse.getItems();
 		final List<Map<String, String>> rows = table.asMaps();
 
-		assertThat(referenceItems.size()).isEqualTo(rows.size());
+		assertThat(referenceItems).hasSameSizeAs(rows);
 
 		for (final Map<String, String> row : rows)
 		{
 			final String expectedExternalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
 			final JsonExternalReferenceItem item = Check.singleElement(referenceItems
-																			   .stream()
-																			   .filter(referenceItem -> referenceItem.getLookupItem().getId().equals(expectedExternalReference))
-																			   .collect(ImmutableList.toImmutableList()));
+					.stream()
+					.filter(referenceItem -> referenceItem.getLookupItem().getId().equals(expectedExternalReference))
+					.collect(ImmutableList.toImmutableList()));
 
 			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -296,7 +284,7 @@ public class S_ExternalReference_StepDef
 
 		for (final Map<String, String> dataTableEntry : dataTableEntries)
 		{
-			final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_ExternalSystem + ".Code");
+			final String externalSystemValue = DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalSystem.Code");
 			final String externalId = DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 			final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_Type));
 
@@ -310,8 +298,11 @@ public class S_ExternalReference_StepDef
 				throw new AdempiereException("No implementation for external reference type.");
 			}
 
-			final IExternalSystem externalSystem = externalSystems.ofCode(externalSystemName)
-					.orElseThrow(() -> new InvalidIdentifierException("systemName", externalSystemName));
+			final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(externalSystemValue)
+					.orElseGet(() -> externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+							.name(externalSystemValue)
+							.type(ExternalSystemType.ofValue(externalSystemValue))
+							.build()));
 
 			final ExternalReference externalReference = ExternalReference.builder()
 					.orgId(ORG_ID)
@@ -327,16 +318,19 @@ public class S_ExternalReference_StepDef
 
 	private void createS_ExternalReference(@NonNull final Map<String, String> tableRow)
 	{
-		final String externalSystemCode = DataTableUtil.extractStringForColumnName(tableRow, "ExternalSystem.Code");
+		final String externalSystemValue = DataTableUtil.extractStringForColumnName(tableRow, "ExternalSystem.Code");
 		final String externalId = DataTableUtil.extractStringForColumnName(tableRow, "ExternalReference");
 		final String referenceType = DataTableUtil.extractStringForColumnName(tableRow, "ExternalReferenceType.Code");
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "RecordId.Identifier");
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(externalSystemCode)
-				.orElseThrow(() -> new InvalidIdentifierException("systemName", externalSystemCode));
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(externalSystemValue)
+				.orElseGet(() -> externalSystemRepository.create(ExternalSystemCreateRequest.builder()
+						.name(externalSystemValue)
+						.type(ExternalSystemType.ofValue(externalSystemValue))
+						.build()));
 
 		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(referenceType)
-				.orElseThrow(() -> new InvalidIdentifierException("externalReferenceType", externalSystemCode));
+				.orElseThrow(() -> new InvalidIdentifierException("externalReferenceType", referenceType));
 
 		final int recordId;
 
@@ -368,17 +362,12 @@ public class S_ExternalReference_StepDef
 
 	private void removeExternalReferenceIfExists(@NonNull final Map<String, String> tableRow)
 	{
-		final String externalSystem = DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_ExternalSystem);
 		final String externalReference = DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_ExternalReference);
-		final String referenceType = DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_Type);
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(DataTableUtil.extractStringForColumnName(tableRow, "ExternalSystem"));
+		final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
+		final IExternalReferenceType referenceType = externalReferenceTypes.ofCodeNotNull(DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_Type));
 
-		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_S_ExternalReference.class)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystem)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, referenceType)
-				.create()
-				.delete();
+		externalReferenceRepository.deleteByReference(externalReference, externalSystem.getId(), referenceType);
 	}
 
 	private IExternalReferenceType getExternalReferenceType(final String type)

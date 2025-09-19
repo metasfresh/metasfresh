@@ -35,9 +35,9 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.IExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
@@ -60,12 +60,14 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,6 +77,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class UpsertProduct_StepDef
 {
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -87,17 +90,9 @@ public class UpsertProduct_StepDef
 	private final OrgId defaultOrgId = OrgId.ofRepoId(1000000);
 
 	private final TestContext testContext;
-	private final ExternalReferenceRepository externalReferenceRepository;
-	private final ProductRepository productRepository;
-	private final ExternalSystems externalSystems;
-
-	public UpsertProduct_StepDef(final TestContext testContext, final ExternalSystems externalSystems)
-	{
-		this.testContext = testContext;
-		this.externalSystems = externalSystems;
-		productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
-		externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
-	}
+	private final ExternalReferenceRepository externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
+	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	@Then("verify if data is persisted correctly for each product")
 	public void verifyIfDataIsPersistedCorrectlyForProductCodeCode()
@@ -135,6 +130,7 @@ public class UpsertProduct_StepDef
 
 				final ExternalReference externalReference =
 						getExternalReference("bpartner", jsonRequestBPartnerProductUpsert.getBpartnerIdentifier());
+				assertThat(externalReference).isNotNull();
 
 				final BPartnerProduct bPartnerProduct = bPartnerProducts.get(BPartnerId.ofRepoId(externalReference.getRecordId()));
 
@@ -258,11 +254,12 @@ public class UpsertProduct_StepDef
 		assertThat(externalReference).isNotNull();
 	}
 
+	@Nullable
 	private ExternalReference getExternalReference(final String type, final String identifier)
 	{
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(identifier);
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(productIdentifier.asExternalValueAndSystem().getExternalSystem())
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(productIdentifier.asExternalValueAndSystem().getExternalSystem())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", identifier));
 
 		final ExternalReferenceQuery externalReferenceQuery = ExternalReferenceQuery.builder()
@@ -275,7 +272,8 @@ public class UpsertProduct_StepDef
 		final Set<ExternalReferenceQuery> querySet = new HashSet<>();
 		querySet.add(externalReferenceQuery);
 
-		return externalReferenceRepository.getExternalReferences(querySet).get(externalReferenceQuery);
+		return externalReferenceRepository.getExternalReferences(querySet).get(externalReferenceQuery)
+				.orElse(null);
 	}
 
 	private IExternalReferenceType getExternalReferenceType(final String type)

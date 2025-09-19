@@ -290,10 +290,10 @@ Feature:product get/create/update using metasfresh api
       | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | 1101899104400 |
 
     And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code | RecordId.Identifier |
-      | LeichUndMehl        | productExternalRef | Product                    | product_1           |
+      | ExternalSystem.Code | ExternalReference    | ExternalReferenceType.Code | RecordId.Identifier |
+      | LeichUndMehl        | productExternalRef_1 | Product                    | product_1           |
 
-    When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef' receives a 'GET' request
+    When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef_1' receives a 'GET' request
 
     Then validate retrieve product response
       | M_Product_ID.Identifier | UomSymbol | M_Product_Category_ID.Identifier | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason | bpartners.ean |

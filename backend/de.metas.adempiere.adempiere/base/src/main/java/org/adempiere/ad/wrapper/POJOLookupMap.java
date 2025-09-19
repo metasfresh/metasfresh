@@ -231,6 +231,16 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		setNextIdSupplier(newNextIdSupplier());
 	}
 
+	public static void setNextIdSupplier_SingleSharedSequence()
+	{
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newSingleSharedSequence());
+	}
+
+	public static void setNextIdSupplier_PerTableSequence()
+	{
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
+	}
+
 	public static void setNextIdSupplier(@NonNull final POJONextIdSupplier nextIdSupplier)
 	{
 		final POJONextIdSupplier nextIdSupplierOld = instance.nextIdSupplier;

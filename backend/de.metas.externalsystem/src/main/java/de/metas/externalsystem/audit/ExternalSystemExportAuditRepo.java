@@ -22,6 +22,9 @@
 
 package de.metas.externalsystem.audit;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_ExportAudit;
 import de.metas.process.PInstanceId;
@@ -29,18 +32,29 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class ExternalSystemExportAuditRepo
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+
+	@VisibleForTesting
+	public static ExternalSystemExportAuditRepo newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ExternalSystemExportAuditRepo(ExternalSystemRepository.newInstanceForUnitTesting());
+	}
 
 	@NonNull
 	public Optional<ExternalSystemExportAudit> getMostRecentByTableReferenceAndSystem(
@@ -51,7 +65,7 @@ public class ExternalSystemExportAuditRepo
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ExternalSystem_ExportAudit.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
 				.addEqualsFilter(I_ExternalSystem_ExportAudit.COLUMNNAME_AD_Table_ID, tableRecordReference.getAD_Table_ID())
-				.addEqualsFilter(I_ExternalSystem_ExportAudit.COLUMNNAME_ExternalSystemType, externalSystemType)
+				.addEqualsFilter(I_ExternalSystem_ExportAudit.COLUMNNAME_ExternalSystem_ID, externalSystemRepository.getByType(externalSystemType).getId())
 				.orderByDescending(I_ExternalSystem_ExportAudit.COLUMN_ExportTime)
 				.create()
 				.firstOptional(I_ExternalSystem_ExportAudit.class)
@@ -75,9 +89,9 @@ public class ExternalSystemExportAuditRepo
 			record.setAD_PInstance_ID(request.getPInstanceId().getRepoId());
 		}
 
-		record.setExternalSystemType(request.getExternalSystemType() != null
-											 ? request.getExternalSystemType().getCode()
-											 : null);
+		record.setExternalSystem_ID(request.getExternalSystemType() != null
+											 ? externalSystemRepository.getByType(request.getExternalSystemType()).getId().getRepoId()
+											 : -1);
 
 		InterfaceWrapperHelper.saveRecord(record);
 
@@ -87,6 +101,8 @@ public class ExternalSystemExportAuditRepo
 	@NonNull
 	private ExternalSystemExportAudit recordToModel(@NonNull final I_ExternalSystem_ExportAudit exportAudit)
 	{
+		final ExternalSystemId externalSystemId = ExternalSystemId.ofRepoIdOrNull(exportAudit.getExternalSystem_ID());
+		final ExternalSystemType externalSystemType = externalSystemId == null ? null : externalSystemRepository.getById(externalSystemId).getType();
 		return ExternalSystemExportAudit.builder()
 				.externalSystemExportAuditId(ExternalSystemExportAuditId.ofRepoId(exportAudit.getExternalSystem_ExportAudit_ID()))
 				.pInstanceId(PInstanceId.ofRepoIdOrNull(exportAudit.getAD_PInstance_ID()))
@@ -95,7 +111,7 @@ public class ExternalSystemExportAuditRepo
 				.tableRecordReference(TableRecordReference.of(exportAudit.getAD_Table_ID(), exportAudit.getRecord_ID()))
 				.exportTime(TimeUtil.asInstant(exportAudit.getExportTime()))
 				.exportParameters(exportAudit.getExportParameters())
-				.externalSystemType(ExternalSystemType.ofNullableCode(exportAudit.getExternalSystemType()))
+				.externalSystemType(externalSystemType)
 				.build();
 	}
 }

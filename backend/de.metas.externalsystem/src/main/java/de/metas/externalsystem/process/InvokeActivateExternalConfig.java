@@ -26,6 +26,7 @@ import de.metas.externalsystem.ExternalSystemConfigQuery;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.AdProcessId;
@@ -63,9 +64,9 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 
 		activateRecord();
 
-		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(getExternalSystemType().getExternalSystemProcessClassName());
+		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExternalSystemProcesses.getExternalSystemProcessClassName(getExternalSystemType()));
 
-		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + getExternalSystemType().getExternalSystemProcessClassName());
+		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + ExternalSystemProcesses.getExternalSystemProcessClassName(getExternalSystemType()));
 
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
 													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
@@ -82,7 +83,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 		final long selectedRecordsCount = getSelectedRecordCount(context);
 		if (selectedRecordsCount > 1)
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_MULTIPLE_EXTERNAL_SELECTION, getExternalSystemType().getName()));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_MULTIPLE_EXTERNAL_SELECTION, getExternalSystemType().getValue()));
 		}
 		else if (selectedRecordsCount == 0)
 		{
@@ -90,7 +91,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 
 			if (!config.isPresent())
 			{
-				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getExternalSystemType().getName()));
+				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getExternalSystemType().getValue()));
 			}
 
 			if (config.get().isActive())

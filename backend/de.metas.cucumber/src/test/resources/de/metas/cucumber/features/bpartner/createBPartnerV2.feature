@@ -476,3 +476,98 @@ Feature: create or update BPartner v2
   }
 }
 """
+
+  @from:cucumber
+  Scenario: create a BPartner record
+    When metasfresh contains External System
+      | Name        | Value      |
+      | Test System | TestSystem |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
+    """
+{
+   "requestItems":[
+      {
+         "bpartnerIdentifier":"ext-TestSystem-001",
+         "externalReferenceUrl":"www.ExternalReferenceURL.com",
+         "bpartnerComposite":{
+            "bpartner":{
+               "code":"test_code_test_system",
+               "name":"test_name_test_system",
+               "companyName":"test_company_test_system",
+               "parentId":null,
+               "phone":null,
+               "language":"de",
+               "url":null,
+               "group":"test-group",
+                "vatId": "vatId_BPartner001_test_system"
+            },
+            "locations":{
+               "requestItems":[
+                  {
+                     "locationIdentifier":"ext-TestSystem-001-1",
+                     "location":{
+                        "address1":"test_address1_test_system",
+                        "address2":"test_address2_test_system",
+                        "poBox":null,
+                        "district":null,
+                        "region":null,
+                        "city":null,
+                        "countryCode":"DE",
+                        "gln":null,
+                        "postal":null,
+                        "vatId": null
+                     }
+                  },
+                  {
+                     "locationIdentifier":"ext-TestSystem-001-2",
+                     "location":{
+                        "address1":null,
+                        "address2":"test_address2_test_system_2",
+                        "poBox":"test_poBox_test_system",
+                        "district":null,
+                        "region":"test_region_test_system",
+                        "city":"test_city_test_system",
+                        "countryCode":"DE",
+                        "gln":null,
+                        "postal":null,
+                        "vatId": "vatId_Location_test_system"
+                     }
+                  }
+               ]
+            },
+            "contacts":{
+               "requestItems":[
+                  {
+                     "contactIdentifier":"ext-TestSystem-001-1",
+                     "contact":{
+                        "code":"code_test_system_1",
+                        "name":"test_name_test_system_1",
+                        "email":"test_email_test_system_1",
+                        "fax":"fax_test_system_1",
+                        "invoiceEmailEnabled" : false
+                     }
+                  },
+                  {
+                     "contactIdentifier":"ext-TestSystem-001-2",
+                     "contact":{
+                        "code":"code_test_system_2",
+                        "name":"test_name_code_test_system_2",
+                        "email":null,
+                        "fax":"fax_test_system_2",
+                        "invoiceEmailEnabled" : true
+                     }
+                  }
+               ]
+            }
+         }
+      }
+   ],
+   "syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"UPDATE_MERGE"
+   }
+}
+"""
+    Then verify that bPartner was created for externalIdentifier
+      | C_BPartner_ID.Identifier | externalIdentifier    | Name                  |
+      | created_bpartner         | ext-TestSystem-001    | test_name_test_system |

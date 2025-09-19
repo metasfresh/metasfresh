@@ -36,7 +36,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @UtilityClass
-public class ExternalSystemTestUtil
+public class ExternalSystemConfigTestUtil
 {
 	@NonNull
 	@Builder(builderMethodName = "createI_ExternalSystem_ConfigBuilder", builderClassName = "I_ExternalSystem_ConfigBuilder")
@@ -46,10 +46,10 @@ public class ExternalSystemTestUtil
 			final int customParentConfigId)
 	{
 		final Boolean isActive = CoalesceUtil.coalesceNotNull(active, Boolean.TRUE);
-
+		final ExternalSystem externalSystem = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.ofValue(type));
 		final I_ExternalSystem_Config record = newInstance(I_ExternalSystem_Config.class);
 		record.setName("name");
-		record.setType(type);
+		record.setExternalSystem_ID(externalSystem.getId().getRepoId());
 		record.setIsActive(isActive);
 		record.setWriteAudit(true);
 		record.setAuditFileFolder("auditFileFolder");

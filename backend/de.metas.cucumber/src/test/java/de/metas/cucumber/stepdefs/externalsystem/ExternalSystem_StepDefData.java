@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,29 +20,18 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.cucumber.stepdefs.externalsystem;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.adempiere.exceptions.AdempiereException;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.externalsystem.model.I_ExternalSystem;
 
-import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_LeichUndMehl;
-
-@AllArgsConstructor
-@Getter
-public enum LeichUndMehlExternalSystem implements IExternalSystem
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class ExternalSystem_StepDefData extends StepDefData<I_ExternalSystem>
 {
-	LEICHUNDMEHL(EXTERNALSYSTEM_LeichUndMehl);
-
-	public String code;
-
-	public static LeichUndMehlExternalSystem ofCode(final String code)
+	public ExternalSystem_StepDefData()
 	{
-		if (LEICHUNDMEHL.getCode().equals(code))
-		{
-			return LEICHUNDMEHL;
-		}
-		throw new AdempiereException("Unsupported code " + code + " for LeichUndMehlExternalSystem. Hint: only 'LeichUndMehl' is allowed");
+		super(I_ExternalSystem.class);
 	}
-
 }

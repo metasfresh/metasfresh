@@ -22,7 +22,7 @@
 
 package de.metas.serviceprovider.external.project;
 
-import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

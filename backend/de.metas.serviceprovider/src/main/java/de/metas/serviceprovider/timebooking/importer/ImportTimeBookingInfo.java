@@ -23,7 +23,6 @@
 package de.metas.serviceprovider.timebooking.importer;
 
 import de.metas.externalreference.ExternalId;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.timebooking.TimeBookingId;
 import de.metas.user.UserId;
@@ -42,7 +41,7 @@ public class ImportTimeBookingInfo
 	TimeBookingId timeBookingId;
 
 	@NonNull
-	ExternalId<ExternalSystem> externalTimeBookingId;
+	ExternalId externalTimeBookingId;
 
 	@NonNull
 	UserId performingUserId;

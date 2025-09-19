@@ -36,7 +36,7 @@ Feature: external references for metasfresh resources (V2)
 {
   "systemName": "Github",
   "items": [
-    { "lookupItem": { "id": "1", "type": "IssueID" }, "metasfreshId": 43 }
+    { "lookupItem": { "id": "1", "type": "IssueID" }, "metasfreshId": 44 }
   ]
 }
     """
@@ -66,7 +66,7 @@ Feature: external references for metasfresh resources (V2)
                     "type": "IssueID",
                     "id": "1"
                 },
-                "metasfreshId": 43,
+                "metasfreshId": 44,
                 "externalReference": "1",
                 "systemName": "Github"
             },

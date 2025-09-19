@@ -69,7 +69,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
@@ -81,13 +81,11 @@ import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
-import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.web.exception.MissingResourceException;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -144,7 +142,6 @@ class BpartnerRestControllerTest
 
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 	private CurrencyRepository currencyRepository;
-	private ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
 	private Expect expect;
 
@@ -152,17 +149,13 @@ class BpartnerRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier_PerTableSequence();
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
-		final ExternalSystems externalSystems = new ExternalSystems();
-
-		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
-
-		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);

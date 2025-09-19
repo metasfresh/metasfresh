@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,10 +20,12 @@
  * #L%
  */
 
-package de.metas.externalreference;
+SELECT backup_table('ad_ref_list_trl', '_ref_list_drop');
+DELETE FROM ad_ref_list_trl WHERE ad_ref_list_id IN (SELECT ad_ref_list_id FROM ad_ref_list WHERE ad_reference_id = 541117);
 
-import de.metas.util.lang.ReferenceListAwareEnum;
+SELECT backup_table('ad_ref_list', '_ref_list_drop');
+DELETE FROM ad_ref_list WHERE ad_reference_id=541117;
 
-public interface IExternalSystem extends ReferenceListAwareEnum
-{
-}
+SELECT backup_table('ad_reference', '_ref_list_drop');
+DELETE FROM ad_reference WHERE ad_reference_id=541117;
+
