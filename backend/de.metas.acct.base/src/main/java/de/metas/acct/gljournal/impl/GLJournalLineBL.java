@@ -139,7 +139,7 @@ public class GLJournalLineBL implements IGLJournalLineBL
 
 			// Split transaction: no, it's not a split transaction because we are just starting a new group.
 			// User would be able to enable it if he wants
-			isSplitAcctTrx = !allowAccountDr || !allowAccountCr;
+			isSplitAcctTrx = true;
 		}
 		//
 		// Case: we found an unbalanced group, so this new journal line shall be part of that.
