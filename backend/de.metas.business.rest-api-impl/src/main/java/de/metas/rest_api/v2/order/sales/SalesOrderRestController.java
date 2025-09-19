@@ -32,9 +32,11 @@ import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
+import de.metas.common.rest_api.v2.order.JsonOrderRevertRequest;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderId;
@@ -44,11 +46,17 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BpartnerRestController;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.order.JsonSalesOrder;
 import de.metas.rest_api.v2.order.JsonSalesOrderAttachment;
 import de.metas.rest_api.v2.order.JsonSalesOrderCreateRequest;
 import de.metas.rest_api.v2.order.JsonSalesOrderLine;
+import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.rest_api.v2.util.JsonConverters;
+import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -90,13 +98,23 @@ public class SalesOrderRestController
 	private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
 	private final OrderService orderService;
 	private final AttachmentEntryService attachmentEntryService;
+	private final BpartnerRestController bpartnerRestController;
+	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final JsonRetrieverService jsonRetrieverService;
+	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
 
 	public SalesOrderRestController(
-			final OrderService orderService,
-			final AttachmentEntryService attachmentEntryService)
+			@NonNull final OrderService orderService,
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final BpartnerRestController bpartnerRestController,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
 	{
 		this.orderService = orderService;
 		this.attachmentEntryService = attachmentEntryService;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.bpartnerRestController = bpartnerRestController;
+		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 	}
 
 	@ApiOperation("Create new order payment")
@@ -184,6 +202,32 @@ public class SalesOrderRestController
 		try
 		{
 			return Optional.ofNullable(OrderId.ofRepoIdOrNull(orderRecordId))
+					.map(orderService::reverseOrder)
+					.map(SalesOrderRestController::toSalesOrder)
+					.map(ResponseEntity::ok)
+					.orElseGet(() -> ResponseEntity.notFound().build());
+		}
+		catch (final Exception ex)
+		{
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(ex, Env.getADLanguageOrBaseLanguage()));
+
+			return ResponseEntity.unprocessableEntity().body(error);
+		}
+	}
+
+	@PutMapping(path = "/revert")
+	public ResponseEntity<?> revertOrder(@NonNull @RequestBody final JsonOrderRevertRequest request)
+	{
+		try
+		{
+			final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
+					.permissionService(permissionServiceFactory.createPermissionService())
+					.bpartnerRestController(bpartnerRestController)
+					.externalReferenceRestControllerService(externalReferenceRestControllerService)
+					.jsonRetrieverService(jsonRetrieverService)
+					.build();
+
+			return orderService.getOrderId(request, masterdataProvider)
 					.map(orderService::reverseOrder)
 					.map(SalesOrderRestController::toSalesOrder)
 					.map(ResponseEntity::ok)

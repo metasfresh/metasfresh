@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,32 +20,28 @@
  * #L%
  */
 
-package de.metas.order;
+package de.metas.common.rest_api.v2.order;
 
-import de.metas.document.DocBaseAndSubType;
-import de.metas.impexp.InputDataSourceId;
-import de.metas.organization.OrgId;
-import de.metas.util.lang.ExternalId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
-@Builder(toBuilder = true)
-public class OrderQuery
+@Builder
+@Jacksonized
+public class JsonOrderRevertRequest
 {
-	@Nullable
-	Integer orderId;
-	@Nullable
-	ExternalId externalId;
+	@ApiModelProperty(position = 10)
+	String orgCode;
+
 	@NonNull
-	OrgId orgId;
-	@Nullable
-	String documentNo;
-	@Nullable
-	DocBaseAndSubType docType;
-	@Nullable
-	InputDataSourceId inputDataSourceId;
+	@ApiModelProperty(position = 20, required = true, value = "This translates to 'C_Order.ExternalId'.\n"
+			+ "'externalId' and 'dataSource' together need to be unique.")
+	String externalId;
+
+	@NonNull
+	@ApiModelProperty(position = 30, required = true, value = "This translates to 'AD_InputDataSource.internalName' of the data source the order in question was added with.")
+	String dataSource;
 }
