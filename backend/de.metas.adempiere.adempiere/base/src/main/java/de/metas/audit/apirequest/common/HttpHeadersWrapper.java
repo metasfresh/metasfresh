@@ -25,6 +25,7 @@ package de.metas.audit.apirequest.common;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableCollection;
@@ -34,9 +35,12 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Value
@@ -48,6 +52,51 @@ public class HttpHeadersWrapper
 	public static HttpHeadersWrapper of(final @NonNull ImmutableMultimap<String, String> keyValueHeaders)
 	{
 		return new HttpHeadersWrapper(keyValueHeaders);
+	}
+
+	@NonNull
+	public static HttpHeadersWrapper fromJson(@NonNull final String json, @NonNull final ObjectMapper objectMapper)
+	{
+		if (Check.isEmpty(json))
+		{
+			return HttpHeadersWrapper.of(ImmutableMultimap.of());
+		}
+
+		try
+		{
+			final JsonNode rootNode = objectMapper.readTree(json);
+
+			final JsonNode keyValueHeadersNode = rootNode.get("keyValueHeaders");
+			if (keyValueHeadersNode == null || !keyValueHeadersNode.isObject())
+			{
+				return HttpHeadersWrapper.of(ImmutableMultimap.of());
+			}
+
+			final ImmutableMultimap.Builder<String, String> headersBuilder = ImmutableMultimap.builder();
+
+			keyValueHeadersNode.fieldNames().forEachRemaining(headerName -> {
+				final JsonNode headerValues = keyValueHeadersNode.get(headerName);
+
+				if (headerValues.isArray())
+				{
+					final Set<String> uniqueValues = new LinkedHashSet<>();
+
+					headerValues.forEach(valueNode -> uniqueValues.add(valueNode.asText()));
+
+					uniqueValues.forEach(value -> headersBuilder.put(headerName, value));
+				}
+				else
+				{
+					headersBuilder.put(headerName, headerValues.asText());
+				}
+			});
+
+			return HttpHeadersWrapper.of(headersBuilder.build());
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Failed to parse HttpHeadersWrapper from JSON: " + json, e);
+		}
 	}
 
 	@JsonProperty("keyValueHeaders")
