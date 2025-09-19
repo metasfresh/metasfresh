@@ -57,8 +57,25 @@ public class BPartnerLocationQuickInputConfiguration
 		@NonNull final BPartnerId bpartnerId = getBPartnerId(request);
 
 		final I_C_BPartner_Location_QuickInput template = InterfaceWrapperHelper.getPO(request.getDocument());
+		updateTemplateForTriggeringField(template, request.getTriggeringField());
 		final BPartnerLocationId bpLocationId = bpartnerLocationQuickInputService.createBPartnerLocationFromTemplate(template, bpartnerId);
 		return bpLocationId.getRepoId();
+	}
+
+	private void updateTemplateForTriggeringField(@NonNull final I_C_BPartner_Location_QuickInput template, @NonNull final String triggeringField)
+	{
+		switch (triggeringField)
+		{
+			case I_C_Order.COLUMNNAME_C_BPartner_Location_ID:
+			case I_C_Order.COLUMNNAME_DropShip_Location_ID:
+				template.setIsShipTo(true);
+				return;
+			case I_C_Order.COLUMNNAME_Bill_Location_ID:
+				template.setIsBillTo(true);
+				return;
+			case I_C_Order.COLUMNNAME_HandOver_Location_ID:
+				template.setIsHandOverLocation(true);
+		}
 	}
 
 	@NonNull
