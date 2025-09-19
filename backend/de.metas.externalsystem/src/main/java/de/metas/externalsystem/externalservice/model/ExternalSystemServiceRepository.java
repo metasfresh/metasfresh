@@ -24,6 +24,7 @@ package de.metas.externalsystem.externalservice.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
@@ -66,7 +67,7 @@ public class ExternalSystemServiceRepository implements ISingletonService
 
 	@NonNull
 	@Cached(cacheName = I_ExternalSystem_Service.Table_Name + "#by#" + I_ExternalSystem_Service.COLUMNNAME_ExternalSystem_ID)
-	public List<ExternalSystemServiceModel> getAllByType(@NonNull final ExternalSystemType systemType)
+	public List<ExternalSystemServiceModel> getAllByType(@NonNull @CacheAllowMutable final ExternalSystemType systemType)
 	{
 
 		return queryBL.createQueryBuilder(I_ExternalSystem_Service.class)
