@@ -1,9 +1,6 @@
-DROP FUNCTION IF EXISTS Report.fresh_attributes(IN p_M_AttributeSetInstance_ID numeric,
-                                                IN p_ad_language               Character Varying(6))
-;
+--DROP FUNCTION Report.fresh_attributes(IN p_M_AttributeSetInstance_ID numeric);
 
-CREATE OR REPLACE FUNCTION Report.fresh_attributes(IN p_M_AttributeSetInstance_ID numeric,
-                                                   IN p_ad_language               Character Varying(6) DEFAULT 'de_DE')
+CREATE OR REPLACE FUNCTION Report.fresh_attributes(IN p_M_AttributeSetInstance_ID numeric)
     RETURNS TABLE (
                       ai_value character varying,
                       m_attributesetinstance_id numeric,
@@ -22,12 +19,7 @@ SELECT att.ai_value,
 FROM (
          SELECT CASE
                     WHEN a.Value = '1000015' AND av.value = '01'                                          THEN NULL -- ADR & Keine/Leer
-                    WHEN a.Value = '1000001' AND (av.value IS NOT NULL AND av.value != '')                THEN (SELECT cnt.name
-                                                                                                                FROM c_country cn
-                                                                                                                         INNER JOIN c_country_trl cnt
-                                                                                                                                    ON cnt.c_country_id = cn.c_country_id
-                                                                                                                                        AND cnt.AD_Language = p_ad_language
-                                                                                                                WHERE cn.countrycode = ai.Value) -- Herkunft
+                    WHEN a.Value = '1000001' AND (av.value IS NOT NULL AND av.value != '')                THEN av.value -- Herkunft
                     WHEN a.Value = '1000021' AND (ai.value IS NOT NULL AND ai.value != '')                THEN ai.Value -- MHD
                     WHEN a.Value = 'HU_BestBeforeDate' AND (ai.valuedate IS NOT NULL)                     THEN 'MHD: ' || TO_CHAR(ai.valuedate, 'DD.MM.YYYY') --Best Before Date
                     WHEN a.attributevaluetype = 'D' AND (ai.valuedate IS NOT NULL) THEN to_char(ai.valuedate, 'DD.MM.YYYY')
@@ -37,11 +29,11 @@ FROM (
                                                                                                           THEN (SELECT mt.lot
                                                                                                                 FROM m_material_tracking mt
                                                                                                                 WHERE mt.m_material_tracking_id = ai.value::numeric)
-                    ELSE (
-                        CASE
-                            WHEN av.name IS NOT NULL AND av.IsNullFieldValue = 'N'
-                                THEN COALESCE(NULLIF(TRIM(printvalue_override), ''), av.name)::varchar
-                        END)
+                                                                                                          ELSE (
+                                                                                                              CASE
+                                                                                                                  WHEN av.name IS NOT NULL AND av.IsNullFieldValue = 'N'
+                                                                                                                      THEN COALESCE(NULLIF(TRIM(printvalue_override), ''), av.name)::varchar
+                                                                                                              END)
                 END                      AS ai_Value,
                 M_AttributeSetInstance_ID,
                 a.Value                  AS at_Value,
@@ -66,6 +58,6 @@ $$
     LANGUAGE sql
     STABLE;
 
-COMMENT ON FUNCTION Report.fresh_attributes(IN p_M_AttributeSetIntance_ID numeric) 
+COMMENT ON FUNCTION Report.fresh_attributes(IN p_M_AttributeSetIntance_ID numeric)
     IS 'Consider using this function instead of the view Report.fresh_attributes, because using the view often causes the DB to do a sequential scan on m_attributeinstance.
     !! While we have both the view and the function, please keep them in sync !!'

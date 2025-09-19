@@ -27,7 +27,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.IProcessPrecondition;
@@ -100,8 +100,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 				.isShipmentDateToday(isShipToday)
 				.build();
 
-		final Result result = new ShipmentScheduleEnqueuer()
-				.setContext(getCtx(), getTrxName())
+		final Result result = ShipmentScheduleEnqueuer.newInstance(getCtx(), getTrxName())
 				.createWorkpackages(workPackageParameters);
 
 		return "@Created@: " + result.getEnqueuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();

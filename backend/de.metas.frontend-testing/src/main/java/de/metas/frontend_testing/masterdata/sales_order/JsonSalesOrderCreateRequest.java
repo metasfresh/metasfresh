@@ -21,10 +21,12 @@ public class JsonSalesOrderCreateRequest
 	@NonNull Identifier warehouse;
 	@NonNull ZonedDateTime datePromised;
 	@NonNull List<Line> lines;
-	
+
 	//
- 	//
- 	//
+	//
+	//
+	//
+	//
 
 	@Value
 	@Builder
@@ -34,5 +36,21 @@ public class JsonSalesOrderCreateRequest
 		@NonNull Identifier product;
 		@NonNull BigDecimal qty;
 		@Nullable Identifier piItemProduct;
+		@Nullable List<Schedule> schedules;
 	}
+
+	//
+	//
+	// 
+	//
+	//
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Schedule
+	{
+		@NonNull Identifier workplace;
+		@NonNull BigDecimal qty;
+	}
+
 }

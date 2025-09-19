@@ -170,11 +170,13 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 			}
 
 			//
-			// If lock could not be acquired/changed and we were asked to fail, do so
+			// If lock could not be acquired/changed, and we were asked to fail, do so
 			if (failIfAlreadyLocked && !locked)
 			{
 				// NOTE: we are checking this just to me sure, but basically, the "lockRecord" method is already throwing an exception in this case
-				throw new LockFailedException("Record was already locked: " + record)
+				throw new LockFailedException(changeLock
+						? "Record " + record + " was not locked by parent lock so we could not transfer the lock"
+						: "Record was already locked: " + record)
 						.setLockCommand(lockCommand)
 						.setRecordToLock(record);
 			}

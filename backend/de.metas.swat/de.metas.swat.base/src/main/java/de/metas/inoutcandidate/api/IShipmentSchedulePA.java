@@ -50,6 +50,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 	@Nullable
 	I_M_ShipmentSchedule getByOrderLineId(OrderLineId orderLineId);
 
+	List<I_M_ShipmentSchedule> getByOrderLineIds(@NonNull Set<OrderLineId> orderLineIds);
+
 	@Nullable
 	ShipmentScheduleId getShipmentScheduleIdByOrderLineId(OrderLineId orderLineId);
 

@@ -42,14 +42,15 @@ import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingS
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobAbortCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobAllocatePickingSlotCommand;
-import de.metas.handlingunits.picking.job.service.commands.PickingJobCandidateRetrieveCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.retrieve.PickingJobCandidateRetrieveCommand;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
+import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.slot.PickingSlotListener;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -116,6 +117,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -141,6 +143,7 @@ public class PickingJobService implements PickingSlotListener
 				.pickingConfigRepo(pickingConfigRepo)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
 				.workplaceService(workplaceService)
+				.pickingJobScheduleService(pickingJobScheduleService)
 				//
 				.request(request)
 				//
@@ -222,6 +225,7 @@ public class PickingJobService implements PickingSlotListener
 		return PickingJobCandidateRetrieveCommand.builder()
 				.packagingDAO(packagingDAO)
 				.configRepository(mobileUIPickingUserProfileRepository)
+				.pickingJobScheduleService(pickingJobScheduleService)
 				//
 				.query(query)
 				//
@@ -353,7 +357,7 @@ public class PickingJobService implements PickingSlotListener
 			for (final PickingJob job : getDraftJobsByPickerId(userId))
 			{
 				unassignPickingJob(job);
-				pickingJobLockService.unlockShipmentSchedules(job);
+				pickingJobLockService.unlockSchedules(job);
 			}
 		});
 	}
@@ -419,7 +423,7 @@ public class PickingJobService implements PickingSlotListener
 		PickingJob job = getById(pickingJobId);
 		if (job.getLockedBy() == null)
 		{
-			pickingJobLockService.lockShipmentSchedules(job.getShipmentScheduleIds(), newResponsibleId);
+			pickingJobLockService.lockSchedules(job.getScheduleIds(), newResponsibleId);
 
 			job = job.withLockedBy(newResponsibleId);
 			pickingJobRepository.save(job);

@@ -182,6 +182,11 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 				.mapToObj(idMapper);
 	}
 
+	public <T extends RepoIdAware> ImmutableSet<T> getRecordIdsByTableName(@NonNull final String tableName, @NonNull final IntFunction<T> idMapper)
+	{
+		return streamIds(tableName, idMapper).collect(ImmutableSet.toImmutableSet());
+	}
+
 	public String getSingleTableName()
 	{
 		final ImmutableSet<String> tableNames = recordRefs.stream()

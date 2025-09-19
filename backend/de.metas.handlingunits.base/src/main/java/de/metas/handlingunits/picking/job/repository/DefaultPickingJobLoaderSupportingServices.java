@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.job.repository;
 
-import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.gs1.GS1ProductCodes;
@@ -11,24 +10,23 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableLocks;
+import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.picking.api.Packageable;
-import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
@@ -67,12 +65,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@NonNull private final IBPartnerBL bpartnerBL;
 	@NonNull private final PickingJobSlotService pickingSlotService;
+	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
@@ -86,12 +84,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
 	@Override
-	public void warmUpCachesFrom(@NonNull final PackageableList items)
+	public void warmUpCachesFrom(@NonNull final ScheduledPackageableList items)
 	{
 		items.forEach(this::loadCacheFrom);
 	}
 
-	private void loadCacheFrom(@NonNull final Packageable packageable)
+	private void loadCacheFrom(@NonNull final ScheduledPackageable packageable)
 	{
 		if (packageable.getSalesOrderId() != null)
 		{
@@ -170,7 +168,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	{
 		final I_M_Product product = productBL.getById(productId);
 		final GS1ProductCodesCollection gs1ProductCodes = productBL.getGS1ProductCodesCollection(product);
-		
+
 		return ProductInfo.builder()
 				.productId(productId)
 				.productNo(product.getValue())
@@ -206,12 +204,9 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	public ScheduledPackageableLocks getLocks(final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
 	{
-		return CollectionUtils.mapKeys(
-				lockManager.getLockInfosByRecordIds(ShipmentScheduleId.toTableRecordReferenceSet(shipmentScheduleIds)),
-				recordRef -> recordRef.getIdAssumingTableName(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId)
-		);
+		return pickingJobLockService.getLocks(scheduleIds);
 	}
 
 	@Override

@@ -1,9 +1,9 @@
 package de.metas.ui.web.pickingJobSchedule.process;
 
 import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleId;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleId;
-import de.metas.handlingunits.picking.job_schedule.model.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;

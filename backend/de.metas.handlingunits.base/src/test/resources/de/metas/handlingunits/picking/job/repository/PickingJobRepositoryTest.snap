@@ -61,7 +61,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
           "orderLineId": 8
         },
         "salesOrderDocumentNo": "docno-2",
-        "shipmentScheduleId": 7,
+        "scheduleId": "7",
         "steps": [
           {
             "id": 1000000,
@@ -130,7 +130,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
               "orderId": 2,
               "orderLineId": 8
             },
-            "shipmentScheduleId": 7
+            "scheduleId": "7"
           }
         ]
       }

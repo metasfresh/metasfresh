@@ -21,6 +21,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
@@ -198,6 +199,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 			addElement(model);
 		}
 
+		return this;
+	}
+
+	@Override
+	public WorkPackageBuilder addElements(final TableRecordReferenceSet recordRefs)
+	{
+		recordRefs.forEach(this::addElement);
 		return this;
 	}
 
