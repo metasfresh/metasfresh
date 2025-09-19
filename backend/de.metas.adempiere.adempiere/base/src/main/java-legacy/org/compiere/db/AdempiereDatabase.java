@@ -1,29 +1,33 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.db;
-
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
 
 import org.adempiere.exceptions.DBException;
 import org.compiere.dbPort.Convert;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.SQLException;
 
 /**
  * Interface for Adempiere Databases
@@ -38,29 +42,28 @@ public interface AdempiereDatabase
 	 *
 	 * @return database short name
 	 */
-	public String getName();
+	String getName();
 
 	/**
 	 * Get Database Description
 	 *
 	 * @return database long name and version
 	 */
-	public String getDescription();
+	String getDescription();
 
 	/**
 	 * Get and register Database Driver
 	 *
 	 * @return Driver
-	 * @throws DBException
 	 */
-	public Driver getDriver();
+	Driver getDriver();
 
 	/**
 	 * Get Standard JDBC Port
 	 *
 	 * @return standard port
 	 */
-	public int getStandardPort();
+	int getStandardPort();
 
 	/**
 	 * Get Database Connection String
@@ -68,7 +71,7 @@ public interface AdempiereDatabase
 	 * @param connection Connection Descriptor
 	 * @return connection String
 	 */
-	public String getConnectionURL(CConnection connection);
+	String getConnectionURL(CConnection connection);
 
 	/**
 	 * Get Connection URL
@@ -79,28 +82,28 @@ public interface AdempiereDatabase
 	 * @param userName user name
 	 * @return url
 	 */
-	public String getConnectionURL(String dbHost, int dbPort, String dbName, String userName);
+	String getConnectionURL(String dbHost, int dbPort, String dbName, String userName);
 
 	/**
 	 * Get JDBC Catalog
 	 *
 	 * @return catalog
 	 */
-	public String getCatalog();
+	String getCatalog();
 
 	/**
 	 * Get JDBC Schema
 	 *
 	 * @return schema
 	 */
-	public String getSchema();
+	String getSchema();
 
 	/**
 	 * Supports BLOB
 	 *
 	 * @return true if BLOB is supported
 	 */
-	public boolean supportsBLOB();
+	boolean supportsBLOB();
 
 	/**
 	 * String Representation
@@ -108,7 +111,7 @@ public interface AdempiereDatabase
 	 * @return info
 	 */
 	@Override
-	public String toString();
+	String toString();
 
 	/**************************************************************************
 	 * Convert an individual Oracle Style statements to target database statement syntax
@@ -116,43 +119,43 @@ public interface AdempiereDatabase
 	 * @param oraStatement oracle statement
 	 * @return converted Statement
 	 */
-	public String convertStatement(String oraStatement);
+	String convertStatement(String oraStatement);
 
 	/**
 	 * Check if DBMS support the sql statement
 	 *
-	 * @sql SQL statement
+	 * @param sql SQL statement
 	 * @return true: yes
 	 */
-	public boolean isSupported(String sql);
+	boolean isSupported(String sql);
 
 	/**
 	 * Get constraint type associated with the index
 	 *
-	 * @conn connection
-	 * @tableName table name
-	 * @IXName Index name
+	 * @param conn connection
+	 * @param tableName table name
+	 * @param IXName Index name
 	 * @return String[0] = 0: do not know, 1: Primary Key 2: Foreign Key
 	 *         String[1] - String[n] = Constraint Name
 	 */
-	public String getConstraintType(Connection conn, String tableName, String IXName);
+	String getConstraintType(Connection conn, String tableName, String IXName);
 
 	/**
 	 * Check and generate an alternative SQL
 	 *
-	 * @reExNo number of re-execution
-	 * @msg previous execution error message
-	 * @sql previous executed SQL
+	 * @param reExNo number of re-execution
+	 * @param msg previous execution error message
+	 * @param sql previous executed SQL
 	 * @return String, the alternative SQL, null if no alternative
 	 */
-	public String getAlternativeSQL(int reExNo, String msg, String sql);
+	String getAlternativeSQL(int reExNo, String msg, String sql);
 
 	/**
 	 * Get Name of System User
 	 *
 	 * @return e.g. sa, system
 	 */
-	public String getSystemUser();
+	String getSystemUser();
 
 	/**
 	 * Get Name of System Database
@@ -160,25 +163,25 @@ public interface AdempiereDatabase
 	 * @param databaseName database Name
 	 * @return e.g. master or database Name
 	 */
-	public String getSystemDatabase(String databaseName);
+	String getSystemDatabase(String databaseName);
 
 
 	/**
 	 * Return next sequence this Sequence
 	 */
-	public int getNextID(String Name);
+	int getNextID(String Name);
 
 	/**
 	 * Creates SQL for retrieving next sequence value.
 	 */
-	public String TO_SEQUENCE_NEXTVAL(final String sequenceName);
+	String TO_SEQUENCE_NEXTVAL(final String sequenceName);
 
 	/**
 	 * Create Native Sequence
 	 *
 	 * @return true if sequence was created or updated
 	 */
-	public boolean createSequence(String name, int increment, int minvalue, int maxvalue, int start, String trxName);
+	boolean createSequence(String name, int increment, int minvalue, int maxvalue, int start, String trxName);
 
 	/**
 	 * Rename the native sequence
@@ -186,7 +189,7 @@ public interface AdempiereDatabase
 	 * @param dbSequenceNameOld sequence name
 	 * @param dbSequenceNameNew new sequence name
 	 */
-	public void renameSequence(String dbSequenceNameOld, String dbSequenceNameNew);
+	void renameSequence(String dbSequenceNameOld, String dbSequenceNameNew);
 
 	/**
 	 * Get Cached Connection on Server
@@ -195,9 +198,8 @@ public interface AdempiereDatabase
 	 * @param autoCommit true if autocommit connection
 	 * @param transactionIsolation Connection transaction level
 	 * @return connection or null
-	 * @throws Exception
 	 */
-	public Connection getCachedConnection(CConnection connection, boolean autoCommit, int transactionIsolation) throws Exception;
+	Connection getCachedConnection(CConnection connection, boolean autoCommit, int transactionIsolation) throws Exception;
 
 	/**
 	 * Get Driver Connection
@@ -206,9 +208,8 @@ public interface AdempiereDatabase
 	 * @param dbUid user
 	 * @param dbPwd password
 	 * @return connection
-	 * @throws SQLException
 	 */
-	public Connection getDriverConnection(String dbUrl, String dbUid, String dbPwd) throws SQLException;
+	Connection getDriverConnection(String dbUrl, String dbUid, String dbPwd) throws SQLException;
 
 	/**
 	 * Create DataSource
@@ -216,58 +217,44 @@ public interface AdempiereDatabase
 	 * @param connection connection
 	 * @return data dource
 	 */
-	public DataSource getDataSource(CConnection connection);
+	DataSource getDataSource(CConnection connection);
 
 	/**
 	 * Get Status
 	 *
 	 * @return status info or null if no local datasource available
 	 */
-	public String getStatus();
+	String getStatus();
 
 	/**
 	 * Close database.
 	 * Shall never fail.
 	 */
-	public void close();
+	void close();
 
-	public Convert getConvert();
+	Convert getConvert();
 
 	/**
 	 * @return true if jdbc driver support statement timeout
 	 */
-	public boolean isQueryTimeoutSupported();
-
-	/**
-	 * Get Data Type
-	 *
-	 * @param DisplayType display type
-	 * @return data type
-	 */
-	// public String getDataType (int displayType, int precision,
-	// boolean defaultValue)
+	boolean isQueryTimeoutSupported();
 
 	/**
 	 * Default sql use to test whether a connection is still valid
 	 */
-	public final static String DEFAULT_CONN_TEST_SQL = "SELECT Version FROM AD_System";
+	String DEFAULT_CONN_TEST_SQL = "SELECT Version FROM AD_System";
 
 	/**
 	 * Is the database have sql extension that return a subset of the query result
 	 *
 	 * @return boolean
 	 */
-	public boolean isPagingSupported();
+	boolean isPagingSupported();
 
 	/**
 	 * modify sql to return a subset of the query result
-	 *
-	 * @param sql
-	 * @param start
-	 * @param end
-	 * @return
 	 */
-	public String addPagingSQL(String sql, int start, int end);
+	String addPagingSQL(String sql, int start, int end);
 
 	/**
 	 * Get SQL DataType
@@ -280,8 +267,6 @@ public interface AdempiereDatabase
 	String getSQLDataType(int displayType, String columnName, int fieldLength);
 
 	/**
-	 *
-	 * @param connection
 	 * @param throwDBException if the connection is closed or an {@link SQLException} is caught, then this parameter decides if an {@link DBException} shall be thrown. Set to <code>false</code> if you
 	 *            are already exception handling and just want to use this method to get whatever info you can (and not to throw yet another exception).
 	 */
