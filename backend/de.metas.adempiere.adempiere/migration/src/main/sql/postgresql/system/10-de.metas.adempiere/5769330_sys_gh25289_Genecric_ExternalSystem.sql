@@ -24,7 +24,7 @@ UPDATE ExternalSystem SET Name='RabbitMQ', Value='RabbitMQRESTAPI',Updated=TO_TI
 ;
 
 -- 2025-09-17T14:44:39.758Z
-INSERT INTO ExternalSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_ID,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,TO_TIMESTAMP('2025-09-17 14:44:39.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,540003,'Y','WOO Commerce',TO_TIMESTAMP('2025-09-17 14:44:39.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'WOO')
+INSERT INTO ExternalSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_ID,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,TO_TIMESTAMP('2025-09-17 14:44:39.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,540003,'Y','WOO Commerce',TO_TIMESTAMP('2025-09-17 14:44:39.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'WooCommerce')
 ;
 
 -- 2025-09-17T14:44:54.076Z

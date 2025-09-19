@@ -34,6 +34,6 @@ FROM externalsystem_exportaudit esea_source
     OR (e.value = 'ProCareManagement' AND esea_source.externalsystemtype = 'PCM')
     OR (e.value = 'RabbitMQRESTAPI' AND esea_source.externalsystemtype = 'RabbitMQ')
     OR (e.value = 'Shopware6' AND esea_source.externalsystemtype = 'S6')
-    OR (e.value = 'WOO' AND esea_source.externalsystemtype = 'WOO'))
+    OR (e.value = 'WooCommerce' AND esea_source.externalsystemtype = 'WOO'))
 WHERE esea.externalsystem_exportaudit_id = esea_source.externalsystem_exportaudit_id
 ;
