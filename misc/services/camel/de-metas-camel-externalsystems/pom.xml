@@ -59,6 +59,8 @@
         <module>de-metas-camel-printingclient</module>
         <module>de-metas-camel-rabbitmq</module>
         <module>de-metas-camel-scriptedadapter</module>
+        <module>de-metas-camel-shipper</module>
+        <module>de-metas-camel-shipper-nshift</module>
         <module>de-metas-camel-shopware6</module>
         <module>de-metas-camel-woocommerce</module>
     </modules>

@@ -119,13 +119,24 @@
             <artifactId>de-metas-camel-pcm-file-import</artifactId>
             <version>10.0.0</version>
         </dependency>
-        
+
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-scriptedadapter</artifactId>
             <version>10.0.0</version>
         </dependency>
-        
+
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-shipper</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-shipper-nshift</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.common.externalreference</groupId>
             <artifactId>de-metas-common-externalreference</artifactId>
