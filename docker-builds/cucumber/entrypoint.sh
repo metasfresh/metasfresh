@@ -47,7 +47,7 @@ echo "==================="
 echo " running cucumber tests ..."
 echo "==================="
 
-mvn --offline surefire:test --fail-never "$@"
+mvn -Duser.timezone=UTC --offline surefire:test --fail-never "$@"
 
 echo "==================="
 echo " exporting reports ..."
