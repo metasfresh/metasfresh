@@ -12,11 +12,6 @@ public class ExternalSystemShipperConfigService
 {
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
-	public ExplainedOptional<String> getShipperGatewayId(@NonNull final ShipperId shipperId)
-	{
-		return shipperDAO.getShipperGatewayId(shipperId);
-	}
-	
 	public ExternalSystemShipperConfig getConfig(@NonNull final ShipperId shipperId)
 	{
 		// TODO
