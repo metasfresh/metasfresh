@@ -20,9 +20,7 @@
  * #L%
  */
 
-DROP VIEW IF EXISTS C_BPartner_Recent_V
-;
-
+DROP VIEW IF EXISTS C_BPartner_Recent_V;
 
 CREATE OR REPLACE VIEW C_BPartner_Recent_V
 AS

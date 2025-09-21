@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de.metas.business.rest-api-impl
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,25 +20,20 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.rest_api.v2.bpartner;
 
-import de.metas.user.UserId;
-import lombok.NonNull;
-import org.compiere.model.I_AD_User;
+import lombok.Builder;
+import lombok.Value;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class AD_User_StepDefData extends StepDefData<I_AD_User> implements StepDefDataGetIdAware<UserId, I_AD_User>
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class RetrieveBPartnerSinceRequest
 {
-	public AD_User_StepDefData()
-	{
-		super(I_AD_User.class);
-	}
+	@Nullable String orgCode;
+	@Nullable String extSystem;
+	@Nullable Long epochMilli;
+	@Nullable String nextPageId;
 
-	@Override
-	public UserId extractIdFromRecord(@NonNull final I_AD_User record)
-	{
-		return UserId.ofRepoId(record.getAD_User_ID());
-	}
 }

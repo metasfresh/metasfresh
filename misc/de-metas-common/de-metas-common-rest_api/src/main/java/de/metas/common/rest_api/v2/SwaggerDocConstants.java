@@ -82,4 +82,7 @@ public class SwaggerDocConstants
 			+ "* a plain `<M_Warehouse_ID>`\n"
 			+ "* or something like `val-<M_Warehouse.Value>`\n"
 			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the warehouse within the given `<ExternalSystem>`";
+
+
+	public static final String EXTERNAL_SYSTEM_NAME = "Identifies an external system.";
 }

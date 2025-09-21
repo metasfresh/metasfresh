@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -2138,7 +2138,7 @@ public class DB
 	 *
 	 * @param conn database connection.
 	 */
-	public void close(final Connection conn)
+	public void close(@Nullable final Connection conn)
 	{
 		if (conn != null)
 		{
