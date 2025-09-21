@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
@@ -134,8 +135,13 @@ public class AD_User_StepDef
 
 		final String name = tableRow.getAsString(COLUMNNAME_Name);
 		final String email = tableRow.getAsOptionalString(COLUMNNAME_EMail).orElse(null);
-
-		final I_AD_User userRecord = InterfaceWrapperHelper.loadOrNew(userDAO.retrieveUserIdByEMail(email, ClientId.METASFRESH), I_AD_User.class);
+		
+		final I_AD_User userRecord = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> tableRow.getAsIdentifier(COLUMNNAME_AD_User_ID).lookupOrNullIn(userTable),
+				() -> {
+					final UserId exitingUserPerMail = userDAO.retrieveUserIdByEMail(email, ClientId.METASFRESH);
+					return InterfaceWrapperHelper.loadOrNew(exitingUserPerMail, I_AD_User.class);
+				});
 
 		if (InterfaceWrapperHelper.isNew(userRecord))
 		{

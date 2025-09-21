@@ -78,6 +78,9 @@ public interface IUserDAO extends ISingletonService
 
 	String retrieveUserFullName(UserId userId);
 
+	/**
+	 * @param email the mail needs to be a syntactically correct mail-address!
+	 */
 	@Nullable
 	UserId retrieveUserIdByEMail(@Nullable String email, ClientId adClientId);
 
