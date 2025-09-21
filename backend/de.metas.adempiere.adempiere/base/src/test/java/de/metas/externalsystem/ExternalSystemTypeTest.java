@@ -57,7 +57,7 @@ class ExternalSystemTypeTest
 	{
 		assertThat(ExternalSystemType.ofValue("Shopware6").isShopware6()).isTrue();
 		assertThat(ExternalSystemType.ofValue("ALBERTA").isAlberta()).isTrue();
-		assertThat(ExternalSystemType.ofValue("WOO").isWOO()).isTrue();
+		assertThat(ExternalSystemType.ofValue("WooCommerce").isWOO()).isTrue();
 		assertThat(ExternalSystemType.ofValue("Other").isOther()).isTrue();
 		assertThat(ExternalSystemType.ofValue("RabbitMQRESTAPI").isRabbitMQ()).isTrue();
 		assertThat(ExternalSystemType.ofValue("GRSSignum").isGRSSignum()).isTrue();

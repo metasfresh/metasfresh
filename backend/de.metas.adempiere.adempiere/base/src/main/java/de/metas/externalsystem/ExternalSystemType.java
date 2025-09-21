@@ -19,7 +19,7 @@ public final class ExternalSystemType
 {
 	public static final ExternalSystemType Alberta = new ExternalSystemType("ALBERTA");
 	public static final ExternalSystemType RabbitMQ = new ExternalSystemType("RabbitMQRESTAPI");
-	public static final ExternalSystemType WOO = new ExternalSystemType("WOO");
+	public static final ExternalSystemType WOO = new ExternalSystemType("WooCommerce");
 	public static final ExternalSystemType GRSSignum = new ExternalSystemType("GRSSignum");
 	public static final ExternalSystemType LeichUndMehl = new ExternalSystemType("LeichUndMehl");
 	public static final ExternalSystemType ProCareManagement = new ExternalSystemType("ProCareManagement");
