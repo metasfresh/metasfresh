@@ -126,7 +126,7 @@ Feature: Sales order API
       "message": "Die Bestellung OrderId(repoId=@orderId@) enthält bereits gelieferte Artikel.",
       "errorCode": "MSG_ERR_ORDER_HAS_DELIVERED_ITEMS",
       "userFriendlyError": true,
-      "stackTrace": "OrderService.reverseOrder:177 <~~~ SalesOrderRestController.revertOrder:231 <~~~ ApiAuditService.processRequestSync:494 <- ApiAuditService.processRequest:245 <- ApiAuditFilter.doFilter:115 <~~~ UserAuthTokenFilter.lambda$doFilter$1:66 <- UserAuthTokenService.lambda$asCallable$0:96 <- UserAuthTokenService.call:117 <- UserAuthTokenService.run:89 <- UserAuthTokenFilter.doFilter:61",
+      "stackTrace": "OrderService.reverseOrder:177 <~~~ SalesOrderRestController.revertOrder:231 <~~~ ApiAuditService.processRequestSync:500 <- ApiAuditService.processRequest:245 <- ApiAuditFilter.doFilter:115 <~~~ UserAuthTokenFilter.lambda$doFilter$1:66 <- UserAuthTokenService.lambda$asCallable$0:96 <- UserAuthTokenService.call:117 <- UserAuthTokenService.run:89 <- UserAuthTokenFilter.doFilter:61",
       "parameters": {
         "AD_Language": "<null>",
         "AD_Message": "MSG_ERR_ORDER_HAS_DELIVERED_ITEMS"
