@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
@@ -30,7 +29,6 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -43,6 +41,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -133,15 +132,10 @@ public class AD_User_StepDef
 	{
 		final DataTableRow tableRow = DataTableRow.singleRow(tableRowMap);
 
-		final String name = tableRow.getAsString(COLUMNNAME_Name);
+		final ValueAndName valueAndName = tableRow.suggestValueAndName();
 		final String email = tableRow.getAsOptionalString(COLUMNNAME_EMail).orElse(null);
-		
-		final I_AD_User userRecord = CoalesceUtil.coalesceSuppliersNotNull(
-				() -> tableRow.getAsIdentifier(COLUMNNAME_AD_User_ID).lookupOrNullIn(userTable),
-				() -> {
-					final UserId exitingUserPerMail = userDAO.retrieveUserIdByEMail(email, ClientId.METASFRESH);
-					return InterfaceWrapperHelper.loadOrNew(exitingUserPerMail, I_AD_User.class);
-				});
+
+		final I_AD_User userRecord = retrieveOrCreateUserRecord(email, valueAndName);
 
 		if (InterfaceWrapperHelper.isNew(userRecord))
 		{
@@ -150,16 +144,16 @@ public class AD_User_StepDef
 		}
 
 		userRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-		userRecord.setName(name);
+		userRecord.setName(valueAndName.getName());
 		userRecord.setEMail(email);
-		userRecord.setPassword(tableRowMap.get("OPT." + COLUMNNAME_Password));
-		userRecord.setAD_Language(tableRowMap.get("OPT." + COLUMNNAME_AD_Language));
-
-		if (tableRowMap.containsKey("OPT." + COLUMNNAME_IsMFProcurementUser))
-		{
+		
+		tableRow.getAsOptionalString(COLUMNNAME_Password).ifPresent(userRecord::setPassword);
+		tableRow.getAsOptionalString(COLUMNNAME_AD_Language).ifPresent(userRecord::setAD_Language);
+		tableRow.getAsOptionalBoolean(COLUMNNAME_IsMFProcurementUser).ifPresent(b -> {
 			final de.metas.procurement.base.model.I_AD_User procurementUserRecord = InterfaceWrapperHelper.create(userRecord, de.metas.procurement.base.model.I_AD_User.class);
-			procurementUserRecord.setIsMFProcurementUser(StringUtils.toBoolean(tableRowMap.get("OPT." + COLUMNNAME_IsMFProcurementUser), false));
-		}
+			procurementUserRecord.setIsMFProcurementUser(b);
+		});
+
 		if (tableRowMap.containsKey("OPT." + COLUMNNAME_ProcurementPassword))
 		{
 			final de.metas.procurement.base.model.I_AD_User procurementUserRecord = InterfaceWrapperHelper.create(userRecord, de.metas.procurement.base.model.I_AD_User.class);
@@ -214,11 +208,35 @@ public class AD_User_StepDef
 			roleDAO.createUserRoleAssignmentIfMissing(UserId.ofRepoId(userRecord.getAD_User_ID()), RoleId.ofRepoId(roleId));
 		}
 
-		final String userIdentifier = DataTableUtil.extractStringForColumnName(tableRowMap, COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-
 		tableRow.getAsOptionalIdentifier("REST.Context.AD_User_ID")
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), userRecord.getAD_User_ID()));
+		tableRow.getAsIdentifier(COLUMNNAME_AD_User_ID).putOrReplace(userTable, userRecord);
+	}
 
-		userTable.putOrReplace(userIdentifier, userRecord);
+	private I_AD_User retrieveOrCreateUserRecord(
+			@Nullable final String email,
+			@NonNull final ValueAndName valueAndName)
+	{
+		I_AD_User userRecord = null;
+		{
+			final UserId exitingUserIdPerMail = userDAO.retrieveUserIdByEMail(email, ClientId.METASFRESH);
+			if (exitingUserIdPerMail != null)
+			{
+				userRecord = InterfaceWrapperHelper.load(exitingUserIdPerMail, I_AD_User.class);
+			}
+
+			if (userRecord == null)
+			{
+				userRecord = queryBL.createQueryBuilder(I_AD_User.class).addOnlyActiveRecordsFilter()
+						.addEqualsFilter(COLUMNNAME_Name, valueAndName.getName())
+						.create()
+						.firstOnly(I_AD_User.class);
+			}
+			if (userRecord == null)
+			{
+				userRecord = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+			}
+		}
+		return userRecord;
 	}
 }
