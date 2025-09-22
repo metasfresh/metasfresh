@@ -88,7 +88,7 @@ Feature: API Audit PUT http method
 """
     
   @from:cucumber
-  @Id:S0490_060
+  @Id:S0490_070
   Scenario: Testcase 120, failing PUT and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -126,7 +126,7 @@ Feature: API Audit PUT http method
 """
     
   @from:cucumber
-  @Id:S0490_070
+  @Id:S0490_080
   Scenario: Testcase 130, failing PUT and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |

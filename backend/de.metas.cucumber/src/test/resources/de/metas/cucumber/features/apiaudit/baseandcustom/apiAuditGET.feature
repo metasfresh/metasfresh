@@ -126,7 +126,7 @@ Feature: API Audit GET http method
 """
     
   @from:cucumber
-  @Id:S0478_060
+  @Id:S0478_040
   Scenario: Testcase 130, failing GET and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
