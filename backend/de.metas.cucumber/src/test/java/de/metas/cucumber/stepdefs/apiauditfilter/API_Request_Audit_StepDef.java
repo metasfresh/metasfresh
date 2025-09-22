@@ -114,7 +114,7 @@ public class API_Request_Audit_StepDef
 				.build());
 	}
 
-	@And("^store api audit request's response endpointPath (.*) in context$")
+	@And("^get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath (.*) and store that path in context$")
 	public void store_auditRequestResponse_endpointPath_in_context(@NonNull String endpointPath)
 	{
 		final String regex = ".*(:[a-zA-Z]+)/?.*";

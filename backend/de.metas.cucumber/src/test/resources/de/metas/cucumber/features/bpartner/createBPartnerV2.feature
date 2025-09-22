@@ -327,7 +327,7 @@ Feature: create or update BPartner v2
 }
     """
 
-    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/:apiRequest/response and store that path in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '201' status code
 

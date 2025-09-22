@@ -4,7 +4,7 @@ Feature: API Audit DELETE http method
 
   Background:
     Given infrastructure and metasfresh are running
-	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the API audit data is reset
 
   @from:cucumber
@@ -34,7 +34,7 @@ Feature: API Audit DELETE http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
-    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/:apiRequest/response and store that path in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -76,7 +76,7 @@ Feature: API Audit DELETE http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
-    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/:apiRequest/response and store that path in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -86,7 +86,7 @@ Feature: API Audit DELETE http method
 	"messageBody": "\"test-endpoint was called\""
   }
 """
- 
+
   @from:cucumber
   @Id:S0490_010
   Scenario: Testcase 120, failing DELETE and caller waits for result
@@ -114,7 +114,7 @@ Feature: API Audit DELETE http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
-    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/:apiRequest/response and store that path in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
 
@@ -124,7 +124,7 @@ Feature: API Audit DELETE http method
 	"messageBody": "\"test-endpoint was called\""
   }
 """
-    
+
   @from:cucumber
   @Id:S0490_020
   Scenario: Testcase 130, failing DELETE and caller does not wait for result
@@ -157,7 +157,7 @@ Feature: API Audit DELETE http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
-    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/:apiRequest/response and store that path in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
 
@@ -167,7 +167,7 @@ Feature: API Audit DELETE http method
 	"messageBody": "\"test-endpoint was called\""
   }
 """
-    
+
   @from:cucumber
   @Id:S0478_030
   Scenario: Testcase 140, failing DELETE and replay
@@ -205,7 +205,7 @@ Feature: API Audit DELETE http method
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
-    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/:apiRequest/response and store that path in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -215,7 +215,7 @@ Feature: API Audit DELETE http method
 	"messageBody": "\"test-endpoint was called\""
   }
 """
-    
+
   @from:cucumber
   Scenario: Testcase 200, reset to initial default data
     And all the API audit data is reset
