@@ -8,8 +8,8 @@ Feature: Validate BPartner is sent to RabbitMQ
 
   Scenario: Export bpartner when created via rest-api
     Given metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name     | OPT.EMail          | OPT.Login |
-      | testUser_1            | testUser | testUser@email.com | testUser  |
+      | Identifier | Name     | OPT.EMail          | OPT.Login |
+      | testUser_1 | testUser | testUser@email.com | testUser  |
     And load AD_Roles
       | AD_Role_ID.Identifier | Name  |
       | userRole              | WebUI |

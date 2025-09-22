@@ -35,8 +35,8 @@ Feature:bpartner get using metasfresh api
       | 2345       | 1234                     | 001                  | BPartnerLocation_1234_ID            |
 
     And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name                   | OPT.C_BPartner_ID.Identifier | AD_Org_ID.Identifier | REST.Context.AD_User_ID |
-      | 3456                  | 3456_bpartner_api_test | 1234                         | 001                  | AD_User_1234_ID         |
+      | Identifier | Name                   | OPT.C_BPartner_ID.Identifier | AD_Org_ID.Identifier | REST.Context.AD_User_ID |
+      | 3456       | 3456_bpartner_api_test | 1234                         | 001                  | AD_User_1234_ID         |
 
     When the metasfresh REST-API endpoint path 'api/v2/bpartner/byOrg/001/?since=2461507318000' receives a 'GET' request
 
@@ -146,8 +146,8 @@ Feature:bpartner get using metasfresh api
       | bpl_by_extSystem | bpartner_by_extSystem    | 001                  | BPartnerLocation_by_extSystem_ID    |
 
     And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name                    | OPT.C_BPartner_ID.Identifier | AD_Org_ID.Identifier | REST.Context.AD_User_ID |
-      | contact_by_extSystem  | contact_by_extSystem | bpartner_by_extSystem        | 001                  | AD_User_by_extSystem_ID |
+      | Identifier           | Name                 | OPT.C_BPartner_ID.Identifier | AD_Org_ID.Identifier | REST.Context.AD_User_ID |
+      | contact_by_extSystem | contact_by_extSystem | bpartner_by_extSystem        | 001                  | AD_User_by_extSystem_ID |
 
     And metasfresh contains S_ExternalReferences:
       | ExternalSystem.Code | ExternalReference | ExternalReferenceType.Code | RecordId.Identifier   |

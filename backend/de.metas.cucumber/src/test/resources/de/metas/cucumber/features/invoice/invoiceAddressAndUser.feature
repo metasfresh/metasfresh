@@ -34,9 +34,9 @@ Feature: Validate default address and contact is considered on invoice based on 
       | bpLocation        | 0123456789011 | bpartner_1               | N                   | bpLocation        |
       | bpLocationDefault | 0123456789012 | bpartner_1               | Y                   | bpLocationDefault |
     And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name             | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.IsBillToContact_Default |
-      | bpContact             | bpContact        | bpartner_1                   | bpLocation                            | N                           |
-      | bpContactDefault      | bpContactDefault | bpartner_1                   | bpLocationDefault                     | Y                           |
+      | Identifier       | Name             | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.IsBillToContact_Default |
+      | bpContact        | bpContact        | bpartner_1                   | bpLocation                            | N                           |
+      | bpContactDefault | bpContactDefault | bpartner_1                   | bpLocationDefault                     | Y                           |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
       | o_1        | false   | bpartner_1               | bpLocation                            | 2022-08-16  | po_ref_mock     | POO             | bpLocation                      | bpContact                   |

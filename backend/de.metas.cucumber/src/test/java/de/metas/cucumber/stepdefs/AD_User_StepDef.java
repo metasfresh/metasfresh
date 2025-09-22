@@ -44,7 +44,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_IsMFProcurementUser;
@@ -139,8 +138,7 @@ public class AD_User_StepDef
 
 		if (InterfaceWrapperHelper.isNew(userRecord))
 		{
-			Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(tableRowMap, "OPT." + COLUMNNAME_AD_User_ID))
-					.ifPresent(userRecord::setAD_User_ID);
+			tableRow.getAsOptionalInt(COLUMNNAME_AD_User_ID).ifPresent(userRecord::setAD_User_ID);
 		}
 
 		userRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -210,7 +208,7 @@ public class AD_User_StepDef
 
 		tableRow.getAsOptionalIdentifier("REST.Context.AD_User_ID")
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), userRecord.getAD_User_ID()));
-		tableRow.getAsIdentifier(COLUMNNAME_AD_User_ID).putOrReplace(userTable, userRecord);
+		tableRow.getAsIdentifier().putOrReplace(userTable, userRecord);
 	}
 
 	private I_AD_User retrieveOrCreateUserRecord(
