@@ -453,6 +453,7 @@ public class PurchaseCandidateRepository
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
 
 		final ZonedDateTime purchaseDatePromised = TimeUtil.asZonedDateTime(record.getPurchaseDatePromised(), timeZone);
+		final ZonedDateTime purchaseDateOrdered = TimeUtil.asZonedDateTime(record.getPurchaseDateOrdered(), timeZone);
 		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(record.getReminderDate());
 		final Duration reminderTime = purchaseDatePromised != null && dateReminder != null ? Duration.between(purchaseDatePromised, dateReminder) : null;
 
@@ -471,6 +472,7 @@ public class PurchaseCandidateRepository
 				.reqCreated(record.isRequisitionCreated())
 				//
 				.purchaseDatePromised(purchaseDatePromised)
+				.purchaseDateOrdered(purchaseDateOrdered)
 				.reminderTime(reminderTime)
 				//
 				.vendorId(BPartnerId.ofRepoId(record.getVendor_ID()))
