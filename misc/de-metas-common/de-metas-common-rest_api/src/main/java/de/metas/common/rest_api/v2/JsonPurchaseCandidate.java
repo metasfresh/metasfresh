@@ -34,8 +34,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import springfox.documentation.spring.web.json.Json;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +50,12 @@ public class JsonPurchaseCandidate
 
 	@JsonProperty("externalLineId")
 	JsonExternalId externalLineId;
+
+	@JsonProperty("purchaseDatePromised")
+	ZonedDateTime purchaseDatePromised;
+
+	@JsonProperty("purchaseDateOrdered")
+	ZonedDateTime purchaseDateOrdered;
 	
 	@JsonProperty("externalPurchaseOrderUrl")
 	String externalPurchaseOrderUrl;
@@ -69,6 +77,8 @@ public class JsonPurchaseCandidate
 	private JsonPurchaseCandidate(
 			@JsonProperty("externalHeaderId") @NonNull final JsonExternalId externalHeaderId,
 			@JsonProperty("externalLineId") @NonNull final JsonExternalId externalLineId,
+			@JsonProperty("purchaseDatePromised") @Nullable final ZonedDateTime purchaseDatePromised,
+			@JsonProperty("purchaseDateOrdered") @Nullable final ZonedDateTime purchaseDateOrdered,
 			@JsonProperty("externalPurchaseOrderUrl") @Nullable final String externalPurchaseOrderUrl,
 			@JsonProperty("metasfreshId") @NonNull final JsonMetasfreshId metasfreshId,
 			@JsonProperty("processed") final boolean processed,
@@ -77,6 +87,8 @@ public class JsonPurchaseCandidate
 	{
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineId = externalLineId;
+		this.purchaseDatePromised = purchaseDatePromised;
+		this.purchaseDateOrdered = purchaseDateOrdered;
 		this.externalPurchaseOrderUrl = externalPurchaseOrderUrl;
 		this.metasfreshId = metasfreshId;
 		this.processed = processed;

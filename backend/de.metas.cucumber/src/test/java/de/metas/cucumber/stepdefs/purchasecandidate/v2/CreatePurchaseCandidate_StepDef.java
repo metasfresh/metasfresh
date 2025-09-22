@@ -69,7 +69,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class CreatePurchaseCandidate_StepDef
 {
@@ -252,6 +252,8 @@ public class CreatePurchaseCandidate_StepDef
 		assertThat(persistedResult.getExternalHeaderId().getValue()).isEqualTo(candidate.getExternalHeaderId().getValue());
 		assertThat(persistedResult.getExternalLineId().getValue()).isEqualTo(candidate.getExternalLineId().getValue());
 		assertThat(persistedResult.getExternalPurchaseOrderUrl()).isEqualTo(candidate.getExternalPurchaseOrderUrl());
+		assertThat(persistedResult.getPurchaseDateOrdered()).isEqualTo(candidate.getPurchaseDateOrdered());
+		assertThat(persistedResult.getPurchaseDatePromised()).isEqualTo(candidate.getPurchaseDatePromised());
 	}
 
 	private Collection<JsonPurchaseCandidateReference> mapEnqueueRequest(final List<Map<String, String>> dataTable)
