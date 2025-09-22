@@ -15,9 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- *
  * @author tsa
- *
  */
 public interface IShipperDAO extends ISingletonService
 {
@@ -35,9 +33,9 @@ public interface IShipperDAO extends ISingletonService
 
 	Optional<I_M_Shipper> getByName(String name);
 
-	Map<ShipperId,I_M_Shipper> getByIds(Set<ShipperId> shipperIds);
+	Map<ShipperId, I_M_Shipper> getByIds(Set<ShipperId> shipperIds);
 
-	ImmutableMap<String,I_M_Shipper> getByInternalName(Set<String> internalNameSet);
+	ImmutableMap<String, I_M_Shipper> getByInternalName(Set<String> internalNameSet);
 
-	ExplainedOptional<String> getShipperGatewayId(ShipperId shipperId);
+	ExplainedOptional<ShipperGatewayId> getShipperGatewayId(ShipperId shipperId);
 }

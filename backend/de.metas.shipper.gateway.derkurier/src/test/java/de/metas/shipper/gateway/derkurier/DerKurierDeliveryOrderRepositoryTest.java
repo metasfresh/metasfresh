@@ -80,7 +80,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 
 		final I_DerKurier_DeliveryOrder headerRecord = headerRecords.get(0);
 		assertThat(headerRecord.getDK_Sender_Street()).isEqualTo(deliveryOrder.getPickupAddress().getStreet1());
-		assertThat(headerRecord.getDerKurier_DeliveryOrder_ID()).isEqualTo(savedDeliveryOrder.getOrderId().getOrderIdAsInt());
+		assertThat(headerRecord.getDerKurier_DeliveryOrder_ID()).isEqualTo(savedDeliveryOrder.getId().getRepoId());
 		assertThat(headerRecord.getM_Shipper_ID()).isEqualTo(M_SHIPPER_ID.getRepoId());
 		assertThat(headerRecord.getM_ShipperTransportation_ID()).isEqualTo(M_SHIPPER_TRANSPORTATION_ID.getRepoId());
 

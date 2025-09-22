@@ -2,7 +2,6 @@ package de.metas.shipper.gateway.go;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder_Package;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
@@ -17,6 +16,7 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.OrderStatus;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -244,10 +244,5 @@ public class GODeliveryOrderRepository
 		orderPackagePO.setGO_DeliveryOrder_ID(deliveryOrderRepoId);
 		orderPackagePO.setM_Package_ID(packageId);
 		InterfaceWrapperHelper.save(orderPackagePO);
-	}
-
-	public String getShipperGatewayId()
-	{
-		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 }

@@ -6,7 +6,7 @@ import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
-import de.metas.util.Check;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,9 +44,9 @@ public class ShipperGatewayServicesRegistry
 {
 	private static final Logger logger = LogManager.getLogger(ShipperGatewayServicesRegistry.class);
 
-	private final ImmutableMap<String, DeliveryOrderService> servicesByGatewayId;
-	private final ImmutableMap<String, ShipperGatewayClientFactory> clientFactoriesByGatewayId;
-	private final ImmutableMap<String, DraftDeliveryOrderCreator> draftDeliveryOrderCreatorsByGatewayId;
+	private final ImmutableMap<ShipperGatewayId, DeliveryOrderService> servicesByGatewayId;
+	private final ImmutableMap<ShipperGatewayId, ShipperGatewayClientFactory> clientFactoriesByGatewayId;
+	private final ImmutableMap<ShipperGatewayId, DraftDeliveryOrderCreator> draftDeliveryOrderCreatorsByGatewayId;
 
 	@NonNull private final DeliveryOrderService defaultDeliveryOrderService;
 	@NonNull private final DraftDeliveryOrderCreator defaultDraftDeliveryOrderCreator;
@@ -98,23 +98,23 @@ public class ShipperGatewayServicesRegistry
 		logger.info("defaultDraftDeliveryOrderCreator: {}", this.defaultDraftDeliveryOrderCreator);
 	}
 
-	public DeliveryOrderService getDeliveryOrderService(@NonNull final String shipperGatewayId)
+	public DeliveryOrderService getDeliveryOrderService(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
 		return servicesByGatewayId.getOrDefault(shipperGatewayId, defaultDeliveryOrderService);
 	}
 
-	public ShipperGatewayClientFactory getClientFactory(@NonNull final String shipperGatewayId)
+	public ShipperGatewayClientFactory getClientFactory(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
 		return clientFactoriesByGatewayId.getOrDefault(shipperGatewayId, defaultShipperGatewayClientFactory);
 	}
 
-	public DraftDeliveryOrderCreator getShipperGatewayService(@NonNull final String shipperGatewayId)
+	public DraftDeliveryOrderCreator getShipperGatewayService(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
 		return draftDeliveryOrderCreatorsByGatewayId.getOrDefault(shipperGatewayId, defaultDraftDeliveryOrderCreator);
 	}
 
-	public boolean hasServiceSupport(@Nullable final String shipperGatewayId)
+	public boolean hasServiceSupport(@Nullable final ShipperGatewayId shipperGatewayId)
 	{
-		return !Check.isBlank(shipperGatewayId);
+		return shipperGatewayId != null;
 	}
 }

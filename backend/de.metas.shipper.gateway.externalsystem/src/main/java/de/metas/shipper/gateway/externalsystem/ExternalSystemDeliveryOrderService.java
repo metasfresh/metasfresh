@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.externalsystem;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.ShipperGatewayId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class ExternalSystemDeliveryOrderService implements DeliveryOrderService
 {
 	@Override
-	public String getShipperGatewayId() {return null; /* default */}
+	public ShipperGatewayId getShipperGatewayId() {return null; /* default */}
 
 	@Override
 	public ITableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)

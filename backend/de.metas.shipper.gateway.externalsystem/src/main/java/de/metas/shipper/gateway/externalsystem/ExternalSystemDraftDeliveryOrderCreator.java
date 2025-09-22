@@ -17,6 +17,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
@@ -50,7 +51,7 @@ public class ExternalSystemDraftDeliveryOrderCreator implements DraftDeliveryOrd
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@Override
-	public String getShipperGatewayId() {return null; /* default */}
+	public ShipperGatewayId getShipperGatewayId() {return null; /* default */}
 
 	@NonNull
 	@Override

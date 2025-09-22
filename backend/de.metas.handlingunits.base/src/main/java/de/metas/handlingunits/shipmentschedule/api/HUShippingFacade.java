@@ -23,6 +23,7 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -274,7 +275,7 @@ public class HUShippingFacade
 			final ShipperId shipperId,
 			@NonNull final Collection<I_M_Package> mPackages)
 	{
-		final String shipperGatewayId = shipperDAO.getShipperGatewayId(shipperId).orElse(null);
+		final ShipperGatewayId shipperGatewayId = shipperDAO.getShipperGatewayId(shipperId).orElse(null);
 		if (shipperGatewayId == null)
 		{
 			return;

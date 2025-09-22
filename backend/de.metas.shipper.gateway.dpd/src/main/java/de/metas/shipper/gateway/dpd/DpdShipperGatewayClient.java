@@ -59,6 +59,7 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import lombok.Builder;
@@ -105,7 +106,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -152,7 +153,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 		final ImmutableList<PackageLabels> packageLabels = ImmutableList.of(
 				PackageLabels.builder()
-						.orderId(OrderId.of(getShipperGatewayId(), String.valueOf(deliveryOrder.getId().getRepoId())))
+						.orderId(OrderId.of(getShipperGatewayId(), deliveryOrder.getId()))
 						.defaultLabelType(customDeliveryData.getPaperFormat())
 						.label(PackageLabel.builder()
 								.type(customDeliveryData.getPaperFormat())

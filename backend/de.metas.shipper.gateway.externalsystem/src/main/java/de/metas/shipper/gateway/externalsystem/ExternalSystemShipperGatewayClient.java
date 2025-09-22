@@ -9,6 +9,7 @@ import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipping.ShipperGatewayId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -21,7 +22,7 @@ class ExternalSystemShipperGatewayClient implements ShipperGatewayClient
 	@NonNull final ExternalSystemMessageSender externalSystemMessageSender;
 
 	@Override
-	public @NonNull String getShipperGatewayId() {return config.getShipperGatewayId();}
+	public @NonNull ShipperGatewayId getShipperGatewayId() {return config.getShipperGatewayId();}
 
 	@Override
 	public @NonNull DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException

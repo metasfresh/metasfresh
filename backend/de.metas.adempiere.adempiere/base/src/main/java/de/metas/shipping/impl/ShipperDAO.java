@@ -7,10 +7,10 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -146,10 +146,10 @@ public class ShipperDAO implements IShipperDAO
 	}
 
 	@Override
-	public ExplainedOptional<String> getShipperGatewayId(@NonNull final ShipperId shipperId)
+	public ExplainedOptional<ShipperGatewayId> getShipperGatewayId(@NonNull final ShipperId shipperId)
 	{
 		final I_M_Shipper shipper = getById(shipperId);
-		final String shipperGatewayId = StringUtils.trimBlankToNull(shipper.getShipperGateway());
+		final ShipperGatewayId shipperGatewayId = ShipperGatewayId.ofNullableString(shipper.getShipperGateway());
 		return shipperGatewayId != null
 				? ExplainedOptional.of(shipperGatewayId)
 				: ExplainedOptional.emptyBecause("Shipper " + shipper.getName() + " has no gateway configured");

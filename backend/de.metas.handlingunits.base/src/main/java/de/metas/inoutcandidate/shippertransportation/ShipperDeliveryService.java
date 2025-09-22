@@ -40,6 +40,7 @@ import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -141,7 +142,7 @@ public class ShipperDeliveryService
 	 * Call the remote Shipper Gateway API and request that the Shipper comes to retrieve the packages.
 	 * The Shipper delivery papers are created as a consequence.
 	 * <p>
-	 * All the packages in the list should not already have delivery papers.
+	 * All the packages in the list should not yet have delivery papers.
 	 * <p>
 	 * If the Shipper does not have a ShipperGateway, this method does nothing (hence the "ifPossible" in its name).
 	 */
@@ -151,7 +152,7 @@ public class ShipperDeliveryService
 			@NonNull final Collection<I_M_Package> packages,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		final String shipperGatewayId = shipperDAO.getShipperGatewayId(shipperId).orElse(null);
+		final ShipperGatewayId shipperGatewayId = shipperDAO.getShipperGatewayId(shipperId).orElse(null);
 		// no ShipperGateway, so no API to call/no courier to request
 		if (shipperGatewayId == null)
 		{

@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.spi;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
 
 public interface DraftDeliveryOrderCreator
 {
-	String getShipperGatewayId();
+	ShipperGatewayId getShipperGatewayId();
 
 	@NonNull
 	DeliveryOrder createDraftDeliveryOrder(CreateDraftDeliveryOrderRequest request);

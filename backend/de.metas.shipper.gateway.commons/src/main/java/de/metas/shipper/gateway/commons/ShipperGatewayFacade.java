@@ -11,6 +11,7 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
@@ -136,7 +137,7 @@ public class ShipperGatewayFacade
 			@NonNull final Collection<I_M_Package> mpackages)
 	{
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
-		final String shipperGatewayId = getShipperGatewayId(shipperId);
+		final ShipperGatewayId shipperGatewayId = getShipperGatewayId(shipperId);
 		final DeliveryOrderService deliveryOrderRepository = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
 
 		final ImmutableSet<PackageInfo> packageInfos = mpackages.stream()
@@ -158,16 +159,16 @@ public class ShipperGatewayFacade
 		DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(request);
 
 		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
-		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId().getRepoId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
+		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
 	}
 
-	private String getShipperGatewayId(final ShipperId shipperId)
+	private ShipperGatewayId getShipperGatewayId(final ShipperId shipperId)
 	{
 		return shipperDAO.getShipperGatewayId(shipperId).orElseThrow();
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
+	public boolean hasServiceSupport(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
 		return shipperRegistry.hasServiceSupport(shipperGatewayId);
 	}

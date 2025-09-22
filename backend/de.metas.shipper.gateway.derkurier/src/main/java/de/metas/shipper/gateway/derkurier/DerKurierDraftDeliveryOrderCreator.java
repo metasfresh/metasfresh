@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.derkurier;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
@@ -59,7 +60,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 	@NonNull private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
 
 	@Override
-	public @NotNull String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DerKurierConstants.SHIPPER_GATEWAY_ID;
 	}

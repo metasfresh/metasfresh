@@ -10,7 +10,6 @@ import de.metas.common.util.pair.IPair;
 import de.metas.location.CountryCode;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
@@ -31,6 +30,7 @@ import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -139,18 +139,19 @@ public class DerKurierDeliveryOrderRepository
 		final ImmutableListMultimap<Integer, I_DerKurier_DeliveryOrderLine_Package> lineId2PackageRecords = //
 				Multimaps.index(orderLinePackageRecords, I_DerKurier_DeliveryOrderLine_Package::getDerKurier_DeliveryOrderLine_ID);
 
-		final String recordId = String.valueOf(headerRecord.getDerKurier_DeliveryOrder_ID());
-		final OrderId orderId = OrderId.of(SHIPPER_GATEWAY_ID, recordId);
+		// final String recordId = String.valueOf(headerRecord.getDerKurier_DeliveryOrder_ID());
+		final DeliveryOrderId deliveryOrderId = DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID());
+		final OrderId orderId = OrderId.of(SHIPPER_GATEWAY_ID, deliveryOrderId);
 
 		final DeliveryOrderBuilder deliverOrderBuilder = DeliveryOrder
 				.builder()
-				.id(DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID()))
+				.id(deliveryOrderId)
 				.shipperId(ShipperId.ofRepoId(headerRecord.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(headerRecord.getM_ShipperTransportation_ID()))
 				.shipperProduct(DerKurierShipperProduct.OVERNIGHT)
 				.pickupAddress(createPickupAddress(headerRecord))
 				.pickupDate(createPickupDate(headerRecord))
-				.customerReference(recordId)
+				.customerReference(orderId.getOrderIdAsString())
 				.orderId(orderId);
 
 		I_DerKurier_DeliveryOrderLine previousLineRecord = null; // used to make sure that all lineRecords have the same value when it comes to certain columns
@@ -342,10 +343,11 @@ public class DerKurierDeliveryOrderRepository
 		storePickupDateInHeaderRecord(headerRecord, deliveryOrder.getPickupDate());
 		InterfaceWrapperHelper.save(headerRecord);
 
+		final DeliveryOrderId deliveryOrderId = DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID());
 		final DeliveryOrderBuilder resultBuilder = deliveryOrder
 				.toBuilder()
-				.id(DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID()))
-				.orderId(OrderId.of(SHIPPER_GATEWAY_ID, String.valueOf(headerRecord.getDerKurier_DeliveryOrder_ID())))
+				.id(deliveryOrderId)
+				.orderId(OrderId.of(SHIPPER_GATEWAY_ID, deliveryOrderId))
 				.clearDeliveryPositions();
 
 		int lineCounter = 0;

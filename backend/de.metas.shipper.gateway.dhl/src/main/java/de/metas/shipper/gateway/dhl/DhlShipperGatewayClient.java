@@ -58,6 +58,7 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -111,7 +112,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -338,7 +339,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		//noinspection ConstantConditions
 		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getDetails().stream()
-				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb(), String.valueOf(deliveryOrder.getId().getRepoId())))
+				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb(), deliveryOrder.getId()))
 				.collect(ImmutableList.toImmutableList());
 
 		epicLogger.addLog("getPackageLabelsList: labels are {}", packageLabels);
@@ -347,10 +348,10 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	@NonNull
-	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, @NonNull final String deliveryOrderIdAsString)
+	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, @NonNull final DeliveryOrderId deliveryOrderId)
 	{
 		return PackageLabels.builder()
-				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderIdAsString))
+				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderId))
 				.defaultLabelType(DhlPackageLabelType.GUI)
 				.label(PackageLabel.builder()
 						.type(DhlPackageLabelType.GUI)

@@ -13,6 +13,7 @@ import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -21,7 +22,7 @@ import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 
@@ -54,12 +55,10 @@ import java.util.Properties;
 public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
 	public static void enqueueOnTrxCommit(
-			final int deliveryOrderRepoId,
-			@NonNull final String shipperGatewayId,
+			@NonNull final DeliveryOrderId deliveryOrderRepoId,
+			@NonNull final ShipperGatewayId shipperGatewayId,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0");
-
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 		workPackageQueueFactory
@@ -77,14 +76,9 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 	private static final String PARAM_DeliveryOrderRepoId = "DeliveryOrderRepoId";
 	private static final String PARAM_ShipperGatewayId = "ShipperGatewayId";
+
 	// Services
-
-	private final ShipperGatewayServicesRegistry shipperRegistry;
-
-	public DeliveryOrderWorkpackageProcessor()
-	{
-		shipperRegistry = Adempiere.getBean(ShipperGatewayServicesRegistry.class);
-	}
+	private final ShipperGatewayServicesRegistry shipperRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
 
 	@Override
 	public boolean isRunInTransaction()
@@ -97,14 +91,13 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	{
 		final DeliveryOrder draftedDeliveryOrder = retrieveDeliveryOrder();
 
-		final String shipperGatewayId = getParameters().getParameterAsString(PARAM_ShipperGatewayId);
+		@NonNull final ShipperGatewayId shipperGatewayId = getShipperGatewayId();
 
 		final ShipperGatewayClient client = shipperRegistry
 				.getClientFactory(shipperGatewayId)
 				.newClientForShipperId(draftedDeliveryOrder.getShipperId());
 
-		final DeliveryOrderService deliveryOrderRepo = //
-				shipperRegistry.getDeliveryOrderService(shipperGatewayId);
+		final DeliveryOrderService deliveryOrderRepo = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
 
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(draftedDeliveryOrder);
 		deliveryOrderRepo.save(completedDeliveryOrder);
@@ -117,9 +110,17 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		return Result.SUCCESS;
 	}
 
+	private @NonNull ShipperGatewayId getShipperGatewayId()
+	{
+		return ShipperGatewayId.ofString(Check.assumeNotNull(
+				getParameters().getParameterAsString(PARAM_ShipperGatewayId),
+				"Parameter {} is set", PARAM_ShipperGatewayId
+		));
+	}
+
 	private DeliveryOrder retrieveDeliveryOrder()
 	{
-		final String shipperGatewayId = getParameters().getParameterAsString(PARAM_ShipperGatewayId);
+		@NonNull final ShipperGatewayId shipperGatewayId = getShipperGatewayId();
 		final DeliveryOrderService deliveryOrderRepo = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
 
 		final DeliveryOrderId deliveryOrderRepoId = getDeliveryOrderRepoId();
