@@ -8,7 +8,7 @@ Feature: API Audit POST http method
     And all the API audit data is reset
 
   @from:cucumber
-  @Id:S0478_080
+  @Id:S0478_070
   Scenario: Testcase 100, normal POST and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -46,7 +46,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-  @Id:S0478_090
+  @Id:S0478_080
   Scenario: Testcase 110, normal POST and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -169,7 +169,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-  @Id:S0478_100
+  @Id:S0478_090
   Scenario: Testcase 140, failing POST and replay
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -240,7 +240,7 @@ Feature: API Audit POST http method
 
 
   @from:cucumber
-  @Id:S0478_110
+  @Id:S0478_100
   Scenario: Testcase 160, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true and IsWrapApiResponse is false
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -278,7 +278,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-  @Id:S0478_120
+  @Id:S0478_110
   Scenario: Testcase 170, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and X-Api-Async header is true
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
