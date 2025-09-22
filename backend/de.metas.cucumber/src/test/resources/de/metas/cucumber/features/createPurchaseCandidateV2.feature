@@ -10,7 +10,7 @@ Feature: create or update Purchase Candidate
 
     Given the user adds a purchase candidate
       | ExternalLineId | ExternalHeaderId | POReference | orgCode | warehouse        | isManualPrice | isManualDiscount | product     | vendor.id | qty | qty.uom | OPT.price | OPT.currency | OPT.priceUom | OPT.discount | OPT.purchaseDatePromised | OPT.purchaseDateOrdered | OPT.ExternalPurchaseOrderURL |
-      | L1             | H1               | poRef1      | 001     | val-StdWarehouse | false         | false            | val-P002737 | val-G0002 | 3   | PCE     |           |              |              |              |                          |                         | www.ExternalReferenceURL.com |
+      | L1             | H1               | poRef1      | 001     | val-StdWarehouse | false         | false            | val-P002737 | val-G0002 | 3   | PCE     |           |              |              |              | 2025-10-10T21:00:00Z     | 2022-10-10T21:00:00Z    | www.ExternalReferenceURL.com |
 
     And the user adds a purchase candidate price
       | value | OPT.currencyCode | OPT.priceUomCode |
