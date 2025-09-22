@@ -8,6 +8,7 @@ Feature: API Audit DELETE http method
     And all the API audit data is reset
 
   @from:cucumber
+  @Id:S0478_010
   Scenario: Testcase 100, normal DELETE and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -45,6 +46,7 @@ Feature: API Audit DELETE http method
 """
 
   @from:cucumber
+  @Id:S0478_020
   Scenario: Testcase 110, normal DELETE and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -86,6 +88,7 @@ Feature: API Audit DELETE http method
 """
  
   @from:cucumber
+  @Id:S0490_010
   Scenario: Testcase 120, failing DELETE and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -123,6 +126,7 @@ Feature: API Audit DELETE http method
 """
     
   @from:cucumber
+  @Id:S0490_020
   Scenario: Testcase 130, failing DELETE and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -165,6 +169,7 @@ Feature: API Audit DELETE http method
 """
     
   @from:cucumber
+  @Id:S0478_030
   Scenario: Testcase 140, failing DELETE and replay
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |

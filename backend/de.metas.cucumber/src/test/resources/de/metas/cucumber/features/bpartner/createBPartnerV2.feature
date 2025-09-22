@@ -232,6 +232,7 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c33   | test_name_c33_created | test_email_created | fax_created | c22  | true                    |
 
   @Id:S0285_700
+  @Id:S0479_010
   Scenario: Create BPartner Account record,
   using all supported external identifier formats:
   - external reference

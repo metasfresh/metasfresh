@@ -8,6 +8,7 @@ Feature: API Audit PUT http method
     And all the API audit data is reset
 
   @from:cucumber
+  @Id:S0478_130
   Scenario: Testcase 100, normal PUT and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -45,6 +46,7 @@ Feature: API Audit PUT http method
 """
     
   @from:cucumber
+  @Id:S0478_140
   Scenario: Testcase 110, normal PUT and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -86,6 +88,7 @@ Feature: API Audit PUT http method
 """
     
   @from:cucumber
+  @Id:S0490_060
   Scenario: Testcase 120, failing PUT and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -123,6 +126,7 @@ Feature: API Audit PUT http method
 """
     
   @from:cucumber
+  @Id:S0490_070
   Scenario: Testcase 130, failing PUT and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -165,6 +169,7 @@ Feature: API Audit PUT http method
 """
     
   @from:cucumber
+  @Id:S0478_150
   Scenario: Testcase 140, failing PUT and replay
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
