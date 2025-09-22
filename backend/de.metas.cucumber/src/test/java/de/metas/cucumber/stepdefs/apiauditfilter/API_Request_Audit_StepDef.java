@@ -115,24 +115,18 @@ public class API_Request_Audit_StepDef
 	}
 
 	@And("^get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath (.*) and store that path in context$")
-	public void store_auditRequestResponse_endpointPath_in_context(@NonNull String endpointPath)
+	public void store_auditRequestResponse_endpointPath_in_context(@NonNull final String endpointPath)
 	{
-		final String regex = ".*(:[a-zA-Z]+)/?.*";
+		final String regex = "@[a-zA-Z0-9_-]+@";
 
 		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(endpointPath);
 
-		while (matcher.find())
-		{
-			final String orderIdentifierGroup = matcher.group(1);
+		final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
+		assertThat(requestId).isNotNull();
+		final String resolvedEndpointPath = matcher.replaceAll(String.valueOf(requestId.getRepoId()));
 
-			final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
-			assertThat(requestId).isNotNull();
-
-			endpointPath = endpointPath.replace(orderIdentifierGroup, String.valueOf(requestId.getRepoId()));
-
-			testContext.setEndpointPath(endpointPath);
-		}
+		testContext.setEndpointPath(resolvedEndpointPath);
 	}
 
 	private boolean isApiAuditRequestFound(@NonNull final ApiRequestAuditId apiRequestAuditId, @NonNull final String[] allowedStatuses)

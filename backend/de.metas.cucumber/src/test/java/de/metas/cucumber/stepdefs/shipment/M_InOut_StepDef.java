@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.EmptyUtil;
@@ -81,7 +80,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -805,15 +803,15 @@ public class M_InOut_StepDef
 	@And("^store shipment PDF endpointPath (.*) in context$")
 	public void store_shipment_endpointPath_in_context(@NonNull String endpointPath)
 	{
-		final String regex = ".*(:[a-zA-Z]+)/?.*";
+		final String regex = "@[a-zA-Z\\d_-]+@";
 
 		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(endpointPath);
 
 		while (matcher.find())
 		{
-			final String shipmentIdentifierGroup = matcher.group(1);
-			final String shipmentIdentifier = shipmentIdentifierGroup.replace(":", "");
+			final String shipmentIdentifierGroup = matcher.group();
+			final String shipmentIdentifier = shipmentIdentifierGroup.replace("@", "");
 
 			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
 			assertThat(shipment).isNotNull();
