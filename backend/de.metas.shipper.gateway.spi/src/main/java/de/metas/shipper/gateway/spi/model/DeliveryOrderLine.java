@@ -27,6 +27,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -37,21 +38,14 @@ import java.math.BigDecimal;
 @Value
 public class DeliveryOrderLine
 {
-	@Nullable
-	String content;
-
+	@Nullable String content;
 	@NonNull BigDecimal grossWeightKg;
-
-	@NonNull
-	PackageDimensions packageDimensions;
-
-	@Nullable
-	CustomDeliveryData customDeliveryData;
-
-	@NonNull
-	PackageId packageId;
+	@NonNull PackageDimensions packageDimensions;
+	@Nullable CustomDeliveryData customDeliveryData;
+	@NonNull PackageId packageId;
 
 	@Builder(toBuilder = true)
+	@Jacksonized
 	private DeliveryOrderLine(
 			@Nullable final String content,
 			@NonNull final BigDecimal grossWeightKg,

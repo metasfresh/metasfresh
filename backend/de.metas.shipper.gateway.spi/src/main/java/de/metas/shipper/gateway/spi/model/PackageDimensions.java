@@ -2,6 +2,7 @@ package de.metas.shipper.gateway.spi.model;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 /*
  * #%L
@@ -36,6 +37,7 @@ public class PackageDimensions
 	 * Note: dimensions may be <= 0 which can stand for "not specified".
 	 */
 	@Builder
+	@Jacksonized
 	private PackageDimensions(final int lengthInCM, final int widthInCM, final int heightInCM)
 	{
 		this.lengthInCM = lengthInCM;

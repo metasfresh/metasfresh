@@ -8,6 +8,8 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
@@ -114,6 +116,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.pickupAddress(pickupAddress) // pickupAddress is mandatory, but not coming from I_DerKurier_DeliveryOrderLine
 				.pickupDate(pickupDate) // same as pickupAddress
+				.shipperId(ShipperId.ofRepoId(1))
 				.shipperProduct(DerKurierShipperProduct.OVERNIGHT);
 
 		// invoke the method under test

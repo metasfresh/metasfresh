@@ -8,8 +8,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -33,57 +35,42 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@Builder(toBuilder = true)
 @Value
+@Builder(toBuilder = true)
+@Jacksonized
 public class DeliveryOrder
 {
+	/**
+	 * ID in external repository
+	 */
+	@Nullable DeliveryOrderId id;
 	/**
 	 * No idea what this field does, as there's a {@link de.metas.shipper.gateway.spi.DeliveryOrderId} field as well}.
 	 *
 	 * @deprecated Not sure if it's correct to deprecate this, but i believe we should use {@link #id} instead when persisting the DeliveryOrder
 	 */
-	@Deprecated
-	@Nullable
-	OrderId orderId;
 
-	@Nullable
-	CustomDeliveryData customDeliveryData;
-
-	@Nullable
-	OrderStatus orderStatus;
-
-	@NonNull
-	Address pickupAddress;
-
-	@NonNull
-	PickupDate pickupDate;
+	@Nullable @Deprecated OrderId orderId;
+	@Nullable CustomDeliveryData customDeliveryData;
+	@Nullable OrderStatus orderStatus;
+	@NonNull Address pickupAddress;
+	@NonNull PickupDate pickupDate;
+	/**
+	 * Not received from anywhere (in DraftDeliveryOrderCreator)
+	 */
+	@Nullable String pickupNote;
+	@NonNull Address deliveryAddress;
+	@Nullable ContactPerson deliveryContact;
+	@Nullable DeliveryDate deliveryDate;
+	/**
+	 * Not received from anywhere (in DraftDeliveryOrderCreator)
+	 */
+	@Nullable String deliveryNote;
 
 	/**
 	 * Not received from anywhere (in DraftDeliveryOrderCreator)
 	 */
-	@Nullable
-	String pickupNote;
-
-	@NonNull
-	Address deliveryAddress;
-
-	@Nullable
-	ContactPerson deliveryContact;
-
-	@Nullable
-	DeliveryDate deliveryDate;
-
-	/**
-	 * Not received from anywhere (in DraftDeliveryOrderCreator)
-	 */
-	@Nullable
-	String deliveryNote;
-
-	/**
-	 * Not received from anywhere (in DraftDeliveryOrderCreator)
-	 */
-	@Nullable
-	String customerReference;
+	@Nullable String customerReference;
 
 	/**
 	 * @deprecated This class has a bad data structure and should not be used in the future. Please use instead {@link #deliveryOrderLines}.
@@ -94,50 +81,30 @@ public class DeliveryOrder
 	 * whilst DeliveryPosition stores multiple packages per position, and there's no easy way to match the shipper "expected" packages
 	 * (each with their own dimensions/size, content) with the specific package inside a delivery position.
 	 */
-	@NonNull
-	@Singular
-	@Deprecated
-	ImmutableList<DeliveryPosition> deliveryPositions;
+	@NonNull @Singular @Deprecated ImmutableList<DeliveryPosition> deliveryPositions;
 
 	/**
 	 * 1 delivery lines represents 1 package
 	 */
-	@NonNull
-	@Singular
-	ImmutableList<DeliveryOrderLine> deliveryOrderLines;
+	@NonNull @Singular ImmutableList<DeliveryOrderLine> deliveryOrderLines;
 
-	/**
-	 * The Shipper Product
-	 */
+	@NonNull ShipperId shipperId;
 	@Nullable ShipperProduct shipperProduct;
-
-	/**
-	 * ID in external repository
-	 */
-	DeliveryOrderId id;
-
-	ShipperId shipperId;
-
-	/**
-	 * Transportation Order id
-	 */
 	ShipperTransportationId shipperTransportationId;
 
-	@Nullable
-	String trackingNumber;
+	@Nullable String trackingNumber;
+	@Nullable String trackingUrl;
 
-	@Nullable
-	String trackingUrl;
-
-
-	public DeliveryOrder withCustomDeliveryData(@Nullable final CustomDeliveryData customDeliveryData)
+	public DeliveryOrder withCustomDeliveryData(@NonNull final CustomDeliveryData customDeliveryData)
 	{
-		if (customDeliveryData == null)
+		if (Objects.equals(this.customDeliveryData, customDeliveryData))
 		{
 			return this;
 		}
+
 		return this.toBuilder()
 				.customDeliveryData(customDeliveryData)
 				.build();
 	}
 }
+

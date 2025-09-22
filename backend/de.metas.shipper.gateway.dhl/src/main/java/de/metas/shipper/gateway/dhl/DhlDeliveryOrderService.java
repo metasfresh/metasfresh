@@ -124,6 +124,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 		return dhlDeliveryOrderRepository.save(deliveryOrder);
 	}
 
+	@NonNull
 	private DhlCustomDeliveryData getDhlCustomDeliveryData(@NonNull final DeliveryOrderId deliveryOrderRepoId)
 	{
 		final List<I_DHL_ShipmentOrder> ordersPo = getAllShipmentOrdersForRequest(deliveryOrderRepoId);
