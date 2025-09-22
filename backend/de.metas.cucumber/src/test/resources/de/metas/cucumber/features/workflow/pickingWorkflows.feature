@@ -63,7 +63,7 @@ Feature: picking rest controller tests
 
     And metasfresh contains M_PickingSlot:
       | Identifier | PickingSlot | IsDynamic |
-      | PS_1       | 063.1        | Y         |
+      | PS_1       | 063.1       | Y         |
 
   @from:cucumber
   Scenario: start a fresh picking job, do the picking, complete the picking => ship the goods
@@ -151,8 +151,8 @@ Feature: picking rest controller tests
   @from:cucumber
   Scenario: start a fresh picking job, do the whole picking, log out, log back in with a different user, complete the picking => ship the goods
     Given metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
-      | testUser_17497        | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
+      | Identifier     | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
+      | testUser_17497 | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
       | salesOrder_17497      | customer                 | customerLocation                  |
@@ -204,8 +204,8 @@ Feature: picking rest controller tests
   @from:cucumber
   Scenario: start a fresh picking job, do nothing, log out, log back in with a different user, do the whole picking, complete the picking => ship the goods
     Given metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
-      | testUser_17497        | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
+      | Identifier     | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
+      | testUser_17497 | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And create JsonWFProcessStartRequest for picking and store it in context as request payload:
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
       | salesOrder_17497      | customer                 | customerLocation                  |
@@ -253,8 +253,8 @@ Feature: picking rest controller tests
   @from:cucumber
   Scenario: start a fresh picking job, do a partial pick, log out, log back in with a different user, do the picking, complete the picking => ship the goods
     Given metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
-      | testUser_17497        | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
+      | Identifier     | Name           | OPT.EMail                | OPT.Login      | OPT.Role_ID |
+      | testUser_17497 | testUser_17497 | testUser_17497@email.com | testUser_17497 | 540024      |
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy |
       | Y                   | CREATE_AND_COMPLETE  |

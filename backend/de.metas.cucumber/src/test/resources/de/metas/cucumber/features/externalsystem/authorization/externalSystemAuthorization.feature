@@ -7,8 +7,8 @@ Feature: Camel-ExternalSystem authorization
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And AD_Note table is reset
     And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | OPT.AD_User_ID | Name                    | OPT.EMail                         | OPT.Login |
-      | externalSystemUser    | 10168          | externalSystemUser_0168 | externalSystemUser_0168@email.com | es_0168   |
+      | Identifier         | AD_User_ID | Name                    | OPT.EMail                         | OPT.Login |
+      | externalSystemUser | 10168      | externalSystemUser_0168 | externalSystemUser_0168@email.com | es_0168   |
     And load AD_Roles
       | AD_Role_ID.Identifier | Name  |
       | WebUIRole             | WebUI |
@@ -17,7 +17,7 @@ Feature: Camel-ExternalSystem authorization
       | externalSystemUser    | WebUIRole             |
 
     And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier      | Name                       | OPT.EMail                            | OPT.NotificationType |
+      | Identifier                 | Name                       | OPT.EMail                            | OPT.NotificationType |
       | user_to_get_notified_S0168 | user_to_get_notified_S0168 | user_to_get_notified_S0168@email.com | N                    |
     And load AD_UserGroup from AD_SysConfig:
       | AD_UserGroup_ID.Identifier | AD_SysConfig.Name                                                             |
