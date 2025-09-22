@@ -33,6 +33,17 @@ Feature: API Audit PUT http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
   Scenario: Testcase 110, normal PUT and caller does not wait for result
     And the following API_Audit_Config records are created:
@@ -63,6 +74,17 @@ Feature: API Audit PUT http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
   Scenario: Testcase 120, failing PUT and caller waits for result
     And the following API_Audit_Config records are created:
@@ -89,6 +111,17 @@ Feature: API Audit PUT http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
   Scenario: Testcase 130, failing PUT and caller does not wait for result
     And the following API_Audit_Config records are created:
@@ -120,6 +153,17 @@ Feature: API Audit PUT http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
   Scenario: Testcase 140, failing PUT and replay
     And the following API_Audit_Config records are created:
@@ -156,6 +200,17 @@ Feature: API Audit PUT http method
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
   Scenario: Testcase 200, reset to initial default data
     And all the API audit data is reset

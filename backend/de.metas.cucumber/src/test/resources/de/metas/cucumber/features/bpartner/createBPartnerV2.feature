@@ -325,6 +325,35 @@ Feature: create or update BPartner v2
   ]
 }
     """
+
+    And store api audit request's response endpointPath /api/v2/audit/requests/:apiRequest/response in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '201' status code
+
+    Then the metasfresh REST-API responds with
+    """
+    {
+  "responseItems": [
+    {
+      "responseBankAccountItems": [
+        {
+          "identifier": "DE15500105171114521777",
+          "syncOutcome": "CREATED"
+        },
+        {
+          "identifier": "DE54500105178721351673",
+          "syncOutcome": "CREATED"
+        },
+        {
+          "identifier": "DE26500105174427157327",
+          "syncOutcome": "CREATED"
+        }
+      ]
+    }
+  ]
+}
+    """
+    
     And verify that bPartner was updated for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | Name              |
       | bpartner                 | ext-ALBERTA-001    | test_name_updated |
