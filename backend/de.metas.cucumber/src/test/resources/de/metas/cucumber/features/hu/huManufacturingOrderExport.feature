@@ -89,7 +89,7 @@ Feature: Handling unit export from manufacturing order
       | ExternalSystem_Config_ID.Identifier | OPT.M_HU_ID.Identifier |
       | GRSConfig_manufacturing             | ppOrderTU              |
 
-    When store HU endpointPath /api/v2/material/handlingunits/byId/:ppOrderTU in context
+    When store HU endpointPath /api/v2/material/handlingunits/byId/@ppOrderTU@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
