@@ -30,11 +30,11 @@ import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.common.JsonWorkPackageStatus;
 import de.metas.common.util.CoalesceUtil;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import springfox.documentation.spring.web.json.Json;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -51,9 +51,11 @@ public class JsonPurchaseCandidate
 	@JsonProperty("externalLineId")
 	JsonExternalId externalLineId;
 
+	@Schema(description = "The promised date of the purchase candidate (Unix timestamp in seconds)")
 	@JsonProperty("purchaseDatePromised")
 	ZonedDateTime purchaseDatePromised;
 
+	@Schema(description = "The date ordered of the purchase candidate (Unix timestamp in seconds)")
 	@JsonProperty("purchaseDateOrdered")
 	ZonedDateTime purchaseDateOrdered;
 	
