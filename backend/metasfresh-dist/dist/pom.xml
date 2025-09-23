@@ -539,6 +539,13 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.shipper.gateway</groupId>
+            <artifactId>de.metas.shipper.gateway.nshift</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.datev</groupId>

@@ -187,6 +187,7 @@
         <module>de.metas.shipper.gateway.dhl</module>
         <module>de.metas.shipper.gateway.dpd</module>
         <module>de.metas.shipper.gateway.externalsystem</module>
+        <module>de.metas.shipper.gateway.nshift</module>
 
         <module>de.metas.util</module>
         <module>de.metas.util.web</module>
@@ -234,6 +235,7 @@
 
         <module>de.metas.frontend-testing</module>
         <module>de.metas.qualitymgmt</module>
+        <module>de.metas.shipper.gateway.nshift</module>
     </modules>
 
     <dependencyManagement>
