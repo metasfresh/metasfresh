@@ -142,33 +142,27 @@ public class BPartnerEndpointService
 		}
 	}
 
-	public Optional<JsonResponseCompositeList> retrieveBPartnersSince(
-			@Nullable final String orgCode,
-			@Nullable final Long epochMilli,
-			@Nullable final String nextPageId
-	)
+	public Optional<JsonResponseCompositeList> retrieveBPartnersSince(@NonNull final RetrieveBPartnerSinceRequest retrieveBPartnerSinceRequest)
 	{
 
 		final SinceQuery sinceQuery;
-
-		if (Check.isBlank(orgCode))
+		final OrgId orgId;
+		if (Check.isBlank(retrieveBPartnerSinceRequest.getOrgCode()))
 		{
-			sinceQuery = SinceQuery.anyEntity(
-					extractInstant(epochMilli),
-					getPageSize());
-
+			orgId = null;
 		}
 		else
 		{
-			final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
-
-			sinceQuery = SinceQuery.anyEntityForOrg(
-					extractInstant(epochMilli),
-					getPageSize(),
-					orgId);
+			orgId = RestUtils.retrieveOrgIdOrDefault(retrieveBPartnerSinceRequest.getOrgCode());
 		}
 
-		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(nextPageId);
+		sinceQuery = SinceQuery.anyEntity(
+				extractInstant(retrieveBPartnerSinceRequest.getEpochMilli()),
+				getPageSize(),
+				orgId,
+				retrieveBPartnerSinceRequest.getExtSystem());
+
+		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(retrieveBPartnerSinceRequest.getNextPageId());
 
 		final QueryResultPage<JsonResponseComposite> page = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery).orElse(null);
 		if (page == null)

@@ -232,6 +232,7 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c33   | test_name_c33_created | test_email_created | fax_created | c22  | true                    |
 
   @Id:S0285_700
+  @Id:S0479_010
   Scenario: Create BPartner Account record,
   using all supported external identifier formats:
   - external reference
@@ -325,6 +326,35 @@ Feature: create or update BPartner v2
   ]
 }
     """
+
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '201' status code
+
+    Then the metasfresh REST-API responds with
+    """
+    {
+  "responseItems": [
+    {
+      "responseBankAccountItems": [
+        {
+          "identifier": "DE15500105171114521777",
+          "syncOutcome": "CREATED"
+        },
+        {
+          "identifier": "DE54500105178721351673",
+          "syncOutcome": "CREATED"
+        },
+        {
+          "identifier": "DE26500105174427157327",
+          "syncOutcome": "CREATED"
+        }
+      ]
+    }
+  ]
+}
+    """
+    
     And verify that bPartner was updated for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | Name              |
       | bpartner                 | ext-ALBERTA-001    | test_name_updated |

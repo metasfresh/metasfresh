@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -146,6 +146,9 @@ public final class StepDefDataIdentifier
 		return result;
 	}
 
+	/**
+	 * @return null if the identifier is equal to {@link #NULL}
+	 */
 	@Nullable
 	public <T> T lookupIn(@NonNull final StepDefData<T> table)
 	{

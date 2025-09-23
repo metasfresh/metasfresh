@@ -80,6 +80,29 @@ public interface I_C_BPartner_Recent_V
 	String COLUMNNAME_C_BPartner_Recent_V_ID = "C_BPartner_Recent_V_ID";
 
 	/**
+	 * Set External system.
+	 * Name of an external system (e.g. Github )
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem (@Nullable java.lang.String ExternalSystem);
+
+	/**
+	 * Get External system.
+	 * Name of an external system (e.g. Github )
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalSystem();
+
+	ModelColumn<I_C_BPartner_Recent_V, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_C_BPartner_Recent_V.class, "ExternalSystem", null);
+	String COLUMNNAME_ExternalSystem = "ExternalSystem";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

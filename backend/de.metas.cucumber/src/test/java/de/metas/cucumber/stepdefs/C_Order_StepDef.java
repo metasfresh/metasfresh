@@ -899,15 +899,15 @@ public class C_Order_StepDef
 	@And("^store sales order PDF endpointPath (.*) in context$")
 	public void store_salesOrder_endpointPath_in_context(@NonNull String endpointPath)
 	{
-		final String regex = ".*(:[a-zA-Z]+)/?.*";
+		final String regex = "@[a-zA-Z\\d_-]+@";
 
 		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(endpointPath);
 
 		while (matcher.find())
 		{
-			final String orderIdentifierGroup = matcher.group(1);
-			final String orderIdentifier = orderIdentifierGroup.replace(":", "");
+			final String orderIdentifierGroup = matcher.group();
+			final String orderIdentifier = orderIdentifierGroup.replace("@", "");
 
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			assertThat(order).isNotNull();

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -356,6 +356,9 @@ public class C_BPartner_StepDef
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getValue()));
 		row.getAsOptionalIdentifier("REST.Context.Name")
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getName()));
+		row.getAsOptionalIdentifier("REST.Context.C_BPartner_ID")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getC_BPartner_ID()));
+		
 	}
 
 	private void changeBPartner(@NonNull final DataTableRow row)

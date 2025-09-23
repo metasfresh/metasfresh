@@ -5,7 +5,7 @@ Feature: Shipping HUs interaction with material schedule
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
+    And metasfresh has date and time 2021-04-11T06:00:00Z
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
@@ -33,7 +33,6 @@ Feature: Shipping HUs interaction with material schedule
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 1609202212345 | customer_SO              | Y                   | Y                   |
-
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | 540008         | 2021-04-09   |
@@ -44,9 +43,11 @@ Feature: Shipping HUs interaction with material schedule
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
+  # OPT.DateProjected_LocalTimeZone=2021-04-09T00:00:00 is interpreted as 2021-04-08T22:00:00Z, because we set the time-source to the zulu-TZ, but the JVM and thus jdbc-drives assumes CEST.Scenario: 
+  # If we changed the JVM to UTC, this test would succeed, but a bunch of others would fail at this stage
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
-      | c_1        | INVENTORY_UP      |                               | p_1                     |               | 100 | 100                    | 2021-04-09T00:00:00             |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected       | Qty | Qty_AvailableToPromise | 
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-09T00:00:00 | 100 | 100                    | 
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
@@ -56,9 +57,9 @@ Feature: Shipping HUs interaction with material schedule
       | ol_1       | o_1                   | p_1                     | 15         |
     When the order identified by o_1 is completed
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
-      | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 100 | 100                    | 2021-04-09T00:00:00             |
-      | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |                                 |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-09T00:00:00  | 100 | 100                    |
+      | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -68,27 +69,31 @@ Feature: Shipping HUs interaction with material schedule
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
+    # c_3 has the date at which the shipment went out, which is set in the time-source
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
-      | c_1        | INVENTORY_UP        |                               | p_1                     |                      | 100 | 100                    | 2021-04-09T00:00:00             |
-      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |                                 |
-      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     |                      | -15 | 85                     | 2021-04-11T00:00:00             |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_1        | INVENTORY_UP        |                               | p_1                     | 2021-04-09T00:00:00  | 100 | 100                    |
+      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |
+      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-11T00:00:00Z | -15 | 85                     |
     When the shipment identified by s_1 is reactivated
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
-      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |                                 |
-      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     |                      | 0   | 100                    | 2021-04-11T00:00:00             |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |
+      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-11T00:00:00Z | 0   | 100                    |
 
     And the shipment identified by s_1 is completed
 
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
-      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |                                 |
-      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     |                      | -15 | 85                     | 2021-04-11T00:00:00             |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |
+      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-11T00:00:00Z | -15 | 85                     |
 
     And the shipment identified by s_1 is reversed
 
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
-      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |                                 |
-      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     |                      | 0   | 100                    | 2021-04-11T00:00:00             |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | 
+      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     | 
+      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-11T00:00:00Z | 0   | 100                    | 
+# cleanup
+    And metasfresh has current date and time
+    

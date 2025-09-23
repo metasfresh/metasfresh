@@ -44,9 +44,9 @@ Feature: Shipment schedule export rest-api
       | shipBPLocation | ship_location_S0150 | customer_so_25_02        | shipLocation                 | true         | false        | ship@location.com | shipBPName       | 321       |
       | billBPLocation | bill_location_S0150 | customer_so_25_02        | billLocation                 | false        | true         | bill@location.com | billBPName       | 654       |
     And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name     | OPT.EMail     | OPT.AD_Language | OPT.C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.Phone |
-      | shipUser              | shipUser | ship@user.com | de_DE           | customer_so_25_02            | shipBPLocation               | 123       |
-      | billUser              | billUser | bill@user.com | de_DE           | customer_so_25_02            | billBPLocation               | 456       |
+      | Identifier | Name     | OPT.EMail     | OPT.AD_Language | OPT.C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.Phone |
+      | shipUser   | shipUser | ship@user.com | de_DE           | customer_so_25_02            | shipBPLocation               | 123       |
+      | billUser   | billUser | bill@user.com | de_DE           | customer_so_25_02            | billBPLocation               | 456       |
     And metasfresh contains S_ExternalReference:
       | S_ExternalReference_ID.Identifier | ExternalSystem | Type    | ExternalReference     | OPT.AD_User_ID.Identifier | OPT.M_Shipper_ID.Identifier |
       | shipUser_ref                      | Shopware6      | UserID  | shipUser_reference    | shipUser                  |                             |
