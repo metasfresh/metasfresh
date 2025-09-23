@@ -19,17 +19,17 @@ Feature: EDI INVOIC export via postgREST
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | salesPLV   | salesPriceList |
-    And metasfresh contains C_BPartners without locations:
+
+  @Id:S0467_010
+  @from:cucumber
+  Scenario: create an invoice and export it to JSON
+    Given metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | bpartner_location_1 | customer1     | Y               | Y               |
-
-  @Id:S0467_010
-  @from:cucumber
-  Scenario: create an invoice and export it to JSON
-    Given metasfresh contains M_Products:
+    And metasfresh contains M_Products:
       | Identifier        | Value                       | Name                       | Description                       |
       | product_S0467_010 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription |
     And metasfresh contains M_ProductPrices
@@ -180,6 +180,9 @@ Feature: EDI INVOIC export via postgREST
   @from:cucumber
   @Id:S0481_010
   Scenario: create an invoice and export it to JSON taking into consideration the BPartner of the Warehouse as Supplier
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
       | location_2               | DE          | addr 0481    | 456        | locationCity_2 |
@@ -188,7 +191,7 @@ Feature: EDI INVOIC export via postgREST
       | bpLocation_2 | 1234568890123 | customer1                | location_2                   | true      | true         | true         | locationBPName   | locationName |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
-      | wh_S0481_010   | customer1     | bpartner_location_1    |
+      | wh_S0481_010   | customer1     | bpLocation_2           |
     And metasfresh contains M_Products:
       | Identifier        | REST.Context.Value | REST.Context.Name | Description        |
       | product_S0481_010 | productValue       | productName       | productDescription |
@@ -229,7 +232,7 @@ Feature: EDI INVOIC export via postgREST
   "metasfresh_INVOIC": [
     {
       "Invoice_ID": @salesInvoice_S0481_010_ID@,
-      "Invoice_Receiver_Tec_GLN": null,
+      "Invoice_Receiver_Tec_GLN": "1234568890123",
       "Invoice_Sender_Tec_GLN": null,
       "Invoice_Sender_CountryCode": "DE",
       "Invoice_Sender_VATaxId": null,
@@ -255,6 +258,82 @@ Feature: EDI INVOIC export via postgREST
       "Invoice_TotalVATWithSurchargeAmt": 0.95,
       "Invoice_GrandTotalWithSurchargeAmt": 5.95,
       "Partners": [
+        {
+          "EANCOM_LocationType": "BY",
+          "GLN": "1234568890123",
+          "Name": "@customerName@",
+          "Name2": null,
+          "PartnerNo": "@customerValue@",
+          "VATaxID": null,
+          "ReferenceNo": null,
+          "SiteName": "locationBPName",
+          "Setup_Place_No": null,
+          "Address1": "addr 0481",
+          "Address2": null,
+          "Postal": "456",
+          "City": "locationCity_2",
+          "CountryCode": "DE",
+          "Phone": null,
+          "Fax": null,
+          "CustomEdiAttributes": null
+        },
+        {
+          "EANCOM_LocationType": "DP",
+          "GLN": "1234568890123",
+          "Name": "@customerName@",
+          "Name2": null,
+          "PartnerNo": "@customerValue@",
+          "VATaxID": null,
+          "ReferenceNo": null,
+          "SiteName": "locationBPName",
+          "Setup_Place_No": null,
+          "Address1": "addr 0481",
+          "Address2": null,
+          "Postal": "456",
+          "City": "locationCity_2",
+          "CountryCode": "DE",
+          "Phone": null,
+          "Fax": null,
+          "CustomEdiAttributes": null
+        },
+        {
+          "EANCOM_LocationType": "IV",
+          "GLN": "1234568890123",
+          "Name": "@customerName@",
+          "Name2": null,
+          "PartnerNo": "@customerValue@",
+          "VATaxID": null,
+          "ReferenceNo": null,
+          "SiteName": "locationBPName",
+          "Setup_Place_No": null,
+          "Address1": "addr 0481",
+          "Address2": null,
+          "Postal": "456",
+          "City": "locationCity_2",
+          "CountryCode": "DE",
+          "Phone": null,
+          "Fax": null,
+          "CustomEdiAttributes": null
+        },
+        {
+          "EANCOM_LocationType": "SN",
+          "GLN": "1234568890123",
+          "Name": "@customerName@",
+          "Name2": null,
+          "PartnerNo": "@customerValue@",
+          "VATaxID": null,
+          "ReferenceNo": null,
+          "SiteName": "locationBPName",
+          "Setup_Place_No": null,
+          "Address1": "addr 0481",
+          "Address2": null,
+          "Postal": "456",
+          "City": "locationCity_2",
+          "CountryCode": "DE",
+          "Phone": null,
+          "Fax": null,
+          "CustomEdiAttributes": null
+        },
         {
           "EANCOM_LocationType": "SU",
           "GLN": "1234568890123",
