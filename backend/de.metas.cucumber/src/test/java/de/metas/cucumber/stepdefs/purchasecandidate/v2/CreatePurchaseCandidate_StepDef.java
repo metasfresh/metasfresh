@@ -113,12 +113,14 @@ public class CreatePurchaseCandidate_StepDef
 	}
 
 	@And("the purchase candidate request is set in context")
-	public void set_req_in_context() throws JsonProcessingException
+	public void set_req_in_context() throws com.fasterxml.jackson.core.JsonProcessingException
 	{
 		final JsonPurchaseCandidateCreateRequest jsonPurchaseCandidateCreateRequest = JsonPurchaseCandidateCreateRequest.builder()
 				.purchaseCandidate(jsonPurchaseCandidateCreateItem.build())
 				.build();
-		testContext.setRequestPayload(new ObjectMapper().writeValueAsString(jsonPurchaseCandidateCreateRequest));
+		// Use JavaTime-enabled mapper to serialize dates as ISO-8601 strings
+		final com.fasterxml.jackson.databind.ObjectMapper mapper = newJsonObjectMapper();
+		testContext.setRequestPayload(mapper.writeValueAsString(jsonPurchaseCandidateCreateRequest));
 	}
 
 	@Given("the purchase candidate enqueue-status request is set in context")
@@ -132,7 +134,8 @@ public class CreatePurchaseCandidate_StepDef
 	public void verify_purchase_candidate_is_persisted_correctly() throws IOException
 	{
 		final String responseJson = testContext.getApiResponse().getContent();
-		final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+		// Use the same JavaTime-enabled mapper to read ZonedDateTime as ISO strings
+		final com.fasterxml.jackson.databind.ObjectMapper mapper = newJsonObjectMapper();
 
 		//response
 		final JsonPurchaseCandidateResponse response = mapper.readValue(responseJson, JsonPurchaseCandidateResponse.class);
@@ -174,7 +177,7 @@ public class CreatePurchaseCandidate_StepDef
 		return JsonPrice.builder()
 				.value(DataTableUtil.extractBigDecimalForColumnName(map, "value"))
 				.currencyCode(DataTableUtil.extractStringOrNullForColumnName(map, "OPT.currencyCode"))
-				.currencyCode(DataTableUtil.extractStringOrNullForColumnName(map, "OPT.priceUomCode"))
+				.priceUomCode(DataTableUtil.extractStringOrNullForColumnName(map, "OPT.priceUomCode"))
 				.build();
 	}
 
