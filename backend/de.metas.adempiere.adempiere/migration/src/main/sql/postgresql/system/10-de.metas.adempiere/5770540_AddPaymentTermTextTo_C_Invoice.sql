@@ -91,9 +91,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2025-09-23T11:15:57.131Z
-/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN PaymentTermText VARCHAR(2000)')
+/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN PaymentTermText VARCHAR(2000) DEFAULT ''@paymentterm@'' ')
 ;
-
 -- Value: PayUntil
 -- 2025-09-23T15:55:03.376Z
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545582,0,TO_TIMESTAMP('2025-09-23 15:55:03.087000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Zahlung bis','I',TO_TIMESTAMP('2025-09-23 15:55:03.087000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'PayUntil')
@@ -129,5 +128,25 @@ INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,E
 
 -- 2025-09-23T15:58:30.401Z
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545583 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Column: C_Invoice.PaymentTermText
+-- 2025-09-23T16:39:51.506Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-09-23 16:39:51.506000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591006
+;
+
+-- Column: C_Invoice.PaymentTermText
+-- 2025-09-23T16:40:18.958Z
+UPDATE AD_Column SET AD_Reference_ID=14,Updated=TO_TIMESTAMP('2025-09-23 16:40:18.958000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591006
+;
+
+-- Column: C_Invoice.PaymentTermText
+-- 2025-09-23T16:41:03.633Z
+UPDATE AD_Column SET PersonalDataCategory='NP',Updated=TO_TIMESTAMP('2025-09-23 16:41:03.632000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591006
+;
+
+-- Column: C_Invoice.PaymentTermText
+-- 2025-09-23T16:42:13.982Z
+UPDATE AD_Column SET DefaultValue='@paymentterm@',Updated=TO_TIMESTAMP('2025-09-23 16:42:13.982000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591006
 ;
 
