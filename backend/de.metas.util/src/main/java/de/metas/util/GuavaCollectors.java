@@ -11,6 +11,7 @@ import com.google.common.collect.Multimaps;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -402,6 +403,33 @@ public final class GuavaCollectors
 			return l;
 		};
 		final Function<List<T>, T> finisher = list -> list.size() == 1 ? list.get(0) : null;
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	@Nullable
+	public static <T> Collector<T, ?, T> noneOrSingleElementOrThrow(@NonNull final Supplier<? extends RuntimeException> exceptionSupplier)
+	{
+		final Supplier<List<T>> supplier = ArrayList::new;
+		final BiConsumer<List<T>, T> accumulator = List::add;
+		final BinaryOperator<List<T>> combiner = (l, r) -> {
+			l.addAll(r);
+			return l;
+		};
+		final Function<List<T>, T> finisher = list -> {
+			if (list.isEmpty())
+			{
+				return null;
+			}
+			else if (list.size() == 1)
+			{
+				return list.get(0);
+			}
+			else
+			{
+				throw exceptionSupplier.get();
+			}
+		};
 
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
