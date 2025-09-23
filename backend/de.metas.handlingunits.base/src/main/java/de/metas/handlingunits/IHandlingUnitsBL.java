@@ -110,6 +110,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
 
+	boolean existsById(@NonNull HuId huId);
+
 	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
 
 	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
@@ -179,7 +181,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	String getDisplayName(I_M_HU hu);
 
-	IHUDisplayNameBuilder buildDisplayName(I_M_HU hu);
+	IHUDisplayNameBuilder buildDisplayName(@Nullable I_M_HU hu);
 
 	/**
 	 * @param hu may be {@code null}
