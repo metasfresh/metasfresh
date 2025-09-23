@@ -141,6 +141,6 @@ export const getClosedLUs = ({ wfProcessId, lineId }) => {
 
 export const getScannedHUQRCodeInfo = ({ qrCode }) => {
   return axios
-    .get(toUrl(`${apiBasePath}/picking/hu/byQRCode`, { qrCode }))
+    .get(toUrl(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode }))
     .then((response) => unboxAxiosResponse(response));
 };
