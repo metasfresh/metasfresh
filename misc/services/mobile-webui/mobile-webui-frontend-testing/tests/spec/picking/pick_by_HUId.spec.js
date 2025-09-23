@@ -4,7 +4,6 @@ import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
-import { generateEAN13 } from '../../utils/ean13';
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
