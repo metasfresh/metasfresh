@@ -18,6 +18,6 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 	@Override
 	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
-		throw new UnsupportedOperationException("Not supported yet."); // TODO
+		return new NShiftShipperGatewayClient();
 	}
 }
