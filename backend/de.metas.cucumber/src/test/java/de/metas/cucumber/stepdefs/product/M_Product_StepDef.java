@@ -344,8 +344,6 @@ public class M_Product_StepDef
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), productRecord.getValue()));
 		tableRow.getAsOptionalIdentifier("REST.Context.Name")
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), productRecord.getName()));
-		tableRow.getAsOptionalIdentifier("REST.Context.Description")
-				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), productRecord.getDescription()));
 	}
 
 	private void locate_product_by_external_identifier(@NonNull final Map<String, String> tableRow)

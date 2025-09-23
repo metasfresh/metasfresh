@@ -190,8 +190,8 @@ Feature: EDI INVOIC export via postgREST
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
       | wh_S0481_010   | customer1     | bpartner_location_1    |
     And metasfresh contains M_Products:
-      | Identifier        | REST.Context.Value | REST.Context.Name | REST.Context.Description |
-      | product_S0481_010 | productValue       | productName       | productDescription       |
+      | Identifier        | REST.Context.Value | REST.Context.Name | Description        |
+      | product_S0481_010 | productValue       | productName       | productDescription |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
       | salesPLV               | product_S0481_010 | 5.00     | PCE      |
@@ -247,11 +247,11 @@ Feature: EDI INVOIC export via postgREST
       "DESADV_DocumentNo": null,
       "Invoice_Currency_Code": "EUR",
       "Invoice_GrandTotal": 5.95,
-      "Invoice_TotalLines": 5.00,
+      "Invoice_TotalLines": 5.0,
       "Invoice_TotalVAT": 0.95,
-      "Invoice_TotalVATBaseAmt": 5.00,
-      "Invoice_SurchargeAmt": 0.00,
-      "Invoice_TotalLinesWithSurchargeAmt": 5.00,
+      "Invoice_TotalVATBaseAmt": 5.0,
+      "Invoice_SurchargeAmt": 0.0,
+      "Invoice_TotalLinesWithSurchargeAmt": 5.0,
       "Invoice_TotalVATWithSurchargeAmt": 0.95,
       "Invoice_GrandTotalWithSurchargeAmt": 5.95,
       "Partners": [
@@ -283,11 +283,11 @@ Feature: EDI INVOIC export via postgREST
       "PaymentDiscounts": [
         {
           "Discount_Name": "30 Tage netto",
-          "Tax_Percent": 19.000000000000,
+          "Tax_Percent": 19.0,
           "Discount_Days": 0,
           "Discount_Percent": 0,
-          "Discount_BaseAmt": 5.00,
-          "Discount_Amt": 0.00
+          "Discount_BaseAmt": 5.0,
+          "Discount_Amt": 0.0
         }
       ],
       "Lines": [
@@ -303,15 +303,15 @@ Feature: EDI INVOIC export via postgREST
           "Order_QtyInvoiced": 1,
           "Order_QtyInvoiced_UOM": "PCE",
           "Currency_Code": "EUR",
-          "PricePerUnit": 5.00,
+          "PricePerUnit": 5.0,
           "PriceUOM": "PCE",
           "Discount_Amt": 0,
           "QtyBasedOn": null,
-          "NetAmt": 5.00,
-          "Tax_Percent": 19.000000000000,
+          "NetAmt": 5.0,
+          "Tax_Percent": 19.0,
           "Tax_Amount": 0.95,
           "Product_Name": "@productName@",
-          "Product_Description": "@productDescription@",
+          "Product_Description": "productDescription",
           "Product_Buyer_CU_GTIN": null,
           "Product_Buyer_TU_GTIN": null,
           "Product_Buyer_ProductNo": null,
@@ -323,11 +323,11 @@ Feature: EDI INVOIC export via postgREST
         {
           "TotalAmt": 5.95,
           "Tax_Amt": 0.95,
-          "Tax_BaseAmt": 5.00,
-          "Tax_Percent": 19.000000000000,
+          "Tax_BaseAmt": 5.0,
+          "Tax_Percent": 19.0,
           "Tax_Exempt": false,
-          "SurchargeAmt": 0.00,
-          "Tax_BaseAmtWithSurchargeAmt": 5.00,
+          "SurchargeAmt": 0.0,
+          "Tax_BaseAmtWithSurchargeAmt": 5.0,
           "Tax_AmtWithSurchargeAmt": 0.95
         }
       ],
