@@ -95,6 +95,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
@@ -145,6 +146,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_GrandTotal;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPaid;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartiallyPaid;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
@@ -767,6 +769,11 @@ public class C_Invoice_StepDef
 		final BPartnerId bpartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
 				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
+
+		final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
+		final WarehouseId warehouseId = warehouseTable.getIdOptional(warehouseIdentifier)
+				.orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class));
+		invoice.setM_Warehouse_ID(warehouseId.getRepoId());
 
 		invoice.setDateInvoiced(row.getAsLocalDateTimestamp(COLUMNNAME_DateInvoiced));
 		invoice.setIsSOTrx(row.getAsBoolean(COLUMNNAME_IsSOTrx));
