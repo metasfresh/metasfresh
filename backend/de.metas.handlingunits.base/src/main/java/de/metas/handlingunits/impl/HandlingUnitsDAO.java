@@ -140,6 +140,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public boolean existsById(@NonNull final HuId huId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU.class)

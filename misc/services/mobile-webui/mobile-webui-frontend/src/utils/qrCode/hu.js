@@ -150,11 +150,13 @@ export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
   let string;
   let returnFalseOnError;
   let customQRCodeFormats = [];
+  let checkOnlyPreciseFormats = false;
   if (typeof param1_string === 'object' && param1_string !== null) {
     const obj = param1_string;
     string = obj.string;
     returnFalseOnError = obj.returnFalseOnError ?? false;
     customQRCodeFormats = obj.customQRCodeFormats ?? [];
+    checkOnlyPreciseFormats = obj.checkOnlyPreciseFormats ?? false;
   } else {
     string = param1_string;
     returnFalseOnError = param2_returnFalseOnError;
@@ -174,7 +176,8 @@ export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
     }
   }
 
-  if (result?.error) {
+  if (result?.error && !checkOnlyPreciseFormats) {
+    // NOTE: GS1 is considered not a precise format because it might match a simple M_HU_ID/Value code as a LotNo GS1.
     result = parseGS1CodeString(string);
     allResults['gs1'] = result;
   }

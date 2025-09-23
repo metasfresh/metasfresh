@@ -240,10 +240,9 @@ public class HUQRCodesService
 		{
 			return existingQRCode;
 		}
-		else if (sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true))
+		else if (isGenerateQRCodesIfMissing())
 		{
-			return generateForExistingHUs(ImmutableSet.of(huId))
-					.getFirstQRCode(huId);
+			return generateForExistingHUs(ImmutableSet.of(huId)).getFirstQRCode(huId);
 		}
 		else
 		{
@@ -398,6 +397,14 @@ public class HUQRCodesService
 		if (customHUQRCode != null)
 		{
 			return customHUQRCode;
+		}
+
+		{
+			final HuId huId = HuId.ofHUValueOrNull(scannedCode.getAsString());
+			if (huId != null && handlingUnitsBL.existsById(huId))
+			{
+				return getFirstQRCodeByHuId(huId);
+			}
 		}
 
 		final GS1HUQRCode gs1HUQRCode = GS1HUQRCode.fromScannedCodeOrNullIfNotHandled(scannedCode);

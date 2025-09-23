@@ -88,8 +88,8 @@ const PickLineScanScreen = () => {
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
   const resolveScannedBarcode = useCallback(
-    (scannedBarcode) =>
-      convertScannedBarcodeToResolvedResult({
+    async (scannedBarcode) =>
+      await convertScannedBarcodeToResolvedResult({
         scannedBarcode,
         expectedProductId: productId,
         customQRCodeFormats,
@@ -145,6 +145,12 @@ const PickLineScanScreen = () => {
   );
 };
 
+//
+//
+// -------------------------------------------------------------------------------------
+//
+//
+
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
@@ -172,22 +178,49 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 };
 
 // @VisibleForTesting
-export const convertScannedBarcodeToResolvedResult = ({
+export const convertScannedBarcodeToResolvedResult = async ({
   scannedBarcode,
   expectedProductId,
   customQRCodeFormats,
   pickingUnit,
 }) => {
-  const parsedQRCode = parseQRCodeString({ string: scannedBarcode, customQRCodeFormats });
+  let parsedQRCode = parseQRCodeString({
+    string: scannedBarcode,
+    customQRCodeFormats,
+    returnFalseOnError: true,
+    checkOnlyPreciseFormats: true, // consider only precise formats, all the others will be matched on backend.
+  });
+  // console.log('convertScannedBarcodeToResolvedResult 1', { parsedQRCode, scannedBarcode });
+
+  //
+  // If the scanned barcode could not be parsed, we have to check on the backend side
+  let huInfoFromBackend = null;
+  if (!parsedQRCode) {
+    huInfoFromBackend = await getScannedHUQRCodeInfo({ qrCode: scannedBarcode });
+    // console.log('convertScannedBarcodeToResolvedResult 2', { huInfoFromBackend });
+    parsedQRCode = parseQRCodeString({
+      string: huInfoFromBackend?.huQRCode?.code,
+      customQRCodeFormats,
+      returnFalseOnError: false, // fail
+      checkOnlyPreciseFormats: false, // after we have checked the backend, it's fine to try matching everything
+    });
+    // console.log('convertScannedBarcodeToResolvedResult 3', { parsedQRCode });
+  }
 
   if (expectedProductId != null && parsedQRCode.productId != null && parsedQRCode.productId !== expectedProductId) {
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  return convertQRCodeObjectToResolvedResult({ parsedQRCode, pickingUnit });
+  return convertQRCodeObjectToResolvedResult({ parsedQRCode, pickingUnit, huInfoFromBackend });
 };
 
-const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit }) => {
+//
+//
+// -------------------------------------------------------------------------------------
+//
+//
+
+const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit, huInfoFromBackend }) => {
   const result = {
     qrCode: parsedQRCode,
   };
@@ -208,17 +241,29 @@ const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit }
     huUnitType: parsedQRCode.huUnitType,
   };
   if (parsedQRCode.huUnitType === 'LU' && pickingUnit === PICKING_UNIT_TU) {
-    try {
-      const huInfo = await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(parsedQRCode) });
+    let huInfo = huInfoFromBackend;
+    if (huInfo == null) {
+      try {
+        huInfo = await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(parsedQRCode) });
+        result.scannedHU.qtyTUs = huInfo.qtyTUs;
+      } catch (error) {
+        console.warn('Failed to get LU info. Ignored', error);
+      }
+    }
+    if (huInfo != null) {
       result.scannedHU.qtyTUs = huInfo.qtyTUs;
-    } catch (error) {
-      console.warn('Failed to get LU info. Ignored', error);
     }
   }
 
   console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj: parsedQRCode, pickingUnit });
   return result;
 };
+
+//
+//
+// -------------------------------------------------------------------------------------
+//
+//
 
 const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
   const history = useMobileNavigation();
@@ -259,6 +304,12 @@ const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
     }
   };
 };
+
+//
+//
+// -------------------------------------------------------------------------------------
+//
+//
 
 const usePostQtyPicked = ({
   wfProcessId,
@@ -348,5 +399,11 @@ const usePostQtyPicked = ({
     //.catch((axiosError) => toastError({ axiosError })); // no need to catch, will be handled by caller
   };
 };
+
+//
+//
+// -------------------------------------------------------------------------------------
+//
+//
 
 export default PickLineScanScreen;
