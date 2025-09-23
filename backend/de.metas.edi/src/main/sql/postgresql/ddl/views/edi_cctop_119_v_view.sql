@@ -74,7 +74,6 @@ FROM (
                          COALESCE(pl_wh.Setup_Place_No, pl_vend.Setup_Place_No)                 AS Setup_Place_No,
                          i.CreatedBy
                   FROM C_Invoice i
-                           JOIN C_BPartner p_cust ON p_cust.C_BPartner_ID = i.C_BPartner_ID
                            JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID
                            JOIN C_BPartner_Location pl_vend ON pl_vend.C_BPartner_ID = p_vend.C_BPartner_ID AND pl_vend.isremitto = 'Y'
                            LEFT JOIN M_Warehouse wh ON wh.M_Warehouse_ID = i.M_Warehouse_ID
