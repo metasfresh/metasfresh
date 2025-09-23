@@ -150,3 +150,9 @@ UPDATE AD_Column SET PersonalDataCategory='NP',Updated=TO_TIMESTAMP('2025-09-23 
 UPDATE AD_Column SET DefaultValue='@paymentterm@',Updated=TO_TIMESTAMP('2025-09-23 16:42:13.982000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591006
 ;
 
+-- Value: paymentterm.PayUntil
+-- 2025-09-23T16:53:00.842Z
+UPDATE AD_Message SET Value='paymentterm.PayUntil',Updated=TO_TIMESTAMP('2025-09-23 16:53:00.839000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Message_ID=545582
+;
+
+
