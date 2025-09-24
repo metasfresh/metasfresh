@@ -103,11 +103,11 @@ Feature: create purchase simulation
 
     Then validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus |
-      | po_1                  | vendor_1                 | vendor_location_1                 | 2021-04-11  | POO         | EUR          | F            | P               | true      | CO        |
+      | po_1                  | vendor_1                 | vendor_location_1                 | 2021-04-04  | POO         | EUR          | F            | P               | true      | CO        |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | pol_1                     | po_1                  | 2021-04-11      | p_1                     | 100        | 0            | 0           | 10    | 0        | EUR          | true      |
+      | pol_1                     | po_1                  | 2021-04-04      | p_1                     | 100        | 0            | 0           | 10    | 0        | EUR          | true      |
 
     Then after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
