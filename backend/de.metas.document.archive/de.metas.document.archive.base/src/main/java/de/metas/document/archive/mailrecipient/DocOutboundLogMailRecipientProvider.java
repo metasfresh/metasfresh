@@ -1,7 +1,5 @@
 package de.metas.document.archive.mailrecipient;
 
-import lombok.NonNull;
-
 import java.util.Optional;
 
 /*
@@ -46,10 +44,5 @@ public interface DocOutboundLogMailRecipientProvider
 	/**
 	 * Unless the implementor has {@link #isDefault()} {@code == true}, it can safely assume that the recored.recordRef's has the same table as {@link #getTableName()}.
 	 */
-	Optional<DocOutBoundRecipient> provideMailRecipient(DocOutboundLogMailRecipientRequest request);
-
-	default Optional<DocOutBoundRecipient> provideMailCCRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
-	{
-		return Optional.empty();
-	}
+	Optional<DocOutBoundRecipients> provideMailRecipient(DocOutboundLogMailRecipientRequest request);
 }

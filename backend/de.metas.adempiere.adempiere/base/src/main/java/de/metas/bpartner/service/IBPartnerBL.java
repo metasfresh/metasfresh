@@ -56,6 +56,8 @@ public interface IBPartnerBL extends ISingletonService
 {
 	I_C_BPartner getById(BPartnerId bpartnerId);
 
+	<T extends I_C_BPartner> T getById(@NonNull BPartnerId bpartnerId, @NonNull Class<T> type);
+
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
 	String getBPartnerName(@Nullable final BPartnerId bpartnerId);
@@ -68,6 +70,8 @@ public interface IBPartnerBL extends ISingletonService
 	 * make full address
 	 */
 	String mkFullAddress(@NonNull I_C_BPartner bpartner, @Nullable I_C_BPartner_Location bpLocation, @Nullable LocationId locationId, @Nullable I_AD_User bpContact);
+
+	User getContactById(UserId userId);
 
 	/**
 	 * Retrieve user/contact assigned to default/first ship to address. If no user/contact found, the first default user contact will be returned.

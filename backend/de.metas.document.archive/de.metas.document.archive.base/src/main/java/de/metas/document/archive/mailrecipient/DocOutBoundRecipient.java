@@ -1,12 +1,15 @@
 package de.metas.document.archive.mailrecipient;
 
 import de.metas.i18n.Language;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -34,18 +37,36 @@ import javax.annotation.Nullable;
 @Builder
 public class DocOutBoundRecipient
 {
-	@NonNull
-	DocOutBoundRecipientId id;
-
-	@With
-	@Nullable
-	String emailAddress;
-
+	@NonNull DocOutBoundRecipientId id;
+	@Nullable @With String emailAddress;
 	boolean invoiceAsEmail;
+	@Nullable Language userLanguage;
+	@Nullable Language bPartnerLanguage;
 
-	@Nullable
-	Language userLanguage;
+	public boolean isEmailAddressSet() {return !Check.isBlank(emailAddress);}
 
-	@Nullable
-	Language bPartnerLanguage;
+	public DocOutBoundRecipient withEmailAddressIfEmpty(@Nullable final String newEmailAddress)
+	{
+		final String emailAddressNorm = StringUtils.trimBlankToNull(emailAddress);
+		if (emailAddressNorm != null)
+		{
+			return this;
+		}
+
+		final String newEmailAddressNorm = StringUtils.trimBlankToNull(newEmailAddress);
+		return newEmailAddressNorm != null ? withEmailAddress(newEmailAddressNorm) : this;
+	}
+
+	public DocOutBoundRecipient withEmailAddressIfEmpty(@NonNull final Supplier<String> newEmailAddressSupplier)
+	{
+		final String emailAddressNorm = StringUtils.trimBlankToNull(emailAddress);
+		if (emailAddressNorm != null)
+		{
+			return this;
+		}
+
+		final String newEmailAddressNorm = StringUtils.trimBlankToNull(newEmailAddressSupplier.get());
+		return newEmailAddressNorm != null ? withEmailAddress(newEmailAddressNorm) : this;
+	}
+
 }

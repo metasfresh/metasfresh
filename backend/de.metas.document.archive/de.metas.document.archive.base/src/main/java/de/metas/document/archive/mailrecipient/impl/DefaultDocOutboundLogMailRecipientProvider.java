@@ -6,6 +6,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.email.MailService;
@@ -84,7 +85,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 	}
 
 	@Override
-	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
+	public Optional<DocOutBoundRecipients> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
 		if (request.getRecordRef() == null)
 		{
@@ -134,7 +135,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 					Loggables.addLog("provideMailRecipient - user-id {} has no/empty emailAddress => return 'no recipient'; user={}", user.getId(), user);
 					return Optional.empty();
 				}
-				return Optional.of(user);
+				return DocOutBoundRecipients.optionalOfTo(user);
 			}
 		}
 		Loggables.addLog("provideMailRecipient - return 'no recipient'; mailbox={}", mailbox);

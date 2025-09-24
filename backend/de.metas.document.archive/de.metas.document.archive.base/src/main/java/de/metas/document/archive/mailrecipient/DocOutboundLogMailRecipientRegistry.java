@@ -1,14 +1,14 @@
 package de.metas.document.archive.mailrecipient;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -67,64 +67,21 @@ public class DocOutboundLogMailRecipientRegistry
 		this.tableName2provider = mapBuilder.build();
 	}
 
-	public Optional<DocOutBoundRecipient> getRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
+	public Optional<DocOutBoundRecipients> getRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
-		if(request.getRecordRef() == null)
-		{
-			return invokeDefaultMailProviderIfPossible(request);
-		}
-
-		final String tableName = request.getRecordRef().getTableName();
-
-		if (!tableName2provider.containsKey(tableName))
-		{
-			return invokeDefaultMailProviderIfPossible(request);
-		}
-
-		return tableName2provider
-				.get(tableName)
-				.provideMailRecipient(request);
+		final DocOutboundLogMailRecipientProvider provider = getProviderOrDefault(request.getRecordRef());
+		return provider == null ? Optional.empty() : provider.provideMailRecipient(request);
 	}
 
-	public Optional<DocOutBoundRecipient> getRecipientCC(@NonNull final DocOutboundLogMailRecipientRequest request)
+	@Nullable
+	private DocOutboundLogMailRecipientProvider getProviderOrDefault(@Nullable final TableRecordReference recordRef)
 	{
-		if(request.getRecordRef() == null)
+		if (recordRef == null)
 		{
-			return invokeDefaultMailCCProviderIfPossible(request);
+			return defaultProvider;
 		}
 
-		final String tableName = request.getRecordRef().getTableName();
-
-		if (!tableName2provider.containsKey(tableName))
-		{
-			return invokeDefaultMailCCProviderIfPossible(request);
-		}
-
-		return tableName2provider
-				.get(tableName)
-				.provideMailCCRecipient(request);
-	}
-
-	private Optional<DocOutBoundRecipient> invokeDefaultMailProviderIfPossible(@NonNull final DocOutboundLogMailRecipientRequest request)
-	{
-		if (defaultProvider == null)
-		{
-			return Optional.empty(); // nothing we can do
-		}
-		return defaultProvider.provideMailRecipient(request);
-	}
-
-	private Optional<DocOutBoundRecipient> invokeDefaultMailCCProviderIfPossible(@NonNull final DocOutboundLogMailRecipientRequest request)
-	{
-		if (defaultProvider == null)
-		{
-			return Optional.empty(); // nothing we can do
-		}
-		return defaultProvider.provideMailCCRecipient(request);
-	}
-
-	public Optional<DocOutboundLogMailRecipientProvider> getDefaultProvider()
-	{
-		return Optional.ofNullable(defaultProvider);
+		final String tableName = recordRef.getTableName();
+		return tableName2provider.getOrDefault(tableName, defaultProvider);
 	}
 }
