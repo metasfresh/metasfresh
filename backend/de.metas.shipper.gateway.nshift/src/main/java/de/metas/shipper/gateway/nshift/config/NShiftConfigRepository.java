@@ -22,8 +22,9 @@ public class NShiftConfigRepository
 		return getAll().getByShipperId(shipperId);
 	}
 
-	private @Nullable NShiftConfigMap getAll()
+	private @NonNull NShiftConfigMap getAll()
 	{
+		//noinspection DataFlowIssue
 		return cache.getOrLoad(0, this::retrieveAll);
 	}
 
