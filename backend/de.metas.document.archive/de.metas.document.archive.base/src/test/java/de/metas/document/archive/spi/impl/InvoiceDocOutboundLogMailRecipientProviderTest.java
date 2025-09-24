@@ -60,6 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+@SuppressWarnings("DataFlowIssue")
 public class InvoiceDocOutboundLogMailRecipientProviderTest
 {
 	private InvoiceDocOutboundLogMailRecipientProvider invoiceDocOutboundLogMailRecipientProvider;

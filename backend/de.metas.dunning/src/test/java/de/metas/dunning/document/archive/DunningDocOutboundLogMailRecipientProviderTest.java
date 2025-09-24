@@ -70,6 +70,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+@SuppressWarnings("DataFlowIssue")
 public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestBase
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);

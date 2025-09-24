@@ -1,7 +1,6 @@
 package de.metas.document.archive.mailrecipient;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -23,6 +22,6 @@ public class DocOutBoundRecipients
 
 	public boolean isInvoiceAsEmail()
 	{
-		return to.isInvoiceAsEmail();
+		return to != null && to.isInvoiceAsEmail();
 	}
 }
