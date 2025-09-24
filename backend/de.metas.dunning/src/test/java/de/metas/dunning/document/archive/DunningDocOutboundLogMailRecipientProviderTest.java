@@ -2,7 +2,7 @@ package de.metas.dunning.document.archive;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -77,7 +77,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 	private final UserRepository userRepository = new UserRepository();
 	private final BPartnerBL bpartnerBL = new BPartnerBL(userRepository);
 	private final DunningDocOutboundLogMailRecipientProvider dunningDocOutboundLogMailRecipientProvider = new DunningDocOutboundLogMailRecipientProvider(
-			new DocOutBoundRecipientRepository(bpartnerBL),
+			new DocOutBoundRecipientService(bpartnerBL),
 			orderEmailPropagationSysConfigRepository,
 			bpartnerBL,
 			new DunningService());

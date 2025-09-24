@@ -9,7 +9,7 @@ import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
@@ -35,9 +35,9 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@Repository
+@Service
 @RequiredArgsConstructor
-public class DocOutBoundRecipientRepository
+public class DocOutBoundRecipientService
 {
 	@NonNull private final IBPartnerBL bpartnerBL;
 

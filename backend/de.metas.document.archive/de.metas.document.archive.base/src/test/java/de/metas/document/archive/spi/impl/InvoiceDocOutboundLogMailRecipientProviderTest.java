@@ -2,7 +2,7 @@ package de.metas.document.archive.spi.impl;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.mailrecipient.impl.InvoiceDocOutboundLogMailRecipientProvider;
@@ -79,7 +79,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
 
 		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(
-				new DocOutBoundRecipientRepository(bpartnerBL),
+				new DocOutBoundRecipientService(bpartnerBL),
 				orderEmailPropagationSysConfigRepository,
 				bpartnerBL);
 

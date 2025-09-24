@@ -3,7 +3,7 @@ package de.metas.document.archive.interceptor;
 import de.metas.document.archive.api.impl.DocOutboundService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -51,15 +51,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Component
 public class C_Doc_Outbound_Log
 {
-	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
+	private final DocOutBoundRecipientService docOutBoundRecipientService;
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final DocOutboundService docOutBoundService;
 
-	public C_Doc_Outbound_Log(@NonNull final DocOutBoundRecipientRepository docOutBoundRecipientRepository,
+	public C_Doc_Outbound_Log(@NonNull final DocOutBoundRecipientService docOutBoundRecipientService,
 			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo,
 			@NonNull final DocOutboundService docOutboundService)
 	{
-		this.docOutBoundRecipientRepository = docOutBoundRecipientRepository;
+		this.docOutBoundRecipientService = docOutBoundRecipientService;
 		this.orderEmailPropagationSysConfigRepository = orderEmailPropagationSysConfigRepo;
 		this.docOutBoundService = docOutboundService;
 
@@ -79,7 +79,7 @@ public class C_Doc_Outbound_Log
 			return;
 		}
 
-		final DocOutBoundRecipient user = docOutBoundRecipientRepository.getById(userId);
+		final DocOutBoundRecipient user = docOutBoundRecipientService.getById(userId);
 
 		final String documentEmail = docOutBoundService.getDocumentEmail(docOutboundlogRecord);
 		final String userEmailAddress = user.getEmailAddress();
