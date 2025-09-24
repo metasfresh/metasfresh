@@ -90,7 +90,7 @@ public class DocOutboundLogMailRecipientRegistry
 	{
 		if(request.getRecordRef() == null)
 		{
-			return invokeDefaultMailProviderIfPossible(request);
+			return invokeDefaultMailCCProviderIfPossible(request);
 		}
 
 		final String tableName = request.getRecordRef().getTableName();

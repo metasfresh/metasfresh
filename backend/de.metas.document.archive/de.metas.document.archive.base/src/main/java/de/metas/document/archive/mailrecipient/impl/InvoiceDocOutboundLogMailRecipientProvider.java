@@ -156,7 +156,11 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 	@Override
 	public Optional<DocOutBoundRecipient> provideMailCCRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
-		assert request.getRecordRef() != null;
+		if (request.getRecordRef() == null)
+		{
+			return Optional.empty();
+		}
+
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(request.getRecordRef().getRecord_ID()));
 		if (!partnerBL.isInvoiceEmailCcToMember(BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID())))
 		{
