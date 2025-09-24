@@ -159,7 +159,7 @@ public class PurchaseCandidate
 			@NonNull final String vendorProductNo,
 			@NonNull final Quantity qtyToPurchase,
 			@NonNull final ZonedDateTime purchaseDatePromised,
-			@Nullable final ZonedDateTime purchaseDateOrdered,
+			@NonNull final ZonedDateTime purchaseDateOrdered,
 			final Duration reminderTime,
 			@Nullable final PurchaseProfitInfo profitInfoOrNull,
 			@Singular final List<PurchaseItem> purchaseItems,
