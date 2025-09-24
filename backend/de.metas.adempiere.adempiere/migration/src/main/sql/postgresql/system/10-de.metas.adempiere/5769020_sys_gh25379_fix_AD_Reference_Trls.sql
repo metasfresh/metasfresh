@@ -31,10 +31,10 @@ UPDATE AD_Reference_Trl
 SET Updated='2025-09-22 14:43', UpdatedBy=99, Name='R_Request Due Type'
 WHERE AD_Reference_ID = 222 AND AD_Language = 'fr_CH';
 
--- now create a UC to make sure it won't happen again 
-CREATE UNIQUE INDEX IF NOT EXISTS AD_Reference_Trl_Name ON AD_Reference_Trl (AD_Language, Name);
-COMMENT ON INDEX AD_Reference_Trl_Name IS 'Needed because It''s no enought to have a UC on AD_Reference-Nname. We also need to make sure that we don''t run into unique constraint errors when switching the base-language'
-;
+-- Index will be created in 5770380_sys_fix_AD_Reference_Trls.sql
+-- CREATE UNIQUE INDEX IF NOT EXISTS AD_Reference_Trl_Name ON AD_Reference_Trl (AD_Language, Name);
+-- COMMENT ON INDEX AD_Reference_Trl_Name IS 'Needed because It''s no enought to have a UC on AD_Reference-Nname. We also need to make sure that we don''t run into unique constraint errors when switching the base-language'
+-- ;
 
 -- If the index-creation fails on some DBs, you can use this select to identify the problematic AD_Reference_Trl records.
 /*
