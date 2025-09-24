@@ -304,6 +304,11 @@ public class LettersValidator implements ModelValidator
 			{
 				replacement = m.group();
 			}
+
+			if (replacement == null)
+			{
+				continue;
+			}
 			m.appendReplacement(sb, replacement);
 		}
 		m.appendTail(sb);
