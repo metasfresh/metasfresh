@@ -439,29 +439,6 @@ public interface I_C_BP_Group
 	String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
-	 * Set Invoice Email CC to Member.
-	 * If active, invoice emails are also sent as CC to the member.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsInvoiceEmailCcToMember (boolean IsInvoiceEmailCcToMember);
-
-	/**
-	 * Get Invoice Email CC to Member.
-	 * If active, invoice emails are also sent as CC to the member.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isInvoiceEmailCcToMember();
-
-	ModelColumn<I_C_BP_Group, Object> COLUMN_IsInvoiceEmailCcToMember = new ModelColumn<>(I_C_BP_Group.class, "IsInvoiceEmailCcToMember", null);
-	String COLUMNNAME_IsInvoiceEmailCcToMember = "IsInvoiceEmailCcToMember";
-
-	/**
 	 * Set Discount Schema.
 	 * Schema to calculate the trade discount percentage
 	 *

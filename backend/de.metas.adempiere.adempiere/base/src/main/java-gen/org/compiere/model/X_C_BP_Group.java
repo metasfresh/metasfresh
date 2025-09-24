@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -528550985L;
+	private static final long serialVersionUID = -1436954019L;
 
     /** Standard Constructor */
     public X_C_BP_Group (final Properties ctx, final int C_BP_Group_ID, @Nullable final String trxName)
@@ -285,18 +285,6 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public boolean isDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
-	}
-
-	@Override
-	public void setIsInvoiceEmailCcToMember (final boolean IsInvoiceEmailCcToMember)
-	{
-		set_Value (COLUMNNAME_IsInvoiceEmailCcToMember, IsInvoiceEmailCcToMember);
-	}
-
-	@Override
-	public boolean isInvoiceEmailCcToMember() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceEmailCcToMember);
 	}
 
 	@Override
