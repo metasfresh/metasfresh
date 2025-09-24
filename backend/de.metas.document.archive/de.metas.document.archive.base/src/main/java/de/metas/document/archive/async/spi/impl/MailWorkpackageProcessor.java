@@ -168,6 +168,9 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final EMailAddress mailTo = EMailAddress.optionalOfNullable(docOutboundLogRecord.getCurrentEMailAddress())
 				.orElseThrow(() -> new AdempiereException("C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log=" + docOutboundLogRecord));
 
+
+		final EMailAddress mailCc = EMailAddress.ofNullableString(docOutboundLogRecord.getCurrentEMailAddressCC());
+
 		// Create and send email
 		final ArchiveEmailSentStatus status;
 		{
@@ -183,6 +186,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				mailService.sendEMail(EMailRequest.builder()
 						.mailbox(mailbox)
 						.to(mailTo)
+						.cc(mailCc)
 						.subject(emailParams.getSubject())
 						.message(emailParams.getMessage())
 						.html(emailParams.isHtml())
@@ -202,7 +206,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 					null,
 					mailbox.getEmail(),
 					mailTo,
-					null,
+					mailCc,
 					null,
 					status);
 		}

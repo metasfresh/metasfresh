@@ -30,6 +30,7 @@ import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
@@ -193,13 +194,16 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 			@Override
 			public EMail sendEMail(final I_AD_User from, final String toEmail, final String subject, final BoilerPlateContext attributes)
 			{
+
+				final Mailbox mailbox = mailService.findMailbox(MailboxQuery.builder()
+						.clientId(getClientId())
+						.orgId(getOrgId())
+						.adProcessId(getProcessInfo().getAdProcessId())
+						.fromUserId(getFromUserId())
+						.build());
+
 				return mailService.sendEMail(EMailRequest.builder()
-						.mailboxQuery(MailboxQuery.builder()
-								.clientId(getClientId())
-								.orgId(getOrgId())
-								.adProcessId(getProcessInfo().getAdProcessId())
-								.fromUserId(getFromUserId())
-								.build())
+						.mailbox(mailbox)
 						.toList(toEMailAddresses(toEmail))
 						.subject(text.getSubject())
 						.message(text.getTextSnippetParsed(attributes))

@@ -122,20 +122,16 @@ public class MailService
 			@NonNull final MailText mailText)
 	{
 		sendEMail(EMailRequest.builder()
-				.mailboxQuery(mailboxQuery)
+				.mailbox(findMailbox(mailboxQuery))
 				.to(to)
 				.mailText(mailText)
 				.build());
 	}
 
-	public EMail createEMail(
-			@NonNull final Mailbox mailbox,
-			@NonNull final EMailAddress to,
-			@Nullable final String subject,
-			@Nullable final String message,
-			final boolean html)
+	public EMail createEMail(@NonNull final EMailRequest request)
 	{
-		final EMail email = new EMail(mailbox, to, subject, message, html);
+		final Mailbox mailbox = request.getMailbox();
+		final EMail email = new EMail(mailbox,  request.getTo(), request.getCc(),  request.getSubject(),  request.getMessage(), request.isHtml());
 		email.setMailSender(getMailSender(mailbox.getType()));
 		email.setDebugMode(isDebugModeEnabled());
 		email.setDebugMailToAddress(getDebugMailToAddressOrNull());
@@ -150,25 +146,14 @@ public class MailService
 			debugLoggable.addLog("Request: {}", request);
 		}
 
-		final Mailbox mailbox;
-		if (request.getMailbox() != null)
-		{
-			mailbox = request.getMailbox();
-		}
-		else if (request.getMailboxQuery() != null)
-		{
-			mailbox = findMailbox(request.getMailboxQuery());
-		}
-		else
-		{
-			throw new AdempiereException("Cannot find mailbox from " + request);
-		}
+
 		if (debugLoggable != null)
 		{
-			debugLoggable.addLog("Mailbox: {}", mailbox);
+			debugLoggable.addLog("Mailbox: {}", request.getMailbox());
 		}
 
-		final EMail email = createEMail(mailbox, request.getTo(), request.getSubject(), request.getMessage(), request.isHtml());
+
+		final EMail email = createEMail(request);
 		if (request.getDebugLoggable() != null)
 		{
 			email.setDebugMode(true);
