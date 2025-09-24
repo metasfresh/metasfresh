@@ -97,7 +97,8 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
 
 		final DocOutBoundRecipient to = getMailTo(invoiceRecord).orElse(null);
-		if (to == null)
+		final DocOutBoundRecipientCC cc = getMailCC(invoiceRecord);
+		if (to == null && cc == null)
 		{
 			return Optional.empty();
 		}
@@ -105,7 +106,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		return Optional.of(
 				DocOutBoundRecipients.builder()
 						.to(to)
-						.cc(getMailCC(invoiceRecord))
+						.cc(cc)
 						.build()
 		);
 	}

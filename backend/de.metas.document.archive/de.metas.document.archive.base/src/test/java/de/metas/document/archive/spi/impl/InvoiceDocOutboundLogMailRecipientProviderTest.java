@@ -2,6 +2,7 @@ package de.metas.document.archive.spi.impl;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientCC;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
@@ -23,6 +24,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -64,10 +66,11 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 
 	private I_C_BPartner shipToBPartnerRecord;
 	private I_C_BPartner billBPartnerRecord;
+	private I_C_Order orderRecord;
 	private I_C_Invoice invoiceRecord;
 
 	@BeforeEach
-	public void init()
+	void init()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -93,7 +96,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		billBPartnerRecord = createBPartner();
 		final I_C_BPartner_Location billBPLocationRecord = createBPLocation(billBPartnerRecord);
 
-		final I_C_Order orderRecord = newInstance(I_C_Order.class);
+		orderRecord = newInstance(I_C_Order.class);
 		orderRecord.setC_BPartner_ID(shipToBPartnerRecord.getC_BPartner_ID());
 		orderRecord.setC_BPartner_Location_ID(shipToBPLocationRecord.getC_BPartner_Location_ID());
 		orderRecord.setBill_BPartner_ID(billBPartnerRecord.getC_BPartner_ID());
@@ -124,7 +127,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 	}
 
 	@Test
-	public void provideMailRecipient()
+	void provideMailRecipient()
 	{
 		final org.compiere.model.I_AD_User defaultShipContact = newInstance(I_AD_User.class);
 		defaultShipContact.setName("defaultShipContact");
@@ -171,8 +174,78 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 
 	}
 
+	@Nested
+	class provideMailRecipient_check_CC
+	{
+		private I_AD_User defaultShipContact;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			billBPartnerRecord.setIsInvoiceEmailCcToMember(true);
+			saveRecord(billBPartnerRecord);
+
+			defaultShipContact = newInstance(I_AD_User.class);
+			defaultShipContact.setName("defaultShipContact");
+			defaultShipContact.setEMail("defaultShipContact.EMail");
+			defaultShipContact.setIsShipToContact_Default(true);
+			defaultShipContact.setC_BPartner_ID(shipToBPartnerRecord.getC_BPartner_ID());
+			saveRecord(defaultShipContact);
+		}
+
+		DocOutBoundRecipientCC getCC()
+		{
+			return invoiceDocOutboundLogMailRecipientProvider.provideMailRecipient(
+							DocOutboundLogMailRecipientRequest.builder()
+									.recordRef(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceRecord.getC_Invoice_ID()))
+									.clientId(ClientId.ofRepoId(invoiceRecord.getAD_Client_ID()))
+									.orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()))
+									.build()
+					)
+					.map(DocOutBoundRecipients::getCc)
+					.orElse(null);
+		}
+
+		@Test
+		void expectNone_because_IsInvoiceEmailCcToMember_is_false()
+		{
+			billBPartnerRecord.setIsInvoiceEmailCcToMember(false);
+			saveRecord(billBPartnerRecord);
+
+			assertThat(getCC()).isNull();
+		}
+
+		@Test
+		void expectDefaultShipToContact()
+		{
+			final DocOutBoundRecipientCC cc = getCC();
+			assertThat(cc).isNotNull();
+			assertThat(cc.getId().getRepoId()).isEqualTo(defaultShipContact.getAD_User_ID());
+			assertThat(cc.getEmailAddress()).isEqualTo("defaultShipContact.EMail");
+		}
+
+		@Test
+		void actualShipToContact()
+		{
+			final I_AD_User shipToContact = newInstance(I_AD_User.class);
+			shipToContact.setName("shipToContact");
+			shipToContact.setEMail("shipToContact.EMail");
+			shipToContact.setC_BPartner_ID(shipToBPartnerRecord.getC_BPartner_ID());
+			saveRecord(shipToContact);
+
+			orderRecord.setAD_User_ID(shipToContact.getAD_User_ID());
+			saveRecord(orderRecord);
+
+			final DocOutBoundRecipientCC cc = getCC();
+			assertThat(cc).isNotNull();
+			assertThat(cc.getId().getRepoId()).isEqualTo(shipToContact.getAD_User_ID());
+			assertThat(cc.getEmailAddress()).isEqualTo("shipToContact.EMail");
+		}
+
+	}
+
 	@Test
-	public void mailFromDocument_SysConfigNoTable()
+	void mailFromDocument_SysConfigNoTable()
 	{
 		invoiceRecord.setEMail("test@test.test");
 		saveRecord(invoiceRecord);
@@ -208,7 +281,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 	}
 
 	@Test
-	public void mailFromUser_SysConfigTable_C_DocOutboundLog()
+	void mailFromUser_SysConfigTable_C_DocOutboundLog()
 	{
 		invoiceRecord.setEMail("test@test.test");
 		saveRecord(invoiceRecord);

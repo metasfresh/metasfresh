@@ -11,7 +11,7 @@ import java.util.Optional;
 @Builder
 public class DocOutBoundRecipients
 {
-	@NonNull DocOutBoundRecipient to;
+	@Nullable DocOutBoundRecipient to;
 	@Nullable DocOutBoundRecipientCC cc;
 
 	public static Optional<DocOutBoundRecipients> optionalOfTo(@Nullable DocOutBoundRecipient to)

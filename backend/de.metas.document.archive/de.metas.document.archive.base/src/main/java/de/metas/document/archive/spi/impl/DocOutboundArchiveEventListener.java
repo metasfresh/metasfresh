@@ -282,8 +282,11 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final boolean isInvoiceEmailEnabled = I_C_Invoice.Table_Name.equals(tableName) && recipients.isInvoiceAsEmail();
 		docOutboundLogRecord.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
 
-		docOutboundLogRecord.setCurrentEMailRecipient_ID(recipients.getTo().getId().getRepoId());
-		docOutboundLogRecord.setCurrentEMailAddress(recipients.getTo().getEmailAddress());
+		if (recipients.getTo() != null)
+		{
+			docOutboundLogRecord.setCurrentEMailRecipient_ID(recipients.getTo().getId().getRepoId());
+			docOutboundLogRecord.setCurrentEMailAddress(recipients.getTo().getEmailAddress());
+		}
 
 		if (recipients.getCc() != null)
 		{
