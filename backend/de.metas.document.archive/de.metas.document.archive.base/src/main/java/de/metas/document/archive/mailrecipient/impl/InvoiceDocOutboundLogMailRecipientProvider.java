@@ -59,6 +59,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 	private final IBPartnerBL bpartnerBL;
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
 	public InvoiceDocOutboundLogMailRecipientProvider(
 			@NonNull final DocOutBoundRecipientRepository recipientRepository,
@@ -157,6 +158,11 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 	{
 		assert request.getRecordRef() != null;
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(request.getRecordRef().getRecord_ID()));
+		if (!partnerBL.isInvoiceEmailCcToMember(BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID())))
+		{
+			return Optional.empty();
+		}
+		
 		final OrderId orderId = OrderId.ofRepoIdOrNull(invoiceRecord.getC_Order_ID());
 		if (orderId == null)
 		{

@@ -179,6 +179,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
 
+	boolean isInvoiceEmailCcToMember(@NonNull BPartnerId bpartnerId);
+
 	@Value
 	@Builder
 	class RetrieveContactRequest

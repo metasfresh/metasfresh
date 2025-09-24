@@ -906,4 +906,11 @@ public class BPartnerBL implements IBPartnerBL
 		}
 		return Optional.empty();
 	}
+
+	@Override
+	public boolean isInvoiceEmailCcToMember(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = getById(bpartnerId);
+		return bpartner.isInvoiceEmailCcToMember();
+	}
 }
