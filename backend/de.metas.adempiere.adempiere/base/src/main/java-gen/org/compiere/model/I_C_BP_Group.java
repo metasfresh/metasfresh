@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BP_Group
  *  @author metasfresh (generated) 
@@ -440,6 +439,29 @@ public interface I_C_BP_Group
 	String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
+	 * Set Invoice Email CC to Member.
+	 * If active, invoice emails are also sent as CC to the member.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceEmailCcToMember (boolean IsInvoiceEmailCcToMember);
+
+	/**
+	 * Get Invoice Email CC to Member.
+	 * If active, invoice emails are also sent as CC to the member.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoiceEmailCcToMember();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_IsInvoiceEmailCcToMember = new ModelColumn<>(I_C_BP_Group.class, "IsInvoiceEmailCcToMember", null);
+	String COLUMNNAME_IsInvoiceEmailCcToMember = "IsInvoiceEmailCcToMember";
+
+	/**
 	 * Set Discount Schema.
 	 * Schema to calculate the trade discount percentage
 	 *
@@ -531,6 +553,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -540,6 +563,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -778,6 +802,28 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_PriorityBase = new ModelColumn<>(I_C_BP_Group.class, "PriorityBase", null);
 	String COLUMNNAME_PriorityBase = "PriorityBase";
+
+	/**
+	 * Set Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPurchaser_User_ID (int Purchaser_User_ID);
+
+	/**
+	 * Get Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPurchaser_User_ID();
+
+	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
 
 	/**
 	 * Set Credit Status.

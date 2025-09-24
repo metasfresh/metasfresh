@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BP_Group
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 225459265L;
+	private static final long serialVersionUID = -528550985L;
 
     /** Standard Constructor */
     public X_C_BP_Group (final Properties ctx, final int C_BP_Group_ID, @Nullable final String trxName)
@@ -285,6 +285,18 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public boolean isDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
+	}
+
+	@Override
+	public void setIsInvoiceEmailCcToMember (final boolean IsInvoiceEmailCcToMember)
+	{
+		set_Value (COLUMNNAME_IsInvoiceEmailCcToMember, IsInvoiceEmailCcToMember);
+	}
+
+	@Override
+	public boolean isInvoiceEmailCcToMember() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceEmailCcToMember);
 	}
 
 	@Override
@@ -611,6 +623,21 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public java.lang.String getPriorityBase() 
 	{
 		return get_ValueAsString(COLUMNNAME_PriorityBase);
+	}
+
+	@Override
+	public void setPurchaser_User_ID (final int Purchaser_User_ID)
+	{
+		if (Purchaser_User_ID < 1) 
+			set_Value (COLUMNNAME_Purchaser_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_Purchaser_User_ID, Purchaser_User_ID);
+	}
+
+	@Override
+	public int getPurchaser_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Purchaser_User_ID);
 	}
 
 	/** 
