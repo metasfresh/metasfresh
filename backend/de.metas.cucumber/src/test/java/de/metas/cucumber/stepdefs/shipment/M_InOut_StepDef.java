@@ -56,6 +56,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.IInOutDAO;
@@ -224,6 +225,33 @@ public class M_InOut_StepDef
 					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 
 					invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.ofRows(ImmutableList.of(tableRow)));
+				}
+		);
+	}
+
+	@And("'generate shipments' process is invoked individually for each M_ShipmentSchedule and expects error message")
+	public void invokeGenerateShipmentsProcessIndividuallyAndAssertErrorMessage(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(tableRow ->
+				{
+					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
+					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
+					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+
+					final String errorMessage = DataTableUtil.extractStringForColumnName(tableRow, "AD_Message.Value");
+
+					try
+					{
+						invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.ofRows(ImmutableList.of(tableRow)));
+
+						assertThat(errorMessage).as("An error message should had been thrown!").isNull();
+					}
+					catch (final Exception e)
+					{
+						final AdMessageKey expectedErrorMessage = AdMessageKey.of("de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords");
+						StepDefUtil.validateErrorMessage(e, msgBL.getTranslatableMsgText(expectedErrorMessage).translate(Optional.ofNullable(Env.getAD_Language())
+								.orElse(Language.getBaseAD_Language())));
+					}
 				}
 		);
 	}
