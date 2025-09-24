@@ -45,18 +45,6 @@ public class DocOutBoundRecipient
 
 	public boolean isEmailAddressSet() {return !Check.isBlank(emailAddress);}
 
-	public DocOutBoundRecipient withEmailAddressIfEmpty(@Nullable final String newEmailAddress)
-	{
-		final String emailAddressNorm = StringUtils.trimBlankToNull(emailAddress);
-		if (emailAddressNorm != null)
-		{
-			return this;
-		}
-
-		final String newEmailAddressNorm = StringUtils.trimBlankToNull(newEmailAddress);
-		return newEmailAddressNorm != null ? withEmailAddress(newEmailAddressNorm) : this;
-	}
-
 	public DocOutBoundRecipient withEmailAddressIfEmpty(@NonNull final Supplier<String> newEmailAddressSupplier)
 	{
 		final String emailAddressNorm = StringUtils.trimBlankToNull(emailAddress);

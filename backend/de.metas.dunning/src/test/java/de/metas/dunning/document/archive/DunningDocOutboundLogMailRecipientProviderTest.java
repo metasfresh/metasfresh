@@ -73,7 +73,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestBase
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
 	private final UserRepository userRepository = new UserRepository();
 	private final BPartnerBL bpartnerBL = new BPartnerBL(userRepository);
 	private final DunningDocOutboundLogMailRecipientProvider dunningDocOutboundLogMailRecipientProvider = new DunningDocOutboundLogMailRecipientProvider(
@@ -87,8 +87,10 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 	private I_C_BPartner bPartnerRecord;
 	private I_C_BPartner_Location bPartnerLocationRecord;
 
-	private I_C_Dunning dunning;
 	private I_C_DunningLevel dunningLevel1_10;
+
+	@SuppressWarnings({ "SameParameterValue", "deprecation" })
+	private static Date date(final int year, final int month, final int day) {return TimeUtil.getDay(year, month, day);}
 
 	@Override
 	protected void createMasterData()
@@ -104,7 +106,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 
 		//
 		// Setup Levels
-		dunning = createDunning("Dunning");
+		final I_C_Dunning dunning = createDunning("Dunning");
 		dunning.setCreateLevelsSequentially(true);
 		InterfaceWrapperHelper.save(dunning);
 
@@ -266,7 +268,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 
 		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(userRecord, "invoiceRecord.EMail");
 
-		final Date dunningDate = TimeUtil.getDay(2013, 02, 01);
+		final Date dunningDate = date(2013, 2, 1);
 		final PlainDunningContext context = createPlainDunningContext(dunningDate, dunningLevel1_10);
 
 		final IDunnableDoc sourceDoc = new DunnableDocBuilder()
@@ -283,7 +285,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 				.setTotalAmt(BigDecimal.valueOf(100)) // totalAmt,
 				.setOpenAmt(BigDecimal.valueOf(100)) // openAmt,
 				//
-				.setDueDate(TimeUtil.getDay(2013, 01, 01)) // dueDate,
+				.setDueDate(date(2013, 1, 1)) // dueDate,
 				.setGraceDate(null)
 				.setDaysDue(15) // daysDue,
 				.create();
@@ -316,13 +318,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 
 	private I_C_DunningDoc retrieveDunningDocForCandidate(final I_C_Dunning_Candidate candidate)
 	{
-		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, pojo -> {
-			if (pojo.getC_Dunning_Candidate_ID() != candidate.getC_Dunning_Candidate_ID())
-			{
-				return false;
-			}
-			return true;
-		});
+		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, pojo -> pojo.getC_Dunning_Candidate_ID() == candidate.getC_Dunning_Candidate_ID());
 		if (lineSrc == null)
 		{
 			return null;
@@ -368,6 +364,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		assertThat(result.get().getTo().getEmailAddress()).isEqualTo("bPartnerUserRecord.EMail");
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private org.compiere.model.I_AD_User createUserRecord(final String eMail)
 	{
 		return createUserRecord(eMail, false);
@@ -433,12 +430,11 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		saveRecord(docLineSourceRecord2);
 	}
 
-	private I_AD_SysConfig createSysConfigOrderEmailPropagation(final String value)
+	private void createSysConfigOrderEmailPropagation(final String value)
 	{
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
-		sysConfig.setName(orderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
+		sysConfig.setName(OrderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
 		sysConfig.setValue(value);
 		saveRecord(sysConfig);
-		return sysConfig;
 	}
 }

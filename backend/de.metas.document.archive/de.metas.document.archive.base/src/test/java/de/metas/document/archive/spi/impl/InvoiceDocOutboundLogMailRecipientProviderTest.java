@@ -61,7 +61,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class InvoiceDocOutboundLogMailRecipientProviderTest
 {
 	private InvoiceDocOutboundLogMailRecipientProvider invoiceDocOutboundLogMailRecipientProvider;
-	private OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 
 	private I_C_BPartner shipToBPartnerRecord;
 	private I_C_BPartner billBPartnerRecord;
@@ -76,7 +75,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
+		final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
 
 		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(
 				new DocOutBoundRecipientService(bpartnerBL),
@@ -244,12 +243,11 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		assertThat(result.get().getTo().getBPartnerLanguage()).isEqualTo(asLanguage(AD_Language_en_US));
 	}
 
-	private I_AD_SysConfig createSysConfigOrderEmailPropagation(final String value)
+	private void createSysConfigOrderEmailPropagation(final String value)
 	{
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
-		sysConfig.setName(orderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
+		sysConfig.setName(OrderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
 		sysConfig.setValue(value);
 		saveRecord(sysConfig);
-		return sysConfig;
 	}
 }
