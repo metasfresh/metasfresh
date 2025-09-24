@@ -89,6 +89,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU getById(HuId huId);
 
+	boolean existsById(@NonNull HuId huId);
+
 	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
 
 	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);

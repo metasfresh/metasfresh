@@ -42,7 +42,6 @@ import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHUIterator;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -176,6 +175,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
 		return Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));
 	}
+
+	@Override
+	public boolean existsById(@NonNull final HuId huId) {return handlingUnitsRepo.existsById(huId);}
 
 	@Override
 	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
@@ -390,9 +392,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public IHUDisplayNameBuilder buildDisplayName(final I_M_HU hu)
+	public HUDisplayNameBuilder buildDisplayName(@Nullable final I_M_HU hu)
 	{
-		return new HUDisplayNameBuilder(hu);
+		return HUDisplayNameBuilder.builder()
+				.handlingUnitsBL(this)
+				.hu(hu)
+				.build();
 	}
 
 	@Override

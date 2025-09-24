@@ -29,6 +29,9 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
@@ -41,6 +44,7 @@ import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.rest_api.json.JsonTUPickingTarget;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
@@ -74,6 +78,7 @@ public class PickingRestController
 	@NonNull private final PickingMobileApplication pickingMobileApplication;
 	@NonNull private final WorkflowRestController workflowRestController;
 	@NonNull private final HandlingUnitsService handlingUnitsService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	private void assertApplicationAccess()
 	{
@@ -205,31 +210,50 @@ public class PickingRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
-	@GetMapping("/hu/byQRCode")
-	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestParam("qrCode") @NonNull final String qrCode)
+	@GetMapping("/hu/byScannedCode")
+	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestParam("scannedCode") @NonNull final String scannedCodeStr)
 	{
 		assertApplicationAccess();
 
+		final ScannedCode scannedCode = ScannedCode.ofString(scannedCodeStr);
+		final HUQRCode qrCode = toHUQRCode(scannedCode);
+
 		final List<JsonHU> hus = handlingUnitsService.getHUsByQrCode(
-				JsonGetByQRCodeRequest.builder().qrCode(qrCode).build(),
+				JsonGetByQRCodeRequest.builder().qrCode(qrCode.toGlobalQRCodeString()).build(),
 				Env.getADLanguageOrBaseLanguage()
 		);
 
 		if (hus.isEmpty())
 		{
-			throw new AdempiereException("No HU found for QRCode: " + qrCode);
+			throw new AdempiereException("No HU found for scanned code: " + scannedCode);
 		}
 		else if (hus.size() > 1)
 		{
-			throw new AdempiereException("More than one HU found for QRCode: " + qrCode)
+			throw new AdempiereException("More than one HU found for scanned code: " + scannedCode)
 					.setParameter("hus", hus);
 		}
-
 		final JsonHU hu = hus.get(0);
+
 		return JsonHUInfo.builder()
 				.id(hu.getId())
 				.unitType(hu.getUnitType())
 				.qtyTUs(hu.getQtyTUs())
+				.huQRCode(hu.getQrCode())
 				.build();
+	}
+
+	private HUQRCode toHUQRCode(final @NotNull ScannedCode scannedCode)
+	{
+		final IHUQRCode parsedHUQRCode = huQRCodesService.parse(scannedCode);
+		if (parsedHUQRCode instanceof HUQRCode)
+		{
+			return (HUQRCode)parsedHUQRCode;
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert " + scannedCode + " to actual HUQRCode")
+					.setParameter("parsedHUQRCode", parsedHUQRCode)
+					.setParameter("parsedHUQRCode type", parsedHUQRCode.getClass().getSimpleName());
+		}
 	}
 }
