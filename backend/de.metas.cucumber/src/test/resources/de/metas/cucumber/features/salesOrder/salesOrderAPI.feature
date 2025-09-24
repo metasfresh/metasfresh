@@ -42,7 +42,7 @@ Feature: Sales order API
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss1        | so_l1          | N             |
 
-    When store sales order PDF endpointPath /api/v2/orders/sales/:so/revert in context
+    When store sales order PDF endpointPath /api/v2/orders/sales/@so@/revert in context
 
     And a 'PUT' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 

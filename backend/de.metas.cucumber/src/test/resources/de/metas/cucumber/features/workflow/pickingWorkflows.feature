@@ -91,7 +91,7 @@ Feature: picking rest controller tests
     And validate M_ShipmentSchedule_Lock record for
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/:CompletePickingActivity/userConfirmation in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/@CompletePickingActivity@/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -134,14 +134,14 @@ Feature: picking rest controller tests
 
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/continue in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/continue in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     And validate M_ShipmentSchedule_Lock record for
       | M_ShipmentSchedule_ID.Identifier | Login      | Exists |
       | pickingShipmentSchedule          | metasfresh | Y      |
 
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/:CompletePickingActivity/userConfirmation in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/@CompletePickingActivity@/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then after not more than 60s, M_InOut is found:
@@ -187,14 +187,14 @@ Feature: picking rest controller tests
 
     And the existing user with login 'testUser_17497' receives a random a API token for the existing role with name 'WebUI'
 
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/continue in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/continue in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     And validate M_ShipmentSchedule_Lock record for
       | M_ShipmentSchedule_ID.Identifier | Login          | Exists |
       | pickingShipmentSchedule          | testUser_17497 | Y      |
 
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/:CompletePickingActivity/userConfirmation in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/@CompletePickingActivity@/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then after not more than 60s, M_InOut is found:
@@ -244,7 +244,7 @@ Feature: picking rest controller tests
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier | QtyPicked |
       | wf2                        | wf2-a1                      | wf2-line1              | wf2-step1              | wf2-QR                       | 2         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf2/:CompletePickingActivityWf2/userConfirmation in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf2@/@CompletePickingActivityWf2@/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -289,7 +289,7 @@ Feature: picking rest controller tests
       | WorkflowProcess.Identifier | DocStatus |
       | wf1                        | DR        |
     And the existing user with login 'testUser_17497' receives a random a API token for the existing role with name 'WebUI'
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/continue in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/continue in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     And validate M_ShipmentSchedule_Lock record for
       | M_ShipmentSchedule_ID.Identifier | Login          | Exists |
@@ -298,7 +298,7 @@ Feature: picking rest controller tests
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
       | wf1                        | a1                          | line1                  | huToPickQR          | 1         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/:CompletePickingActivity/userConfirmation in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/@CompletePickingActivity@/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |

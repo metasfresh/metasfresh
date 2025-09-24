@@ -499,15 +499,15 @@ public class M_HU_StepDef
 	@And("^store HU endpointPath (.*) in context$")
 	public void store_hu_endpointPath_in_context(@NonNull String endpointPath)
 	{
-		final String regex = ".*(:[a-zA-Z]+)/?.*";
+		final String regex = "@[a-zA-Z\\d_-]+@";
 
 		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(endpointPath);
 
 		while (matcher.find())
 		{
-			final String huIdentifierGroup = matcher.group(1);
-			final String huIdentifier = huIdentifierGroup.replace(":", "");
+			final String huIdentifierGroup = matcher.group();
+			final String huIdentifier = huIdentifierGroup.replaceAll("@", "");
 
 			final I_M_HU hu = huTable.get(huIdentifier);
 			assertThat(hu).isNotNull();
