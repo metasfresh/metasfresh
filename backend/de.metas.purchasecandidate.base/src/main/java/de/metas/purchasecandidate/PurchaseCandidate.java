@@ -90,7 +90,7 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private ZonedDateTime purchaseDatePromisedInitial;
 
-	@NonNull
+	@Nullable
 	private ZonedDateTime purchaseDateOrdered;
 
 	private final Duration reminderTime;
@@ -159,7 +159,7 @@ public class PurchaseCandidate
 			@NonNull final String vendorProductNo,
 			@NonNull final Quantity qtyToPurchase,
 			@NonNull final ZonedDateTime purchaseDatePromised,
-			@NonNull final ZonedDateTime purchaseDateOrdered,
+			@Nullable final ZonedDateTime purchaseDateOrdered,
 			final Duration reminderTime,
 			@Nullable final PurchaseProfitInfo profitInfoOrNull,
 			@Singular final List<PurchaseItem> purchaseItems,
