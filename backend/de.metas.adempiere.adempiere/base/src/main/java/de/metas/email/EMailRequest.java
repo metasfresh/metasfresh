@@ -18,7 +18,7 @@ public class EMailRequest
 	@NonNull Mailbox mailbox;
 
 	@NonNull ImmutableList<EMailAddress> toList;
-	@Nullable ImmutableList<EMailAddress> ccList;
+	@Nullable EMailAddress cc;
 	@Nullable String subject;
 	@Nullable String message;
 	boolean html;
@@ -32,7 +32,7 @@ public class EMailRequest
 	private EMailRequest(
 			@NonNull final Mailbox mailbox,
 			@NonNull @Singular("to") final ImmutableList<EMailAddress> toList,
-			@Nullable @Singular("cc") final ImmutableList<EMailAddress> ccList,
+			final @Nullable EMailAddress cc,
 			@Nullable final String subject,
 			@Nullable final String message,
 			final boolean html,
@@ -44,7 +44,7 @@ public class EMailRequest
 		this.mailbox = mailbox;
 
 		this.toList = Check.assumeNotEmpty(toList, "at least one to recipient shall be specified");
-		this.ccList = ccList;
+		this.cc = cc;
 		this.subject = subject;
 		this.message = message;
 		this.html = html;
@@ -78,5 +78,5 @@ public class EMailRequest
 
 	public EMailAddress getTo() {return toList.get(0);}
 
-	public @Nullable EMailAddress getCc() {return ccList != null ? ccList.get(0) : null;}
+	public @Nullable EMailAddress getCc() {return cc;}
 }

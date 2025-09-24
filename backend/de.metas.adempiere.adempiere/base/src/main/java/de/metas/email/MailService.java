@@ -165,6 +165,12 @@ public class MailService
 		}
 
 		request.getToList().forEach(email::addTo);
+		final EMailAddress cc = request.getCc();
+		if (cc !=null && !request.getToList().contains(cc))
+		{
+			email.addCc(request.getCc());
+		}
+
 		request.getAttachments().forEach(email::addAttachment);
 
 		final EMailSentStatus sentStatus = email.send();
