@@ -287,7 +287,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 						.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
 						.build());
 
-		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
+		mailRecipient.ifPresent(recipient -> updateRecordWithRecipientCC(docOutboundLogRecord, recipient));
 	}
 
 	private void updateRecordWithRecipient(
@@ -301,6 +301,15 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setCurrentEMailRecipient_ID(recipient.getId().getRepoId());
 		docOutboundLogRecord.setCurrentEMailAddress(recipient.getEmailAddress());
 	}
+
+	private void updateRecordWithRecipientCC(
+			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
+			@NonNull final DocOutBoundRecipient recipient)
+	{
+		docOutboundLogRecord.setCurrentEMailCCRecipient_ID(recipient.getId().getRepoId());
+		docOutboundLogRecord.setCurrentEMailAddressCC(recipient.getEmailAddress());
+	}
+
 
 	private void shareDocumentAttachmentsWithDocoutBoundLog(
 			@NonNull final I_AD_Archive archiveRecord,
