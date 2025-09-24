@@ -398,8 +398,7 @@ public class RetrieveDbRecordsUtil
 		static IQueryBuilder<I_M_HU_Trace> createQueryBuilderOrNull(@NonNull final HUTraceEventQuery query)
 		{
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
-			final IQueryBuilder<I_M_HU_Trace> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Trace.class)
-					.addOnlyActiveRecordsFilter();
+			final IQueryBuilder<I_M_HU_Trace> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Trace.class);
 
 			boolean queryIsEmpty = updateQueryBuilderForQueryEventTime(queryBuilder, query);
 
@@ -501,6 +500,17 @@ public class RetrieveDbRecordsUtil
 			{
 				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trx_Line_ID, query.getHuTrxLineId());
 				queryIsEmpty = false;
+			}
+
+			if (query.getIsActive() != null)
+			{
+				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_IsActive, query.getIsActive());
+				queryIsEmpty = false;
+			}
+			else
+			{
+				// dev-note: for all the other cases where query is not empty (queryIsEmpty = false), consider only the active records
+				queryBuilder.addOnlyActiveRecordsFilter();
 			}
 
 			if (queryIsEmpty)
