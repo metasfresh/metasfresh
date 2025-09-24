@@ -12,13 +12,17 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvid
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.user.User;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -54,6 +58,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final IBPartnerBL bpartnerBL;
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	public InvoiceDocOutboundLogMailRecipientProvider(
 			@NonNull final DocOutBoundRecipientRepository recipientRepository,
@@ -121,7 +126,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 						.onlyIfInvoiceEmailEnabled(true)
 						.build());
 
-		if (billContact != null)
+		if (billContact != null && billContact.getId()!= null)
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
@@ -146,4 +151,67 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 
 	}
 
+
+	@Override
+	public Optional<DocOutBoundRecipient> provideMailCCRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
+	{
+		assert request.getRecordRef() != null;
+		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(request.getRecordRef().getRecord_ID()));
+		final OrderId orderId = OrderId.ofRepoIdOrNull(invoiceRecord.getC_Order_ID());
+		if (orderId == null)
+		{
+			return Optional.empty();
+		}
+
+		final I_C_Order orderRecord = orderBL.getById(orderId);
+
+		final String locationEmail = orderBL.getLocationEmail(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
+
+		if (orderRecord.getAD_User_ID() > 0)
+		{
+			final DocOutBoundRecipient orderUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(orderRecord.getAD_User_ID()));
+
+			if (Check.isNotBlank(orderUser.getEmailAddress()))
+			{
+				return Optional.of(orderUser);
+			}
+
+			if (Check.isNotBlank(locationEmail))
+			{
+				return Optional.of(orderUser.withEmailAddress(locationEmail));
+			}
+
+		}
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+
+		final User billContact = bpartnerBL.retrieveContactOrNull(
+				RetrieveContactRequest
+						.builder()
+						.bpartnerId(bpartnerId)
+						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, orderRecord.getC_BPartner_Location_ID()))
+						.contactType(ContactType.BILL_TO_DEFAULT)
+						.onlyIfInvoiceEmailEnabled(true)
+						.build());
+
+		if (billContact != null && billContact.getId() != null)
+		{
+			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(UserId.toRepoId(billContact.getId()));
+			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
+
+
+			if (Check.isNotBlank(locationEmail))
+			{
+				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
+			}
+
+			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
+			{
+				return Optional.of(docOutBoundRecipient);
+			}
+		}
+
+		return Optional.empty();
+
+	}
 }

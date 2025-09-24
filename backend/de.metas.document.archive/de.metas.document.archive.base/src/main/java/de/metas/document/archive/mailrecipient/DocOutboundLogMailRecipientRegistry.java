@@ -3,14 +3,11 @@ package de.metas.document.archive.mailrecipient;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -74,14 +71,14 @@ public class DocOutboundLogMailRecipientRegistry
 	{
 		if(request.getRecordRef() == null)
 		{
-			return invokeDefaultProviderIfPossible(request);
+			return invokeDefaultMailProviderIfPossible(request);
 		}
 
 		final String tableName = request.getRecordRef().getTableName();
 
 		if (!tableName2provider.containsKey(tableName))
 		{
-			return invokeDefaultProviderIfPossible(request);
+			return invokeDefaultMailProviderIfPossible(request);
 		}
 
 		return tableName2provider
@@ -89,13 +86,41 @@ public class DocOutboundLogMailRecipientRegistry
 				.provideMailRecipient(request);
 	}
 
-	private Optional<DocOutBoundRecipient> invokeDefaultProviderIfPossible(@NonNull final DocOutboundLogMailRecipientRequest request)
+	public Optional<DocOutBoundRecipient> getRecipientCC(@NonNull final DocOutboundLogMailRecipientRequest request)
+	{
+		if(request.getRecordRef() == null)
+		{
+			return invokeDefaultMailProviderIfPossible(request);
+		}
+
+		final String tableName = request.getRecordRef().getTableName();
+
+		if (!tableName2provider.containsKey(tableName))
+		{
+			return invokeDefaultMailCCProviderIfPossible(request);
+		}
+
+		return tableName2provider
+				.get(tableName)
+				.provideMailCCRecipient(request);
+	}
+
+	private Optional<DocOutBoundRecipient> invokeDefaultMailProviderIfPossible(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
 		if (defaultProvider == null)
 		{
 			return Optional.empty(); // nothing we can do
 		}
 		return defaultProvider.provideMailRecipient(request);
+	}
+
+	private Optional<DocOutBoundRecipient> invokeDefaultMailCCProviderIfPossible(@NonNull final DocOutboundLogMailRecipientRequest request)
+	{
+		if (defaultProvider == null)
+		{
+			return Optional.empty(); // nothing we can do
+		}
+		return defaultProvider.provideMailCCRecipient(request);
 	}
 
 	public Optional<DocOutboundLogMailRecipientProvider> getDefaultProvider()

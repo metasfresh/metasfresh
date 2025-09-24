@@ -148,7 +148,8 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 						.onlyActive(true)
 						.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 						.build());
-		if (billContact != null)
+
+		if (billContact != null && billContact.getId() != null)
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);

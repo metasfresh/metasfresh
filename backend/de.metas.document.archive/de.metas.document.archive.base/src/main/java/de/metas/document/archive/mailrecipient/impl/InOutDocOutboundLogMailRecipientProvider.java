@@ -117,7 +117,7 @@ public class InOutDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 						.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
 						.build());
 
-		if (billContact != null)
+		if (billContact != null && billContact.getId() != null)
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);

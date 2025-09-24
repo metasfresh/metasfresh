@@ -255,6 +255,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setDateDoc(TimeUtil.asTimestamp(documentDate)); // task 08905: Also set the the documentDate
 
 		setMailRecipient(docOutboundLogRecord);
+		setMailCCRecipient(docOutboundLogRecord);
 
 		save(docOutboundLogRecord);
 
@@ -266,6 +267,19 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.getRecipient(
+				DocOutboundLogMailRecipientRequest.builder()
+						.recordRef(TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID()))
+						.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
+						.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
+						.build());
+
+		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
+	}
+
+	private void setMailCCRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.getRecipientCC(
 				DocOutboundLogMailRecipientRequest.builder()
 						.recordRef(TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID()))
 						.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
