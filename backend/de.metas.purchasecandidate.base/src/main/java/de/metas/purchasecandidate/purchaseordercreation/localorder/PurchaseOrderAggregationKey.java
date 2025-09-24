@@ -53,6 +53,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 	WarehouseId warehouseId;
 	BPartnerId vendorId;
 	ZonedDateTime datePromised;
+	ZonedDateTime dateOrdered;
 	ForecastLineId forecastLineId;
 	Dimension dimension;
 	String externalPurchaseOrderUrl;
@@ -61,6 +62,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
 			.thenComparing(PurchaseOrderAggregationKey::getDatePromised)
+			.thenComparing(PurchaseOrderAggregationKey::getDateOrdered)
 			.thenComparing(PurchaseOrderAggregationKey::getDimension, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getPoReference, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
@@ -74,6 +76,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.warehouseId(purchaseOrderItem.getWarehouseId())
 				.vendorId(purchaseOrderItem.getVendorId())
 				.datePromised(purchaseOrderItem.getDatePromised())
+				.dateOrdered(purchaseOrderItem.getDateOrdered())
 				.forecastLineId(purchaseOrderItem.getForecastLineId())
 				.dimension(purchaseOrderItem.getDimension())
 				.externalPurchaseOrderUrl(purchaseOrderItem.getExternalPurchaseOrderUrl())
@@ -90,6 +93,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.vendorId(purchaseCandidate.getVendorId())
 				.datePromised(purchaseCandidate.getPurchaseDatePromised())
+				.dateOrdered(purchaseCandidate.getPurchaseDateOrdered())
 				.forecastLineId(purchaseCandidate.getForecastLineId())
 				.dimension(purchaseCandidate.getDimension())
 				.externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
