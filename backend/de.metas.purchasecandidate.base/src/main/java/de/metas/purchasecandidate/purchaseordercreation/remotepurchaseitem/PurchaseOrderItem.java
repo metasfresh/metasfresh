@@ -88,6 +88,9 @@ public class PurchaseOrderItem implements PurchaseItem
 	private final ZonedDateTime datePromised;
 
 	@Getter
+	private final ZonedDateTime dateOrdered;
+
+	@Getter
 	private OrderAndLineId purchaseOrderAndLineId;
 
 	@Getter
@@ -99,6 +102,7 @@ public class PurchaseOrderItem implements PurchaseItem
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final Quantity purchasedQty,
 			@NonNull final ZonedDateTime datePromised,
+			@NonNull final ZonedDateTime dateOrdered,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
 			final OrderAndLineId purchaseOrderAndLineId,
@@ -110,14 +114,15 @@ public class PurchaseOrderItem implements PurchaseItem
 
 		this.purchasedQty = purchasedQty;
 		this.datePromised = datePromised;
+		this.dateOrdered = dateOrdered;
 		this.remotePurchaseOrderId = remotePurchaseOrderId;
 
 		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
 
 		final boolean remotePurchaseExists = !Objects.equals(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		Check.errorIf(remotePurchaseExists && transactionReference == null,
-					  "If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
-					  remotePurchaseOrderId);
+				"If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
+				remotePurchaseOrderId);
 		this.transactionReference = transactionReference;
 
 		this.dimension = dimension;
@@ -131,6 +136,7 @@ public class PurchaseOrderItem implements PurchaseItem
 
 		this.purchasedQty = from.purchasedQty;
 		this.datePromised = from.datePromised;
+		this.dateOrdered = from.dateOrdered;
 		this.remotePurchaseOrderId = from.remotePurchaseOrderId;
 
 		this.purchaseOrderAndLineId = from.purchaseOrderAndLineId;
