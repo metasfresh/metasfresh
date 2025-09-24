@@ -129,8 +129,6 @@ public class C_Doc_Outbound_Log
 		final I_C_BPartner bpartnerRecord = loadOutOfTrx(docOutboundlogRecord.getC_BPartner_ID(), I_C_BPartner.class);
 		docOutboundlogRecord.setIsInvoiceEmailEnabled(StringUtils.toBoolean(bpartnerRecord.getIsInvoiceEmailEnabled()));
 
-		// set cc
-		docOutboundlogRecord.getRecord_ID()
 	}
 
 }

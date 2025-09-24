@@ -162,7 +162,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		{
 			return Optional.empty();
 		}
-		
+
 		final OrderId orderId = OrderId.ofRepoIdOrNull(invoiceRecord.getC_Order_ID());
 		if (orderId == null)
 		{
