@@ -134,3 +134,17 @@ Feature: Cleared HU can be picked on the fly and manually picked
     And validate M_HUs:
       | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier | OPT.ClearanceStatus | OPT.ClearanceNote |
       | createdCU          | packingVersionCU              | S        | locatorHauptlager           | C                   | Cleared HU        |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_2                            | P            | true                | false       |
+
+    And after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_2                            | s_1_09242025          |
+
+    And the shipment identified by s_1_09242025 is reversed
+
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed | OPT.Processed |
+      | s_s_2                            | false        | false         |
