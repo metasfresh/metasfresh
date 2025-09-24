@@ -505,7 +505,7 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public OrderItemBuilder dateOrdered(@NonNull final ZonedDateTime dateOrdered)
+		public OrderItemBuilder dateOrdered(@Nullable final ZonedDateTime dateOrdered)
 		{
 			innerBuilder.dateOrdered(dateOrdered);
 			return this;

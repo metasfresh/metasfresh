@@ -102,7 +102,7 @@ public class PurchaseOrderItem implements PurchaseItem
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final Quantity purchasedQty,
 			@NonNull final ZonedDateTime datePromised,
-			@NonNull final ZonedDateTime dateOrdered,
+			@Nullable final ZonedDateTime dateOrdered,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
 			final OrderAndLineId purchaseOrderAndLineId,

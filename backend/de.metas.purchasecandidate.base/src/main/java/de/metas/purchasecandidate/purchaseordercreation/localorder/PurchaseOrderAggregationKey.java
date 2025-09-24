@@ -53,6 +53,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 	WarehouseId warehouseId;
 	BPartnerId vendorId;
 	ZonedDateTime datePromised;
+	@Nullable
 	ZonedDateTime dateOrdered;
 	ForecastLineId forecastLineId;
 	Dimension dimension;
@@ -62,7 +63,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
 			.thenComparing(PurchaseOrderAggregationKey::getDatePromised)
-			.thenComparing(PurchaseOrderAggregationKey::getDateOrdered)
+			.thenComparing(PurchaseOrderAggregationKey::getDateOrdered, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getDimension, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getPoReference, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
