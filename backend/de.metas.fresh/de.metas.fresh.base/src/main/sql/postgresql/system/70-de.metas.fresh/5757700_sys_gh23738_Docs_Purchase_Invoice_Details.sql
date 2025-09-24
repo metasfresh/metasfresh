@@ -44,57 +44,57 @@ AS
 $$
 SELECT *
 FROM (
-SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.DocNo) AS InOuts,
-       COALESCE(io1.DocType, io2.DocType)                                           AS DocType,
-       TO_CHAR(COALESCE(io1.DateFrom, io2.DateFrom), 'DD.MM.YYYY')                  AS InOuts_DateFrom,
-       COALESCE(io1.DocNo, io2.DocNo) IS NOT NULL                                   AS InOuts_IsDataComplete,
-       COALESCE(pc.IsHU, FALSE)                                                     AS IsHU,
-       MAX(il.line)                                                                 AS line,
-       -- ts: QnD: appending the invoice line description to the product name.
-       -- TODO: create a dedicated field for it etc
-       il.Description,
-       il.ProductDescription,
-       COALESCE(pt.name, p.name)                                                    AS Name,
-       COALESCE(
-               CASE
-                   WHEN LENGTH(att.Attributes) > 15
-                       THEN att.Attributes || E'\n'
-                       ELSE att.Attributes
-               END,
-               ''
-       )                                                                            AS Attributes,
-       SUM(il.QtyenteredTU)                                                         AS HUQty,
-       piip.name                                                                    AS HUName,
-       SUM(il.QtyInvoicedInPriceUOM)                                                AS qtyinvoicedinpriceuom,
-       SUM(CASE
-               WHEN il.QtyEntered > 0 THEN il.QtyEntered
-                                      ELSE 0
-           END)                                                                     AS shipped,
-       SUM(CASE
-               WHEN il.QtyEntered < 0 THEN il.QtyEntered * -1
-                                      ELSE 0
-           END)                                                                     AS retour,
-       il.PriceActual,
-       il.PriceEntered,
-       COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                                      AS UOM,
-       COALESCE(puomt.UOMSymbol, puom.UOMSymbol)                                    AS PriceUOM,
-       puom.StdPrecision,
-       SUM(il.linenetamt)                                                           AS linenetamt,
-       t.rate,
-       bpg.IsPrintTax,
-       -- in case there is no C_BPartner_Product, fallback to the default ones
-       COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                                 AS bp_product_no,
-       COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                       AS bp_product_name,
-       p.value                                                                      AS p_value,
-       p.description                                                                AS p_description,
-       i.description                                                                AS invoice_description,
-       c.cursymbol,
-       report.getPricePatternForJasper(i.m_pricelist_id)      AS PricePattern,
-       report.getAmountPatternForJasper(c.c_currency_id)      AS AmountPattern
-FROM C_InvoiceLine il
-         INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
-         INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT OUTER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
+         SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.DocNo) AS InOuts,
+                COALESCE(io1.DocType, io2.DocType)                                           AS DocType,
+                TO_CHAR(COALESCE(io1.DateFrom, io2.DateFrom), 'DD.MM.YYYY')                  AS InOuts_DateFrom,
+                COALESCE(io1.DocNo, io2.DocNo) IS NOT NULL                                   AS InOuts_IsDataComplete,
+                COALESCE(pc.IsHU, FALSE)                                                     AS IsHU,
+                MAX(il.line)                                                                 AS line,
+                -- ts: QnD: appending the invoice line description to the product name.
+                -- TODO: create a dedicated field for it etc
+                il.Description,
+                il.ProductDescription,
+                COALESCE(pt.name, p.name)                                                    AS Name,
+                COALESCE(
+                        CASE
+                            WHEN LENGTH(att.Attributes) > 15
+                                THEN att.Attributes || E'\n'
+                                ELSE att.Attributes
+                        END,
+                        ''
+                )                                                                            AS Attributes,
+                SUM(il.QtyenteredTU)                                                         AS HUQty,
+                piip.name                                                                    AS HUName,
+                SUM(il.QtyInvoicedInPriceUOM)                                                AS qtyinvoicedinpriceuom,
+                SUM(CASE
+                        WHEN il.QtyEntered > 0 THEN il.QtyEntered
+                                               ELSE 0
+                    END)                                                                     AS shipped,
+                SUM(CASE
+                        WHEN il.QtyEntered < 0 THEN il.QtyEntered * -1
+                                               ELSE 0
+                    END)                                                                     AS retour,
+                il.PriceActual,
+                il.PriceEntered,
+                COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                                      AS UOM,
+                COALESCE(puomt.UOMSymbol, puom.UOMSymbol)                                    AS PriceUOM,
+                puom.StdPrecision,
+                SUM(il.linenetamt)                                                           AS linenetamt,
+                t.rate,
+                bpg.IsPrintTax,
+                -- in case there is no C_BPartner_Product, fallback to the default ones
+                COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                                 AS bp_product_no,
+                COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                       AS bp_product_name,
+                p.value                                                                      AS p_value,
+                p.description                                                                AS p_description,
+                i.description                                                                AS invoice_description,
+                c.cursymbol,
+                report.getPricePatternForJasper(i.m_pricelist_id)      AS PricePattern,
+                report.getAmountPatternForJasper(c.c_currency_id)      AS AmountPattern
+         FROM C_InvoiceLine il
+                  INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
+                  INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
+                  LEFT OUTER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
 
              -- Get Product and its translation
                   LEFT OUTER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID
@@ -197,48 +197,48 @@ FROM C_InvoiceLine il
 
          WHERE il.C_Invoice_ID = p_record_id
 
-GROUP BY InOuts,
-         COALESCE(io1.DocType, io2.DocType),
-         TO_CHAR(COALESCE(io1.DateFrom, io2.DateFrom), 'DD.MM.YYYY'),
-         COALESCE(io1.DocNo, io2.DocNo) IS NOT NULL,
-         COALESCE(pc.IsHU, FALSE),
-         -- ts: QnD: appending the invoice line description to the product name.
-         -- TODO: create a dedicated field for it etc
-         il.Description,
-         il.ProductDescription,
-         COALESCE(pt.name, p.name),
-         COALESCE(
-                 CASE
-                     WHEN LENGTH(att.Attributes) > 15
-                         THEN att.Attributes || E'\n'
-                         ELSE att.Attributes
-                 END,
-                 ''
-         ),
-         piip.name,
-         il.PriceActual,
-         il.PriceEntered,
-         COALESCE(uomt.UOMSymbol, uom.UOMSymbol),
-         COALESCE(puomt.UOMSymbol, puom.UOMSymbol),
-         puom.StdPrecision,
-         t.rate,
-         bpg.IsPrintTax,
-         COALESCE(io1.DateFrom, io2.DateFrom),
-         COALESCE(io1.DocNo, io2.DocNo),
-         COALESCE(NULLIF(bpp.ProductNo, ''), p.value),
-         COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name),
-         p.value,
-         p.description,
-         i.description,
-         c.cursymbol,
-         i.m_pricelist_id,
-         c.c_currency_id
+         GROUP BY InOuts,
+                  COALESCE(io1.DocType, io2.DocType),
+                  TO_CHAR(COALESCE(io1.DateFrom, io2.DateFrom), 'DD.MM.YYYY'),
+                  COALESCE(io1.DocNo, io2.DocNo) IS NOT NULL,
+                  COALESCE(pc.IsHU, FALSE),
+                  -- ts: QnD: appending the invoice line description to the product name.
+                  -- TODO: create a dedicated field for it etc
+                  il.Description,
+                  il.ProductDescription,
+                  COALESCE(pt.name, p.name),
+                  COALESCE(
+                          CASE
+                              WHEN LENGTH(att.Attributes) > 15
+                                  THEN att.Attributes || E'\n'
+                                  ELSE att.Attributes
+                          END,
+                          ''
+                  ),
+                  piip.name,
+                  il.PriceActual,
+                  il.PriceEntered,
+                  COALESCE(uomt.UOMSymbol, uom.UOMSymbol),
+                  COALESCE(puomt.UOMSymbol, puom.UOMSymbol),
+                  puom.StdPrecision,
+                  t.rate,
+                  bpg.IsPrintTax,
+                  COALESCE(io1.DateFrom, io2.DateFrom),
+                  COALESCE(io1.DocNo, io2.DocNo),
+                  COALESCE(NULLIF(bpp.ProductNo, ''), p.value),
+                  COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name),
+                  p.value,
+                  p.description,
+                  i.description,
+                  c.cursymbol,
+                  i.m_pricelist_id,
+                  c.c_currency_id
 
-ORDER BY COALESCE(io1.DateFrom, io2.DateFrom),
-         COALESCE(io1.DocNo, io2.DocNo),
-         COALESCE(pc.IsHU, FALSE),
-         Name,
-         MAX(line)
+         ORDER BY COALESCE(io1.DateFrom, io2.DateFrom),
+                  COALESCE(io1.DocNo, io2.DocNo),
+                  COALESCE(pc.IsHU, FALSE),
+                  Name,
+                  MAX(line)
      ) result
 ORDER BY line
 $$
