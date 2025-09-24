@@ -124,6 +124,7 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setIsShipTo(isShipTo);
 
 		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault).ifPresent(bPartnerLocationRecord::setIsBillToDefault);
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsRemitTo).ifPresent(bPartnerLocationRecord::setIsRemitTo);
 
 		final boolean isBillTo = tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillTo).orElse(bPartnerLocationRecord.isBillToDefault());
 		bPartnerLocationRecord.setIsBillTo(isBillTo);
