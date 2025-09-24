@@ -66,17 +66,19 @@ FROM (
                   --
                   SELECT 2::INTEGER         AS SeqNo,
                          'vend'::TEXT       AS Type_V,
-                         pl_vend.C_BPartner_Location_ID,
+                         COALESCE(pl_wh.C_BPartner_Location_ID, pl_vend.C_BPartner_Location_ID) AS C_BPartner_Location_ID,
                          i.C_Invoice_ID,
                          0::INTEGER         AS M_InOut_ID,
-                         p_cust.ReferenceNo AS Vendor_ReferenceNo,
-                         pl_vend.bpartnername AS SiteName,
-                         pl_vend.Setup_Place_No,
+                         COALESCE(p_wh.ReferenceNo, p_vend.ReferenceNo)                         AS Vendor_ReferenceNo,
+                         COALESCE(pl_wh.bpartnername, pl_vend.bpartnername)                     AS SiteName,
+                         COALESCE(pl_wh.Setup_Place_No, pl_vend.Setup_Place_No)                 AS Setup_Place_No,
                          i.CreatedBy
                   FROM C_Invoice i
-                           JOIN C_BPartner p_cust ON p_cust.C_BPartner_ID = i.C_BPartner_ID
                            JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID
                            JOIN C_BPartner_Location pl_vend ON pl_vend.C_BPartner_ID = p_vend.C_BPartner_ID AND pl_vend.isremitto = 'Y'
+                           LEFT JOIN M_Warehouse wh ON wh.M_Warehouse_ID = i.M_Warehouse_ID
+                           LEFT JOIN C_BPartner p_wh ON p_wh.C_BPartner_ID = wh.C_BPartner_ID
+                           LEFT JOIN C_BPartner_Location pl_wh ON pl_wh.C_BPartner_ID = p_wh.C_BPartner_ID AND pl_wh.isremitto = 'Y'
                        --
                   UNION
                   --
@@ -167,7 +169,7 @@ FROM (
          LEFT JOIN C_Country c ON c.C_Country_ID = l.C_Country_ID
          LEFT JOIN AD_User u ON u.AD_User_ID = lookup.CreatedBy
 WHERE TRUE
---  AND p.VATaxID IS NOT NULL -- VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
+  --  AND p.VATaxID IS NOT NULL -- VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
   AND (l.Address1 IS NOT NULL OR l.Address2 IS NOT NULL)
 ORDER BY (
           lookup.C_Invoice_ID,
