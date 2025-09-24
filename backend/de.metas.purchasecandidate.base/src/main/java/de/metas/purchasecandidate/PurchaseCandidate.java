@@ -90,7 +90,7 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private ZonedDateTime purchaseDatePromisedInitial;
 
-	@Nullable
+	@NonNull
 	private ZonedDateTime purchaseDateOrdered;
 
 	private final Duration reminderTime;
@@ -502,6 +502,12 @@ public class PurchaseCandidate
 		public OrderItemBuilder datePromised(@NonNull final ZonedDateTime datePromised)
 		{
 			innerBuilder.datePromised(datePromised);
+			return this;
+		}
+
+		public OrderItemBuilder dateOrdered(@NonNull final ZonedDateTime dateOrdered)
+		{
+			innerBuilder.dateOrdered(dateOrdered);
 			return this;
 		}
 
