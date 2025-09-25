@@ -28,8 +28,8 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
-import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -41,9 +41,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.IQuery;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -59,6 +58,8 @@ public class M_ShipmentSchedule_EnqueueSelection
 		extends JavaProcess
 		implements IProcessPrecondition
 {
+	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
+	
 	private final Instant nowInstant = Env.getZonedDateTime().toInstant();
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -106,6 +107,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		return "@Created@: " + result.getEnqueuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();
 	}
 
+	@NonNull
 	private IQueryFilter<I_M_ShipmentSchedule> createShipmentSchedulesQueryFilters()
 	{
 		final ICompositeQueryFilter<I_M_ShipmentSchedule> filters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class);
@@ -129,28 +131,6 @@ public class M_ShipmentSchedule_EnqueueSelection
 			filters.addFilter(selectionFilter);
 		}
 
-		//
-		// Filter only those which are not yet processed
-		filters.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Processed, false);
-
-		final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
-				.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-						.setJoinOr()
-						.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
-						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedPreparationDate, false)
-				)
-				.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-						.setJoinOr()
-						.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
-						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
-				)
-				.create();
-
-		filters.addInSubQueryFilter()
-				.matchingColumnNames(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID)
-				.subQuery(subQueryPackageable)
-				.end();
-
-		return filters;
+		return shipmentService.createShipmentScheduleEnqueuerQueryFilters(filters, nowInstant);
 	}
 }
