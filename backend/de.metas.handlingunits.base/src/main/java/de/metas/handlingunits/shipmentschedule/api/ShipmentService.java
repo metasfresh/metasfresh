@@ -58,7 +58,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
@@ -281,13 +280,6 @@ public class ShipmentService implements IShipmentService
 
 	@NonNull
 	public IQueryFilter<I_M_ShipmentSchedule> createShipmentScheduleEnqueuerQueryFilters(
-			@NonNull final IQueryFilter<I_M_ShipmentSchedule> selectionFilter)
-	{
-		return createShipmentScheduleEnqueuerQueryFilters(selectionFilter, null);
-	}
-
-	@NonNull
-	public IQueryFilter<I_M_ShipmentSchedule> createShipmentScheduleEnqueuerQueryFilters(
 			@NonNull final IQueryFilter<I_M_ShipmentSchedule> selectionFilter,
 			@Nullable final Instant nowInstant)
 	{
@@ -341,13 +333,9 @@ public class ShipmentService implements IShipmentService
 	@NonNull
 	private ShipmentScheduleEnqueuer.Result enqueueShipmentSchedules(@NonNull final GenerateShipmentsRequest request)
 	{
-		final ICompositeQueryFilter<I_M_ShipmentSchedule> queryFilters = queryBL
-				.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, request.getScheduleIds());
-
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
-				.queryFilters(createShipmentScheduleEnqueuerQueryFilters(queryFilters))
+				.scheduleIds(request.getScheduleIds())
 				.onlyLUIds(request.getOnlyLUIds())
 				.quantityType(request.getQuantityTypeToUse())
 				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())

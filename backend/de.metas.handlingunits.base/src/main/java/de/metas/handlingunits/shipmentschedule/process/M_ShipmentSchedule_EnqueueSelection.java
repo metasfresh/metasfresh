@@ -59,7 +59,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		implements IProcessPrecondition
 {
 	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
-	
+
 	private final Instant nowInstant = Env.getZonedDateTime().toInstant();
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 

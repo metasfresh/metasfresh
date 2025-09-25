@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.EmptyUtil;
@@ -68,7 +69,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -238,9 +238,9 @@ public class M_InOut_StepDef
 	{
 		DataTableRows.of(table).forEach(tableRow ->
 				{
-					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
-					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
+					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
+					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 
 					final String errorMessage = DataTableUtil.extractStringForColumnName(tableRow, "AD_Message.Value");
 
