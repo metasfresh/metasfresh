@@ -57,6 +57,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	boolean existsExportedShipmentScheduleForOrder(@NonNull final OrderId orderId);
 
+	boolean existsSheduledForPickingShipmentScheduleForOrder(@NonNull OrderId orderId);
+
 	Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(OrderId orderId);
 
 	/**
