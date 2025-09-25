@@ -25,14 +25,11 @@ package de.metas.handlingunits.mobileui;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
-import de.metas.global_qrcodes.GlobalQRCode;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.mobileui.config.HUManagerProfile;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileLayoutSectionList;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.rest_api.GetByIdRequest;
+import de.metas.handlingunits.rest_api.GetByQRCodeRequest;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
@@ -77,19 +74,11 @@ public class HUManagerRestController
 	{
 		assertApplicationAccess();
 
-		return handlingUnitsService.getByIdSupplier(() -> {
-					final HuId huId = handlingUnitsService.resolveHuId(GlobalQRCode.parse(request.getQrCode()).orThrow());
-					if (huId == null)
-					{
-						return null;
-					}
-					return GetByIdRequest.builder()
-							.huId(huId)
-							.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()))
-							.orderedAttributeCodes(getDisplayedAttributeCodes())
-							.layoutSections(getLayoutSections())
-							.build();
-				}
+		return handlingUnitsService.getByQRCode(
+				GetByQRCodeRequest.builderFrom(request)
+						.orderedAttributeCodes(getDisplayedAttributeCodes())
+						.layoutSections(getLayoutSections())
+						.build()
 		);
 	}
 
@@ -102,7 +91,7 @@ public class HUManagerRestController
 				? attributeDAO.getOrderedAttributeCodesByIds(displayedAttributeIdsInOrder)
 				: ImmutableList.of();
 	}
-	
+
 	private @NonNull HUManagerProfileLayoutSectionList getLayoutSections()
 	{
 		return getProfile().getLayoutSections();

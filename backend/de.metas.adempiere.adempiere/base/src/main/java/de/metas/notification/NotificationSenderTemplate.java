@@ -439,19 +439,17 @@ public class NotificationSenderTemplate
 			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
 		}
 
+		final Mailbox mailbox = mailService.findMailbox(mailboxQuery(notificationsConfig));
+
+
 		mailService.sendEMail(EMailRequest.builder()
-				.mailboxQuery(mailboxQuery(notificationsConfig))
+				.mailbox(mailbox)
 				.to(notificationsConfig.getEmail())
 				.subject(subject)
 				.message(content)
 				.html(html)
 				.attachments(request.getAttachments().stream().map(EMailAttachment::of).collect(Collectors.toList()))
 				.build());
-	}
-
-	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
-	{
-		return mailService.findMailbox(mailboxQuery(notificationsConfig));
 	}
 
 	private static MailboxQuery mailboxQuery(final @NonNull UserNotificationsConfig notificationsConfig)

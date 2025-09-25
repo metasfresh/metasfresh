@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_PurchaseCandidate_Alloc extends org.compiere.model.PO implements I_C_PurchaseCandidate_Alloc, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1921207400L;
+	private static final long serialVersionUID = -1709961241L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate_Alloc (final Properties ctx, final int C_PurchaseCandidate_Alloc_ID, @Nullable final String trxName)
@@ -158,6 +158,18 @@ public class X_C_PurchaseCandidate_Alloc extends org.compiere.model.PO implement
 	public int getC_PurchaseCandidate_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PurchaseCandidate_ID);
+	}
+
+	@Override
+	public void setDateOrdered (final @Nullable java.sql.Timestamp DateOrdered)
+	{
+		set_Value (COLUMNNAME_DateOrdered, DateOrdered);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateOrdered() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
 	}
 
 	@Override

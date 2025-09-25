@@ -1,9 +1,9 @@
-import { test } from "../../playwright.config";
-import { Backend } from "../utils/screens/Backend";
-import { LoginScreen } from "../utils/screens/LoginScreen";
-import { ApplicationsListScreen } from "../utils/screens/ApplicationsListScreen";
-import { HUManagerScreen } from '../utils/screens/huManager/HUManagerScreen';
-import { CLEARANCE_STATUS_Quarantined } from '../utils/screens/huManager/ClearanceDialog';
+import { test } from "../../../playwright.config";
+import { Backend } from "../../utils/screens/Backend";
+import { LoginScreen } from "../../utils/screens/LoginScreen";
+import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
+import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
+import { CLEARANCE_STATUS_Quarantined } from '../../utils/screens/huManager/ClearanceDialog';
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -29,6 +29,19 @@ const createMasterdata = async () => {
         }
     });
 }
+
+// noinspection JSUnusedLocalSymbols
+test('Scan by M_HU_ID', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
+    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.huId });
+    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+});
+
 
 // noinspection JSUnusedLocalSymbols
 test('Move HU', async ({ page }) => {
