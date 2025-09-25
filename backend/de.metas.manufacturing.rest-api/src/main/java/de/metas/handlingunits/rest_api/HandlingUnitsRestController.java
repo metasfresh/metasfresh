@@ -146,9 +146,8 @@ public class HandlingUnitsRestController
 	@PostMapping("/byQRCode")
 	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByIdSupplier(
-				() -> handlingUnitsService.toGetByIdRequest(request));
-
+		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByQRCode(GetByQRCodeRequest.of(request));
+		
 		//
 		// If no HU was found for given QR Code then try to directly convert given QR code to a "new HU"
 		if (responseEntity.getStatusCode() == HttpStatus.NOT_FOUND)

@@ -5,7 +5,7 @@ import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 import { computeTestId } from '../../../utils/testing_support';
 
 export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
-  const layoutSections = handlingUnitInfo.layoutSections;
+  const layoutSections = handlingUnitInfo.layoutSections ?? [];
   const clearanceStatus = handlingUnitInfo.clearanceStatus ? handlingUnitInfo.clearanceStatus.caption : '';
   const clearanceStatusKey = handlingUnitInfo.clearanceStatus?.key;
   const { clearanceNote } = handlingUnitInfo;
