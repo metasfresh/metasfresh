@@ -152,6 +152,8 @@ public class PurchaseCandidatesStatusService
 		return JsonPurchaseCandidate.builder()
 				.externalHeaderId(JsonExternalId.of(candidate.getExternalHeaderId().getValue()))
 				.externalLineId(JsonExternalId.of(candidate.getExternalLineId().getValue()))
+				.purchaseDateOrdered(candidate.getPurchaseDateOrdered())
+				.purchaseDatePromised(candidate.getPurchaseDatePromised())
 				.metasfreshId(JsonMetasfreshId.of(candidate.getId().getRepoId()))
 				.externalPurchaseOrderUrl(candidate.getExternalPurchaseOrderUrl())
 				.processed(candidate.isProcessed());
