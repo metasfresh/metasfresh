@@ -29,23 +29,26 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.compiere.model.I_MobileUI_HUManager;
-import org.compiere.model.I_MobileUI_HUManager_LayoutSection;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class GetByIdRequest
 {
 	@NonNull HuId huId;
 	@Nullable HUQRCode expectedQRCode;
 
-	@Nullable List<AttributeCode> orderedAttributeCodes;
-	String adLanguage;
-
 	boolean includeAllowedClearanceStatuses;
-
+	@Nullable List<AttributeCode> orderedAttributeCodes;
 	@Nullable HUManagerProfileLayoutSectionList layoutSections;
+
+	public static GetByIdRequestBuilder builderFrom(@NonNull final GetByQRCodeRequest request)
+	{
+		return builder()
+				.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
+				.orderedAttributeCodes(request.getOrderedAttributeCodes())
+				.layoutSections(request.getLayoutSections());
+	}
 }
