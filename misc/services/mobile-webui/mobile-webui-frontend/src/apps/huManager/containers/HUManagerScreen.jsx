@@ -22,6 +22,8 @@ import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../consta
 import * as scanAnythingRoutes from '../../scanAnything/routes';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { trl } from '../../../utils/translations';
+import { useApplicationInfo } from '../../../reducers/applications';
+import { APPLICATION_ID } from '../constants';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -34,6 +36,7 @@ const HUManagerScreen = () => {
     screenId: 'HUManagerScreen',
     back: '/',
   });
+  const { actions } = useApplicationInfo({ applicationId: APPLICATION_ID });
 
   const dispatch = useDispatch();
   const [modalToDisplay, setModalToDisplay] = useState('');
@@ -94,6 +97,7 @@ const HUManagerScreen = () => {
   const isExistingHU = !!handlingUnitInfo?.id;
 
   const isAllowQtyChange =
+    actions.includes('changeQty') && //
     isSingleStorage && //
     (isExistingHU || !!currentLocatorQRCode?.locatorId); // either we have an huId or we scanned the locator where the new HU will be created
 
@@ -131,36 +135,40 @@ const HUManagerScreen = () => {
         )}
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} currentLocatorQRCode={currentLocatorQRCode} />
         <div className="pt-3 section">
-          {isExistingHU && (
+          {actions.includes('dispose') && isExistingHU && (
             <ButtonWithIndicator
               captionKey="huManager.action.dispose.buttonCaption"
               onClick={onDisposeClick}
               testId="dispose-button"
             />
           )}
-          <ButtonWithIndicator
-            captionKey="huManager.action.move.buttonCaption"
-            onClick={onMoveClick}
-            testId="move-button"
-          />
-          {isExistingHU && (
+          {actions.includes('move') && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.move.buttonCaption"
+              onClick={onMoveClick}
+              testId="move-button"
+            />
+          )}
+          {actions.includes('setClearanceStatus') && isExistingHU && (
             <ButtonWithIndicator
               captionKey="huManager.action.setClearance.buttonCaption"
               onClick={() => setModalToDisplay(MODALS.CLEARANCE_STATUS)}
               testId="set-clearance-button"
             />
           )}
-          {!isExistingHU && (
+          {actions.includes('setCurrentLocator') && !isExistingHU && (
             <ButtonWithIndicator
               captionKey="huManager.action.setCurrentLocator.buttonCaption"
               onClick={() => setModalToDisplay(MODALS.SCAN_CURRENT_LOCATOR)}
               testId="set-current-locator-button"
             />
           )}
-          <ButtonWithIndicator
-            caption={trl('huManager.action.bulkActions.buttonCaption')}
-            onClick={onBulkActionsClick}
-          />
+          {actions.includes('bulkActions') && (
+            <ButtonWithIndicator
+              caption={trl('huManager.action.bulkActions.buttonCaption')}
+              onClick={onBulkActionsClick}
+            />
+          )}
           {isAllowQtyChange && (
             <ButtonWithIndicator
               captionKey="huManager.action.changeQty.buttonCaption"
@@ -168,11 +176,13 @@ const HUManagerScreen = () => {
               testId="change-qty-button"
             />
           )}
-          <ButtonWithIndicator
-            captionKey="huManager.action.printLabels.buttonCaption"
-            onClick={onPrintLabelsClicked}
-            testId="print-labels-button"
-          />
+          {actions.includes('printLabels') && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.printLabels.buttonCaption"
+              onClick={onPrintLabelsClicked}
+              testId="print-labels-button"
+            />
+          )}
           <ButtonWithIndicator
             captionKey="huManager.action.scanAgain.buttonCaption"
             onClick={onScanAgainClick}

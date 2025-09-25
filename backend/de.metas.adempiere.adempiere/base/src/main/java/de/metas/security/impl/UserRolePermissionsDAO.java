@@ -22,6 +22,8 @@ import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsEventBus;
 import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
+import de.metas.security.mobile_application.MobileApplicationPermissionsRepository;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.security.permissions.ElementPermissions;
@@ -97,7 +99,6 @@ import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.I_C_OrgAssignment;
-import org.compiere.model.I_Mobile_Application;
 import org.compiere.model.I_Mobile_Application_Access;
 import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_Table_Access;
@@ -126,6 +127,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final MobileApplicationPermissionsRepository mobileApplicationPermissionsRepository = new MobileApplicationPermissionsRepository();
 
 	private static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 	private static final String COLUMNNAME_IsReadWrite = "IsReadWrite";
@@ -203,10 +205,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	private final CCache<RoleId, TableColumnPermissions> columnPermissionsCache = CCache.<RoleId, TableColumnPermissions>builder()
 			.tableName(I_AD_Column_Access.Table_Name)
-			.build();
-
-	private final CCache<RoleId, ElementPermissions> mobileApplicationPermissionsCache = CCache.<RoleId, ElementPermissions>builder()
-			.tableName(I_Mobile_Application_Access.Table_Name)
 			.build();
 
 	@Override
@@ -674,17 +672,9 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				I_AD_Workflow_Access.COLUMNNAME_AD_Workflow_ID);
 	}
 
-	ElementPermissions getMobileApplicationPermissions(final RoleId adRoleId)
+	MobileApplicationPermissions getMobileApplicationPermissions(final RoleId adRoleId)
 	{
-		return mobileApplicationPermissionsCache.getOrLoad(adRoleId, this::retrieveMobileApplicationPermissions0);
-	}
-
-	private ElementPermissions retrieveMobileApplicationPermissions0(final RoleId adRoleId)
-	{
-		return retrieveElementPermissions(adRoleId,
-				I_Mobile_Application_Access.class,
-				I_Mobile_Application.Table_Name,
-				I_Mobile_Application.COLUMNNAME_Mobile_Application_ID);
+		return mobileApplicationPermissionsRepository.getMobileApplicationPermissions(adRoleId);
 	}
 
 	private <AccessTableType> ElementPermissions retrieveElementPermissions(
@@ -705,7 +695,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		// EntityType filter: filter out those elements where EntityType is not displayed
 		final String accessTableName = InterfaceWrapperHelper.getTableName(accessTableClass);
 		boolean hasEntityType;
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			hasEntityType = false; // we don't care
 		}
@@ -727,7 +717,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		//
 		// IsReadWrite flag
 		final String readWriteColumnName;
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			readWriteColumnName = COLUMNNAME_IsReadWrite;
 		}
@@ -1484,62 +1474,14 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Override
 	public void createMobileApplicationAccess(@NonNull final CreateMobileApplicationAccessRequest request)
 	{
-		changeMobileApplicationAccess(
-				request.getRoleId(),
-				request.getClientId(),
-				request.getOrgId(),
-				request.getApplicationId(),
-				windowAccess -> windowAccess.setIsActive(true));
-	}
-
-	private void changeMobileApplicationAccess(
-			@NonNull final RoleId roleId,
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId,
-			@NonNull final MobileApplicationRepoId applicationId,
-			@NonNull final Consumer<I_Mobile_Application_Access> updater)
-	{
-		I_Mobile_Application_Access accessRecord = queryBL
-				.createQueryBuilder(I_Mobile_Application_Access.class)
-				.addEqualsFilter(I_Mobile_Application_Access.COLUMNNAME_AD_Role_ID, roleId)
-				.addEqualsFilter(I_Mobile_Application_Access.COLUMNNAME_Mobile_Application_ID, applicationId)
-				.create()
-				.firstOnly(I_Mobile_Application_Access.class);
-
-		if (accessRecord == null)
-		{
-			accessRecord = InterfaceWrapperHelper.newInstance(I_Mobile_Application_Access.class);
-			InterfaceWrapperHelper.setValue(accessRecord, I_Mobile_Application_Access.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
-			accessRecord.setAD_Org_ID(orgId.getRepoId());
-			accessRecord.setAD_Role_ID(roleId.getRepoId());
-			accessRecord.setMobile_Application_ID(applicationId.getRepoId());
-		}
-
-		updater.accept(accessRecord);
-
-		if (accessRecord.isActive())
-		{
-			InterfaceWrapperHelper.save(accessRecord);
-		}
-		else
-		{
-			if (!InterfaceWrapperHelper.isNew(accessRecord))
-			{
-				InterfaceWrapperHelper.delete(accessRecord);
-			}
-		}
-
-		//
+		mobileApplicationPermissionsRepository.createMobileApplicationAccess(request);
 		resetCacheAfterTrxCommit();
 	}
 
 	@Override
 	public void deleteMobileApplicationAccess(@NonNull final MobileApplicationRepoId applicationId)
 	{
-		queryBL.createQueryBuilder(I_Mobile_Application_Access.class)
-				.addEqualsFilter(I_Mobile_Application_Access.COLUMNNAME_Mobile_Application_ID, applicationId)
-				.create()
-				.delete();
+		mobileApplicationPermissionsRepository.deleteMobileApplicationAccess(applicationId);
 	}
 
 	@Override

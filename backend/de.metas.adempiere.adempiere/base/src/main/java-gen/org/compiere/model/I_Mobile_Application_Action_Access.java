@@ -2,16 +2,16 @@ package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for Mobile_Application_Access
+/** Generated Interface for Mobile_Application_Action_Access
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_Mobile_Application_Access 
+public interface I_Mobile_Application_Action_Access 
 {
 
-	String Table_Name = "Mobile_Application_Access";
+	String Table_Name = "Mobile_Application_Action_Access";
 
-//	/** AD_Table_ID=542446 */
+//	/** AD_Table_ID=542534 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -53,7 +53,7 @@ public interface I_Mobile_Application_Access
 	 * Set Role.
 	 * Responsibility Role
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -63,13 +63,13 @@ public interface I_Mobile_Application_Access
 	 * Get Role.
 	 * Responsibility Role
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Role_ID();
 
-	ModelColumn<I_Mobile_Application_Access, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new ModelColumn<>(I_Mobile_Application_Access.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
+	ModelColumn<I_Mobile_Application_Action_Access, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new ModelColumn<>(I_Mobile_Application_Action_Access.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
 	String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
 	/**
@@ -82,7 +82,7 @@ public interface I_Mobile_Application_Access
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_Mobile_Application_Access, Object> COLUMN_Created = new ModelColumn<>(I_Mobile_Application_Access.class, "Created", null);
+	ModelColumn<I_Mobile_Application_Action_Access, Object> COLUMN_Created = new ModelColumn<>(I_Mobile_Application_Action_Access.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -117,50 +117,50 @@ public interface I_Mobile_Application_Access
 	 */
 	boolean isActive();
 
-	ModelColumn<I_Mobile_Application_Access, Object> COLUMN_IsActive = new ModelColumn<>(I_Mobile_Application_Access.class, "IsActive", null);
+	ModelColumn<I_Mobile_Application_Action_Access, Object> COLUMN_IsActive = new ModelColumn<>(I_Mobile_Application_Action_Access.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow all Actions.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowAllActions (boolean IsAllowAllActions);
-
-	/**
-	 * Get Allow all Actions.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAllowAllActions();
-
-	ModelColumn<I_Mobile_Application_Access, Object> COLUMN_IsAllowAllActions = new ModelColumn<>(I_Mobile_Application_Access.class, "IsAllowAllActions", null);
-	String COLUMNNAME_IsAllowAllActions = "IsAllowAllActions";
-
-	/**
-	 * Set Mobile Application Role Access.
+	 * Set Mobile Application Action Access.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMobile_Application_Access_ID (int Mobile_Application_Access_ID);
+	void setMobile_Application_Action_Access_ID (int Mobile_Application_Action_Access_ID);
 
 	/**
-	 * Get Mobile Application Role Access.
+	 * Get Mobile Application Action Access.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getMobile_Application_Access_ID();
+	int getMobile_Application_Action_Access_ID();
 
-	ModelColumn<I_Mobile_Application_Access, Object> COLUMN_Mobile_Application_Access_ID = new ModelColumn<>(I_Mobile_Application_Access.class, "Mobile_Application_Access_ID", null);
-	String COLUMNNAME_Mobile_Application_Access_ID = "Mobile_Application_Access_ID";
+	ModelColumn<I_Mobile_Application_Action_Access, Object> COLUMN_Mobile_Application_Action_Access_ID = new ModelColumn<>(I_Mobile_Application_Action_Access.class, "Mobile_Application_Action_Access_ID", null);
+	String COLUMNNAME_Mobile_Application_Action_Access_ID = "Mobile_Application_Action_Access_ID";
+
+	/**
+	 * Set Mobile Application Action.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMobile_Application_Action_ID (int Mobile_Application_Action_ID);
+
+	/**
+	 * Get Mobile Application Action.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMobile_Application_Action_ID();
+
+	ModelColumn<I_Mobile_Application_Action_Access, org.compiere.model.I_Mobile_Application_Action> COLUMN_Mobile_Application_Action_ID = new ModelColumn<>(I_Mobile_Application_Action_Access.class, "Mobile_Application_Action_ID", org.compiere.model.I_Mobile_Application_Action.class);
+	String COLUMNNAME_Mobile_Application_Action_ID = "Mobile_Application_Action_ID";
 
 	/**
 	 * Set Mobile Application.
@@ -180,7 +180,7 @@ public interface I_Mobile_Application_Access
 	 */
 	int getMobile_Application_ID();
 
-	ModelColumn<I_Mobile_Application_Access, org.compiere.model.I_Mobile_Application> COLUMN_Mobile_Application_ID = new ModelColumn<>(I_Mobile_Application_Access.class, "Mobile_Application_ID", org.compiere.model.I_Mobile_Application.class);
+	ModelColumn<I_Mobile_Application_Action_Access, org.compiere.model.I_Mobile_Application> COLUMN_Mobile_Application_ID = new ModelColumn<>(I_Mobile_Application_Action_Access.class, "Mobile_Application_ID", org.compiere.model.I_Mobile_Application.class);
 	String COLUMNNAME_Mobile_Application_ID = "Mobile_Application_ID";
 
 	/**
@@ -193,7 +193,7 @@ public interface I_Mobile_Application_Access
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_Mobile_Application_Access, Object> COLUMN_Updated = new ModelColumn<>(I_Mobile_Application_Access.class, "Updated", null);
+	ModelColumn<I_Mobile_Application_Action_Access, Object> COLUMN_Updated = new ModelColumn<>(I_Mobile_Application_Action_Access.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

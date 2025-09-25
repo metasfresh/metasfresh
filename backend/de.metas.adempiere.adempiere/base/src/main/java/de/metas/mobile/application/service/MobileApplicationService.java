@@ -102,7 +102,7 @@ public class MobileApplicationService
 
 	private static boolean hasAccess(final MobileApplicationRepoId repoId, final IUserRolePermissions permissions)
 	{
-		return permissions.checkMobileApplicationPermission(repoId).hasWriteAccess();
+		return permissions.getMobileApplicationPermissions().isAllowAccess(repoId);
 	}
 
 }
