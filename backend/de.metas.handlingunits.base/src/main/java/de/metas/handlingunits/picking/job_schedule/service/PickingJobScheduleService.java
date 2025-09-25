@@ -10,7 +10,6 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedules;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedulesCollection;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
@@ -36,15 +35,13 @@ public class PickingJobScheduleService
 {
 	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
-	@NonNull private final IShipmentScheduleInvalidateBL invalidSchedulesService;
 
 	public static PickingJobScheduleService newInstanceForUnitTesting()
 	{
 		return SpringContextHolder.getBeanOrSupply(
 				PickingJobScheduleService.class,
 				() -> new PickingJobScheduleService(
-						new PickingJobScheduleRepository(),
-						Services.get(IShipmentScheduleInvalidateBL.class)
+						new PickingJobScheduleRepository()
 				)
 		);
 	}
