@@ -48,9 +48,9 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_1 | orderLine_A_stocked_1     | N             | 0            |
 
-    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
-      | shipmentSchedule_1               | D            | true                | false       |
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule and expects error message
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | AD_Message.Value                                                                    |
+      | shipmentSchedule_1               | D            | true                | false       | de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords |
 
     Then validate no M_InOut found for C_Order identified by order_A_stocked_1
 

@@ -32,11 +32,11 @@ FROM (SELECT
           COALESCE(
                   (CASE WHEN o.IsUseHandOver_Location = 'Y' THEN o.HandOver_Location_ID ELSE o.C_BPartner_Location_ID END),
                   o.C_BPartner_Location_ID
-          )                                                                       AS HandOver_Location_ID,
+              )                                                                       AS HandOver_Location_ID,
           COALESCE(
                   (CASE WHEN o.IsUseHandOver_Location = 'Y' THEN o.Handover_Partner_ID ELSE o.C_BPartner_ID END),
                   o.C_BPartner_ID
-          )                                                                       AS HandOver_Partner_ID,
+              )                                                                       AS HandOver_Partner_ID,
           cast_to_numeric_or_null(l.Setup_Place_No)                               AS Setup_Place_No,
           dt.DocSubType,
           s.DateOrdered,
@@ -87,7 +87,7 @@ FROM (SELECT
                   pc.C_UOM_ID, -- from UOM
                   prod.C_UOM_ID, -- to UOM: shipment schedule's UOM (see above)
                   pc.QtyPicked
-                               )), 0)
+              )), 0)
            FROM M_Picking_Candidate pc
            WHERE pc.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
              -- IP means in progress, i.e. not yet covered my M_ShipmentSchedule_QtyPicked
@@ -162,7 +162,7 @@ SELECT db_alter_view(
                (SELECT view_definition
                 FROM information_schema.views
                 WHERE views.table_name = 'm_packageable_v$new')
-       )
+           )
 ;
 
 DROP VIEW IF EXISTS m_packageable_v$new
