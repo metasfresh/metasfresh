@@ -1,6 +1,6 @@
 package de.metas.ui.web.pickingJobSchedule.process;
 
-import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
+import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
 import de.metas.process.Param;

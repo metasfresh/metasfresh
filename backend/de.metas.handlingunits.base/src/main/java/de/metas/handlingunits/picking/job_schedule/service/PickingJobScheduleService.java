@@ -4,10 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobSchedule;
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleCollection;
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleQuery;
-import de.metas.handlingunits.picking.job_schedule.repository.PickingJobScheduleRepository;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesCommand;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -16,6 +12,10 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedul
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
+import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
+import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,9 @@ public class PickingJobScheduleService
 	{
 		return SpringContextHolder.getBeanOrSupply(
 				PickingJobScheduleService.class,
-				() -> new PickingJobScheduleService(new PickingJobScheduleRepository())
+				() -> new PickingJobScheduleService(
+						new PickingJobScheduleRepository()
+				)
 		);
 	}
 

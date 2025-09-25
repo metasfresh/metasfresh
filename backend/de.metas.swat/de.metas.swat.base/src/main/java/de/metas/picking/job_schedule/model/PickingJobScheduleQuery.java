@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job_schedule.model;
+package de.metas.picking.job_schedule.model;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;

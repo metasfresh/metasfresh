@@ -1,8 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobSchedule;
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleCollection;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
