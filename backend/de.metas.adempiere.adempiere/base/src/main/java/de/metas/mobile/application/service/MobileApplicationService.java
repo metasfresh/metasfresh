@@ -48,7 +48,7 @@ public class MobileApplicationService
 
 	public void assertActionAccess(@NonNull final MobileApplicationId applicationId, @NonNull String actionInternalName, @NonNull final MobileApplicationPermissions permissions)
 	{
-		if (!hasAccess(applicationId, permissions))
+		if (!hasActionAccess(applicationId, actionInternalName, permissions))
 		{
 			throw new AdempiereException("Access denied");
 		}
@@ -58,7 +58,7 @@ public class MobileApplicationService
 	{
 		return applicationInfoRepository.getAllActive()
 				.stream()
-				.filter(applicationInfo -> hasAccess(applicationInfo.getRepoId(), permissions.getMobileApplicationPermissions()))
+				.filter(applicationInfo -> permissions.getMobileApplicationPermissions().isAllowAccess(applicationInfo.getRepoId()))
 				.map(applicationInfo -> {
 					try
 					{
@@ -111,15 +111,10 @@ public class MobileApplicationService
 	private boolean hasAccess(@NonNull final MobileApplicationId applicationId, @NonNull final MobileApplicationPermissions permissions)
 	{
 		final MobileApplicationRepoId repoId = applicationInfoRepository.getById(applicationId).getRepoId();
-		return hasAccess(repoId, permissions);
-	}
-
-	private static boolean hasAccess(final MobileApplicationRepoId repoId, final MobileApplicationPermissions permissions)
-	{
 		return permissions.isAllowAccess(repoId);
 	}
 
-	private boolean hasAccess(@NonNull final MobileApplicationId applicationId, @NonNull String actionInternalName, final MobileApplicationPermissions permissions)
+	private boolean hasActionAccess(@NonNull final MobileApplicationId applicationId, @NonNull String actionInternalName, final MobileApplicationPermissions permissions)
 	{
 		final MobileApplicationInfo applicationInfo = applicationInfoRepository.getById(applicationId);
 		final MobileApplicationActionId actionId = applicationInfo.getActionIdByInternalName(actionInternalName).orElse(null);
