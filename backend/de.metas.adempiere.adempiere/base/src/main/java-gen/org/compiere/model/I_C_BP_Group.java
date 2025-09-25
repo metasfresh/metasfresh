@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BP_Group
  *  @author metasfresh (generated) 
@@ -531,6 +530,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -540,6 +540,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -778,6 +779,28 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_PriorityBase = new ModelColumn<>(I_C_BP_Group.class, "PriorityBase", null);
 	String COLUMNNAME_PriorityBase = "PriorityBase";
+
+	/**
+	 * Set Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPurchaser_User_ID (int Purchaser_User_ID);
+
+	/**
+	 * Get Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPurchaser_User_ID();
+
+	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
 
 	/**
 	 * Set Credit Status.
