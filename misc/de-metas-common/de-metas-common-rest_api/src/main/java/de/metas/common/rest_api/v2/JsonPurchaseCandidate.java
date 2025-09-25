@@ -25,6 +25,7 @@ package de.metas.common.rest_api.v2;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -51,14 +52,16 @@ public class JsonPurchaseCandidate
 	@JsonProperty("externalLineId")
 	JsonExternalId externalLineId;
 
-	@Schema(description = "The promised date of the purchase candidate (Unix timestamp in seconds)")
+	@Schema(description = "The date ordered of the purchase candidate")
+	@JsonProperty("purchaseDateOrdered")
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
+	ZonedDateTime purchaseDateOrdered;
+
+	@Schema(description = "The promised date of the purchase candidate")
 	@JsonProperty("purchaseDatePromised")
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
 	ZonedDateTime purchaseDatePromised;
 
-	@Schema(description = "The date ordered of the purchase candidate (Unix timestamp in seconds)")
-	@JsonProperty("purchaseDateOrdered")
-	ZonedDateTime purchaseDateOrdered;
-	
 	@JsonProperty("externalPurchaseOrderUrl")
 	String externalPurchaseOrderUrl;
 
