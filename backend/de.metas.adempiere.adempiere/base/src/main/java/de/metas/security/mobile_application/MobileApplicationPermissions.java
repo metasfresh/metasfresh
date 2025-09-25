@@ -115,5 +115,4 @@ public class MobileApplicationPermissions
 		final MobileApplicationPermission permission = byMobileApplicationId.get(mobileApplicationId);
 		return permission != null && permission.isAllowAction(actionId);
 	}
-
 }

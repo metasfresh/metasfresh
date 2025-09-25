@@ -2,12 +2,15 @@ package de.metas.mobile.application.service;
 
 import de.metas.logging.LogManager;
 import de.metas.mobile.application.MobileApplication;
+import de.metas.mobile.application.MobileApplicationActionId;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.MobileApplicationsMap;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
@@ -35,7 +38,15 @@ public class MobileApplicationService
 		logger.info("applications: {}", this.applications);
 	}
 
-	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final IUserRolePermissions permissions)
+	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final MobileApplicationPermissions permissions)
+	{
+		if (!hasAccess(applicationId, permissions))
+		{
+			throw new AdempiereException("Access denied");
+		}
+	}
+
+	public void assertActionAccess(@NonNull final MobileApplicationId applicationId, @NonNull String actionInternalName, @NonNull final MobileApplicationPermissions permissions)
 	{
 		if (!hasAccess(applicationId, permissions))
 		{
@@ -47,7 +58,7 @@ public class MobileApplicationService
 	{
 		return applicationInfoRepository.getAllActive()
 				.stream()
-				.filter(applicationInfo -> hasAccess(applicationInfo.getRepoId(), permissions))
+				.filter(applicationInfo -> hasAccess(applicationInfo.getRepoId(), permissions.getMobileApplicationPermissions()))
 				.map(applicationInfo -> {
 					try
 					{
@@ -80,12 +91,15 @@ public class MobileApplicationService
 
 	public void logout(@NonNull final IUserRolePermissions permissions)
 	{
+		final UserId userId = permissions.getUserId();
+		final MobileApplicationPermissions mobileApplicationPermissions = permissions.getMobileApplicationPermissions();
+
 		applications.stream()
-				.filter(application -> hasAccess(application.getApplicationId(), permissions))
+				.filter(application -> hasAccess(application.getApplicationId(), mobileApplicationPermissions))
 				.forEach(application -> {
 					try
 					{
-						application.logout(permissions.getUserId());
+						application.logout(userId);
 					}
 					catch (Exception ex)
 					{
@@ -94,15 +108,27 @@ public class MobileApplicationService
 				});
 	}
 
-	private boolean hasAccess(@NonNull final MobileApplicationId applicationId, @NonNull final IUserRolePermissions permissions)
+	private boolean hasAccess(@NonNull final MobileApplicationId applicationId, @NonNull final MobileApplicationPermissions permissions)
 	{
 		final MobileApplicationRepoId repoId = applicationInfoRepository.getById(applicationId).getRepoId();
 		return hasAccess(repoId, permissions);
 	}
 
-	private static boolean hasAccess(final MobileApplicationRepoId repoId, final IUserRolePermissions permissions)
+	private static boolean hasAccess(final MobileApplicationRepoId repoId, final MobileApplicationPermissions permissions)
 	{
-		return permissions.getMobileApplicationPermissions().isAllowAccess(repoId);
+		return permissions.isAllowAccess(repoId);
+	}
+
+	private boolean hasAccess(@NonNull final MobileApplicationId applicationId, @NonNull String actionInternalName, final MobileApplicationPermissions permissions)
+	{
+		final MobileApplicationInfo applicationInfo = applicationInfoRepository.getById(applicationId);
+		final MobileApplicationActionId actionId = applicationInfo.getActionIdByInternalName(actionInternalName).orElse(null);
+		if (actionId == null)
+		{
+			return false;
+		}
+
+		return permissions.isAllowAction(applicationInfo.getRepoId(), actionId);
 	}
 
 }

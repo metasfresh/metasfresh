@@ -45,6 +45,7 @@ import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.rest_api.json.JsonTUPickingTarget;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
@@ -82,7 +83,8 @@ public class PickingRestController
 
 	private void assertApplicationAccess()
 	{
-		mobileApplicationService.assertAccess(pickingMobileApplication.getApplicationId(), Env.getUserRolePermissions());
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+		mobileApplicationService.assertAccess(pickingMobileApplication.getApplicationId(), permissions);
 	}
 
 	private static @NotNull UserId getLoggedUserId() {return Env.getLoggedUserId();}

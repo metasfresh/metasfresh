@@ -4,13 +4,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.i18n.ITranslatableString;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 @Value
 public class MobileApplicationInfo
@@ -28,7 +31,7 @@ public class MobileApplicationInfo
 	int sortNo;
 	@NonNull @Singular ImmutableMap<String, Object> applicationParameters;
 
-	@NonNull ImmutableMap<MobileApplicationActionId, MobileApplicationAction> actionsById;
+	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<String, MobileApplicationAction> actionsByInternalName;
 
 	@Builder(toBuilder = true)
 	private MobileApplicationInfo(
@@ -58,6 +61,12 @@ public class MobileApplicationInfo
 		this.sortNo = sortNo != null ? sortNo : 100;
 		this.applicationParameters = applicationParameters;
 
-		this.actionsById = Maps.uniqueIndex(this.actions, MobileApplicationAction::getId);
+		this.actionsByInternalName = Maps.uniqueIndex(this.actions, MobileApplicationAction::getInternalName);
+	}
+
+	public Optional<MobileApplicationActionId> getActionIdByInternalName(final @NonNull String actionInternalName)
+	{
+		final MobileApplicationAction action = actionsByInternalName.get(actionInternalName);
+		return action != null ? Optional.of(action.getId()) : Optional.empty();
 	}
 }

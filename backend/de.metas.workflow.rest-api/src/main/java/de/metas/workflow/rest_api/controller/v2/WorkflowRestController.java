@@ -96,7 +96,8 @@ public class WorkflowRestController
 
 	private void assertAccess(final MobileApplicationId applicationId)
 	{
-		workflowRestAPIService.assertAccess(applicationId, Env.getUserRolePermissions());
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+		workflowRestAPIService.assertAccess(applicationId, permissions);
 	}
 
 	private JsonOpts newJsonOpts()

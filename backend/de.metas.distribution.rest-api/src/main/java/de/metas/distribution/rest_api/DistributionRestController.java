@@ -3,6 +3,7 @@ package de.metas.distribution.rest_api;
 import de.metas.Profiles;
 import de.metas.distribution.workflows_api.DistributionMobileApplication;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
@@ -28,7 +29,8 @@ public class DistributionRestController
 
 	private void assertApplicationAccess()
 	{
-		mobileApplicationService.assertAccess(distributionMobileApplication.getApplicationId(), Env.getUserRolePermissions());
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+		mobileApplicationService.assertAccess(distributionMobileApplication.getApplicationId(), permissions);
 	}
 
 	@PostMapping("/event")
