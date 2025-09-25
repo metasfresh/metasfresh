@@ -302,11 +302,11 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
 
     Then validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus |
-      | po_1                  | endvendor_1              | endvendor_location_1              | 2021-04-11  | POO         | EUR          | F            | P               | true      | CO        |
+      | po_1                  | endvendor_1              | endvendor_location_1              | 2021-04-16  | POO         | EUR          | F            | P               | true      | CO        |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | pol_1                     | po_1                  | 2021-04-11      | p_1                     | 5          | 0            | 0           | 10    | 0        | EUR          | true      |
+      | pol_1                     | po_1                  | 2021-04-16      | p_1                     | 5          | 0            | 0           | 10    | 0        | EUR          | true      |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
