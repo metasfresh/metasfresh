@@ -198,4 +198,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	I_M_ShipmentSchedule getByOrderLineId(@NonNull OrderLineId orderLineId);
 
 	void assertSalesOrderCanBeReactivated(@NonNull OrderId salesOrderId);
+
+	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
 }

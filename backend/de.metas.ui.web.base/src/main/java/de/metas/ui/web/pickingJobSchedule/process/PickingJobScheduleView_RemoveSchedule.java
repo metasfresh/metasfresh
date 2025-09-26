@@ -1,11 +1,13 @@
 package de.metas.ui.web.pickingJobSchedule.process;
 
 import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessPreconditionChecker;
 import de.metas.process.ProcessPreconditionsResolution;
 
 import java.util.Set;
 
-public class PickingJobScheduleView_RemoveSchedule extends PickingJobScheduleViewBasedProcess
+public class PickingJobScheduleView_RemoveSchedule extends PickingJobScheduleViewBasedProcess implements IProcessPrecondition
 {
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
