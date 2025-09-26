@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -67,6 +68,13 @@ public class PickingJobScheduleCollection implements Iterable<PickingJobSchedule
 			throw new AdempiereException("Expected shipment schedule " + expectedShipmentScheduleId + " but found " + shipmentScheduleId)
 					.setParameter("list", list);
 		}
+	}
+
+	public Set<ShipmentScheduleId> getShipmentScheduleIds()
+	{
+		return list.stream()
+				.map(PickingJobSchedule::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public ShipmentScheduleId getSingleShipmentScheduleId()
