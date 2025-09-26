@@ -1,3 +1,6 @@
+SELECT backup_table('ad_reference_trl')
+;
+
 UPDATE ad_reference_trl trl2
 SET Name = base2.name,
     Updated = now(),
