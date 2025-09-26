@@ -94,7 +94,8 @@ public class PickingJobScheduleService
 
 	public void deleteJobSchedulesById(@NonNull final Set<PickingJobScheduleId> jobScheduleIds)
 	{
-		pickingJobScheduleRepository.deleteJobSchedulesById(jobScheduleIds);
+		final PickingJobScheduleCollection deletedSchedules = pickingJobScheduleRepository.deleteByIdsAndReturn(jobScheduleIds);
+		shipmentScheduleBL.flagForRecompute(deletedSchedules.getShipmentScheduleIds());
 	}
 
 	public List<PickingJobSchedule> list(@NonNull PickingJobScheduleQuery query)
