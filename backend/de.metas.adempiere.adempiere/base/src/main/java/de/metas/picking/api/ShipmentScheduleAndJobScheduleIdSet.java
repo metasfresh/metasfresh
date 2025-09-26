@@ -180,7 +180,7 @@ public class ShipmentScheduleAndJobScheduleIdSet implements Iterable<ShipmentSch
 				? this
 				: ofCollection(retainedIds);
 	}
-	
+
 	@Nullable
 	public ShipmentScheduleAndJobScheduleId singleOrNull()
 	{
