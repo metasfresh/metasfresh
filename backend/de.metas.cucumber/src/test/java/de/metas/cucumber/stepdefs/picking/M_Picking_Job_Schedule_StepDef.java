@@ -25,7 +25,7 @@ public class M_Picking_Job_Schedule_StepDef
 {
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService = SpringContextHolder.instance.getBean(PickingJobScheduleService.class);
 
-	@NonNull private final M_Picking_Job_Schedule_StepDefData jobScheduleTable;
+	// @NonNull private final M_Picking_Job_Schedule_StepDefData jobScheduleTable;
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final C_Workplace_StepDefData workplaceTable;
 

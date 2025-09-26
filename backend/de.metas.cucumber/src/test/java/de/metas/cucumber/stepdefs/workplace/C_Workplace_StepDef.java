@@ -23,7 +23,7 @@ public class C_Workplace_StepDef
 	@NonNull private final C_Workplace_StepDefData workplaceTable;
 
 	@Given("metasfresh contains C_Workplaces")
-	public void createWorkplaces(DataTable dataTable) throws Throwable
+	public void createWorkplaces(DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_C_Workplace.COLUMNNAME_C_Workplace_ID)

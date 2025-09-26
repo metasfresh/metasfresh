@@ -2,7 +2,6 @@ package de.metas.ui.web.pickingJobSchedule.process;
 
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.ProcessPreconditionChecker;
 import de.metas.process.ProcessPreconditionsResolution;
 
 import java.util.Set;
