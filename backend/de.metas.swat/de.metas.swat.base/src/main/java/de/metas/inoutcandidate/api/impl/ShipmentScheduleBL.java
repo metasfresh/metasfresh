@@ -987,4 +987,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			throw new AdempiereException(MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_SCHEDULED_FOR_PICKING);
 		}
 	}
+
+	@Override
+	public Quantity getQtyScheduledForPicking(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final BigDecimal qtyScheduledForPicking = shipmentScheduleRecord.getQtyScheduledForPicking();
+		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
+		return Quantity.of(qtyScheduledForPicking, uom);
+	}
 }
