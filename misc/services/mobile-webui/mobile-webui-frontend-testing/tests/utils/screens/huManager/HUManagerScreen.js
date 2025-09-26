@@ -4,6 +4,7 @@ import { expect } from '@playwright/test';
 import { HUMoveScreen } from './HUMoveScreen';
 import { ChangeHUQtyDialog } from './ChangeHUQtyDialog';
 import { ClearanceDialog } from './ClearanceDialog';
+import { DISPOSAL_REASON_DAMAGED, HUDisposalScreen } from './HUDisposalScreen';
 
 const NAME = 'HUManagerScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -41,9 +42,15 @@ export const HUManagerScreen = {
     },
 
     expectValueMissing: async ({ name }) => HUManagerScreen.expectValue({ name, missing: true }),
-    
+
     clickButton: async ({ testId }) => await test.step(`${NAME} - Click "${testId}" button`, async () => {
         await page.getByTestId(testId).tap();
+    }),
+
+    dispose: async ({ reason = DISPOSAL_REASON_DAMAGED } = {}) => await test.step(`${NAME} - Dispose HU`, async () => {
+        await HUManagerScreen.clickButton({ testId: 'dispose-button' });
+        await HUDisposalScreen.waitForScreen();
+        await HUDisposalScreen.dispose({ reason });
     }),
 
     move: async ({ qrCode }) => await test.step(`${NAME} - Move HU`, async () => {

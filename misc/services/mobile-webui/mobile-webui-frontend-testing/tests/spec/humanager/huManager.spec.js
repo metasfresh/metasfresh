@@ -42,6 +42,19 @@ test('Scan by M_HU_ID', async ({ page }) => {
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
 });
 
+// noinspection JSUnusedLocalSymbols
+test('Dispose HU', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
+    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
+
+    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    await HUManagerScreen.dispose();
+});
 
 // noinspection JSUnusedLocalSymbols
 test('Move HU', async ({ page }) => {
