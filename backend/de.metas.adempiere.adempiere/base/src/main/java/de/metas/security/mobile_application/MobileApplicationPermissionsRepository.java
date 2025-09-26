@@ -96,6 +96,7 @@ public class MobileApplicationPermissionsRepository
 			accessRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 			accessRecord.setAD_Role_ID(roleId.getRepoId());
 			accessRecord.setMobile_Application_ID(applicationId.getRepoId());
+			accessRecord.setIsAllowAllActions(true);
 		}
 
 		accessRecord.setIsActive(true);
