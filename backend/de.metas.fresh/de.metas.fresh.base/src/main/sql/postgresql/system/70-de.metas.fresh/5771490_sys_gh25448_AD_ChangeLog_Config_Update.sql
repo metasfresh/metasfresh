@@ -11,7 +11,7 @@ INSERT INTO AD_ChangeLog_Config (AD_ChangeLog_Config_ID,
 
 SELECT NEXTVAL('AD_ChangeLog_Config_seq'),
        1000000,
-       1000000,
+       0,
        cc.AD_Table_ID,
        NOW(),
        99,
