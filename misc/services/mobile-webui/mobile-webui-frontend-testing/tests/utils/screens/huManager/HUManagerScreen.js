@@ -5,6 +5,7 @@ import { HUMoveScreen } from './HUMoveScreen';
 import { ChangeHUQtyDialog } from './ChangeHUQtyDialog';
 import { ClearanceDialog } from './ClearanceDialog';
 import { DISPOSAL_REASON_DAMAGED, HUDisposalScreen } from './HUDisposalScreen';
+import { HUBulkActionsScreen } from './HUBulkActionsScreen';
 
 const NAME = 'HUManagerScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -75,5 +76,11 @@ export const HUManagerScreen = {
         if (note != null) await ClearanceDialog.typeNote(note);
         await ClearanceDialog.clickOK();
     }),
+
+    bulkActions: async ({ targetLocator }) => await test.step(`${NAME} - Bulk Actions`, async () => {
+        await HUManagerScreen.clickButton({ testId: 'bulk-actions-button' });
+        await HUBulkActionsScreen.waitForScreen();
+        await HUBulkActionsScreen.move({ targetLocator });
+    })
 };
 

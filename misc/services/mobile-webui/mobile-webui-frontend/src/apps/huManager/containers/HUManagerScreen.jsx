@@ -167,6 +167,7 @@ const HUManagerScreen = () => {
             <ButtonWithIndicator
               caption={trl('huManager.action.bulkActions.buttonCaption')}
               onClick={onBulkActionsClick}
+              testId="bulk-actions-button"
             />
           )}
           {isAllowQtyChange && (
