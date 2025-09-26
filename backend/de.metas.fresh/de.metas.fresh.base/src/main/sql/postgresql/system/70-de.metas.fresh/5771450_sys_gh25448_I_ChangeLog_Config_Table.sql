@@ -1,4 +1,4 @@
-CREATE TABLE fix.I_ChangeLog_Config
+CREATE TABLE fix.AD_Table_Changelog_Config_26092025
 (
     I_ChangeLog_Config_id numeric(10)              NOT NULL
         CONSTRAINT I_ChangeLog_Config_key

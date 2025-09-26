@@ -19,5 +19,5 @@ SELECT NEXTVAL('AD_ChangeLog_Config_seq'),
        cc.KeepChangeLogsDays,
        cc.Updated,
        cc.UpdatedBy
-FROM fix.I_ChangeLog_Config cc
+FROM fix.AD_Table_Changelog_Config_26092025 cc
 ;

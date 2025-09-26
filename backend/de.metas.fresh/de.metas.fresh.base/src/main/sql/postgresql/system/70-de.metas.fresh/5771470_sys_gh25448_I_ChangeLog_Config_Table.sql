@@ -1,4 +1,4 @@
-INSERT INTO fix.I_ChangeLog_Config (I_ChangeLog_Config_id,
+INSERT INTO fix.AD_Table_Changelog_Config_26092025 (I_ChangeLog_Config_id,
                                     AD_Client_ID,
                                     AD_Org_ID,
                                     AD_Table_ID,
