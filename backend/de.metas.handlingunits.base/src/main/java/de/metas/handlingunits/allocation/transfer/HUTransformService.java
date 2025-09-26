@@ -1307,6 +1307,9 @@ public class HUTransformService
 					.findFirst().orElse(null);
 			if (materialItem == null)
 			{
+				// TODO: Add ad-message with
+				//"Keine \"Material\" Packvorschrift-Position für Packvorschrift \""+tuPI.getName()+"\" (ID=" + tuPI.getM_HU_PI_ID()+") gefunden. Betroffene HU-ID:"+ sourceTuHU.get_ID();
+				// throw new HUException(<that-userfriendly-AD_Message>).markAsUserValidationError();
 				throw new HUException("@NotFound@ @M_HU_PI_Item_ID@")
 						.setParameter("tuPI", tuPI);
 			}

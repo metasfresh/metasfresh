@@ -23,6 +23,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -88,9 +89,13 @@ public class PurchaseOrderToShipperTransportationService
 				.stream()
 				.filter(repo::purchaseOrderNotInShipperTransportation)
 				.collect(ImmutableList.toImmutableList());
-
+		if (validPurchaseOrdersIds.isEmpty())
+		{
+			Loggables.addLog("No purchase orders found for shipper transportation with ID: {}", shipperTransportationId);
+		}
 		for (final OrderId purchaseOrderId : validPurchaseOrdersIds)
 		{
+			Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", purchaseOrderId, shipperTransportationId);
 			addPurchaseOrderToShipperTransportation(purchaseOrderId, shipperTransportationId);
 		}
 	}

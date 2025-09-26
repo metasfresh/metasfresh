@@ -420,12 +420,18 @@ public class LUTUProducerDestination
 			final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(_luPI.getM_HU_PI_ID());
 			final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
 			final BPartnerId bpartnerId = getBPartnerId();
-
 			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
-					.orElseThrow(() -> new AdempiereException("No PI-Item found to connect LU-PI \"" + _luPI.getName() + "\" to TU-PI \"" + tuPI.getName() + "\" with " + bpartnerId)
-							.appendParametersToMessage()
-							.setParameter("LU-PI_ID", _luPI.getM_HU_PI_ID())
-							.setParameter("TU-PI_ID", tuPI.getM_HU_PI_ID())
+					.orElseThrow(
+							// TODO: Add ad-message with
+							// "LU-Packvorschrift "+ _luPI.getName() + " hat keine TU-Unterpackvorschrift "+tuPI.getName()
+							// throw new HUException(<that-userfriendly-AD_Message>).markAsUserValidationError()
+							// 		.appendParametersToMessage()
+							// 		.setParameter("LU-M_HU_PI_ID", _luPI.getM_HU_PI_ID())
+							// 		.setParameter("TU-HU_PI_ID", tuPI.getM_HU_PI_ID());
+							() -> new AdempiereException("No PI-Item found to connect LU-PI \"" + _luPI.getName() + "\" to TU-PI \"" + tuPI.getName() + "\" with " + bpartnerId)
+									.appendParametersToMessage()
+									.setParameter("LU-M_HU_PI_ID", _luPI.getM_HU_PI_ID())
+									.setParameter("TU-HU_PI_ID", tuPI.getM_HU_PI_ID())
 					);
 		}
 		return _luPIItem;

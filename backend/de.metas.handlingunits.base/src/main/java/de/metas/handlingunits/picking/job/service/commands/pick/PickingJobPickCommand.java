@@ -924,6 +924,8 @@ public class PickingJobPickCommand
 			return;
 		}
 
+		// TODO: check explicitly if the locator of huIdToBePicked is one of the locators of getLocatorIdsOfTheSamePickingGroup and if not, throw a userfriendly error-message  
+		
 		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
 		final WarehouseId warehouseId = shipmentScheduleInfo.getWarehouseId();
 		final BPartnerId customerId = shipmentScheduleInfo.getBpartnerId();
