@@ -1,10 +1,8 @@
-package de.metas.shipper.gateway.spi.model;
-
 /*
  * #%L
- * de.metas.shipper.gateway.spi
+ * de.metas.shipper.gateway.carrier
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,9 +20,13 @@ package de.metas.shipper.gateway.spi.model;
  * #L%
  */
 
-/**
- * Implementors can be used to add custom data to both {@link DeliveryOrder}.
- */
-public interface CustomDeliveryData
+package de.metas.shipper.gateway.carrier;
+
+import lombok.experimental.UtilityClass;
+import org.compiere.model.X_M_Shipper;
+
+@UtilityClass
+public class CarrierConstants
 {
+	public static final String SHIPPER_GATEWAY_ID = X_M_Shipper.SHIPPERGATEWAY_NShift;
 }

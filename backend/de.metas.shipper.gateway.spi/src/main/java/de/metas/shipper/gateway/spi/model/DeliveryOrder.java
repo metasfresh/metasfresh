@@ -92,8 +92,21 @@ public class DeliveryOrder
 	@Nullable ShipperProduct shipperProduct;
 	ShipperTransportationId shipperTransportationId;
 
-	@Nullable String trackingNumber;
-	@Nullable String trackingUrl;
+	/**
+	 * @deprecated An order would typically contain multiple packages to be shipped, each with its own tracking number.
+	 * Such info should be stored in {@link DeliveryOrderLine#getCustomDeliveryLineData()}
+	 */
+	@Nullable
+	@Deprecated
+	String trackingNumber;
+
+	/**
+	 * @deprecated An order would typically contain multiple packages to be shipped, each with its own tracking number.
+	 * Such info should be stored in {@link DeliveryOrderLine#getCustomDeliveryLineData()}
+	 */
+	@Nullable
+	@Deprecated
+	String trackingUrl;
 
 	public DeliveryOrder withCustomDeliveryData(@NonNull final CustomDeliveryData customDeliveryData)
 	{

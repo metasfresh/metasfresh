@@ -1,10 +1,8 @@
-package de.metas.shipper.gateway.spi.model;
-
 /*
  * #%L
- * de.metas.shipper.gateway.spi
+ * de.metas.shipper.gateway.carrier
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,9 +20,25 @@ package de.metas.shipper.gateway.spi.model;
  * #L%
  */
 
-/**
- * Implementors can be used to add custom data to both {@link DeliveryOrder}.
- */
-public interface CustomDeliveryData
+package de.metas.shipper.gateway.carrier.model;
+
+import de.metas.money.Money;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+@Value
+@Builder
+public class ShipmentOrderItem
 {
+	@Nullable ShipmentOrderItemId id;
+	Money unitPrice;
+	Money totalValue;
+	String productName;
+	String productValue;
+	BigDecimal totalWeightInKg;
+	Quantity shippedQuantity;
 }

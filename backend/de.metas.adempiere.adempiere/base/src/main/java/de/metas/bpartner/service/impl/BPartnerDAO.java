@@ -508,6 +508,15 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public I_C_Location getLocationByBpartnerLocationIdOrNull(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return retrieveLocations(bpartnerLocationId, true)
+				.stream()
+				.findFirst()
+				.orElse(null);
+	}
+
+	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocationsInTrx(bpartnerLocationId.getBpartnerId())
@@ -571,6 +580,27 @@ public class BPartnerDAO implements IBPartnerDAO
 	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
 	{
 		return retrieveBPartnerLocations(bpartnerId, false);
+	}
+
+	@Cached(cacheName = I_C_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
+	public ImmutableList<I_C_Location> retrieveLocations(@NonNull final BPartnerLocationId bpartnerLocationId, final boolean includeInactive)
+	{
+		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = queryBL
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerLocationId);
+
+		if (!includeInactive)
+		{
+			queryBuilder.addOnlyActiveRecordsFilter();
+		}
+
+		queryBuilder.orderBy()
+				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsActive);
+
+		return queryBuilder
+				.andCollect(I_C_BPartner_Location.COLUMNNAME_C_Location_ID, I_C_Location.class)
+				.create()
+				.listImmutable(I_C_Location.class);
 	}
 
 	@Override
