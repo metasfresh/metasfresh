@@ -71,6 +71,32 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient {
                 .build();
     }
 
+	@Nullable
+	private NShiftCustomDeliveryDataDetail toCustomDeliveryDataDetail(@NonNull final JsonShipmentDocument document, @NonNull final String language) {
+	    //TODO validate if this is correct
+	    if (!"Label".equalsIgnoreCase(document.getDocumentType())) {
+	        return null;
+	    }
+	    if (Check.isEmpty(document.getContent(), true)) {
+	        logger.warn("Label document received from nShift without content: {}", document);
+	        return null;
+	    }
+	    final String pkgNo = document.getPkgNo();
+	    if (Check.isEmpty(pkgNo, true)) {
+	        logger.warn("Label document received from nShift without PkgNo, it will be skipped: {}", document);
+	        return null;
+	    }
+
+	    final byte[] labelData = Base64.getDecoder().decode(document.getContent());
+	    final String trackingUrl = config.getTrackingUrl(pkgNo, language);
+
+	    return NShiftCustomDeliveryDataDetail.builder()
+	            .pdfLabelData(labelData)
+	            .trackingNumber(pkgNo)
+	            .trackingUrl(trackingUrl)
+	            .build();
+	}
+
 	@NonNull
 	@Override
 	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
@@ -97,7 +123,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient {
 						.build())
 				.build();
 	}
-}
+
     // @Override
     // @NonNull
     // public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException {
@@ -138,32 +164,6 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient {
     //             })
     //             .filter(Objects::nonNull)
     //             .collect(Collectors.toList());
-    // }
-	//
-    // @Nullable
-    // private NShiftCustomDeliveryDataDetail toCustomDeliveryDataDetail(@NonNull final JsonShipmentDocument document, @NonNull final String language) {
-    //     //TODO validate if this is correct
-    //     if (!"Label".equalsIgnoreCase(document.getDocumentType())) {
-    //         return null;
-    //     }
-    //     if (Check.isEmpty(document.getContent(), true)) {
-    //         logger.warn("Label document received from nShift without content: {}", document);
-    //         return null;
-    //     }
-    //     final String pkgNo = document.getPkgNo();
-    //     if (Check.isEmpty(pkgNo, true)) {
-    //         logger.warn("Label document received from nShift without PkgNo, it will be skipped: {}", document);
-    //         return null;
-    //     }
-	//
-    //     final byte[] labelData = Base64.getDecoder().decode(document.getContent());
-    //     final String trackingUrl = config.getTrackingUrl(pkgNo, language);
-	//
-    //     return NShiftCustomDeliveryDataDetail.builder()
-    //             .pdfLabelData(labelData)
-    //             .trackingNumber(pkgNo)
-    //             .trackingUrl(trackingUrl)
-    //             .build();
     // }
 
 }
