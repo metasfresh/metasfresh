@@ -46,10 +46,10 @@ import de.metas.shipper.gateway.carrier.model.ShipmentOrderItem;
 import de.metas.shipper.gateway.carrier.model.ShipmentOrderParcel;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
-import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
@@ -110,7 +110,7 @@ public class CarrierOrderCreator implements DraftDeliveryOrderCreator
 		return DeliveryOrder.builder()
 				.shipperId(deliveryOrderKey.getShipperId())
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
-				.deliveryDate(DeliveryDate.builder()
+				.pickupDate(PickupDate.builder()
 						.date(deliveryOrderKey.getPickupDate())
 						.build())
 				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)

@@ -587,7 +587,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = queryBL
 				.createQueryBuilder(I_C_BPartner_Location.class)
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerLocationId);
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationId);
 
 		if (!includeInactive)
 		{
