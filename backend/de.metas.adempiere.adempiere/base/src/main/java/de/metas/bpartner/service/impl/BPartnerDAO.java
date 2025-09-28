@@ -508,15 +508,6 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public I_C_Location getLocationByBpartnerLocationIdOrNull(@NonNull final BPartnerLocationId bpartnerLocationId)
-	{
-		return retrieveLocations(bpartnerLocationId, true)
-				.stream()
-				.findFirst()
-				.orElse(null);
-	}
-
-	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocationsInTrx(bpartnerLocationId.getBpartnerId())

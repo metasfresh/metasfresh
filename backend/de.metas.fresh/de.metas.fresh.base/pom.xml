@@ -310,12 +310,6 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
-        <dependency>
-            <groupId>de.metas.shipper.gateway</groupId>
-            <artifactId>de.metas.shipper.gateway.carrier</artifactId>
-            <version>${metasfresh.version}</version>
-        </dependency>
-
 		<dependency>
 			<groupId>de.metas.shipper.gateway</groupId>
 			<artifactId>de.metas.shipper.gateway.derkurier</artifactId>

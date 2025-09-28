@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.carrier
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.carrier;
+package de.metas.shipper.gateway.commons.model;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;

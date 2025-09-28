@@ -56,7 +56,7 @@ class DeliveryOrderTest
 												.heightInCM(2)
 												.widthInCM(3)
 												.build())
-										.customDeliveryData(null)
+										.customDeliveryLineData(null)
 										.packageId(PackageId.ofRepoId(9))
 										.build()
 						))
@@ -68,7 +68,7 @@ class DeliveryOrderTest
 		);
 	}
 
-	private static Address address(String prefix)
+	private static Address address(final String prefix)
 	{
 		return Address.builder()
 				.bpartnerId(55)

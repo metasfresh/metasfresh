@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.carrier
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,30 +20,33 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.carrier.model;
+package de.metas.shipper.gateway.commons.model;
 
-import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import com.google.common.collect.ImmutableList;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryLineData;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Value
 @Builder
-public class ShipmentOrderData implements CustomDeliveryData
+@Value
+public class ShipmentOrderParcel implements CustomDeliveryLineData
 {
+	@Nullable String awb;
+	@Nullable String trackingUrl;
+	@Nullable byte[] labelPdfBase64;
+	ImmutableList<ShipmentOrderItem> items;
+
 	@Nullable
-	public static ShipmentOrderData ofDeliveryOrderOrNull(@NonNull final DeliveryOrder deliveryOrder)
+	public static ShipmentOrderParcel ofDeliveryOrderLineOrNull(@NonNull final DeliveryOrderLine deliveryOrderLine)
 	{
-		if (!(deliveryOrder.getCustomDeliveryData() instanceof ShipmentOrderData))
+		if (!(deliveryOrderLine.getCustomDeliveryLineData() instanceof ShipmentOrderParcel))
 		{
 			return null;
 		}
-		return (ShipmentOrderData)deliveryOrder.getCustomDeliveryData();
+		return (ShipmentOrderParcel)deliveryOrderLine.getCustomDeliveryLineData();
 	}
-
-	String shipperEORI;
-	String receiverEORI;
 }

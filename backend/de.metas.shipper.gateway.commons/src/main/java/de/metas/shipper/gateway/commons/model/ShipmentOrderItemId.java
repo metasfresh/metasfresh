@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.carrier
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.carrier.model;
+package de.metas.shipper.gateway.commons.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -33,24 +33,24 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Value
-public class ShipmentOrderParcelId implements RepoIdAware
+public class ShipmentOrderItemId implements RepoIdAware
 {
 	int repoId;
 
-	private ShipmentOrderParcelId(final int repoId)
+	private ShipmentOrderItemId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "Shipper_ShipmentOrder_Parcel_ID");
 	}
 
 	@JsonCreator
-	public static ShipmentOrderParcelId ofRepoId(final int repoId) {return new ShipmentOrderParcelId(repoId);}
+	public static ShipmentOrderItemId ofRepoId(final int repoId) {return new ShipmentOrderItemId(repoId);}
 
 	@Nullable
-	public static ShipmentOrderParcelId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
+	public static ShipmentOrderItemId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
 
-	public static Optional<ShipmentOrderParcelId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
+	public static Optional<ShipmentOrderItemId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
-	public static int toRepoId(@Nullable final ShipmentOrderParcelId id) {return id != null ? id.getRepoId() : -1;}
+	public static int toRepoId(@Nullable final ShipmentOrderItemId id) {return id != null ? id.getRepoId() : -1;}
 
 	@Override
 	@JsonValue
@@ -59,5 +59,5 @@ public class ShipmentOrderParcelId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(@Nullable final ShipmentOrderParcelId id1, @Nullable final ShipmentOrderParcelId id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable final ShipmentOrderItemId id1, @Nullable final ShipmentOrderItemId id2) {return Objects.equals(id1, id2);}
 }

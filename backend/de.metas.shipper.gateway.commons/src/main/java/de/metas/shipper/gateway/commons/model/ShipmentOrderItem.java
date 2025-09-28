@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.carrier
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,27 +20,25 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.carrier.service;
+package de.metas.shipper.gateway.commons.model;
 
-import de.metas.shipper.gateway.carrier.CarrierConstants;
-import de.metas.shipper.gateway.spi.ShipperGatewayClient;
-import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
-import de.metas.shipping.ShipperId;
-import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import de.metas.money.Money;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.Value;
 
-@Service
-public class CarrierGatewayClientFactory implements ShipperGatewayClientFactory
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+@Value
+@Builder
+public class ShipmentOrderItem
 {
-	@Override
-	public String getShipperGatewayId()
-	{
-		return CarrierConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
-	{
-		return new CarrierGatewayClient();
-	}
+	@Nullable ShipmentOrderItemId id;
+	Money unitPrice;
+	Money totalValue;
+	String productName;
+	String productValue;
+	BigDecimal totalWeightInKg;
+	Quantity shippedQuantity;
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.carrier
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.carrier.model;
+package de.metas.shipper.gateway.commons.model;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
@@ -30,7 +30,6 @@ import de.metas.location.CountryCode;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantitys;
-import de.metas.shipper.gateway.carrier.CarrierShipperProduct;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;

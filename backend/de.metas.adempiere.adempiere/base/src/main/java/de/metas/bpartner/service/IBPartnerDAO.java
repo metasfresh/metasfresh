@@ -53,7 +53,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -136,9 +135,6 @@ public interface IBPartnerDAO extends ISingletonService
 
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
-
-	@Nullable
-	I_C_Location getLocationByBpartnerLocationIdOrNull(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);

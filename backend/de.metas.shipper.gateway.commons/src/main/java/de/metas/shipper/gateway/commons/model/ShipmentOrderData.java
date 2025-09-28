@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.carrier
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,13 +20,30 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.carrier;
+package de.metas.shipper.gateway.commons.model;
 
-import lombok.experimental.UtilityClass;
-import org.compiere.model.X_M_Shipper;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@UtilityClass
-public class CarrierConstants
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class ShipmentOrderData implements CustomDeliveryData
 {
-	public static final String SHIPPER_GATEWAY_ID = X_M_Shipper.SHIPPERGATEWAY_NShift;
+	@Nullable
+	public static ShipmentOrderData ofDeliveryOrderOrNull(@NonNull final DeliveryOrder deliveryOrder)
+	{
+		if (!(deliveryOrder.getCustomDeliveryData() instanceof ShipmentOrderData))
+		{
+			return null;
+		}
+		return (ShipmentOrderData)deliveryOrder.getCustomDeliveryData();
+	}
+
+	String shipperEORI;
+	String receiverEORI;
 }
