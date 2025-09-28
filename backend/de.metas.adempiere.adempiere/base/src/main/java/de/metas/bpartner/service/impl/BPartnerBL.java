@@ -102,6 +102,12 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, @NonNull Class<T> type)
+	{
+		return bpartnersRepo.getById(bpartnerId, type);
+	}
+
+	@Override
 	public String getBPartnerValue(final BPartnerId bpartnerId)
 	{
 		return toBPartnerDisplayName(bpartnerId, I_C_BPartner::getValue);
@@ -174,6 +180,12 @@ public class BPartnerBL implements IBPartnerBL
 				.adLanguage(bpartner.getAD_Language())
 				.build();
 		return addressBuilder.buildBPartnerFullAddressString(bpartner, bpLocation, locationId, bpContact);
+	}
+
+	@Override
+	public User getContactById(final UserId userId)
+	{
+		return userRepository.getByIdInTrx(userId);
 	}
 
 	@Override
@@ -463,6 +475,11 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public Optional<BPartnerId> getBPartnerIdForModel(@Nullable final Object model)
 	{
+		if (model instanceof User)
+		{
+			return Optional.ofNullable(((User)model).getBpartnerId());
+		}
+
 		final IBPartnerAware bpartnerAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IBPartnerAware.class);
 		return bpartnerAware != null
 				? BPartnerId.optionalOfRepoId(bpartnerAware.getC_BPartner_ID())
@@ -905,5 +922,12 @@ public class BPartnerBL implements IBPartnerBL
 
 		}
 		return Optional.empty();
+	}
+
+	@Override
+	public boolean isInvoiceEmailCcToMember(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = getById(bpartnerId);
+		return bpartner.isInvoiceEmailCcToMember();
 	}
 }

@@ -124,6 +124,24 @@ class AssertPickingExpectationsCommand
 			@NonNull final JsonShipmentScheduleExpectation expectation,
 			@NonNull final List<I_M_ShipmentSchedule> actuals) throws Exception
 	{
+		if (expectation.getIsScheduledForPicking() != null
+				|| expectation.getQtyScheduledForPicking() != null)
+		{
+			assertThat(actuals).isNotEmpty();
+			actuals.forEach(actual -> softly(() -> {
+				softlyPutContext("shipmentSchedule", actual);
+
+				if (expectation.getIsScheduledForPicking() != null)
+				{
+					assertThat(actual.isScheduledForPicking()).isEqualTo(expectation.getIsScheduledForPicking());
+				}
+				if (expectation.getQtyScheduledForPicking() != null)
+				{
+					assertThat(actual.getQtyScheduledForPicking()).isEqualTo(expectation.getQtyScheduledForPicking());
+				}
+			}));
+		}
+
 		if (expectation.getQtyPicked() != null)
 		{
 			final ImmutableMap<ShipmentScheduleId, I_M_ShipmentSchedule> actualsById = Maps.uniqueIndex(actuals, actual -> ShipmentScheduleId.ofRepoId(actual.getM_ShipmentSchedule_ID()));

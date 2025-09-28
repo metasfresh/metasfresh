@@ -9,7 +9,6 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -24,6 +23,7 @@ import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRul
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.util.Loggables;

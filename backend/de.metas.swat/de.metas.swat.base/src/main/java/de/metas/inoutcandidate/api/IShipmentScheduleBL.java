@@ -32,6 +32,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuil
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -195,4 +196,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
 
 	I_M_ShipmentSchedule getByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	void assertSalesOrderCanBeReactivated(@NonNull OrderId salesOrderId);
+
+	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
 }

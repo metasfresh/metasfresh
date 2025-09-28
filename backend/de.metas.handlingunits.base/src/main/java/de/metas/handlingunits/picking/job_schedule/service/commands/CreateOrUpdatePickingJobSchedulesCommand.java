@@ -1,8 +1,8 @@
 package de.metas.handlingunits.picking.job_schedule.service.commands;
 
 import com.google.common.collect.Sets;
-import de.metas.handlingunits.picking.job_schedule.repository.PickingJobScheduleCreateRepoRequest;
-import de.metas.handlingunits.picking.job_schedule.repository.PickingJobScheduleRepository;
+import de.metas.picking.job_schedule.repository.PickingJobScheduleCreateRepoRequest;
+import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -56,6 +56,7 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 							.qtyToPick(Quantity.of(qtyToPickBD, uom))
 							.build());
 				});
-
+		
+		shipmentScheduleBL.flagForRecompute(shipmentScheduleIds);
 	}
 }

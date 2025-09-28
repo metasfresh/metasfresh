@@ -225,10 +225,6 @@ public interface I_Mobile_Application_Trl
 	 */
 	int getMobile_Application_ID();
 
-	org.compiere.model.I_Mobile_Application getMobile_Application();
-
-	void setMobile_Application(org.compiere.model.I_Mobile_Application Mobile_Application);
-
 	ModelColumn<I_Mobile_Application_Trl, org.compiere.model.I_Mobile_Application> COLUMN_Mobile_Application_ID = new ModelColumn<>(I_Mobile_Application_Trl.class, "Mobile_Application_ID", org.compiere.model.I_Mobile_Application.class);
 	String COLUMNNAME_Mobile_Application_ID = "Mobile_Application_ID";
 

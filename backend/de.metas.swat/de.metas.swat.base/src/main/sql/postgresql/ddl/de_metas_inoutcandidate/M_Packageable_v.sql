@@ -151,7 +151,7 @@ FROM (SELECT
       WHERE TRUE
         AND s.Processed = 'N'
         AND s.IsActive = 'Y'
-        AND s.QtyToDeliver > 0
+        AND (s.QtyToDeliver > 0 OR s.qtypicklist > 0)
         AND s.isclosed = 'N'
         AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)) p
 ;

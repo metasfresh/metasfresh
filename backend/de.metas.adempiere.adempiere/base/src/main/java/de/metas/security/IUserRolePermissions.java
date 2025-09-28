@@ -2,8 +2,8 @@ package de.metas.security;
 
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.ElementPermission;
@@ -13,7 +13,6 @@ import de.metas.security.permissions.ResourceAsPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
-import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
@@ -48,10 +47,14 @@ public interface IUserRolePermissions
 	@Deprecated
 	Permission PERMISSION_MigrationScripts = ResourceAsPermission.ofName("MigrationScripts");
 
-	/** Access SQL Not Fully Qualified */
+	/**
+	 * Access SQL Not Fully Qualified
+	 */
 	boolean SQL_NOTQUALIFIED = false;
 
-	/** Access SQL Fully Qualified */
+	/**
+	 * Access SQL Fully Qualified
+	 */
 	boolean SQL_FULLYQUALIFIED = true;
 
 	/**
@@ -59,7 +62,9 @@ public interface IUserRolePermissions
 	 */
 	String toStringX();
 
-	/** @return role name */
+	/**
+	 * @return role name
+	 */
 	String getName();
 
 	RoleGroup getRoleGroup();
@@ -74,11 +79,11 @@ public interface IUserRolePermissions
 
 	/**
 	 * @return all AD_Role_IDs. It will contain:
-	 *         <ul>
-	 *         <li>this {@link #getRoleId()}
-	 *         <li>and all directly or indirectly included roles
-	 *         <li>substituted roles
-	 *         </ul>
+	 * <ul>
+	 * <li>this {@link #getRoleId()}
+	 * <li>and all directly or indirectly included roles
+	 * <li>substituted roles
+	 * </ul>
 	 */
 	Set<RoleId> getAllRoleIds();
 
@@ -88,7 +93,7 @@ public interface IUserRolePermissions
 
 	<T extends Constraint> Optional<T> getConstraint(Class<T> constraintType);
 
-	ElementPermission checkMobileApplicationPermission(@NonNull MobileApplicationRepoId applicationId);
+	MobileApplicationPermissions getMobileApplicationPermissions();
 
 	/*************************************************************************
 	 * Appends where clause to SQL statement for Table
@@ -101,28 +106,37 @@ public interface IUserRolePermissions
 	 */
 	String addAccessSQL(String sql, String tableNameIn, boolean fullyQualified, Access access);
 
-	/** @return window permissions; never return null */
+	/**
+	 * @return window permissions; never return null
+	 */
 	ElementPermission checkWindowPermission(AdWindowId AD_Window_ID);
 
-	@Nullable Boolean getWindowAccess(AdWindowId AD_Window_ID);
+	@Nullable
+	Boolean getWindowAccess(AdWindowId AD_Window_ID);
 
-	@Nullable Boolean checkWorkflowAccess(int AD_Workflow_ID);
+	@Nullable
+	Boolean checkWorkflowAccess(int AD_Workflow_ID);
 
 	ElementPermission checkWorkflowPermission(int AD_Workflow_ID);
 
-	@Nullable Boolean getWorkflowAccess(int AD_Workflow_ID);
+	@Nullable
+	Boolean getWorkflowAccess(int AD_Workflow_ID);
 
-	@Nullable Boolean checkFormAccess(int AD_Form_ID);
+	@Nullable
+	Boolean checkFormAccess(int AD_Form_ID);
 
 	ElementPermission checkFormPermission(int AD_Form_ID);
 
-	@Nullable Boolean getFormAccess(int AD_Form_ID);
+	@Nullable
+	Boolean getFormAccess(int AD_Form_ID);
 
-	@Nullable Boolean checkTaskAccess(int AD_Task_ID);
+	@Nullable
+	Boolean checkTaskAccess(int AD_Task_ID);
 
 	ElementPermission checkTaskPermission(int AD_Task_ID);
 
-	@Nullable Boolean getTaskAccess(int AD_Task_ID);
+	@Nullable
+	Boolean getTaskAccess(int AD_Task_ID);
 
 	//
 	// Process
@@ -140,12 +154,11 @@ public interface IUserRolePermissions
 	/**
 	 * Checks if given record can be viewed by this role.
 	 *
-	 * @param clientId record's AD_Client_ID
-	 * @param orgId record's AD_Org_ID
+	 * @param clientId    record's AD_Client_ID
+	 * @param orgId       record's AD_Org_ID
 	 * @param AD_Table_ID record table
-	 * @param Record_ID record id
+	 * @param Record_ID   record id
 	 * @return true if you can view
-	 *
 	 * @deprecated consider using {@link #checkCanView(ClientId, OrgId, int, int)}
 	 **/
 	@Deprecated
@@ -159,10 +172,10 @@ public interface IUserRolePermissions
 	/**
 	 * Checks if given record can be updated by this role.
 	 *
-	 * @param clientId record's AD_Client_ID
-	 * @param orgId record's AD_Org_ID
+	 * @param clientId    record's AD_Client_ID
+	 * @param orgId       record's AD_Org_ID
 	 * @param AD_Table_ID record table
-	 * @param Record_ID record id
+	 * @param Record_ID   record id
 	 * @param createError true if a warning shall be logged and saved (AccessTableNoUpdate).
 	 * @return true if you can update
 	 **/
@@ -172,10 +185,10 @@ public interface IUserRolePermissions
 	/**
 	 * Checks if given record can be updated by this role.
 	 *
-	 * @param clientId record's AD_Client_ID
-	 * @param orgId record's AD_Org_ID
+	 * @param clientId    record's AD_Client_ID
+	 * @param orgId       record's AD_Org_ID
 	 * @param AD_Table_ID record table
-	 * @param Record_ID record id
+	 * @param Record_ID   record id
 	 **/
 	BooleanWithReason checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 

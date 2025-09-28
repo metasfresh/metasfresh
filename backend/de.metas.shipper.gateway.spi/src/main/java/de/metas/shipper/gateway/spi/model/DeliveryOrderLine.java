@@ -38,28 +38,31 @@ import java.math.BigDecimal;
 @Value
 public class DeliveryOrderLine
 {
+	@Nullable
+	DeliveryOrderLineId id;
 	@Nullable String content;
 	@NonNull BigDecimal grossWeightKg;
 	@NonNull PackageDimensions packageDimensions;
-	@Nullable CustomDeliveryData customDeliveryData;
+	@Nullable CustomDeliveryLineData customDeliveryLineData;
 	@NonNull PackageId packageId;
 
 	@Builder(toBuilder = true)
 	@Jacksonized
 	private DeliveryOrderLine(
+			@Nullable final DeliveryOrderLineId id,
 			@Nullable final String content,
 			@NonNull final BigDecimal grossWeightKg,
 			@NonNull final PackageDimensions packageDimensions,
-			@Nullable final CustomDeliveryData customDeliveryData,
+			@Nullable final CustomDeliveryLineData customDeliveryLineData,
 			@NonNull final PackageId packageId)
 	{
 
 		Check.assume(grossWeightKg.signum() > 0, "grossWeightKg > 0");
-
+		this.id = id;
 		this.grossWeightKg = grossWeightKg;
 		this.content = content;
 		this.packageDimensions = packageDimensions;
-		this.customDeliveryData = customDeliveryData;
+		this.customDeliveryLineData = customDeliveryLineData;
 		this.packageId = packageId;
 	}
 }

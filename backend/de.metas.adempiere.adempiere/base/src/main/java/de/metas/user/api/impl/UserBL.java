@@ -7,6 +7,7 @@ import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.ClientMailTemplates;
@@ -182,8 +183,10 @@ public class UserBL implements IUserBL
 				.customType(MAILCONFIG_CUSTOMTYPE_UserPasswordReset)
 				.build();
 
+		final Mailbox mailbox = mailService().findMailbox(mailboxQuery);
+
 		mailService().sendEMail(EMailRequest.builder()
-				.mailboxQuery(mailboxQuery)
+				.mailbox(mailbox)
 				.to(emailTo)
 				.mailText(mailText)
 				.forceRealEmailRecipients(true)

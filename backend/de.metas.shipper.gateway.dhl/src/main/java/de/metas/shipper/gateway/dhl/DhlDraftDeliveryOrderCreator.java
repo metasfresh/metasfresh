@@ -46,9 +46,9 @@ import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -62,11 +62,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences;
 
 @Service
 @RequiredArgsConstructor
@@ -265,16 +264,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		}
 
 		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
-	}
-
-	private static String getPOReferences(@NonNull final Collection<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
-	{
-		return packageInfos.stream()
-				.map(CreateDraftDeliveryOrderRequest.PackageInfo::getPoReference)
-				.map(StringUtils::trimBlankToNull)
-				.filter(Objects::nonNull)
-				.distinct()
-				.collect(Collectors.joining(", "));
 	}
 
 }

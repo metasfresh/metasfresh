@@ -2,7 +2,6 @@ package de.metas.shipper.gateway.derkurier;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.location.CountryCode;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData.DerKurierDeliveryDataBuilder;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
@@ -18,6 +17,7 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -115,6 +115,7 @@ public class DerKurierTestTools
 				.shipperProduct(DerKurierShipperProduct.OVERNIGHT)
 				.pickupAddress(createPickupAddress())
 				.pickupDate(createPickupDate())
+				.shipperId(ShipperId.ofRepoId(100))
 				.deliveryDate(DeliveryDate.builder()
 						.date(LocalDate.of(2018, Month.JANUARY, 9))
 						.timeFrom(LocalTime.of(9, 0))
