@@ -764,3 +764,23 @@ UPDATE AD_TreeNodeMM SET Parent_ID=542248, SeqNo=2, Updated=now(), UpdatedBy=100
 UPDATE AD_TreeNodeMM SET Parent_ID=542248, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542249 AND AD_Tree_ID=10
 ;
 
+-- Value: Package-Licencing-Report-Details
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2025-09-28T13:51:07.081Z
+UPDATE AD_Process SET SQLStatement='SELECT * FROM report.Package_Licensing_InOut_Report_report(''@DateFrom@''::date, ''@DateTo@''::date, @C_Country_ID/null@)',Updated=TO_TIMESTAMP('2025-09-28 13:51:07.077000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585503
+;
+
+
+-- Value: Package-Licencing-Report-Details
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2025-09-28T13:52:16.522Z
+UPDATE AD_Process SET SQLStatement='SELECT * FROM report.Package_Licensing_InOut_Report(''@DateFrom@''::date, ''@DateTo@''::date, @C_Country_ID/null@)',Updated=TO_TIMESTAMP('2025-09-28 13:52:16.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585503
+;
+
+
+-- Value: Package-Licencing-Summary-Report
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2025-09-28T13:53:55.992Z
+UPDATE AD_Process SET SQLStatement='SELECT * FROM report.Package_Licensing_InOut_Summary_Report(''@DateFrom@''::date, ''@DateTo@''::date, @C_Country_ID/null@)',Updated=TO_TIMESTAMP('2025-09-28 13:53:55.989000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585504
+;
+
