@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_Picking_Job_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 239787343L;
+	private static final long serialVersionUID = -1573680053L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Step (final Properties ctx, final int M_Picking_Job_Step_ID, @Nullable final String trxName)
@@ -36,18 +36,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
-	}
-
-	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
@@ -60,18 +48,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setC_OrderLine(final org.compiere.model.I_C_OrderLine C_OrderLine)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
 	}
 
 	@Override
@@ -102,18 +78,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Workplace getC_Workplace()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class);
-	}
-
-	@Override
-	public void setC_Workplace(final org.compiere.model.I_C_Workplace C_Workplace)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class, C_Workplace);
 	}
 
 	@Override
@@ -193,18 +157,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_Picking_Job getM_Picking_Job()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Picking_Job_ID, de.metas.handlingunits.model.I_M_Picking_Job.class);
-	}
-
-	@Override
-	public void setM_Picking_Job(final de.metas.handlingunits.model.I_M_Picking_Job M_Picking_Job)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Picking_Job_ID, de.metas.handlingunits.model.I_M_Picking_Job.class, M_Picking_Job);
-	}
-
-	@Override
 	public void setM_Picking_Job_ID (final int M_Picking_Job_ID)
 	{
 		if (M_Picking_Job_ID < 1) 
@@ -220,18 +172,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_Picking_Job_Line getM_Picking_Job_Line()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Picking_Job_Line_ID, de.metas.handlingunits.model.I_M_Picking_Job_Line.class);
-	}
-
-	@Override
-	public void setM_Picking_Job_Line(final de.metas.handlingunits.model.I_M_Picking_Job_Line M_Picking_Job_Line)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Picking_Job_Line_ID, de.metas.handlingunits.model.I_M_Picking_Job_Line.class, M_Picking_Job_Line);
-	}
-
-	@Override
 	public void setM_Picking_Job_Line_ID (final int M_Picking_Job_Line_ID)
 	{
 		if (M_Picking_Job_Line_ID < 1) 
@@ -244,18 +184,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getM_Picking_Job_Line_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Line_ID);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_Picking_Job_Schedule getM_Picking_Job_Schedule()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Picking_Job_Schedule_ID, de.metas.handlingunits.model.I_M_Picking_Job_Schedule.class);
-	}
-
-	@Override
-	public void setM_Picking_Job_Schedule(final de.metas.handlingunits.model.I_M_Picking_Job_Schedule M_Picking_Job_Schedule)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Picking_Job_Schedule_ID, de.metas.handlingunits.model.I_M_Picking_Job_Schedule.class, M_Picking_Job_Schedule);
 	}
 
 	@Override
@@ -345,18 +273,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public org.compiere.model.I_M_Shipper getM_Shipper()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
-	}
-
-	@Override
-	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
-	}
-
-	@Override
 	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
 		if (M_Shipper_ID < 1) 
@@ -387,18 +303,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getPicked_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_Picked_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setPicked_HU(final de.metas.handlingunits.model.I_M_HU Picked_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_Picked_HU_ID, de.metas.handlingunits.model.I_M_HU.class, Picked_HU);
-	}
-
-	@Override
 	public void setPicked_HU_ID (final int Picked_HU_ID)
 	{
 		if (Picked_HU_ID < 1) 
@@ -411,18 +315,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getPicked_HU_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Picked_HU_ID);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setPickFrom_HU(final de.metas.handlingunits.model.I_M_HU PickFrom_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, PickFrom_HU);
 	}
 
 	@Override

@@ -1,10 +1,11 @@
-package de.metas.handlingunits.picking.job_schedule.model;
+package de.metas.picking.job_schedule.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,7 +16,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 @ToString
@@ -39,6 +44,11 @@ public class PickingJobScheduleCollection implements Iterable<PickingJobSchedule
 
 	public static Collector<PickingJobSchedule, ?, PickingJobScheduleCollection> collect() {return GuavaCollectors.collectUsingListAccumulator(PickingJobScheduleCollection::ofCollection);}
 
+	public static Collector<PickingJobSchedule, ?, Map<ShipmentScheduleId, PickingJobScheduleCollection>> collectGroupedByShipmentScheduleId()
+	{
+		return Collectors.groupingBy(PickingJobSchedule::getShipmentScheduleId, collect());
+	}
+
 	@Override
 	public @NotNull Iterator<PickingJobSchedule> iterator()
 	{
@@ -60,6 +70,13 @@ public class PickingJobScheduleCollection implements Iterable<PickingJobSchedule
 		}
 	}
 
+	public Set<ShipmentScheduleId> getShipmentScheduleIds()
+	{
+		return list.stream()
+				.map(PickingJobSchedule::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public ShipmentScheduleId getSingleShipmentScheduleId()
 	{
 		return list.stream()
@@ -77,5 +94,12 @@ public class PickingJobScheduleCollection implements Iterable<PickingJobSchedule
 	public boolean isAllProcessed()
 	{
 		return list.stream().allMatch(PickingJobSchedule::isProcessed);
+	}
+
+	public Optional<Quantity> getQtyToPick()
+	{
+		return list.stream()
+				.map(PickingJobSchedule::getQtyToPick)
+				.reduce(Quantity::add);
 	}
 }

@@ -479,9 +479,7 @@ public class OrderBL implements IOrderBL
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
-
-		@Nullable
-		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+		@Nullable final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
 		if (copyDescriptionAndDocumentNote == null)
 		{
@@ -1211,6 +1209,13 @@ public class OrderBL implements IOrderBL
 	public String getLocationEmail(@NonNull final OrderId orderId)
 	{
 		final I_C_Order order = orderDAO.getById(orderId);
+		return getLocationEmail(order);
+	}
+
+	@Nullable
+	@Override
+	public String getLocationEmail(@NonNull final I_C_Order order)
+	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 
 		//

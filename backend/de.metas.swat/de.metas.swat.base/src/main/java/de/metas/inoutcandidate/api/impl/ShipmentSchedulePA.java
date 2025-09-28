@@ -195,7 +195,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_ExportStatus, APIExportStatus.EXPORTED_STATES)
-				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public boolean existsSheduledForPickingShipmentScheduleForOrder(@NonNull final OrderId orderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking, true)
 				.anyMatch();
 	}
 
@@ -642,7 +653,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final Class<T> clazz)
 	{
 		if (ids.isEmpty()) {return ImmutableMap.of();}
-		
+
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
 				.create()

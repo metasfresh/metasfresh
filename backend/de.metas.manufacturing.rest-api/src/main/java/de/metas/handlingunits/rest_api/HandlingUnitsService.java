@@ -300,6 +300,12 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
+	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(@NonNull final GetByQRCodeRequest request)
+	{
+		return getByIdSupplier(() -> toGetByIdRequest(request));
+	}
+
+	@NonNull
 	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
@@ -563,8 +569,7 @@ public class HandlingUnitsService
 				.build();
 	}
 
-	@NonNull
-	public ImmutableSet<HuId> move(@NonNull final MoveHURequest request)
+	public void move(@NonNull final MoveHURequest request)
 	{
 		final MoveHURequestItem moveHURequestItem = MoveHURequestItem.builder()
 				.huIdAndQRCode(HUIdAndQRCode.builder()
@@ -574,7 +579,7 @@ public class HandlingUnitsService
 				.numberOfTUs(request.getNumberOfTUs())
 				.build();
 
-		return MoveHUCommand.builder()
+		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
 				.requestItems(ImmutableSet.of(moveHURequestItem))
 				.targetQRCode(request.getTargetQRCode())
@@ -610,9 +615,9 @@ public class HandlingUnitsService
 	}
 
 	@Nullable
-	public GetByIdRequest toGetByIdRequest(@NonNull final JsonGetByQRCodeRequest request)
+	private GetByIdRequest toGetByIdRequest(@NonNull final GetByQRCodeRequest request)
 	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
+		final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode().getAsString()).orNullIfError();
 		if (globalQRCode != null)
 		{
 			final HuId huId = resolveHuId(globalQRCode);
@@ -621,23 +626,21 @@ public class HandlingUnitsService
 				return null;
 			}
 
-			return GetByIdRequest.builder()
+			return GetByIdRequest.builderFrom(request)
 					.huId(huId)
 					.expectedQRCode(HUQRCode.fromGlobalQRCode(globalQRCode))
-					.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
 					.build();
 		}
 		else
 		{
-			return GetByIdRequest.builder()
-					.huId(HuId.ofHUValue(request.getQrCode()))
-					.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
+			return GetByIdRequest.builderFrom(request)
+					.huId(HuId.ofHUValue(request.getQrCode().getAsString()))
 					.build();
 		}
 	}
 
 	@Nullable
-	public HuId resolveHuId(@NonNull final GlobalQRCode globalQRCode)
+	private HuId resolveHuId(@NonNull final GlobalQRCode globalQRCode)
 	{
 
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);

@@ -25,17 +25,20 @@ package de.metas.common.rest_api.v2;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.common.JsonWorkPackageStatus;
 import de.metas.common.util.CoalesceUtil;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,7 +51,17 @@ public class JsonPurchaseCandidate
 
 	@JsonProperty("externalLineId")
 	JsonExternalId externalLineId;
-	
+
+	@Schema(description = "The date ordered of the purchase candidate")
+	@JsonProperty("purchaseDateOrdered")
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
+	ZonedDateTime purchaseDateOrdered;
+
+	@Schema(description = "The promised date of the purchase candidate")
+	@JsonProperty("purchaseDatePromised")
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
+	ZonedDateTime purchaseDatePromised;
+
 	@JsonProperty("externalPurchaseOrderUrl")
 	String externalPurchaseOrderUrl;
 
@@ -69,6 +82,8 @@ public class JsonPurchaseCandidate
 	private JsonPurchaseCandidate(
 			@JsonProperty("externalHeaderId") @NonNull final JsonExternalId externalHeaderId,
 			@JsonProperty("externalLineId") @NonNull final JsonExternalId externalLineId,
+			@JsonProperty("purchaseDatePromised") @Nullable final ZonedDateTime purchaseDatePromised,
+			@JsonProperty("purchaseDateOrdered") @Nullable final ZonedDateTime purchaseDateOrdered,
 			@JsonProperty("externalPurchaseOrderUrl") @Nullable final String externalPurchaseOrderUrl,
 			@JsonProperty("metasfreshId") @NonNull final JsonMetasfreshId metasfreshId,
 			@JsonProperty("processed") final boolean processed,
@@ -77,6 +92,8 @@ public class JsonPurchaseCandidate
 	{
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineId = externalLineId;
+		this.purchaseDatePromised = purchaseDatePromised;
+		this.purchaseDateOrdered = purchaseDateOrdered;
 		this.externalPurchaseOrderUrl = externalPurchaseOrderUrl;
 		this.metasfreshId = metasfreshId;
 		this.processed = processed;
