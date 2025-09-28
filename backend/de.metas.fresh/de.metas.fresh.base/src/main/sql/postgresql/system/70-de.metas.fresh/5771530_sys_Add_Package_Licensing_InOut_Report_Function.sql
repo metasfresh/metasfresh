@@ -71,7 +71,7 @@ FROM m_inout io
 
     -- Product group and packaging
          LEFT JOIN m_product_packagelicensing_productgroup ppp ON ppp.m_product_id = p.m_product_id
-         LEFT JOIN M_PackageLicensing_ProductGroup pp ON pp.M_PackageLicensing_ProductGroup_id = pp.M_PackageLicensing_ProductGroup_ID AND pp.c_country_id = l.c_country_id
+         LEFT JOIN M_PackageLicensing_ProductGroup pp ON pp.M_PackageLicensing_ProductGroup_id = ppp.M_PackageLicensing_ProductGroup_ID AND pp.c_country_id = l.c_country_id
          LEFT JOIN M_Product_SmallPackagingMaterial pspm ON pspm.m_product_id = p.m_product_id
          LEFT JOIN M_PackageLicensing_MaterialGroup plmp1 ON pspm.M_PackageLicensing_MaterialGroup_id = plmp1.m_packagelicensing_materialgroup_id AND plmp1.c_country_id = l.c_country_id
          LEFT JOIN M_Product_OuterPackagingMaterial popm ON popm.m_product_id = p.m_product_id
@@ -93,7 +93,8 @@ WHERE (
     )
 
   AND io.movementdate BETWEEN p_DateFrom AND p_DateTo
-
+  AND (plmp1.name IS NOT NULL OR plmp2.name IS NOT NULL)
+  AND pp.value IS NOT NULL
 ORDER BY io.movementdate, io.documentno, p.value
     ;
 
