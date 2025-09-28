@@ -23,8 +23,8 @@ package de.metas.shipper.gateway.spi.model;
  */
 
 /**
- * Implementors can be used to add custom data to both {@link DeliveryOrder}.
+ * Implementors can be used to add custom data to {@link DeliveryPosition} / {@link DeliveryOrderLine}.
  */
-public interface CustomDeliveryData
+public interface CustomDeliveryLineData
 {
 }

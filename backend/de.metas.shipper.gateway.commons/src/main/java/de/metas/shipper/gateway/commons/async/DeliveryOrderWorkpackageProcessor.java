@@ -69,7 +69,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 				.bindToThreadInheritedTrx()
 				.parameters()
 				.setParameter(PARAM_DeliveryOrderRepoId, deliveryOrderRepoId)
-				.setParameter(PARAM_ShipperGatewayId, shipperGatewayId)
+				.setParameter(PARAM_ShipperGatewayId, shipperGatewayId.toJson())
 				.end()
 				.buildAndEnqueue();
 	}
