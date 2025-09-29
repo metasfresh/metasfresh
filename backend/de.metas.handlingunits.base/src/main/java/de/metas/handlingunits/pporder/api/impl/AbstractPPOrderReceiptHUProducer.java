@@ -230,7 +230,7 @@ import java.util.Optional;
 	public List<I_M_HU> receiveIndividualPlanningCUs(@NonNull final Quantity qtyToReceive)
 	{
 		this.processReceiptCandidates = false;
-		this.receiveUsingTUSpec = PreciseTUSpec.of(HuPackingInstructionsId.VIRTUAL,
+		this.receiveUsingSpec = PreciseTUSpec.of(HuPackingInstructionsId.VIRTUAL,
 												   Quantity.of(BigDecimal.ONE, qtyToReceive.getUOM()));
 		return trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndHUs(qtyToReceive));
 	}
