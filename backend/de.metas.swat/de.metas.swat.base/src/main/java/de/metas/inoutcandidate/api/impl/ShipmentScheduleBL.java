@@ -161,6 +161,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
 	private static final AdMessageKey MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = AdMessageKey.of("ShipmentScheduleAlreadyProcessed");
+	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_ALREADY_EXPORTED = AdMessageKey.of("salesorder.shipmentschedule.exported");
+	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_SCHEDULED_FOR_PICKING = AdMessageKey.of("salesorder.shipmentschedule.cannotReactivateBecauseScheduledForPicking");
 
 	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
 
@@ -971,5 +973,26 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public I_M_ShipmentSchedule getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return shipmentSchedulePA.getByOrderLineId(orderLineId);
+	}
+
+	@Override
+	public void assertSalesOrderCanBeReactivated(@NonNull final OrderId salesOrderId)
+	{
+		if (shipmentSchedulePA.existsExportedShipmentScheduleForOrder(salesOrderId))
+		{
+			throw new AdempiereException(MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_ALREADY_EXPORTED);
+		}
+		if (shipmentSchedulePA.existsSheduledForPickingShipmentScheduleForOrder(salesOrderId))
+		{
+			throw new AdempiereException(MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_SCHEDULED_FOR_PICKING);
+		}
+	}
+
+	@Override
+	public Quantity getQtyScheduledForPicking(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final BigDecimal qtyScheduledForPicking = shipmentScheduleRecord.getQtyScheduledForPicking();
+		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
+		return Quantity.of(qtyScheduledForPicking, uom);
 	}
 }

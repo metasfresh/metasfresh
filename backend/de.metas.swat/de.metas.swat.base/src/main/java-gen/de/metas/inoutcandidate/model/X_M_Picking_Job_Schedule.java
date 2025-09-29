@@ -1,5 +1,5 @@
 // Generated Model - DO NOT CHANGE
-package de.metas.handlingunits.model;
+package de.metas.inoutcandidate.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Schedule extends org.compiere.model.PO implements I_M_Picking_Job_Schedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1390288523L;
+	private static final long serialVersionUID = 1754908611L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Schedule (final Properties ctx, final int M_Picking_Job_Schedule_ID, @Nullable final String trxName)
@@ -48,18 +48,6 @@ public class X_M_Picking_Job_Schedule extends org.compiere.model.PO implements I
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Workplace getC_Workplace()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class);
-	}
-
-	@Override
-	public void setC_Workplace(final org.compiere.model.I_C_Workplace C_Workplace)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class, C_Workplace);
 	}
 
 	@Override

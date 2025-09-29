@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job_schedule.repository;
+package de.metas.picking.job_schedule.repository;
 
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.quantity.Quantity;

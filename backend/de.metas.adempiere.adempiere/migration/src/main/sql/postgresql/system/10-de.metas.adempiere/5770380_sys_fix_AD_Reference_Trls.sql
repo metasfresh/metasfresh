@@ -33,7 +33,7 @@ WHERE AD_Reference_ID = 222 AND AD_Language = 'fr_CH';
 
 -- now create a UC to make sure it won't happen again 
 CREATE UNIQUE INDEX AD_Reference_Trl_Name ON AD_Reference_Trl (AD_Language, Name);
-COMMENT ON INDEX AD_Reference_Trl_Name IS 'Needed because It''s no enought to have a UC on AD_Reference-Nname. We also need to make sure that we don''t run into unique constraint errors when switching the base-language'
+COMMENT ON INDEX AD_Reference_Trl_Name IS 'Needed because It''s no enough to have a UC on AD_Reference-Name. We also need to make sure that we don''t run into unique constraint errors when switching the base-language'
 ;
 
 -- If the index-creation fails on some DBs, you can use this select to identify the problematic AD_Reference_Trl records.

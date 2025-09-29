@@ -1,13 +1,15 @@
-package de.metas.handlingunits.picking.job_schedule.repository;
+package de.metas.picking.job_schedule.repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.model.I_M_Picking_Job_Schedule;
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobSchedule;
-import de.metas.handlingunits.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
+import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -17,6 +19,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
@@ -31,6 +34,13 @@ import java.util.stream.Stream;
 public class PickingJobScheduleRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@VisibleForTesting
+	public static PickingJobScheduleRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new PickingJobScheduleRepository();
+	}
 
 	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)
 	{
@@ -130,17 +140,29 @@ public class PickingJobScheduleRepository
 		);
 	}
 
-	public void deleteJobSchedulesById(final @NonNull Set<PickingJobScheduleId> jobScheduleIds)
+	public PickingJobScheduleCollection deleteByIdsAndReturn(final @NonNull Set<PickingJobScheduleId> jobScheduleIds)
 	{
 		if (jobScheduleIds.isEmpty())
 		{
-			return;
+			return PickingJobScheduleCollection.EMPTY;
 		}
 
-		queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+		final List<I_M_Picking_Job_Schedule> records = queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
 				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleIds)
 				.create()
-				.delete();
+				.list();
+		if (records.isEmpty())
+		{
+			return PickingJobScheduleCollection.EMPTY;
+		}
+
+		final PickingJobScheduleCollection deletedSchedules = records.stream()
+				.map(PickingJobScheduleRepository::fromRecord)
+				.collect(PickingJobScheduleCollection.collect());
+
+		InterfaceWrapperHelper.deleteAll(records);
+
+		return deletedSchedules;
 	}
 
 	public List<PickingJobSchedule> list(@NonNull PickingJobScheduleQuery query)

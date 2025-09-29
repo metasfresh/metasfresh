@@ -1593,7 +1593,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsFullLURequired = "IsFullLURequired";
 
 	/**
-	 * Set Haddex Check.
+	 * Set Haddex Prüfung erforderlich.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1602,7 +1602,7 @@ public interface I_C_BPartner
 	void setIsHaddexCheck (boolean IsHaddexCheck);
 
 	/**
-	 * Get Haddex Check.
+	 * Get Haddex Prüfung erforderlich.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1612,6 +1612,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsHaddexCheck = new ModelColumn<>(I_C_BPartner.class, "IsHaddexCheck", null);
 	String COLUMNNAME_IsHaddexCheck = "IsHaddexCheck";
+
+	/**
+	 * Set Invoice Email CC to Member.
+	 * If active, invoice emails are also sent as CC to the member.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceEmailCcToMember (boolean IsInvoiceEmailCcToMember);
+
+	/**
+	 * Get Invoice Email CC to Member.
+	 * If active, invoice emails are also sent as CC to the member.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoiceEmailCcToMember();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsInvoiceEmailCcToMember = new ModelColumn<>(I_C_BPartner.class, "IsInvoiceEmailCcToMember", null);
+	String COLUMNNAME_IsInvoiceEmailCcToMember = "IsInvoiceEmailCcToMember";
 
 	/**
 	 * Set Manufacturer.
@@ -2212,6 +2235,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2221,6 +2245,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -3297,7 +3322,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SO_DocTypeTarget_ID = "SO_DocTypeTarget_ID";
 
 	/**
-	 * Set Notiz Auftragsart.
+	 * Set SO_TargetDocTypeReason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3306,7 +3331,7 @@ public interface I_C_BPartner
 	void setSO_TargetDocTypeReason (@Nullable java.lang.String SO_TargetDocTypeReason);
 
 	/**
-	 * Get Notiz Auftragsart.
+	 * Get SO_TargetDocTypeReason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

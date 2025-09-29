@@ -146,8 +146,7 @@ public class HandlingUnitsRestController
 	@PostMapping("/byQRCode")
 	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByIdSupplier(
-				() -> handlingUnitsService.toGetByIdRequest(request));
+		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByQRCode(GetByQRCodeRequest.of(request));
 
 		//
 		// If no HU was found for given QR Code then try to directly convert given QR code to a "new HU"
@@ -242,7 +241,7 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final ADRefList adRefList, final String adLanguage)
+	public static JsonDisposalReasonsList toJsonDisposalReasonsList(final ADRefList adRefList, final String adLanguage)
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()

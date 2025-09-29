@@ -132,4 +132,8 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	BPartnerId getBPartnerId(@NonNull I_M_ShipmentSchedule schedule);
 
 	Quantity getQtyToDeliver(I_M_ShipmentSchedule schedule);
+
+	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	void flagForRecompute(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
 }

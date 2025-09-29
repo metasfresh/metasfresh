@@ -71,10 +71,6 @@ public interface I_M_Picking_Job_Step
 	 */
 	int getC_Order_ID();
 
-	org.compiere.model.I_C_Order getC_Order();
-
-	void setC_Order(org.compiere.model.I_C_Order C_Order);
-
 	ModelColumn<I_M_Picking_Job_Step, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
@@ -95,10 +91,6 @@ public interface I_M_Picking_Job_Step
 	 * <br>Virtual Column: false
 	 */
 	int getC_OrderLine_ID();
-
-	org.compiere.model.I_C_OrderLine getC_OrderLine();
-
-	void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
 
 	ModelColumn<I_M_Picking_Job_Step, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
@@ -167,10 +159,6 @@ public interface I_M_Picking_Job_Step
 	 * <br>Virtual Column: false
 	 */
 	int getC_Workplace_ID();
-
-	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
-
-	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
 
 	ModelColumn<I_M_Picking_Job_Step, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
 	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
@@ -302,10 +290,6 @@ public interface I_M_Picking_Job_Step
 	 */
 	int getM_Picking_Job_ID();
 
-	de.metas.handlingunits.model.I_M_Picking_Job getM_Picking_Job();
-
-	void setM_Picking_Job(de.metas.handlingunits.model.I_M_Picking_Job M_Picking_Job);
-
 	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_Picking_Job> COLUMN_M_Picking_Job_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_Picking_Job_ID", de.metas.handlingunits.model.I_M_Picking_Job.class);
 	String COLUMNNAME_M_Picking_Job_ID = "M_Picking_Job_ID";
 
@@ -326,10 +310,6 @@ public interface I_M_Picking_Job_Step
 	 * <br>Virtual Column: false
 	 */
 	int getM_Picking_Job_Line_ID();
-
-	de.metas.handlingunits.model.I_M_Picking_Job_Line getM_Picking_Job_Line();
-
-	void setM_Picking_Job_Line(de.metas.handlingunits.model.I_M_Picking_Job_Line M_Picking_Job_Line);
 
 	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_Picking_Job_Line> COLUMN_M_Picking_Job_Line_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_Picking_Job_Line_ID", de.metas.handlingunits.model.I_M_Picking_Job_Line.class);
 	String COLUMNNAME_M_Picking_Job_Line_ID = "M_Picking_Job_Line_ID";
@@ -352,11 +332,7 @@ public interface I_M_Picking_Job_Step
 	 */
 	int getM_Picking_Job_Schedule_ID();
 
-	@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Schedule getM_Picking_Job_Schedule();
-
-	void setM_Picking_Job_Schedule(@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Schedule M_Picking_Job_Schedule);
-
-	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_Picking_Job_Schedule> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_Picking_Job_Schedule_ID", de.metas.handlingunits.model.I_M_Picking_Job_Schedule.class);
+	ModelColumn<I_M_Picking_Job_Step, Object> COLUMN_M_Picking_Job_Schedule_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_Picking_Job_Schedule_ID", null);
 	String COLUMNNAME_M_Picking_Job_Schedule_ID = "M_Picking_Job_Schedule_ID";
 
 	/**
@@ -490,10 +466,6 @@ public interface I_M_Picking_Job_Step
 	 */
 	int getM_Shipper_ID();
 
-	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
-
-	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
-
 	ModelColumn<I_M_Picking_Job_Step, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
 	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
@@ -535,10 +507,6 @@ public interface I_M_Picking_Job_Step
 	 */
 	int getPicked_HU_ID();
 
-	@Nullable de.metas.handlingunits.model.I_M_HU getPicked_HU();
-
-	void setPicked_HU(@Nullable de.metas.handlingunits.model.I_M_HU Picked_HU);
-
 	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_HU> COLUMN_Picked_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "Picked_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_Picked_HU_ID = "Picked_HU_ID";
 
@@ -559,10 +527,6 @@ public interface I_M_Picking_Job_Step
 	 * <br>Virtual Column: false
 	 */
 	int getPickFrom_HU_ID();
-
-	de.metas.handlingunits.model.I_M_HU getPickFrom_HU();
-
-	void setPickFrom_HU(de.metas.handlingunits.model.I_M_HU PickFrom_HU);
 
 	ModelColumn<I_M_Picking_Job_Step, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";

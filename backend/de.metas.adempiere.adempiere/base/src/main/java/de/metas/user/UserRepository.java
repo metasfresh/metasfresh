@@ -5,6 +5,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -79,6 +80,7 @@ public class UserRepository
 				.bPartnerLanguage(bpartnerLanguage)
 				.language(language)
 
+				.isInvoiceEmailEnabled(OptionalBoolean.ofNullableString(userRecord.getIsInvoiceEmailEnabled()))
 				.build();
 	}
 

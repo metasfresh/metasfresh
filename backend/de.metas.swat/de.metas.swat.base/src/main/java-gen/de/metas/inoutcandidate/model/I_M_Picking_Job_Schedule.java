@@ -1,4 +1,4 @@
-package de.metas.handlingunits.model;
+package de.metas.inoutcandidate.model;
 
 import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
@@ -115,10 +115,6 @@ public interface I_M_Picking_Job_Schedule
 	 */
 	int getC_Workplace_ID();
 
-	org.compiere.model.I_C_Workplace getC_Workplace();
-
-	void setC_Workplace(org.compiere.model.I_C_Workplace C_Workplace);
-
 	ModelColumn<I_M_Picking_Job_Schedule, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_M_Picking_Job_Schedule.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
 	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
 
@@ -184,7 +180,7 @@ public interface I_M_Picking_Job_Schedule
 	 */
 	int getM_ShipmentSchedule_ID();
 
-	ModelColumn<I_M_Picking_Job_Schedule, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_M_Picking_Job_Schedule.class, "M_ShipmentSchedule_ID", null);
+	ModelColumn<I_M_Picking_Job_Schedule, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_M_Picking_Job_Schedule.class, "M_ShipmentSchedule_ID", de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
