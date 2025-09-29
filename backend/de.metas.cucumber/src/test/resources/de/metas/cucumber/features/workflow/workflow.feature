@@ -17,7 +17,7 @@ Feature: workflow tests
 
     And create AD_Workflow:
       | AD_Workflow_ID.Identifier | Name     | WorkflowType | OPT.AD_WF_Node_ID.Identifier | OPT.Description | OPT.Help | OPT.AccessLevel | OPT.DurationUnit | OPT.Version | OPT.ValidFrom | OPT.ValidTo | OPT.Priority | OPT.DurationLimit | OPT.Duration | OPT.Cost | OPT.WaitingTime | OPT.IsDefault |
-      | workflow_1                | testName2 | M            | node_1                       | testDescription | testHelp | 1               | D                | 0           | 2022-08-18    | 2022-08-19  | 0            | 0                 | 2            | 1        | 1               | false         |
+      | workflow_1                | testName | M            | node_1                       | testDescription | testHelp | 1               | D                | 0           | 2022-08-18    | 2022-08-19  | 0            | 0                 | 2            | 1        | 1               | false         |
 
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |

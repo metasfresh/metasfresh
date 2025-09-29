@@ -40,7 +40,7 @@ import org.junit.platform.suite.api.Suite;
 @IncludeEngines("cucumber")
 @SelectPackages("de.metas.cucumber")
 @ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = "de.metas.cucumber.stepdefs")
-@ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = "@Id:S0302_100")
+@ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = "not @ignore")
 @ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "html:target/cucumber.html,json:target/cucumber.json,junit:target/cucumber-junit.xml,message:target/cucumber.message")
 public class RunCucumberTest
 {
