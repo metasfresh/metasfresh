@@ -20,16 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.cache;
+package de.metas.cucumber.stepdefs.workflow;
 
-import de.metas.cache.CacheMgt;
-import io.cucumber.java.en.Then;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.eevolution.model.I_PP_WF_Node_Product;
 
-public class CacheMgt_StepDef
+public class PP_WF_Node_Product_StepDefData extends StepDefData<I_PP_WF_Node_Product>
 {
-	@Then("the metasfresh cache is reset")
-	public void processMetasfreshResponse()
+	public PP_WF_Node_Product_StepDefData()
 	{
-		CacheMgt.get().reset();
+		super(I_PP_WF_Node_Product.class);
 	}
 }

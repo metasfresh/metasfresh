@@ -1,8 +1,6 @@
 package de.metas.tax.api.impl;
 
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
