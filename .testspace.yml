@@ -39,6 +39,8 @@ release:
   - middle_ages_uat
   - modified_carbon_uat
   - modus_operandi_uat
+  - modus_operandi_hotfix
+  - modus_operandi_release
   - neon_underwear_uat
   - new_dawn_uat
   - oasis_sun_uat

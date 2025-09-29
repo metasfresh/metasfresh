@@ -68,6 +68,7 @@ pull_request_rules:
               - base=mad_orange_hotfix
               - base=massive_entropy_hotfix
               - base=memorable_shiny_hotfix
+              - base=modus_operandi_hotfix
               - base=pink_rooster_hotfix
               - base=science_vessel_hotfix
               - base=secondary_opinion_hotfix
@@ -82,6 +83,7 @@ pull_request_rules:
               - base=temporary_test20240815_release
               - base=ghost_rider_release
               - base=intensive_care_release
+              - base=modus_operandi_release
               - base=soft_panda_release
               - base=vampire_textbook_release
               - base=science_vessel_release
