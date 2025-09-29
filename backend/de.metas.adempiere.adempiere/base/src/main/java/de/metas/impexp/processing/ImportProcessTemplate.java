@@ -8,6 +8,7 @@ import de.metas.error.IErrorManager;
 import de.metas.impexp.ActualImportRecordsResult;
 import de.metas.impexp.ImportRecordsAsyncExecutor;
 import de.metas.impexp.ImportRecordsRequest;
+import de.metas.impexp.format.ImportStatus;
 import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.ImportProcessResult.ImportProcessResultCollector;
@@ -606,7 +607,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 	protected void markImported(final ImportRecordType importRecord)
 	{
-		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_I_IsImported, true);
+		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_I_IsImported, ImportStatus.IMPORTED.getCode());
 		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_Processed, true);
 		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_Processing, false);
 		InterfaceWrapperHelper.save(importRecord);
