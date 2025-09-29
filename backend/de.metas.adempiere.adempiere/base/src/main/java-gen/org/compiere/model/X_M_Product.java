@@ -927,18 +927,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setLowLevel (final int LowLevel)
-	{
-		set_Value (COLUMNNAME_LowLevel, LowLevel);
-	}
-
-	@Override
-	public int getLowLevel()
-	{
-		return get_ValueAsInt(COLUMNNAME_LowLevel);
-	}
-
-	@Override
 	public void setManufacturerArticleNumber (final @Nullable java.lang.String ManufacturerArticleNumber)
 	{
 		set_Value (COLUMNNAME_ManufacturerArticleNumber, ManufacturerArticleNumber);
