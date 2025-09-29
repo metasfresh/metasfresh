@@ -189,11 +189,6 @@ public class InventoryLineHU
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public InventoryLineHU withHuId(final @NonNull HuId huId)
-	{
-		return toBuilder().huId(huId).build();
-	}
-
 	public InventoryLineHU convertQuantities(@NonNull final UnaryOperator<Quantity> qtyConverter)
 	{
 		return toBuilder()

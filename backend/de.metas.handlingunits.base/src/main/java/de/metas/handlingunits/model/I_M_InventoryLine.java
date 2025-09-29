@@ -26,6 +26,7 @@ import java.math.BigDecimal;
  * #L%
  */
 
+@SuppressWarnings("unused")
 public interface I_M_InventoryLine extends org.compiere.model.I_M_InventoryLine
 {
 	// @formatter:off

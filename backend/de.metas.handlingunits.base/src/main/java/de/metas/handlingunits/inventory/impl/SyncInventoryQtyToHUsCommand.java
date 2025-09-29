@@ -392,24 +392,6 @@ public class SyncInventoryQtyToHUsCommand
 		}
 	}
 
-	private static HuId extractSingleCreatedHUId(
-			@NonNull final IAllocationDestination huDestination)
-	{
-		final List<I_M_HU> createdHUs = extractCreatedHUs(huDestination);
-		if (createdHUs.isEmpty())
-		{
-			throw new HUException("No HU was created by " + huDestination);
-		}
-		else if (createdHUs.size() > 1)
-		{
-			throw new HUException("Only one HU expected to be created by " + huDestination);
-		}
-		else
-		{
-			return HuId.ofRepoId(createdHUs.get(0).getM_HU_ID());
-		}
-	}
-
 	private static List<I_M_HU> extractCreatedHUs(
 			@NonNull final IAllocationDestination huDestination)
 	{
@@ -426,10 +408,5 @@ public class SyncInventoryQtyToHUsCommand
 	private boolean isIgnoreOnInventoryMinusAndNoHU()
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_IgnoreOnInventoryMinusAndNoHU, false);
-	}
-
-	private void addSourceHUMarkerIfCarringComponents()
-	{
-
 	}
 }

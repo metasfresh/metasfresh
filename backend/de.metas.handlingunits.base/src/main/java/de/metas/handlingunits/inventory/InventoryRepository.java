@@ -70,7 +70,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -112,7 +112,7 @@ public class InventoryRepository
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
+	private I_M_InventoryLine getInventoryLineRecordById(@NonNull final InventoryLineId inventoryLineId)
 	{
 		return load(inventoryLineId, I_M_InventoryLine.class);
 	}
@@ -120,21 +120,21 @@ public class InventoryRepository
 	@Deprecated
 	public final I_M_InventoryLine getInventoryLineRecordFor(@NonNull final InventoryLine inventoryLine)
 	{
-		return getInventoryLineRecordById(inventoryLine.getId());
+		return getInventoryLineRecordById(inventoryLine.getIdNonNull());
 	}
 
-	private ImmutableSet<I_M_InventoryLine> getInventoryLinesByIDs(@Nullable final Set<InventoryLineId> inventoryLineIds)
+	private ImmutableSet<I_M_InventoryLine> getInventoryLinesByIDs(@NonNull final Set<InventoryLineId> inventoryLineIds)
 	{
 		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
 				.stream()
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private HashMap<InventoryLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@Nullable final Set<InventoryLineId> inventoryLineIds)
+	private HashMap<InventoryLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@NonNull final Set<InventoryLineId> inventoryLineIds)
 	{
 		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(record -> extractInventoryLineId(record)));
+				.collect(GuavaCollectors.toHashMapByKey(InventoryRepository::extractInventoryLineId));
 	}
 
 	private static InventoryLineId extractInventoryLineId(@NonNull final I_M_InventoryLine record)
@@ -155,8 +155,7 @@ public class InventoryRepository
 
 	I_M_Inventory getRecordById(@NonNull final InventoryId inventoryId)
 	{
-		final I_M_Inventory inventoryRecord = inventoryDAO.getById(inventoryId);
-		return inventoryRecord;
+		return inventoryDAO.getById(inventoryId);
 	}
 
 	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
@@ -172,7 +171,7 @@ public class InventoryRepository
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final Collection<I_M_InventoryLine> inventoryLineRecords = retrieveLineRecords(inventoryId);
-		final ImmutableSet<InventoryLineId> inventoryLineIds = inventoryLineRecords.stream().map(r -> extractInventoryLineId(r)).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<InventoryLineId> inventoryLineIds = inventoryLineRecords.stream().map(InventoryRepository::extractInventoryLineId).collect(ImmutableSet.toImmutableSet());
 
 		final ListMultimap<InventoryLineId, I_M_InventoryLine_HU> inventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLineIds);
 
@@ -473,8 +472,8 @@ public class InventoryRepository
 
 		final AttributesKey storageAttributesKey = inventoryLine.getStorageAttributesKey();
 
-		final AttributeSetInstanceId asiId = coalesceSuppliers(
-				() -> inventoryLine.getAsiId(),
+		final AttributeSetInstanceId asiId = coalesceSuppliersNotNull(
+				inventoryLine::getAsiId,
 				() -> AttributesKeys.createAttributeSetInstanceFromAttributesKey(storageAttributesKey));
 		lineRecord.setM_AttributeSetInstance_ID(asiId.getRepoId());
 
@@ -549,9 +548,9 @@ public class InventoryRepository
 		}
 		else
 		{
-			final HashMap<InventoryLineHUId, I_M_InventoryLine_HU> existingInventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLine.getId())
+			final HashMap<InventoryLineHUId, I_M_InventoryLine_HU> existingInventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLine.getIdNonNull())
 					.stream()
-					.collect(GuavaCollectors.toHashMapByKey(l -> extractInventoryLineHUId(l)));
+					.collect(GuavaCollectors.toHashMapByKey(InventoryRepository::extractInventoryLineHUId));
 
 			for (final InventoryLineHU lineHU : inventoryLine.getInventoryLineHUs())
 			{
@@ -563,7 +562,7 @@ public class InventoryRepository
 
 				lineHURecord.setAD_Org_ID(inventoryLine.getOrgId().getRepoId());
 				lineHURecord.setM_Inventory_ID(inventoryId.getRepoId());
-				lineHURecord.setM_InventoryLine_ID(inventoryLine.getId().getRepoId());
+				lineHURecord.setM_InventoryLine_ID(inventoryLine.getIdNonNull().getRepoId());
 				updateInventoryLineHURecord(lineHURecord, lineHU);
 
 				saveRecord(lineHURecord);
@@ -722,7 +721,7 @@ public class InventoryRepository
 		return toInventory(inventoryRecord);
 	}
 
-	public Inventory createInventoryLine(@NonNull final InventoryLineCreateRequest request)
+	public void createInventoryLine(@NonNull final InventoryLineCreateRequest request)
 	{
 		final I_M_Inventory inventory = getRecordById(request.getInventoryId());
 
@@ -762,7 +761,7 @@ public class InventoryRepository
 			saveInventoryLineHURecords(inventoryLine, request.getInventoryId());
 		}
 
-		return toInventory(inventory);
+		toInventory(inventory);
 	}
 
 	public Set<I_M_InventoryLine> retrieveAllLinesForHU(final @NonNull IContextAware ctxAware, @NonNull final HuId huId)
@@ -802,7 +801,7 @@ public class InventoryRepository
 				.filter(filter)
 				.create()
 				.stream()
-				.map(huAssignment -> TableRecordReference.ofReferenced(huAssignment))
+				.map(TableRecordReference::ofReferenced)
 				.sorted(Comparator.comparing(TableRecordReference::getRecord_ID))
 				.distinct()
 				.map(ref -> ref.getModel(ctxAware, I_M_InventoryLine.class))

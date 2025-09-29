@@ -434,46 +434,42 @@ public class M_HU_StepDef
 	@And("aggregate TUs to new LU")
 	public void aggregateTUsToNewLU(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			huTrxBL.process(huContext -> {
-				final LULoader luLoader = new LULoader(huContext);
+		DataTableRows.of(dataTable).forEach(row -> huTrxBL.process(huContext -> {
+			final LULoader luLoader = new LULoader(huContext);
 
-				@NonNull final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
-				for (final StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
-				{
-					final I_M_HU sourceTU = huTable.get(sourceTUIdentifier);
-					luLoader.addTU(sourceTU);
-				}
+			@NonNull final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
+			for (final StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
+			{
+				final I_M_HU sourceTU = huTable.get(sourceTUIdentifier);
+				luLoader.addTU(sourceTU);
+			}
 
-				luLoader.close();
+			luLoader.close();
 
-				row.getAsOptionalIdentifier("newLUs")
-						.map(StepDefDataIdentifier::toCommaSeparatedList)
-						.ifPresent(newLUIdentifiers -> {
-							final List<I_M_HU> newLUs = luLoader.getLU_HUs();
-							assertThat(newLUs).hasSameSizeAs(newLUIdentifiers);
-							for (int index = 0; index < newLUs.size(); index++)
-							{
-								huTable.put(newLUIdentifiers.get(index), newLUs.get(index));
-							}
-						});
-			});
-		});
+			row.getAsOptionalIdentifier("newLUs")
+					.map(StepDefDataIdentifier::toCommaSeparatedList)
+					.ifPresent(newLUIdentifiers -> {
+						final List<I_M_HU> newLUs = luLoader.getLU_HUs();
+						assertThat(newLUs).hasSameSizeAs(newLUIdentifiers);
+						for (int index = 0; index < newLUs.size(); index++)
+						{
+							huTable.put(newLUIdentifiers.get(index), newLUs.get(index));
+						}
+					});
+		}));
 	}
 
 	@And("transform CU to new LU")
 	public void transformCUtoNewLUs(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			huTrxBL.process(huContext -> {
-				transformCUtoNewLU(row, huContext);
-			});
-		});
+		DataTableRows.of(dataTable).forEach(row -> huTrxBL.process(huContext -> {
+			transformCUtoNewLU(row, huContext);
+		}));
 	}
 
 	private void transformCUtoNewLU(final DataTableRow row, final IHUContext huContext)
 	{
-		final I_M_HU sourceCU = row.getAsIdentifier("sourceCU").lookupIn(huTable);
+		final I_M_HU sourceCU = row.getAsIdentifier("sourceCU").lookupNotNullIn(huTable);
 
 		final IHUProductStorage sourceCUProductStorage = handlingUnitsBL.getSingleHUProductStorage(sourceCU);
 		final ProductId productId = sourceCUProductStorage.getProductId();
@@ -489,7 +485,7 @@ public class M_HU_StepDef
 			producer.setBPartnerAndLocationId(bpartnerLocationId);
 		}
 
-		final I_M_HU_PI tuPI = row.getAsIdentifier("TU_PI_ID").lookupIn(huPiTable);
+		final I_M_HU_PI tuPI = row.getAsIdentifier("TU_PI_ID").lookupNotNullIn(huPiTable);
 		final BigDecimal qtyCUsPerTU = row.getAsBigDecimal("QtyCUsPerTU");
 		final QtyTU qtyTUs = QtyTU.ofInt(row.getAsInt("QtyTUsPerLU"));
 		producer.setTUPI(tuPI);

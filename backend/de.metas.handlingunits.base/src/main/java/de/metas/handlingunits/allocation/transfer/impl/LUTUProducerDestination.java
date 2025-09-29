@@ -95,7 +95,7 @@ public class LUTUProducerDestination
 	private final HashMap<HuId, TUProducerDestination> luId2tuProducer = new HashMap<>();
 
 	/**
-	 * Current Transport Units (TUs) producer for remaining qty (which could not loaded to some LUs).
+	 * Current Transport Units (TUs) producer for the remaining qty (which could not loaded to some LUs).
 	 */
 	private TUProducerDestination tuProducerForRemaining = null;
 	private Set<I_M_HU> tuProducerForRemaining_alreadyCreatedTUs = null;
@@ -125,22 +125,22 @@ public class LUTUProducerDestination
 	private int maxTUsPerLU = -1;
 
 	/**
-	 * How may TUs were maximum created for an LU
+	 * How may TUs be maximum created for an LU
 	 */
 	private int maxTUsPerLU_ActuallyCreated = 0;
 
 	/**
-	 * Shall we create TUs which are not linked to any LU for remaining Qty?
+	 * Shall we create TUs, which are not linked to any LU for remaining Qty?
 	 */
 	private boolean createTUsForRemainingQty = false;
 
 	/**
-	 * How many TUs to create for remaining Qty (i.e. after all LUs were created)?
+	 * How many TUs to create for the remaining Qty (i.e. after all LUs were created)?
 	 */
 	private int maxTUsForRemainingQty = Integer.MAX_VALUE;
 
 	/**
-	 * How may TUs for remaining Qty were maximum created
+	 * How may TUs for remaining Qty be maximum created
 	 */
 	private int maxTUsForRemainingQty_ActuallyCreated = 0;
 
@@ -150,7 +150,7 @@ public class LUTUProducerDestination
 	private final ArrayList<I_M_HU> _createdLUs = new ArrayList<>();
 
 	/**
-	 * TUs that were actually created for remaining Qty
+	 * TUs that were actually created for the remaining Qty
 	 */
 	private final ArrayList<I_M_HU> _createdTUsForRemainingQty = new ArrayList<>();
 
@@ -218,16 +218,10 @@ public class LUTUProducerDestination
 	}
 
 	@Override
-	public int getMaxTUsForRemainingQty_ActuallyCreated()
-	{
-		return maxTUsForRemainingQty_ActuallyCreated;
-	}
-
-	@Override
 	public boolean isMaxTUsForRemainingQtyInfinite()
 	{
 		final int maxTUsForRemainingQty = getMaxTUsForRemainingQty();
-		return maxTUsForRemainingQty >= Integer.MAX_VALUE;
+		return maxTUsForRemainingQty == Integer.MAX_VALUE;
 	}
 
 	@Override
@@ -264,12 +258,6 @@ public class LUTUProducerDestination
 		//
 		// Fallback: Max TU/LU was not configured => throw exception
 		throw new HUException("Max TU/LU was not configured for " + this);
-	}
-
-	@Override
-	public final int getMaxTUsPerLU_ActuallyCreated()
-	{
-		return maxTUsPerLU_ActuallyCreated;
 	}
 
 	@Override
@@ -316,7 +304,7 @@ public class LUTUProducerDestination
 	@Override
 	public boolean isMaxLUsInfinite()
 	{
-		return maxLUs >= Integer.MAX_VALUE;
+		return maxLUs == Integer.MAX_VALUE;
 	}
 
 	/**
@@ -357,7 +345,7 @@ public class LUTUProducerDestination
 		}
 		else
 		{
-			// at this point in time, luHU might not even have an item with itemType=HandingUnit, but it will have one with itemType=HUAggregate,
+			// At this point in time, luHU might not even have an item with itemType=HandingUnit, but it will have one with itemType=HUAggregate,
 			// and in that case, the "HUAggregate" one will be returned. This means that the tuProducer will load to an aggregate VHU that represents a number of TUs
 			luItem = handlingUnitsDAO.retrieveItem(luHU, luItemPI);
 		}
@@ -495,7 +483,7 @@ public class LUTUProducerDestination
 	@Override
 	public void setTUPI(@NonNull final I_M_HU_PI tuPI)
 	{
-		// verify the tuPI's HU-type
+		// verify the tuPI's HU type
 		final boolean tuPIisVirtual = HuPackingInstructionsId.isVirtualRepoId(tuPI.getM_HU_PI_ID());
 		final String expectedHuType = tuPIisVirtual ? X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI : X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 		assertCorrectHuType(tuPI, expectedHuType);
@@ -513,14 +501,14 @@ public class LUTUProducerDestination
 		addCUPerTU(huCapacityBL.getCapacity(tuPIItemProduct, productId));
 	}
 
-	private void assertCorrectHuType(final I_M_HU_PI pi, final String exptectedType)
+	private void assertCorrectHuType(final I_M_HU_PI pi, final String expectedType)
 	{
 		final String type = Services.get(IHandlingUnitsBL.class).getHU_UnitType(pi);
 
 		Check.errorUnless(
-				exptectedType.equals(type),
+				expectedType.equals(type),
 				"The M_HU_PI_Version of the given parameter pi needs to have type={}, but has type={}; pi={}",
-				exptectedType, type, pi);
+				expectedType, type, pi);
 	}
 
 	@Override
@@ -560,12 +548,6 @@ public class LUTUProducerDestination
 		{
 			throw new HUException("More than one TU capacity defined: " + productId2tuCapacity);
 		}
-	}
-
-	@Override
-	public Capacity getCUPerTU(@NonNull final ProductId cuProductId)
-	{
-		return productId2tuCapacity.get(cuProductId);
 	}
 
 	private Capacity createCapacity(
@@ -620,7 +602,7 @@ public class LUTUProducerDestination
 	protected final IAllocationResult loadRemaining(final IAllocationRequest request)
 	{
 		//
-		// If we are not asked to create more TUs for remaining Qty then do nothing
+		// If we are not asked to create more TUs for remaining Qty, then do nothing
 		if (!isCreateTUsForRemainingQty())
 		{
 			return AllocationUtils.createMutableAllocationResult(request);
@@ -628,19 +610,19 @@ public class LUTUProducerDestination
 
 		//
 		// Create & setup TU Producer to create as many TUs as needed
-		final TUProducerDestination tuProducerForRemainings = getCreateTUProducerDestinationForRemaining();
+		final TUProducerDestination tuProducerForRemaining = getCreateTUProducerDestinationForRemaining();
 
 		//
 		// There is no parent for remaining TUs
-		tuProducerForRemainings.setParentItem(null);
+		tuProducerForRemaining.setParentItem(null);
 
 		//
 		// Create TUs for remaining Qty
-		final IAllocationResult finalResult = tuProducerForRemainings.load(request);
+		final IAllocationResult finalResult = tuProducerForRemaining.load(request);
 
 		//
-		// Add produced TU for remaining quantity, right in our main result
-		final List<I_M_HU> createdTUs = tuProducerForRemainings.getCreatedHUs();
+		// Add produced TU for the remaining quantity, right in our main result
+		final List<I_M_HU> createdTUs = tuProducerForRemaining.getCreatedHUs();
 		addToCreatedHUs(createdTUs);
 
 		//
@@ -683,13 +665,13 @@ public class LUTUProducerDestination
 		}
 
 		//
-		// Iterate all assigned HUs and add them as "created HUs" to "destination", if their LU/TU configuration matches.
-		// If configuration does not match, destroy them because for sure we won't use them again.
+		// Iterate all assigned HUs and add them as "created HUs" to "destination" if their LU/TU configuration matches.
+		// If the configuration does not match, destroy them because for sure we won't use them again.
 		final List<I_M_HU> husAssigned = huAllocations.getAssignedHUs();
 		for (final I_M_HU hu : husAssigned)
 		{
 			//
-			// Skip those HUs which were destroyed in meantime.
+			// Skip those HUs, which were destroyed in the meantime.
 			// It's tempting to also remove their assignments but think to the case when
 			// the assignment was left there intentionally, for audit/documentation purposes.
 			if (handlingUnitsBL.isDestroyed(hu))
@@ -697,7 +679,7 @@ public class LUTUProducerDestination
 				continue;
 			}
 
-			// Check if current HU has the same configuration and if yes, add it to "created HUs"
+			// Check if the current HU has the same configuration and if yes, add it to "created HUs"
 			final int huConfigurationId = hu.getM_HU_LUTU_Configuration_ID();
 			if (lutuConfigurationId > 0 && lutuConfigurationId == huConfigurationId)
 			{
@@ -706,12 +688,12 @@ public class LUTUProducerDestination
 			}
 
 			//
-			// Else, HU does not have the same configuration so we can safely destroy it
+			// Else, HU does not have the same configuration, so we can safely destroy it
 			huAllocations.destroyAssignedHU(hu);
 		}
 
 		//
-		// Reset existing HUs to load, to make sure we are not loading them again
+		// Reset existing HUs to load to make sure we are not loading them again
 		existingHUs = null;
 	}
 
@@ -724,7 +706,7 @@ public class LUTUProducerDestination
 		}
 
 		//
-		// Create a new TU Producer for remaining instance
+		// Create a new TU Producer for the remaining instance
 		final int maxTUsForRemainingQty = getMaxTUsForRemainingQty();
 		tuProducerForRemaining = createTUProducerDestination(maxTUsForRemainingQty);
 		tuProducerForRemaining.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
@@ -736,7 +718,7 @@ public class LUTUProducerDestination
 		tuProducerForRemaining_alreadyCreatedTUs = null;
 
 		//
-		// From this point on this producer is not configurable anymore
+		// From this point on this producer is not configurable any more
 		setNotConfigurable();
 
 		//
@@ -840,24 +822,9 @@ public class LUTUProducerDestination
 	}
 
 	@Override
-	public int getCreatedTUsForRemainingQtyCount()
-	{
-		return _createdTUsForRemainingQty.size();
-	}
-
-	@Override
 	public Quantity calculateTotalQtyCU()
 	{
 		final Capacity tuCapacity = getSingleCUPerTU();
-		return calculateTotalQtyCU(tuCapacity);
-	}
-
-	@Override
-	public Quantity calculateTotalQtyCU(final ProductId cuProductId)
-	{
-		final Capacity tuCapacity = getCUPerTU(cuProductId);
-		Check.assumeNotNull(tuCapacity, "tuCapacity defined for {}", cuProductId);
-
 		return calculateTotalQtyCU(tuCapacity);
 	}
 

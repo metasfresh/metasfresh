@@ -128,6 +128,12 @@ public class InventoryLine
 				.reduce(Reducers.singleValue(values -> new AdempiereException("Mixing Physical inventories with Internal Use inventories is not allowed: " + lineHUs)));
 	}
 
+	@NonNull
+	public InventoryLineId getIdNonNull()
+	{
+		return Check.assumeNotNull(id, "line is saved: {}", this);
+	}
+
 	void setId(@NonNull final InventoryLineId id)
 	{
 		this.id = id;
@@ -175,15 +181,6 @@ public class InventoryLine
 		}
 
 		return qtyCountFixed;
-	}
-
-	public Quantity getQtyCountMinusBooked()
-	{
-		return getInventoryLineHUs()
-				.stream()
-				.map(InventoryLineHU::getQtyCountMinusBooked)
-				.reduce(Quantity::add)
-				.orElseThrow(() -> new AdempiereException("No HUs found for " + this));
 	}
 
 	public Quantity getQtyInternalUse()
