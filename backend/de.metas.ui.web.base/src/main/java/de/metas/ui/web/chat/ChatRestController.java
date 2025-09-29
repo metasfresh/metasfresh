@@ -2,7 +2,6 @@ package de.metas.ui.web.chat;
 
 import de.metas.ui.web.chat.json.JsonPostMessage;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
@@ -20,7 +19,6 @@ public class ChatRestController
 {
 	protected static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/chat";
 
-	@NonNull private final UserSession userSession;
 	@NonNull private final WebsocketSender websocketSender;
 
 	@PostMapping("/post")
