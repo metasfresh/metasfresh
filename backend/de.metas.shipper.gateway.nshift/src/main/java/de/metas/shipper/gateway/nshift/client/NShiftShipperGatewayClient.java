@@ -67,7 +67,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient {
 
         return deliveryOrder.toBuilder()
                 .trackingNumber(mainTrackingNumber)
-                .customDeliveryData(customDeliveryData)
+                .customDeliveryData(customDeliveryData) // why this is custom data and not standard/common data?
                 .build();
     }
 

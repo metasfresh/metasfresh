@@ -73,6 +73,7 @@ public class ShipmentOrderRepository
 				.andCollectChildren(I_Carrier_ShipmentOrder_Item.COLUMNNAME_Carrier_ShipmentOrder_Parcel_ID, I_Carrier_ShipmentOrder_Item.class)
 				.create()
 				.stream()
+				// FIXME: not sure we have a link from parcel to item
 				.collect(ImmutableListMultimap.toImmutableListMultimap(item -> ShipmentOrderParcelId.ofRepoId(item.getCarrier_ShipmentOrder_Parcel_ID()), this::itemFromPO));
 
 		final ImmutableList<DeliveryOrderLine> parcels = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
@@ -123,7 +124,7 @@ public class ShipmentOrderRepository
 						.houseNo(po.getShipper_StreetNumber())
 						.country(CountryCode.builder()
 								.alpha2(po.getShipper_CountryISO2Code())
-								.alpha3(po.getShipper_CountryISO3Code())
+								.alpha3(po.getShipper_CountryISO3Code()) // FIXME don't need both versions
 								.build())
 						.bpartnerId(po.getC_BPartner_ID())
 						.build())
@@ -137,7 +138,7 @@ public class ShipmentOrderRepository
 						.houseNo(po.getReceiver_StreetNumber())
 						.country(CountryCode.builder()
 								.alpha2(po.getReceiver_CountryISO2Code())
-								.alpha3(po.getReceiver_CountryISO3Code())
+								.alpha3(po.getReceiver_CountryISO3Code())// FIXME don't need both versions
 								.build())
 						.build())
 				.customDeliveryData(ShipmentOrderData.builder()
@@ -172,6 +173,7 @@ public class ShipmentOrderRepository
 	{
 		if (order.getId() != null)
 		{
+			// FIXME: we need a full save, not only parcels
 			updateShipmentOrderParcels(order);
 			return order;
 		}
@@ -195,11 +197,14 @@ public class ShipmentOrderRepository
 				.stream()
 				.map(deliveryOrderLine -> getAndUpdateParcel(deliveryOrderLine, parcelsById))
 				.collect(ImmutableList.toImmutableList());
+
+		// FIXME parcels which no longer exists in the order shall be deleted from database
 		saveAll(updatedParcels);
 	}
 
-	private I_Carrier_ShipmentOrder_Parcel getAndUpdateParcel(final DeliveryOrderLine deliveryOrderLine, final ImmutableMap<DeliveryOrderLineId, I_Carrier_ShipmentOrder_Parcel> parcelsById)
+	private static I_Carrier_ShipmentOrder_Parcel getAndUpdateParcel(final DeliveryOrderLine deliveryOrderLine, final ImmutableMap<DeliveryOrderLineId, I_Carrier_ShipmentOrder_Parcel> parcelsById)
 	{
+		// FIXME parcels that are not present in database shall be created (i.e. when deliveryOrderLine.getId() == null)
 		final I_Carrier_ShipmentOrder_Parcel parcel = parcelsById.get(deliveryOrderLine.getId());
 		if (parcel == null)
 		{
@@ -227,6 +232,7 @@ public class ShipmentOrderRepository
 		po.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
 		po.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));
 		po.setShipmentDate(TimeUtil.asTimestamp(request.getPickupDate().getDate()));
+		// FIXME what about pickup time from/to
 
 		if (deliveryContact != null)
 		{

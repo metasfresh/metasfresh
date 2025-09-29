@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Value;
 
+// FIXME why not Jacksonized
 @JsonDeserialize(builder = NShiftCustomDeliveryDataDetail.NShiftCustomDeliveryDataDetailBuilder.class)
 @Value
 @Builder(toBuilder = true)

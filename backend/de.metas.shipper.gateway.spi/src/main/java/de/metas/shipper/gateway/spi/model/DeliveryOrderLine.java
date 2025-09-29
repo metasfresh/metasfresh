@@ -38,8 +38,7 @@ import java.math.BigDecimal;
 @Value
 public class DeliveryOrderLine
 {
-	@Nullable
-	DeliveryOrderLineId id;
+	@Nullable DeliveryOrderLineId id;
 	@Nullable String content;
 	@NonNull BigDecimal grossWeightKg;
 	@NonNull PackageDimensions packageDimensions;
