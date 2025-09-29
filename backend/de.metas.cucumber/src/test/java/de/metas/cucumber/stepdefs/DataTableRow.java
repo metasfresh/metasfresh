@@ -488,7 +488,7 @@ public class DataTableRow
 
 		if (uomCode == null && uomColumnName != null)
 		{
-			uomCode = getAsUOMCode(uomColumnName);
+			uomCode = getAsOptionalUOMCode(uomColumnName).orElse(null);
 		}
 
 		if (uomCode == null && uomDefaultCode != null)
@@ -508,16 +508,19 @@ public class DataTableRow
 	@NonNull
 	public X12DE355 getAsUOMCode(@NonNull final String columnName)
 	{
+		return getAsOptionalUOMCode(columnName)
+				.orElseThrow(() -> new AdempiereException("No value found in column " + columnName));
+	}
+
+	@NonNull
+	public Optional<X12DE355> getAsOptionalUOMCode(@NonNull final String columnName)
+	{
 		String valueStr = getAsOptionalString(columnName).orElse(null);
 		if (valueStr == null && !columnName.endsWith("X12DE355"))
 		{
 			valueStr = getAsOptionalString(columnName + ".X12DE355").orElse(null);
 		}
-		if (valueStr == null)
-		{
-			throw new AdempiereException("No value found for " + columnName);
-		}
-		return X12DE355.ofCode(valueStr);
+		return valueStr != null ? Optional.of(X12DE355.ofCode(valueStr)) : Optional.empty();
 	}
 
 	public CurrencyCode getAsCurrencyCode()
