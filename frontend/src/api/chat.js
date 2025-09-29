@@ -1,4 +1,3 @@
-// TODO
 import { post } from 'axios';
 
 export const postChatMessage = ({ message }) => {
