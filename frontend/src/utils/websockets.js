@@ -34,7 +34,7 @@ export function connectWS(topic, onMessageCallback) {
       });
 
       this.sockTopic = topic;
-      // console.log("WS: Subscribed to %s (tries=%s)", this.sockTopic, tries);
+      console.log('WS: Subscribed to %s (tries=%s)', this.sockTopic, tries);
     } else {
       // not ready yet
       setTimeout(() => {
