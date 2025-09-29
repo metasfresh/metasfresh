@@ -38,6 +38,7 @@ public interface I_M_InventoryLine extends org.compiere.model.I_M_InventoryLine
 	// @formatter:off
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 	int getM_HU_PI_Item_Product_ID();
+	void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
 	void setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
 	// @formatter:on
 
@@ -45,6 +46,12 @@ public interface I_M_InventoryLine extends org.compiere.model.I_M_InventoryLine
 	String COLUMNNAME_QtyTU = "QtyTU";
 	BigDecimal getQtyTU();
 	void setQtyTU(BigDecimal QtyTU);
+	// @formatter:on
+
+	// @formatter:off
+	String COLUMNNAME_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
+	int getM_LU_HU_PI_ID();
+	void setM_LU_HU_PI_ID(int M_LU_HU_PI_ID);
 	// @formatter:on
 
 	// @formatter:off

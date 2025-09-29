@@ -23,8 +23,6 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.DataTableRow;
-import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -37,8 +35,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import java.math.BigDecimal;
-
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_IsActive;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_ItemType;
@@ -46,7 +42,6 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Ite
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_Qty;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_HU_PI_Item_StepDef
 {
@@ -77,50 +72,49 @@ public class M_HU_PI_Item_StepDef
 				.forEach(row -> {
 					final HuPackingInstructionsVersionId huPiVersionId = row.getAsIdentifier(COLUMNNAME_M_HU_PI_Version_ID).lookupNotNullIdIn(huPiVersionTable);
 
-					final BigDecimal qty = row.getAsOptionalBigDecimal(COLUMNNAME_Qty).orElse(null);
 					final String itemType = row.getAsString(COLUMNNAME_ItemType); //dev-note: ITEMTYPE_AD_Reference_ID=540395;
 					final boolean active = row.getAsOptionalBoolean(COLUMNNAME_IsActive).orElseTrue();
 
-		final IQueryBuilder<I_M_HU_PI_Item> piItemQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+					final IQueryBuilder<I_M_HU_PI_Item> piItemQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
 							.addEqualsFilter(COLUMNNAME_M_HU_PI_Version_ID, huPiVersionId)
-				.addEqualsFilter(COLUMNNAME_ItemType, itemType)
-				.addEqualsFilter(COLUMNNAME_IsActive, active);
+							.addEqualsFilter(COLUMNNAME_ItemType, itemType)
+							.addEqualsFilter(COLUMNNAME_IsActive, active);
 
 					final HuPackingInstructionsId includedHuPiId = row.getAsOptionalIdentifier(COLUMNNAME_Included_HU_PI_ID)
-							.map(huPiTable::getId)
+							.map(huPiTable::getIdOrParse)
 							.orElse(null);
 					if (includedHuPiId != null)
-		{
+					{
 						piItemQueryBuilder.addEqualsFilter(COLUMNNAME_Included_HU_PI_ID, includedHuPiId);
-		}
+					}
 
-		final I_M_HU_PI_Item existingHuPiItem = piItemQueryBuilder.create()
-				.firstOnlyOrNull(I_M_HU_PI_Item.class);
+					final I_M_HU_PI_Item existingHuPiItem = piItemQueryBuilder.create()
+							.firstOnlyOrNull(I_M_HU_PI_Item.class);
 
-		final I_M_HU_PI_Item huPiItemRecord = CoalesceUtil.coalesceSuppliersNotNull(
-				() -> existingHuPiItem,
-				() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class));
+					final I_M_HU_PI_Item huPiItemRecord = CoalesceUtil.coalesceSuppliersNotNull(
+							() -> existingHuPiItem,
+							() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class));
 
-		huPiItemRecord.setM_HU_PI_Version_ID(huPiVersionId.getRepoId());
-		huPiItemRecord.setQty(qty);
-		huPiItemRecord.setItemType(itemType);
-		huPiItemRecord.setIsActive(active);
+					huPiItemRecord.setM_HU_PI_Version_ID(huPiVersionId.getRepoId());
+					huPiItemRecord.setQty(row.getAsOptionalBigDecimal(COLUMNNAME_Qty).orElse(null));
+					huPiItemRecord.setItemType(itemType);
+					huPiItemRecord.setIsActive(active);
 
 					if (includedHuPiId != null)
-		{
+					{
 						huPiItemRecord.setIncluded_HU_PI_ID(includedHuPiId.getRepoId());
-		}
+					}
 
 					row.getAsOptionalIdentifier(I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID)
 							.ifPresent(huPackingMaterialIdentifier -> {
 								final int huPackingMaterialId = huPackingMaterialIdentifier.isNullPlaceholder()
-					? -1
-					: huPackingMaterialTable.get(huPackingMaterialIdentifier).getM_HU_PackingMaterial_ID();
+										? -1
+										: huPackingMaterialTable.get(huPackingMaterialIdentifier).getM_HU_PackingMaterial_ID();
 
-			huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterialId);
+								huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterialId);
 							});
 
-		saveRecord(huPiItemRecord);
+					saveRecord(huPiItemRecord);
 
 					row.getAsOptionalIdentifier().ifPresent(identifier -> huPiItemTable.put(identifier, huPiItemRecord));
 				});

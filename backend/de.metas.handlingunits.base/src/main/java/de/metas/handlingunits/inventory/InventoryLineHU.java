@@ -51,9 +51,7 @@ import java.util.stream.Stream;
 public class InventoryLineHU
 {
 	/** Null if not yet persisted or if this is an inventory line's single InventoryLineHU. */
-	@Nullable
-	@NonFinal
-	InventoryLineHUId id;
+	@Nullable @NonFinal InventoryLineHUId id;
 
 	/** Null if this instance does not yet have a persisted HU */
 	@Nullable HuId huId;

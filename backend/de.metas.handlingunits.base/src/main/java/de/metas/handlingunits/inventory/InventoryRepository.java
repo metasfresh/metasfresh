@@ -10,7 +10,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
@@ -127,6 +129,7 @@ public class InventoryRepository
 				.stream()
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
 	private HashMap<InventoryLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@Nullable final Set<InventoryLineId> inventoryLineIds)
 	{
 		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
@@ -240,7 +243,7 @@ public class InventoryRepository
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inventoryLineRecord.getM_AttributeSetInstance_ID());
 		final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
 
-		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLineRecord.getM_Locator_ID());
+		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoId(inventoryLineRecord.getM_Locator_ID());
 
 		final I_C_UOM uom = uomsRepo.getById(inventoryLineRecord.getC_UOM_ID());
 
@@ -250,6 +253,7 @@ public class InventoryRepository
 				.locatorId(locatorId)
 				.productId(ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID()))
 				.asiId(asiId)
+				.packingInstructions(extractPackingInstructions(inventoryLineRecord))
 				.qtyCountFixed(Quantity.of(inventoryLineRecord.getQtyCount(), uom))
 				.qtyBookFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom))
 				.storageAttributesKey(storageAttributesKey);
@@ -286,6 +290,28 @@ public class InventoryRepository
 		}
 
 		return lineBuilder.build();
+	}
+
+	private static InventoryLinePackingInstructions extractPackingInstructions(final @NonNull I_M_InventoryLine inventoryLineRecord)
+	{
+		final HUPIItemProductId tuPIItemProductId = HUPIItemProductId.ofRepoIdOrNone(inventoryLineRecord.getM_HU_PI_Item_Product_ID());
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(inventoryLineRecord.getM_LU_HU_PI_ID());
+
+		if (tuPIItemProductId.isVirtualHU() && luPIId == null)
+		{
+			return InventoryLinePackingInstructions.VHU;
+		}
+
+		return InventoryLinePackingInstructions.builder()
+				.tuPIItemProductId(tuPIItemProductId)
+				.luPIId(luPIId)
+				.build();
+	}
+
+	private static void updateRecord(@NonNull final I_M_InventoryLine lineRecord, final @NonNull InventoryLinePackingInstructions from)
+	{
+		lineRecord.setM_HU_PI_Item_Product_ID(from.isVHU() ? -1 : from.getTuPIItemProductId().getRepoId());
+		lineRecord.setM_LU_HU_PI_ID(HuPackingInstructionsId.toRepoId(from.getLuPIId()));
 	}
 
 	private InventoryLineHU toInventoryLineHU(@NonNull final I_M_InventoryLine inventoryLineRecord)
@@ -463,10 +489,10 @@ public class InventoryRepository
 		final HUQRCode huQRCode = singleLineHU != null ? singleLineHU.getHuQRCode() : null;
 		lineRecord.setM_HU_ID(HuId.toRepoId(huId));
 		lineRecord.setRenderedQRCode(huQRCode != null ? huQRCode.toGlobalQRCodeString() : null);
-		// lineRecord.setM_HU_PI_Item_Product(null); // TODO
 		// lineRecord.setQtyTU(BigDecimal.ZERO); // TODO
 
 		updateInventoryLineRecordQuantities(lineRecord, inventoryLine);
+		updateRecord(lineRecord, inventoryLine.getPackingInstructions());
 
 		saveRecord(lineRecord);
 		inventoryLine.setId(extractInventoryLineId(lineRecord));
@@ -474,7 +500,7 @@ public class InventoryRepository
 		saveInventoryLineHURecords(inventoryLine, inventoryId);
 	}
 
-	private void updateInventoryLineRecordQuantities(
+	private static void updateInventoryLineRecordQuantities(
 			@NonNull final I_M_InventoryLine lineRecord,
 			@NonNull final InventoryLine from)
 	{

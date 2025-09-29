@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 
@@ -42,5 +43,11 @@ public class M_HU_PI_Version_StepDefData extends StepDefData<I_M_HU_PI_Version>
 	public HuPackingInstructionsVersionId extractIdFromRecord(final I_M_HU_PI_Version record)
 	{
 		return HuPackingInstructionsVersionId.ofRepoId(record.getM_HU_PI_Version_ID());
+	}
+
+	@Override
+	public HuPackingInstructionsVersionId parseId(final StepDefDataIdentifier identifier)
+	{
+		return identifier.getAsId(HuPackingInstructionsVersionId.class);
 	}
 }

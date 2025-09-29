@@ -24,8 +24,12 @@ l *
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -70,8 +74,9 @@ public class LUTUProducerDestination
 {
 
 	// Services
-	private final transient IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 
 	/**
 	 * Load Unit PI
@@ -402,6 +407,14 @@ public class LUTUProducerDestination
 	}
 
 	@Override
+	public void setLUItemPI(@NonNull final HuPackingInstructionsItemId luPIItemId)
+	{
+		assertConfigurable();
+
+		setLUItemPI(handlingUnitsBL.getPIItem(luPIItemId));
+	}
+
+	@Override
 	public void setLUItemPI(final I_M_HU_PI_Item luItemPI)
 	{
 		assertConfigurable();
@@ -442,7 +455,7 @@ public class LUTUProducerDestination
 	{
 		assertConfigurable();
 
-		setLUItemPI(null);
+		setLUItemPI((I_M_HU_PI_Item)null);
 		setLUPI((I_M_HU_PI)null);
 		setMaxLUs(0);
 		setCreateTUsForRemainingQty(true);
@@ -490,6 +503,14 @@ public class LUTUProducerDestination
 		assertConfigurable();
 
 		this.tuPI = tuPI;
+	}
+
+	@Override
+	public void setTUPI(@NonNull final HUPIItemProductId piItemProductId, @Nullable final ProductId productId)
+	{
+		final HUPIItemProduct tuPIItemProduct = handlingUnitsBL.getPIItemProduct(piItemProductId);
+		setTUPI(handlingUnitsBL.getPackingInstructionsId(tuPIItemProduct.getPiItemId()));
+		addCUPerTU(huCapacityBL.getCapacity(tuPIItemProduct, productId));
 	}
 
 	private void assertCorrectHuType(final I_M_HU_PI pi, final String exptectedType)
@@ -625,7 +646,7 @@ public class LUTUProducerDestination
 		//
 		// Update Max TUs/LU that were actually created
 		final int createdTUsCount = createdTUs.size();
-		if (createdTUsCount >= 0 && createdTUsCount > maxTUsForRemainingQty_ActuallyCreated)
+		if (createdTUsCount > maxTUsForRemainingQty_ActuallyCreated)
 		{
 			maxTUsForRemainingQty_ActuallyCreated = createdTUsCount;
 		}

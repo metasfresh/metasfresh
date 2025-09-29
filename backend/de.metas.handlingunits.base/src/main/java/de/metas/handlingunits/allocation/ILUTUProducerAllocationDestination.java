@@ -22,7 +22,9 @@ package de.metas.handlingunits.allocation;
  * #L%
  */
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.model.I_M_HU;
@@ -35,6 +37,7 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /**
@@ -44,6 +47,8 @@ import java.math.BigDecimal;
  */
 public interface ILUTUProducerAllocationDestination extends IHUProducerAllocationDestination
 {
+	void setTUPI(@NonNull HUPIItemProductId piItemProductId, @Nullable ProductId productId);
+
 	I_M_HU_PI getTUPI();
 
 	void setTUPI(@NonNull HuPackingInstructionsId tuPIId);
@@ -99,6 +104,8 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * @return
 	 */
 	I_M_HU_PI_Item getLUItemPI();
+
+	void setLUItemPI(@NonNull HuPackingInstructionsItemId luPIItemId);
 
 	/**
 	 * Sets LU PI's PI Item (with ItemType=HU) on which the TU will be included. May be {@code null} for the case that a TU without LU is needed.

@@ -68,13 +68,10 @@ public class M_HU_PI_Version_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_HU_PI_Version_ID)
 				.forEach(row -> {
-					final StepDefDataIdentifier huPiIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID);
-					final I_M_HU_PI huPi = huPiIdentifier.lookupIn(huPiTable);
-
-					Check.assumeNotNull(huPi, "M_HU_PI_ID {} not found", huPiIdentifier);
+					final I_M_HU_PI huPi = row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID).lookupNotNullIn(huPiTable);
 					final String name = row.suggestValueAndName(null, huPi::getName).getName();
 					final String huUnitType = row.getAsString(COLUMNNAME_HU_UnitType); //dev-note: HU_UNITTYPE_AD_Reference_ID=540472;
-					final boolean isCurrent = row.getAsBoolean(COLUMNNAME_IsCurrent);
+					final boolean isCurrent = row.getAsOptionalBoolean(COLUMNNAME_IsCurrent).orElseTrue();
 					final boolean active = row.getAsOptionalBoolean(COLUMNNAME_IsActive).orElseTrue();
 
 					final I_M_HU_PI_Version existingPiVersion = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
