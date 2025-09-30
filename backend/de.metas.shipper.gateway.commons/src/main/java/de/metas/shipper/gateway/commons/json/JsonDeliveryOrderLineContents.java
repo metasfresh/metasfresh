@@ -20,33 +20,30 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
+package de.metas.shipper.gateway.commons.json;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.shipper.gateway.spi.model.CustomDeliveryLineData;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.money.Money;
+import de.metas.quantity.Quantity;
+import de.metas.shipper.gateway.commons.model.ShipmentOrderItemId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
-@Builder(toBuilder = true)
 @Value
-public class ShipmentOrderParcel implements CustomDeliveryLineData
+@Builder(toBuilder = true)
+@Jacksonized
+public class JsonDeliveryOrderLineContents
 {
-	@Nullable String awb;
-	@Nullable String trackingUrl;
-	@Nullable byte[] labelPdfBase64;
-	ImmutableList<ShipmentOrderItem> items;
+	@Nullable ShipmentOrderItemId id;
+	Money unitPrice;
+	Money totalValue;
+	String productName;
+	String productValue;
+	BigDecimal totalWeightInKg;
+	Quantity shippedQuantity;
 
-	@Nullable
-	public static ShipmentOrderParcel ofDeliveryOrderLineOrNull(@NonNull final DeliveryOrderLine deliveryOrderLine)
-	{
-		if (!(deliveryOrderLine.getCustomDeliveryLineData() instanceof ShipmentOrderParcel))
-		{
-			return null;
-		}
-		return (ShipmentOrderParcel)deliveryOrderLine.getCustomDeliveryLineData();
-	}
+
 }

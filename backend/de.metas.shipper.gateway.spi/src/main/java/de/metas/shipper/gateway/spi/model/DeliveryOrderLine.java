@@ -31,6 +31,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * 1 DeliveryOrderLine represents 1 Package
@@ -63,5 +64,16 @@ public class DeliveryOrderLine
 		this.packageDimensions = packageDimensions;
 		this.customDeliveryLineData = customDeliveryLineData;
 		this.packageId = packageId;
+	}
+
+	public DeliveryOrderLine withCustomDeliveryData(@NonNull final CustomDeliveryLineData customDeliveryLineData)
+	{
+		if (Objects.equals(this.customDeliveryLineData, customDeliveryLineData))
+		{
+			return this;
+		}
+		return this.toBuilder()
+				.customDeliveryLineData(customDeliveryLineData)
+				.build();
 	}
 }

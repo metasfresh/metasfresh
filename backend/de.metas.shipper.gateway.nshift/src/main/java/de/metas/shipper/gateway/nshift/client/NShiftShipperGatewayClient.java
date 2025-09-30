@@ -1,100 +1,105 @@
 package de.metas.shipper.gateway.nshift.client;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
+import de.metas.shipper.gateway.commons.json.JsonDeliveryOrderRequest;
+import de.metas.shipper.gateway.commons.json.JsonDeliveryOrderResponse;
+import de.metas.shipper.gateway.commons.json.JsonDeliveryOrderResponseItem;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderParcel;
 import de.metas.shipper.gateway.nshift.NShiftConstants;
 import de.metas.shipper.gateway.nshift.config.NShiftConfig;
-import de.metas.shipper.gateway.nshift.json.JsonPackageResponse;
-import de.metas.shipper.gateway.nshift.json.JsonShipmentDocument;
-import de.metas.shipper.gateway.nshift.json.JsonShipmentResponse;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLineId;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipping.ShipperGatewayId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Builder
-public class NShiftShipperGatewayClient implements ShipperGatewayClient {
-    private static final Logger logger = LogManager.getLogger(NShiftShipperGatewayClient.class);
+public class NShiftShipperGatewayClient implements ShipperGatewayClient
+{
+	private static final Logger logger = LogManager.getLogger(NShiftShipperGatewayClient.class);
 
-    @NonNull private final NShiftShipmentService shipmentService;
-    //TODO implement as provided by carrier
-	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};@NonNull private final NShiftConfig config;
+	@NonNull private final NShiftShipmentService shipmentService;
+	//TODO implement as provided by carrier
+	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};
+	@NonNull private final NShiftConfig config;
 
-    @Override
-    @NonNull
-    public ShipperGatewayId getShipperGatewayId() {
-        return NShiftConstants.SHIPPER_GATEWAY_ID;
-    }
+	@Override
+	@NonNull
+	public ShipperGatewayId getShipperGatewayId()
+	{
+		return NShiftConstants.SHIPPER_GATEWAY_ID;
+	}
 
-    @Override
-    @NonNull
-    public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException {
-        final JsonShipmentResponse response = shipmentService.createShipment(deliveryOrder);
-        logger.debug("Received nShift response: {}", response);
+	@Override
+	@NonNull
+	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	{
+		final JsonDeliveryOrderResponse response = shipmentService.createShipment(toJsonDeliveryOrder(deliveryOrder));
+		logger.debug("Received nShift response: {}", response);
 
-        final String mainTrackingNumber = response.getLines().stream()
-                .flatMap(line -> line.getPkgs().stream())
-                .map(JsonPackageResponse::getPkgNo)
-                .findFirst()
-                .orElse(response.getShpNo());
+		//TODO log request into Carrier_ShipmentOrder_Log
 
-        final String language = "de"; //TODO introduce something like deliveryOrder.getDeliveryAddress().getBpartnerLanguage();
+		return updateDeliveryOrder(deliveryOrder, response);
 
-        final ImmutableList<NShiftCustomDeliveryDataDetail> details = response.getShpDocuments().stream()
-                .map(document -> toCustomDeliveryDataDetail(document, language))
-                .filter(Objects::nonNull)
-                .collect(ImmutableList.toImmutableList());
+	}
 
-        final NShiftCustomDeliveryData customDeliveryData = NShiftCustomDeliveryData.builder()
-                .details(details)
-                .build();
+	private DeliveryOrder updateDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder, @NonNull final JsonDeliveryOrderResponse response)
+	{
+		final String language = "de"; //TODO introduce something like deliveryOrder.getDeliveryAddress().getBpartnerLanguage();
 
-        return deliveryOrder.toBuilder()
-                .trackingNumber(mainTrackingNumber)
-                .customDeliveryData(customDeliveryData) // why this is custom data and not standard/common data?
-                .build();
-    }
+		final ImmutableMap<DeliveryOrderLineId, JsonDeliveryOrderResponseItem> lineIdToResponseMap = response.getItems().stream()
+				.collect(ImmutableMap.toImmutableMap(JsonDeliveryOrderResponseItem::getLineId, Function.identity()));
+		final ImmutableList<DeliveryOrderLine> updatedDeliveryOrderLines = deliveryOrder.getDeliveryOrderLines()
+				.stream()
+				.map(line -> updateDeliveryOrderLine(line, lineIdToResponseMap.get(line.getId()), language))
+				.collect(ImmutableList.toImmutableList());
+		return deliveryOrder.withDeliveryOrderLines(updatedDeliveryOrderLines);
+	}
 
-	@Nullable
-	private NShiftCustomDeliveryDataDetail toCustomDeliveryDataDetail(@NonNull final JsonShipmentDocument document, @NonNull final String language) {
-	    //TODO validate if this is correct
-	    if (!"Label".equalsIgnoreCase(document.getDocumentType())) {
-	        return null;
-	    }
-	    if (Check.isEmpty(document.getContent(), true)) {
-	        logger.warn("Label document received from nShift without content: {}", document);
-	        return null;
-	    }
-	    final String pkgNo = document.getPkgNo();
-	    if (Check.isEmpty(pkgNo, true)) {
-	        logger.warn("Label document received from nShift without PkgNo, it will be skipped: {}", document);
-	        return null;
-	    }
+	private DeliveryOrderLine updateDeliveryOrderLine(@NonNull final DeliveryOrderLine line, @NonNull final JsonDeliveryOrderResponseItem jsonDeliveryOrderResponseItem, @NonNull final String language)
+	{
+		final ShipmentOrderParcel shipmentOrderParcel = ShipmentOrderParcel.ofDeliveryOrderLineOrNull(line);
+		if (shipmentOrderParcel == null)
+		{
+			throw new ShipperGatewayException("Cannot update delivery order line because it is not in the proper format: " + line);
+		}
 
-	    final byte[] labelData = Base64.getDecoder().decode(document.getContent());
-	    final String trackingUrl = config.getTrackingUrl(pkgNo, language);
+		final String awb = jsonDeliveryOrderResponseItem.getAwb();
+		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryOrderResponseItem.getLabelPdfBase64());
+		final String trackingUrl = config.getTrackingUrl(awb, language);
 
-	    return NShiftCustomDeliveryDataDetail.builder()
-	            .pdfLabelData(labelData)
-	            .trackingNumber(pkgNo)
-	            .trackingUrl(trackingUrl)
-	            .build();
+		final ShipmentOrderParcel updatedShipmentOrderParcel = shipmentOrderParcel.toBuilder()
+				.awb(awb)
+				.trackingUrl(trackingUrl)
+				.labelPdfBase64(labelData)
+				.build();
+
+		return line.withCustomDeliveryData(updatedShipmentOrderParcel);
+	}
+
+	private @NonNull JsonDeliveryOrderRequest toJsonDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder)
+	{
+		return JsonDeliveryOrderRequest.builder()
+				.id(deliveryOrder.getId())
+
+				//TODO
+				.build();
 	}
 
 	@NonNull
@@ -105,6 +110,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient {
 		return deliveryOrder.getDeliveryOrderLines()
 				.stream()
 				.map(ShipmentOrderParcel::ofDeliveryOrderLineOrNull)
+				.filter(Objects::nonNull)
 				.map(parcel -> createPackageLabel(parcel.getLabelPdfBase64(), parcel.getAwb(), orderIdAsString))
 				.collect(Collectors.toList());
 	}
@@ -114,56 +120,14 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient {
 	{
 		return PackageLabels.builder()
 				.orderId(OrderId.of(NShiftConstants.SHIPPER_GATEWAY_ID, deliveryOrderIdAsString))
-				.defaultLabelType(DEFAULT_LABEL_TYPE)
+				.defaultLabelType(NShiftPackageLabelType.DEFAULT)
 				.label(PackageLabel.builder()
-						.type(DEFAULT_LABEL_TYPE)
+						.type(NShiftPackageLabelType.DEFAULT)
 						.labelData(labelData)
 						.contentType(PackageLabel.CONTENTTYPE_PDF)
 						.fileName(awb)
 						.build())
 				.build();
 	}
-
-    // @Override
-    // @NonNull
-    // public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException {
-    //     final NShiftCustomDeliveryData customDeliveryData = NShiftCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-    //     if (customDeliveryData == null || customDeliveryData.getDetails().isEmpty()) {
-    //         return ImmutableList.of();
-    //     }
-	//
-    //     final OrderId orderId = OrderId.of(getShipperGatewayId(), deliveryOrder.getId());
-	//
-    //     final Map<String, List<NShiftCustomDeliveryDataDetail>> detailsByTrackingNumber = customDeliveryData.getDetails().stream()
-    //             .filter(detail -> Check.isNotBlank(detail.getTrackingNumber()))
-    //             .collect(Collectors.groupingBy(NShiftCustomDeliveryDataDetail::getTrackingNumber));
-	//
-    //     return detailsByTrackingNumber.entrySet().stream()
-    //             .map(entry -> {
-    //                 final String trackingNumber = entry.getKey();
-    //                 final List<NShiftCustomDeliveryDataDetail> packageDetails = entry.getValue();
-	//
-    //                 final ImmutableList<PackageLabel> packageLabels = packageDetails.stream()
-    //                         .map(detail -> PackageLabel.builder()
-    //                                 .type(NShiftPackageLabelType.DEFAULT)
-    //                                 .contentType(PackageLabel.CONTENTTYPE_PDF)
-    //                                 .labelData(detail.getPdfLabelData())
-    //                                 .fileName(trackingNumber)
-    //                                 .build())
-    //                         .collect(ImmutableList.toImmutableList());
-	//
-    //                 if (packageLabels.isEmpty()) {
-    //                     return null;
-    //                 }
-	//
-    //                 return PackageLabels.builder()
-    //                         .orderId(orderId)
-    //                         .defaultLabelType(NShiftPackageLabelType.DEFAULT)
-    //                         .labels(packageLabels)
-    //                         .build();
-    //             })
-    //             .filter(Objects::nonNull)
-    //             .collect(Collectors.toList());
-    // }
 
 }

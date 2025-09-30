@@ -20,28 +20,21 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
+package de.metas.shipper.gateway.commons.json;
 
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLineId;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
 @Jacksonized
-@RequiredArgsConstructor
-public class CarrierShipperProduct implements ShipperProduct
+public class JsonDeliveryOrderResponseItem
 {
-	@Getter
-	String code;
-
-	public static CarrierShipperProduct ofCode(@NonNull final String code)
-	{
-		return new CarrierShipperProduct(code);
-	}
-
+	DeliveryOrderLineId lineId;
+	String errorMessage;
+	String awb;
+	String trackingUrl;
+	byte[] labelPdfBase64;
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.nshift
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,18 +20,33 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.nshift.client;
+package de.metas.shipper.gateway.commons.json;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLineId;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipping.mpackage.PackageId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-// FIXME why not Jacksonized
-@JsonDeserialize(builder = NShiftCustomDeliveryDataDetail.NShiftCustomDeliveryDataDetailBuilder.class)
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+
 @Value
 @Builder(toBuilder = true)
-public class NShiftCustomDeliveryDataDetail {
-    byte[] pdfLabelData;
-    String trackingNumber;
-    String trackingUrl;
+@Jacksonized
+public class JsonDeliveryOrderLine
+{
+	@Nullable DeliveryOrderLineId id;
+	@Nullable String content;
+	@NonNull BigDecimal grossWeightKg;
+	@NonNull PackageDimensions packageDimensions;
+	@NonNull PackageId packageId;
+	@Nullable String awb;
+	@Nullable String trackingUrl;
+	@Nullable byte[] labelPdfBase64;
+	@NonNull List<JsonDeliveryOrderLineContents> contents;
+
 }

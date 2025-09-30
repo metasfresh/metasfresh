@@ -119,5 +119,16 @@ public class DeliveryOrder
 				.customDeliveryData(customDeliveryData)
 				.build();
 	}
+
+	public DeliveryOrder withDeliveryOrderLines(@NonNull final ImmutableList<DeliveryOrderLine> deliveryOrderLines)
+	{
+		if (Objects.equals(this.deliveryOrderLines, deliveryOrderLines))
+		{
+			return this;
+		}
+		return this.toBuilder()
+				.deliveryOrderLines(deliveryOrderLines)
+				.build();
+	}
 }
 

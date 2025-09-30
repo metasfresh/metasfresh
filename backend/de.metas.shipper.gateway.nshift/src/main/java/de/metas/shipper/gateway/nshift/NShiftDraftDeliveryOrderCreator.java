@@ -101,7 +101,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 
-				.shipperProduct(CarrierShipperProduct.DHL) // TODO this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
+				.shipperProduct(CarrierShipperProduct.ofCode("DHL")) // TODO this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(getPOReferences(request.getPackageInfos()))
 				.customDeliveryData(ShipmentOrderData.builder()
 						.shipperEORI(pickupFromBPartner.getEORI())

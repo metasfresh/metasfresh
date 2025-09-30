@@ -68,19 +68,19 @@ public class ShipmentOrderRepository
 	{
 		final I_Carrier_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.load(deliveryOrderId, I_Carrier_ShipmentOrder.class);
 
-		final ImmutableListMultimap<ShipmentOrderParcelId, ShipmentOrderItem> parcelIdToItems = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
+		final ImmutableListMultimap<DeliveryOrderLineId, ShipmentOrderItem> parcelIdToItems = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
 				.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, deliveryOrderId)
 				.andCollectChildren(I_Carrier_ShipmentOrder_Item.COLUMNNAME_Carrier_ShipmentOrder_Parcel_ID, I_Carrier_ShipmentOrder_Item.class)
 				.create()
 				.stream()
 				// FIXME: not sure we have a link from parcel to item
-				.collect(ImmutableListMultimap.toImmutableListMultimap(item -> ShipmentOrderParcelId.ofRepoId(item.getCarrier_ShipmentOrder_Parcel_ID()), this::itemFromPO));
+				.collect(ImmutableListMultimap.toImmutableListMultimap(item -> DeliveryOrderLineId.ofRepoId(item.getCarrier_ShipmentOrder_Parcel_ID()), this::itemFromPO));
 
 		final ImmutableList<DeliveryOrderLine> parcels = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
 				.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, deliveryOrderId)
 				.create()
 				.stream()
-				.map(parcel -> parcelFromPO(parcel, parcelIdToItems.get(ShipmentOrderParcelId.ofRepoId(parcel.getCarrier_ShipmentOrder_Parcel_ID()))))
+				.map(parcel -> parcelFromPO(parcel, parcelIdToItems.get(DeliveryOrderLineId.ofRepoId(parcel.getCarrier_ShipmentOrder_Parcel_ID()))))
 				.collect(ImmutableList.toImmutableList());
 
 		return fromPO(shipmentOrder, parcels);
@@ -103,8 +103,7 @@ public class ShipmentOrderRepository
 	private DeliveryOrder fromPO(@NonNull final I_Carrier_ShipmentOrder po, @NonNull final ImmutableList<DeliveryOrderLine> parcels)
 	{
 		return DeliveryOrder.builder()
-				.id(DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID()))
-				.shipperProduct(CarrierShipperProduct.forCode(po.getCarrier_Product()))
+				.shipperProduct(CarrierShipperProduct.ofCode(po.getCarrier_Product()))
 				.customerReference(po.getCustomerReference())
 				.shipperId(ShipperId.ofRepoId(po.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(po.getM_ShipperTransportation_ID()))
@@ -282,13 +281,13 @@ public class ShipmentOrderRepository
 
 		saveAll(orderLineToParcel.keySet()
 				.stream()
-				.flatMap(orderLine -> createItems(orderLine, ShipmentOrderParcelId.ofRepoId(orderLineToParcel.get(orderLine).getCarrier_ShipmentOrder_Parcel_ID())))
+				.flatMap(orderLine -> createItems(orderLine, DeliveryOrderLineId.ofRepoId(orderLineToParcel.get(orderLine).getCarrier_ShipmentOrder_Parcel_ID())))
 				.collect(ImmutableList.toImmutableList()));
 
 		return deliveryOrderId;
 	}
 
-	private Stream<I_Carrier_ShipmentOrder_Item> createItems(@NonNull final DeliveryOrderLine orderLine, @NonNull final ShipmentOrderParcelId shipmentOrderParcelId)
+	private Stream<I_Carrier_ShipmentOrder_Item> createItems(@NonNull final DeliveryOrderLine orderLine, @NonNull final DeliveryOrderLineId deliveryOrderLineId)
 	{
 		final ShipmentOrderParcel shipmentOrderParcel = ShipmentOrderParcel.ofDeliveryOrderLineOrNull(orderLine);
 		if (shipmentOrderParcel == null)
@@ -297,10 +296,10 @@ public class ShipmentOrderRepository
 		}
 		return shipmentOrderParcel.getItems()
 				.stream()
-				.map(item -> createItem(item, shipmentOrderParcelId));
+				.map(item -> createItem(item, deliveryOrderLineId));
 	}
 
-	private I_Carrier_ShipmentOrder_Item createItem(final ShipmentOrderItem item, final @NonNull ShipmentOrderParcelId shipmentOrderParcelId)
+	private I_Carrier_ShipmentOrder_Item createItem(final ShipmentOrderItem item, final @NonNull DeliveryOrderLineId deliveryOrderLineId)
 	{
 		final I_Carrier_ShipmentOrder_Item po;
 		if (item.getId() != null)
@@ -311,7 +310,7 @@ public class ShipmentOrderRepository
 		else
 		{
 			po = InterfaceWrapperHelper.newInstance(I_Carrier_ShipmentOrder_Item.class);
-			po.setCarrier_ShipmentOrder_Parcel_ID(shipmentOrderParcelId.getRepoId());
+			po.setCarrier_ShipmentOrder_Parcel_ID(deliveryOrderLineId.getRepoId());
 		}
 		po.setProductName(item.getProductName());
 		po.setArticleValue(item.getProductValue());

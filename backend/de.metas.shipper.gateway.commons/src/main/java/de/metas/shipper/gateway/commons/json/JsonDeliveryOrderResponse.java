@@ -20,33 +20,28 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
+package de.metas.shipper.gateway.commons.json;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.shipper.gateway.spi.model.CustomDeliveryLineData;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
-@Builder(toBuilder = true)
 @Value
-public class ShipmentOrderParcel implements CustomDeliveryLineData
+@Builder
+@Jacksonized
+public class JsonDeliveryOrderResponse
 {
-	@Nullable String awb;
-	@Nullable String trackingUrl;
-	@Nullable byte[] labelPdfBase64;
-	ImmutableList<ShipmentOrderItem> items;
+	@NonNull List<JsonDeliveryOrderResponseItem> items;
 
-	@Nullable
-	public static ShipmentOrderParcel ofDeliveryOrderLineOrNull(@NonNull final DeliveryOrderLine deliveryOrderLine)
+	@JsonIgnore
+	public boolean isError()
 	{
-		if (!(deliveryOrderLine.getCustomDeliveryLineData() instanceof ShipmentOrderParcel))
-		{
-			return null;
-		}
-		return (ShipmentOrderParcel)deliveryOrderLine.getCustomDeliveryLineData();
+		return items.stream()
+				.anyMatch(item -> Check.isNotBlank(item.getErrorMessage()));
 	}
 }
