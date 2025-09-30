@@ -23,8 +23,6 @@
 package de.metas.common.delivery.v1.json.request;
 
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
-import de.metas.shipping.mpackage.PackageId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
