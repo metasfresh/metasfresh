@@ -213,6 +213,8 @@ public class SyncInventoryQtyToHUsCommand
 			}
 		}
 
+		recomputeQtyCountAndBook(resultInventoryLineHUs, inventoryLine.getQtyBookFixed());
+
 		HUAggregationType huAggregationType = inventoryLine.getHuAggregationType();
 		if (huAggregationType != null && huAggregationType.isSingleHU() && resultInventoryLineHUs.size() > 1)
 		{
@@ -233,6 +235,34 @@ public class SyncInventoryQtyToHUsCommand
 		}
 
 		return resultInventoryLine;
+	}
+
+	private void recomputeQtyCountAndBook(
+			@NonNull final ArrayList<InventoryLineHU> inventoryLineHUs,
+			@NonNull final Quantity qtyBookedStart)
+	{
+		for (int i = 0, size = inventoryLineHUs.size(); i < size; i++)
+		{
+			final InventoryLineHU lineHU = inventoryLineHUs.get(i);
+			final Quantity lineQtyBooked;
+			if (i == 0)
+			{
+				lineQtyBooked = qtyBookedStart;
+			}
+			else
+			{
+				lineQtyBooked = qtyBookedStart.toZero();
+			}
+
+			final Quantity lineQtyDiff = lineHU.getQtyCountMinusBooked();
+			final Quantity lineQtyCount = lineQtyBooked.add(lineQtyDiff);
+
+			inventoryLineHUs.set(i, lineHU.toBuilder()
+					.qtyBook(lineQtyBooked)
+					.qtyCount(lineQtyCount)
+					.qtyInternalUse(null)
+					.build());
+		}
 	}
 
 	private @NonNull List<InventoryLineHU> syncQtyFromInventoryLineToHU(

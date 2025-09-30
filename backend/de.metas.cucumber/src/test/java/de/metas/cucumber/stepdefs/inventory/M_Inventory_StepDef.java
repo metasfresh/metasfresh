@@ -42,6 +42,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
+import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -291,13 +292,14 @@ public class M_Inventory_StepDef
 
 		if (isInboundTrx(inventoryLine))
 		{
-			loadInventoryLineHUs(row, inventoryLine);
+			final InventoryLineId inventoryLineId = InventoryLineId.ofRepoId(inventoryLine.getM_InventoryLine_ID());
+			loadInventoryLineHUs(row, inventoryId, inventoryLineId);
 		}
 
 		waitUtilPosted(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId));
 	}
 
-	private void loadInventoryLineHUs(final @NotNull DataTableRow row, final I_M_InventoryLine inventoryLine)
+	private void loadInventoryLineHUs(final @NotNull DataTableRow row, final InventoryId inventoryId, final InventoryLineId inventoryLineId)
 	{
 		final ArrayList<StepDefDataIdentifier> huIdentifiers = new ArrayList<>();
 		for (int i = 1; i <= 10; i++)
@@ -315,26 +317,15 @@ public class M_Inventory_StepDef
 			}
 		}
 
-		if (huIdentifiers.size() == 1)
+		final InventoryLine inventoryLine = inventoryService.getById(inventoryId).getLineById(inventoryLineId);
+		final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryLine.getInventoryLineHUs();
+		assertThat(inventoryLineHUs).as("inventoryLineHUs").hasSameSizeAs(huIdentifiers);
+		for (int i = 0; i < huIdentifiers.size(); i++)
 		{
-			InterfaceWrapperHelper.refresh(inventoryLine);
-			final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
-			assertThat(huId).as("inventory line has HU set").isNotNull();
-			huTable.put(huIdentifiers.get(0), handlingUnitsBL.getById(huId));
-		}
-		else if (huIdentifiers.size() > 1)
-		{
-			final InventoryId inventoryId = InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID());
-			final InventoryLineId inventoryLineId = InventoryLineId.ofRepoId(inventoryLine.getM_InventoryLine_ID());
-			final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryService.getById(inventoryId).getLineById(inventoryLineId).getInventoryLineHUs();
-			assertThat(inventoryLineHUs).as("inventoryLineHUs").hasSameSizeAs(huIdentifiers);
-			for (int i = 0; i < huIdentifiers.size(); i++)
-			{
-				final InventoryLineHU inventoryLineHU = inventoryLineHUs.get(i);
-				final HuId huId = inventoryLineHU.getHuId();
-				assertThat(huId).as(() -> "inventory line HU has HU set for line " + inventoryLineHU).isNotNull();
-				huTable.put(huIdentifiers.get(i), handlingUnitsBL.getById(huId));
-			}
+			final InventoryLineHU inventoryLineHU = inventoryLineHUs.get(i);
+			final HuId huId = inventoryLineHU.getHuId();
+			assertThat(huId).as(() -> "inventory line HU has HU set for line " + inventoryLineHU).isNotNull();
+			huTable.put(huIdentifiers.get(i), handlingUnitsBL.getById(huId));
 		}
 	}
 }
