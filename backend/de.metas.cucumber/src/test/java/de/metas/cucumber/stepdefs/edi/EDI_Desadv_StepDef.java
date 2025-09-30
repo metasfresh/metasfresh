@@ -195,40 +195,36 @@ public class EDI_Desadv_StepDef
 		assertThat(ediExpDesadv).isNotNull();
 
 		final Element desadvPackElement = getElement(ediExpDesadv, EDI_EXP_DESADV_PACK_TAGNAME);
-
-		assertThat(desadvPackElement).isNotNull();
+		assertThat(desadvPackElement).as(EDI_EXP_DESADV_PACK_TAGNAME).isNotNull();
 
 		final Element sscc18Element = getElement(desadvPackElement, IPA_SSCC18_TAGNAME);
-		assertThat(sscc18Element).isNotNull();
+		assertThat(sscc18Element).as(IPA_SSCC18_TAGNAME).isNotNull();
 
 		final Element desadvPackItem = getElement(desadvPackElement, EDI_EXP_DESADV_PACK_ITEM_TAGNAME);
-		assertThat(desadvPackItem).isNotNull();
+		assertThat(desadvPackItem).as(EDI_EXP_DESADV_PACK_ITEM_TAGNAME).isNotNull();
 
 		final String qtyCuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU");
 		if (Check.isNotBlank(qtyCuExpected))
 		{
 			final Element qtyCu = getElement(desadvPackElement, QTY_CU_TAGNAME);
-			assertThat(qtyCu).isNotNull();
-
-			assertThat(qtyCu.getTextContent()).isEqualTo(qtyCuExpected);
+			assertThat(qtyCu).as(QTY_CU_TAGNAME).isNotNull();
+			assertThat(qtyCu.getTextContent()).as(QTY_CU_TAGNAME).isEqualTo(qtyCuExpected);
 		}
 
 		final String qtyCusPerLuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU");
 		if (Check.isNotBlank(qtyCusPerLuExpected))
 		{
 			final Element qtyCusPerLu = getElement(desadvPackElement, QTY_CUS_PER_LU_TAGNAME);
-			assertThat(qtyCusPerLu).isNotNull();
-
-			assertThat(qtyCusPerLu.getTextContent()).isEqualTo(qtyCusPerLuExpected);
+			assertThat(qtyCusPerLu).as(QTY_CUS_PER_LU_TAGNAME).isNotNull();
+			assertThat(qtyCusPerLu.getTextContent()).as(QTY_CUS_PER_LU_TAGNAME).isEqualTo(qtyCusPerLuExpected);
 		}
 
 		final String qtyTuExpected = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.EDI_Exp_Desadv_Pack_Item.QtyTU");
 		if (Check.isNotBlank(qtyTuExpected))
 		{
 			final Element qtyTu = getElement(desadvPackElement, QTY_TU_TAGNAME);
-			assertThat(qtyTu).isNotNull();
-
-			assertThat(qtyTu.getTextContent()).isEqualTo(qtyTuExpected);
+			assertThat(qtyTu).as(QTY_TU_TAGNAME).isNotNull();
+			assertThat(qtyTu.getTextContent()).as(QTY_TU_TAGNAME).isEqualTo(qtyTuExpected);
 		}
 	}
 

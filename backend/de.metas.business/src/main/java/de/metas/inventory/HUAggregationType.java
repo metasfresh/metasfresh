@@ -1,17 +1,14 @@
 package de.metas.inventory;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -79,5 +76,7 @@ public enum HUAggregationType implements ReferenceListAwareEnum
 	{
 		return Objects.equals(o1, o2);
 	}
+
+	public boolean isSingleHU() {return this.equals(SINGLE_HU);}
 
 }
