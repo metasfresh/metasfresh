@@ -1,6 +1,8 @@
 package de.metas.shipper.gateway.nshift.client;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderParcel;
 import de.metas.shipper.gateway.nshift.NShiftConstants;
@@ -24,7 +26,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,8 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient {
 
     @NonNull private final NShiftShipmentService shipmentService;
     //TODO implement as provided by carrier
-	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};@NonNull private final NShiftConfig config;
+	@NonNull private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};
+	@NonNull private final NShiftConfig config;
 
     @Override
     @NonNull
@@ -45,29 +47,10 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient {
     @Override
     @NonNull
     public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException {
-        final JsonShipmentResponse response = shipmentService.createShipment(deliveryOrder);
+        final JsonDeliveryResponse response = shipmentService.createShipment(JsonDeliveryRequest.builder().build());
         logger.debug("Received nShift response: {}", response);
 
-        final String mainTrackingNumber = response.getLines().stream()
-                .flatMap(line -> line.getPkgs().stream())
-                .map(JsonPackageResponse::getPkgNo)
-                .findFirst()
-                .orElse(response.getShpNo());
-
-        final String language = "de"; //TODO introduce something like deliveryOrder.getDeliveryAddress().getBpartnerLanguage();
-
-        final ImmutableList<NShiftCustomDeliveryDataDetail> details = response.getShpDocuments().stream()
-                .map(document -> toCustomDeliveryDataDetail(document, language))
-                .filter(Objects::nonNull)
-                .collect(ImmutableList.toImmutableList());
-
-        final NShiftCustomDeliveryData customDeliveryData = NShiftCustomDeliveryData.builder()
-                .details(details)
-                .build();
-
         return deliveryOrder.toBuilder()
-                .trackingNumber(mainTrackingNumber)
-                .customDeliveryData(customDeliveryData)
                 .build();
     }
 

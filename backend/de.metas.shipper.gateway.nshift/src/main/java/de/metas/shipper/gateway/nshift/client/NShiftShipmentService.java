@@ -3,6 +3,8 @@ package de.metas.shipper.gateway.nshift.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.nshift.config.NShiftConfig;
 import de.metas.shipper.gateway.nshift.json.JsonAddress;
@@ -20,7 +22,6 @@ import de.metas.shipper.gateway.nshift.json.JsonShipmentOptions;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentRequest;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentResponse;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -56,17 +57,18 @@ public class NShiftShipmentService
 	@NonNull
 	private final ObjectMapper objectMapper;
 
-	public JsonShipmentResponse createShipment(@NonNull final DeliveryOrder deliveryOrder)
+	public JsonDeliveryResponse createShipment(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
-		logger.debug("Creating shipment for delivery order: {}", deliveryOrder);
-		final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryOrder);
+		logger.debug("Creating shipment for request: {}", deliveryRequest);
+		final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryRequest);
 
 		logRequestAsJson(requestBody);
 
 		final JsonShipmentResponse response = callNShift(requestBody);
 
 		logger.debug("Successfully received nShift response: {}", response);
-		return response;
+		return JsonDeliveryResponse.builder()
+                .build();
 	}
 
 	private JsonShipmentResponse callNShift(@NonNull final JsonShipmentRequest request)
@@ -157,7 +159,7 @@ public class NShiftShipmentService
 		}
 	}
 
-	private JsonShipmentRequest buildShipmentRequest(@NonNull final DeliveryOrder deliveryOrder)
+	private JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		// TODO: Map the DeliveryOrder to the JsonShipmentRequest instead of using hardcoded data.
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
