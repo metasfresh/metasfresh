@@ -29,6 +29,13 @@ export const SupportChatPopup = () => {
     },
   });
 
+  const onInputTextKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
   const onInputTextChanged = (e) => {
     setInputText(e.target.value);
   };
@@ -74,6 +81,7 @@ export const SupportChatPopup = () => {
           autoComplete="off"
           className="input-field js-input-field chat-popup-input"
           onKeyPress={(e) => onInputTextChanged(e)}
+          onKeyDown={(e) => onInputTextKeyDown(e)}
           onChange={(e) => onInputTextChanged(e)}
           tabIndex="0"
           value={inputText}
