@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
@@ -284,9 +285,11 @@ public class M_Inventory_StepDef
 	{
 		row.setAdditionalRowIdentifierColumnName(I_M_Inventory.COLUMNNAME_M_Inventory_ID);
 		final InventoryId inventoryId = createInventory(row);
+		SharedTestContext.put("inventoryId", inventoryId);
 
 		row.setAdditionalRowIdentifierColumnName(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID);
 		final I_M_InventoryLine inventoryLine = addNewInventoryLine(row);
+		SharedTestContext.put("inventoryLine", inventoryLine);
 
 		inventoryService.completeDocument(inventoryId);
 
@@ -317,15 +320,18 @@ public class M_Inventory_StepDef
 			}
 		}
 
-		final InventoryLine inventoryLine = inventoryService.getById(inventoryId).getLineById(inventoryLineId);
-		final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryLine.getInventoryLineHUs();
-		assertThat(inventoryLineHUs).as("inventoryLineHUs").hasSameSizeAs(huIdentifiers);
-		for (int i = 0; i < huIdentifiers.size(); i++)
+		if (!huIdentifiers.isEmpty())
 		{
-			final InventoryLineHU inventoryLineHU = inventoryLineHUs.get(i);
-			final HuId huId = inventoryLineHU.getHuId();
-			assertThat(huId).as(() -> "inventory line HU has HU set for line " + inventoryLineHU).isNotNull();
-			huTable.put(huIdentifiers.get(i), handlingUnitsBL.getById(huId));
+			final InventoryLine inventoryLine = inventoryService.getById(inventoryId).getLineById(inventoryLineId);
+			final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryLine.getInventoryLineHUs();
+			assertThat(inventoryLineHUs).as("inventoryLineHUs").hasSameSizeAs(huIdentifiers);
+			for (int i = 0; i < huIdentifiers.size(); i++)
+			{
+				final InventoryLineHU inventoryLineHU = inventoryLineHUs.get(i);
+				final HuId huId = inventoryLineHU.getHuId();
+				assertThat(huId).as(() -> "inventory line HU has HU set for line " + inventoryLineHU).isNotNull();
+				huTable.put(huIdentifiers.get(i), handlingUnitsBL.getById(huId));
+			}
 		}
 	}
 }
