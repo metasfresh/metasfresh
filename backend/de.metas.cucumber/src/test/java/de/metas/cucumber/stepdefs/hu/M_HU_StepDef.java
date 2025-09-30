@@ -202,6 +202,7 @@ public class M_HU_StepDef
 			huTable.putOrReplace(huIdentifier, currentHU);
 		}
 		final I_M_HU hu = huTable.get(huIdentifier);
+		SharedTestContext.put("hu", hu);
 
 		//
 		// Test it:
