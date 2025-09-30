@@ -51,6 +51,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +135,11 @@ public class M_HU_PI_Item_Product_StepDef
 		tableRow.getAsOptionalBoolean(COLUMNNAME_IsOrderInTuUomWhenMatched).ifPresent(huPiItemProductRecord::setIsOrderInTuUomWhenMatched);
 
 		huPiItemProductRecord.setIsInfiniteCapacity(isInfiniteCapacity);
-		if (!isInfiniteCapacity)
+		if (isInfiniteCapacity)
+		{
+			huPiItemProductRecord.setQty(BigDecimal.ZERO); // just because it's mandatory
+		}
+		else
 		{
 			huPiItemProductRecord.setQty(qtyCUsPerTU.toBigDecimal());
 			huPiItemProductRecord.setC_UOM_ID(qtyCUsPerTU.getUomId().getRepoId());
