@@ -24,15 +24,16 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID;
@@ -74,21 +75,21 @@ public class M_HU_PI_Item_StepDef
 
 					final String itemType = row.getAsString(COLUMNNAME_ItemType); //dev-note: ITEMTYPE_AD_Reference_ID=540395;
 					final boolean active = row.getAsOptionalBoolean(COLUMNNAME_IsActive).orElseTrue();
-
-					final IQueryBuilder<I_M_HU_PI_Item> piItemQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
-							.addEqualsFilter(COLUMNNAME_M_HU_PI_Version_ID, huPiVersionId)
-							.addEqualsFilter(COLUMNNAME_ItemType, itemType)
-							.addEqualsFilter(COLUMNNAME_IsActive, active);
-
 					final HuPackingInstructionsId includedHuPiId = row.getAsOptionalIdentifier(COLUMNNAME_Included_HU_PI_ID)
 							.map(huPiTable::getIdOrParse)
 							.orElse(null);
-					if (includedHuPiId != null)
-					{
-						piItemQueryBuilder.addEqualsFilter(COLUMNNAME_Included_HU_PI_ID, includedHuPiId);
-					}
+					final HuPackingMaterialId huPackingMaterialId = row.getAsOptionalIdentifier(I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID)
+							.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+							.map(huPackingMaterialTable::getId)
+							.orElse(null);
 
-					final I_M_HU_PI_Item existingHuPiItem = piItemQueryBuilder.create()
+					final I_M_HU_PI_Item existingHuPiItem = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+							.addEqualsFilter(COLUMNNAME_M_HU_PI_Version_ID, huPiVersionId)
+							.addEqualsFilter(COLUMNNAME_ItemType, itemType)
+							.addEqualsFilter(COLUMNNAME_IsActive, active)
+							.addEqualsFilter(COLUMNNAME_Included_HU_PI_ID, includedHuPiId)
+							.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID, huPackingMaterialId)
+							.create()
 							.firstOnlyOrNull(I_M_HU_PI_Item.class);
 
 					final I_M_HU_PI_Item huPiItemRecord = CoalesceUtil.coalesceSuppliersNotNull(
@@ -96,23 +97,11 @@ public class M_HU_PI_Item_StepDef
 							() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class));
 
 					huPiItemRecord.setM_HU_PI_Version_ID(huPiVersionId.getRepoId());
-					huPiItemRecord.setQty(row.getAsOptionalBigDecimal(COLUMNNAME_Qty).orElse(null));
 					huPiItemRecord.setItemType(itemType);
 					huPiItemRecord.setIsActive(active);
-
-					if (includedHuPiId != null)
-					{
-						huPiItemRecord.setIncluded_HU_PI_ID(includedHuPiId.getRepoId());
-					}
-
-					row.getAsOptionalIdentifier(I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID)
-							.ifPresent(huPackingMaterialIdentifier -> {
-								final int huPackingMaterialId = huPackingMaterialIdentifier.isNullPlaceholder()
-										? -1
-										: huPackingMaterialTable.get(huPackingMaterialIdentifier).getM_HU_PackingMaterial_ID();
-
-								huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterialId);
-							});
+					huPiItemRecord.setIncluded_HU_PI_ID(HuPackingInstructionsId.toRepoId(includedHuPiId));
+					huPiItemRecord.setM_HU_PackingMaterial_ID(HuPackingMaterialId.toRepoId(huPackingMaterialId));
+					huPiItemRecord.setQty(row.getAsOptionalBigDecimal(COLUMNNAME_Qty).orElse(null));
 
 					saveRecord(huPiItemRecord);
 
