@@ -1,9 +1,10 @@
 package de.metas.handlingunits.inventory.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -16,6 +17,7 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -26,6 +28,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
+import de.metas.handlingunits.inventory.InventoryLinePackingInstructions;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
@@ -35,6 +38,7 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
+import de.metas.inventory.HUAggregationType;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -43,9 +47,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +77,7 @@ import java.util.Objects;
 
 public class SyncInventoryQtyToHUsCommand
 {
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -90,7 +92,7 @@ public class SyncInventoryQtyToHUsCommand
 	@Builder
 	private SyncInventoryQtyToHUsCommand(
 			@NonNull final InventoryRepository inventoryRepository,
-			@NonNull final SourceHUsService sourceHUsService, 
+			@NonNull final SourceHUsService sourceHUsService,
 			@NonNull final HUQRCodesService huQRCodesService,
 			//
 			@NonNull final Inventory inventory)
@@ -144,9 +146,9 @@ public class SyncInventoryQtyToHUsCommand
 			{
 				final HuId huId = Check.assumeNotNull(inventoryLineHU.getHuId(), "Every inventoryLineHU instance needs to have an HuId; inventoryLineHU={}", inventoryLineHU);
 
-				final I_M_HU hu = handlingUnitsDAO.getById(huId);
+				final I_M_HU hu = handlingUnitsBL.getById(huId);
 				transferAttributesToHU(inventoryLine, hu);
-				handlingUnitsDAO.saveHU(hu);
+				handlingUnitsBL.saveHU(hu);
 			}
 		}
 	}
@@ -202,8 +204,7 @@ public class SyncInventoryQtyToHUsCommand
 		{
 			try
 			{
-				final InventoryLineHU resultInventoryLineHU = syncQtyFromInventoryLineToHU(inventoryLine, inventoryLineHU);
-				resultInventoryLineHUs.add(resultInventoryLineHU);
+				resultInventoryLineHUs.addAll(syncQtyFromInventoryLineToHU(inventoryLine, inventoryLineHU));
 			}
 			catch (final RuntimeException e)
 			{
@@ -212,7 +213,19 @@ public class SyncInventoryQtyToHUsCommand
 			}
 		}
 
-		final InventoryLine resultInventoryLine = inventoryLine.withInventoryLineHUs(resultInventoryLineHUs);
+		recomputeQtyCountAndBook(resultInventoryLineHUs, inventoryLine.getQtyBookFixed());
+
+		HUAggregationType huAggregationType = inventoryLine.getHuAggregationType();
+		if (huAggregationType != null && huAggregationType.isSingleHU() && resultInventoryLineHUs.size() > 1)
+		{
+			huAggregationType = HUAggregationType.MULTI_HU;
+		}
+
+		final InventoryLine resultInventoryLine = inventoryLine.toBuilder()
+				.huAggregationType(huAggregationType)
+				.clearInventoryLineHUs()
+				.inventoryLineHUs(resultInventoryLineHUs)
+				.build();
 
 		if (!Objects.equals(inventoryLine, resultInventoryLine)
 				&& inventoryLine.getQtyCountFixed().equals(resultInventoryLine.getQtyCount()) // do not adjust quantity in inventory line
@@ -224,14 +237,42 @@ public class SyncInventoryQtyToHUsCommand
 		return resultInventoryLine;
 	}
 
-	private @NonNull InventoryLineHU syncQtyFromInventoryLineToHU(
+	private void recomputeQtyCountAndBook(
+			@NonNull final ArrayList<InventoryLineHU> inventoryLineHUs,
+			@NonNull final Quantity qtyBookedStart)
+	{
+		for (int i = 0, size = inventoryLineHUs.size(); i < size; i++)
+		{
+			final InventoryLineHU lineHU = inventoryLineHUs.get(i);
+			final Quantity lineQtyBooked;
+			if (i == 0)
+			{
+				lineQtyBooked = qtyBookedStart;
+			}
+			else
+			{
+				lineQtyBooked = qtyBookedStart.toZero();
+			}
+
+			final Quantity lineQtyDiff = lineHU.getQtyCountMinusBooked();
+			final Quantity lineQtyCount = lineQtyBooked.add(lineQtyDiff);
+
+			inventoryLineHUs.set(i, lineHU.toBuilder()
+					.qtyBook(lineQtyBooked)
+					.qtyCount(lineQtyCount)
+					.qtyInternalUse(null)
+					.build());
+		}
+	}
+
+	private @NonNull List<InventoryLineHU> syncQtyFromInventoryLineToHU(
 			final @NonNull InventoryLine inventoryLine,
 			final @NonNull InventoryLineHU inventoryLineHU)
 	{
 		final Quantity qtyCountMinusBooked = inventoryLineHU.getQtyCountMinusBooked();
 		if (qtyCountMinusBooked.signum() == 0)
 		{
-			return inventoryLineHU;
+			return ImmutableList.of(inventoryLineHU);
 		}
 
 		final ProductId productId = inventoryLine.getProductId();
@@ -265,14 +306,14 @@ public class SyncInventoryQtyToHUsCommand
 			{
 				if (isIgnoreOnInventoryMinusAndNoHU())
 				{
-					return inventoryLineHU;
+					return ImmutableList.of(inventoryLineHU);
 				}
 
 				throw new AdempiereException("HU field shall be set when Qty Count is less than Booked for " + inventoryLine + ", qtyCountMinusBooked=" + qtyCountMinusBooked);
 			}
 			else
 			{
-				final I_M_HU hu = handlingUnitsDAO.getById(inventoryLineHU.getHuId());
+				final I_M_HU hu = handlingUnitsBL.getById(inventoryLineHU.getHuId());
 				source = HUListAllocationSourceDestination.of(hu, AllocationStrategyType.UNIFORM)
 						.setDestroyEmptyHUs(true);
 			}
@@ -282,12 +323,10 @@ public class SyncInventoryQtyToHUsCommand
 					inventoryLineRecord);
 		}
 
-		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(inventoryLineRecord);
-		final IMutableHUContext huContextwithOrgId = huContextFactory.createMutableHUContext(contextAware);
-
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
 		HULoader.of(source, destination)
 				.load(AllocationUtils.builder()
-						.setHUContext(huContextwithOrgId)
+						.setHUContext(huContext)
 						.setDateAsToday()
 						.setProduct(inventoryLine.getProductId())
 						.setQuantity(qtyToTransfer)
@@ -297,22 +336,42 @@ public class SyncInventoryQtyToHUsCommand
 
 		if (inventoryLineHU.getHuId() == null)
 		{
-			final HuId createdHUId = extractSingleCreatedHUId(destination);
+			final List<I_M_HU> createdHUs = extractCreatedHUs(destination);
+			if (createdHUs.isEmpty())
+			{
+				throw new HUException("No HU was created by " + destination);
+			}
+			final ImmutableSet<HuId> createdHUIds = createdHUs.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet());
+
 			if (inventoryLineHU.getHuQRCode() != null)
 			{
-				huQRCodesService.assign(inventoryLineHU.getHuQRCode(), ImmutableSet.of(createdHUId));
+				huQRCodesService.assign(inventoryLineHU.getHuQRCode(), createdHUIds);
 			}
 
 			sourceHUsService.addSourceHUMarkerIfCarringComponents(
-					createdHUId,
+					createdHUIds,
 					inventoryLine.getProductId(),
 					inventoryLine.getLocatorId().getWarehouseId());
 
-			return inventoryLineHU.withHuId(createdHUId);
+			final ArrayList<InventoryLineHU> result = new ArrayList<>(createdHUs.size());
+			for (final I_M_HU createdHU : createdHUs)
+			{
+				final Quantity huQty = huContext.getHUStorageFactory().getStorage(createdHU).getProductStorage(inventoryLine.getProductId()).getQty();
+				result.add(
+						inventoryLineHU.toBuilder()
+								.id(null)
+								.huId(HuId.ofRepoId(createdHU.getM_HU_ID()))
+								.qtyInternalUse(null)
+								.qtyBook(huQty.toZero())
+								.qtyCount(huQty)
+								.build()
+				);
+			}
+			return result;
 		}
 		else
 		{
-			return inventoryLineHU;
+			return ImmutableList.of(inventoryLineHU);
 		}
 	}
 
@@ -328,37 +387,47 @@ public class SyncInventoryQtyToHUsCommand
 			}
 			else
 			{
-				// TODO use inventoryLine.getM_HU_PI_Item_Product_ID() if set
-				return HUProducerDestination.ofVirtualPI()
-						.setHUStatus(X_M_HU.HUSTATUS_Active)
-						.setLocatorId(inventoryLine.getLocatorId());
+				final InventoryLinePackingInstructions packingInstructions = inventoryLine.getPackingInstructions();
+				if (packingInstructions.isVHU())
+				{
+					return HUProducerDestination.ofVirtualPI()
+							.setHUStatus(X_M_HU.HUSTATUS_Active)
+							.setLocatorId(inventoryLine.getLocatorId());
+				}
+				else
+				{
+					final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+					lutuProducer.setHUStatus(X_M_HU.HUSTATUS_Active);
+					lutuProducer.setLocatorId(inventoryLine.getLocatorId());
+					lutuProducer.setTUPI(packingInstructions.getTuPIItemProductId(), inventoryLine.getProductId());
+
+					if (packingInstructions.getLuPIId() != null)
+					{
+						lutuProducer.setLUPI(packingInstructions.getLuPIId());
+						lutuProducer.setMaxLUsInfinite();
+					}
+					else
+					{
+						lutuProducer.setNoLU();
+					}
+
+					return lutuProducer;
+				}
 			}
 		}
 		else
 		{
-			final I_M_HU hu = handlingUnitsDAO.getById(inventoryLineHU.getHuId());
+			final I_M_HU hu = handlingUnitsBL.getById(inventoryLineHU.getHuId());
 			return HUListAllocationSourceDestination.of(hu, AllocationStrategyType.UNIFORM);
 		}
 	}
 
-	private static HuId extractSingleCreatedHUId(
+	private static List<I_M_HU> extractCreatedHUs(
 			@NonNull final IAllocationDestination huDestination)
 	{
 		if (huDestination instanceof IHUProducerAllocationDestination)
 		{
-			final List<I_M_HU> createdHUs = ((IHUProducerAllocationDestination)huDestination).getCreatedHUs();
-			if (createdHUs.isEmpty())
-			{
-				throw new HUException("No HU was created by " + huDestination);
-			}
-			else if (createdHUs.size() > 1)
-			{
-				throw new HUException("Only one HU expected to be created by " + huDestination);
-			}
-			else
-			{
-				return HuId.ofRepoId(createdHUs.get(0).getM_HU_ID());
-			}
+			return ((IHUProducerAllocationDestination)huDestination).getCreatedHUs();
 		}
 		else
 		{

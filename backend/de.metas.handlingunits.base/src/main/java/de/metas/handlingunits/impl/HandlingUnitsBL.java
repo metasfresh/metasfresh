@@ -33,6 +33,7 @@ import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -189,6 +190,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
 	{
 		return handlingUnitsRepo.getHuIdsBySelectionId(selectionId);
+	}
+
+	@Override
+	public void saveHU(final I_M_HU hu)
+	{
+		handlingUnitsRepo.saveHU(hu);
 	}
 
 	@Override
@@ -934,7 +941,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final HuPackingInstructionsItemId packingInstructionsItemId = HuPackingInstructionsItemId.ofRepoId(huPIItemProduct.getM_HU_PI_Item_ID());
 		return getPI(packingInstructionsItemId);
 	}
-
+	
 	@Override
 	public I_M_HU_PI_Version getPIVersion(final I_M_HU hu)
 	{
@@ -947,9 +954,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI_Item getPIItem(@NonNull final I_M_HU_Item huItem)
 	{
 		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
-		return piItemId != null
-				? handlingUnitsRepo.getPackingInstructionItemById(piItemId)
-				: null;
+		return piItemId != null ? getPIItem(piItemId) : null;
+	}
+
+	@Override
+	public @NonNull I_M_HU_PI_Item getPIItem(@NonNull final HuPackingInstructionsItemId piItemId)
+	{
+		return handlingUnitsRepo.getPackingInstructionItemById(piItemId);
 	}
 
 	@NonNull
@@ -1072,6 +1083,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getEffectivePI(@NonNull final HuId huId)
 	{
 		return getEffectivePI(getById(huId));
+	}
+
+	@Override
+	public HUPIItemProduct getPIItemProduct(final HUPIItemProductId piItemProductId)
+	{
+		return huPIItemProductDAO.getById(piItemProductId);
 	}
 
 	@Override
