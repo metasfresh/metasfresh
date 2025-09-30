@@ -49,6 +49,7 @@ import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_Order;
@@ -65,6 +66,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -160,6 +162,7 @@ public class AvailableForSalesUtil
 		return result.build();
 	}
 
+	@NonNull
 	public CheckAvailableForSalesRequest createRequest(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final I_C_Order orderRecord = orderLineRecord.getC_Order();
@@ -171,6 +174,8 @@ public class AvailableForSalesUtil
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.preparationDate(preparationDate)
+				.warehouseId(Optional.ofNullable(WarehouseId.ofRepoIdOrNull(orderLineRecord.getM_Warehouse_ID()))
+						.orElse(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID())))
 				.build();
 	}
 
@@ -194,7 +199,8 @@ public class AvailableForSalesUtil
 			@NonNull final AvailableForSalesConfig config,
 			@NonNull final ProductId productId,
 			@NonNull final OrgId orgId,
-			@NonNull final AttributesKey storageAttributesKey)
+			@NonNull final AttributesKey storageAttributesKey,
+			@NonNull final WarehouseId warehouseId)
 	{
 		return EnqueueAvailableForSalesRequest.of(AvailableForSalesQuery
 						.builder()
@@ -204,6 +210,7 @@ public class AvailableForSalesUtil
 						.orgId(orgId)
 						.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
 						.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
+						.warehouseId(warehouseId)
 						.build(),
 				ctx);
 	}
@@ -220,7 +227,10 @@ public class AvailableForSalesUtil
 				.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.orElse(AttributesKey.NONE);
 
-		final EnqueueAvailableForSalesRequest enqueueAvailableForSalesRequest = createRequestWithPreparationDateNow(ctx, config, productId, orgId, storageAttributesKey);
+		final WarehouseId warehouseId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(orderLineRecord.getM_Warehouse_ID()))
+				.orElseGet(() -> WarehouseId.ofRepoId(ordersDAO.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID())).getM_Warehouse_ID()));
+
+		final EnqueueAvailableForSalesRequest enqueueAvailableForSalesRequest = createRequestWithPreparationDateNow(ctx, config, productId, orgId, storageAttributesKey, warehouseId);
 
 		trxManager.runAfterCommit(() -> availableForSalesService
 				.enqueueAvailableForSalesRequest(enqueueAvailableForSalesRequest));
@@ -235,6 +245,8 @@ public class AvailableForSalesUtil
 		ProductId productId;
 
 		AttributeSetInstanceId attributeSetInstanceId;
+
+		WarehouseId warehouseId;
 
 		Timestamp preparationDate;
 	}
@@ -420,6 +432,7 @@ public class AvailableForSalesUtil
 					.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(storageAttributesKey))
 					.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
 					.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
+					.warehouseId(config.isQtyPerWarehouse() ? request.getWarehouseId() : null)
 					.build();
 
 			query2OrderLineId.put(availableForSalesQuery, request.getOrderLineId());

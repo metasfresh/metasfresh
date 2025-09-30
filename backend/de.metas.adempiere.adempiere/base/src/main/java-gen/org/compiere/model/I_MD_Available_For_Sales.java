@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
@@ -145,6 +123,28 @@ public interface I_MD_Available_For_Sales
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
 	 * Set Available for sales.
 	 *
 	 * <br>Type: ID
@@ -190,6 +190,7 @@ public interface I_MD_Available_For_Sales
 
 	/**
 	 * Set QtyToBeShipped.
+	 * Quantity that according to the respective org's "Available quantity for sales config" is still stocked, but is going to be shipped soon
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -199,6 +200,7 @@ public interface I_MD_Available_For_Sales
 
 	/**
 	 * Get QtyToBeShipped.
+	 * Quantity that according to the respective org's "Available quantity for sales config" is still stocked, but is going to be shipped soon
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

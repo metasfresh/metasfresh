@@ -89,14 +89,9 @@ public class AFSProductLookupEnricher
 
 	public List<AvailabilityInfoResultForWebui.Group> getAvailabilityInfoGroups(@NonNull final LookupValuesList productLookupValues)
 	{
-		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
-				AvailableForSalesConfigRepo.ConfigQuery.builder()
-						.clientId(clientId)
-						.orgId(orgId)
-						.build());
 		final List<AvailableForSalesQuery> collect = productLookupValues.getKeysAsInt().stream()
 				.map(ProductId::ofRepoId)
-				.map(id -> createAvailableForSalesMultiQuery(id, dateOrNull.toInstant(), config.getSalesOrderLookBehindHours(), config.getShipmentDateLookAheadHours(), warehouseId))
+				.map(id -> createAvailableForSalesMultiQuery(id, dateOrNull.toInstant()))
 				.map(AvailableForSalesMultiQuery::getAvailableForSalesQueries)
 				.flatMap(Collection::stream)
 				.collect(Collectors.toList());
@@ -111,20 +106,23 @@ public class AFSProductLookupEnricher
 
 	private AvailableForSalesMultiQuery createAvailableForSalesMultiQuery(
 			@NonNull final ProductId productId,
-			@NonNull final Instant dateOfInterest,
-			final int salesOrderLookBehindHours,
-			final int shipmentDateLookAheadHours,
-			@Nullable final WarehouseId warehouseId)
+			@NonNull final Instant dateOfInterest)
 	{
+		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
+				AvailableForSalesConfigRepo.ConfigQuery.builder()
+						.clientId(clientId)
+						.orgId(orgId)
+						.build());
+		
 		final AvailableForSalesMultiQuery.AvailableForSalesMultiQueryBuilder result = AvailableForSalesMultiQuery.builder();
 
 		final AvailableForSalesQuery.AvailableForSalesQueryBuilder queryBuilder = AvailableForSalesQuery.builder()
 				.orgId(orgId)
 				.productId(productId)
 				.dateOfInterest(dateOfInterest)
-				.salesOrderLookBehindHours(salesOrderLookBehindHours)
-				.warehouseId(warehouseId)
-				.shipmentDateLookAheadHours(shipmentDateLookAheadHours);
+				.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
+				.warehouseId(config.isQtyPerWarehouse() ? warehouseId : null)
+				.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours());
 
 		boolean containsAll = false;
 		for (final AttributesKeyPattern attributesKey : availableForSaleAdapter.getPredefinedStorageAttributeKeys())

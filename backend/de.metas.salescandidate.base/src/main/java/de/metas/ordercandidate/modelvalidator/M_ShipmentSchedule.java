@@ -49,6 +49,7 @@ import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -57,6 +58,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 @Interceptor(I_M_ShipmentSchedule.class)
@@ -138,7 +140,9 @@ public class M_ShipmentSchedule
 					I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID,
 					I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_PreparationDate,
-					I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID })
+					I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID })
 	public void triggerSyncAvailableForSales(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
 		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
@@ -216,6 +220,8 @@ public class M_ShipmentSchedule
 			@NonNull final I_M_ShipmentSchedule oldShipmentScheduleRecord)
 	{
 		return oldShipmentScheduleRecord.getM_Product_ID() != currentShipmentScheduleRecord.getM_Product_ID()
+				|| oldShipmentScheduleRecord.getM_Warehouse_Override_ID() != currentShipmentScheduleRecord.getM_Warehouse_Override_ID()
+				|| oldShipmentScheduleRecord.getM_Warehouse_ID() != currentShipmentScheduleRecord.getM_Warehouse_ID()
 				|| oldShipmentScheduleRecord.getM_AttributeSetInstance_ID() != currentShipmentScheduleRecord.getM_AttributeSetInstance_ID()
 				|| oldShipmentScheduleRecord.getAD_Org_ID() != currentShipmentScheduleRecord.getAD_Org_ID();
 	}
@@ -231,9 +237,12 @@ public class M_ShipmentSchedule
 		final AttributesKey storageAttributesKey = AttributesKeys
 				.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoIdOrNone(shipmentScheduleRecord.getM_AttributeSetInstance_ID()))
 				.orElse(AttributesKey.NONE);
+		
+		final WarehouseId warehouseId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(shipmentScheduleRecord.getM_Warehouse_Override_ID()))
+				.orElseGet(() -> WarehouseId.ofRepoId(shipmentScheduleRecord.getM_Warehouse_ID()));
 
 		final EnqueueAvailableForSalesRequest enqueueAvailableForSalesRequest = availableForSalesUtil.
-				createRequestWithPreparationDateNow(ctx, config, productId, orgId, storageAttributesKey);
+				createRequestWithPreparationDateNow(ctx, config, productId, orgId, storageAttributesKey, warehouseId);
 
 		trxManager.runAfterCommit(() -> availableForSalesService.enqueueAvailableForSalesRequest(enqueueAvailableForSalesRequest));
 	}

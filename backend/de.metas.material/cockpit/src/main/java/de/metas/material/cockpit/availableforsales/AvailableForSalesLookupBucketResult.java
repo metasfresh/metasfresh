@@ -5,6 +5,7 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 import java.math.BigDecimal;
 
@@ -43,6 +44,9 @@ public class AvailableForSalesLookupBucketResult
 
 	@NonNull
 	AttributesKey storageAttributesKey;
+
+	@NonNull
+	WarehouseId warehouseId;
 
 	@NonNull
 	Quantities quantities;
