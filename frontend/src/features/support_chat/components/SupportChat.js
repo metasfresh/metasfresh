@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ChatPopup } from './ChatPopup';
-import { ChatButton } from './ChatButton';
+import { SupportChatPopup } from './SupportChatPopup';
+import { SupportChatButton } from './SupportChatButton';
 
-export const Chat = () => {
+export const SupportChat = () => {
   const [isPopupDisplayed, setIsPopupDisplayed] = useState(true);
 
   const toggleChatPopup = () => {
@@ -13,8 +13,8 @@ export const Chat = () => {
   return (
     <div className="chat">
       <div className="space" />
-      {isPopupDisplayed && <ChatPopup />}
-      <ChatButton onClick={toggleChatPopup} />
+      {isPopupDisplayed && <SupportChatPopup />}
+      <SupportChatButton onClick={toggleChatPopup} />
     </div>
   );
 };

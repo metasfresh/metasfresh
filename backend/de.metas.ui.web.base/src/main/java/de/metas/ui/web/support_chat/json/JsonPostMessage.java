@@ -1,4 +1,4 @@
-package de.metas.ui.web.chat.json;
+package de.metas.ui.web.support_chat.json;
 
 import lombok.Builder;
 import lombok.NonNull;

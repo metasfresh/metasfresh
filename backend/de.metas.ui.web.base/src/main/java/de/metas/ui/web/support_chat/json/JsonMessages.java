@@ -1,4 +1,4 @@
-package de.metas.ui.web.chat.json;
+package de.metas.ui.web.support_chat.json;
 
 import com.google.common.collect.ImmutableList;
 import lombok.Builder;

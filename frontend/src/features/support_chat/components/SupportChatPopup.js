@@ -1,11 +1,11 @@
 import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { postChatMessage } from '../../api/chat';
-import { useWebsocketTopic } from '../../hooks/useWebsocketTopic';
-import { useUserSession } from '../../hooks/useUserSession';
+import { postChatMessage } from '../api';
+import { useWebsocketTopic } from '../../../hooks/useWebsocketTopic';
+import { useUserSession } from '../../../hooks/useUserSession';
 import { v4 as uuidv4 } from 'uuid';
 
-export const ChatPopup = () => {
+export const SupportChatPopup = () => {
   const [inputText, setInputText] = useState('');
   const [chatLines, setChatLines] = useState([]);
   const inputTextRef = useRef(null);
