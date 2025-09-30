@@ -10,40 +10,40 @@ Feature: Packing material invoice candidates: shipments
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
     And metasfresh contains M_Products:
-      | Identifier     | Name                        |
-      | salesProduct   | salesProduct_S0160_@Date@   |
-      | packingProduct | packingProduct_S0160_@Date@ |
+      | Identifier     |
+      | salesProduct   |
+      | packingProduct |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                               | Value          |
-      | ps_1       | pricing_system_name_S0160_26072022 | S0160_26072022 |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_SO      | ps_1                          | DE                        | EUR                 | price_list_name_SO | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | pl_SO      | ps_1               | DE           | EUR           | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_SO     | pl_SO                     | salesOrder-PLV | 2022-07-01 |
+      | Identifier | M_PriceList_ID |
+      | plv_SO     | pl_SO          |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_SO                            | salesProduct            | 10.0     | PCE               | Normal                        |
-      | pp_2       | plv_SO                            | packingProduct          | 2.0      | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | plv_SO                 | salesProduct   | 10.0     | PCE               | Normal                        |
+      | plv_SO                 | packingProduct | 2.0      | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name            | IsCustomer | M_PricingSystem_ID | InvoiceRule |
-      | bpartner_1 | BP_S0160_@Date@ | Y          | ps_1               | D           |
+      | Identifier | IsCustomer | M_PricingSystem_ID | InvoiceRule |
+      | bpartner_1 | Y          | ps_1               | D           |
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name              |
-      | huPackingTU           | huPackingTU_S0160 |
+      | M_HU_PI_ID  |
+      | huPackingTU |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                   | HU_UnitType | IsCurrent |
-      | packingVersionTU              | huPackingTU           | packingVersionTU_S0160 | TU          | Y         |
+      | M_HU_PI_Version_ID | M_HU_PI_ID  | HU_UnitType | IsCurrent |
+      | packingVersionTU   | huPackingTU | TU          | Y         |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID.Identifier | Name                    | OPT.M_Product_ID.Identifier |
-      | huPackingMaterial                  | HUPackingMaterial_S0160 | packingProduct              |
+      | M_HU_PackingMaterial_ID | M_Product_ID   |
+      | huPackingMaterial       | packingProduct |
     And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.M_HU_PackingMaterial_ID.Identifier |
-      | huPiItemTU                 | packingVersionTU              | 0   | PM       | huPackingMaterial                      |
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPiItemTU      | packingVersionTU   | 0   | PM       | huPackingMaterial       |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huPiItemSalesProduct               | huPiItemTU                 | salesProduct            | 10  | 2022-07-01 |
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty |
+      | huPiItemSalesProduct    | huPiItemTU      | salesProduct | 10  |
 
 
   @from:cucumber
