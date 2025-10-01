@@ -3,9 +3,9 @@ package de.metas.shipper.gateway.nshift.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.logging.LogManager;
-import de.metas.shipper.gateway.commons.json.JsonDeliveryOrderRequest;
-import de.metas.shipper.gateway.commons.json.JsonDeliveryOrderResponse;
 import de.metas.shipper.gateway.nshift.config.NShiftConfig;
 import de.metas.shipper.gateway.nshift.json.JsonAddress;
 import de.metas.shipper.gateway.nshift.json.JsonAddressKind;
@@ -56,7 +56,7 @@ public class NShiftShipmentService
 	@NonNull
 	private final ObjectMapper objectMapper;
 
-	public JsonDeliveryOrderResponse createShipment(@NonNull final JsonDeliveryOrderRequest deliveryOrder)
+	public JsonDeliveryResponse createShipment(@NonNull final JsonDeliveryRequest deliveryOrder)
 	{
 		logger.debug("Creating shipment for delivery order: {}", deliveryOrder);
 		final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryOrder);
@@ -70,10 +70,11 @@ public class NShiftShipmentService
 		return normalizeResponse(response);
 	}
 
-	private JsonDeliveryOrderResponse normalizeResponse(final JsonShipmentResponse response)
+	private JsonDeliveryResponse normalizeResponse(final JsonShipmentResponse response)
 	{
-		//TODO implement normalization
-		return null;
+		return JsonDeliveryResponse.builder()
+				//TODO implement normalization
+				.build();
 	}
 
 	private JsonShipmentResponse callNShift(@NonNull final JsonShipmentRequest request)
@@ -163,7 +164,7 @@ public class NShiftShipmentService
 		}
 	}
 
-	private JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryOrderRequest deliveryOrder)
+	private JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryOrder)
 	{
 		// TODO: Map the DeliveryOrder to the JsonShipmentRequest instead of using hardcoded data.
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()

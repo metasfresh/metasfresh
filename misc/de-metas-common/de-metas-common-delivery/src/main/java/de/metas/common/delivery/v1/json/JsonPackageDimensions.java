@@ -22,13 +22,18 @@
 
 package de.metas.common.delivery.v1.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
 @Jacksonized
 public class JsonPackageDimensions
 {
+	int lengthInCM;
+	int widthInCM;
+	int heightInCM;
 }

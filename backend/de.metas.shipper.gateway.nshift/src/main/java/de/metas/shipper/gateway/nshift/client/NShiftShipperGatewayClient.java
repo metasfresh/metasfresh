@@ -2,10 +2,10 @@ package de.metas.shipper.gateway.nshift.client;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.logging.LogManager;
-import de.metas.shipper.gateway.commons.json.JsonDeliveryOrderRequest;
-import de.metas.shipper.gateway.commons.json.JsonDeliveryOrderResponse;
-import de.metas.shipper.gateway.commons.json.JsonDeliveryOrderResponseItem;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderParcel;
 import de.metas.shipper.gateway.nshift.NShiftConstants;
 import de.metas.shipper.gateway.nshift.config.NShiftConfig;
@@ -13,7 +13,6 @@ import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLineId;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
@@ -50,7 +49,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final JsonDeliveryOrderResponse response = shipmentService.createShipment(toJsonDeliveryOrder(deliveryOrder));
+		final JsonDeliveryResponse response = shipmentService.createShipment(toJsonDeliveryOrder(deliveryOrder));
 		logger.debug("Received nShift response: {}", response);
 
 		//TODO log request into Carrier_ShipmentOrder_Log
@@ -59,12 +58,12 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 
 	}
 
-	private DeliveryOrder updateDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder, @NonNull final JsonDeliveryOrderResponse response)
+	private DeliveryOrder updateDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder, @NonNull final JsonDeliveryResponse response)
 	{
 		final String language = "de"; //TODO introduce something like deliveryOrder.getDeliveryAddress().getBpartnerLanguage();
 
-		final ImmutableMap<DeliveryOrderLineId, JsonDeliveryOrderResponseItem> lineIdToResponseMap = response.getItems().stream()
-				.collect(ImmutableMap.toImmutableMap(JsonDeliveryOrderResponseItem::getLineId, Function.identity()));
+		final ImmutableMap<String, JsonDeliveryResponseItem> lineIdToResponseMap = response.getItems().stream()
+				.collect(ImmutableMap.toImmutableMap(JsonDeliveryResponseItem::getLineId, Function.identity()));
 		final ImmutableList<DeliveryOrderLine> updatedDeliveryOrderLines = deliveryOrder.getDeliveryOrderLines()
 				.stream()
 				.map(line -> updateDeliveryOrderLine(line, lineIdToResponseMap.get(line.getId()), language))
@@ -72,7 +71,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		return deliveryOrder.withDeliveryOrderLines(updatedDeliveryOrderLines);
 	}
 
-	private DeliveryOrderLine updateDeliveryOrderLine(@NonNull final DeliveryOrderLine line, @NonNull final JsonDeliveryOrderResponseItem jsonDeliveryOrderResponseItem, @NonNull final String language)
+	private DeliveryOrderLine updateDeliveryOrderLine(@NonNull final DeliveryOrderLine line, @NonNull final JsonDeliveryResponseItem jsonDeliveryOrderResponseItem, @NonNull final String language)
 	{
 		final ShipmentOrderParcel shipmentOrderParcel = ShipmentOrderParcel.ofDeliveryOrderLineOrNull(line);
 		if (shipmentOrderParcel == null)
@@ -93,10 +92,10 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		return line.withCustomDeliveryData(updatedShipmentOrderParcel);
 	}
 
-	private @NonNull JsonDeliveryOrderRequest toJsonDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder)
+	private @NonNull JsonDeliveryRequest toJsonDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder)
 	{
-		return JsonDeliveryOrderRequest.builder()
-				.id(deliveryOrder.getId())
+		return JsonDeliveryRequest.builder()
+				.id(deliveryOrder.getId().toString())
 
 				//TODO
 				.build();

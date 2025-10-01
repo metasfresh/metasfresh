@@ -20,22 +20,23 @@
  * #L%
  */
 
-package de.metas.common.delivery.v1.json;
+package de.metas.common.delivery.v1.json.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-
-import java.math.BigDecimal;
+import org.jetbrains.annotations.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
 @Jacksonized
-public class JsonQuantity
+public class JsonDeliveryResponseItem
 {
-	@NonNull BigDecimal value;
-	@NonNull String uomCode; // ISO or system UOM code, e.g. "PCE"
+	@Nullable String lineId;
+	@Nullable String errorMessage;
+	@Nullable String awb;
+	@Nullable String trackingUrl;
+	byte[] labelPdfBase64;
 }
