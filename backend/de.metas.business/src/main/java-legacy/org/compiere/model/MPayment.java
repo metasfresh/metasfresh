@@ -342,9 +342,9 @@ public final class MPayment extends X_C_Payment
 			if (getC_Order_ID() != 0)
 			{
 				final I_C_Order ord = getC_Order();
-				Check.errorIf(ord.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {} has C_BPartner_ID={}, but order {} has C_BPartner_ID={}",
-						this, getC_BPartner_ID(), ord, ord.getC_BPartner_ID());
+				Check.errorIf(ord.getBill_BPartner_ID() != getC_BPartner_ID(),
+						"Payment {} has C_BPartner_ID={}, but order {} has Bill_BPartner_ID={}",
+						this, getC_BPartner_ID(), ord, ord.getBill_BPartner_ID());
 			}
 		}
 
