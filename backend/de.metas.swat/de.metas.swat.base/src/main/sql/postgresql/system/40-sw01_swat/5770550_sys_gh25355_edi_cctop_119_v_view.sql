@@ -1,5 +1,3 @@
--- View: EDI_Cctop_119_v
-
 DROP VIEW IF EXISTS EDI_Cctop_119_v;
 CREATE OR REPLACE VIEW EDI_Cctop_119_v AS
 SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
@@ -135,7 +133,7 @@ FROM (
                                   'snum'::TEXT AS Type_V,
                                   pl_snum.C_BPartner_Location_ID,
                                   i.C_Invoice_ID,
-                                  s.M_InOut_ID,
+                                  0::numeric as M_InOut_ID, -- don't return the s.M_InOut_ID, bc there might be many and we don't need them here
                                   NULL::TEXT   AS Vendor_ReferenceNo,
                                   pl_snum.bpartnername AS SiteName,
                                   pl_snum.Setup_Place_No,
