@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.nshift
+ * de-metas-common-delivery
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,32 +20,23 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.nshift.json;
+package de.metas.common.delivery.v1.json.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+import org.jetbrains.annotations.Nullable;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonShipmentDocument.JsonShipmentDocumentBuilder.class)
-public class JsonShipmentDocument {
-
-    @JsonProperty("DocumentType")
-    String documentType;
-
-    /**
-     * Base64-encoded content of the document.
-     */
-    @JsonProperty("Content")
-    String content;
-
-    @JsonProperty("DocumentName")
-    String documentName;
-
-    @JsonProperty("PkgNo")
-    String pkgNo;
+@Jacksonized
+public class JsonDeliveryResponseItem
+{
+	@Nullable String lineId;
+	@Nullable String errorMessage;
+	@Nullable String awb;
+	@Nullable String trackingUrl;
+	byte[] labelPdfBase64;
 }

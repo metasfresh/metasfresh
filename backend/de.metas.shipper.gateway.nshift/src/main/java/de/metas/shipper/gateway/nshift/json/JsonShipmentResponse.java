@@ -24,19 +24,51 @@ package de.metas.shipper.gateway.nshift.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
 import lombok.Value;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Builder
+@JsonDeserialize(builder = JsonShipmentResponse.JsonShipmentResponseBuilder.class)
 public class JsonShipmentResponse {
 
-    @JsonProperty("ShpNo")
-    String shpNo;
+    @JsonProperty("ShpCSID")
+    int shpCSID;
+
+    @JsonProperty("ShpTag")
+    String shpTag;
+
+    @JsonProperty("InstallationID")
+    String installationID;
+
+    @JsonProperty("PhysicalInstallationID")
+    String physicalInstallationID;
+
+    @JsonProperty("Kind")
+    int kind;
 
     @JsonProperty("OrderNo")
     String orderNo;
+
+    @JsonProperty("PickupDt")
+    LocalDateTime pickupDt;
+
+    @JsonProperty("ImportDt")
+    LocalDateTime importDt;
+
+    @JsonProperty("Vol")
+    long vol;
+
+    @JsonProperty("Weight")
+    int weight;
+
+    @JsonProperty("ShpNo")
+    String shpNo;
 
     @JsonProperty("Lines")
     List<JsonLineResponse> lines;

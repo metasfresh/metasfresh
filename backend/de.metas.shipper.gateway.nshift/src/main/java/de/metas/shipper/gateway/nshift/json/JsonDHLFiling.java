@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Singular;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
@@ -21,5 +22,6 @@ import java.util.List;
 public class JsonDHLFiling extends JsonDetailGroup {
 
 	@JsonProperty("Rows")
+	@Singular
 	private List<JsonDetailRow<JsonDHLFilingDetail>> rows;
 }

@@ -64,7 +64,7 @@ public class JsonLine {
     @JsonProperty("Loadmeter")
     Integer loadmeter;
 
-    @JsonProperty("GoodsTypeID")
+    @JsonProperty("GoodsType")
     Integer goodsTypeID;
 
     @JsonProperty("GoodsTypeName")
@@ -89,6 +89,7 @@ public class JsonLine {
     List<JsonLineUnit> lineUnits;
 
     @JsonProperty("Pkgs")
+    @Singular
     List<JsonPackage> pkgs;
 
     @JsonProperty("References")

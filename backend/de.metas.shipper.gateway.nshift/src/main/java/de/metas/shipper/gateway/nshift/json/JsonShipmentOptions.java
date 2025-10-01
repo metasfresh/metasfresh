@@ -65,4 +65,7 @@ public class JsonShipmentOptions {
     @JsonProperty("ValidatePostCode")
     @JsonSerialize(converter = BooleanToIntConverter.class)
     Boolean validatePostCode;
+
+    @JsonProperty("Place")
+    String place;
 }

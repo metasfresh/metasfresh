@@ -21,17 +21,15 @@
  */
 package de.metas.shipper.gateway.nshift.json;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
+@Jacksonized
 public class JsonShipmentRequest {
-
-    @JsonProperty("Options")
-    JsonShipmentOptions options;
-
-    @JsonProperty("Data")
-    JsonShipmentData data;
+    @NonNull JsonShipmentData data;
+    @NonNull JsonShipmentOptions options;
 }

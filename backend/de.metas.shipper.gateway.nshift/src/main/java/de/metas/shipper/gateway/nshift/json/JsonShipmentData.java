@@ -75,7 +75,8 @@ public class JsonShipmentData {
     String senderAccountAtBank;
 
     @JsonProperty("Services")
-    List<String> services;
+    @Singular
+    List<Integer> services;
 
     @JsonProperty("Addresses")
     @Singular
@@ -100,5 +101,6 @@ public class JsonShipmentData {
     List<JsonShipmentMessage> messages;
 
     @JsonProperty("DangerousGoods")
+    @Singular
     List<JsonDangerousGoods> dangerousGoods;
 }

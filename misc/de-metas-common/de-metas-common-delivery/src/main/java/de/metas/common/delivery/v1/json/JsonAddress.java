@@ -22,13 +22,30 @@
 
 package de.metas.common.delivery.v1.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.jetbrains.annotations.Nullable;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
 @Jacksonized
 public class JsonAddress
 {
+	@NonNull String companyName1;
+	@Nullable String companyName2;
+	@Nullable String companyDepartment;
+
+	@Nullable String street1;
+	@Nullable String street2;
+	@Nullable String houseNo;
+	@NonNull String country; // ISO country code, e.g. "DE"
+	@NonNull String zipCode;
+	@NonNull String city;
+
+	// Optional; used only for logging/debugging in some processors
+	@Nullable Integer bpartnerId;
 }

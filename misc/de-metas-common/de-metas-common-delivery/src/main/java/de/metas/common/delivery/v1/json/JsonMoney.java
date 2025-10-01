@@ -22,13 +22,20 @@
 
 package de.metas.common.delivery.v1.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.math.BigDecimal;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
 @Jacksonized
 public class JsonMoney
 {
+	@NonNull BigDecimal amount;
+	@NonNull String currencyCode; // ISO 4217, e.g. "EUR"
 }

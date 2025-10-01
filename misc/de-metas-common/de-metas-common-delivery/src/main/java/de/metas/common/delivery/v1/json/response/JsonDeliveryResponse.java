@@ -22,9 +22,26 @@
 
 package de.metas.common.delivery.v1.json.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Value
 @Builder
+@Jacksonized
 public class JsonDeliveryResponse
 {
+	@NonNull List<JsonDeliveryResponseItem> items;
+
+	@JsonIgnore
+	public boolean isError()
+	{
+		return items.stream().anyMatch(item -> item.getErrorMessage() != null && !item.getErrorMessage().isEmpty());
+	}
 }

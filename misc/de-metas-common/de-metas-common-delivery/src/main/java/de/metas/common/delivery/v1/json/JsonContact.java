@@ -22,13 +22,19 @@
 
 package de.metas.common.delivery.v1.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.jetbrains.annotations.Nullable;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
 @Jacksonized
 public class JsonContact
 {
+	@Nullable String phone; // formatted phone number
+	@Nullable String simplePhoneNumber; // alternative simple number as string
+	@Nullable String emailAddress;
 }

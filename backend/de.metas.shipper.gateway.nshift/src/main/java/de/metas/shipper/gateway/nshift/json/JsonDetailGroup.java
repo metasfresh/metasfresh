@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
         @JsonSubTypes.Type(value = JsonCustomsInfo.class, name = "2"),
         @JsonSubTypes.Type(value = JsonFedExCustomsInformation.class, name = "4"),
         @JsonSubTypes.Type(value = JsonDHLFiling.class, name = "5"),
-        @JsonSubTypes.Type(value = JsonOrderData.class, name = "6")
+        @JsonSubTypes.Type(value = JsonOrderData.class, name = "6"),
 })
 @Getter
 @NoArgsConstructor
