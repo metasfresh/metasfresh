@@ -40,6 +40,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -238,6 +239,6 @@ public class MD_Available_For_Sales_StepDef
 		return warehouseTable.getOptional(warehouseIdentifier)
 				.map(I_M_Warehouse::getM_Warehouse_ID)
 				.map(WarehouseId::ofRepoId)
-				.orElseGet(() -> WarehouseId.ofRepoId(Integer.parseInt(warehouseIdentifier)));
+				.orElseThrow(() -> new AdempiereException("No warehouse found for identifier: " + warehouseIdentifier));
 	}
 }

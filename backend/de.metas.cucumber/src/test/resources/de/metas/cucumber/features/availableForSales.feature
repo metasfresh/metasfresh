@@ -526,7 +526,7 @@ Feature: available for sales
     "QtyToBeShipped": 8,
     "StorageAttributesKey": "-1002",
     "ExternalSystem": "GRSSignum",
-    "WarehouseValue": "StdWarehouse"
+    "WarehouseCode": "StdWarehouse"
   },
   {
     "ProductExternalReference": "availableForSales_09292025_2",
@@ -535,7 +535,7 @@ Feature: available for sales
     "QtyToBeShipped": 10,
     "StorageAttributesKey": "-1002",
     "ExternalSystem": "GRSSignum",
-    "WarehouseValue": "StdWarehouse"
+    "WarehouseCode": "StdWarehouse"
   },
   {
     "ProductExternalReference": "availableForSales_09292025_3",
@@ -544,7 +544,7 @@ Feature: available for sales
     "QtyToBeShipped": 12,
     "StorageAttributesKey": "-1002",
     "ExternalSystem": "GRSSignum",
-    "WarehouseValue": "@warehouseValue@"
+    "WarehouseCode": "@warehouseValue@"
   }
 ]
     """
@@ -570,7 +570,7 @@ Feature: available for sales
     "QtyToBeShipped": 12,
     "StorageAttributesKey": "-1002",
     "ExternalSystem": "GRSSignum",
-    "WarehouseValue": "@warehouseValue@"
+    "WarehouseCode": "@warehouseValue@"
   }
   ]
   """

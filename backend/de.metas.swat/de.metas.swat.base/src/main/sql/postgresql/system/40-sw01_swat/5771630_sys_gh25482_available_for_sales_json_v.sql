@@ -9,7 +9,7 @@ SELECT COALESCE(externalReference.externalreference, '') AS "ProductExternalRefe
        availableForSales.qtytobeshipped                  AS "QtyToBeShipped",
        availableForSales.storageattributeskey            AS "StorageAttributesKey",
        COALESCE(externalreference.externalsystem, '')    AS "ExternalSystem",
-       warehouse.value                                   AS "WarehouseValue"
+       warehouse.value                                   AS "WarehouseCode"
 
 FROM MD_Available_For_Sales availableForSales
          INNER JOIN m_product product ON availableForSales.m_product_id = product.m_product_id

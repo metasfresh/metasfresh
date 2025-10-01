@@ -23,6 +23,8 @@
 package de.metas.ordercandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
@@ -58,7 +60,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 @Interceptor(I_M_ShipmentSchedule.class)
@@ -71,6 +72,7 @@ public class M_ShipmentSchedule
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	private final AvailableForSalesService availableForSalesService;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
@@ -219,8 +221,14 @@ public class M_ShipmentSchedule
 			@NonNull final I_M_ShipmentSchedule currentShipmentScheduleRecord,
 			@NonNull final I_M_ShipmentSchedule oldShipmentScheduleRecord)
 	{
+		final WarehouseId oldRecordWarehouseId = CoalesceUtil.coalesceNotNull(WarehouseId.ofRepoIdOrNull(oldShipmentScheduleRecord.getM_Warehouse_ID()),
+				WarehouseId.ofRepoId(oldShipmentScheduleRecord.getM_Warehouse_ID()));
+
+		final WarehouseId currentRecordWarehouseId = CoalesceUtil.coalesceNotNull(WarehouseId.ofRepoIdOrNull(currentShipmentScheduleRecord.getM_Warehouse_ID()),
+				WarehouseId.ofRepoId(currentShipmentScheduleRecord.getM_Warehouse_ID()));
+
 		return oldShipmentScheduleRecord.getM_Product_ID() != currentShipmentScheduleRecord.getM_Product_ID()
-				|| oldShipmentScheduleRecord.getM_Warehouse_Override_ID() != currentShipmentScheduleRecord.getM_Warehouse_Override_ID()
+				|| !oldRecordWarehouseId.equals(currentRecordWarehouseId)
 				|| oldShipmentScheduleRecord.getM_Warehouse_ID() != currentShipmentScheduleRecord.getM_Warehouse_ID()
 				|| oldShipmentScheduleRecord.getM_AttributeSetInstance_ID() != currentShipmentScheduleRecord.getM_AttributeSetInstance_ID()
 				|| oldShipmentScheduleRecord.getAD_Org_ID() != currentShipmentScheduleRecord.getAD_Org_ID();
@@ -238,8 +246,7 @@ public class M_ShipmentSchedule
 				.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoIdOrNone(shipmentScheduleRecord.getM_AttributeSetInstance_ID()))
 				.orElse(AttributesKey.NONE);
 		
-		final WarehouseId warehouseId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(shipmentScheduleRecord.getM_Warehouse_Override_ID()))
-				.orElseGet(() -> WarehouseId.ofRepoId(shipmentScheduleRecord.getM_Warehouse_ID()));
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(shipmentScheduleRecord);
 
 		final EnqueueAvailableForSalesRequest enqueueAvailableForSalesRequest = availableForSalesUtil.
 				createRequestWithPreparationDateNow(ctx, config, productId, orgId, storageAttributesKey, warehouseId);
