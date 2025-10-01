@@ -19,6 +19,7 @@ import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_MD_Available_For_Sales;
 import org.compiere.util.Env;
@@ -118,6 +119,11 @@ public class AvailableForSalesRepository
 		{
 			queryBuilder.filter(ASIAvailableForSalesAttributesKeyFilter.matchingAttributes(retrieveAvailableForSalesQuery.getStorageAttributesKeyPattern()));
 		}
+		
+		if (retrieveAvailableForSalesQuery.getWarehouseId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Warehouse_ID, retrieveAvailableForSalesQuery.getWarehouseId());
+		}
 
 		return queryBuilder
 				.create()
@@ -139,6 +145,7 @@ public class AvailableForSalesRepository
 		availableForSales.setQtyOnHandStock(createAvailableForSalesRequest.getQtyOnHandStock());
 		availableForSales.setAD_Org_ID(createAvailableForSalesRequest.getOrgId().getRepoId());
 		availableForSales.setIsActive(true);
+		availableForSales.setM_Warehouse_ID(createAvailableForSalesRequest.getWarehouseId().getRepoId());
 
 		save(availableForSales);
 	}
@@ -152,12 +159,14 @@ public class AvailableForSalesRepository
 	public I_MD_Available_For_Sales getByUniqueKey(
 			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
-			@NonNull final OrgId orgId)
+			@NonNull final OrgId orgId,
+			@NonNull final WarehouseId warehouseId)
 	{
 		return queryBL.createQueryBuilder(I_MD_Available_For_Sales.class)
 				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_StorageAttributesKey, storageAttributesKey.getAsString())
 				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Warehouse_ID, warehouseId)
 				.create()
 				.firstOnly(I_MD_Available_For_Sales.class);
 	}
@@ -178,16 +187,17 @@ public class AvailableForSalesRepository
 		final String storageAttributesKey = queryResultRow.getStorageAttributesKey();
 
 		return Optional.of(AvailableForSalesResult
-								   .builder()
-								   .availableForSalesQuery(singleQuery)
-								   .productId(singleQuery.getProductId())
-								   .storageAttributesKey(AttributesKey.ofString(storageAttributesKey))
-								   .orgId(OrgId.ofRepoId(queryResultRow.getAD_Org_ID()))
-								   .quantities(Quantities.builder()
-													   .qtyOnHandStock(qtyOnHandStock)
-													   .qtyToBeShipped(qtyToBeShipped)
-													   .build())
-								   .build());
+				.builder()
+				.availableForSalesQuery(singleQuery)
+				.productId(singleQuery.getProductId())
+				.storageAttributesKey(AttributesKey.ofString(storageAttributesKey))
+				.orgId(OrgId.ofRepoId(queryResultRow.getAD_Org_ID()))
+				.quantities(Quantities.builder()
+						.qtyOnHandStock(qtyOnHandStock)
+						.qtyToBeShipped(qtyToBeShipped)
+						.build())
+				.warehouseId(WarehouseId.ofRepoId(queryResultRow.getM_Warehouse_ID()))
+				.build());
 	}
 
 	public AvailableForSalesLookupResult retrieveAvailableStock(@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery)
@@ -211,6 +221,7 @@ public class AvailableForSalesRepository
 		return result.build();
 	}
 
+	@NonNull
 	private static AddToResultGroupRequest createAddToResultGroupRequest(final I_MD_Available_For_Sales_QueryResult result)
 	{
 		return AddToResultGroupRequest.builder()
@@ -219,6 +230,7 @@ public class AvailableForSalesRepository
 				.qtyToBeShipped(result.getQtyToBeShipped())
 				.qtyOnHandStock(result.getQtyOnHandStock())
 				.queryNo(result.getQueryNo())
+				.warehouseId(WarehouseId.ofRepoId(result.getM_Warehouse_ID()))
 				.build();
 	}
 

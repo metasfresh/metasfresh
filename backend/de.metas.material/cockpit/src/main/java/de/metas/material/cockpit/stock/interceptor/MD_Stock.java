@@ -38,6 +38,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
@@ -82,9 +83,10 @@ public class MD_Stock
 		final ProductId productId = ProductId.ofRepoId(stockRecord.getM_Product_ID());
 		final OrgId orgId = OrgId.ofRepoId(stockRecord.getAD_Org_ID());
 		final AttributesKey attributesKey = AttributesKey.ofString(stockRecord.getAttributesKey());
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID());
 
 		final EnqueueAvailableForSalesRequest enqueueAvailableForSalesRequest = availableForSalesUtil
-				.createRequestWithPreparationDateNow(ctx, config, productId, orgId, attributesKey);
+				.createRequestWithPreparationDateNow(ctx, config, productId, orgId, attributesKey, warehouseId);
 
 		trxManager.runAfterCommit(() -> availableForSalesService.enqueueAvailableForSalesRequest(enqueueAvailableForSalesRequest));
 	}

@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
 import de.metas.material.event.commons.AttributesKey;
@@ -39,13 +40,16 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_MD_Available_For_Sales;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableSet;
@@ -67,13 +71,16 @@ public class MD_Available_For_Sales_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_Product_StepDefData productTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public MD_Available_For_Sales_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
+		this.warehouseTable = warehouseTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
@@ -146,7 +153,8 @@ public class MD_Available_For_Sales_StepDef
 
 		final I_MD_Available_For_Sales availableForSales = availableForSalesRepository.getByUniqueKey(ProductId.ofRepoId(productId),
 				storageAttributesKey,
-				OrgId.ofRepoId(product.getAD_Org_ID()));
+				OrgId.ofRepoId(product.getAD_Org_ID()),
+				getWarehouseIdFromRow(row));
 
 		return availableForSales != null &&
 				availableForSales.getQtyOnHandStock().equals(qtyOnHand) &&
@@ -222,5 +230,15 @@ public class MD_Available_For_Sales_StepDef
 		return productTable.getOptional(productIdentifier)
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
+	}
+
+	@NonNull
+	private WarehouseId getWarehouseIdFromRow(@NonNull final Map<String, String> row)
+	{
+		final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, I_MD_Available_For_Sales.COLUMNNAME_M_Warehouse_ID);
+		return warehouseTable.getOptional(warehouseIdentifier)
+				.map(I_M_Warehouse::getM_Warehouse_ID)
+				.map(WarehouseId::ofRepoId)
+				.orElseThrow(() -> new AdempiereException("No warehouse found for identifier: " + warehouseIdentifier));
 	}
 }
