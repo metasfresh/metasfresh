@@ -27,7 +27,7 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -42,10 +42,10 @@ public class JsonShipmentData {
     String orderNo;
 
     @JsonProperty("PickupDt")
-    LocalDateTime pickupDt;
+    LocalDate pickupDt;
 
     @JsonProperty("ExpireDt")
-    LocalDateTime expireDt;
+    LocalDate expireDt;
 
     @JsonProperty("ActorCSID")
     Integer actorCSID;

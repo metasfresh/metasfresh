@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Value;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -56,10 +57,10 @@ public class JsonShipmentResponse {
     String orderNo;
 
     @JsonProperty("PickupDt")
-    LocalDateTime pickupDt;
+    LocalDate pickupDt;
 
     @JsonProperty("ImportDt")
-    LocalDateTime importDt;
+    LocalDate importDt;
 
     @JsonProperty("Vol")
     long vol;

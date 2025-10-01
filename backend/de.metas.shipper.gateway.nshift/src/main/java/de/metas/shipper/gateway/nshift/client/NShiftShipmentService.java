@@ -41,6 +41,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Collections;
@@ -192,7 +193,7 @@ public class NShiftShipmentService
 				.actorCSID(Integer.valueOf(actorId))
 				.orderNo(deliveryRequest.getId())
 				.prodConceptID(2757)
-				.pickupDt(LocalDateTime.parse(deliveryRequest.getPickupDate()));
+				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
 
 		// Add Addresses
 		dataBuilder.address(buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER).build());
