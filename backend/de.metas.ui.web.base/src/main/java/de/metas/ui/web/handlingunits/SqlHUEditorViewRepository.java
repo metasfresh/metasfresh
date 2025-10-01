@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
@@ -120,6 +121,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -259,13 +261,15 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final boolean processed = rowProcessedPredicate.isProcessed(hu);
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final HUEditorRowId rowId = HUEditorRowId.ofHU(huId, topLevelHUId);
+		final BPartnerId partnerId = BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
 
 		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
 				.setRowId(rowId)
 				.setType(huRecordType)
 				.setTopLevel(topLevelHUId == null)
 				.setProcessed(processed)
-				.setBPartnerId(BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()))
+				.setBPartnerId(partnerId)
+				.setPartner(createPartnerLookupValue(partnerId))
 				.setAttributesProvider(attributesProvider)
 				//
 				.setCode(hu.getValue())
@@ -402,6 +406,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final I_M_HU hu = huStorage.getM_HU();
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final ProductId productId = huStorage.getProductId();
+		final BPartnerId partnerId = BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
 		final HUEditorRowAttributesProvider attributesProviderEffective = !huId.equals(parentHUId) ? attributesProvider : null;
 
 		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getOrderLineIdByReservedVhuId(huId);
@@ -421,6 +426,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setHUStatusDisplay(createHUStatusDisplayLookupValue(hu))
 				//
 				.setProduct(createProductLookupValue(productId))
+				.setPartner(createPartnerLookupValue(partnerId))
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
 				.setQtyCU(huStorage.getQty().toBigDecimal())
 				.setClearanceStatus(getHUClearanceStatusLookupValue(hu))
@@ -438,6 +444,18 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		final String displayName = productBL.getProductValueAndName(productId);
 		return JSONLookupValue.of(productId.getRepoId(), displayName);
+	}
+
+	@Nullable
+	public JSONLookupValue createPartnerLookupValue(@Nullable final BPartnerId partnerId)
+	{
+		if (partnerId == null)
+		{
+			return null;
+		}
+
+		final String displayName = partnerBL.getBPartnerValueAndName(partnerId);
+		return JSONLookupValue.of(partnerId.getRepoId(), displayName);
 	}
 
 	@Nullable
@@ -536,7 +554,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (allOtherFilters.isEmpty())
 		{
 			final HuIdsFilterList onlyHUIds = huIdsFilterData.getFixedHUIds().orElse(null);
-			if(onlyHUIds != null && !onlyHUIds.isAll())
+			if (onlyHUIds != null && !onlyHUIds.isAll())
 			{
 				return onlyHUIds.toSet();
 			}
