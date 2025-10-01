@@ -841,6 +841,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
+	public Quantity getQtyScheduledForPicking(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		return shipmentScheduleBL.getQtyScheduledForPicking(shipmentScheduleRecord);
+	}
+
+	@Override
 	public void flagForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (shipmentScheduleIds.isEmpty()) {return;}

@@ -85,7 +85,9 @@ public interface IHUPIItemProductBL extends ISingletonService
 	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_PI_Item_Product itemProduct)
 	{
 		final UomId uomId = extractUomIdOrNull(itemProduct);
-		return uomId != null ? Services.get(IUOMDAO.class).getById(uomId) : null;
+		
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		return uomId != null ? uomDAO.getById(uomId) : null;
 	}
 
 	static @Nullable UomId extractUomIdOrNull(final @NotNull I_M_HU_PI_Item_Product itemProduct)

@@ -8,6 +8,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
+import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
 
 const createMasterdata = async ({
                                     allowCompletingPartialPickingJob = false,
@@ -351,7 +352,22 @@ test('Ship on close LU', async ({ page }) => {
     });
 });
 
+// noinspection JSUnusedLocalSymbols
+test('Close LU / Reopen LU', async ({ page }) => {
+    const masterdata = await createMasterdata();
 
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startPickingApplication();
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
-
-
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+    await PickingJobScreen.closeTargetLU();
+    
+    await PickingJobScreen.clickReopenLUButton();
+    await SelectPickTargetLUScreen.waitForScreen();
+});
