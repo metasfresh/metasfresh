@@ -34,6 +34,8 @@ import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderItemId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLineId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
@@ -68,7 +70,7 @@ public class ShipmentOrderRepository
 	{
 		final I_Carrier_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.load(deliveryOrderId, I_Carrier_ShipmentOrder.class);
 
-		final ImmutableListMultimap<DeliveryOrderLineId, ShipmentOrderItem> parcelIdToItems = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
+		final ImmutableListMultimap<DeliveryOrderLineId, DeliveryOrderItem> parcelIdToItems = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
 				.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, deliveryOrderId)
 				.andCollectChildren(I_Carrier_ShipmentOrder_Item.COLUMNNAME_Carrier_ShipmentOrder_Parcel_ID, I_Carrier_ShipmentOrder_Item.class)
 				.create()
@@ -86,11 +88,11 @@ public class ShipmentOrderRepository
 		return fromPO(shipmentOrder, parcels);
 	}
 
-	private ShipmentOrderItem itemFromPO(@NonNull final I_Carrier_ShipmentOrder_Item item)
+	private DeliveryOrderItem itemFromPO(@NonNull final I_Carrier_ShipmentOrder_Item item)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(item.getC_Currency_ID());
-		return ShipmentOrderItem.builder()
-				.id(ShipmentOrderItemId.ofRepoId(item.getCarrier_ShipmentOrder_Item_ID()))
+		return DeliveryOrderItem.builder()
+				.id(DeliveryOrderItemId.ofRepoId(item.getCarrier_ShipmentOrder_Item_ID()))
 				.productName(item.getProductName())
 				.productValue(item.getArticleValue())
 				.totalWeightInKg(item.getTotalWeightInKg())
@@ -140,24 +142,20 @@ public class ShipmentOrderRepository
 								.alpha3(po.getReceiver_CountryISO3Code())// FIXME don't need both versions
 								.build())
 						.build())
-				.customDeliveryData(ShipmentOrderData.builder()
-						.shipperEORI(po.getShipper_EORI())
-						.receiverEORI(po.getReceiver_EORI())
-						.build())
+				.shipperEORI(po.getShipper_EORI())
+				.receiverEORI(po.getReceiver_EORI())
 				.deliveryOrderLines(parcels)
 				.build();
 	}
 
-	private DeliveryOrderLine parcelFromPO(@NonNull final I_Carrier_ShipmentOrder_Parcel po, final ImmutableList<ShipmentOrderItem> shipmentOrderItems)
+	private DeliveryOrderLine parcelFromPO(@NonNull final I_Carrier_ShipmentOrder_Parcel po, final ImmutableList<DeliveryOrderItem> deliveryOrderItems)
 	{
 		return DeliveryOrderLine.builder()
 				.id(DeliveryOrderLineId.ofRepoId(po.getCarrier_ShipmentOrder_Parcel_ID()))
-				.customDeliveryLineData(ShipmentOrderParcel.builder()
-						.awb(po.getawb())
-						.trackingUrl(po.getTrackingURL())
-						.labelPdfBase64(po.getPdfLabelData())
-						.items(shipmentOrderItems)
-						.build())
+				.awb(po.getawb())
+				.trackingUrl(po.getTrackingURL())
+				.labelPdfBase64(po.getPdfLabelData())
+				.items(deliveryOrderItems)
 				.packageDimensions(PackageDimensions.builder()
 						.heightInCM(po.getHeightInCm())
 						.lengthInCM(po.getLengthInCm())
@@ -209,14 +207,9 @@ public class ShipmentOrderRepository
 		{
 			throw new AdempiereException("Could not find shipment order line with id " + deliveryOrderLine.getId());
 		}
-		final ShipmentOrderParcel shipmentOrderParcel = ShipmentOrderParcel.ofDeliveryOrderLineOrNull(deliveryOrderLine);
-		if (shipmentOrderParcel == null)
-		{
-			throw new AdempiereException("Shipment order line " + deliveryOrderLine.getId() + " has no custom delivery data");
-		}
-		parcel.setawb(shipmentOrderParcel.getAwb());
-		parcel.setTrackingURL(shipmentOrderParcel.getTrackingUrl());
-		parcel.setPdfLabelData(shipmentOrderParcel.getLabelPdfBase64());
+		parcel.setawb(deliveryOrderLine.getAwb());
+		parcel.setTrackingURL(deliveryOrderLine.getTrackingUrl());
+		parcel.setPdfLabelData(deliveryOrderLine.getLabelPdfBase64());
 		return parcel;
 	}
 
@@ -231,6 +224,8 @@ public class ShipmentOrderRepository
 		po.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
 		po.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));
 		po.setShipmentDate(TimeUtil.asTimestamp(request.getPickupDate().getDate()));
+		po.setShipper_EORI(request.getShipperEORI());
+		po.setReceiver_EORI(request.getReceiverEORI());
 		// FIXME what about pickup time from/to
 
 		if (deliveryContact != null)
@@ -262,12 +257,6 @@ public class ShipmentOrderRepository
 		po.setReceiver_CountryISO2Code(receiverCountry.getAlpha2());
 		po.setReceiver_CountryISO3Code(receiverCountry.getAlpha3());
 
-		final ShipmentOrderData shipmentOrderData = ShipmentOrderData.ofDeliveryOrderOrNull(request);
-		if (shipmentOrderData != null)
-		{
-			po.setShipper_EORI(shipmentOrderData.getShipperEORI());
-			po.setReceiver_EORI(shipmentOrderData.getReceiverEORI());
-		}
 
 		InterfaceWrapperHelper.saveRecord(po);
 
@@ -289,17 +278,12 @@ public class ShipmentOrderRepository
 
 	private Stream<I_Carrier_ShipmentOrder_Item> createItems(@NonNull final DeliveryOrderLine orderLine, @NonNull final DeliveryOrderLineId deliveryOrderLineId)
 	{
-		final ShipmentOrderParcel shipmentOrderParcel = ShipmentOrderParcel.ofDeliveryOrderLineOrNull(orderLine);
-		if (shipmentOrderParcel == null)
-		{
-			return Stream.empty();
-		}
-		return shipmentOrderParcel.getItems()
+		return orderLine.getItems()
 				.stream()
 				.map(item -> createItem(item, deliveryOrderLineId));
 	}
 
-	private I_Carrier_ShipmentOrder_Item createItem(final ShipmentOrderItem item, final @NonNull DeliveryOrderLineId deliveryOrderLineId)
+	private I_Carrier_ShipmentOrder_Item createItem(final DeliveryOrderItem item, final @NonNull DeliveryOrderLineId deliveryOrderLineId)
 	{
 		final I_Carrier_ShipmentOrder_Item po;
 		if (item.getId() != null)

@@ -22,31 +22,24 @@
 
 package de.metas.shipper.gateway.commons.model;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.shipper.gateway.spi.model.CustomDeliveryLineData;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Builder(toBuilder = true)
 @Value
-public class ShipmentOrderParcel implements CustomDeliveryLineData
+@Builder
+public class ShipperConfig
 {
-	@Nullable String awb;
-	@Nullable String trackingUrl;
-	@Nullable byte[] labelPdfBase64;
-	ImmutableList<ShipmentOrderItem> items;
-
-	@Nullable
-	public static ShipmentOrderParcel ofDeliveryOrderLineOrNull(@NonNull final DeliveryOrderLine deliveryOrderLine)
-	{
-		if (!(deliveryOrderLine.getCustomDeliveryLineData() instanceof ShipmentOrderParcel))
-		{
-			return null;
-		}
-		return (ShipmentOrderParcel)deliveryOrderLine.getCustomDeliveryLineData();
-	}
+	@NonNull ShipperId shipperId;
+	@NonNull ShipperConfigId id;
+	@NonNull String url;
+	@Nullable String username;
+	@Nullable String password;
+	@Nullable String clientId;
+	@Nullable String clientSecret;
+	@Nullable String gatewayId; // e.g. actorId in nShift
+	@NonNull String trackingUrl;
 }

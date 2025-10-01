@@ -21,13 +21,11 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.commons.model.CarrierShipperProduct;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderData;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderItem;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderParcel;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
@@ -103,10 +101,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 				.shipperProduct(CarrierShipperProduct.ofCode("DHL")) // TODO this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(getPOReferences(request.getPackageInfos()))
-				.customDeliveryData(ShipmentOrderData.builder()
-						.shipperEORI(pickupFromBPartner.getEORI())
-						.receiverEORI(deliverToBPartner.getEORI())
-						.build())
+				.shipperEORI(pickupFromBPartner.getEORI())
+				.receiverEORI(deliverToBPartner.getEORI())
 				//
 				// Pickup aka Shipper
 				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation))
@@ -156,7 +152,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	{
 		return packageInfos.stream()
 				.map(packageInfo -> {
-					final ImmutableList<ShipmentOrderItem> deliveryOrderItems = purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents()
+					final ImmutableList<DeliveryOrderItem> deliveryOrderItems = purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents()
 							.stream()
 							.map(this::createDeliveryOrderItems)
 							.collect(ImmutableList.toImmutableList());
@@ -165,15 +161,13 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 							.packageId(packageInfo.getPackageId())
 							.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
 							.content(packageInfo.getDescription())
-							.customDeliveryLineData(ShipmentOrderParcel.builder()
-									.items(deliveryOrderItems)
-									.build())
+							.items(deliveryOrderItems)
 							.build();
 				})
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ShipmentOrderItem createDeliveryOrderItems(final PackageItem packageItem)
+	private DeliveryOrderItem createDeliveryOrderItems(final PackageItem packageItem)
 	{
 		Check.assumeNotNull(packageItem.getQuantity(), "quantity must not be null, for packageItem " + packageItem);
 		final ProductId productId = packageItem.getProductId();
@@ -187,7 +181,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		final Money unitPrice = Money.of(orderLine.getPriceEntered(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 		final Money totalPackageValue = unitPrice.multiply(quantity.toBigDecimal());
 
-		return ShipmentOrderItem.builder()
+		return DeliveryOrderItem.builder()
 				.productName(product.getName())
 				.productValue(product.getValue())
 				.totalWeightInKg(weightInKg)

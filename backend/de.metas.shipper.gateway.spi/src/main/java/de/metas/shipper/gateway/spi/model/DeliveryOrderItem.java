@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de.metas.shipper.gateway.spi
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
+package de.metas.shipper.gateway.spi.model;
 
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -32,9 +32,9 @@ import java.math.BigDecimal;
 
 @Value
 @Builder
-public class ShipmentOrderItem
+public class DeliveryOrderItem
 {
-	@Nullable ShipmentOrderItemId id;
+	@Nullable DeliveryOrderItemId id;
 	Money unitPrice;
 	Money totalValue;
 	String productName;

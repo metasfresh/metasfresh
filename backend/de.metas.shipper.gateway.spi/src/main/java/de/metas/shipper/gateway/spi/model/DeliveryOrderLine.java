@@ -22,6 +22,8 @@
 
 package de.metas.shipper.gateway.spi.model;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -45,6 +47,10 @@ public class DeliveryOrderLine
 	@NonNull PackageDimensions packageDimensions;
 	@Nullable CustomDeliveryLineData customDeliveryLineData;
 	@NonNull PackageId packageId;
+	@Nullable String awb;
+	@Nullable String trackingUrl;
+	@Nullable byte[] labelPdfBase64;
+	@NonNull ImmutableList<DeliveryOrderItem> items;
 
 	@Builder(toBuilder = true)
 	@Jacksonized
@@ -54,8 +60,16 @@ public class DeliveryOrderLine
 			@NonNull final BigDecimal grossWeightKg,
 			@NonNull final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryLineData customDeliveryLineData,
-			@NonNull final PackageId packageId)
+			@NonNull final PackageId packageId,
+			@Nullable final String awb,
+			@Nullable final String trackingUrl,
+			@Nullable final byte[] labelPdfBase64,
+			@Nullable final ImmutableList<DeliveryOrderItem> items)
 	{
+		this.awb = awb;
+		this.trackingUrl = trackingUrl;
+		this.labelPdfBase64 = labelPdfBase64;
+		this.items = CoalesceUtil.coalesceNotNull(items, ImmutableList.of());
 
 		Check.assume(grossWeightKg.signum() > 0, "grossWeightKg > 0");
 		this.id = id;

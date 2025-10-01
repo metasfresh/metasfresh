@@ -108,6 +108,9 @@ public class DeliveryOrder
 	@Deprecated
 	String trackingUrl;
 
+	String shipperEORI;
+	String receiverEORI;
+
 	public DeliveryOrder withCustomDeliveryData(@NonNull final CustomDeliveryData customDeliveryData)
 	{
 		if (Objects.equals(this.customDeliveryData, customDeliveryData))

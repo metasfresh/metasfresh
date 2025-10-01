@@ -2,11 +2,11 @@ package de.metas.shipper.gateway.nshift.client;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.logging.LogManager;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderParcel;
+import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
+import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.nshift.NShiftConstants;
 import de.metas.shipper.gateway.nshift.config.NShiftConfig;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
@@ -24,19 +24,21 @@ import org.slf4j.Logger;
 
 import java.util.Base64;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Builder
+
 public class NShiftShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LogManager.getLogger(NShiftShipperGatewayClient.class);
 
 	@NonNull private final NShiftShipmentService shipmentService;
+	@NonNull private final JsonShipperConverter jsonConverter;
 	//TODO implement as provided by carrier
 	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};
 	@NonNull private final NShiftConfig config;
+	@NonNull private final ShipperConfig shipperConfig;
 
 	@Override
 	@NonNull
@@ -49,7 +51,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final JsonDeliveryResponse response = shipmentService.createShipment(toJsonDeliveryOrder(deliveryOrder));
+		final JsonDeliveryResponse response = shipmentService.createShipment(jsonConverter.toJson(shipperConfig, deliveryOrder));
 		logger.debug("Received nShift response: {}", response);
 
 		//TODO log request into Carrier_ShipmentOrder_Log
@@ -73,31 +75,14 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 
 	private DeliveryOrderLine updateDeliveryOrderLine(@NonNull final DeliveryOrderLine line, @NonNull final JsonDeliveryResponseItem jsonDeliveryOrderResponseItem, @NonNull final String language)
 	{
-		final ShipmentOrderParcel shipmentOrderParcel = ShipmentOrderParcel.ofDeliveryOrderLineOrNull(line);
-		if (shipmentOrderParcel == null)
-		{
-			throw new ShipperGatewayException("Cannot update delivery order line because it is not in the proper format: " + line);
-		}
-
 		final String awb = jsonDeliveryOrderResponseItem.getAwb();
 		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryOrderResponseItem.getLabelPdfBase64());
 		final String trackingUrl = config.getTrackingUrl(awb, language);
 
-		final ShipmentOrderParcel updatedShipmentOrderParcel = shipmentOrderParcel.toBuilder()
+		return line.toBuilder()
 				.awb(awb)
 				.trackingUrl(trackingUrl)
 				.labelPdfBase64(labelData)
-				.build();
-
-		return line.withCustomDeliveryData(updatedShipmentOrderParcel);
-	}
-
-	private @NonNull JsonDeliveryRequest toJsonDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder)
-	{
-		return JsonDeliveryRequest.builder()
-				.id(deliveryOrder.getId().toString())
-
-				//TODO
 				.build();
 	}
 
@@ -108,9 +93,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		final String orderIdAsString = String.valueOf(deliveryOrder.getId());
 		return deliveryOrder.getDeliveryOrderLines()
 				.stream()
-				.map(ShipmentOrderParcel::ofDeliveryOrderLineOrNull)
-				.filter(Objects::nonNull)
-				.map(parcel -> createPackageLabel(parcel.getLabelPdfBase64(), parcel.getAwb(), orderIdAsString))
+				.map(line -> createPackageLabel(line.getLabelPdfBase64(), line.getAwb(), orderIdAsString))
 				.collect(Collectors.toList());
 	}
 

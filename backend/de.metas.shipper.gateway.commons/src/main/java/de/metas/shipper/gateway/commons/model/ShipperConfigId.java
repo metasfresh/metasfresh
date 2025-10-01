@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de.metas.contracts
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,29 +28,31 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.Optional;
-
 @Value
-public class ShipmentOrderItemId implements RepoIdAware
+public class ShipperConfigId implements RepoIdAware
 {
 	int repoId;
 
-	private ShipmentOrderItemId(final int repoId)
+	@JsonCreator
+	public static ShipperConfigId ofRepoId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "Shipper_ShipmentOrder_Parcel_ID");
+		return new ShipperConfigId(repoId);
 	}
 
-	@JsonCreator
-	public static ShipmentOrderItemId ofRepoId(final int repoId) {return new ShipmentOrderItemId(repoId);}
+	public static ShipperConfigId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new ShipperConfigId(repoId) : null;
+	}
 
-	@Nullable
-	public static ShipmentOrderItemId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
+	public static int toRepoId(final ShipperConfigId productId)
+	{
+		return productId != null ? productId.getRepoId() : -1;
+	}
 
-	public static Optional<ShipmentOrderItemId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
-
-	public static int toRepoId(@Nullable final ShipmentOrderItemId id) {return id != null ? id.getRepoId() : -1;}
+	private ShipperConfigId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "Carrier_Config_Id");
+	}
 
 	@Override
 	@JsonValue
@@ -58,6 +60,4 @@ public class ShipmentOrderItemId implements RepoIdAware
 	{
 		return repoId;
 	}
-
-	public static boolean equals(@Nullable final ShipmentOrderItemId id1, @Nullable final ShipmentOrderItemId id2) {return Objects.equals(id1, id2);}
 }
