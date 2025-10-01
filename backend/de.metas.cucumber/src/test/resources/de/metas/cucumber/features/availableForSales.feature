@@ -554,7 +554,7 @@ Feature: available for sales
     {
   "processParameters": [
     {
-      "name": "WarehouseValue",
+      "name": "WarehouseCode",
       "value": "@warehouseValue@"
     }
   ]
