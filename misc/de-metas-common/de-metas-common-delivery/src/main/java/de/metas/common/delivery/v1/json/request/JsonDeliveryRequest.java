@@ -52,4 +52,5 @@ public class JsonDeliveryRequest
 	@Nullable String shipperProduct;
 	@Nullable String shipperEORI;
 	@Nullable String receiverEORI;
+	@NonNull JsonShipperConfig shipperConfig;
 }
