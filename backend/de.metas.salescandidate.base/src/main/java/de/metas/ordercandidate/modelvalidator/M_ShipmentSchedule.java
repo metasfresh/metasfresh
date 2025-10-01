@@ -23,7 +23,6 @@
 package de.metas.ordercandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
@@ -221,11 +220,8 @@ public class M_ShipmentSchedule
 			@NonNull final I_M_ShipmentSchedule currentShipmentScheduleRecord,
 			@NonNull final I_M_ShipmentSchedule oldShipmentScheduleRecord)
 	{
-		final WarehouseId oldRecordWarehouseId = CoalesceUtil.coalesceNotNull(WarehouseId.ofRepoIdOrNull(oldShipmentScheduleRecord.getM_Warehouse_ID()),
-				WarehouseId.ofRepoId(oldShipmentScheduleRecord.getM_Warehouse_ID()));
-
-		final WarehouseId currentRecordWarehouseId = CoalesceUtil.coalesceNotNull(WarehouseId.ofRepoIdOrNull(currentShipmentScheduleRecord.getM_Warehouse_ID()),
-				WarehouseId.ofRepoId(currentShipmentScheduleRecord.getM_Warehouse_ID()));
+		final WarehouseId oldRecordWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(oldShipmentScheduleRecord);
+		final WarehouseId currentRecordWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentScheduleRecord);
 
 		return oldShipmentScheduleRecord.getM_Product_ID() != currentShipmentScheduleRecord.getM_Product_ID()
 				|| !oldRecordWarehouseId.equals(currentRecordWarehouseId)
