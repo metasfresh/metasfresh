@@ -101,7 +101,6 @@ public class JsonShipperConverter
 
 		return JsonContact.builder()
 				.phone(contact.getPhoneAsStringOrNull())
-				.simplePhoneNumber(contact.getSimplePhoneNumber())
 				.emailAddress(contact.getEmailAddress())
 				.language(contact.getLanguageCode())
 				.build();

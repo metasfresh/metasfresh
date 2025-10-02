@@ -44,4 +44,9 @@ public class JsonDeliveryResponseItem
 	{
 		return toBuilder().labelPdfBase64(null).build();
 	}
+
+	public boolean isError()
+	{
+		return errorMessage != null && !errorMessage.isEmpty();
+	}
 }

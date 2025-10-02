@@ -37,7 +37,6 @@ public class JsonContact
 {
 	@NonNull String name;
 	@Nullable String phone; // formatted phone number
-	@Nullable String simplePhoneNumber; // alternative simple number as string
 	@Nullable String emailAddress;
 	@NonNull String language; // ISO 639-1 language code, e.g. "en"
 }

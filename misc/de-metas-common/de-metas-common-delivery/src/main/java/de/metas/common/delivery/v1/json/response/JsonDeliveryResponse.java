@@ -47,7 +47,7 @@ public class JsonDeliveryResponse
 	@JsonIgnore
 	public boolean isError()
 	{
-		return (errorMessage != null && !errorMessage.isEmpty()) || items.stream().anyMatch(item -> item.getErrorMessage() != null && !item.getErrorMessage().isEmpty());
+		return (errorMessage != null && !errorMessage.isEmpty()) || items.stream().anyMatch(JsonDeliveryResponseItem::isError);
 	}
 
 	public JsonDeliveryResponse withoutPDFContents()
