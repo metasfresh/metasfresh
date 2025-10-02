@@ -20,8 +20,8 @@ Feature: Invoice to comply with RKSV export via postgREST
       | Identifier | M_PriceList_ID |
       | salesPLV   | salesPriceList |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | OPT.C_PaymentTerm_ID | PaymentRule |
-      | vendor1    | N          | Y        | pricingSystem      | 1000009              | B           |
+      | Identifier | IsCustomer | IsVendor | REST.Context.Name | M_PricingSystem_ID | OPT.C_PaymentTerm_ID | PaymentRule |
+      | vendor1    | N          | Y        | partnerName       | pricingSystem      | 1000009              | B           |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | City | Postal |
       | bpartner_location_1 | vendor1       | Y               | Y               | Bonn | 53175  |
@@ -74,7 +74,7 @@ Feature: Invoice to comply with RKSV export via postgREST
 {
   "invoice": "10022025",
   "amount": 5.95,
-  "customer": "Test Lieferant 1, 53175 Bonn",
+  "customer": "@partnerName@, 53175 Bonn",
   "payment": "B"
 }
     """
