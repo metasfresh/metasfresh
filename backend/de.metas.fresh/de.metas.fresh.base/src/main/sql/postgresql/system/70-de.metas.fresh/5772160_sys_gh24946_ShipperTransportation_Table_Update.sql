@@ -781,3 +781,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE M_ShipperTransportation ADD CONSTRAINT POD_MShipperTransportation FOREIGN KEY (POD_ID) REFERENCES public.C_Postal DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- Reference: C_Postal_City
+-- Table: C_Postal
+-- Key: C_Postal.C_Postal_ID
+-- 2025-10-02T16:49:38.805Z
+UPDATE AD_Ref_Table SET AD_Key=545739,Updated=TO_TIMESTAMP('2025-10-02 16:49:38.805000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Reference_ID=541991
+;
