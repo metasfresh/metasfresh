@@ -21,6 +21,7 @@ import de.metas.shipper.gateway.nshift.json.JsonDetailRow;
 import de.metas.shipper.gateway.nshift.json.JsonLabelType;
 import de.metas.shipper.gateway.nshift.json.JsonLine;
 import de.metas.shipper.gateway.nshift.json.JsonLineReference;
+import de.metas.shipper.gateway.nshift.json.JsonLineReferenceKind;
 import de.metas.shipper.gateway.nshift.json.JsonPackage;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentData;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentOptions;
@@ -297,12 +298,10 @@ public class NShiftShipmentService
 					.build());
 		}
 
-		// Process each delivery line as a separate package line in the nShift request
 		int lineNoCounter = 1;
 		for (final JsonDeliveryOrderParcel deliveryLine : deliveryRequest.getDeliveryOrderLines())
 		{
-			dataBuilder.line(buildNShiftLine(deliveryLine, lineNoCounter, prodConceptId));
-			// Each line might also require a corresponding customs declaration group
+			dataBuilder.line(buildNShiftLine(deliveryLine, prodConceptId));
 			dataBuilder.detailGroup(buildCustomsArticleGroup(deliveryLine, lineNoCounter, deliveryRequest.getPickupAddress().getCountry()));
 			lineNoCounter++;
 		}
@@ -332,7 +331,7 @@ public class NShiftShipmentService
 				.countryCode(commonAddress.getCountry());
 	}
 
-	private JsonLine buildNShiftLine(@NonNull final JsonDeliveryOrderParcel deliveryLine, final int lineNo, final int prodConceptId)
+	private JsonLine buildNShiftLine(@NonNull final JsonDeliveryOrderParcel deliveryLine, final int prodConceptId)
 	{
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = deliveryLine.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
@@ -342,7 +341,7 @@ public class NShiftShipmentService
 		final NShiftGoodsType goodsType = NShiftGoodsType.getByProdConceptId(prodConceptId);
 
 		return JsonLine.builder()
-				.number(lineNo)
+				.number(1)
 				.pkgWeight(weightGrams)
 				.lineWeight(weightGrams)
 				.length(lengthMM)
@@ -352,16 +351,11 @@ public class NShiftShipmentService
 				.goodsTypeKey1(goodsType.getGoodsTypeKey1())
 				.goodsTypeKey2(goodsType.getGoodsTypeKey2())
 				.goodsTypeName(goodsType.getGoodsTypeName())
-				.pkg(buildNShiftPackage(deliveryLine))
+				.reference(JsonLineReference.builder()
+						.kind(JsonLineReferenceKind.ESRK_CUSTOM_LINE_FIELD_1)
+						.value(deliveryLine.getId())
+						.build())
 				.build();
-	}
-
-	private JsonPackage buildNShiftPackage(@NonNull final JsonDeliveryOrderParcel deliveryLine)
-	{
-		return JsonPackage.builder()
-				.pkgNo(deliveryLine.getPackageId())
-				.itemNo(Integer.valueOf(deliveryLine.getId()))
-			    .build();
 	}
 
 	private JsonDetailGroup buildCustomsArticleGroup(@NonNull final JsonDeliveryOrderParcel deliveryLine, final int lineNo, @NonNull final String countryOfOrigin)
@@ -391,7 +385,6 @@ public class NShiftShipmentService
 
 	private JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final String requestId)
 	{
-		// 1. Create a lookup map of labels using pkgNo as the key for efficient access.
 		final Map<String, JsonShipmentResponseLabel> labelsByPkgNo = response.getLabels() != null
 				? response.getLabels().stream()
 				.filter(label -> label.getPkgNo() != null)
@@ -401,7 +394,6 @@ public class NShiftShipmentService
 						(first, second) -> first)) // In case of duplicate pkgNo, take the first.
 				: Collections.emptyMap();
 
-		// 2. Map each parcel from the response to our standard JsonDeliveryResponseItem.
 		final List<JsonDeliveryResponseItem> items = response.getLines() != null
 				? response.getLines().stream()
 				.map(parcel -> {
@@ -412,9 +404,15 @@ public class NShiftShipmentService
 							? label.getContent().getBytes()
 							: null;
 
+					final String lineId = parcel.getReferences().stream()
+							.filter(ref -> ref.getKind().isLineId())
+							.map(JsonLineReference::getValue)
+							.findFirst()
+							.orElse(null);
+					Check.assumeNotNull(lineId, "The lineId in the response shall not be null for parcel {}", parcel);
+
 					return JsonDeliveryResponseItem.builder()
-							// CORRECTED: Use pkgNo for externalId to link back to the original request's packageId.
-							.lineId(String.valueOf(pkg.getItemNo()))
+							.lineId(lineId)
 							.trackingUrl(pkg.getReferences().stream()
 									.filter(ref -> ref.getKind().isTrackingUrl())
 									.map(JsonLineReference::getValue)

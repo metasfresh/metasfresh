@@ -81,4 +81,7 @@ public enum JsonLineReferenceKind
 	@JsonIgnore
 	public boolean isTrackingUrl(){return this.equals(ESRK_TRACKING_URL);}
 
+	@JsonIgnore
+	public boolean isLineId(){return this.equals(ESRK_CUSTOM_LINE_FIELD_1);}
+
 }
