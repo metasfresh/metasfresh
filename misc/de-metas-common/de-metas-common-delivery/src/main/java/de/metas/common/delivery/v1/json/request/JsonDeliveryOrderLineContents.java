@@ -29,7 +29,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -37,7 +36,7 @@ import java.math.BigDecimal;
 @Jacksonized
 public class JsonDeliveryOrderLineContents
 {
-	@Nullable String shipmentOrderItemId;
+	@NonNull String shipmentOrderItemId;
 	@NonNull JsonMoney unitPrice;
 	@NonNull JsonMoney totalValue;
 	@NonNull String productName;

@@ -33,13 +33,17 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class JsonDeliveryRequest
 {
-	@Nullable String id;
+	@Builder.Default
+	@NonNull String id = UUID.randomUUID().toString();
+	int deliveryOrderId;
 	@NonNull JsonAddress pickupAddress;
 	@NonNull String pickupDate;
 	@Nullable String pickupNote;
@@ -48,7 +52,7 @@ public class JsonDeliveryRequest
 	@Nullable String deliveryDate;
 	@Nullable String deliveryNote;
 	@Nullable String customerReference;
-	@NonNull @Singular ImmutableList<JsonDeliveryOrderLine> deliveryOrderLines;
+	@NonNull @Singular ImmutableList<JsonDeliveryOrderParcel> deliveryOrderLines;
 	@Nullable String shipperProduct;
 	@Nullable String shipperEORI;
 	@Nullable String receiverEORI;

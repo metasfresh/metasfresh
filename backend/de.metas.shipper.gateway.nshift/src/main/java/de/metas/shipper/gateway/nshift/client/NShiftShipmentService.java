@@ -4,8 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.nshift.json.JsonAddress;
 import de.metas.shipper.gateway.nshift.json.JsonAddressKind;
@@ -16,6 +20,7 @@ import de.metas.shipper.gateway.nshift.json.JsonDetailGroup;
 import de.metas.shipper.gateway.nshift.json.JsonDetailRow;
 import de.metas.shipper.gateway.nshift.json.JsonLabelType;
 import de.metas.shipper.gateway.nshift.json.JsonLine;
+import de.metas.shipper.gateway.nshift.json.JsonLineReference;
 import de.metas.shipper.gateway.nshift.json.JsonPackage;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentData;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentOptions;
@@ -23,6 +28,7 @@ import de.metas.shipper.gateway.nshift.json.JsonShipmentReference;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentReferenceKind;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentRequest;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentResponse;
+import de.metas.shipper.gateway.nshift.json.JsonShipmentResponseLabel;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -45,11 +51,14 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static de.metas.shipper.gateway.nshift.client.NShiftClientConfig.NSHIFT_OBJECT_MAPPER;
 import static de.metas.shipper.gateway.nshift.client.NShiftClientConfig.NSHIFT_REST_TEMPLATE;
-
 
 @Service
 public class NShiftShipmentService
@@ -67,11 +76,6 @@ public class NShiftShipmentService
 			.put("NightStarExpress", 3399)
 			.build();
 
-	//FIXME Hardcoded Services for prodConceptIds where it's mandatory
-	private static final ImmutableMap<Integer, Integer> SERVICE_BY_PROD_CONCEPT_ID = ImmutableMap.<Integer, Integer>builder()
-			.put(3399, 412001)
-			.build();
-
 	@NonNull private final RestTemplate restTemplate;
 	@NonNull private final ObjectMapper objectMapper;
 
@@ -81,6 +85,29 @@ public class NShiftShipmentService
 	{
 		this.restTemplate = restTemplate;
 		this.objectMapper = objectMapper;
+	}
+
+	public JsonDeliveryResponse createShipment(@NonNull final JsonDeliveryRequest deliveryRequest)
+	{
+		try
+		{
+			logger.debug("Creating shipment for request: {}", deliveryRequest);
+			final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryRequest);
+
+			logRequestAsJson(requestBody);
+
+			final JsonShipmentResponse response = callNShift(requestBody, deliveryRequest.getShipperConfig());
+
+			logger.debug("Successfully received nShift response: {}", response);
+			return buildJsonDeliveryResponse(response, deliveryRequest.getId());
+		}
+		catch (final AdempiereException e)
+		{
+			return JsonDeliveryResponse.builder()
+					.requestId(deliveryRequest.getId())
+					.errorMessage(e.getMessage())
+					.build();
+		}
 	}
 
 	@Nullable
@@ -106,26 +133,12 @@ public class NShiftShipmentService
 		return prodConceptId;
 	}
 
-	public JsonDeliveryResponse createShipment(@NonNull final JsonDeliveryRequest deliveryRequest)
-	{
-		logger.debug("Creating shipment for request: {}", deliveryRequest);
-		final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryRequest);
-
-		logRequestAsJson(requestBody);
-
-		final JsonShipmentResponse response = callNShift(requestBody, deliveryRequest);
-
-		logger.debug("Successfully received nShift response: {}", response);
-		return JsonDeliveryResponse.builder()
-                .build();
-	}
-
-	private JsonShipmentResponse callNShift(@NonNull final JsonShipmentRequest request, @NonNull final JsonDeliveryRequest deliveryRequest)
+	private JsonShipmentResponse callNShift(@NonNull final JsonShipmentRequest request, @NonNull final JsonShipperConfig config)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
 		{
-			final String responseJson = callNShiftWith(request, deliveryRequest);
+			final String responseJson = callNShiftWith(request, config);
 			logger.info("nShift API call successful. Duration: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 			logger.trace("nShift response JSON: {}", responseJson);
 			return objectMapper.readValue(responseJson, JsonShipmentResponse.class);
@@ -137,18 +150,19 @@ public class NShiftShipmentService
 		}
 	}
 
-	private String callNShiftWith(@NonNull final JsonShipmentRequest request, @NonNull final JsonDeliveryRequest deliveryRequest)
+	private String callNShiftWith(@NonNull final JsonShipmentRequest request, @NonNull final JsonShipperConfig config)
 	{
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 		httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-		httpHeaders.set("Authorization", getAuthorizationHeader(deliveryRequest));
+		httpHeaders.set("Authorization", getAuthorizationHeader(config));
 
 		try
 		{
-			final String url = deliveryRequest.getShipperConfig().getUrl() + CREATE_SHIPMENT_ENDPOINT;
+			final String url = config.getUrl() + CREATE_SHIPMENT_ENDPOINT;
 			final HttpEntity<JsonShipmentRequest> entity = new HttpEntity<>(request, httpHeaders);
-			final ResponseEntity<String> result = restTemplate.postForEntity(url, entity, String.class, deliveryRequest.getShipperConfig().getGatewayId());
+			final String actorId = getActorId(config);
+			final ResponseEntity<String> result = restTemplate.postForEntity(url, entity, String.class, actorId);
 
 			if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null)
 			{
@@ -162,9 +176,17 @@ public class NShiftShipmentService
 		}
 	}
 
-	private @NotNull String getAuthorizationHeader(@NonNull final JsonDeliveryRequest deliveryRequest)
+	private String getActorId(@NonNull final JsonShipperConfig config)
 	{
-		final String auth = deliveryRequest.getShipperConfig().getUsername() + ":" + deliveryRequest.getShipperConfig().getPassword();
+		return Check.assumeNotNull(config.getAdditionalProperties().get("ActorId"),
+				"No actorId found in (ShipperConfig.additionalProperties.actorId): {} "
+				, config.getAdditionalProperties()
+		);
+	}
+
+	private @NotNull String getAuthorizationHeader(@NonNull final JsonShipperConfig config)
+	{
+		final String auth = config.getUsername() + ":" + config.getPassword();
 		return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 	}
 
@@ -215,24 +237,17 @@ public class NShiftShipmentService
 				.labelType(JsonLabelType.PDF)
 				//.requiredDeliveryDate()
 				.validatePostCode(true)
-				//.place("Inbox") //should be removed after switch of Endpoint
 				.build();
 
-		final String actorId = Check.assumeNotNull(deliveryRequest.getShipperConfig().getGatewayId(), "The GatewayId (ActorId) shouldn't be null");
+		final String actorId = getActorId(deliveryRequest.getShipperConfig());
 		final String shipperProduct = Check.assumeNotNull(deliveryRequest.getShipperProduct(), "The ShipperProduct shouldn't be null");
 		final int prodConceptId = getProdConceptIdByShipperProduct(shipperProduct);
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.actorCSID(Integer.valueOf(actorId))
-				.orderNo(deliveryRequest.getId())
+				.orderNo(String.valueOf(deliveryRequest.getDeliveryOrderId()))
 				.prodConceptID(prodConceptId)
 				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
-
-		final Integer serviceId = SERVICE_BY_PROD_CONCEPT_ID.get(prodConceptId);
-		if (serviceId != null)
-		{
-			dataBuilder.service(serviceId);
-		}
 
 		// Add Addresses
 		dataBuilder.address(buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER)
@@ -254,10 +269,15 @@ public class NShiftShipmentService
 			{
 				receiverAddressBuilder.email(deliveryContact.getEmailAddress());
 			}
+			receiverAddressBuilder.attention(deliveryContact.getName());
 		}
-		if (Check.isNotBlank(deliveryRequest.getDeliveryNote()))
+		else
 		{
-			receiverAddressBuilder.attention(deliveryRequest.getDeliveryNote());
+			final String attention = CoalesceUtil.coalesceNotNull(
+					deliveryRequest.getDeliveryAddress().getAdditionalAddressInfo(),
+					deliveryRequest.getDeliveryAddress().getCompanyName2(),
+					deliveryRequest.getDeliveryAddress().getCompanyName1());
+			receiverAddressBuilder.attention(attention);
 		}
 		dataBuilder.address(receiverAddressBuilder.build());
 
@@ -277,10 +297,9 @@ public class NShiftShipmentService
 					.build());
 		}
 
-
 		// Process each delivery line as a separate package line in the nShift request
 		int lineNoCounter = 1;
-		for (final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLine deliveryLine : deliveryRequest.getDeliveryOrderLines())
+		for (final JsonDeliveryOrderParcel deliveryLine : deliveryRequest.getDeliveryOrderLines())
 		{
 			dataBuilder.line(buildNShiftLine(deliveryLine, lineNoCounter, prodConceptId));
 			// Each line might also require a corresponding customs declaration group
@@ -296,7 +315,7 @@ public class NShiftShipmentService
 
 	private JsonAddress.JsonAddressBuilder buildNShiftAddressBuilder(@NonNull final de.metas.common.delivery.v1.json.JsonAddress commonAddress, @NonNull final JsonAddressKind kind)
 	{
-		String street1 = commonAddress.getStreet1();
+		String street1 = commonAddress.getStreet();
 		if (Check.isNotBlank(commonAddress.getHouseNo()))
 		{
 			street1 = street1 + " " + commonAddress.getHouseNo();
@@ -307,13 +326,13 @@ public class NShiftShipmentService
 				.name1(commonAddress.getCompanyName1())
 				.name2(commonAddress.getCompanyName2())
 				.street1(street1)
-				.street2(commonAddress.getStreet2())
+				.street2(commonAddress.getAdditionalAddressInfo())
 				.postCode(commonAddress.getZipCode())
 				.city(commonAddress.getCity())
 				.countryCode(commonAddress.getCountry());
 	}
 
-	private JsonLine buildNShiftLine(@NonNull final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLine deliveryLine, final int lineNo, final int prodConceptId)
+	private JsonLine buildNShiftLine(@NonNull final JsonDeliveryOrderParcel deliveryLine, final int lineNo, final int prodConceptId)
 	{
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = deliveryLine.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
@@ -333,13 +352,19 @@ public class NShiftShipmentService
 				.goodsTypeKey1(goodsType.getGoodsTypeKey1())
 				.goodsTypeKey2(goodsType.getGoodsTypeKey2())
 				.goodsTypeName(goodsType.getGoodsTypeName())
-				.pkg(JsonPackage.builder()
-						.pkgNo(deliveryLine.getPackageId())
-						.build())
+				.pkg(buildNShiftPackage(deliveryLine))
 				.build();
 	}
 
-	private JsonDetailGroup buildCustomsArticleGroup(@NonNull final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLine deliveryLine, final int lineNo, @NonNull final String countryOfOrigin)
+	private JsonPackage buildNShiftPackage(@NonNull final JsonDeliveryOrderParcel deliveryLine)
+	{
+		return JsonPackage.builder()
+				.pkgNo(deliveryLine.getPackageId())
+				.itemNo(Integer.valueOf(deliveryLine.getId()))
+			    .build();
+	}
+
+	private JsonDetailGroup buildCustomsArticleGroup(@NonNull final JsonDeliveryOrderParcel deliveryLine, final int lineNo, @NonNull final String countryOfOrigin)
 	{
 		final JsonCustomsArticleInfo.JsonCustomsArticleInfoBuilder<?, ?> customsArticleInfoBuilder = JsonCustomsArticleInfo.builder();
 
@@ -362,5 +387,50 @@ public class NShiftShipmentService
 		}
 
 		return customsArticleInfoBuilder.build();
+	}
+
+	private JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final String requestId)
+	{
+		// 1. Create a lookup map of labels using pkgNo as the key for efficient access.
+		final Map<String, JsonShipmentResponseLabel> labelsByPkgNo = response.getLabels() != null
+				? response.getLabels().stream()
+				.filter(label -> label.getPkgNo() != null)
+				.collect(Collectors.toMap(
+						JsonShipmentResponseLabel::getPkgNo,
+						Function.identity(),
+						(first, second) -> first)) // In case of duplicate pkgNo, take the first.
+				: Collections.emptyMap();
+
+		// 2. Map each parcel from the response to our standard JsonDeliveryResponseItem.
+		final List<JsonDeliveryResponseItem> items = response.getLines() != null
+				? response.getLines().stream()
+				.map(parcel -> {
+					final JsonPackage pkg = parcel.getPkgs().get(0);
+					final JsonShipmentResponseLabel label = labelsByPkgNo.get(pkg.getPkgNo());
+
+					final byte[] labelPdf = (label != null && label.getContent() != null)
+							? label.getContent().getBytes()
+							: null;
+
+					return JsonDeliveryResponseItem.builder()
+							// CORRECTED: Use pkgNo for externalId to link back to the original request's packageId.
+							.lineId(String.valueOf(pkg.getItemNo()))
+							.trackingUrl(pkg.getReferences().stream()
+									.filter(ref -> ref.getKind().isTrackingUrl())
+									.map(JsonLineReference::getValue)
+									.findFirst()
+									.orElse(null))
+							.labelPdfBase64(labelPdf)
+							.build();
+				})
+				.collect(Collectors.toList())
+				: Collections.emptyList();
+
+		// 3. Construct the final response object with the correlated items.
+		return JsonDeliveryResponse.builder()
+				.requestId(requestId)
+				.items(items)
+				.build();
+
 	}
 }

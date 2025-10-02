@@ -22,6 +22,7 @@
 package de.metas.shipper.gateway.nshift.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ public enum JsonLineReferenceKind
 	ESRK_CUSTOM_LINE_FIELD_3(131),
 	ESRK_CUSTOM_LINE_FIELD_4(132),
 	ESRK_CUSTOM_LINE_FIELD_5(133),
+	ESRK_TRACKING_URL(147),
 	ESRK_CUSTOM_LINE_FIELD_6(221),
 	ESRK_CUSTOM_LINE_FIELD_7(222),
 	ESRK_CUSTOM_LINE_FIELD_8(223),
@@ -75,5 +77,8 @@ public enum JsonLineReferenceKind
 				.findFirst()
 				.orElse(UNKNOWN);
 	}
+
+	@JsonIgnore
+	public boolean isTrackingUrl(){return this.equals(ESRK_TRACKING_URL);}
 
 }

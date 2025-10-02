@@ -22,6 +22,7 @@
 
 package de.metas.common.delivery.v1.json.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Value;
@@ -30,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class JsonDeliveryResponseItem
 {
@@ -39,4 +40,16 @@ public class JsonDeliveryResponseItem
 	@Nullable String awb;
 	@Nullable String trackingUrl;
 	byte[] labelPdfBase64;
+
+	@JsonIgnore
+	public boolean isError()
+	{
+		return getErrorMessage() != null && !getErrorMessage().isEmpty();
+	}
+
+	@JsonIgnore
+	public JsonDeliveryResponseItem withoutPDFContents()
+	{
+		return toBuilder().labelPdfBase64(null).build();
+	}
 }

@@ -24,6 +24,7 @@ package de.metas.common.delivery.v1.json.request;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -40,6 +41,6 @@ public class JsonShipperConfig
 	@Nullable String password;
 	@Nullable String clientId;
 	@Nullable String clientSecret;
-	@NonNull String trackingUrl;
-	Map<String, String> additionalProperties;
+	@NonNull String trackingUrlTemplate;
+	@NonNull @Singular Map<String, String> additionalProperties;
 }
