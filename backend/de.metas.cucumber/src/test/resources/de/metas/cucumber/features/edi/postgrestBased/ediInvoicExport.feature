@@ -198,13 +198,37 @@ Feature: EDI INVOIC export via postgREST
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
       | salesPLV               | product_S0481_010 | 5.00     | PCE      |
-    And metasfresh contains C_Invoice:
-      | Identifier             | REST.Context              | M_Warehouse_ID | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoice_S0481_010 | salesInvoice_S0481_010_ID | wh_S0481_010   | customer1     | Ausgangsrechnung        | S0481_010  | 2025-05-01   | Spot                     | true    | EUR                 |
-    And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID           | M_Product_ID      | QtyInvoiced |
-      | salesInvoice_S0481_010 | product_S0481_010 | 1 PCE       |
-    And the invoice identified by salesInvoice_S0481_010 is completed
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | M_Warehouse_ID |
+      | o_1        | true    | customer1     | 2025-05-01  | 2025-05-01Z  | wh_S0481_010   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID      | QtyEntered |
+      | ol_1       | o_1                   | product_S0481_010 | 1          |
+
+    And the order identified by o_1 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1      | ol_1                      | N             |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_1                            | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_1                            | s_1                   |
+
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic_ci_1                           | ol_1                      | 1            |
+
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_ci_1                           |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context              | REST.Context.DocumentNo      |
+      | ic_ci_1                           | salesInvoice_S0481_010  | salesInvoice_S0481_010_ID | salesInvoice_S0481_010_docNo |
 
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -236,7 +260,7 @@ Feature: EDI INVOIC export via postgREST
       "Invoice_Sender_Tec_GLN": null,
       "Invoice_Sender_CountryCode": "DE",
       "Invoice_Sender_VATaxId": null,
-      "Invoice_DocumentNo": "S0481_010",
+      "Invoice_DocumentNo": "@salesInvoice_S0481_010_docNo@",
       "Invoice_Date": "2025-05-01T00:00:00",
       "Invoice_Acct_Date": "2025-05-01T00:00:00",
       "DocType_Base": "ARI",

@@ -667,6 +667,10 @@ public class C_Invoice_StepDef
 			{
 				matcher.getRow().getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
 						.ifPresent(invoiceIdentifier -> invoiceTable.putOrReplace(invoiceIdentifier, currentInvoice));
+
+				restTestContext.setIntVariableFromRow(matcher.getRow(), currentInvoice::getC_Invoice_ID);
+				matcher.getRow().getAsOptionalIdentifier("REST.Context.DocumentNo")
+						.ifPresent(id -> restTestContext.setVariable(id.getAsString(), currentInvoice.getDocumentNo()));
 			}
 
 			lastInvoice = currentInvoice;
