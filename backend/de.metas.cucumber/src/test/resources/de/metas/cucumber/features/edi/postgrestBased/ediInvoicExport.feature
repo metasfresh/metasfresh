@@ -216,8 +216,8 @@ Feature: EDI INVOIC export via postgREST
       | s_s_1                            | D            | true                | false       |
 
     And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | s_s_1                            | s_1                   |
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.DocumentNo |
+      | s_s_1                            | s_1                   | shipmentDocNo           |
 
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
@@ -268,9 +268,9 @@ Feature: EDI INVOIC export via postgREST
       "CreditMemo_Reason": null,
       "CreditMemo_ReasonText": null,
       "Order_POReference": null,
-      "Order_Date": null,
-      "Shipment_Date": null,
-      "Shipment_DocumentNo": null,
+      "Order_Date": "2025-05-01T00:00:00",
+      "Shipment_Date": "2025-05-01T00:00:00",
+      "Shipment_DocumentNo": @shipmentDocNo@,
       "DESADV_DocumentNo": null,
       "Invoice_Currency_Code": "EUR",
       "Invoice_GrandTotal": 5.95,
