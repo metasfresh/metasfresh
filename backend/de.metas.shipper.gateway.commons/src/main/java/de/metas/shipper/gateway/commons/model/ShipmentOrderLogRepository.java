@@ -28,7 +28,6 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Carrier_ShipmentOrder_Log;
 import org.springframework.stereotype.Repository;
@@ -65,7 +64,7 @@ public class ShipmentOrderLogRepository
 		}
 		catch (final JsonProcessingException e)
 		{
-			throw new AdempiereException("Failed to parse object!", e);
+			return object.toString();
 		}
 	}
 

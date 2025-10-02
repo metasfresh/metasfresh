@@ -43,9 +43,7 @@ import java.util.function.Function;
 @Repository
 public class ShipperConfigRepository
 {
-	AdMessageKey MSG_NO_SHIPPER_CONFIG_FOUND = AdMessageKey.of("de.metas.shipper.gateway.commons.config.NoShipperConfigFound");
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final static AdMessageKey MSG_NO_SHIPPER_CONFIG_FOUND = AdMessageKey.of("de.metas.shipper.gateway.commons.config.NoShipperConfigFound");
 	private final static ImmutableSet<String> COLUMNS_TO_EXCLUDE_FROM_MAPPING = ImmutableSet.of(
 			//already mapped or irrelevant columns
 			I_Carrier_Config.COLUMNNAME_M_Shipper_ID,
@@ -66,6 +64,8 @@ public class ShipperConfigRepository
 			I_Carrier_Config.COLUMNNAME_AD_Org_ID,
 			I_Carrier_Config.COLUMNNAME_AD_Client_ID);
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@NonNull
 	public ShipperConfig getByShipperId(@NonNull final ShipperId shipperId)
 	{
@@ -73,11 +73,11 @@ public class ShipperConfigRepository
 				.addEqualsFilter(I_Carrier_Config.COLUMNNAME_M_Shipper_ID, shipperId)
 				.create()
 				.firstOnlyOptional()
-				.map(this::fromPO)
+				.map(ShipperConfigRepository::fromRecord)
 				.orElseThrow(() -> new AdempiereException(MSG_NO_SHIPPER_CONFIG_FOUND, shipperId));
 	}
 
-	private ShipperConfig fromPO(@NotNull final I_Carrier_Config carrierConfig)
+	private static ShipperConfig fromRecord(@NotNull final I_Carrier_Config carrierConfig)
 	{
 		return ShipperConfig.builder()
 				.id(ShipperConfigId.ofRepoId(carrierConfig.getCarrier_Config_ID()))
@@ -92,13 +92,14 @@ public class ShipperConfigRepository
 				.build();
 	}
 
-	private ImmutableMap<String, String> buildAdditionalPropertiesMap(final @NotNull I_Carrier_Config carrierConfig)
+	private static ImmutableMap<String, String> buildAdditionalPropertiesMap(final @NotNull I_Carrier_Config carrierConfig)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(I_Carrier_Config.Table_Name);
 		Check.assumeNotNull(poInfo, "POInfo for {} is not null", I_Carrier_Config.Table_Name);
 		return
 				poInfo.streamColumns(poInfoColumn -> !COLUMNS_TO_EXCLUDE_FROM_MAPPING.contains(poInfoColumn.getColumnName()))
 						.map(POInfoColumn::getColumnName)
+						.filter(columnName -> Check.isNotBlank(InterfaceWrapperHelper.getValueOrNull(carrierConfig, columnName)))
 						.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> InterfaceWrapperHelper.getModelValue(carrierConfig, colName, String.class)));
 	}
 
