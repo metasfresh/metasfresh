@@ -103,6 +103,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOM;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -223,6 +224,15 @@ import java.util.Optional;
 		this.receiveUsingSpec = PreciseTUSpec.of(tuPackingInstructionsId, qtyToReceive);
 		final List<I_M_HU> tus = receiveHUs(qtyToReceive);
 		return CollectionUtils.singleElement(tus);
+	}
+
+	@Override
+	public List<I_M_HU> receiveIndividualPlanningCUs(@NonNull final Quantity qtyToReceive)
+	{
+		this.processReceiptCandidates = false;
+		this.receiveUsingSpec = PreciseTUSpec.of(HuPackingInstructionsId.VIRTUAL,
+												   Quantity.of(BigDecimal.ONE, qtyToReceive.getUOM()));
+		return trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndHUs(qtyToReceive));
 	}
 
 	@Override
