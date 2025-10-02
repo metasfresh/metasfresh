@@ -28,6 +28,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 @Value
 @Builder
@@ -39,6 +40,6 @@ public class JsonShipperConfig
 	@Nullable String password;
 	@Nullable String clientId;
 	@Nullable String clientSecret;
-	@Nullable String gatewayId; //for example, actorId in nShift
 	@NonNull String trackingUrl;
+	Map<String, String> additionalProperties;
 }

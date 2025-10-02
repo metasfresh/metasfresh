@@ -39,9 +39,9 @@ public class JsonAddress
 	@Nullable String companyName2;
 	@Nullable String companyDepartment;
 
-	@Nullable String street1;
-	@Nullable String street2;
+	@Nullable String street;
 	@Nullable String houseNo;
+	@Nullable String additionalAddressInfo;
 	@NonNull String country; // ISO country code, e.g. "DE"
 	@NonNull String zipCode;
 	@NonNull String city;
