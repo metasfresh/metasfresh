@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1507889870L;
+	private static final long serialVersionUID = -912365330L;
 
     /** Standard Constructor */
     public X_Carrier_Config (final Properties ctx, final int Carrier_Config_ID, @Nullable final String trxName)
@@ -32,6 +32,18 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setActorId (final @Nullable java.lang.String ActorId)
+	{
+		set_Value (COLUMNNAME_ActorId, ActorId);
+	}
+
+	@Override
+	public java.lang.String getActorId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ActorId);
 	}
 
 	@Override
@@ -83,18 +95,6 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	public java.lang.String getClient_Secret() 
 	{
 		return get_ValueAsString(COLUMNNAME_Client_Secret);
-	}
-
-	@Override
-	public void setGatewayId (final @Nullable java.lang.String GatewayId)
-	{
-		set_Value (COLUMNNAME_GatewayId, GatewayId);
-	}
-
-	@Override
-	public java.lang.String getGatewayId() 
-	{
-		return get_ValueAsString(COLUMNNAME_GatewayId);
 	}
 
 	@Override

@@ -18,6 +18,27 @@ public interface I_Carrier_Config
 
 
 	/**
+	 * Set Actor ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setActorId (@Nullable java.lang.String ActorId);
+
+	/**
+	 * Get Actor ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getActorId();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_ActorId = new ModelColumn<>(I_Carrier_Config.class, "ActorId", null);
+	String COLUMNNAME_ActorId = "ActorId";
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
@@ -159,27 +180,6 @@ public interface I_Carrier_Config
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Gateway ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setGatewayId (@Nullable java.lang.String GatewayId);
-
-	/**
-	 * Get Gateway ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getGatewayId();
-
-	ModelColumn<I_Carrier_Config, Object> COLUMN_GatewayId = new ModelColumn<>(I_Carrier_Config.class, "GatewayId", null);
-	String COLUMNNAME_GatewayId = "GatewayId";
 
 	/**
 	 * Set Active.

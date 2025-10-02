@@ -24,17 +24,17 @@ package de.metas.common.delivery.v1.json.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class JsonDeliveryResponse
 {
@@ -42,11 +42,20 @@ public class JsonDeliveryResponse
 
 	@Nullable String errorMessage;
 
-	@NonNull List<JsonDeliveryResponseItem> items;
+	@NonNull ImmutableList<JsonDeliveryResponseItem> items;
 
 	@JsonIgnore
 	public boolean isError()
 	{
-		return items.stream().anyMatch(item -> item.getErrorMessage() != null && !item.getErrorMessage().isEmpty());
+		return (errorMessage != null && !errorMessage.isEmpty()) || items.stream().anyMatch(item -> item.getErrorMessage() != null && !item.getErrorMessage().isEmpty());
+	}
+
+	public JsonDeliveryResponse withoutPDFContents()
+	{
+		return toBuilder()
+				.items(items.stream()
+						.map(JsonDeliveryResponseItem::withoutPDFContents)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
 	}
 }

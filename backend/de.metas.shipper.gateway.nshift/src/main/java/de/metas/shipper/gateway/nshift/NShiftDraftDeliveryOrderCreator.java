@@ -8,6 +8,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
@@ -145,6 +146,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		return ContactPerson.builder()
 				.emailAddress(deliverToBPartner.getEMail())
 				.simplePhoneNumber(deliverToPhoneNumber)
+				.language(Language.asLanguage(deliverToBPartner.getAD_Language()))
 				.build();
 	}
 

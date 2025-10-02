@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
@@ -34,7 +12,7 @@ import java.util.Properties;
 public class X_Carrier_ShipmentOrder_Log extends org.compiere.model.PO implements I_Carrier_ShipmentOrder_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1402081124L;
+	private static final long serialVersionUID = 115259953L;
 
     /** Standard Constructor */
     public X_Carrier_ShipmentOrder_Log (final Properties ctx, final int Carrier_ShipmentOrder_Log_ID, @Nullable final String trxName)
@@ -87,18 +65,6 @@ public class X_Carrier_ShipmentOrder_Log extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setConfigSummary (final @Nullable java.lang.String ConfigSummary)
-	{
-		set_Value (COLUMNNAME_ConfigSummary, ConfigSummary);
-	}
-
-	@Override
-	public java.lang.String getConfigSummary() 
-	{
-		return get_ValueAsString(COLUMNNAME_ConfigSummary);
-	}
-
-	@Override
 	public void setDurationMillis (final int DurationMillis)
 	{
 		set_Value (COLUMNNAME_DurationMillis, DurationMillis);
@@ -120,6 +86,18 @@ public class X_Carrier_ShipmentOrder_Log extends org.compiere.model.PO implement
 	public boolean isError() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsError);
+	}
+
+	@Override
+	public void setRequestID (final java.lang.String RequestID)
+	{
+		set_Value (COLUMNNAME_RequestID, RequestID);
+	}
+
+	@Override
+	public java.lang.String getRequestID() 
+	{
+		return get_ValueAsString(COLUMNNAME_RequestID);
 	}
 
 	@Override

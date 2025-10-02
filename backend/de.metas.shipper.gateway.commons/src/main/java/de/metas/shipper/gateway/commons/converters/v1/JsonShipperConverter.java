@@ -72,8 +72,8 @@ public class JsonShipperConverter
 				.password(config.getPassword())
 				.clientId(config.getClientId())
 				.clientSecret(config.getClientSecret())
-				//.gatewayId(config.getGatewayId())
-				.trackingUrl(config.getTrackingUrl())
+				.trackingUrlTemplate(config.getTrackingUrlTemplate())
+				.additionalProperties(config.getAdditionalProperties())
 				.build();
 	}
 
@@ -98,10 +98,12 @@ public class JsonShipperConverter
 	private JsonContact toJsonContactOrNull(final @Nullable ContactPerson contact)
 	{
 		if (contact == null) {return null;}
+
 		return JsonContact.builder()
 				.phone(contact.getPhoneAsStringOrNull())
 				.simplePhoneNumber(contact.getSimplePhoneNumber())
 				.emailAddress(contact.getEmailAddress())
+				.language(contact.getLanguage().getLanguageCode())
 				.build();
 	}
 

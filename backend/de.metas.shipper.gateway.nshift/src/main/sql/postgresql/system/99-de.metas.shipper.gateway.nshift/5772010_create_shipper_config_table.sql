@@ -419,14 +419,6 @@ ALTER SEQUENCE Carrier_Shipper_Config_SEQ RENAME TO Carrier_Config_SEQ
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-10-01 17:54:45.838000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591227
 ;
 
--- 2025-10-01T17:54:47.419Z
-INSERT INTO t_alter_column values('carrier_config','M_Shipper_ID','NUMERIC(10)',null,null)
-;
-
--- 2025-10-01T17:54:47.422Z
-INSERT INTO t_alter_column values('carrier_config','M_Shipper_ID',null,'NOT NULL',null)
-;
-
 -- Table: Carrier_Config
 -- 2025-10-01T17:55:49.753Z
 UPDATE AD_Table SET Name='Carrier Config',Updated=TO_TIMESTAMP('2025-10-01 17:55:49.751000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_ID=542540
@@ -516,3 +508,89 @@ UPDATE AD_Column SET DefaultValue='',Updated=TO_TIMESTAMP('2025-10-01 18:03:41.2
 /* DDL */ CREATE TABLE public.Carrier_Config (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Base_url VARCHAR(255), Carrier_Config_ID NUMERIC(10) NOT NULL, Client_Id VARCHAR(255), Client_Secret VARCHAR(255), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, GatewayId VARCHAR(255), IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_Shipper_ID NUMERIC(10) NOT NULL, Password VARCHAR(255), TrackingURL VARCHAR(255), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, UserName VARCHAR(255), CONSTRAINT Carrier_Config_Key PRIMARY KEY (Carrier_Config_ID), CONSTRAINT MShipper_CarrierConfig FOREIGN KEY (M_Shipper_ID) REFERENCES public.M_Shipper DEFERRABLE INITIALLY DEFERRED)
 ;
 
+-- 2025-10-02T14:20:57.090Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584065,0,'RequestID',TO_TIMESTAMP('2025-10-02 14:20:56.804000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Request ID','Request ID',TO_TIMESTAMP('2025-10-02 14:20:56.804000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-10-02T14:20:57.098Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584065 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Column: Carrier_ShipmentOrder_Log.RequestID
+-- 2025-10-02T14:24:40.441Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,591243,584065,0,10,542537,'XX','RequestID',TO_TIMESTAMP('2025-10-02 14:24:40.235000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','D',0,36,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Request ID',0,0,TO_TIMESTAMP('2025-10-02 14:24:40.235000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2025-10-02T14:24:40.444Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=591243 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2025-10-02T14:24:40.470Z
+/* DDL */  select update_Column_Translation_From_AD_Element(584065)
+;
+
+-- 2025-10-02T14:24:43.471Z
+/* DDL */ SELECT public.db_alter_table('Carrier_ShipmentOrder_Log','ALTER TABLE public.Carrier_ShipmentOrder_Log ADD COLUMN RequestID VARCHAR(36) NOT NULL')
+;
+
+-- 2025-10-02T14:52:51.461Z
+INSERT INTO t_alter_column values('carrier_shipmentorder_log','ConfigSummary','VARCHAR(2000)',null,null)
+;
+
+-- 2025-10-02T14:52:56.961Z
+/* DDL */ SELECT public.db_alter_table('Carrier_ShipmentOrder_Log','ALTER TABLE Carrier_ShipmentOrder_Log DROP COLUMN IF EXISTS ConfigSummary')
+;
+
+-- Column: Carrier_ShipmentOrder_Log.ConfigSummary
+-- 2025-10-02T14:52:57.024Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=591173
+;
+
+-- 2025-10-02T14:52:57.035Z
+DELETE FROM AD_Column WHERE AD_Column_ID=591173
+;
+
+-- 2025-10-02T15:22:51.982Z
+/* DDL */ SELECT public.db_alter_table('Carrier_Config','ALTER TABLE Carrier_Config DROP COLUMN IF EXISTS GatewayId')
+;
+
+-- Column: Carrier_Config.GatewayId
+-- 2025-10-02T15:22:52Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=591236
+;
+
+-- 2025-10-02T15:22:52.008Z
+DELETE FROM AD_Column WHERE AD_Column_ID=591236
+;
+
+-- 2025-10-02T15:23:28.536Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584080,0,'ActorId',TO_TIMESTAMP('2025-10-02 15:23:28.328000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Actor ID','Actor ID',TO_TIMESTAMP('2025-10-02 15:23:28.328000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-10-02T15:23:28.539Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584080 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Column: Carrier_Config.ActorId
+-- 2025-10-02T15:23:55.666Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,591244,584080,0,10,542540,'XX','ActorId',TO_TIMESTAMP('2025-10-02 15:23:55.477000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','D',0,20,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Actor ID',0,0,TO_TIMESTAMP('2025-10-02 15:23:55.477000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2025-10-02T15:23:55.668Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=591244 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2025-10-02T15:23:55.671Z
+/* DDL */  select update_Column_Translation_From_AD_Element(584080)
+;
+
+-- 2025-10-02T15:23:57.627Z
+/* DDL */ SELECT public.db_alter_table('Carrier_Config','ALTER TABLE public.Carrier_Config ADD COLUMN ActorId VARCHAR(20)')
+;
+
+-- 2025-10-02T15:45:30.192Z
+INSERT INTO t_alter_column values('carrier_shipmentorder_log','RequestID','VARCHAR(36)',null,null)
+;
+
+CREATE INDEX carrier_shipmentorder_log_RequestID ON Carrier_ShipmentOrder_Log (RequestID)
+;

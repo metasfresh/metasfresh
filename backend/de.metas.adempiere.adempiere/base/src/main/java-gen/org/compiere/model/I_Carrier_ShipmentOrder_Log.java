@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
@@ -116,27 +94,6 @@ public interface I_Carrier_ShipmentOrder_Log
 	String COLUMNNAME_Carrier_ShipmentOrder_Log_ID = "Carrier_ShipmentOrder_Log_ID";
 
 	/**
-	 * Set Config Summary.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setConfigSummary (@Nullable java.lang.String ConfigSummary);
-
-	/**
-	 * Get Config Summary.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getConfigSummary();
-
-	ModelColumn<I_Carrier_ShipmentOrder_Log, Object> COLUMN_ConfigSummary = new ModelColumn<>(I_Carrier_ShipmentOrder_Log.class, "ConfigSummary", null);
-	String COLUMNNAME_ConfigSummary = "ConfigSummary";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -227,6 +184,27 @@ public interface I_Carrier_ShipmentOrder_Log
 
 	ModelColumn<I_Carrier_ShipmentOrder_Log, Object> COLUMN_IsError = new ModelColumn<>(I_Carrier_ShipmentOrder_Log.class, "IsError", null);
 	String COLUMNNAME_IsError = "IsError";
+
+	/**
+	 * Set Request ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRequestID (java.lang.String RequestID);
+
+	/**
+	 * Get Request ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getRequestID();
+
+	ModelColumn<I_Carrier_ShipmentOrder_Log, Object> COLUMN_RequestID = new ModelColumn<>(I_Carrier_ShipmentOrder_Log.class, "RequestID", null);
+	String COLUMNNAME_RequestID = "RequestID";
 
 	/**
 	 * Set Request Message.

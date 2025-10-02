@@ -22,25 +22,16 @@
 
 package de.metas.shipper.gateway.commons.model;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.shipping.ShipperId;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class ShipperConfig
+public class ShipmentOrderLogCreateRequest
 {
-	@NonNull ShipperId shipperId;
-	@NonNull ShipperConfigId id;
-	@NonNull String url;
-	@Nullable String username;
-	@Nullable String password;
-	@Nullable String clientId;
-	@Nullable String clientSecret;
-	@NonNull String trackingUrlTemplate;
-	ImmutableMap<String, String> additionalProperties;
+	JsonDeliveryRequest request;
+	JsonDeliveryResponse response;
+	long durationMillis;
 }

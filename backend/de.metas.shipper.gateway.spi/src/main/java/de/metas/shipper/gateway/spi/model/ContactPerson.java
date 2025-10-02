@@ -1,8 +1,10 @@
 package de.metas.shipper.gateway.spi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.i18n.Language;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -36,17 +38,20 @@ public class ContactPerson
 	@Nullable PhoneNumber phone;
 	@Nullable String emailAddress;
 	@Nullable String simplePhoneNumber;
+	@NonNull Language language;
 
 	@Builder
 	@Jacksonized
 	private ContactPerson(
 			@Nullable final PhoneNumber phone,
 			@Nullable final String simplePhoneNumber,
-			@Nullable final String emailAddress)
+			@Nullable final String emailAddress,
+			@Nullable final Language language)
 	{
 		this.phone = phone;
 		this.simplePhoneNumber = simplePhoneNumber;
 		this.emailAddress = emailAddress;
+		this.language = language == null ? Language.getBaseLanguage() : language;
 
 		final boolean simplePhoneNumberIsEmpty = Check.isEmpty(simplePhoneNumber);
 		final boolean phoneIsEmpty = phone == null;
@@ -69,4 +74,5 @@ public class ContactPerson
 		}
 		return null;
 	}
+
 }

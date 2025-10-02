@@ -22,29 +22,59 @@
 
 package de.metas.shipper.gateway.commons.model;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
 import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Carrier_Config;
+import org.compiere.model.POInfo;
+import org.compiere.model.POInfoColumn;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Repository;
+
+import java.util.function.Function;
 
 @Repository
 public class ShipperConfigRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	AdMessageKey MSG_NO_SHIPPER_CONFIG_FOUND = AdMessageKey.of("de.metas.shipper.gateway.commons.config.NoShipperConfigFound");
 
-	@Nullable
-	public ShipperConfig getByShipperIdOrNull(@NonNull final ShipperId shipperId)
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final static ImmutableSet<String> COLUMNS_TO_EXCLUDE_FROM_MAPPING = ImmutableSet.of(
+			//already mapped or irrelevant columns
+			I_Carrier_Config.COLUMNNAME_M_Shipper_ID,
+			I_Carrier_Config.COLUMNNAME_Carrier_Config_ID,
+			I_Carrier_Config.COLUMNNAME_UserName,
+			I_Carrier_Config.COLUMNNAME_Client_Id,
+			I_Carrier_Config.COLUMNNAME_Client_Secret,
+			I_Carrier_Config.COLUMNNAME_TrackingURL,
+			I_Carrier_Config.COLUMNNAME_Password,
+			I_Carrier_Config.COLUMNNAME_Base_url,
+
+			//metasfresh specific columns
+			I_Carrier_Config.COLUMNNAME_Created,
+			I_Carrier_Config.COLUMNNAME_CreatedBy,
+			I_Carrier_Config.COLUMNNAME_IsActive,
+			I_Carrier_Config.COLUMNNAME_Updated,
+			I_Carrier_Config.COLUMNNAME_UpdatedBy,
+			I_Carrier_Config.COLUMNNAME_AD_Org_ID,
+			I_Carrier_Config.COLUMNNAME_AD_Client_ID);
+
+	@NonNull
+	public ShipperConfig getByShipperId(@NonNull final ShipperId shipperId)
 	{
 		return queryBL.createQueryBuilder(I_Carrier_Config.class)
 				.addEqualsFilter(I_Carrier_Config.COLUMNNAME_M_Shipper_ID, shipperId)
 				.create()
 				.firstOnlyOptional()
 				.map(this::fromPO)
-				.orElse(null);
+				.orElseThrow(() -> new AdempiereException(MSG_NO_SHIPPER_CONFIG_FOUND, shipperId));
 	}
 
 	private ShipperConfig fromPO(@NotNull final I_Carrier_Config carrierConfig)
@@ -57,9 +87,19 @@ public class ShipperConfigRepository
 				.password(carrierConfig.getPassword())
 				.clientId(carrierConfig.getClient_Id())
 				.clientSecret(carrierConfig.getClient_Secret())
-				.gatewayId(carrierConfig.getGatewayId())
-				.trackingUrl(carrierConfig.getTrackingURL())
+				.trackingUrlTemplate(carrierConfig.getTrackingURL())
+				.additionalProperties(buildAdditionalPropertiesMap(carrierConfig))
 				.build();
+	}
+
+	private ImmutableMap<String, String> buildAdditionalPropertiesMap(final @NotNull I_Carrier_Config carrierConfig)
+	{
+		final POInfo poInfo = POInfo.getPOInfo(I_Carrier_Config.Table_Name);
+		Check.assumeNotNull(poInfo, "POInfo for {} is not null", I_Carrier_Config.Table_Name);
+		return
+				poInfo.streamColumns(poInfoColumn -> !COLUMNS_TO_EXCLUDE_FROM_MAPPING.contains(poInfoColumn.getColumnName()))
+						.map(POInfoColumn::getColumnName)
+						.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> InterfaceWrapperHelper.getModelValue(carrierConfig, colName, String.class)));
 	}
 
 }

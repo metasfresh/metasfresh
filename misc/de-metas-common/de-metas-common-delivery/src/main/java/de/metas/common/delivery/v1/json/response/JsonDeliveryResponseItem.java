@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class JsonDeliveryResponseItem
 {
@@ -39,4 +39,9 @@ public class JsonDeliveryResponseItem
 	@Nullable String awb;
 	@Nullable String trackingUrl;
 	byte[] labelPdfBase64;
+
+	public JsonDeliveryResponseItem withoutPDFContents()
+	{
+		return toBuilder().labelPdfBase64(null).build();
+	}
 }
