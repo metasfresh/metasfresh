@@ -72,7 +72,7 @@ public class JsonShipperConverter
 				.password(config.getPassword())
 				.clientId(config.getClientId())
 				.clientSecret(config.getClientSecret())
-				.gatewayId(config.getGatewayId())
+				//.gatewayId(config.getGatewayId())
 				.trackingUrl(config.getTrackingUrl())
 				.build();
 	}

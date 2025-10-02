@@ -25,6 +25,7 @@ package de.metas.common.delivery.v1.json.request;
 import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonQuantity;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -37,11 +38,10 @@ import java.math.BigDecimal;
 public class JsonDeliveryOrderLineContents
 {
 	@Nullable String shipmentOrderItemId;
-	JsonMoney unitPrice;
-	JsonMoney totalValue;
-	String productName;
-	String productValue;
-	BigDecimal totalWeightInKg;
-	JsonQuantity shippedQuantity;
-
+	@NonNull JsonMoney unitPrice;
+	@NonNull JsonMoney totalValue;
+	@NonNull String productName;
+	@NonNull String productValue;
+	@NonNull BigDecimal totalWeightInKg;
+	@NonNull JsonQuantity shippedQuantity;
 }
