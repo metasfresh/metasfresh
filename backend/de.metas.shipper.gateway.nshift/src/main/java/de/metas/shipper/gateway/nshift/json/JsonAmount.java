@@ -29,14 +29,14 @@ import lombok.Value;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-public class JsonAmount {
+public class JsonAmount
+{
+	@JsonProperty("Kind")
+	JsonShipmentAmountKind kind;
 
-    @JsonProperty("Kind")
-    JsonShipmentAmountKind kind;
+	@JsonProperty("CurrencyCode")
+	String currencyCode;
 
-    @JsonProperty("CurrencyCode")
-    String currencyCode;
-
-    @JsonProperty("Value")
-    Double value;
+	@JsonProperty("Value")
+	Double value;
 }

@@ -29,19 +29,20 @@ import lombok.Value;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-public class JsonLineUnit {
-    @JsonProperty("Name")
-    String name;
+public class JsonLineUnit
+{
+	@JsonProperty("Name")
+	String name;
 
-    @JsonProperty("KindID")
-    JsonLineUnitKind kindId;
+	@JsonProperty("KindID")
+	JsonLineUnitKind kindId;
 
-    @JsonProperty("Count")
-    Double count;
+	@JsonProperty("Count")
+	Double count;
 
-    @JsonProperty("Weight")
-    Integer weight;
+	@JsonProperty("Weight")
+	Integer weight;
 
-    @JsonProperty("Vol")
-    Integer vol;
+	@JsonProperty("Vol")
+	Integer vol;
 }

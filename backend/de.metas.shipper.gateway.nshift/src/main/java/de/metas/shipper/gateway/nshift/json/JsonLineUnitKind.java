@@ -21,16 +21,29 @@
  */
 package de.metas.shipper.gateway.nshift.json;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-// TODO: Enum values need to be defined based on nshift documentation for the KindID in LineUnit
+import java.util.stream.Stream;
+
 @RequiredArgsConstructor
 @Getter
-public enum JsonLineUnitKind {
-    ;
+public enum JsonLineUnitKind
+{
+	UNKNOWN(0);
 
-    @JsonValue
-    private final int jsonValue;
+	@JsonValue
+	private final int jsonValue;
+
+	@JsonCreator
+	public static JsonLineUnitKind fromJsonValue(final int value)
+	{
+		return Stream.of(values())
+				.filter(kind -> kind.jsonValue == value)
+				.findFirst()
+				.orElse(UNKNOWN);
+	}
+
 }

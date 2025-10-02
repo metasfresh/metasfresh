@@ -1,3 +1,4 @@
+
 /*
  * #%L
  * de.metas.shipper.gateway.nshift
@@ -22,6 +23,7 @@
 
 package de.metas.shipper.gateway.nshift.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -30,21 +32,33 @@ import lombok.extern.jackson.Jacksonized;
 @Value
 @Builder
 @Jacksonized
-public class JsonShipmentDocument
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class JsonShipmentResponseLabel
 {
-
-	@JsonProperty("DocumentType")
-	String documentType;
-
-	/**
-	 * Base64-encoded content of the document.
-	 */
 	@JsonProperty("Content")
 	String content;
+
+	@JsonProperty("Type")
+	Integer type;
+
+	@JsonProperty("DocumentID")
+	Integer documentID;
 
 	@JsonProperty("DocumentName")
 	String documentName;
 
+	@JsonProperty("Copies")
+	Integer copies;
+
+	@JsonProperty("PkgCSID")
+	Integer pkgCSID;
+
+	@JsonProperty("PkgTag")
+	String pkgTag;
+
 	@JsonProperty("PkgNo")
 	String pkgNo;
+
+	@JsonProperty("Tag")
+	String tag;
 }

@@ -24,14 +24,16 @@ package de.metas.shipper.gateway.nshift.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-public class JsonLineReference {
+@Jacksonized
+public class JsonLineReference
+{
+	@JsonProperty("Kind")
+	JsonLineReferenceKind kind;
 
-    @JsonProperty("Kind")
-    JsonLineReferenceKind kind;
-
-    @JsonProperty("Value")
-    String value;
+	@JsonProperty("Value")
+	String value;
 }

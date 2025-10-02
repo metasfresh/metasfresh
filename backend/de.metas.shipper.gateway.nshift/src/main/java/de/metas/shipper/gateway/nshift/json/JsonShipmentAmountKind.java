@@ -25,13 +25,67 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-// TODO: Enum values need to be defined based on nshift documentation for ShipmentAmountKind
+/**
+ * Specifies the type of amount associated with a shipment, such as insurance value or COD (Cash on Delivery) amount.
+ * The values are based on the nShift API specification for ShipmentAmountKind.
+ */
 @RequiredArgsConstructor
 @Getter
-public enum JsonShipmentAmountKind {
-    // Example: INSURANCE_VALUE(1)
-    ;
+public enum JsonShipmentAmountKind
+{
+	/**
+	 * Unknown or not specified.
+	 */
+	UNKNOWN(0),
+	/**
+	 * Price 1. The specific meaning may depend on the carrier.
+	 */
+	PRICE_1(1),
+	/**
+	 * Price 2. The specific meaning may depend on the carrier.
+	 */
+	PRICE_2(2),
+	/**
+	 * Price 3. The specific meaning may depend on the carrier.
+	 */
+	PRICE_3(3),
+	/**
+	 * The value of the goods for insurance purposes.
+	 */
+	INSURANCE_VALUE(4),
+	/**
+	 * The Cash on Delivery amount to be collected.
+	 */
+	COD_AMOUNT(5),
+	/**
+	 * A price specified by the carrier.
+	 */
+	CARRIER_SPECIFIED_PRICE(6),
+	/**
+	 * A COD amount specified by the carrier.
+	 */
+	CARRIER_SPECIFIED_COD_AMOUNT(7),
+	/**
+	 * The insurance amount on a per-package basis.
+	 */
+	INSURANCE_AMOUNT_PER_PACKAGE(8),
+	/**
+	 * A fixed price for the shipment.
+	 */
+	FIXED_PRICE(9),
+	/**
+	 * The total amount of the invoice.
+	 */
+	INVOICE_AMOUNT(10),
+	/**
+	 * The original COD amount before any adjustments.
+	 */
+	COD_AMOUNT_ORIGINAL(11),
+	/**
+	 * Insurance provided by a third party.
+	 */
+	THIRD_PARTY_INSURANCE(12);
 
-    @JsonValue
-    private final int jsonValue;
+	@JsonValue
+	private final int jsonValue;
 }

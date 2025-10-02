@@ -6,11 +6,12 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonShipmentMessage {
+public class JsonShipmentMessage
+{
 
-    @JsonProperty("Kind")
-    JsonShipmentMessageKind kind;
+	@JsonProperty("Kind")
+	JsonShipmentMessageKind kind;
 
-    @JsonProperty("Text")
-    String text;
+	@JsonProperty("Text")
+	String text;
 }

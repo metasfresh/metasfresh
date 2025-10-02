@@ -22,60 +22,119 @@
 
 package de.metas.shipper.gateway.nshift.json;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Value
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Builder
-@JsonDeserialize(builder = JsonShipmentResponse.JsonShipmentResponseBuilder.class)
-public class JsonShipmentResponse {
+@Jacksonized
+public class JsonShipmentResponse
+{
 
-    @JsonProperty("ShpCSID")
-    int shpCSID;
+	@JsonProperty("ShpCSID")
+	Integer shpCSID;
 
-    @JsonProperty("ShpTag")
-    String shpTag;
+	@JsonProperty("ShpTag")
+	String shpTag;
 
-    @JsonProperty("InstallationID")
-    String installationID;
+	@JsonProperty("InstallationID")
+	String installationID;
 
-    @JsonProperty("PhysicalInstallationID")
-    String physicalInstallationID;
+	@JsonProperty("PhysicalInstallationID")
+	String physicalInstallationID;
 
-    @JsonProperty("Kind")
-    int kind;
+	@JsonProperty("Kind")
+	Integer kind;
 
-    @JsonProperty("OrderNo")
-    String orderNo;
+	@JsonProperty("ShpNo")
+	String shpNo;
 
-    @JsonProperty("PickupDt")
-    LocalDate pickupDt;
+	@JsonProperty("OrderNo")
+	String orderNo;
 
-    @JsonProperty("ImportDt")
-    LocalDate importDt;
+	@JsonProperty("PickupDt")
+	String pickupDt;
 
-    @JsonProperty("Vol")
-    long vol;
+	@JsonProperty("LabelPrintDt")
+	String labelPrintDt;
 
-    @JsonProperty("Weight")
-    int weight;
+	@JsonProperty("SubmitDt")
+	String submitDt;
 
-    @JsonProperty("ShpNo")
-    String shpNo;
+	@JsonProperty("Vol")
+	Integer vol;
 
-    @JsonProperty("Lines")
-    List<JsonLineResponse> lines;
+	@JsonProperty("Weight")
+	Integer weight;
 
-    @JsonProperty("ShpDocuments")
-    List<JsonShipmentDocument> shpDocuments;
+	@JsonProperty("Height")
+	Integer height;
 
-    //TODO extend
+	@JsonProperty("Length")
+	Integer length;
+
+	@JsonProperty("Width")
+	Integer width;
+
+	@JsonProperty("ActorCSID")
+	Integer actorCSID;
+
+	@JsonProperty("Temperature")
+	Integer temperature;
+
+	@JsonProperty("CarriagePayer")
+	Integer carriagePayer;
+
+	@JsonProperty("CarrierConceptID")
+	Integer carrierConceptID;
+
+	@JsonProperty("CarrierCSID")
+	Integer carrierCSID;
+
+	@JsonProperty("SubcarrierConceptID")
+	Integer subcarrierConceptID;
+
+	@JsonProperty("SubcarrierCSID")
+	Integer subcarrierCSID;
+
+	@JsonProperty("ProdConceptID")
+	Integer prodConceptID;
+
+	@JsonProperty("ProdCSID")
+	Integer prodCSID;
+
+	@JsonProperty("StackCSID")
+	Integer stackCSID;
+
+	@JsonProperty("PickupTerminal")
+	String pickupTerminal;
+
+	@JsonProperty("AgentNo")
+	String agentNo;
+
+	@JsonProperty("PayerAccountAtCarrier")
+	String payerAccountAtCarrier;
+
+	@JsonProperty("SenderAccountAtCarrier")
+	String senderAccountAtCarrier;
+
+	@JsonProperty("Addresses")
+	List<JsonAddress> addresses;
+
+	@JsonProperty("Lines")
+	List<JsonLine> lines;
+
+	@JsonProperty("Labels")
+	List<JsonShipmentResponseLabel> labels;
+
+	@JsonProperty("ShpDocuments")
+	List<JsonShipmentDocument> shpDocuments;
+
+	@JsonProperty("CorrelationID")
+	String correlationID;
+
 }

@@ -19,7 +19,8 @@ import java.util.List;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class JsonDHLFiling extends JsonDetailGroup {
+public class JsonDHLFiling extends JsonDetailGroup
+{
 
 	@JsonProperty("Rows")
 	@Singular

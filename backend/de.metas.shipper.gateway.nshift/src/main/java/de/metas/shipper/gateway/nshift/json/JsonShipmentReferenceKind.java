@@ -27,7 +27,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum JsonShipmentReferenceKind {
+public enum JsonShipmentReferenceKind
+{
 	UNKNOWN(0),
 	COD_REFERENCE(2),
 	JOB_NUMBER(4),
@@ -187,7 +188,7 @@ public enum JsonShipmentReferenceKind {
 	CUSTOM_FIELD_24(179),
 	CUSTOM_FIELD_25(180),
 	CUSTOM_FIELD_26(181),
-SAP_ID(182),
+	SAP_ID(182),
 	CUSTOM_FIELD_28(183),
 	CUSTOM_FIELD_29(184),
 	CUSTOM_FIELD_30(185),
@@ -257,7 +258,7 @@ SAP_ID(182),
 	ROUTING_CODE_11(264),
 	ROUTING_CODE_12(265),
 	ROUTING_CODE_13(266),
-SAP_ID_2(267),
+	SAP_ID_2(267),
 	ROUTING_CODE_15(268),
 	ROUTING_CODE_16(269),
 	ROUTING_CODE_17(270),

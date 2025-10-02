@@ -6,11 +6,12 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonDHLFilingDetail {
+public class JsonDHLFilingDetail
+{
 
-    @JsonProperty("KindID")
-    JsonDHLFilingDetailKind kindId;
+	@JsonProperty("KindID")
+	JsonDHLFilingDetailKind kindId;
 
-    @JsonProperty("Value")
-    String value;
+	@JsonProperty("Value")
+	String value;
 }

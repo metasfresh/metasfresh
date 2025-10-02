@@ -2,9 +2,8 @@ package de.metas.shipper.gateway.nshift.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.logging.LogManager;
@@ -15,6 +14,7 @@ import de.metas.shipper.gateway.nshift.json.JsonCustomsArticleDetailKind;
 import de.metas.shipper.gateway.nshift.json.JsonCustomsArticleInfo;
 import de.metas.shipper.gateway.nshift.json.JsonDetailGroup;
 import de.metas.shipper.gateway.nshift.json.JsonDetailRow;
+import de.metas.shipper.gateway.nshift.json.JsonLabelType;
 import de.metas.shipper.gateway.nshift.json.JsonLine;
 import de.metas.shipper.gateway.nshift.json.JsonPackage;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentData;
@@ -28,6 +28,7 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -42,7 +43,6 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -56,8 +56,21 @@ public class NShiftShipmentService
 {
 
 	private static final Logger logger = LogManager.getLogger(NShiftShipmentService.class);
-	//For now only save as configuration is missing (to be replaced with /Shipments )
-	private static final String CREATE_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/SaveShipment";
+	private static final String CREATE_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/Shipments";
+
+	private static final ImmutableMap<String, Integer> PROD_CONCEPT_ID_BY_SHIPPER_PRODUCT = ImmutableMap.<String, Integer>builder()
+			.put("V01PAK", 2757) //DHL - domestic
+			.put("V53WPAK", 2758) //DHL - euroconnect
+			.put("DeutschePostDomesticDHLPaket", 1712)
+			.put("DeutschePostDomesticParcelDEPickup", 9371)
+			.put("DeutschePostDomesticWarenpost", 9770)
+			.put("NightStarExpress", 3399)
+			.build();
+
+	//FIXME Hardcoded Services for prodConceptIds where it's mandatory
+	private static final ImmutableMap<Integer, Integer> SERVICE_BY_PROD_CONCEPT_ID = ImmutableMap.<Integer, Integer>builder()
+			.put(3399, 412001)
+			.build();
 
 	@NonNull private final RestTemplate restTemplate;
 	@NonNull private final ObjectMapper objectMapper;
@@ -70,13 +83,31 @@ public class NShiftShipmentService
 		this.objectMapper = objectMapper;
 	}
 
+	@Nullable
+	private static Integer findProdConceptIdByShipperProduct(@Nullable final String shipperProduct)
+	{
+		if (shipperProduct == null)
+		{
+			return null;
+		}
+		return PROD_CONCEPT_ID_BY_SHIPPER_PRODUCT.get(shipperProduct);
+	}
+
+	@NonNull
+	private static Integer getProdConceptIdByShipperProduct(@NonNull final String shipperProduct)
+	{
+		final Integer prodConceptId = findProdConceptIdByShipperProduct(shipperProduct);
+		if (prodConceptId == null)
+		{
+			throw new AdempiereException("No nShift ProdConceptId found for shipperProduct=" + shipperProduct)
+					.setParameter("shipperProduct", shipperProduct)
+					.setParameter("availableShipperProducts", PROD_CONCEPT_ID_BY_SHIPPER_PRODUCT.keySet());
+		}
+		return prodConceptId;
+	}
 
 	public JsonDeliveryResponse createShipment(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
-		objectMapper.registerModule(new JavaTimeModule());
-		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-		objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
 		logger.debug("Creating shipment for request: {}", deliveryRequest);
 		final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryRequest);
 
@@ -180,23 +211,33 @@ public class NShiftShipmentService
 	private JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
-				//.submit(true)
-				//.labelType(JsonLabelType.PDF)
-				//.requiredDeliveryDate(LocalDateTime.now().plusDays(3).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-				//.validatePostCode(true)
-				.place("Inbox") //should be removed after switch of Endpoint
+				.submit(false)
+				.labelType(JsonLabelType.PDF)
+				//.requiredDeliveryDate()
+				.validatePostCode(true)
+				//.place("Inbox") //should be removed after switch of Endpoint
 				.build();
 
 		final String actorId = Check.assumeNotNull(deliveryRequest.getShipperConfig().getGatewayId(), "The GatewayId (ActorId) shouldn't be null");
+		final String shipperProduct = Check.assumeNotNull(deliveryRequest.getShipperProduct(), "The ShipperProduct shouldn't be null");
+		final int prodConceptId = getProdConceptIdByShipperProduct(shipperProduct);
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.actorCSID(Integer.valueOf(actorId))
 				.orderNo(deliveryRequest.getId())
-				.prodConceptID(2757)
+				.prodConceptID(prodConceptId)
 				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
 
+		final Integer serviceId = SERVICE_BY_PROD_CONCEPT_ID.get(prodConceptId);
+		if (serviceId != null)
+		{
+			dataBuilder.service(serviceId);
+		}
+
 		// Add Addresses
-		dataBuilder.address(buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER).build());
+		dataBuilder.address(buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER)
+				.attention(deliveryRequest.getPickupAddress().getCompanyName1())
+				.build());
 		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = buildNShiftAddressBuilder(deliveryRequest.getDeliveryAddress(), JsonAddressKind.RECEIVER);
 		final de.metas.common.delivery.v1.json.JsonContact deliveryContact = deliveryRequest.getDeliveryContact();
 		if (deliveryContact != null)
@@ -213,6 +254,10 @@ public class NShiftShipmentService
 			{
 				receiverAddressBuilder.email(deliveryContact.getEmailAddress());
 			}
+		}
+		if (Check.isNotBlank(deliveryRequest.getDeliveryNote()))
+		{
+			receiverAddressBuilder.attention(deliveryRequest.getDeliveryNote());
 		}
 		dataBuilder.address(receiverAddressBuilder.build());
 
@@ -237,7 +282,7 @@ public class NShiftShipmentService
 		int lineNoCounter = 1;
 		for (final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLine deliveryLine : deliveryRequest.getDeliveryOrderLines())
 		{
-			dataBuilder.line(buildNShiftLine(deliveryLine, lineNoCounter));
+			dataBuilder.line(buildNShiftLine(deliveryLine, lineNoCounter, prodConceptId));
 			// Each line might also require a corresponding customs declaration group
 			dataBuilder.detailGroup(buildCustomsArticleGroup(deliveryLine, lineNoCounter, deliveryRequest.getPickupAddress().getCountry()));
 			lineNoCounter++;
@@ -268,13 +313,14 @@ public class NShiftShipmentService
 				.countryCode(commonAddress.getCountry());
 	}
 
-	private JsonLine buildNShiftLine(@NonNull final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLine deliveryLine, final int lineNo)
+	private JsonLine buildNShiftLine(@NonNull final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLine deliveryLine, final int lineNo, final int prodConceptId)
 	{
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = deliveryLine.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
 		final int lengthMM = deliveryLine.getPackageDimensions().getLengthInCM() * 10;
 		final int widthMM = deliveryLine.getPackageDimensions().getWidthInCM() * 10;
 		final int heightMM = deliveryLine.getPackageDimensions().getHeightInCM() * 10;
+		final NShiftGoodsType goodsType = NShiftGoodsType.getByProdConceptId(prodConceptId);
 
 		return JsonLine.builder()
 				.number(lineNo)
@@ -283,7 +329,10 @@ public class NShiftShipmentService
 				.length(lengthMM)
 				.width(widthMM)
 				.height(heightMM)
-				.goodsTypeID(21) // Goods Types currently seem not to be configured, but as this is mandatory we only save the shipment
+				.goodsTypeID(goodsType.getGoodsTypeID())
+				.goodsTypeKey1(goodsType.getGoodsTypeKey1())
+				.goodsTypeKey2(goodsType.getGoodsTypeKey2())
+				.goodsTypeName(goodsType.getGoodsTypeName())
 				.pkg(JsonPackage.builder()
 						.pkgNo(deliveryLine.getPackageId())
 						.build())

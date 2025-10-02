@@ -6,9 +6,10 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum JsonUnknownDetailKind {
-    UNKNOWN(0);
+public enum JsonUnknownDetailKind
+{
+	UNKNOWN(0);
 
-    @JsonValue
-    private final int jsonValue;
+	@JsonValue
+	private final int jsonValue;
 }
