@@ -262,10 +262,6 @@ public class NShiftShipmentService
 			{
 				receiverAddressBuilder.phone(deliveryContact.getPhone());
 			}
-			if (Check.isNotBlank(deliveryContact.getSimplePhoneNumber()))
-			{
-				receiverAddressBuilder.mobile(deliveryContact.getSimplePhoneNumber());
-			}
 			if (Check.isNotBlank(deliveryContact.getEmailAddress()))
 			{
 				receiverAddressBuilder.email(deliveryContact.getEmailAddress());
