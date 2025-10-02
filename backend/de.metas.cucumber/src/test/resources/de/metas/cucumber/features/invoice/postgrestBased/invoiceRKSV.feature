@@ -57,7 +57,7 @@ Feature: Invoice to comply with RKSV export via postgREST
       | Content-Type | application/json;charset=UTF-8 |
       | accept       | application/json;charset=UTF-8 |
 
-    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Historical_Invoices_JSON/invoke' and fulfills with '200' status code
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Invoice_RKSV_JSON/invoke' and fulfills with '200' status code
     """
 {
   "processParameters": [
