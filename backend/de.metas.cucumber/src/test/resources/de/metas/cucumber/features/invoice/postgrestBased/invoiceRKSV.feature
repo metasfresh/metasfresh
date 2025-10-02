@@ -42,8 +42,8 @@ Feature: Invoice to comply with RKSV export via postgREST
       | purchaseInvoice10022025 | product_10022025_010 | 1 PCE       |
     And the invoice identified by purchaseInvoice10022025 is completed
     And metasfresh contains C_Invoice:
-      | Identifier                | C_BPartner_ID | C_DocTypeTarget_ID.Name | PaymentRule | DocumentNo | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
-      | purchaseInvoice10022025_2 | vendor1       | Eingangsrechnung        | B           | 10022025_2 | 2025-05-01   | false   | EUR                 |
+      | Identifier                | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
+      | purchaseInvoice10022025_2 | vendor1       | Eingangsrechnung        | 10022025_2 | 2025-05-01   | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID              | M_Product_ID         | QtyInvoiced |
       | purchaseInvoice10022025_2 | product_10022025_010 | 1 PCE       |

@@ -147,7 +147,6 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartiallyPaid;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
-import static org.compiere.model.I_C_Invoice.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 
@@ -783,8 +782,6 @@ public class C_Invoice_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocumentNo).ifPresent(invoice::setDocumentNo);
 		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
-		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class)
-				.ifPresent(paymentRule -> invoice.setPaymentRule(paymentRule.getCode()));
 
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
 				.map(dataSourceTable::getId)
