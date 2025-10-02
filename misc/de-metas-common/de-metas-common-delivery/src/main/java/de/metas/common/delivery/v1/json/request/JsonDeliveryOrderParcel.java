@@ -35,9 +35,9 @@ import java.util.List;
 @Value
 @Builder(toBuilder = true)
 @Jacksonized
-public class JsonDeliveryOrderLine
+public class JsonDeliveryOrderParcel
 {
-	@Nullable String id;
+	@NonNull String id;
 	@Nullable String content;
 	@NonNull BigDecimal grossWeightKg;
 	@NonNull JsonPackageDimensions packageDimensions;

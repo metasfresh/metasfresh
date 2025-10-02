@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
-import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLine;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
@@ -105,9 +105,9 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private JsonDeliveryOrderLine toJsonDeliveryOrderLine(final DeliveryOrderLine line)
+	private JsonDeliveryOrderParcel toJsonDeliveryOrderLine(final DeliveryOrderLine line)
 	{
-		return JsonDeliveryOrderLine.builder()
+		return JsonDeliveryOrderParcel.builder()
 				.id(line.getId() != null ? String.valueOf(line.getId().getRepoId()) : null)
 				.content(line.getContent())
 				.grossWeightKg(line.getGrossWeightKg())

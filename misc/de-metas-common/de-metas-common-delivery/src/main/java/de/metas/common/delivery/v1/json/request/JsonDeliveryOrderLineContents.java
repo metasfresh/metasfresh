@@ -44,5 +44,4 @@ public class JsonDeliveryOrderLineContents
 	BigDecimal totalWeightInKg;
 	JsonQuantity shippedQuantity;
 
-
 }
