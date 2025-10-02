@@ -891,7 +891,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 			return this;
 		}
 
-		public Builder addIncludedRow(final HUEditorRow includedRow)
+		public Builder addIncludedRow(@NonNull final HUEditorRow includedRow)
 		{
 			if (includedRows == null)
 			{
