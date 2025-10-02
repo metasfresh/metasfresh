@@ -24,6 +24,7 @@ package de.metas.common.delivery.v1.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 @Jacksonized
 public class JsonContact
 {
+	@NonNull String name;
 	@Nullable String phone; // formatted phone number
 	@Nullable String simplePhoneNumber; // alternative simple number as string
 	@Nullable String emailAddress;

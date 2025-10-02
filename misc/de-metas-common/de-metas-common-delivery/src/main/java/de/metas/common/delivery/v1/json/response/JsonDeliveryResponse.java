@@ -29,6 +29,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -37,6 +38,10 @@ import java.util.List;
 @Jacksonized
 public class JsonDeliveryResponse
 {
+	@NonNull String requestId;
+
+	@Nullable String errorMessage;
+
 	@NonNull List<JsonDeliveryResponseItem> items;
 
 	@JsonIgnore
