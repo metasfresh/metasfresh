@@ -102,11 +102,11 @@ public class NShiftShipmentService
 			logger.debug("Successfully received nShift response: {}", response);
 			return buildJsonDeliveryResponse(response, deliveryRequest.getId());
 		}
-		catch (final AdempiereException e)
+		catch (final Throwable throwable)
 		{
 			return JsonDeliveryResponse.builder()
 					.requestId(deliveryRequest.getId())
-					.errorMessage(e.getMessage())
+					.errorMessage(throwable.getMessage())
 					.build();
 		}
 	}
