@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.commons.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
@@ -35,6 +36,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class ShipmentOrderLogRepository
 {
+	private final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+
 	public void save(@NonNull final ShipmentOrderLogCreateRequest logRequest)
 	{
 		final I_Carrier_ShipmentOrder_Log log = InterfaceWrapperHelper.newInstance(I_Carrier_ShipmentOrder_Log.class);
@@ -58,7 +61,7 @@ public class ShipmentOrderLogRepository
 		}
 		try
 		{
-			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(object);
+			return objectMapper.writeValueAsString(object);
 		}
 		catch (final JsonProcessingException e)
 		{

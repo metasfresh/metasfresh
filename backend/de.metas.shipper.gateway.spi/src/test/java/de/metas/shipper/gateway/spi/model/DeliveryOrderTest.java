@@ -30,6 +30,7 @@ class DeliveryOrderTest
 						.deliveryContact(ContactPerson.builder()
 								.simplePhoneNumber("+49123456789")
 								.emailAddress("test@test.com")
+								.languageCode("de_DE")
 								.build())
 						.deliveryDate(DeliveryDate.builder()
 								.date(LocalDate.parse("2025-04-05"))
@@ -47,8 +48,8 @@ class DeliveryOrderTest
 						// other
 						.customerReference("customerReference")
 						.shipperProduct(null)
-						.deliveryOrderLines(ImmutableList.of(
-								DeliveryOrderLine.builder()
+						.deliveryOrderParcels(ImmutableList.of(
+								DeliveryOrderParcel.builder()
 										.content("content")
 										.grossWeightKg(new BigDecimal("123.45"))
 										.packageDimensions(PackageDimensions.builder()

@@ -9,7 +9,6 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
-import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
@@ -112,7 +111,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final Address pickupAddress = DerKurierTestTools.createPickupAddress();
 		final PickupDate pickupDate = DerKurierTestTools.createPickupDate();
 
-		// create a builder, add properties that are mandatory, but not related to the deliveryOrderLine's data
+		// create a builder, add properties that are mandatory, but not related to the deliveryOrderParcel's data
 		final DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.pickupAddress(pickupAddress) // pickupAddress is mandatory, but not coming from I_DerKurier_DeliveryOrderLine
 				.pickupDate(pickupDate) // same as pickupAddress

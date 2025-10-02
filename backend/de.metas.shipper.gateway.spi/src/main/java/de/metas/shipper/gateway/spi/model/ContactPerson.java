@@ -38,7 +38,7 @@ public class ContactPerson
 	@Nullable PhoneNumber phone;
 	@Nullable String emailAddress;
 	@Nullable String simplePhoneNumber;
-	@NonNull Language language;
+	@NonNull String languageCode;
 
 	@Builder
 	@Jacksonized
@@ -46,12 +46,12 @@ public class ContactPerson
 			@Nullable final PhoneNumber phone,
 			@Nullable final String simplePhoneNumber,
 			@Nullable final String emailAddress,
-			@Nullable final Language language)
+			@Nullable final String languageCode)
 	{
 		this.phone = phone;
 		this.simplePhoneNumber = simplePhoneNumber;
 		this.emailAddress = emailAddress;
-		this.language = language == null ? Language.getBaseLanguage() : language;
+		this.languageCode = Check.isBlank(languageCode) ? Language.getBaseLanguage().getLanguageCode() : languageCode;
 
 		final boolean simplePhoneNumberIsEmpty = Check.isEmpty(simplePhoneNumber);
 		final boolean phoneIsEmpty = phone == null;
@@ -62,6 +62,7 @@ public class ContactPerson
 	}
 
 	@JsonIgnore
+	@Nullable
 	public String getPhoneAsStringOrNull()
 	{
 		if (simplePhoneNumber != null)

@@ -88,6 +88,7 @@ public class DhlAddressMapperTest
 		final ContactPerson contactPerson = ContactPerson.builder()
 				.emailAddress("contact@example.com")
 				.simplePhoneNumber("555-1234")
+				.languageCode("de_DE")
 				.build();
 
 		final JsonDhlAddress result = DhlAddressMapper.getConsigneeAddress(address, contactPerson);
@@ -126,6 +127,7 @@ public class DhlAddressMapperTest
 		final ContactPerson contactPerson = ContactPerson.builder()
 				.emailAddress("co")
 				.simplePhoneNumber("555-1234")
+				.languageCode("de_DE")
 				.build();
 
 		// when
@@ -202,6 +204,7 @@ public class DhlAddressMapperTest
 		final ContactPerson contactPerson = ContactPerson.builder()
 				.emailAddress(ninetyLongString)
 				.simplePhoneNumber(sixtyTwoLongString)
+				.languageCode("de_DE")
 				.build();
 
 		final JsonDhlAddress result = DhlAddressMapper.getConsigneeAddress(address, contactPerson);

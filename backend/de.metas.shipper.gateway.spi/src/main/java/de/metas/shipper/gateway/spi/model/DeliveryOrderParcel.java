@@ -36,12 +36,12 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
- * 1 DeliveryOrderLine represents 1 Package
+ * 1 DeliveryOrderParcel represents 1 Package
  */
 @Value
-public class DeliveryOrderLine
+public class DeliveryOrderParcel
 {
-	@Nullable DeliveryOrderLineId id;
+	@Nullable DeliveryOrderParcelId id;
 	@Nullable String content;
 	@NonNull BigDecimal grossWeightKg;
 	@NonNull PackageDimensions packageDimensions;
@@ -54,8 +54,8 @@ public class DeliveryOrderLine
 
 	@Builder(toBuilder = true)
 	@Jacksonized
-	private DeliveryOrderLine(
-			@Nullable final DeliveryOrderLineId id,
+	private DeliveryOrderParcel(
+			@Nullable final DeliveryOrderParcelId id,
 			@Nullable final String content,
 			@NonNull final BigDecimal grossWeightKg,
 			@NonNull final PackageDimensions packageDimensions,
@@ -80,7 +80,7 @@ public class DeliveryOrderLine
 		this.packageId = packageId;
 	}
 
-	public DeliveryOrderLine withCustomDeliveryData(@NonNull final CustomDeliveryLineData customDeliveryLineData)
+	public DeliveryOrderParcel withCustomDeliveryData(@NonNull final CustomDeliveryLineData customDeliveryLineData)
 	{
 		if (Objects.equals(this.customDeliveryLineData, customDeliveryLineData))
 		{

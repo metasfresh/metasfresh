@@ -15,7 +15,7 @@ import de.metas.shipper.gateway.nshift.NShiftConstants;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
@@ -74,23 +74,23 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	 * This method has 2 concerns that will be separated in the future:
 	 * <ol>
 	 * <li>replace the tracking url in the JsonDeliveryResponse - should stay in nShift</li>
-	 * <li>update the deliveryOrderLines based on JsonDeliveryResponse - should be moved to the common module in the next iteration</li>
+	 * <li>update the deliveryOrderParcels based on JsonDeliveryResponse - should be moved to the common module in the next iteration</li>
 	 * </ol>
 	 */
 	private DeliveryOrder updateDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder, @NonNull final JsonDeliveryResponse response)
 	{
-		final String language = deliveryOrder.getDeliveryContact().getLanguage().getLanguageCode();
+		final String language = deliveryOrder.getDeliveryContact().getLanguageCode();
 
 		final ImmutableMap<String, JsonDeliveryResponseItem> lineIdToResponseMap = response.getItems().stream()
 				.collect(ImmutableMap.toImmutableMap(JsonDeliveryResponseItem::getLineId, Function.identity()));
-		final ImmutableList<DeliveryOrderLine> updatedDeliveryOrderLines = deliveryOrder.getDeliveryOrderLines()
+		final ImmutableList<DeliveryOrderParcel> updatedDeliveryOrderParcels = deliveryOrder.getDeliveryOrderParcels()
 				.stream()
 				.map(line -> updateDeliveryOrderLine(line, lineIdToResponseMap.get(line.getId()), language))
 				.collect(ImmutableList.toImmutableList());
-		return deliveryOrder.withDeliveryOrderLines(updatedDeliveryOrderLines);
+		return deliveryOrder.withDeliveryOrderParcels(updatedDeliveryOrderParcels);
 	}
 
-	private DeliveryOrderLine updateDeliveryOrderLine(@NonNull final DeliveryOrderLine line, @NonNull final JsonDeliveryResponseItem jsonDeliveryOrderResponseItem, @NonNull final String language)
+	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryOrderResponseItem, @NonNull final String language)
 	{
 		final String awb = jsonDeliveryOrderResponseItem.getAwb();
 		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryOrderResponseItem.getLabelPdfBase64());
@@ -115,7 +115,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final String orderIdAsString = String.valueOf(deliveryOrder.getId());
-		return deliveryOrder.getDeliveryOrderLines()
+		return deliveryOrder.getDeliveryOrderParcels()
 				.stream()
 				.map(line -> createPackageLabel(line.getLabelPdfBase64(), line.getAwb(), orderIdAsString))
 				.collect(Collectors.toList());

@@ -26,8 +26,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.location.CountryCode;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
@@ -35,14 +33,16 @@ import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -155,7 +155,7 @@ public class DhlDeliveryOrderRepository
 				// other
 				.customerReference(firstOrder.getCustomerReference())
 				.shipperProduct(DhlShipperProduct.forCode(firstOrder.getDHL_Product()))
-				.deliveryOrderLines(constructDeliveryOrderLines(firstOrder, packageIds))
+				.deliveryOrderParcels(constructDeliveryOrderLines(firstOrder, packageIds))
 				.shipperId(ShipperId.ofRepoId(firstOrder.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(firstOrder.getM_ShipperTransportation_ID()))
 				.build();
@@ -171,9 +171,9 @@ public class DhlDeliveryOrderRepository
 				.list();
 	}
 
-	private Iterable<DeliveryOrderLine> constructDeliveryOrderLines(final I_DHL_ShipmentOrder firstOrder, final ImmutableSet<PackageId> packageIds)
+	private Iterable<DeliveryOrderParcel> constructDeliveryOrderLines(final I_DHL_ShipmentOrder firstOrder, final ImmutableSet<PackageId> packageIds)
 	{
-		final DeliveryOrderLine.DeliveryOrderLineBuilder orderLineBuilder = DeliveryOrderLine.builder()
+		final DeliveryOrderParcel.DeliveryOrderParcelBuilder orderLineBuilder = DeliveryOrderParcel.builder()
 				.packageDimensions(PackageDimensions.builder()
 						.widthInCM(firstOrder.getDHL_WidthInCm())
 						.lengthInCM(firstOrder.getDHL_LengthInCm())
@@ -182,7 +182,7 @@ public class DhlDeliveryOrderRepository
 				.grossWeightKg(firstOrder.getDHL_WeightInKg());
 		return packageIds.stream()
 				.map(orderLineBuilder::packageId)
-				.map(DeliveryOrderLine.DeliveryOrderLineBuilder::build)
+				.map(DeliveryOrderParcel.DeliveryOrderParcelBuilder::build)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -198,7 +198,7 @@ public class DhlDeliveryOrderRepository
 		final I_DHL_ShipmentOrderRequest shipmentOrderRequest = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrderRequest.class);
 		InterfaceWrapperHelper.save(shipmentOrderRequest);
 
-		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+		for (final DeliveryOrderParcel deliveryOrderParcel : deliveryOrder.getDeliveryOrderParcels())
 		{
 			final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
 
@@ -209,7 +209,7 @@ public class DhlDeliveryOrderRepository
 				// Misc which doesn't fit dhl structure
 				final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 
-				shipmentOrder.setM_Package_ID(deliveryOrderLine.getPackageId().getRepoId());
+				shipmentOrder.setM_Package_ID(deliveryOrderParcel.getPackageId().getRepoId());
 				shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
 				shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
 				shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
@@ -223,14 +223,14 @@ public class DhlDeliveryOrderRepository
 				shipmentOrder.setCustomerReference(deliveryOrder.getCustomerReference());
 				shipmentOrder.setDHL_ShipmentDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
 				// (2.2.1.8)
-				final PackageDimensions packageDimensions = deliveryOrderLine.getPackageDimensions();
+				final PackageDimensions packageDimensions = deliveryOrderParcel.getPackageDimensions();
 				if (packageDimensions != null)
 				{
 					shipmentOrder.setDHL_HeightInCm(packageDimensions.getHeightInCM());
 					shipmentOrder.setDHL_LengthInCm(packageDimensions.getLengthInCM());
 					shipmentOrder.setDHL_WidthInCm(packageDimensions.getWidthInCM());
 				}
-				shipmentOrder.setDHL_WeightInKg(deliveryOrderLine.getGrossWeightKg());
+				shipmentOrder.setDHL_WeightInKg(deliveryOrderParcel.getGrossWeightKg());
 				// (2.2.1.10)
 				//noinspection ConstantConditions
 				shipmentOrder.setDHL_RecipientEmailAddress(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
@@ -313,9 +313,9 @@ public class DhlDeliveryOrderRepository
 
 	private void updateShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+		for (final DeliveryOrderParcel deliveryOrderParcel : deliveryOrder.getDeliveryOrderParcels())
 		{
-			final PackageId packageId = deliveryOrderLine.getPackageId();
+			final PackageId packageId = deliveryOrderParcel.getPackageId();
 			final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 			final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getId().getRepoId(), packageId.getRepoId());

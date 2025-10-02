@@ -27,7 +27,7 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
@@ -116,7 +116,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.deliveryContact(toDeliverToContact(deliverToBPartner, deliverToBPLocation))
 				//
 				// Delivery content
-				.deliveryOrderLines(toDeliveryOrderLines(request.getPackageInfos()))
+				.deliveryOrderParcels(toDeliveryOrderLines(request.getPackageInfos()))
 				//
 				.build();
 
@@ -143,14 +143,15 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	{
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
+		final Language bpLanguage = Language.asLanguage(deliverToBPartner.getAD_Language());
 		return ContactPerson.builder()
 				.emailAddress(deliverToBPartner.getEMail())
 				.simplePhoneNumber(deliverToPhoneNumber)
-				.language(Language.asLanguage(deliverToBPartner.getAD_Language()))
+				.languageCode(bpLanguage != null ? bpLanguage.getLanguageCode() : null)
 				.build();
 	}
 
-	private ImmutableList<DeliveryOrderLine> toDeliveryOrderLines(@NotNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	private ImmutableList<DeliveryOrderParcel> toDeliveryOrderLines(@NotNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
 		return packageInfos.stream()
 				.map(packageInfo -> {
@@ -158,7 +159,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 							.stream()
 							.map(this::createDeliveryOrderItems)
 							.collect(ImmutableList.toImmutableList());
-					return DeliveryOrderLine.builder()
+					return DeliveryOrderParcel.builder()
 							.packageDimensions(getPackageDimensions(packageInfo.getPackageId(), HARDCODE_CM_UOM_ID))
 							.packageId(packageInfo.getPackageId())
 							.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))

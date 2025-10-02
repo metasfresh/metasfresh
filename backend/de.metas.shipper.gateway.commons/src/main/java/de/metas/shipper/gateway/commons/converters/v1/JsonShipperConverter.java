@@ -33,7 +33,7 @@ import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
@@ -56,7 +56,7 @@ public class JsonShipperConverter
 				.deliveryDate(order.getDeliveryDate() != null ? order.getDeliveryDate().getDate().toString() : null)
 				.deliveryNote(order.getDeliveryNote())
 				.customerReference(order.getCustomerReference())
-				.deliveryOrderLines(order.getDeliveryOrderLines().stream().map(this::toJsonDeliveryOrderLine).collect(ImmutableList.toImmutableList()))
+				.deliveryOrderLines(order.getDeliveryOrderParcels().stream().map(this::toJsonDeliveryOrderLine).collect(ImmutableList.toImmutableList()))
 				.shipperProduct(order.getShipperProduct() != null ? order.getShipperProduct().getCode() : null)
 				.shipperEORI(order.getShipperEORI())
 				.receiverEORI(order.getReceiverEORI())
@@ -103,11 +103,11 @@ public class JsonShipperConverter
 				.phone(contact.getPhoneAsStringOrNull())
 				.simplePhoneNumber(contact.getSimplePhoneNumber())
 				.emailAddress(contact.getEmailAddress())
-				.language(contact.getLanguage().getLanguageCode())
+				.language(contact.getLanguageCode())
 				.build();
 	}
 
-	private JsonDeliveryOrderParcel toJsonDeliveryOrderLine(final DeliveryOrderLine line)
+	private JsonDeliveryOrderParcel toJsonDeliveryOrderLine(final DeliveryOrderParcel line)
 	{
 		return JsonDeliveryOrderParcel.builder()
 				.id(line.getId() != null ? String.valueOf(line.getId().getRepoId()) : null)

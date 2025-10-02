@@ -25,13 +25,14 @@ package de.metas.shipper.gateway.commons.model;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
 public class ShipmentOrderLogCreateRequest
 {
-	JsonDeliveryRequest request;
-	JsonDeliveryResponse response;
+	@NonNull JsonDeliveryRequest request;
+	@NonNull JsonDeliveryResponse response;
 	long durationMillis;
 }

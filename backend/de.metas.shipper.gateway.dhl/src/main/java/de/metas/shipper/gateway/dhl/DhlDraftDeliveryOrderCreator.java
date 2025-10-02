@@ -28,8 +28,6 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.shipping.ShipperGatewayId;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
@@ -41,9 +39,10 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
@@ -198,8 +197,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final PackageDimensions packageDimensions,
 			final CustomDeliveryData customDeliveryData)
 	{
-		final List<DeliveryOrderLine> deliveryOrderLines = packageInfos.stream()
-				.map(packageInfo -> DeliveryOrderLine.builder()
+		final List<DeliveryOrderParcel> deliveryOrderParcels = packageInfos.stream()
+				.map(packageInfo -> DeliveryOrderParcel.builder()
 						.packageDimensions(packageDimensions)
 						.packageId(packageInfo.getPackageId())
 						.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
@@ -236,7 +235,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				//
 				// Delivery content
-				.deliveryOrderLines(deliveryOrderLines)
+				.deliveryOrderParcels(deliveryOrderParcels)
 				//
 				.build();
 	}

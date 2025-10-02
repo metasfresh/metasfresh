@@ -53,7 +53,7 @@ import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
@@ -206,7 +206,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.profile(DhlConstants.STANDARD_GRUPPENPROFIL);
 		final ImmutableList.Builder<JsonDhlShipment> shipments = ImmutableList.builder();
 		final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
-		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+		for (final DeliveryOrderParcel deliveryOrderParcel : deliveryOrder.getDeliveryOrderParcels())
 		{
 			final String customerReference = getCustomerReference(deliveryOrder);
 			final JsonDhlShipment.JsonDhlShipmentBuilder shipmentBuilder = JsonDhlShipment.builder()
@@ -215,8 +215,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					.shipDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
 					.shipper(DhlAddressMapper.getShipperAddress(deliveryOrder.getPickupAddress()))
 					.consignee(DhlAddressMapper.getConsigneeAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))
-					.details(getJsonDhlDetails(deliveryOrderLine))
-					.customs(getJsonCustomsDeclaration(deliveryOrder.getCustomDeliveryData(), deliveryOrderLine.getPackageId()));
+					.details(getJsonDhlDetails(deliveryOrderParcel))
+					.customs(getJsonCustomsDeclaration(deliveryOrder.getCustomDeliveryData(), deliveryOrderParcel.getPackageId()));
 			if (customerReference != null)
 			{
 				shipmentBuilder.refNo(customerReference);
@@ -304,12 +304,12 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	private JsonDhlPackageDetails getJsonDhlDetails(@NonNull final DeliveryOrderLine deliveryOrderLine)
+	private JsonDhlPackageDetails getJsonDhlDetails(@NonNull final DeliveryOrderParcel deliveryOrderParcel)
 	{
-		final PackageDimensions packageDimensions = deliveryOrderLine.getPackageDimensions();
+		final PackageDimensions packageDimensions = deliveryOrderParcel.getPackageDimensions();
 		return JsonDhlPackageDetails.builder()
 				.weight(JsonDhlWeight._inKg()
-						.qtyInKg(deliveryOrderLine.getGrossWeightKg())
+						.qtyInKg(deliveryOrderParcel.getGrossWeightKg())
 						.weightInKg())
 				.dim(JsonDhlDimension._inCM()
 						.heightInCM(BigDecimal.valueOf(packageDimensions.getHeightInCM()))
@@ -368,7 +368,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final DhlCustomDeliveryData initialCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 		final ImmutableList.Builder<DhlCustomDeliveryDataDetail> updatedCustomDeliveryData = ImmutableList.builder();
-		final int deliveryOrderLineCount = deliveryOrder.getDeliveryOrderLines().size();
+		final int deliveryOrderLineCount = deliveryOrder.getDeliveryOrderParcels().size();
 		final int responseItemsCount = response.getItems().size();
 		if (deliveryOrderLineCount != responseItemsCount)
 		{
