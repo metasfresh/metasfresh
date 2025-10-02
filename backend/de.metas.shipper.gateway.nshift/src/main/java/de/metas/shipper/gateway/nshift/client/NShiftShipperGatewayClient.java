@@ -35,8 +35,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient {
 
     @NonNull private final NShiftShipmentService shipmentService;
     //TODO implement as provided by carrier
-	@NonNull private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};
-	@NonNull private final NShiftConfig config;
+	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};@NonNull private final NShiftConfig config;
 
     @Override
     @NonNull

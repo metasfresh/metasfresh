@@ -23,8 +23,7 @@
 package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.location.ICountryCodeFactory;
-import de.metas.shipping.mpackage.PackageId;
+import de.metas.location.CountryCode;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
@@ -41,6 +40,7 @@ import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -55,8 +55,6 @@ import java.util.List;
 @Repository
 public class DpdDeliveryOrderRepository
 {
-	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
-
 	public DeliveryOrder getByRepoId(final DeliveryOrderId deliveryOrderRepoId)
 	{
 
@@ -244,7 +242,7 @@ public class DpdDeliveryOrderRepository
 						.houseNo(orderPO.getSenderHouseNo())
 						.zipCode(orderPO.getSenderZipCode())
 						.city(orderPO.getSenderCity())
-						.country(countryCodeFactory.getCountryCodeByAlpha2(orderPO.getSenderCountry()))
+						.country(CountryCode.ofAlpha2(orderPO.getSenderCountry()))
 						.build())
 				//
 				// Pickup Date and Time
@@ -262,7 +260,7 @@ public class DpdDeliveryOrderRepository
 						.houseNo(orderPO.getRecipientHouseNo())
 						.zipCode(orderPO.getRecipientZipCode())
 						.city(orderPO.getRecipientCity())
-						.country(countryCodeFactory.getCountryCodeByAlpha2(orderPO.getRecipientCountry()))
+						.country(CountryCode.ofAlpha2(orderPO.getRecipientCountry()))
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress(orderPO.getRecipientEmailAddress())
