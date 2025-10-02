@@ -25,26 +25,29 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-public class JsonPackage {
+@Jacksonized
+public class JsonPackage
+{
 
-    @JsonProperty("ItemNo")
-    Integer itemNo;
+	@JsonProperty("ItemNo")
+	Integer itemNo;
 
-    @JsonProperty("PkgNo")
-    String pkgNo;
+	@JsonProperty("PkgNo")
+	String pkgNo;
 
-    @JsonProperty("Barcode1")
-    String barcode1;
+	@JsonProperty("Barcode1")
+	String barcode1;
 
-    @JsonProperty("Barcode2")
-    String barcode2;
+	@JsonProperty("Barcode2")
+	String barcode2;
 
-    @JsonProperty("References")
-    List<JsonLineReference> references;
+	@JsonProperty("References")
+	List<JsonLineReference> references;
 }

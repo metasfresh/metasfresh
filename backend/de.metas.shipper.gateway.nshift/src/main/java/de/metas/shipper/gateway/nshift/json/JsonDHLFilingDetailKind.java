@@ -6,13 +6,14 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum JsonDHLFilingDetailKind {
-    UNKNOWN(0),
-    FILING_TYPE(501),
-    FTSR(502),
-    INT(503),
-    AES4EIN(504);
+public enum JsonDHLFilingDetailKind
+{
+	UNKNOWN(0),
+	FILING_TYPE(501),
+	FTSR(502),
+	INT(503),
+	AES4EIN(504);
 
-    @JsonValue
-    private final int jsonValue;
+	@JsonValue
+	private final int jsonValue;
 }

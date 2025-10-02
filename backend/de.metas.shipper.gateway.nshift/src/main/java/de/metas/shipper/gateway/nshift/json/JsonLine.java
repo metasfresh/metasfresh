@@ -26,72 +26,76 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-public class JsonLine {
+@Jacksonized
+public class JsonLine
+{
 
-    @JsonProperty("Number")
-    int number;
+	@JsonProperty("Number")
+	int number;
 
-    @JsonProperty("LineWeight")
-    Integer lineWeight;
+	@JsonProperty("LineWeight")
+	Integer lineWeight;
 
-    @JsonProperty("PkgWeight")
-    Integer pkgWeight;
+	@JsonProperty("PkgWeight")
+	Integer pkgWeight;
 
-    @JsonProperty("DimensionalWeight")
-    Integer dimensionalWeight;
+	@JsonProperty("DimensionalWeight")
+	Integer dimensionalWeight;
 
-    @JsonProperty("Height")
-    Integer height;
+	@JsonProperty("Height")
+	Integer height;
 
-    @JsonProperty("Length")
-    Integer length;
+	@JsonProperty("Length")
+	Integer length;
 
-    @JsonProperty("Width")
-    Integer width;
+	@JsonProperty("Width")
+	Integer width;
 
-    @JsonProperty("LineVol")
-    Long lineVol;
+	@JsonProperty("LineVol")
+	Long lineVol;
 
-    @JsonProperty("PkgVol")
-    Long pkgVol;
+	@JsonProperty("PkgVol")
+	Long pkgVol;
 
-    @JsonProperty("Loadmeter")
-    Integer loadmeter;
+	@JsonProperty("Loadmeter")
+	Integer loadmeter;
 
-    @JsonProperty("GoodsTypeID")
-    Integer goodsTypeID;
+	@JsonProperty("GoodsType")
+	Integer goodsTypeID;
 
-    @JsonProperty("GoodsTypeName")
-    String goodsTypeName;
+	@JsonProperty("GoodsTypeName")
+	String goodsTypeName;
 
-    @JsonProperty("GoodsTypeKey1")
-    String goodsTypeKey1;
+	@JsonProperty("GoodsTypeKey1")
+	String goodsTypeKey1;
 
-    @JsonProperty("GoodsTypeKey2")
-    String goodsTypeKey2;
+	@JsonProperty("GoodsTypeKey2")
+	String goodsTypeKey2;
 
-    @JsonProperty("RecycleCount")
-    Integer recycleCount;
+	@JsonProperty("RecycleCount")
+	Integer recycleCount;
 
-    @JsonProperty("RecycleTypeID")
-    Integer recycleTypeID;
+	@JsonProperty("RecycleTypeID")
+	Integer recycleTypeID;
 
-    @JsonProperty("RecycleTypeName")
-    String recycleTypeName;
+	@JsonProperty("RecycleTypeName")
+	String recycleTypeName;
 
-    @JsonProperty("LineUnits")
-    List<JsonLineUnit> lineUnits;
+	@JsonProperty("LineUnits")
+	List<JsonLineUnit> lineUnits;
 
-    @JsonProperty("Pkgs")
-    List<JsonPackage> pkgs;
+	@JsonProperty("Pkgs")
+	@Singular
+	List<JsonPackage> pkgs;
 
-    @JsonProperty("References")
-    @Singular
-    List<JsonLineReference> references;
+	@JsonProperty("References")
+	@Singular
+	List<JsonLineReference> references;
 }

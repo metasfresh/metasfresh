@@ -27,11 +27,12 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonShipmentReference {
+public class JsonShipmentReference
+{
 
-    @JsonProperty("Kind")
-    JsonShipmentReferenceKind kind;
+	@JsonProperty("Kind")
+	JsonShipmentReferenceKind kind;
 
-    @JsonProperty("Value")
-    String value;
+	@JsonProperty("Value")
+	String value;
 }

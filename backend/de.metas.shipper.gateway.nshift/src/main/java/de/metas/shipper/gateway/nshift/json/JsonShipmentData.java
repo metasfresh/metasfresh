@@ -27,78 +27,81 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-public class JsonShipmentData {
+public class JsonShipmentData
+{
 
-    @JsonProperty("OverrideShpNo")
-    String overrideShpNo;
+	@JsonProperty("OverrideShpNo")
+	String overrideShpNo;
 
-    @JsonProperty("OrderNo")
-    String orderNo;
+	@JsonProperty("OrderNo")
+	String orderNo;
 
-    @JsonProperty("PickupDt")
-    LocalDateTime pickupDt;
+	@JsonProperty("PickupDt")
+	LocalDate pickupDt;
 
-    @JsonProperty("ExpireDt")
-    LocalDateTime expireDt;
+	@JsonProperty("ExpireDt")
+	LocalDate expireDt;
 
-    @JsonProperty("ActorCSID")
-    Integer actorCSID;
+	@JsonProperty("ActorCSID")
+	Integer actorCSID;
 
-    @JsonProperty("StackCSID")
-    Integer stackCSID;
+	@JsonProperty("StackCSID")
+	Integer stackCSID;
 
-    @JsonProperty("ProdConceptID")
-    int prodConceptID;
+	@JsonProperty("ProdConceptID")
+	int prodConceptID;
 
-    @JsonProperty("ProdCSID")
-    Integer prodCSID;
+	@JsonProperty("ProdCSID")
+	Integer prodCSID;
 
-    @JsonProperty("PickupTerminal")
-    String pickupTerminal;
+	@JsonProperty("PickupTerminal")
+	String pickupTerminal;
 
-    @JsonProperty("AgentNo")
-    String agentNo;
+	@JsonProperty("AgentNo")
+	String agentNo;
 
-    @JsonProperty("PayerAccountAtCarrier")
-    String payerAccountAtCarrier;
+	@JsonProperty("PayerAccountAtCarrier")
+	String payerAccountAtCarrier;
 
-    @JsonProperty("SenderAccountAtCarrier")
-    String senderAccountAtCarrier;
+	@JsonProperty("SenderAccountAtCarrier")
+	String senderAccountAtCarrier;
 
-    @JsonProperty("SenderAccountAtBank")
-    String senderAccountAtBank;
+	@JsonProperty("SenderAccountAtBank")
+	String senderAccountAtBank;
 
-    @JsonProperty("Services")
-    List<String> services;
+	@JsonProperty("Services")
+	@Singular
+	List<Integer> services;
 
-    @JsonProperty("Addresses")
-    @Singular
-    List<JsonAddress> addresses;
+	@JsonProperty("Addresses")
+	@Singular
+	List<JsonAddress> addresses;
 
-    @JsonProperty("Lines")
-    @Singular
-    List<JsonLine> lines;
+	@JsonProperty("Lines")
+	@Singular
+	List<JsonLine> lines;
 
-    @JsonProperty("References")
-    @Singular
-    List<JsonShipmentReference> references;
+	@JsonProperty("References")
+	@Singular
+	List<JsonShipmentReference> references;
 
-    @JsonProperty("DetailGroups")
-    @Singular
-    List<JsonDetailGroup> detailGroups;
+	@JsonProperty("DetailGroups")
+	@Singular
+	List<JsonDetailGroup> detailGroups;
 
-    @JsonProperty("Amounts")
-    List<JsonAmount> amounts;
+	@JsonProperty("Amounts")
+	List<JsonAmount> amounts;
 
-    @JsonProperty("Messages")
-    List<JsonShipmentMessage> messages;
+	@JsonProperty("Messages")
+	List<JsonShipmentMessage> messages;
 
-    @JsonProperty("DangerousGoods")
-    List<JsonDangerousGoods> dangerousGoods;
+	@JsonProperty("DangerousGoods")
+	@Singular
+	List<JsonDangerousGoods> dangerousGoods;
 }

@@ -18,7 +18,8 @@ import java.util.List;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class JsonFedExCustomsInformation extends JsonDetailGroup {
+public class JsonFedExCustomsInformation extends JsonDetailGroup
+{
 
 	@JsonProperty("Rows")
 	private List<JsonDetailRow<JsonFedExCustomsInformationDetail>> rows;

@@ -22,27 +22,119 @@
 
 package de.metas.shipper.gateway.nshift.json;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
 @Value
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonShipmentResponse {
+@Builder
+@Jacksonized
+public class JsonShipmentResponse
+{
 
-    @JsonProperty("ShpNo")
-    String shpNo;
+	@JsonProperty("ShpCSID")
+	Integer shpCSID;
 
-    @JsonProperty("OrderNo")
-    String orderNo;
+	@JsonProperty("ShpTag")
+	String shpTag;
 
-    @JsonProperty("Lines")
-    List<JsonLineResponse> lines;
+	@JsonProperty("InstallationID")
+	String installationID;
 
-    @JsonProperty("ShpDocuments")
-    List<JsonShipmentDocument> shpDocuments;
+	@JsonProperty("PhysicalInstallationID")
+	String physicalInstallationID;
 
-    //TODO extend
+	@JsonProperty("Kind")
+	Integer kind;
+
+	@JsonProperty("ShpNo")
+	String shpNo;
+
+	@JsonProperty("OrderNo")
+	String orderNo;
+
+	@JsonProperty("PickupDt")
+	String pickupDt;
+
+	@JsonProperty("LabelPrintDt")
+	String labelPrintDt;
+
+	@JsonProperty("SubmitDt")
+	String submitDt;
+
+	@JsonProperty("Vol")
+	Integer vol;
+
+	@JsonProperty("Weight")
+	Integer weight;
+
+	@JsonProperty("Height")
+	Integer height;
+
+	@JsonProperty("Length")
+	Integer length;
+
+	@JsonProperty("Width")
+	Integer width;
+
+	@JsonProperty("ActorCSID")
+	Integer actorCSID;
+
+	@JsonProperty("Temperature")
+	Integer temperature;
+
+	@JsonProperty("CarriagePayer")
+	Integer carriagePayer;
+
+	@JsonProperty("CarrierConceptID")
+	Integer carrierConceptID;
+
+	@JsonProperty("CarrierCSID")
+	Integer carrierCSID;
+
+	@JsonProperty("SubcarrierConceptID")
+	Integer subcarrierConceptID;
+
+	@JsonProperty("SubcarrierCSID")
+	Integer subcarrierCSID;
+
+	@JsonProperty("ProdConceptID")
+	Integer prodConceptID;
+
+	@JsonProperty("ProdCSID")
+	Integer prodCSID;
+
+	@JsonProperty("StackCSID")
+	Integer stackCSID;
+
+	@JsonProperty("PickupTerminal")
+	String pickupTerminal;
+
+	@JsonProperty("AgentNo")
+	String agentNo;
+
+	@JsonProperty("PayerAccountAtCarrier")
+	String payerAccountAtCarrier;
+
+	@JsonProperty("SenderAccountAtCarrier")
+	String senderAccountAtCarrier;
+
+	@JsonProperty("Addresses")
+	List<JsonAddress> addresses;
+
+	@JsonProperty("Lines")
+	List<JsonLine> lines;
+
+	@JsonProperty("Labels")
+	List<JsonShipmentResponseLabel> labels;
+
+	@JsonProperty("ShpDocuments")
+	List<JsonShipmentDocument> shpDocuments;
+
+	@JsonProperty("CorrelationID")
+	String correlationID;
+
 }

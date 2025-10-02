@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -42,12 +43,12 @@ public class JsonDeliveryResponse
 
 	@Nullable String errorMessage;
 
-	@NonNull ImmutableList<JsonDeliveryResponseItem> items;
+	@NonNull @Singular ImmutableList<JsonDeliveryResponseItem> items;
 
 	@JsonIgnore
 	public boolean isError()
 	{
-		return (errorMessage != null && !errorMessage.isEmpty()) || items.stream().anyMatch(JsonDeliveryResponseItem::isError);
+		return (getErrorMessage() != null && !getErrorMessage().isEmpty()) || items.stream().anyMatch(JsonDeliveryResponseItem::isError);
 	}
 
 	public JsonDeliveryResponse withoutPDFContents()

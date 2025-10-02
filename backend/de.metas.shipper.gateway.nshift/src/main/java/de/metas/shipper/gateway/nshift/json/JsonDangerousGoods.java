@@ -32,156 +32,157 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-public class JsonDangerousGoods {
+public class JsonDangerousGoods
+{
 
-    @JsonProperty("AdditionalHandlingInformation")
-    String additionalHandlingInformation;
-    @JsonProperty("ADRtankSpecialProvisions")
-    String adrTankSpecialProvisions;
-    @JsonProperty("ADRtankTankCode")
-    String adrTankTankCode;
-    @JsonProperty("ArticleNo")
-    String articleNo;
-    @JsonProperty("ArticleName")
-    String articleName;
-    @JsonProperty("AutoSummarizeMass")
-    String autoSummarizeMass;
-    @JsonProperty("Class")
-    JsonDGClass dgClass;
-    @JsonProperty("Classification")
-    String classification;
-    @JsonProperty("ClassName")
-    String className;
-    @JsonProperty("Count")
-    Integer count;
-    @JsonProperty("DeclarantName")
-    String declarantName;
-    @JsonProperty("Description")
-    String description;
-    @JsonProperty("DGMId")
-    String dgmId;
-    @JsonProperty("EMSNo")
-    String emsNo;
-    @JsonProperty("EMSProc")
-    String emsProc;
-    @JsonProperty("ExceptedQuantities")
-    String exceptedQuantities;
-    @JsonProperty("FlashPoint")
-    String flashPoint;
-    @JsonProperty("GoodsLineID")
-    Integer goodsLineID;
-    @JsonProperty("GoodsLineNo")
-    Integer goodsLineNo;
-    @JsonProperty("GrossWeight")
-    Integer grossWeight;
-    @JsonProperty("IdentificationNo")
-    String identificationNo;
-    @JsonProperty("ItemGrossWeight")
-    Long itemGrossWeight;
-    @JsonProperty("ItemNetWeight")
-    Long itemNetWeight;
-    @JsonProperty("Kind")
-    JsonDGKind kind;
-    @JsonProperty("KindName")
-    String kindName;
-    @JsonProperty("KitAmount")
-    Integer kitAmount;
-    @JsonProperty("Labels")
-    List<JsonLabel> labels;
-    @JsonProperty("LimitedQuantities")
-    String limitedQuantities;
-    @JsonProperty("LQCount")
-    Integer lqCount;
-    @JsonProperty("LQGrossWeight")
-    Integer lqGrossWeight;
-    @JsonProperty("MarinePollutant")
-    JsonMarinePollutant marinePollutant;
-    @JsonProperty("MfagNo")
-    String mfagNo;
-    @JsonProperty("MixedPackingProvision")
-    String mixedPackingProvision;
-    @JsonProperty("Name")
-    String name;
-    @JsonProperty("NameRoad")
-    String nameRoad;
-    @JsonProperty("NameSea")
-    String nameSea;
-    @JsonProperty("NEQ")
-    BigDecimal neq;
-    @JsonProperty("NetWeight")
-    Integer netWeight;
-    @JsonProperty("NOS")
-    String nos;
-    @JsonProperty("OuterPackingAmount")
-    Integer outerPackingAmount;
-    @JsonProperty("OuterPackingBundleID")
-    Integer outerPackingBundleID;
-    @JsonProperty("OuterPackingType")
-    String outerPackingType;
-    @JsonProperty("OuterPackingTypeID")
-    String outerPackingTypeID;
-    @JsonProperty("PackingGroup")
-    JsonDGPackingGroup packingGroup;
-    @JsonProperty("PackingGroupName")
-    String packingGroupName;
-    @JsonProperty("PackingInstructions")
-    String packingInstructions;
-    @JsonProperty("PackingTypeID")
-    Integer packingTypeID;
-    @JsonProperty("PackingTypeKey")
-    String packingTypeKey;
-    @JsonProperty("PackingTypeName")
-    String packingTypeName;
-    @JsonProperty("PageNo")
-    String pageNo;
-    @JsonProperty("Point")
-    BigDecimal point;
-    @JsonProperty("PortTankBulkContInstructions")
-    String portTankBulkContInstructions;
-    @JsonProperty("PortTankBulkContSpecialProvisions")
-    String portTankBulkContSpecialProvisions;
-    @JsonProperty("SecondaryClasses")
-    String secondaryClasses;
-    @JsonProperty("ShipperReference")
-    String shipperReference;
-    @JsonProperty("ShortName")
-    String shortName;
-    @JsonProperty("SpecialPackingProvision")
-    String specialPackingProvision;
-    @JsonProperty("SpecialProvisions")
-    String specialProvisions;
-    @JsonProperty("SpecialProvisionsBulk")
-    String specialProvisionsBulk;
-    @JsonProperty("SpecialProvisionsHandling")
-    String specialProvisionsHandling;
-    @JsonProperty("SpecialProvisionsOperation")
-    String specialProvisionsOperation;
-    @JsonProperty("SpecialProvisionsPackages")
-    String specialProvisionsPackages;
-    @JsonProperty("StowingCategory")
-    String stowingCategory;
-    @JsonProperty("SubsidiaryRisk")
-    String subsidiaryRisk;
-    @JsonProperty("TARE")
-    Integer tare;
-    @JsonProperty("TotalGross")
-    Integer totalGross;
-    @JsonProperty("TransportCategory")
-    String transportCategory;
-    @JsonProperty("TransportInTank")
-    String transportInTank;
-    @JsonProperty("TransportMode")
-    String transportMode;
-    @JsonProperty("TransportModeName")
-    String transportModeName;
-    @JsonProperty("UN")
-    Integer un;
-    @JsonProperty("UnitOfMeasure")
-    String unitOfMeasure;
-    @JsonProperty("UnitOfMeasureName")
-    String unitOfMeasureName;
-    @JsonProperty("Vehicle")
-    String vehicle;
-    @JsonProperty("Vol")
-    Integer vol;
+	@JsonProperty("AdditionalHandlingInformation")
+	String additionalHandlingInformation;
+	@JsonProperty("ADRtankSpecialProvisions")
+	String adrTankSpecialProvisions;
+	@JsonProperty("ADRtankTankCode")
+	String adrTankTankCode;
+	@JsonProperty("ArticleNo")
+	String articleNo;
+	@JsonProperty("ArticleName")
+	String articleName;
+	@JsonProperty("AutoSummarizeMass")
+	String autoSummarizeMass;
+	@JsonProperty("Class")
+	JsonDGClass dgClass;
+	@JsonProperty("Classification")
+	String classification;
+	@JsonProperty("ClassName")
+	String className;
+	@JsonProperty("Count")
+	Integer count;
+	@JsonProperty("DeclarantName")
+	String declarantName;
+	@JsonProperty("Description")
+	String description;
+	@JsonProperty("DGMId")
+	String dgmId;
+	@JsonProperty("EMSNo")
+	String emsNo;
+	@JsonProperty("EMSProc")
+	String emsProc;
+	@JsonProperty("ExceptedQuantities")
+	String exceptedQuantities;
+	@JsonProperty("FlashPoint")
+	String flashPoint;
+	@JsonProperty("GoodsLineID")
+	Integer goodsLineID;
+	@JsonProperty("GoodsLineNo")
+	Integer goodsLineNo;
+	@JsonProperty("GrossWeight")
+	Integer grossWeight;
+	@JsonProperty("IdentificationNo")
+	String identificationNo;
+	@JsonProperty("ItemGrossWeight")
+	Long itemGrossWeight;
+	@JsonProperty("ItemNetWeight")
+	Long itemNetWeight;
+	@JsonProperty("Kind")
+	JsonDGKind kind;
+	@JsonProperty("KindName")
+	String kindName;
+	@JsonProperty("KitAmount")
+	Integer kitAmount;
+	@JsonProperty("Labels")
+	List<JsonLabel> labels;
+	@JsonProperty("LimitedQuantities")
+	String limitedQuantities;
+	@JsonProperty("LQCount")
+	Integer lqCount;
+	@JsonProperty("LQGrossWeight")
+	Integer lqGrossWeight;
+	@JsonProperty("MarinePollutant")
+	JsonMarinePollutant marinePollutant;
+	@JsonProperty("MfagNo")
+	String mfagNo;
+	@JsonProperty("MixedPackingProvision")
+	String mixedPackingProvision;
+	@JsonProperty("Name")
+	String name;
+	@JsonProperty("NameRoad")
+	String nameRoad;
+	@JsonProperty("NameSea")
+	String nameSea;
+	@JsonProperty("NEQ")
+	BigDecimal neq;
+	@JsonProperty("NetWeight")
+	Integer netWeight;
+	@JsonProperty("NOS")
+	String nos;
+	@JsonProperty("OuterPackingAmount")
+	Integer outerPackingAmount;
+	@JsonProperty("OuterPackingBundleID")
+	Integer outerPackingBundleID;
+	@JsonProperty("OuterPackingType")
+	String outerPackingType;
+	@JsonProperty("OuterPackingTypeID")
+	String outerPackingTypeID;
+	@JsonProperty("PackingGroup")
+	JsonDGPackingGroup packingGroup;
+	@JsonProperty("PackingGroupName")
+	String packingGroupName;
+	@JsonProperty("PackingInstructions")
+	String packingInstructions;
+	@JsonProperty("PackingTypeID")
+	Integer packingTypeID;
+	@JsonProperty("PackingTypeKey")
+	String packingTypeKey;
+	@JsonProperty("PackingTypeName")
+	String packingTypeName;
+	@JsonProperty("PageNo")
+	String pageNo;
+	@JsonProperty("Point")
+	BigDecimal point;
+	@JsonProperty("PortTankBulkContInstructions")
+	String portTankBulkContInstructions;
+	@JsonProperty("PortTankBulkContSpecialProvisions")
+	String portTankBulkContSpecialProvisions;
+	@JsonProperty("SecondaryClasses")
+	String secondaryClasses;
+	@JsonProperty("ShipperReference")
+	String shipperReference;
+	@JsonProperty("ShortName")
+	String shortName;
+	@JsonProperty("SpecialPackingProvision")
+	String specialPackingProvision;
+	@JsonProperty("SpecialProvisions")
+	String specialProvisions;
+	@JsonProperty("SpecialProvisionsBulk")
+	String specialProvisionsBulk;
+	@JsonProperty("SpecialProvisionsHandling")
+	String specialProvisionsHandling;
+	@JsonProperty("SpecialProvisionsOperation")
+	String specialProvisionsOperation;
+	@JsonProperty("SpecialProvisionsPackages")
+	String specialProvisionsPackages;
+	@JsonProperty("StowingCategory")
+	String stowingCategory;
+	@JsonProperty("SubsidiaryRisk")
+	String subsidiaryRisk;
+	@JsonProperty("TARE")
+	Integer tare;
+	@JsonProperty("TotalGross")
+	Integer totalGross;
+	@JsonProperty("TransportCategory")
+	String transportCategory;
+	@JsonProperty("TransportInTank")
+	String transportInTank;
+	@JsonProperty("TransportMode")
+	String transportMode;
+	@JsonProperty("TransportModeName")
+	String transportModeName;
+	@JsonProperty("UN")
+	Integer un;
+	@JsonProperty("UnitOfMeasure")
+	String unitOfMeasure;
+	@JsonProperty("UnitOfMeasureName")
+	String unitOfMeasureName;
+	@JsonProperty("Vehicle")
+	String vehicle;
+	@JsonProperty("Vol")
+	Integer vol;
 }

@@ -21,16 +21,31 @@
  */
 package de.metas.shipper.gateway.nshift.json;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.stream.Stream;
+
 @RequiredArgsConstructor
 @Getter
-public enum JsonAddressKind {
-    RECEIVER(1),
-    SENDER(2);
+public enum JsonAddressKind
+{
+	UNKNOWN(0),
+	RECEIVER(1),
+	SENDER(2);
 
-    @JsonValue
-    private final int jsonValue;
+	@JsonValue
+	private final int jsonValue;
+
+	@JsonCreator
+	public static JsonAddressKind fromJsonValue(final int value)
+	{
+		return Stream.of(values())
+				.filter(kind -> kind.jsonValue == value)
+				.findFirst()
+				.orElse(UNKNOWN);
+	}
+
 }

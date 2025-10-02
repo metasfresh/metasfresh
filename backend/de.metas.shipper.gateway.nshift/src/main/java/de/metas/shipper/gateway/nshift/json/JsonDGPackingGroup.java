@@ -1,4 +1,3 @@
-
 /*
  * #%L
  * de.metas.shipper.gateway.nshift
@@ -26,12 +25,31 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-// TODO: Enum values need to be defined based on nshift documentation for DGPackingGroup
+/**
+ * Defines the packing group for dangerous goods, as specified by nShift.
+ * The packing group indicates the degree of danger.
+ */
 @RequiredArgsConstructor
 @Getter
-public enum JsonDGPackingGroup {
-    ;
+public enum JsonDGPackingGroup
+{
+	/**
+	 * Packing Group None: Not applicable.
+	 */
+	NONE(0),
+	/**
+	 * Packing Group I: High danger.
+	 */
+	I(1),
+	/**
+	 * Packing Group II: Medium danger.
+	 */
+	II(2),
+	/**
+	 * Packing Group III: Low danger.
+	 */
+	III(3);
 
-    @JsonValue
-    private final int jsonValue;
+	@JsonValue
+	private final int jsonValue;
 }

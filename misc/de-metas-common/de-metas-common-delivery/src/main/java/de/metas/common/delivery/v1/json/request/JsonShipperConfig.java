@@ -42,6 +42,5 @@ public class JsonShipperConfig
 	@Nullable String clientId;
 	@Nullable String clientSecret;
 	@NonNull String trackingUrlTemplate;
-	@Singular("additionalProperty")
-	@NonNull Map<String, String> additionalProperties;
+	@NonNull @Singular("additionalProperty") Map<String, String> additionalProperties;
 }

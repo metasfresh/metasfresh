@@ -37,12 +37,13 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @ToString
-public class JsonDetailRow<T> {
+public class JsonDetailRow<T>
+{
 
-    @JsonProperty("LineNo")
-    int lineNo;
+	@JsonProperty("LineNo")
+	int lineNo;
 
-    @JsonProperty("Details")
-    @Singular
-    private List<T> details;
+	@JsonProperty("Details")
+	@Singular
+	private List<T> details;
 }

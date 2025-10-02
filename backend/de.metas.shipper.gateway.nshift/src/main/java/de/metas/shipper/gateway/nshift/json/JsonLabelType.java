@@ -32,44 +32,45 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 @Getter
-public enum JsonLabelType {
+public enum JsonLabelType
+{
 
-    /**
-     * No label will be returned, but the shipment is still created.
-     */
-    NONE("none"),
+	/**
+	 * No label will be returned, but the shipment is still created.
+	 */
+	NONE("none"),
 
-    /**
-     * PNG format label. Supports Unicode.
-     */
-    PNG("PNG"),
+	/**
+	 * PNG format label. Supports Unicode.
+	 */
+	PNG("PNG"),
 
-    /**
-     * PDF format label. Supports Unicode.
-     */
-    PDF("PDF"),
+	/**
+	 * PDF format label. Supports Unicode.
+	 */
+	PDF("PDF"),
 
-    /**
-     * EPL format for printers like LP2844, ZM400, and GK420D.
-     */
-    EPL("EPL"),
+	/**
+	 * EPL format for printers like LP2844, ZM400, and GK420D.
+	 */
+	EPL("EPL"),
 
-    /**
-     * ZPL format with a top margin of 30. Optimized for LP2844-Z printers.
-     * May print too far down on other printers.
-     */
-    ZPL("ZPL"),
+	/**
+	 * ZPL format with a top margin of 30. Optimized for LP2844-Z printers.
+	 * May print too far down on other printers.
+	 */
+	ZPL("ZPL"),
 
-    /**
-     * ZPL II format without a top margin. Recommended for printers like GK420D and ZM400. Supports Unicode.
-     */
-    ZPLGK("ZPLGK"),
+	/**
+	 * ZPL II format without a top margin. Recommended for printers like GK420D and ZM400. Supports Unicode.
+	 */
+	ZPLGK("ZPLGK"),
 
-    /**
-     * Label format for Datamax printers.
-     */
-    DATAMAXLP2("DATAMAXLP2");
+	/**
+	 * Label format for Datamax printers.
+	 */
+	DATAMAXLP2("DATAMAXLP2");
 
-    @JsonValue
-    private final String jsonValue;
+	@JsonValue
+	private final String jsonValue;
 }
