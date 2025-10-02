@@ -140,6 +140,13 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	})
 	private final JSONLookupValue product;
 
+	public static final String FIELDNAME_BPartner = I_M_HU.COLUMNNAME_C_BPartner_ID;
+	@ViewColumn(fieldName = FIELDNAME_BPartner, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 22),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 22)
+	})
+	private final JSONLookupValue partner;
+
 	public static final String FIELDNAME_SerialNo = "SerialNo";
 	@ViewColumn(fieldName = FIELDNAME_SerialNo, widgetType = DocumentFieldWidgetType.Text, sorting = false,
 			layouts = {
@@ -265,6 +272,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 
 		packingInfo = builder.packingInfo;
 		product = builder.product;
+		partner = builder.partner;
 		isOwnPalette = builder.isOwnPalette;
 		uom = builder.uom;
 		qtyCU = builder.qtyCU;
@@ -693,6 +701,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 
 		private String packingInfo;
 		private JSONLookupValue product;
+		private JSONLookupValue partner;
 		private Boolean isOwnPalette;
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
@@ -818,6 +827,12 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		public Builder setProduct(final JSONLookupValue product)
 		{
 			this.product = product;
+			return this;
+		}
+
+		public Builder setPartner(final JSONLookupValue partner)
+		{
+			this.partner = partner;
 			return this;
 		}
 
