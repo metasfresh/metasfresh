@@ -44,6 +44,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -51,6 +52,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
@@ -128,6 +130,11 @@ public final class MPayment extends X_C_Payment
 	 *
 	 */
 	private static final long serialVersionUID = 5273805787122033169L;
+
+	private static final AdMessageKey PAYMENT_BPARTNERMISMATCH_ORDER = AdMessageKey.of("Payment_BPartnerMismatch_Order");
+	private static final AdMessageKey PAYMENT_BPARTNERMISMATCH_INVOICE = AdMessageKey.of("Payment_BPartnerMismatch_Invoice");
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	/**
 	 * Get Payments Of BPartner
@@ -334,17 +341,13 @@ public final class MPayment extends X_C_Payment
 		{
 			if (getC_Invoice_ID() != 0)
 			{
-				final I_C_Invoice inv = getC_Invoice();
-				Check.errorIf(inv.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {} has C_BPartner_ID={}, but invoice {} has C_BPartner_ID={}",
-						this, getC_BPartner_ID(), inv, inv.getC_BPartner_ID());
+				final I_C_Invoice inv = invoiceBL.getById(InvoiceId.ofRepoId(getC_Invoice_ID()));
+				throw new AdempiereException(PAYMENT_BPARTNERMISMATCH_INVOICE, getC_BPartner_ID(), inv.getC_BPartner_ID(), inv.getDocumentNo());
 			}
 			if (getC_Order_ID() != 0)
 			{
-				final I_C_Order ord = getC_Order();
-				Check.errorIf(ord.getBill_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {} has C_BPartner_ID={}, but order {} has Bill_BPartner_ID={}",
-						this, getC_BPartner_ID(), ord, ord.getBill_BPartner_ID());
+				final I_C_Order ord = orderBL.getById(OrderId.ofRepoId(getC_Order_ID()));
+				throw new AdempiereException(PAYMENT_BPARTNERMISMATCH_ORDER, getC_BPartner_ID(), ord.getC_BPartner_ID(), ord.getDocumentNo());
 			}
 		}
 
