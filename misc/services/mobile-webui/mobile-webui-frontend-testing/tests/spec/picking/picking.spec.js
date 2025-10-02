@@ -11,16 +11,15 @@ import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQ
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
 
 const createMasterdata = async ({
+                                    language = 'en_US',
                                     allowCompletingPartialPickingJob = false,
                                     shipOnCloseLU = false,
                                     salesOrdersQty = 12,
                                 } = {}) => {
     return await Backend.createMasterdata({
-        language: "en_US",
+        language,
         request: {
-            login: {
-                user: { language: "en_US" },
-            },
+            login: { user: { language } },
             mobileConfig: {
                 picking: {
                     aggregationType: "sales_order",
@@ -354,7 +353,7 @@ test('Ship on close LU', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Close LU / Reopen LU', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdata({ language: 'de_DE' });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -367,7 +366,7 @@ test('Close LU / Reopen LU', async ({ page }) => {
 
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
     await PickingJobScreen.closeTargetLU();
-    
+
     await PickingJobScreen.clickReopenLUButton();
     await SelectPickTargetLUScreen.waitForScreen();
 });

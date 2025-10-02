@@ -221,6 +221,7 @@
         <module>de.metas.picking.rest-api</module>
         <module>de.metas.hu_consolidation.mobile</module>
         <module>de.metas.distribution.rest-api</module>
+        <module>de.metas.inventory.mobileui</module>
 
         <module>de.metas.pos.base</module>
         <module>de.metas.pos.rest-api</module>

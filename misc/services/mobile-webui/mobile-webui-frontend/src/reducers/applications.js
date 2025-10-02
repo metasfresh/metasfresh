@@ -59,6 +59,8 @@ const getIconClassNames = (applicationId) => {
       return 'fas fa-people-carry';
     case APPLICATION_ID_Manufacturing:
       return 'fas fa-industry';
+    case 'inventory':
+      return 'fas fa-solid fa-warehouse';
     case 'huManager':
       return 'fas fa-boxes';
     case 'workplaceManager':
