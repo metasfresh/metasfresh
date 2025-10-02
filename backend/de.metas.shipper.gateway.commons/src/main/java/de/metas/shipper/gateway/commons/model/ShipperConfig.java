@@ -42,5 +42,6 @@ public class ShipperConfig
 	@Nullable String clientId;
 	@Nullable String clientSecret;
 	@NonNull String trackingUrlTemplate;
-	ImmutableMap<String, String> additionalProperties;
+	@Builder.Default
+	ImmutableMap<String, String> additionalProperties = ImmutableMap.of();
 }

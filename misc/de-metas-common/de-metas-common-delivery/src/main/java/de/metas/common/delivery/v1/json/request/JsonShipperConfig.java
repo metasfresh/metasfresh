@@ -22,9 +22,9 @@
 
 package de.metas.common.delivery.v1.json.request;
 
-import com.google.common.collect.ImmutableMap;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -42,6 +42,6 @@ public class JsonShipperConfig
 	@Nullable String clientId;
 	@Nullable String clientSecret;
 	@NonNull String trackingUrlTemplate;
-	@Builder.Default
-	@NonNull Map<String, String> additionalProperties = ImmutableMap.of();
+	@Singular("additionalProperty")
+	@NonNull Map<String, String> additionalProperties;
 }
