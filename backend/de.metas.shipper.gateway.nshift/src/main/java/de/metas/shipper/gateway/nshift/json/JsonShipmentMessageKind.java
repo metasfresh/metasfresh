@@ -6,12 +6,13 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum JsonShipmentMessageKind {
-    UNKNOWN(0),
-    DRIVER(1),
-    CARRIER(2),
-    RECEIVER(3);
+public enum JsonShipmentMessageKind
+{
+	UNKNOWN(0),
+	DRIVER(1),
+	CARRIER(2),
+	RECEIVER(3);
 
-    @JsonValue
-    private final int jsonValue;
+	@JsonValue
+	private final int jsonValue;
 }

@@ -32,37 +32,41 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-public class JsonShipmentOptions {
+public class JsonShipmentOptions
+{
 
-    @JsonProperty("ServiceLevel")
-    String serviceLevel;
+	@JsonProperty("ServiceLevel")
+	String serviceLevel;
 
-    @JsonProperty("RequiredDeliveryDate")
-    String requiredDeliveryDate; // Expects DATETIME format, e.g., "YYYY-MM-DDTHH:mm:ss"
+	@JsonProperty("RequiredDeliveryDate")
+	String requiredDeliveryDate; // Expects DATETIME format, e.g., "YYYY-MM-DDTHH:mm:ss"
 
-    @JsonProperty("Visibility")
-    String visibility;
+	@JsonProperty("Visibility")
+	String visibility;
 
-    @JsonProperty("Submit")
-    @JsonSerialize(converter = BooleanToIntConverter.class)
-    Boolean submit;
+	@JsonProperty("Submit")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean submit;
 
-    @JsonProperty("Labels")
-    JsonLabelType labelType;
+	@JsonProperty("Labels")
+	JsonLabelType labelType;
 
-    @JsonProperty("TicketUserName")
-    String ticketUserName;
+	@JsonProperty("TicketUserName")
+	String ticketUserName;
 
-    @JsonProperty("WorkstationID")
-    UUID workstationID;
+	@JsonProperty("WorkstationID")
+	UUID workstationID;
 
-    @JsonProperty("DropZoneLabelPrinterKey")
-    String dropZoneLabelPrinterKey;
+	@JsonProperty("DropZoneLabelPrinterKey")
+	String dropZoneLabelPrinterKey;
 
-    @JsonProperty("DropZoneDocPrinterKey")
-    String dropZoneDocPrinterKey;
+	@JsonProperty("DropZoneDocPrinterKey")
+	String dropZoneDocPrinterKey;
 
-    @JsonProperty("ValidatePostCode")
-    @JsonSerialize(converter = BooleanToIntConverter.class)
-    Boolean validatePostCode;
+	@JsonProperty("ValidatePostCode")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean validatePostCode;
+
+	@JsonProperty("Place")
+	String place;
 }

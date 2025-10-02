@@ -22,26 +22,29 @@
 
 package de.metas.shipper.gateway.nshift.json;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonShipmentDocument {
+@Builder
+@Jacksonized
+public class JsonShipmentDocument
+{
 
-    @JsonProperty("DocumentType")
-    String documentType;
+	@JsonProperty("DocumentType")
+	String documentType;
 
-    /**
-     * Base64-encoded content of the document.
-     */
-    @JsonProperty("Content")
-    String content;
+	/**
+	 * Base64-encoded content of the document.
+	 */
+	@JsonProperty("Content")
+	String content;
 
-    @JsonProperty("DocumentName")
-    String documentName;
+	@JsonProperty("DocumentName")
+	String documentName;
 
-    @JsonProperty("PkgNo")
-    String pkgNo;
+	@JsonProperty("PkgNo")
+	String pkgNo;
 }

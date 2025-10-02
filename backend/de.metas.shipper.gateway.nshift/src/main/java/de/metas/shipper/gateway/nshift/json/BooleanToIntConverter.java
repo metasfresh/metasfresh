@@ -28,15 +28,16 @@ import javax.annotation.Nullable;
 /**
  * Jackson converter to serialize a Java {@link Boolean} to an integer (1 for true, 0 for false).
  */
-public class BooleanToIntConverter extends StdConverter<Boolean, Integer> {
-    @Override
-    @Nullable
-    public Integer convert(final Boolean value)
-    {
-        if (value == null)
-        {
-            return null;
-        }
-        return value ? 1 : 0;
-    }
+public class BooleanToIntConverter extends StdConverter<Boolean, Integer>
+{
+	@Override
+	@Nullable
+	public Integer convert(final Boolean value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		return value ? 1 : 0;
+	}
 }

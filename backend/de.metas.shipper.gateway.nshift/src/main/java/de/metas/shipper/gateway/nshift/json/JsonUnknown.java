@@ -16,7 +16,8 @@ import java.util.List;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class JsonUnknown extends JsonDetailGroup {
+public class JsonUnknown extends JsonDetailGroup
+{
 
 	@JsonProperty("Rows")
 	private List<JsonDetailRow<JsonUnknownDetail>> rows;

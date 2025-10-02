@@ -6,11 +6,12 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonCustomsInfoDetail {
+public class JsonCustomsInfoDetail
+{
 
-    @JsonProperty("KindID")
-    JsonCustomsInfoDetailKind kindId;
+	@JsonProperty("KindID")
+	JsonCustomsInfoDetailKind kindId;
 
-    @JsonProperty("Value")
-    String value;
+	@JsonProperty("Value")
+	String value;
 }

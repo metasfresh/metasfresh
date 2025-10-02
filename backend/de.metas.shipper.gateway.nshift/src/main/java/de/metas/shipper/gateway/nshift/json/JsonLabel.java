@@ -25,14 +25,16 @@ package de.metas.shipper.gateway.nshift.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-public class JsonLabel {
+@Jacksonized
+public class JsonLabel
+{
+	@JsonProperty("Type")
+	JsonLabelType type;
 
-    @JsonProperty("Type")
-    JsonLabelType type;
-
-    @JsonProperty("Content")
-    String content;
+	@JsonProperty("Content")
+	String content;
 }

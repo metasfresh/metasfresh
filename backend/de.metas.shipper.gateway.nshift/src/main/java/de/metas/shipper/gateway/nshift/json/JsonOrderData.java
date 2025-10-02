@@ -18,7 +18,8 @@ import java.util.List;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class JsonOrderData extends JsonDetailGroup {
+public class JsonOrderData extends JsonDetailGroup
+{
 
 	@JsonProperty("Rows")
 	private List<JsonDetailRow<JsonOrderDataDetail>> rows;

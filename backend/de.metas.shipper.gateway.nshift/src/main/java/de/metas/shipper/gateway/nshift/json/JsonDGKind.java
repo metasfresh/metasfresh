@@ -33,12 +33,13 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 @Getter
-public enum JsonDGKind {
-    ADR_RID(0),
-    IMDG(1),
-    LIMITED_QUANTITIES(2),
-    EXCEPTED_QUANTITIES(3);
+public enum JsonDGKind
+{
+	ADR_RID(0),
+	IMDG(1),
+	LIMITED_QUANTITIES(2),
+	EXCEPTED_QUANTITIES(3);
 
-    @JsonValue
-    private final int jsonValue;
+	@JsonValue
+	private final int jsonValue;
 }

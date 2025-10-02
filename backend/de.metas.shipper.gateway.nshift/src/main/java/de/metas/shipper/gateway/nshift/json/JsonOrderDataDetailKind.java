@@ -6,10 +6,11 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum JsonOrderDataDetailKind {
-    ORDER_TOTAL_VALUE(514),
-    ORDER_VAT(515);
+public enum JsonOrderDataDetailKind
+{
+	ORDER_TOTAL_VALUE(514),
+	ORDER_VAT(515);
 
-    @JsonValue
-    private final int jsonValue;
+	@JsonValue
+	private final int jsonValue;
 }

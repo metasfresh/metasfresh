@@ -19,9 +19,10 @@ import java.util.List;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class JsonCustomsArticleInfo extends JsonDetailGroup {
+public class JsonCustomsArticleInfo extends JsonDetailGroup
+{
 
-    @JsonProperty("Rows")
-    @Singular
-    private List<JsonDetailRow<JsonCustomsArticleDetail>> rows;
+	@JsonProperty("Rows")
+	@Singular
+	private List<JsonDetailRow<JsonCustomsArticleDetail>> rows;
 }

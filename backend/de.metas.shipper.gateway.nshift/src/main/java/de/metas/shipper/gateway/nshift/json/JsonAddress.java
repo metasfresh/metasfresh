@@ -25,78 +25,81 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-public class JsonAddress {
+@Jacksonized
+public class JsonAddress
+{
 
-    @JsonProperty("Kind")
-    JsonAddressKind kind;
+	@JsonProperty("Kind")
+	JsonAddressKind kind;
 
-    @JsonProperty("Name1")
-    String name1;
+	@JsonProperty("Name1")
+	String name1;
 
-    @JsonProperty("Name2")
-    String name2;
+	@JsonProperty("Name2")
+	String name2;
 
-    @JsonProperty("Street1")
-    String street1;
+	@JsonProperty("Street1")
+	String street1;
 
-    @JsonProperty("Street2")
-    String street2;
+	@JsonProperty("Street2")
+	String street2;
 
-    @JsonProperty("State")
-    String state;
+	@JsonProperty("State")
+	String state;
 
-    @JsonProperty("PostCode")
-    String postCode;
+	@JsonProperty("PostCode")
+	String postCode;
 
-    @JsonProperty("City")
-    String city;
+	@JsonProperty("City")
+	String city;
 
-    @JsonProperty("POBox")
-    String poBox;
+	@JsonProperty("POBox")
+	String poBox;
 
-    @JsonProperty("POPostCode")
-    String poPostCode;
+	@JsonProperty("POPostCode")
+	String poPostCode;
 
-    @JsonProperty("POCity")
-    String poCity;
+	@JsonProperty("POCity")
+	String poCity;
 
-    @JsonProperty("Phone")
-    String phone;
+	@JsonProperty("Phone")
+	String phone;
 
-    @JsonProperty("Mobile")
-    String mobile;
+	@JsonProperty("Mobile")
+	String mobile;
 
-    @JsonProperty("Email")
-    String email;
+	@JsonProperty("Email")
+	String email;
 
-    @JsonProperty("Attention")
-    String attention;
+	@JsonProperty("Attention")
+	String attention;
 
-    @JsonProperty("CustNo")
-    String custNo;
+	@JsonProperty("CustNo")
+	String custNo;
 
-    @JsonProperty("Fax")
-    String fax;
+	@JsonProperty("Fax")
+	String fax;
 
-    @JsonProperty("CountryCode")
-    String countryCode;
+	@JsonProperty("CountryCode")
+	String countryCode;
 
-    @JsonProperty("Province")
-    String province;
+	@JsonProperty("Province")
+	String province;
 
-    @JsonProperty("ERPRef")
-    String erpRef;
+	@JsonProperty("ERPRef")
+	String erpRef;
 
-    @JsonProperty("OpeningHours")
-    String openingHours;
+	@JsonProperty("OpeningHours")
+	String openingHours;
 
-    @JsonProperty("VATNo")
-    String vatNo;
+	@JsonProperty("VATNo")
+	String vatNo;
 
-    @JsonProperty("VOECNumber")
-    String voecNumber;
+	@JsonProperty("VOECNumber")
+	String voecNumber;
 }
