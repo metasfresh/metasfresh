@@ -146,6 +146,10 @@ public class C_BPartner_Location_StepDef
 
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(countryId.getRepoId());
+			
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_City).ifPresent(locationRecord::setCity);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Postal).ifPresent(locationRecord::setPostal);
+			
 			saveRecord(locationRecord);
 
 			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
