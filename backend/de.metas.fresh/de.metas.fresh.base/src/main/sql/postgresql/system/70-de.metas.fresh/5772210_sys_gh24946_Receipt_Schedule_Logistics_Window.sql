@@ -3759,14 +3759,6 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Window SET Overrides_Window_ID=NULL,Updated=TO_TIMESTAMP('2025-10-02 18:33:05.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=541954
 ;
 
-------------------------------------------------------------
-
--- Window: Wareneingangsdisposition - Einkauf, InternalName=null
--- 2025-10-02T18:34:44.182Z
-UPDATE AD_Window SET IsOverrideInMenu='Y', Overrides_Window_ID=540196,Updated=TO_TIMESTAMP('2025-10-02 18:34:43.950000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=541928
-;
-
-------------------------------------------------------------
 -- 2025-10-02T18:36:33.792Z
 UPDATE AD_Window_Trl SET Name='Wareneingangsdisposition Logistik',Updated=TO_TIMESTAMP('2025-10-02 18:36:33.560000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Window_ID=541954
 ;
@@ -3855,4 +3847,5 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000017, SeqNo=7, Updated=now(), UpdatedBy=10
 -- 2025-10-02T18:40:05.804Z
 UPDATE AD_TreeNodeMM SET Parent_ID=1000017, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542257 AND AD_Tree_ID=10
 ;
+
 
