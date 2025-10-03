@@ -64,7 +64,7 @@ public class JsonMoney
 		}
 		catch (final Exception e)
 		{
-			throw new RuntimeException("Cannot convert json to Amount: " + json, e);
+			throw new RuntimeException("Cannot convert string to JsonMoney: " + json, e);
 		}
 	}
 }

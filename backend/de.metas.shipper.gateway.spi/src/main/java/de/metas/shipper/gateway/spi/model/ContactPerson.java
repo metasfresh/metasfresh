@@ -65,15 +65,12 @@ public class ContactPerson
 	@Nullable
 	public String getPhoneAsStringOrNull()
 	{
-		if (simplePhoneNumber != null)
-		{
-			return simplePhoneNumber;
-		}
-		else if (phone != null)
+		if (phone != null)
 		{
 			return phone.getAsString();
 		}
-		return null;
+		else
+			return simplePhoneNumber;
 	}
 
 }

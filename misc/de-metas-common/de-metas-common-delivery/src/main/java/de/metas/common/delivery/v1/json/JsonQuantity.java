@@ -48,7 +48,7 @@ public class JsonQuantity
 		final List<String> parts = Splitter.on(" ").trimResults().omitEmptyStrings().splitToList(string);
 		if (parts.size() != 2)
 		{
-			throw new RuntimeException("Cannot parse " + string + " to QtyAndUOMSymbol: expected 2 parts separated by space");
+			throw new RuntimeException("Cannot parse " + string + " to JsonQuantity: expected 2 parts separated by space");
 		}
 		try
 		{
@@ -59,7 +59,7 @@ public class JsonQuantity
 		}
 		catch (final Exception ex)
 		{
-			throw new RuntimeException("Cannot parse " + string + " to QtyAndUOMSymbol", ex);
+			throw new RuntimeException("Cannot parse " + string + " to JsonQuantity", ex);
 		}
 	}
 
