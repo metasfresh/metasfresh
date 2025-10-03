@@ -40,7 +40,7 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
@@ -110,7 +110,7 @@ class DhlTestHelper
 						.emailAddress("tbp@tbp.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(ImmutableList.of(DeliveryOrderLine.builder()
+				.deliveryOrderParcels(ImmutableList.of(DeliveryOrderParcel.builder()
 						.packageDimensions(PackageDimensions.builder()
 								.heightInCM(10)
 								.lengthInCM(10)
@@ -157,7 +157,7 @@ class DhlTestHelper
 						.emailAddress("tbp@tbp.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(ImmutableList.of(DeliveryOrderLine.builder()
+				.deliveryOrderParcels(ImmutableList.of(DeliveryOrderParcel.builder()
 						.packageDimensions(PackageDimensions.builder()
 								.heightInCM(10)
 								.lengthInCM(10)
@@ -204,7 +204,7 @@ class DhlTestHelper
 						.emailAddress("tbp@tbp.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(ImmutableList.of(DeliveryOrderLine.builder()
+				.deliveryOrderParcels(ImmutableList.of(DeliveryOrderParcel.builder()
 						.packageDimensions(PackageDimensions.builder()
 								.heightInCM(10)
 								.lengthInCM(10)
@@ -348,12 +348,12 @@ class DhlTestHelper
 
 	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder, @NonNull final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator)
 	{
-		final DeliveryOrderLine firstDeliveryOrderLine = deliveryOrder.getDeliveryOrderLines().get(0);
+		final DeliveryOrderParcel firstDeliveryOrderParcel = deliveryOrder.getDeliveryOrderParcels().get(0);
 
 		//
 		final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo = CreateDraftDeliveryOrderRequest.PackageInfo.builder()
-				.packageId(firstDeliveryOrderLine.getPackageId())
-				.weightInKg(firstDeliveryOrderLine.getGrossWeightKg())
+				.packageId(firstDeliveryOrderParcel.getPackageId())
+				.weightInKg(firstDeliveryOrderParcel.getGrossWeightKg())
 				.build();
 
 		//
@@ -373,7 +373,7 @@ class DhlTestHelper
 		final DhlShipperProduct detectedServiceType = (DhlShipperProduct)deliveryOrder.getShipperProduct();
 		final ShipperId shipperId = deliveryOrder.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
-		final PackageDimensions packageDimensions = firstDeliveryOrderLine.getPackageDimensions();
+		final PackageDimensions packageDimensions = firstDeliveryOrderParcel.getPackageDimensions();
 
 		final CustomDeliveryData customDeliveryData = null;
 

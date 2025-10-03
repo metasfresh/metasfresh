@@ -38,6 +38,7 @@ import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
+import com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
@@ -53,11 +54,12 @@ import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import lombok.Builder;
@@ -88,7 +90,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 	// dpd webservice data
 	private final WebServiceTemplate webServiceTemplate;
-	private final com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory loginServiceOF;
+	private final ObjectFactory loginServiceOF;
 	private final com.dpd.common.service.types.shipmentservice._3.ObjectFactory shipmentServiceOF;
 
 	@Builder
@@ -98,22 +100,15 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		this.databaseLogger = databaseLogger;
 
 		webServiceTemplate = DpdClientUtil.createWebServiceTemplate();
-		loginServiceOF = new com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory();
+		loginServiceOF = new ObjectFactory();
 		shipmentServiceOF = new com.dpd.common.service.types.shipmentservice._3.ObjectFactory();
 	}
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	@Deprecated
-	public DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
-	{
-		throw new ShipperGatewayException("(DRAFT) Delivery Orders shall never be created.");
 	}
 
 	@NonNull
@@ -128,8 +123,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		final StoreOrders storeOrders = createStoreOrdersFromDeliveryOrder(deliveryOrder, login.getDepot());
 
 		final JAXBElement<StoreOrders> storeOrdersElement = shipmentServiceOF.createStoreOrders(storeOrders);
-		@SuppressWarnings("unchecked")
-		final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement = (JAXBElement<StoreOrdersResponse>)doActualRequest(config.getShipmentServiceApiUrl(), storeOrdersElement, login, deliveryOrder.getId());
+		@SuppressWarnings("unchecked") final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement = (JAXBElement<StoreOrdersResponse>)doActualRequest(config.getShipmentServiceApiUrl(), storeOrdersElement, login, deliveryOrder.getId());
 
 		final StoreOrdersResponseType storeOrdersResponse = storeOrdersResponseElement.getValue().getOrderResult();
 
@@ -159,7 +153,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 		final ImmutableList<PackageLabels> packageLabels = ImmutableList.of(
 				PackageLabels.builder()
-						.orderId(OrderId.of(getShipperGatewayId(), String.valueOf(deliveryOrder.getId().getRepoId())))
+						.orderId(OrderId.of(getShipperGatewayId(), deliveryOrder.getId()))
 						.defaultLabelType(customDeliveryData.getPaperFormat())
 						.label(PackageLabel.builder()
 								.type(customDeliveryData.getPaperFormat())
@@ -263,7 +257,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			generalShipmentData.setMpsCustomerReferenceNumber1(deliveryOrder.getCustomerReference()); // what is this? optional?
 			generalShipmentData.setIdentificationNumber(String.valueOf(deliveryOrder.getId().getRepoId())); // unique metasfresh number for this shipment
 			//			generalShipmentData.setSendingDepot(); // not set here, as it's taken from login info
-			generalShipmentData.setProduct(deliveryOrder.getShipperProduct().getCode()); // this is the DPD product
+			generalShipmentData.setProduct(deliveryOrder.getShipperProduct() != null ? deliveryOrder.getShipperProduct().getCode() : null); // this is the DPD product
 
 			{
 				// Sender aka Pickup
@@ -283,14 +277,14 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		}
 		{
 			// Parcels aka Packages aka DeliveryOrderLines
-			for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+			for (final DeliveryOrderParcel deliveryOrderParcel : deliveryOrder.getDeliveryOrderParcels())
 			{
 				final Parcel parcel = shipmentServiceOF.createParcel();
 				shipmentServiceData.getParcels().add(parcel);
 				//noinspection ConstantConditions
-				parcel.setContent(deliveryOrderLine.getContent());
-				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderLine.getPackageDimensions()));
-				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderLine.getGrossWeightKg().intValue()));
+				parcel.setContent(deliveryOrderParcel.getContent());
+				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderParcel.getPackageDimensions()));
+				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderParcel.getGrossWeightKg().intValue()));
 				//				parcel.setInternational(); // todo non-UE orders will be implemented in a followup task
 			}
 		}
@@ -319,7 +313,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			}
 			{
 				// Pickup date and time
-				final Pickup pickup = createPickupDateAndTime(deliveryOrder.getPickupDate(), deliveryOrder.getDeliveryOrderLines().size(), deliveryOrder.getPickupAddress());
+				final Pickup pickup = createPickupDateAndTime(deliveryOrder.getPickupDate(), deliveryOrder.getDeliveryOrderParcels().size(), deliveryOrder.getPickupAddress());
 				productAndServiceData.setPickup(pickup);
 			}
 		}
@@ -408,8 +402,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		epicLogger.addLog("Creating login request");
 
 		final JAXBElement<GetAuth> getAuthElement = loginServiceOF.createGetAuth(getAuthValue);
-		@SuppressWarnings("unchecked")
-		final JAXBElement<GetAuthResponse> authenticationElement = (JAXBElement<GetAuthResponse>)doActualRequest(config.getLoginApiUrl(), getAuthElement, null, null);
+		@SuppressWarnings("unchecked") final JAXBElement<GetAuthResponse> authenticationElement = (JAXBElement<GetAuthResponse>)doActualRequest(config.getLoginApiUrl(), getAuthElement, null, null);
 
 		final Login login = authenticationElement.getValue().getReturn();
 

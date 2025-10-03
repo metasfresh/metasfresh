@@ -1,8 +1,10 @@
+package de.metas.shipper.gateway.spi.model;
+
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.shipper.gateway.spi
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +22,9 @@
  * #L%
  */
 
-package de.metas.location;
-
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-
-public interface ICountryCodeFactory extends ISingletonService
+/**
+ * Implementors can be used to add custom data to {@link DeliveryPosition} / {@link DeliveryOrderParcel}.
+ */
+public interface CustomDeliveryLineData
 {
-	CountryCode getCountryCodeByAlpha2(@NonNull final String countryCodeAlpha2);
 }
