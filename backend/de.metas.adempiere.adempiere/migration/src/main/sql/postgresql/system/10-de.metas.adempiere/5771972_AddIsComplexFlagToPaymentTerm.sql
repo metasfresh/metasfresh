@@ -266,3 +266,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 
 
+-- Tab: Zahlungsbedingung(141,D) -> Zahlungsbedingungsrate
+-- Table: C_PaymentTerm_Break
+-- 2025-10-02T10:54:50.786Z
+UPDATE AD_Tab SET ReadOnlyLogic='@IsComplex@=''N''',Updated=TO_TIMESTAMP('2025-10-02 10:54:50.786000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=548448
+;
