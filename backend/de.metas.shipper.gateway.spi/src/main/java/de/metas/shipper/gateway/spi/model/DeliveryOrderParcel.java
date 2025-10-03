@@ -22,6 +22,8 @@
 
 package de.metas.shipper.gateway.spi.model;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -31,30 +33,43 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
- * 1 DeliveryOrderLine represents 1 Package
+ * 1 DeliveryOrderParcel represents 1 Package
  */
 @Value
-public class DeliveryOrderLine
+public class DeliveryOrderParcel
 {
-	@Nullable DeliveryOrderLineId id;
+	@Nullable DeliveryOrderParcelId id;
 	@Nullable String content;
 	@NonNull BigDecimal grossWeightKg;
 	@NonNull PackageDimensions packageDimensions;
 	@Nullable CustomDeliveryLineData customDeliveryLineData;
 	@NonNull PackageId packageId;
+	@Nullable String awb;
+	@Nullable String trackingUrl;
+	@Nullable byte[] labelPdfBase64;
+	@NonNull ImmutableList<DeliveryOrderItem> items;
 
 	@Builder(toBuilder = true)
 	@Jacksonized
-	private DeliveryOrderLine(
-			@Nullable final DeliveryOrderLineId id,
+	private DeliveryOrderParcel(
+			@Nullable final DeliveryOrderParcelId id,
 			@Nullable final String content,
 			@NonNull final BigDecimal grossWeightKg,
 			@NonNull final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryLineData customDeliveryLineData,
-			@NonNull final PackageId packageId)
+			@NonNull final PackageId packageId,
+			@Nullable final String awb,
+			@Nullable final String trackingUrl,
+			@Nullable final byte[] labelPdfBase64,
+			@Nullable final ImmutableList<DeliveryOrderItem> items)
 	{
+		this.awb = awb;
+		this.trackingUrl = trackingUrl;
+		this.labelPdfBase64 = labelPdfBase64;
+		this.items = CoalesceUtil.coalesceNotNull(items, ImmutableList.of());
 
 		Check.assume(grossWeightKg.signum() > 0, "grossWeightKg > 0");
 		this.id = id;
@@ -63,5 +78,16 @@ public class DeliveryOrderLine
 		this.packageDimensions = packageDimensions;
 		this.customDeliveryLineData = customDeliveryLineData;
 		this.packageId = packageId;
+	}
+
+	public DeliveryOrderParcel withCustomDeliveryData(@NonNull final CustomDeliveryLineData customDeliveryLineData)
+	{
+		if (Objects.equals(this.customDeliveryLineData, customDeliveryLineData))
+		{
+			return this;
+		}
+		return this.toBuilder()
+				.customDeliveryLineData(customDeliveryLineData)
+				.build();
 	}
 }

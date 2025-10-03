@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.nshift
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,18 +20,28 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.nshift.client;
+package de.metas.shipper.gateway.commons.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMap;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
-// FIXME why not Jacksonized
-@JsonDeserialize(builder = NShiftCustomDeliveryDataDetail.NShiftCustomDeliveryDataDetailBuilder.class)
+import javax.annotation.Nullable;
+
 @Value
-@Builder(toBuilder = true)
-public class NShiftCustomDeliveryDataDetail {
-    byte[] pdfLabelData;
-    String trackingNumber;
-    String trackingUrl;
+@Builder
+public class ShipperConfig
+{
+	@NonNull ShipperId shipperId;
+	@NonNull ShipperConfigId id;
+	@NonNull String url;
+	@Nullable String username;
+	@Nullable String password;
+	@Nullable String clientId;
+	@Nullable String clientSecret;
+	@Nullable String trackingUrlTemplate;
+	@Builder.Default
+	ImmutableMap<String, String> additionalProperties = ImmutableMap.of();
 }

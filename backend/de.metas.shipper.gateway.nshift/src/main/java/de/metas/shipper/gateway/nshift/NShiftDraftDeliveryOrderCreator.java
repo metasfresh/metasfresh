@@ -8,6 +8,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
@@ -20,15 +21,13 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.commons.model.CarrierShipperProduct;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderData;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderItem;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderParcel;
+import de.metas.shipper.gateway.nshift.client.NShiftShipperProduct;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
@@ -96,17 +95,17 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 
+		final boolean isInternationalShipment = pickupFromLocation.getC_Country_ID() != deliverToLocation.getC_Country_ID();
+
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 
-				.shipperProduct(CarrierShipperProduct.DHL) // TODO this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
+				.shipperProduct(isInternationalShipment ? NShiftShipperProduct.DHL_INTERNATIONAL : NShiftShipperProduct.DHL_NATIONAL) // TODO this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(getPOReferences(request.getPackageInfos()))
-				.customDeliveryData(ShipmentOrderData.builder()
-						.shipperEORI(pickupFromBPartner.getEORI())
-						.receiverEORI(deliverToBPartner.getEORI())
-						.build())
+				.shipperEORI(pickupFromBPartner.getEORI())
+				.receiverEORI(deliverToBPartner.getEORI())
 				//
 				// Pickup aka Shipper
 				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation))
@@ -119,7 +118,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.deliveryContact(toDeliverToContact(deliverToBPartner, deliverToBPLocation))
 				//
 				// Delivery content
-				.deliveryOrderLines(toDeliveryOrderLines(request.getPackageInfos()))
+				.deliveryOrderParcels(toDeliveryOrderLines(request.getPackageInfos()))
 				//
 				.build();
 
@@ -146,34 +145,35 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	{
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
+		final Language bpLanguage = Language.asLanguage(deliverToBPartner.getAD_Language());
 		return ContactPerson.builder()
+				.name(deliverToBPartner.getName())
 				.emailAddress(deliverToBPartner.getEMail())
 				.simplePhoneNumber(deliverToPhoneNumber)
+				.languageCode(bpLanguage != null ? bpLanguage.getLanguageCode() : null)
 				.build();
 	}
 
-	private ImmutableList<DeliveryOrderLine> toDeliveryOrderLines(@NotNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	private ImmutableList<DeliveryOrderParcel> toDeliveryOrderLines(@NotNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
 		return packageInfos.stream()
 				.map(packageInfo -> {
-					final ImmutableList<ShipmentOrderItem> deliveryOrderItems = purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents()
+					final ImmutableList<DeliveryOrderItem> deliveryOrderItems = purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents()
 							.stream()
 							.map(this::createDeliveryOrderItems)
 							.collect(ImmutableList.toImmutableList());
-					return DeliveryOrderLine.builder()
+					return DeliveryOrderParcel.builder()
 							.packageDimensions(getPackageDimensions(packageInfo.getPackageId(), HARDCODE_CM_UOM_ID))
 							.packageId(packageInfo.getPackageId())
 							.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
 							.content(packageInfo.getDescription())
-							.customDeliveryLineData(ShipmentOrderParcel.builder()
-									.items(deliveryOrderItems)
-									.build())
+							.items(deliveryOrderItems)
 							.build();
 				})
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ShipmentOrderItem createDeliveryOrderItems(final PackageItem packageItem)
+	private DeliveryOrderItem createDeliveryOrderItems(final PackageItem packageItem)
 	{
 		Check.assumeNotNull(packageItem.getQuantity(), "quantity must not be null, for packageItem " + packageItem);
 		final ProductId productId = packageItem.getProductId();
@@ -187,7 +187,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		final Money unitPrice = Money.of(orderLine.getPriceEntered(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 		final Money totalPackageValue = unitPrice.multiply(quantity.toBigDecimal());
 
-		return ShipmentOrderItem.builder()
+		return DeliveryOrderItem.builder()
 				.productName(product.getName())
 				.productValue(product.getValue())
 				.totalWeightInKg(weightInKg)

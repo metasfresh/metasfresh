@@ -22,39 +22,26 @@
 
 package de.metas.shipper.gateway.commons.model;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
-import de.metas.util.GuavaCollectors;
-import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.util.stream.Stream;
-
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public enum CarrierShipperProduct implements ShipperProduct
+@Value
+@Builder
+@Jacksonized
+@RequiredArgsConstructor
+public class CarrierShipperProduct implements ShipperProduct
 {
-	// Here, I'm using this as: dear carrier aggregator, please send this order using DHL.
-	DHL("DHL"),
-	Any("");
-
 	@Getter
-	private final String code;
+	String code;
 
-	private static final ImmutableMap<String, CarrierShipperProduct> code2type = Stream.of(values())
-			.collect(GuavaCollectors.toImmutableMapByKey(CarrierShipperProduct::getCode));
-
-	@NonNull
-	public static CarrierShipperProduct forCode(final String code)
+	public static CarrierShipperProduct ofCode(@NonNull final String code)
 	{
-		final CarrierShipperProduct type = code2type.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No serviceType for code=" + code + " exists.");
-		}
-		return type;
+		return new CarrierShipperProduct(code);
 	}
 
 }

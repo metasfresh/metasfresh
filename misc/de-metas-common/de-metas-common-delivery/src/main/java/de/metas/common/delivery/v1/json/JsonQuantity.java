@@ -22,20 +22,50 @@
 
 package de.metas.common.delivery.v1.json;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Splitter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-@Jacksonized
 public class JsonQuantity
 {
 	@NonNull BigDecimal value;
 	@NonNull String uomCode; // ISO or system UOM code, e.g. "PCE"
+
+	@NonNull
+	@JsonCreator
+	public static JsonQuantity parseString(@NonNull final String string)
+	{
+		final List<String> parts = Splitter.on(" ").trimResults().omitEmptyStrings().splitToList(string);
+		if (parts.size() != 2)
+		{
+			throw new RuntimeException("Cannot parse " + string + " to JsonQuantity: expected 2 parts separated by space");
+		}
+		try
+		{
+			return JsonQuantity.builder()
+					.value(new BigDecimal(parts.get(0)))
+					.uomCode(parts.get(1))
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			throw new RuntimeException("Cannot parse " + string + " to JsonQuantity", ex);
+		}
+	}
+
+	@Override
+	public String toString() {return toJson();}
+
+	@JsonValue
+	public String toJson() {return value + " " + uomCode;}
 }

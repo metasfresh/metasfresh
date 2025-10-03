@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de.metas.shipper.gateway.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,30 +20,23 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
+package de.metas.shipper.gateway.nshift.client;
 
-import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class ShipmentOrderData implements CustomDeliveryData
+@RequiredArgsConstructor
+public enum NShiftShipperProduct implements ShipperProduct
 {
-	@Nullable
-	public static ShipmentOrderData ofDeliveryOrderOrNull(@NonNull final DeliveryOrder deliveryOrder)
-	{
-		if (!(deliveryOrder.getCustomDeliveryData() instanceof ShipmentOrderData))
-		{
-			return null;
-		}
-		return (ShipmentOrderData)deliveryOrder.getCustomDeliveryData();
-	}
+	DHL_NATIONAL("V01PAK"),
+	DHL_INTERNATIONAL("V53PAK"),
+	DHL_DHLPAKET("DeutschePostDomesticDHLPaket"),
+	DHL_DEPICKUP("DeutschePostDomesticParcelDEPickup"),
+	DHL_WARENPOST("DeutschePostDomesticWarenpost"),
+	DHL_NIGHTSTAR("NightStarExpress"),
 
-	String shipperEORI;
-	String receiverEORI;
-}
+	;
+	@Getter
+	private final String code;
+	}

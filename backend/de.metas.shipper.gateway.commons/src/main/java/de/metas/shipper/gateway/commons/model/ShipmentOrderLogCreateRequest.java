@@ -22,31 +22,17 @@
 
 package de.metas.shipper.gateway.commons.model;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.shipper.gateway.spi.model.CustomDeliveryLineData;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
-@Builder
 @Value
-public class ShipmentOrderParcel implements CustomDeliveryLineData
+@Builder
+public class ShipmentOrderLogCreateRequest
 {
-	@Nullable String awb;
-	@Nullable String trackingUrl;
-	@Nullable byte[] labelPdfBase64;
-	ImmutableList<ShipmentOrderItem> items;
-
-	@Nullable
-	public static ShipmentOrderParcel ofDeliveryOrderLineOrNull(@NonNull final DeliveryOrderLine deliveryOrderLine)
-	{
-		if (!(deliveryOrderLine.getCustomDeliveryLineData() instanceof ShipmentOrderParcel))
-		{
-			return null;
-		}
-		return (ShipmentOrderParcel)deliveryOrderLine.getCustomDeliveryLineData();
-	}
+	@NonNull JsonDeliveryRequest request;
+	@NonNull JsonDeliveryResponse response;
+	long durationMillis;
 }

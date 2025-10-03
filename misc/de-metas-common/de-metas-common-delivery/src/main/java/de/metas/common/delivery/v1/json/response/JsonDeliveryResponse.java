@@ -53,10 +53,12 @@ public class JsonDeliveryResponse
 
 	public JsonDeliveryResponse withoutPDFContents()
 	{
+		final ImmutableList<JsonDeliveryResponseItem> itemsWithoutPDFContents = items.stream()
+				.map(JsonDeliveryResponseItem::withoutPDFContents)
+				.collect(ImmutableList.toImmutableList());
 		return toBuilder()
-				.items(items.stream()
-						.map(JsonDeliveryResponseItem::withoutPDFContents)
-						.collect(ImmutableList.toImmutableList()))
+				.clearItems()
+				.items(itemsWithoutPDFContents)
 				.build();
 	}
 }

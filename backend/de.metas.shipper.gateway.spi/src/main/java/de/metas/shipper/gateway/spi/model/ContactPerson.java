@@ -1,8 +1,10 @@
 package de.metas.shipper.gateway.spi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.i18n.Language;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -33,20 +35,26 @@ import javax.annotation.Nullable;
 @Value
 public class ContactPerson
 {
+	@NonNull String name;
 	@Nullable PhoneNumber phone;
 	@Nullable String emailAddress;
 	@Nullable String simplePhoneNumber;
+	@NonNull String languageCode;
 
 	@Builder
 	@Jacksonized
 	private ContactPerson(
+			@NonNull final String name,
 			@Nullable final PhoneNumber phone,
 			@Nullable final String simplePhoneNumber,
-			@Nullable final String emailAddress)
+			@Nullable final String emailAddress,
+			@Nullable final String languageCode)
 	{
+		this.name = name;
 		this.phone = phone;
 		this.simplePhoneNumber = simplePhoneNumber;
 		this.emailAddress = emailAddress;
+		this.languageCode = Check.isBlank(languageCode) ? Language.getBaseLanguage().getLanguageCode() : languageCode;
 
 		final boolean simplePhoneNumberIsEmpty = Check.isEmpty(simplePhoneNumber);
 		final boolean phoneIsEmpty = phone == null;
@@ -57,16 +65,15 @@ public class ContactPerson
 	}
 
 	@JsonIgnore
+	@Nullable
 	public String getPhoneAsStringOrNull()
 	{
-		if (simplePhoneNumber != null)
-		{
-			return simplePhoneNumber;
-		}
-		else if (phone != null)
+		if (phone != null)
 		{
 			return phone.getAsString();
 		}
-		return null;
+		else
+			return simplePhoneNumber;
 	}
+
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de-metas-common-delivery
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,25 +20,27 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
+package de.metas.common.delivery.v1.json;
 
-import de.metas.money.Money;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.Value;
+import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
-@Value
-@Builder
-public class ShipmentOrderItem
-{
-	@Nullable ShipmentOrderItemId id;
-	Money unitPrice;
-	Money totalValue;
-	String productName;
-	String productValue;
-	BigDecimal totalWeightInKg;
-	Quantity shippedQuantity;
+import static org.assertj.core.api.Assertions.assertThat;
+
+class JsonMoneyTest {
+
+    @Test
+    void jsonCreator_and_jsonValue_roundtrip() {
+        final JsonMoney money = JsonMoney.builder()
+                .amount(new BigDecimal("12.34"))
+                .currencyCode("EUR")
+                .build();
+
+        final String asString = money.toJson();
+        assertThat(asString).isEqualTo("12.34 EUR");
+
+        final JsonMoney parsed = JsonMoney.fromJson(asString);
+        assertThat(parsed).isEqualTo(money);
+    }
 }

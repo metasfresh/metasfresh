@@ -60,6 +60,12 @@ import java.util.stream.Collectors;
 
 import static de.metas.shipper.gateway.nshift.client.NShiftClientConfig.NSHIFT_OBJECT_MAPPER;
 import static de.metas.shipper.gateway.nshift.client.NShiftClientConfig.NSHIFT_REST_TEMPLATE;
+import static de.metas.shipper.gateway.nshift.client.NShiftShipperProduct.DHL_DEPICKUP;
+import static de.metas.shipper.gateway.nshift.client.NShiftShipperProduct.DHL_DHLPAKET;
+import static de.metas.shipper.gateway.nshift.client.NShiftShipperProduct.DHL_INTERNATIONAL;
+import static de.metas.shipper.gateway.nshift.client.NShiftShipperProduct.DHL_NATIONAL;
+import static de.metas.shipper.gateway.nshift.client.NShiftShipperProduct.DHL_NIGHTSTAR;
+import static de.metas.shipper.gateway.nshift.client.NShiftShipperProduct.DHL_WARENPOST;
 
 @Service
 public class NShiftShipmentService
@@ -69,12 +75,12 @@ public class NShiftShipmentService
 	private static final String CREATE_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/Shipments";
 
 	private static final ImmutableMap<String, Integer> PROD_CONCEPT_ID_BY_SHIPPER_PRODUCT = ImmutableMap.<String, Integer>builder()
-			.put("V01PAK", 2757) //DHL - domestic
-			.put("V53WPAK", 2758) //DHL - euroconnect
-			.put("DeutschePostDomesticDHLPaket", 1712)
-			.put("DeutschePostDomesticParcelDEPickup", 9371)
-			.put("DeutschePostDomesticWarenpost", 9770)
-			.put("NightStarExpress", 3399)
+			.put(DHL_NATIONAL.getCode(), 2757) //DHL - domestic
+			.put(DHL_INTERNATIONAL.getCode(), 2758) //DHL - euroconnect
+			.put(DHL_DHLPAKET.getCode(), 1712)
+			.put(DHL_DEPICKUP.getCode(), 9371)
+			.put(DHL_WARENPOST.getCode(), 9770)
+			.put(DHL_NIGHTSTAR.getCode(), 3399)
 			.build();
 
 	@NonNull private final RestTemplate restTemplate;
@@ -262,10 +268,6 @@ public class NShiftShipmentService
 			{
 				receiverAddressBuilder.phone(deliveryContact.getPhone());
 			}
-			if (Check.isNotBlank(deliveryContact.getSimplePhoneNumber()))
-			{
-				receiverAddressBuilder.mobile(deliveryContact.getSimplePhoneNumber());
-			}
 			if (Check.isNotBlank(deliveryContact.getEmailAddress()))
 			{
 				receiverAddressBuilder.email(deliveryContact.getEmailAddress());
@@ -413,6 +415,7 @@ public class NShiftShipmentService
 
 					return JsonDeliveryResponseItem.builder()
 							.lineId(lineId)
+							.awb(pkg.getPkgNo())
 							.trackingUrl(pkg.getReferences().stream()
 									.filter(ref -> ref.getKind().isTrackingUrl())
 									.map(JsonLineReference::getValue)

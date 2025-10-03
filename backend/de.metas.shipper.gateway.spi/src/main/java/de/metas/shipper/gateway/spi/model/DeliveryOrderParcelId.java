@@ -32,26 +32,25 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-// FIXME why we call it DeliveryOrderLineId when it shall be DeliveryOrderParcelId? 
 @Value
-public class DeliveryOrderLineId implements RepoIdAware
+public class DeliveryOrderParcelId implements RepoIdAware
 {
 	int repoId;
 
-	private DeliveryOrderLineId(final int repoId)
+	private DeliveryOrderParcelId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "DeliveryOrderLineId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "DeliveryOrderParcelId");
 	}
 
 	@JsonCreator
-	public static DeliveryOrderLineId ofRepoId(final int repoId) {return new DeliveryOrderLineId(repoId);}
+	public static DeliveryOrderParcelId ofRepoId(final int repoId) {return new DeliveryOrderParcelId(repoId);}
 
 	@Nullable
-	public static DeliveryOrderLineId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
+	public static DeliveryOrderParcelId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
 
-	public static Optional<DeliveryOrderLineId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
+	public static Optional<DeliveryOrderParcelId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
-	public static int toRepoId(@Nullable final DeliveryOrderLineId id) {return id != null ? id.getRepoId() : -1;}
+	public static int toRepoId(@Nullable final DeliveryOrderParcelId id) {return id != null ? id.getRepoId() : -1;}
 
 	@Override
 	@JsonValue
@@ -60,5 +59,5 @@ public class DeliveryOrderLineId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(@Nullable final DeliveryOrderLineId id1, @Nullable final DeliveryOrderLineId id2) {return Objects.equals(id1, id2);}
+	public static boolean equals(@Nullable final DeliveryOrderParcelId id1, @Nullable final DeliveryOrderParcelId id2) {return Objects.equals(id1, id2);}
 }

@@ -22,6 +22,7 @@ public class NShiftDeliveryOrderService implements DeliveryOrderService
 	@Override
 	public ShipperGatewayId getShipperGatewayId() {return NShiftConstants.SHIPPER_GATEWAY_ID;}
 
+	//TODO Adrian refactor in next iteration to take a DeliveryOrderParcel as param, since now parcels are 1-to-1 with Shipment
 	@Override
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{

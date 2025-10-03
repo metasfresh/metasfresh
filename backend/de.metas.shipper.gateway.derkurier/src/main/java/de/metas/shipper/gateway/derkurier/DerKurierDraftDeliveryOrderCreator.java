@@ -1,8 +1,6 @@
 package de.metas.shipper.gateway.derkurier;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.shipping.ShipperGatewayId;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
@@ -14,6 +12,8 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -121,6 +121,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.bpartnerId(deliverToBPartnerId)
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name(deliverToBPartner.getName())
 						.emailAddress(deliverToBPartner.getEMail())
 						.build())
 				//

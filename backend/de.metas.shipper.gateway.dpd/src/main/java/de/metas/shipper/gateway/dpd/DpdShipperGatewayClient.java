@@ -54,7 +54,7 @@ import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
@@ -277,14 +277,14 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		}
 		{
 			// Parcels aka Packages aka DeliveryOrderLines
-			for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+			for (final DeliveryOrderParcel deliveryOrderParcel : deliveryOrder.getDeliveryOrderParcels())
 			{
 				final Parcel parcel = shipmentServiceOF.createParcel();
 				shipmentServiceData.getParcels().add(parcel);
 				//noinspection ConstantConditions
-				parcel.setContent(deliveryOrderLine.getContent());
-				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderLine.getPackageDimensions()));
-				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderLine.getGrossWeightKg().intValue()));
+				parcel.setContent(deliveryOrderParcel.getContent());
+				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderParcel.getPackageDimensions()));
+				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderParcel.getGrossWeightKg().intValue()));
 				//				parcel.setInternational(); // todo non-UE orders will be implemented in a followup task
 			}
 		}
@@ -313,7 +313,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			}
 			{
 				// Pickup date and time
-				final Pickup pickup = createPickupDateAndTime(deliveryOrder.getPickupDate(), deliveryOrder.getDeliveryOrderLines().size(), deliveryOrder.getPickupAddress());
+				final Pickup pickup = createPickupDateAndTime(deliveryOrder.getPickupDate(), deliveryOrder.getDeliveryOrderParcels().size(), deliveryOrder.getPickupAddress());
 				productAndServiceData.setPickup(pickup);
 			}
 		}

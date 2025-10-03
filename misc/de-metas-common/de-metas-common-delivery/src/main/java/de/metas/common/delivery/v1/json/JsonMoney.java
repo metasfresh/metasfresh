@@ -22,20 +22,49 @@
 
 package de.metas.common.delivery.v1.json;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Splitter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder
-@Jacksonized
 public class JsonMoney
 {
 	@NonNull BigDecimal amount;
 	@NonNull String currencyCode; // ISO 4217, e.g. "EUR"
+
+	@Override
+	public String toString() {return toJson();}
+
+	@JsonValue
+	public String toJson() {return amount + " " + currencyCode;}
+
+	@JsonCreator
+	public static JsonMoney fromJson(@NonNull final String json)
+	{
+		try
+		{
+			final List<String> parts = Splitter.on(" ")
+					.trimResults()
+					.omitEmptyStrings()
+					.splitToList(json);
+
+			return JsonMoney.builder()
+					.amount(new BigDecimal(parts.get(0)))
+					.currencyCode(parts.get(1))
+					.build();
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeException("Cannot convert string to JsonMoney: " + json, e);
+		}
+	}
 }

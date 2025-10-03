@@ -290,27 +290,6 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Receiver_CountryISO2Code = "Receiver_CountryISO2Code";
 
 	/**
-	 * Set Empfänger Ländercode (ISO-3).
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setReceiver_CountryISO3Code (@Nullable java.lang.String Receiver_CountryISO3Code);
-
-	/**
-	 * Get Empfänger Ländercode (ISO-3).
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getReceiver_CountryISO3Code();
-
-	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Receiver_CountryISO3Code = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Receiver_CountryISO3Code", null);
-	String COLUMNNAME_Receiver_CountryISO3Code = "Receiver_CountryISO3Code";
-
-	/**
 	 * Set E-Mail Empfänger.
 	 *
 	 * <br>Type: String
@@ -561,27 +540,6 @@ public interface I_Carrier_ShipmentOrder
 
 	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Shipper_CountryISO2Code = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Shipper_CountryISO2Code", null);
 	String COLUMNNAME_Shipper_CountryISO2Code = "Shipper_CountryISO2Code";
-
-	/**
-	 * Set Lieferant Ländercode (ISO-3).
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setShipper_CountryISO3Code (@Nullable java.lang.String Shipper_CountryISO3Code);
-
-	/**
-	 * Get Lieferant Ländercode (ISO-3).
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getShipper_CountryISO3Code();
-
-	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Shipper_CountryISO3Code = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Shipper_CountryISO3Code", null);
-	String COLUMNNAME_Shipper_CountryISO3Code = "Shipper_CountryISO3Code";
 
 	/**
 	 * Set Shipper EORI.
