@@ -48,12 +48,14 @@ public class WEBUI_Order_ProductsProposal_Launcher extends WEBUI_ProductsProposa
 			return ProcessPreconditionsResolution.rejectWithInternalReason("one and only one order shall be selected");
 		}
 
+		if (context.isExistingDocument().isFalse())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not persisted");
+		}
+
 		final OrderId orderId = OrderId.ofRepoId(context.getSingleSelectedRecordId());
 		final I_C_Order salesOrder = orderDAO.getById(orderId, I_C_Order.class);
-		if(salesOrder == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("C_Order not yet persisted");
-		}
+		
 		final DocStatus docStatus = DocStatus.ofCode(salesOrder.getDocStatus());
 		if (!docStatus.isDraftedOrInProgress())
 		{
