@@ -32,7 +32,6 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-// FIXME why we call it DeliveryOrderParcelId when it shall be DeliveryOrderParcelId?
 @Value
 public class DeliveryOrderParcelId implements RepoIdAware
 {

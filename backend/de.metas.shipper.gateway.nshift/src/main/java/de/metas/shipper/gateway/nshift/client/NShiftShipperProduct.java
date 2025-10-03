@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-delivery
+ * de.metas.shipper.gateway.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,27 +20,23 @@
  * #L%
  */
 
-package de.metas.common.delivery.v1.json.request;
+package de.metas.shipper.gateway.nshift.client;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-
-@Value
-@Builder
-@Jacksonized
-public class JsonShipperConfig
+@RequiredArgsConstructor
+public enum NShiftShipperProduct implements ShipperProduct
 {
-	@NonNull String url;
-	@Nullable String username;
-	@Nullable String password;
-	@Nullable String clientId;
-	@Nullable String clientSecret;
-	@Nullable String trackingUrlTemplate;
-	@NonNull @Singular("additionalProperty") Map<String, String> additionalProperties;
-}
+	DHL_NATIONAL("V01PAK"),
+	DHL_INTERNATIONAL("V53PAK"),
+	DHL_DHLPAKET("DeutschePostDomesticDHLPaket"),
+	DHL_DEPICKUP("DeutschePostDomesticParcelDEPickup"),
+	DHL_WARENPOST("DeutschePostDomesticWarenpost"),
+	DHL_NIGHTSTAR("NightStarExpress"),
+
+	;
+	@Getter
+	private final String code;
+	}

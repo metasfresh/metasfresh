@@ -48,7 +48,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Carrier_ShipmentOrder;
 import org.compiere.model.I_Carrier_ShipmentOrder_Item;
@@ -56,7 +55,9 @@ import org.compiere.model.I_Carrier_ShipmentOrder_Parcel;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveAll;
@@ -105,6 +106,7 @@ public class ShipmentOrderRepository
 	private static DeliveryOrder fromRecord(@NonNull final I_Carrier_ShipmentOrder po, @NonNull final ImmutableList<DeliveryOrderParcel> parcels)
 	{
 		return DeliveryOrder.builder()
+				.id(DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID()))
 				.shipperProduct(CarrierShipperProduct.ofCode(po.getCarrier_Product()))
 				.customerReference(po.getCustomerReference())
 				.shipperId(ShipperId.ofRepoId(po.getM_Shipper_ID()))
@@ -113,6 +115,8 @@ public class ShipmentOrderRepository
 						.date(TimeUtil.asLocalDate(po.getShipmentDate()))
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name(po.getReceiver_Name1() + " " + po.getReceiver_Name2())
+						.simplePhoneNumber(po.getReceiver_Phone())
 						.emailAddress(po.getReceiver_Email())
 						.build())
 				.pickupAddress(Address.builder()
@@ -123,10 +127,7 @@ public class ShipmentOrderRepository
 						.street1(po.getShipper_StreetName1())
 						.street2(po.getShipper_StreetName2())
 						.houseNo(po.getShipper_StreetNumber())
-						.country(CountryCode.builder()
-								.alpha2(po.getShipper_CountryISO2Code())
-								.alpha3(po.getShipper_CountryISO3Code()) // FIXME don't need both versions
-								.build())
+						.country(CountryCode.ofAlpha2(po.getShipper_CountryISO2Code()))
 						.bpartnerId(po.getC_BPartner_ID())
 						.build())
 				.deliveryAddress(Address.builder()
@@ -137,10 +138,7 @@ public class ShipmentOrderRepository
 						.street1(po.getReceiver_StreetName1())
 						.street2(po.getReceiver_StreetName2())
 						.houseNo(po.getReceiver_StreetNumber())
-						.country(CountryCode.builder()
-								.alpha2(po.getReceiver_CountryISO2Code())
-								.alpha3(po.getReceiver_CountryISO3Code())// FIXME don't need both versions
-								.build())
+						.country(CountryCode.ofAlpha2(po.getReceiver_CountryISO2Code()))
 						.build())
 				.shipperEORI(po.getShipper_EORI())
 				.receiverEORI(po.getReceiver_EORI())
@@ -186,26 +184,39 @@ public class ShipmentOrderRepository
 
 	private void updateShipmentOrderParcels(final @NonNull DeliveryOrder order)
 	{
+		final DeliveryOrderId deliveryOrderId = Objects.requireNonNull(order.getId());
 		final ImmutableMap<DeliveryOrderParcelId, I_Carrier_ShipmentOrder_Parcel> parcelsById = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
-				.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, order.getId())
+				.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, deliveryOrderId)
 				.create()
 				.map(I_Carrier_ShipmentOrder_Parcel.class, parcel -> DeliveryOrderParcelId.ofRepoId(parcel.getCarrier_ShipmentOrder_Parcel_ID()));
 		final ImmutableList<I_Carrier_ShipmentOrder_Parcel> updatedParcels = order.getDeliveryOrderParcels()
 				.stream()
-				.map(deliveryOrderLine -> getAndUpdateParcel(deliveryOrderLine, parcelsById))
+				.map(deliveryOrderLine -> getAndUpdateParcel(deliveryOrderId, deliveryOrderLine, parcelsById))
 				.collect(ImmutableList.toImmutableList());
 
-		// FIXME parcels which no longer exists in the order shall be deleted from database
 		saveAll(updatedParcels);
+		deleteUnreferencedParcels(order);
 	}
 
-	private static I_Carrier_ShipmentOrder_Parcel getAndUpdateParcel(final DeliveryOrderParcel deliveryOrderParcel, final ImmutableMap<DeliveryOrderParcelId, I_Carrier_ShipmentOrder_Parcel> parcelsById)
+	private void deleteUnreferencedParcels(final @NonNull DeliveryOrder order)
 	{
-		// FIXME parcels that are not present in database shall be created (i.e. when deliveryOrderParcel.getId() == null)
-		final I_Carrier_ShipmentOrder_Parcel parcel = parcelsById.get(deliveryOrderParcel.getId());
+		final List<DeliveryOrderParcelId> updatedParcelIds = order.getDeliveryOrderParcels()
+				.stream()
+				.map(DeliveryOrderParcel::getId)
+				.collect(Collectors.toList());
+		queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
+				.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, order.getId())
+				.addNotInArrayFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_Parcel_ID, updatedParcelIds)
+				.create()
+				.delete();
+	}
+
+	private I_Carrier_ShipmentOrder_Parcel getAndUpdateParcel(@NonNull final DeliveryOrderId deliveryOrderId, @NonNull final DeliveryOrderParcel deliveryOrderParcel, @NonNull final ImmutableMap<DeliveryOrderParcelId, I_Carrier_ShipmentOrder_Parcel> parcelsById)
+	{
+		I_Carrier_ShipmentOrder_Parcel parcel = parcelsById.get(deliveryOrderParcel.getId());
 		if (parcel == null)
 		{
-			throw new AdempiereException("Could not find shipment order line with id " + deliveryOrderParcel.getId());
+			parcel = createParcel(deliveryOrderParcel, deliveryOrderId);
 		}
 		parcel.setawb(deliveryOrderParcel.getAwb());
 		parcel.setTrackingURL(deliveryOrderParcel.getTrackingUrl());
@@ -243,7 +254,6 @@ public class ShipmentOrderRepository
 		po.setShipper_City(shipperAddress.getCity());
 		final CountryCode shipperCountry = shipperAddress.getCountry();
 		po.setShipper_CountryISO2Code(shipperCountry.getAlpha2());
-		po.setShipper_CountryISO3Code(shipperCountry.getAlpha3());
 
 		final Address receiverAddress = request.getDeliveryAddress();
 		po.setReceiver_Name1(receiverAddress.getCompanyName1());
@@ -255,7 +265,6 @@ public class ShipmentOrderRepository
 		po.setReceiver_City(receiverAddress.getCity());
 		final CountryCode receiverCountry = receiverAddress.getCountry();
 		po.setReceiver_CountryISO2Code(receiverCountry.getAlpha2());
-		po.setReceiver_CountryISO3Code(receiverCountry.getAlpha3());
 
 		InterfaceWrapperHelper.saveRecord(po);
 

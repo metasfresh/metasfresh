@@ -21,10 +21,12 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipping.ShipperGatewayId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +40,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	private static final Logger logger = LogManager.getLogger(NShiftShipperGatewayClient.class);
 
 	@NonNull private final NShiftShipmentService shipmentService;
-	//TODO to be removed in next iteration(s), once the API changes so that we pass a JsonDeliveryRequest and we get a JsonDeliveryResponse
+	//TODO Adrian to be removed in next iteration(s), once the API changes so that we pass a JsonDeliveryRequest and we get a JsonDeliveryResponse
 	@NonNull private final JsonShipperConverter jsonConverter;
 	@NonNull private final ShipmentOrderLogRepository shipmentOrderLogRepository;
 	//TODO implement as provided by carrier
@@ -85,16 +87,16 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.collect(ImmutableMap.toImmutableMap(JsonDeliveryResponseItem::getLineId, Function.identity()));
 		final ImmutableList<DeliveryOrderParcel> updatedDeliveryOrderParcels = deliveryOrder.getDeliveryOrderParcels()
 				.stream()
-				.map(line -> updateDeliveryOrderLine(line, lineIdToResponseMap.get(line.getId()), language))
+				.map(line -> updateDeliveryOrderLine(line, lineIdToResponseMap.get(String.valueOf(line.getId().getRepoId())), language))
 				.collect(ImmutableList.toImmutableList());
 		return deliveryOrder.withDeliveryOrderParcels(updatedDeliveryOrderParcels);
 	}
 
-	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryOrderResponseItem, @NonNull final String language)
+	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryResponseItem, @NonNull final String language)
 	{
-		final String awb = jsonDeliveryOrderResponseItem.getAwb();
-		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryOrderResponseItem.getLabelPdfBase64());
-		final String trackingUrl = getTrackingUrl(shipperConfig.getTrackingUrlTemplate(), awb, language);
+		final String awb = jsonDeliveryResponseItem.getAwb();
+		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryResponseItem.getLabelPdfBase64());
+		final String trackingUrl = getTrackingUrlOrNull(shipperConfig.getTrackingUrlTemplate(), awb, language);
 
 		return line.toBuilder()
 				.awb(awb)
@@ -103,9 +105,11 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	private static String getTrackingUrl(@NonNull final String url, @NonNull final String shipmentId, @NonNull final String language)
+	@Nullable
+	private static String getTrackingUrlOrNull(@Nullable final String url, @NonNull final String shipmentId, @NonNull final String language)
 	{
-		return url
+
+		return Check.isBlank(url) ? null : url
 				.replace("{lang}", language)
 				.replace("{shipmentNo}", shipmentId);
 	}

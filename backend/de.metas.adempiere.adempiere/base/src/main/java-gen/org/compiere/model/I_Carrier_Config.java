@@ -251,29 +251,6 @@ public interface I_Carrier_Config
 	String COLUMNNAME_Password = "Password";
 
 	/**
-	 * Set Tracking URL.
-	 * URL of the shipper to track shipments
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTrackingURL (@Nullable java.lang.String TrackingURL);
-
-	/**
-	 * Get Tracking URL.
-	 * URL of the shipper to track shipments
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getTrackingURL();
-
-	ModelColumn<I_Carrier_Config, Object> COLUMN_TrackingURL = new ModelColumn<>(I_Carrier_Config.class, "TrackingURL", null);
-	String COLUMNNAME_TrackingURL = "TrackingURL";
-
-	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

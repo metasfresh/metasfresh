@@ -21,7 +21,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.commons.model.CarrierShipperProduct;
+import de.metas.shipper.gateway.nshift.client.NShiftShipperProduct;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -95,12 +95,14 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 
+		final boolean isInternationalShipment = pickupFromLocation.getC_Country_ID() != deliverToLocation.getC_Country_ID();
+
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 
-				.shipperProduct(CarrierShipperProduct.ofCode("DHL")) // TODO this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
+				.shipperProduct(isInternationalShipment ? NShiftShipperProduct.DHL_INTERNATIONAL : NShiftShipperProduct.DHL_NATIONAL) // TODO this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(getPOReferences(request.getPackageInfos()))
 				.shipperEORI(pickupFromBPartner.getEORI())
 				.receiverEORI(deliverToBPartner.getEORI())

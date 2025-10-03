@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -912365330L;
+	private static final long serialVersionUID = -1305250872L;
 
     /** Standard Constructor */
     public X_Carrier_Config (final Properties ctx, final int Carrier_Config_ID, @Nullable final String trxName)
@@ -122,18 +122,6 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	public java.lang.String getPassword() 
 	{
 		return get_ValueAsString(COLUMNNAME_Password);
-	}
-
-	@Override
-	public void setTrackingURL (final @Nullable java.lang.String TrackingURL)
-	{
-		set_Value (COLUMNNAME_TrackingURL, TrackingURL);
-	}
-
-	@Override
-	public java.lang.String getTrackingURL() 
-	{
-		return get_ValueAsString(COLUMNNAME_TrackingURL);
 	}
 
 	@Override

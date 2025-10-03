@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.commons.model;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
+import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -33,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Carrier_Config;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +53,6 @@ public class ShipperConfigRepository
 			I_Carrier_Config.COLUMNNAME_UserName,
 			I_Carrier_Config.COLUMNNAME_Client_Id,
 			I_Carrier_Config.COLUMNNAME_Client_Secret,
-			I_Carrier_Config.COLUMNNAME_TrackingURL,
 			I_Carrier_Config.COLUMNNAME_Password,
 			I_Carrier_Config.COLUMNNAME_Base_url,
 
@@ -65,6 +66,7 @@ public class ShipperConfigRepository
 			I_Carrier_Config.COLUMNNAME_AD_Client_ID);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@NonNull
 	public ShipperConfig getByShipperId(@NonNull final ShipperId shipperId)
@@ -73,21 +75,23 @@ public class ShipperConfigRepository
 				.addEqualsFilter(I_Carrier_Config.COLUMNNAME_M_Shipper_ID, shipperId)
 				.create()
 				.firstOnlyOptional()
-				.map(ShipperConfigRepository::fromRecord)
+				.map(this::fromRecord)
 				.orElseThrow(() -> new AdempiereException(MSG_NO_SHIPPER_CONFIG_FOUND, shipperId));
 	}
 
-	private static ShipperConfig fromRecord(@NotNull final I_Carrier_Config carrierConfig)
+	private ShipperConfig fromRecord(@NotNull final I_Carrier_Config carrierConfig)
 	{
+		final ShipperId shipperId = ShipperId.ofRepoId(carrierConfig.getM_Shipper_ID());
+		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
 		return ShipperConfig.builder()
 				.id(ShipperConfigId.ofRepoId(carrierConfig.getCarrier_Config_ID()))
-				.shipperId(de.metas.shipping.ShipperId.ofRepoId(carrierConfig.getM_Shipper_ID()))
+				.shipperId(shipperId)
 				.url(carrierConfig.getBase_url())
 				.username(carrierConfig.getUserName())
 				.password(carrierConfig.getPassword())
 				.clientId(carrierConfig.getClient_Id())
 				.clientSecret(carrierConfig.getClient_Secret())
-				.trackingUrlTemplate(carrierConfig.getTrackingURL())
+				.trackingUrlTemplate(shipper.getTrackingURL())
 				.additionalProperties(buildAdditionalPropertiesMap(carrierConfig))
 				.build();
 	}
@@ -99,8 +103,8 @@ public class ShipperConfigRepository
 		return
 				poInfo.streamColumns(poInfoColumn -> !COLUMNS_TO_EXCLUDE_FROM_MAPPING.contains(poInfoColumn.getColumnName()))
 						.map(POInfoColumn::getColumnName)
-						.filter(columnName -> Check.isNotBlank(InterfaceWrapperHelper.getValueOrNull(carrierConfig, columnName)))
-						.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> InterfaceWrapperHelper.getModelValue(carrierConfig, colName, String.class)));
+						.filter(columnName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, columnName) != null)
+						.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, colName)));
 	}
 
 }

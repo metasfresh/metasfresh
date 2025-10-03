@@ -30,6 +30,7 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -47,7 +48,7 @@ public class JsonShipperConverter
 	public JsonDeliveryRequest toJson(@NonNull final ShipperConfig config, @NonNull final DeliveryOrder order)
 	{
 		return JsonDeliveryRequest.builder()
-				.id(order.getId() != null ? order.getId().toString() : null)
+				.deliveryOrderId(DeliveryOrderId.toRepoId(order.getId()))
 				.pickupAddress(toJsonAddress(order.getPickupAddress()))
 				.pickupDate(order.getPickupDate() != null ? order.getPickupDate().getDate().toString() : null)
 				.pickupNote(order.getPickupNote())
@@ -100,6 +101,7 @@ public class JsonShipperConverter
 		if (contact == null) {return null;}
 
 		return JsonContact.builder()
+				.name(contact.getName())
 				.phone(contact.getPhoneAsStringOrNull())
 				.emailAddress(contact.getEmailAddress())
 				.language(contact.getLanguageCode())

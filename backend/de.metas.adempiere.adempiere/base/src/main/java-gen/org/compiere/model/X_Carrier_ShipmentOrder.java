@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_Carrier_ShipmentOrder, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 176503779L;
+	private static final long serialVersionUID = -324853335L;
 
     /** Standard Constructor */
     public X_Carrier_ShipmentOrder (final Properties ctx, final int Carrier_ShipmentOrder_ID, @Nullable final String trxName)
@@ -152,18 +152,6 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	public java.lang.String getReceiver_CountryISO2Code() 
 	{
 		return get_ValueAsString(COLUMNNAME_Receiver_CountryISO2Code);
-	}
-
-	@Override
-	public void setReceiver_CountryISO3Code (final @Nullable java.lang.String Receiver_CountryISO3Code)
-	{
-		set_Value (COLUMNNAME_Receiver_CountryISO3Code, Receiver_CountryISO3Code);
-	}
-
-	@Override
-	public java.lang.String getReceiver_CountryISO3Code() 
-	{
-		return get_ValueAsString(COLUMNNAME_Receiver_CountryISO3Code);
 	}
 
 	@Override
@@ -308,18 +296,6 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	public java.lang.String getShipper_CountryISO2Code() 
 	{
 		return get_ValueAsString(COLUMNNAME_Shipper_CountryISO2Code);
-	}
-
-	@Override
-	public void setShipper_CountryISO3Code (final @Nullable java.lang.String Shipper_CountryISO3Code)
-	{
-		set_Value (COLUMNNAME_Shipper_CountryISO3Code, Shipper_CountryISO3Code);
-	}
-
-	@Override
-	public java.lang.String getShipper_CountryISO3Code() 
-	{
-		return get_ValueAsString(COLUMNNAME_Shipper_CountryISO3Code);
 	}
 
 	@Override
