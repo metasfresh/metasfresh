@@ -17,6 +17,7 @@ public class C_OrderLine
 					I_C_OrderLine.COLUMNNAME_QtyOrdered // task 08452: make sure the IC gets invalidated when we sort of "close" a single line
 					, I_C_OrderLine.COLUMNNAME_QtyOrderedOverUnder
 					, I_C_OrderLine.COLUMNNAME_IsPackagingMaterial
+					, I_C_OrderLine.COLUMNNAME_M_Product_ID
 			})
 	public void invalidateInvoiceCandidates(final I_C_OrderLine ol)
 	{
