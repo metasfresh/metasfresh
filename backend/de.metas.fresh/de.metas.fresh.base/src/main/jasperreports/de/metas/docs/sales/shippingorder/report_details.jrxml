@@ -19,7 +19,15 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT
-* from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details( $P{RECORD_ID});]]>
+name,
+       address,
+       istobefetched,
+       DeliveryDateTimeMax,
+       isPallet,
+       QtyTU,
+       QtyLU,
+       notes
+from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details( $P{RECORD_ID});]]>
 	</queryString>
 	<field name="name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="name"/>
@@ -179,7 +187,9 @@
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{istobefetched}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($P{ad_language}.equals("de_DE") || $P{ad_language}.equals("de_CH")) 
+? ( $F{istobefetched}.equals("Y") ? "Ja" : "Nein") 
+: $F{istobefetched}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band/>
