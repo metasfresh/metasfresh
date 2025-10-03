@@ -205,6 +205,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name(deliverToBPartner.getName())
 						.emailAddress(deliverToBPartner.getEMail())
 						.simplePhoneNumber(deliverToPhoneNumber)
 						.build())

@@ -131,7 +131,7 @@ public class ShipmentOrderRepository
 						.date(TimeUtil.asLocalDate(po.getShipmentDate()))
 						.build())
 				.deliveryContact(ContactPerson.builder()
-						.name(po.getReceiver_Name1() + " " + po.getReceiver_Name2())
+						.name(po.getReceiver_Name1())
 						.simplePhoneNumber(po.getReceiver_Phone())
 						.emailAddress(po.getReceiver_Email())
 						.build())

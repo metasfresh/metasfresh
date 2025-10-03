@@ -133,6 +133,7 @@ public class DhlDeliveryOrderRepository
 								.build())
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name(firstOrder.getDHL_Receiver_Name1())
 						.simplePhoneNumber(firstOrder.getDHL_Receiver_Phone())
 						.emailAddress(firstOrder.getDHL_Receiver_Email())
 						.build())

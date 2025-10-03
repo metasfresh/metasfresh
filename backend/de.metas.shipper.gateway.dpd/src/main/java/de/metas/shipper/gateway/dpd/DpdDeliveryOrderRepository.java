@@ -263,6 +263,7 @@ public class DpdDeliveryOrderRepository
 						.country(CountryCode.ofAlpha2(orderPO.getRecipientCountry()))
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name(orderPO.getRecipientName1())
 						.emailAddress(orderPO.getRecipientEmailAddress())
 						.simplePhoneNumber(orderPO.getRecipientPhone())
 						.build())
