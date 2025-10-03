@@ -787,3 +787,69 @@ ALTER TABLE M_ShipperTransportation ADD CONSTRAINT POD_MShipperTransportation FO
 -- 2025-10-02T16:49:38.805Z
 UPDATE AD_Ref_Table SET AD_Key=545739,Updated=TO_TIMESTAMP('2025-10-02 16:49:38.805000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Reference_ID=541991
 ;
+
+-- Element: VesselName
+-- 2025-10-03T08:25:11.374Z
+UPDATE AD_Element_Trl SET Description='Name des Schiffes', IsTranslated='Y',Updated=TO_TIMESTAMP('2025-10-03 08:25:11.374000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584077 AND AD_Language='de_DE'
+;
+
+-- 2025-10-03T08:25:11.453Z
+UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-10-03T08:25:20.597Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584077,'de_DE')
+;
+
+-- 2025-10-03T08:25:20.678Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584077,'de_DE')
+;
+
+-- Element: VesselName
+-- 2025-10-03T08:25:35.791Z
+UPDATE AD_Element_Trl SET Description='Name des Schiffes', IsTranslated='Y',Updated=TO_TIMESTAMP('2025-10-03 08:25:35.791000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584077 AND AD_Language='de_CH'
+;
+
+-- 2025-10-03T08:25:35.871Z
+UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-10-03T08:25:43.007Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584077,'de_CH')
+;
+
+-- Element: VesselName
+-- 2025-10-03T08:25:56.158Z
+UPDATE AD_Element_Trl SET Description='Name of the ship',Updated=TO_TIMESTAMP('2025-10-03 08:25:56.157000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584077 AND AD_Language='en_US'
+;
+
+-- 2025-10-03T08:25:56.237Z
+UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-10-03T08:26:03.056Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584077,'en_US')
+;
+
+-- Element: VesselName
+-- 2025-10-03T08:26:08.066Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-10-03 08:26:08.066000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584077 AND AD_Language='en_US'
+;
+
+-- 2025-10-03T08:26:08.223Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584077,'en_US')
+;
+
+-- Element: VesselName
+-- 2025-10-03T08:26:23.298Z
+UPDATE AD_Element_Trl SET Description='Nom du navire', IsTranslated='Y',Updated=TO_TIMESTAMP('2025-10-03 08:26:23.298000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584077 AND AD_Language='fr_CH'
+;
+
+-- 2025-10-03T08:26:23.381Z
+UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-10-03T08:26:30.413Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584077,'fr_CH')
+;
+
