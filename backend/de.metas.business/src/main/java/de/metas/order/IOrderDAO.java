@@ -38,6 +38,10 @@ public interface IOrderDAO extends ISingletonService
 	 */
 	<T extends I_C_Order> T getById(final OrderId orderId, Class<T> clazz);
 
+	<T extends I_C_Order> Optional<T> getByIdIfExists(
+			@NonNull OrderId orderId,
+			@NonNull Class<T> clazz);
+
 	I_C_OrderLine getOrderLineById(final int orderLineId);
 
 	I_C_OrderLine getOrderLineById(final OrderLineId orderLineId);

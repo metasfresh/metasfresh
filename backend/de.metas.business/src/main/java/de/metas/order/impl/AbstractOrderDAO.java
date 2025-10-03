@@ -126,6 +126,17 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
+	public <T extends I_C_Order> Optional<T> getByIdIfExists(
+			@NonNull final OrderId orderId,
+			@NonNull final Class<T> clazz)
+	{
+		queryBL.createQueryBuilder(clazz)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.firstOnlyOptional(clazz);
+	}
+
+	@Override
 	public I_C_OrderLine getOrderLineById(final int orderLineId)
 	{
 		return InterfaceWrapperHelper.load(orderLineId, I_C_OrderLine.class);
