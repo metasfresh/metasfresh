@@ -3848,14 +3848,4 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000017, SeqNo=7, Updated=now(), UpdatedBy=10
 UPDATE AD_TreeNodeMM SET Parent_ID=1000017, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542257 AND AD_Tree_ID=10
 ;
 
--- UI Element: Wareneingangsdisposition Logistik(541954,de.metas.inoutcandidate) -> Wareneingangsdisposition(548451,de.metas.inoutcandidate) -> main -> 20 -> doctype.KW
--- Column: M_ReceiptSchedule.CalendarWeek
--- 2025-10-03T15:29:46.005Z
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=553605, SeqNo=30,Updated=TO_TIMESTAMP('2025-10-03 15:29:46.005000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637576
-;
 
--- UI Element: Wareneingangsdisposition Logistik(541954,de.metas.inoutcandidate) -> Wareneingangsdisposition(548451,de.metas.inoutcandidate) -> main -> 20 -> doctype.Bestelldatum
--- Column: M_ReceiptSchedule.DateOrdered
--- 2025-10-03T15:30:05.807Z
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=553605, SeqNo=40,Updated=TO_TIMESTAMP('2025-10-03 15:30:05.807000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637577
-;
