@@ -24,6 +24,7 @@ FROM c_invoice invoice
 WHERE invoice.c_invoice_id = p_invoice_id::numeric
   AND invoice.paymentrule IN ('B', 'K')
   AND invoice.issotrx = 'Y'
-  AND invoice.processed = 'Y';
+  AND invoice.processed = 'Y'
+  AND invoice.docstatus IN ('CO', 'CL');
 $$
 ;
