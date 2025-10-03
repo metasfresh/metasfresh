@@ -51,19 +51,11 @@ public class InventoryJobLoaderAndSaver
 	{
 		final InventoryId inventoryId = jobId.toInventoryId();
 		final I_M_Inventory inventoryRecord = getInventoryRecordById(inventoryId);
-		final WarehouseId warehouseId = extractWarehouseId(inventoryRecord);
 		final List<I_M_InventoryLine> lineRecords = getLineRecords(inventoryId);
 
 		products.warnUp(lineRecords, lineRecord -> ProductId.ofRepoId(lineRecord.getM_Product_ID()));
 
-		return InventoryJob.builder()
-				.id(InventoryJobId.ofRepoId(inventoryRecord.getM_Inventory_ID()))
-				.responsibleId(extractResponsibleId(inventoryRecord))
-				.warehouseId(warehouseId)
-				.lines(lineRecords.stream()
-						.map((record) -> fromRecord(record, warehouseId))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+		return fromRecord(inventoryRecord, lineRecords);
 	}
 
 	private ArrayList<I_M_InventoryLine> getLineRecords(final InventoryId inventoryId)
@@ -82,14 +74,34 @@ public class InventoryJobLoaderAndSaver
 		return inventoryRecordsByInventoryId.computeIfAbsent(inventoryId, inventoryDAO::getById);
 	}
 
+	private InventoryJob fromRecord(final I_M_Inventory inventoryRecord, final List<I_M_InventoryLine> lineRecords)
+	{
+		final WarehouseInfo warehouse = warehouses.getById(extractWarehouseId(inventoryRecord));
+
+		return InventoryJob.builder()
+				.id(InventoryJobId.ofRepoId(inventoryRecord.getM_Inventory_ID()))
+				.responsibleId(extractResponsibleId(inventoryRecord))
+				.documentNo(inventoryRecord.getDocumentNo())
+				.movementDate(TimeUtil.asLocalDate(inventoryRecord.getMovementDate()))
+				.warehouseId(warehouse.getWarehouseId())
+				.warehouseName(warehouse.getWarehouseName())
+				.lines(lineRecords.stream()
+						.map((record) -> fromRecord(record, warehouse.getWarehouseId()))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
 	private InventoryJobLine fromRecord(final I_M_InventoryLine record, @NonNull final WarehouseId warehouseId)
 	{
 		final ProductInfo productInfo = products.getById(ProductId.ofRepoId(record.getM_Product_ID()));
 		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(record.getC_UOM_ID()));
 
+		final LocatorId locatorId = LocatorId.ofRepoId(warehouseId, record.getM_Locator_ID());
+
 		return InventoryJobLine.builder()
 				.id(InventoryLineId.ofRepoId(record.getM_InventoryLine_ID()))
-				.locatorId(LocatorId.ofRepoId(warehouseId, record.getM_Locator_ID()))
+				.locatorId(locatorId)
+				.locatorName(warehouses.getLocatorName(locatorId))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.productNo(productInfo.getProductNo())
 				.productName(productInfo.getProductName())
@@ -155,13 +167,6 @@ public class InventoryJobLoaderAndSaver
 		lineRecord.setC_UOM_ID(from.getUomId().getRepoId());
 		lineRecord.setQtyBook(from.getQtyBooked().toBigDecimal());
 		lineRecord.setQtyCount(from.getQtyCount().toBigDecimal());
-	}
-
-	public InventoryJobLoaderAndSaver addToCache(@NonNull final I_M_Inventory inventoryRecord)
-	{
-		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
-		this.inventoryRecordsByInventoryId.put(inventoryId, inventoryRecord);
-		return this;
 	}
 
 	public InventoryJob updateById(final InventoryJobId jobId, final UnaryOperator<InventoryJob> updater)

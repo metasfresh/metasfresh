@@ -1,17 +1,19 @@
 package de.metas.inventory.mobileui.job.repository;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -19,7 +21,8 @@ class Warehouses
 {
 	private final IWarehouseDAO dao = Services.get(IWarehouseDAO.class);
 
-	private final HashMap<WarehouseId, WarehouseInfo> byId = new HashMap<>();
+	private final HashMap<WarehouseId, WarehouseInfo> warehousesByWarehouseId = new HashMap<>();
+	private final HashMap<WarehouseId, WarehouseLocatorsInfo> locatorsByWarehouseId = new HashMap<>();
 
 	public <T> void warnUp(final Collection<T> objects, Function<T, WarehouseId> idMapper)
 	{
@@ -34,11 +37,13 @@ class Warehouses
 
 	private Collection<WarehouseInfo> getByIds(final Set<WarehouseId> id)
 	{
-		return CollectionUtils.getAllOrLoad(byId, id, this::retrieveByIds);
+		return CollectionUtils.getAllOrLoad(warehousesByWarehouseId, id, this::retrieveByIds);
 	}
 
-	private Map<WarehouseId, WarehouseInfo> retrieveByIds(final Set<WarehouseId> ids)
+	private ImmutableMap<WarehouseId, WarehouseInfo> retrieveByIds(final Set<WarehouseId> ids)
 	{
+		if (ids.isEmpty()) {return ImmutableMap.of();}
+
 		return dao.getByIds(ids)
 				.stream()
 				.map(Warehouses::fromRecord)
@@ -50,6 +55,36 @@ class Warehouses
 		return WarehouseInfo.builder()
 				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
 				.warehouseName(record.getName())
+				.build();
+	}
+
+	public String getLocatorName(final LocatorId locatorId)
+	{
+		return getWarehouseLocators(locatorId.getWarehouseId()).getLocatorName(locatorId);
+	}
+
+	private WarehouseLocatorsInfo getWarehouseLocators(@NonNull final WarehouseId warehouseId)
+	{
+		return locatorsByWarehouseId.computeIfAbsent(warehouseId, this::retrieveWarehouseLocators);
+	}
+
+	private WarehouseLocatorsInfo retrieveWarehouseLocators(@NonNull final WarehouseId warehouseId)
+	{
+		return WarehouseLocatorsInfo.builder()
+				.warehouseId(warehouseId)
+				.locators(dao.getLocators(warehouseId)
+						.stream()
+						.map(Warehouses::fromRecord)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+
+	}
+
+	private static LocatorInfo fromRecord(final I_M_Locator record)
+	{
+		return LocatorInfo.builder()
+				.locatorId(LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
+				.locatorName(record.getValue())
 				.build();
 	}
 

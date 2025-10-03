@@ -15,10 +15,14 @@ import org.adempiere.warehouse.LocatorId;
 public class InventoryJobLine
 {
 	@NonNull InventoryLineId id;
-	@NonNull LocatorId locatorId;
+	
 	@NonNull ProductId productId;
 	@NonNull String productNo;
 	@NonNull ITranslatableString productName;
+
+	@NonNull LocatorId locatorId;
+	@NonNull String locatorName;
+
 
 	@NonNull Quantity qtyBooked;
 	@NonNull Quantity qtyCount;

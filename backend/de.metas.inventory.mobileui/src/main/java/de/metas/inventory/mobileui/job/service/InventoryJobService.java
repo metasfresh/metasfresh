@@ -52,20 +52,13 @@ public class InventoryJobService
 		}
 
 		return newLoaderAndSaver()
-				.updateById(InventoryJobId.ofInventoryId(inventoryId), job -> {
-					final UserId previousResponsibleId = job.getResponsibleId();
-					if (previousResponsibleId != null && !UserId.equals(previousResponsibleId, responsibleId))
-					{
-						throw new AdempiereException("Inventory is already assigned");
-					}
-					return job.withResponsibleId(responsibleId);
-				});
+				.updateById(InventoryJobId.ofInventoryId(inventoryId), job -> job.assigningTo(responsibleId));
 	}
 
-	public InventoryJob assignJob(final InventoryJobId jobId, final UserId callerId)
+	public InventoryJob assignJob(final InventoryJobId jobId, final UserId newResponsibleId)
 	{
 		return newLoaderAndSaver()
-				.updateById(jobId, job -> job.withResponsibleId(callerId));
+				.updateById(jobId, job -> job.reassigningTo(newResponsibleId));
 	}
 
 	public void abort(final InventoryJobId jobId, final UserId callerId)
