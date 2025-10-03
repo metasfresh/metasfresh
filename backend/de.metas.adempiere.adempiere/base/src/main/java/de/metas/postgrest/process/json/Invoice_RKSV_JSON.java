@@ -30,16 +30,9 @@ public class Invoice_RKSV_JSON extends PostgRESTProcessExecutor
 	@Override
 	protected final CustomPostgRESTParameters beforePostgRESTCall()
 	{
-		final boolean calledViaAPI = isCalledViaAPI();
-
 		return CustomPostgRESTParameters.builder()
-				.storeJsonFile(!calledViaAPI)
+				.storeJsonFile(!isCalledViaAPI())
 				.expectSingleResult(true) // because we export exactly one record, we don't want the JSON to be an array
 				.build();
-	}
-
-	private boolean isCalledViaAPI()
-	{
-		return ProcessCalledFrom.API.equals(getProcessInfo().getProcessCalledFrom());
 	}
 }
