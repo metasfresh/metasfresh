@@ -15,16 +15,16 @@ Feature: Invoice to comply with RKSV export via postgREST
 
     And metasfresh contains M_PriceLists
       | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | salesPriceList | pricingSystem      | DE           | EUR           | false |
+      | salesPriceList | pricingSystem      | DE           | EUR           | true  |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | salesPLV   | salesPriceList |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | IsVendor | REST.Context.Name | M_PricingSystem_ID | OPT.C_PaymentTerm_ID | PaymentRule |
-      | vendor1    | N          | Y        | partnerName       | pricingSystem      | 1000009              | B           |
+      | customer1  | Y          | Y        | partnerName       | pricingSystem      | 1000009              | B           |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | City | Postal |
-      | bpartner_location_1 | vendor1       | Y               | Y               | Bonn | 53175  |
+      | bpartner_location_1 | customer1     | Y               | Y               | Bonn | 53175  |
 
   @from:cucumber
   Scenario: create an invoice and export it
@@ -35,19 +35,22 @@ Feature: Invoice to comply with RKSV export via postgREST
       | M_PriceList_Version_ID | M_Product_ID         | PriceStd | C_UOM_ID |
       | salesPLV               | product_10022025_010 | 5.00     | PCE      |
     And metasfresh contains C_Invoice:
-      | Identifier              | REST.Context               | C_BPartner_ID | PaymentRule | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
-      | purchaseInvoice10022025 | purchaseInvoice10022025_ID | vendor1       | B           | Eingangsrechnung        | 10022025   | 2025-05-01   | false   | EUR                 |
+      | Identifier           | REST.Context            | C_BPartner_ID | PaymentRule | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoice10022025 | salesInvoice10022025_ID | customer1     | B           | Ausgangsrechnung        | 10022025   | 2025-05-01   | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID            | M_Product_ID         | QtyInvoiced |
-      | purchaseInvoice10022025 | product_10022025_010 | 1 PCE       |
-    And the invoice identified by purchaseInvoice10022025 is completed
+      | C_Invoice_ID         | M_Product_ID         | QtyInvoiced |
+      | salesInvoice10022025 | product_10022025_010 | 1 PCE       |
+    And the invoice identified by salesInvoice10022025 is completed
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.GrandTotal |
+      | salesInvoice10022025    | customer1                | bpartner_location_1               | 30 Tage netto | true      | CO        | 5.95 EUR       |
     And metasfresh contains C_Invoice:
-      | Identifier                | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
-      | purchaseInvoice10022025_2 | vendor1       | Eingangsrechnung        | 10022025_2 | 2025-05-01   | false   | EUR                 |
+      | Identifier             | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoice10022025_2 | customer1     | Ausgangsrechnung        | 10022025_2 | 2025-05-01   | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID              | M_Product_ID         | QtyInvoiced |
-      | purchaseInvoice10022025_2 | product_10022025_010 | 1 PCE       |
-    And the invoice identified by purchaseInvoice10022025_2 is completed
+      | C_Invoice_ID           | M_Product_ID         | QtyInvoiced |
+      | salesInvoice10022025_2 | product_10022025_010 | 1 PCE       |
+    And the invoice identified by salesInvoice10022025_2 is completed
 
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -63,7 +66,7 @@ Feature: Invoice to comply with RKSV export via postgREST
   "processParameters": [
     {
       "name": "C_Invoice_ID",
-      "value": @purchaseInvoice10022025_ID@
+      "value": @salesInvoice10022025_ID@
     }
   ]
 }

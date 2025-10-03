@@ -23,7 +23,7 @@ FROM c_invoice invoice
          LEFT JOIN c_location location ON blocation.c_location_id = location.c_location_id
 WHERE invoice.c_invoice_id = p_invoice_id::numeric
   AND invoice.paymentrule IN ('B', 'K')
-  AND invoice.issotrx = 'N'
+  AND invoice.issotrx = 'Y'
   AND invoice.processed = 'Y';
 $$
 ;

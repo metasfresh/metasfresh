@@ -894,7 +894,7 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000018, SeqNo=16, Updated=now(), UpdatedBy=1
 
 -- Name: Invoice_RKSV
 -- 2025-10-02T12:16:36.176Z
-INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540747,'C_Invoice.PaymentRule IN (''B'', ''K'') AND C_Invoice.IsSOTrx = ''N'' AND C_Invoice.Processed = ''Y''',TO_TIMESTAMP('2025-10-02 12:16:35.985000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Invoice_RKSV','S',TO_TIMESTAMP('2025-10-02 12:16:35.985000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540747,'C_Invoice.PaymentRule IN (''B'', ''K'') AND C_Invoice.IsSOTrx = ''Y'' AND C_Invoice.Processed = ''Y''',TO_TIMESTAMP('2025-10-02 12:16:35.985000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Invoice_RKSV','S',TO_TIMESTAMP('2025-10-02 12:16:35.985000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Process: Invoice_RKSV_JSON(de.metas.postgrest.process.json.Invoice_RKSV_JSON)
