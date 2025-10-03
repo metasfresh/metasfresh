@@ -1,11 +1,13 @@
 package de.metas.inventory.mobileui.job.service;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryQuery;
 import de.metas.inventory.mobileui.job.InventoryJob;
 import de.metas.inventory.mobileui.job.InventoryJobId;
+import de.metas.inventory.mobileui.job.InventoryJobLine;
 import de.metas.inventory.mobileui.job.qrcode.InventoryScannedCodeResolveCommand;
 import de.metas.inventory.mobileui.job.qrcode.InventoryScannedCodeResolveCommand.InventoryScannedCodeResolveCommandBuilder;
 import de.metas.inventory.mobileui.job.qrcode.ScannedCodeResolveRequest;
@@ -18,9 +20,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolveContext;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 @Service
@@ -29,6 +35,7 @@ public class InventoryJobService
 {
 	@NonNull final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 	@NonNull final HUQRCodesService huQRCodesService;
 
 	@NotNull
@@ -75,6 +82,18 @@ public class InventoryJobService
 	{
 		// TODO
 		return inventoryJob;
+	}
+
+	public LocatorScannedCodeResolverResult resolveLocator(@NonNull final ScannedCodeResolveRequest request)
+	{
+		final List<InventoryJobLine> lines = request.getContextJobLines();
+
+		return locatorScannedCodeResolver.resolve(
+				request.getScannedCode(),
+				LocatorScannedCodeResolveContext.builder()
+						.eligibleLocatorIds(lines.stream().map(InventoryJobLine::getLocatorId).collect(ImmutableSet.toImmutableSet()))
+						.build()
+		);
 	}
 
 	public ScannedCodeResolveResponse resolveHU(@NonNull final ScannedCodeResolveRequest request)

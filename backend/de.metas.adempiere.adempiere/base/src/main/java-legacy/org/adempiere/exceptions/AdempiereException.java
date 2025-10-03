@@ -390,7 +390,9 @@ public class AdempiereException extends RuntimeException
 		this.mdcContextMap = captureMDCContextMap();
 		this.errorCode = extractErrorCodeOrNull(cause);
 	}
-	
+
+	public static AdempiereException notFound() {return new AdempiereException(MSG_NotFound);}
+
 	public static AdempiereException noLines() {return new AdempiereException(MSG_NoLines);}
 
 	public static AdempiereException noSelection() {return new AdempiereException(MSG_NoSelection);}

@@ -54,6 +54,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.util.Collection;
@@ -363,7 +364,7 @@ public class WarehouseBL implements IWarehouseBL
 	@NonNull
 	public ExplainedOptional<LocatorQRCode> getLocatorQRCodeByValue(@NonNull String locatorValue)
 	{
-		final List<I_M_Locator> locators = warehouseDAO.retrieveActiveLocatorsByValue(locatorValue);
+		final List<I_M_Locator> locators = getActiveLocatorsByValue(locatorValue);
 		if (locators.isEmpty())
 		{
 			return ExplainedOptional.emptyBecause(AdempiereException.MSG_NotFound);
@@ -378,4 +379,11 @@ public class WarehouseBL implements IWarehouseBL
 			return ExplainedOptional.of(LocatorQRCode.ofLocator(locator));
 		}
 	}
+
+	@Override
+	public List<I_M_Locator> getActiveLocatorsByValue(final @NotNull String locatorValue)
+	{
+		return warehouseDAO.retrieveActiveLocatorsByValue(locatorValue);
+	}
+
 }

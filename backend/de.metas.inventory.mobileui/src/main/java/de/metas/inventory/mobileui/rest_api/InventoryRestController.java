@@ -7,11 +7,13 @@ import de.metas.inventory.mobileui.job.qrcode.ScannedCodeResolveRequest;
 import de.metas.inventory.mobileui.job.qrcode.ScannedCodeResolveResponse;
 import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHUResponse;
+import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorResponse;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveProductResponse;
 import de.metas.inventory.mobileui.rest_api.json.JsonScannedCodeResolveRequest;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +28,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class InventoryRestController
 {
 	@NonNull private InventoryJobService jobService;
+
+	@PostMapping("/resolveLocator")
+	public JsonResolveLocatorResponse resolveLocator(@RequestBody @NonNull final JsonScannedCodeResolveRequest request)
+	{
+		final LocatorScannedCodeResolverResult result = jobService.resolveLocator(fromJson(request));
+		return JsonResolveLocatorResponse.of(result);
+	}
 
 	@PostMapping("/resolveHU")
 	public JsonResolveHUResponse resolveHU(@RequestBody @NonNull final JsonScannedCodeResolveRequest request)
