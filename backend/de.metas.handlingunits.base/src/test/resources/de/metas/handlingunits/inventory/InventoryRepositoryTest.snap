@@ -33,6 +33,10 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 1000000,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 40,
         "qtyBookFixed": "30 Ea",
         "qtyCountFixed": "3 Ea",

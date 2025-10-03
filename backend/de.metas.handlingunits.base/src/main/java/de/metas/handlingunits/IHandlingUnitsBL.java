@@ -100,6 +100,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	HUType getHUUnitType(@NonNull I_M_HU hu);
 
+	HUPIItemProduct getPIItemProduct(HUPIItemProductId piItemProductId);
+
 	ImmutableSet<HuId> getVHUIds(HuId huId);
 
 	ImmutableSet<HuId> getVHUIds(Set<HuId> huIds);
@@ -115,6 +117,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
 
 	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
+
+	void saveHU(I_M_HU hu);
 
 	/**
 	 * @return default storage factory
@@ -498,6 +502,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	@Nullable
 	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
+
+	@NonNull
+	I_M_HU_PI_Item getPIItem(@NonNull HuPackingInstructionsItemId piItemId);
 
 	@NonNull
 	List<I_M_HU_PI_Item> getPIItems(@NonNull Collection<I_M_HU_Item> huItems);

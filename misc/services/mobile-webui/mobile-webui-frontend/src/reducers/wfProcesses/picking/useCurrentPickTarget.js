@@ -17,7 +17,7 @@ export const useCurrentPickingTargetInfo = ({ wfProcessId, activityId, lineId })
 const computeIsAllowReopeningLU = ({ allowedPickToStructures }) =>
   allowedPickToStructures.some(isLUBasedPickToStructure);
 
-export const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, lineId, fallbackToHeader = false }) => {
+const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, lineId, fallbackToHeader = false }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   return getCurrentPickingTargetInfoFromActivity({ activity, lineId, fallbackToHeader });
 };

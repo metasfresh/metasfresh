@@ -8,6 +8,9 @@ Feature: available for sales
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh initially has no MD_Available_For_Sales data
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | warehouseStd              | StdWarehouse |
 
   @from:cucumber
   Scenario: sync MD_Available_For_Sales when C_OrderLine's qtyOrdered changes
@@ -36,14 +39,14 @@ Feature: available for sales
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | ol_1       | o_1        | p_1          | 10         |
     And after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 0              | 10             | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 0              | 10             | -1002                           | warehouseStd   |
     When update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyOrdered |
       | ol_1                      | 20             |
     Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 0              | 20             | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 0              | 20             | -1002                           | warehouseStd   |
 
   @from:cucumber
   Scenario: sync MD_Available_For_Sales when C_OrderLine's M_AttributeSetInstance_ID changes
@@ -76,9 +79,9 @@ Feature: available for sales
       | ol_2       | o_1                   | p_2                     | 10         |
       | ol_3       | o_1                   | p_1                     | 10         |
     And after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 0              | 20             | -1002                           |
-      | p_2                     | 0              | 10             | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 0              | 20             | -1002                           | warehouseStd   |
+      | p_2                     | 0              | 10             | -1002                           | warehouseStd   |
 
     And metasfresh contains M_AttributeSetInstance with identifier "lineASI":
   """
@@ -95,10 +98,10 @@ Feature: available for sales
       | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1                      | lineASI                                  |
     Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 0              | 10             | lineASI                         |
-      | p_2                     | 0              | 10             | -1002                           |
-      | p_1                     | 0              | 10             | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 0              | 10             | lineASI                         | warehouseStd   |
+      | p_2                     | 0              | 10             | -1002                           | warehouseStd   |
+      | p_1                     | 0              | 10             | -1002                           | warehouseStd   |
 
   @from:cucumber
   Scenario: sync MD_Available_For_Sales when MD_Stock is created and then move qtyToBeShipped in the future
@@ -127,8 +130,8 @@ Feature: available for sales
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | ol_1       | o_1        | p_1          | 10         |
     And after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 0              | 10             | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 0              | 10             | -1002                           | warehouseStd   |
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
       | 11                        | 540008         | 2021-07-11   | 1111           |
@@ -137,8 +140,8 @@ Feature: available for sales
       | 21                            | 11                        | p_1                     | PCE          | 10       | 0       |
     And the inventory identified by 11 is completed
     And after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 10             | 10             | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 10             | 10             | -1002                           | warehouseStd   |
     And validate MD_AvailableForSales_Config
       | AD_Client_ID | AD_Org_ID | SalesOrderLookBehindHours | ShipmentDateLookAheadHours |
       | 1000000      | 0         | 8                         | 72                         |
@@ -146,8 +149,8 @@ Feature: available for sales
       | C_Order_ID.Identifier | OPT.PreparationDate |
       | o_1                   | 2022-04-17          |
     Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 10             | 0              | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 10             | 0              | -1002                           | warehouseStd   |
 
   @from:cucumber
   Scenario: sync MD_Available_For_Sales when M_ShipmentSchedule's preparationDate_Override is changed
@@ -177,8 +180,8 @@ Feature: available for sales
       | ol_1       | o_1        | p_1          | 10         |
     When the order identified by o_1 is completed
     And after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 0              | 10             | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 0              | 10             | -1002                           | warehouseStd   |
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -215,8 +218,8 @@ Feature: available for sales
       | ol_1       | o_1        | p_1          | 10         |
     When the order identified by o_1 is completed
     And after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 0              | 10             | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 0              | 10             | -1002                           | warehouseStd   |
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -265,8 +268,8 @@ Feature: available for sales
     When the inventory identified by 11 is completed
 
     Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 10             | 8              | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 10             | 8              | -1002                           | warehouseStd   |
 
   @from:cucumber
   Scenario: sync MD_Available_For_Sales and export it via API
@@ -310,9 +313,9 @@ Feature: available for sales
     And the inventory identified by 11 is completed
 
     And after not more than 30s, MD_Available_For_Sales table contains only the following records:
-      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 10             | 8              | -1002                           |
-      | p_2                     | 0              | 10             | -1002                           |
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 10             | 8              | -1002                           | warehouseStd   |
+      | p_2                     | 0              | 10             | -1002                           | warehouseStd   |
 
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -347,7 +350,7 @@ Feature: available for sales
   }
 ]
     """
-    
+
     When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Available_For_Sales_JSON/invoke' and fulfills with '200' status code
     """
     """
@@ -372,3 +375,202 @@ Feature: available for sales
     }
 ]
     """
+
+  @from:cucumber
+  Scenario: sync MD_Available_For_Sales with multiple warehouses
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | p_1        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | wh             |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_1       |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | pl_1       | ps_1               | DE           | EUR           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_1                             | p_1          | 10.0     | PCE      | Normal           |
+    And metasfresh contains C_BPartners:
+      | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | endcustomer_1 | N        | Y          | ps_1               |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference | C_PaymentTerm_ID |
+      | o_1        | true    | endcustomer_1 | 2021-04-17  | po_ref_mock | 1000012          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | o_1        | p_1          | 8          |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference | C_PaymentTerm_ID | M_Warehouse_ID |
+      | o_1        | true    | endcustomer_1 | 2021-04-17  | po_ref_mock | 1000012          | wh             |
+
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | o_1        | p_1          | 10         |
+
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
+      | 11                        | 540008         | 2021-07-11   | 1111           |
+    And metasfresh contains M_InventoriesLines:
+      | M_InventoryLine_ID.Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
+      | 21                            | 11                        | p_1                     | PCE          | 10       | 0       |
+    When the inventory identified by 11 is completed
+
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate |
+      | 22                        | wh             | 2021-07-11   |
+
+    And metasfresh contains M_InventoriesLines:
+      | M_InventoryLine_ID.Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
+      | 31                            | 22                        | p_1                     | PCE          | 12       | 0       |
+
+    When the inventory identified by 22 is completed
+
+    Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 10             | 8              | -1002                           | warehouseStd   |
+      | p_1                     | 12             | 10             | -1002                           | wh             |
+
+  @from:cucumber
+  Scenario: sync MD_Available_For_Sales with multiple warehouses and export it via API
+    Given metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | REST.Context.Value |
+      | wh             | warehouseValue     |
+    And metasfresh contains M_Products:
+      | Identifier | REST.Context |
+      | p_1        | productId_1  |
+      | p_2        | productId_2  |
+      | p_3        | productId_3  |
+    And metasfresh contains S_ExternalReferences:
+      | ExternalSystem.Code | ExternalReference            | ExternalReferenceType.Code | RecordId.Identifier |
+      | GRSSignum           | availableForSales_09292025_1 | Product                    | p_1                 |
+      | GRSSignum           | availableForSales_09292025_2 | Product                    | p_2                 |
+      | GRSSignum           | availableForSales_09292025_3 | Product                    | p_3                 |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_1       |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | pl_1       | ps_1               | DE           | EUR           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_1                             | p_1          | 10.0     | PCE      | Normal           |
+      | plv_1                             | p_2          | 10.0     | PCE      | Normal           |
+      | plv_1                             | p_3          | 10.0     | PCE      | Normal           |
+    And metasfresh contains C_BPartners:
+      | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | endcustomer_1 | N        | Y          | ps_1               |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference | C_PaymentTerm_ID | M_Warehouse_ID |
+      | o_1        | true    | endcustomer_1 | 2021-04-17  | po_ref_mock | 1000012          | warehouseStd   |
+      | o_2        | true    | endcustomer_1 | 2021-04-17  | po_ref_mock | 1000012          | wh             |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | o_1        | p_1          | 8          |
+      | ol_2       | o_1        | p_2          | 10         |
+      | ol_3       | o_2        | p_3          | 12         |
+
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
+      | 11                        | 540008         | 2021-07-11   | 1111           |
+      | i2                        | wh             | 2021-07-11   | 1111           |
+    And metasfresh contains M_InventoriesLines:
+      | M_InventoryLine_ID.Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
+      | 21                            | 11                        | p_1                     | PCE          | 10       | 0       |
+      | 31                            | i2                        | p_3                     | PCE          | 14       | 0       |
+    And the inventory identified by 11 is completed
+    And the inventory identified by i2 is completed
+
+    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+      | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier | M_Warehouse_ID |
+      | p_1                     | 10             | 8              | -1002                           | warehouseStd   |
+      | p_2                     | 0              | 10             | -1002                           | warehouseStd   |
+      | p_3                     | 14             | 12             | -1002                           | wh             |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Available_For_Sales_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "ExternalSystem",
+      "value": "GRSSignum"
+    }
+  ]
+}
+    """
+
+    Then the metasfresh REST-API responds with
+    """
+[
+    {
+    "ProductExternalReference": "availableForSales_09292025_1",
+    "Product_ID": @productId_1@,
+    "QtyOnHandStock": 10,
+    "QtyToBeShipped": 8,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": "GRSSignum",
+    "WarehouseCode": "StdWarehouse"
+  },
+  {
+    "ProductExternalReference": "availableForSales_09292025_2",
+    "Product_ID": @productId_2@,
+    "QtyOnHandStock": 0,
+    "QtyToBeShipped": 10,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": "GRSSignum",
+    "WarehouseCode": "StdWarehouse"
+  },
+  {
+    "ProductExternalReference": "availableForSales_09292025_3",
+    "Product_ID": @productId_3@,
+    "QtyOnHandStock": 14,
+    "QtyToBeShipped": 12,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": "GRSSignum",
+    "WarehouseCode": "@warehouseValue@"
+  }
+]
+    """
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Available_For_Sales_JSON/invoke' and fulfills with '200' status code
+    """
+    {
+  "processParameters": [
+    {
+      "name": "WarehouseCode",
+      "value": "@warehouseValue@"
+    }
+  ]
+}
+    """
+    And the metasfresh REST-API responds with
+    """
+  [
+  {
+    "ProductExternalReference": "availableForSales_09292025_3",
+    "Product_ID": @productId_3@,
+    "QtyOnHandStock": 14,
+    "QtyToBeShipped": 12,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": "GRSSignum",
+    "WarehouseCode": "@warehouseValue@"
+  }
+  ]
+  """

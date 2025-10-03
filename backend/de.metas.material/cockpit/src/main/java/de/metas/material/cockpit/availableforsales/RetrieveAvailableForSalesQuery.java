@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 
@@ -43,4 +44,6 @@ public class RetrieveAvailableForSalesQuery
 
 	@Nullable
 	OrgId orgId;
+
+	@Nullable WarehouseId warehouseId;
 }

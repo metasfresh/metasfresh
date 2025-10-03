@@ -83,6 +83,10 @@ export const PickingJobScreen = {
         }
     }),
 
+    clickReopenLUButton: async () => await step(`${NAME} - Click Reopen LU button`, async () => {
+        await page.getByTestId('reopenLU-button').tap();
+    }),
+
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {
         await page.getByTestId('targetLU-button').tap();
     }),

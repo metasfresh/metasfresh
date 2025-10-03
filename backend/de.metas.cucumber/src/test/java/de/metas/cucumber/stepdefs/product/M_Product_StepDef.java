@@ -71,7 +71,6 @@ import org.compiere.util.DB;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
@@ -412,8 +411,9 @@ public class M_Product_StepDef
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 
-		final OptionalInt optionalProductId = row.getAsOptionalInt(I_M_Product.COLUMNNAME_M_Product_ID);
-		optionalProductId.ifPresent(id -> productTable.putOrReplace(identifier, productDAO.getById(id)));
+		row.getAsOptionalInt(I_M_Product.COLUMNNAME_M_Product_ID)
+				.map(ProductId::ofRepoId)
+				.ifPresent(id -> productTable.putOrReplace(identifier, productDAO.getById(id)));
 	}
 
 	private void updateMProduct(@NonNull final DataTableRow row)

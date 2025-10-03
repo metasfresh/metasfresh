@@ -599,6 +599,14 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	}
 
+	public boolean hasClosedLUs(
+			@NonNull final WFProcessId wfProcessId,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final UserId callerId)
+	{
+		return !getClosedLUs(wfProcessId, lineId, callerId).isEmpty();
+	}
+
 	@NonNull
 	public List<HuId> getClosedLUs(
 			@NonNull final WFProcessId wfProcessId,

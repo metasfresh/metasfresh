@@ -89,6 +89,7 @@ public class AvailableForSalesConfigRepo
 				.shipmentDateLookAheadHours(configRecord.getShipmentDateLookAheadHours())
 				.runAsync(configRecord.isAsync())
 				.asyncTimeoutMillis(configRecord.getAsyncTimeoutMillis())
+				.qtyPerWarehouse(configRecord.isQtyPerWarehouse())
 				.build();
 	}
 

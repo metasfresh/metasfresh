@@ -136,6 +136,18 @@ public class PickingRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
+	@GetMapping("/job/{wfProcessId}/has-closed-lu")
+	public boolean hasClosedLUs(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@RequestParam(value = "lineId", required = false) @Nullable final String lineIdStr)
+	{
+		assertApplicationAccess();
+
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
+		return pickingMobileApplication.hasClosedLUs(wfProcessId, lineId, getLoggedUserId());
+	}
+
 	@GetMapping("/job/{wfProcessId}/closed-lu")
 	public JsonHUList getClosedLUs(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
