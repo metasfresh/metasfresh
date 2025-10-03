@@ -21,6 +21,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
@@ -50,6 +51,7 @@ public class InventoryJobLoaderAndSaver
 	{
 		final InventoryId inventoryId = jobId.toInventoryId();
 		final I_M_Inventory inventoryRecord = getInventoryRecordById(inventoryId);
+		final WarehouseId warehouseId = extractWarehouseId(inventoryRecord);
 		final List<I_M_InventoryLine> lineRecords = getLineRecords(inventoryId);
 
 		products.warnUp(lineRecords, lineRecord -> ProductId.ofRepoId(lineRecord.getM_Product_ID()));
@@ -57,8 +59,9 @@ public class InventoryJobLoaderAndSaver
 		return InventoryJob.builder()
 				.id(InventoryJobId.ofRepoId(inventoryRecord.getM_Inventory_ID()))
 				.responsibleId(extractResponsibleId(inventoryRecord))
+				.warehouseId(warehouseId)
 				.lines(lineRecords.stream()
-						.map(this::fromRecord)
+						.map((record) -> fromRecord(record, warehouseId))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
@@ -79,13 +82,14 @@ public class InventoryJobLoaderAndSaver
 		return inventoryRecordsByInventoryId.computeIfAbsent(inventoryId, inventoryDAO::getById);
 	}
 
-	private InventoryJobLine fromRecord(final I_M_InventoryLine record)
+	private InventoryJobLine fromRecord(final I_M_InventoryLine record, @NonNull final WarehouseId warehouseId)
 	{
 		final ProductInfo productInfo = products.getById(ProductId.ofRepoId(record.getM_Product_ID()));
 		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(record.getC_UOM_ID()));
 
 		return InventoryJobLine.builder()
 				.id(InventoryLineId.ofRepoId(record.getM_InventoryLine_ID()))
+				.locatorId(LocatorId.ofRepoId(warehouseId, record.getM_Locator_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.productNo(productInfo.getProductNo())
 				.productName(productInfo.getProductName())

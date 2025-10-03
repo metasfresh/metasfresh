@@ -3,7 +3,7 @@ package de.metas.inventory.mobileui.workflows_api.activity_handlers;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.mobileui.InventoryMobileApplication;
 import de.metas.inventory.mobileui.job.InventoryJob;
-import de.metas.inventory.mobileui.job.InventoryJobService;
+import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;

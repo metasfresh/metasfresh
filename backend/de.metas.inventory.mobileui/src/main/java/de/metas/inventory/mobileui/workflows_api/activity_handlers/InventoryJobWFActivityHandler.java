@@ -1,6 +1,9 @@
 package de.metas.inventory.mobileui.workflows_api.activity_handlers;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.inventory.mobileui.job.InventoryJob;
+import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJob;
+import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJobLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -33,11 +36,28 @@ public class InventoryJobWFActivityHandler implements WFActivityHandler
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
-						// .valueObj("job", toJson(job))
-						// TODO
-						// .valueObj("lines", lines)
-						// .valueObj("qtyRejectedReasons", qtyRejectedReasons)
+						.valueObj("job", toJson(job))
 						.build())
+				.build();
+	}
+
+	private JsonInventoryJob toJson(final InventoryJob job)
+	{
+		return JsonInventoryJob.builder()
+				.id(job.getId())
+				.lines(job.getLines()
+						.stream()
+						.map(line -> JsonInventoryJobLine.builder()
+								.id(line.getId())
+								.caption(line.getProductNo() + "_" + line.getProductName())
+								.productId(line.getProductId())
+								.productNo(line.getProductNo())
+								.productName(line.getProductName())
+								.uom(line.getUOMSymbol())
+								.qtyBooked(line.getQtyBooked().toBigDecimal())
+								.qtyCount(line.getQtyCount().toBigDecimal())
+								.build())
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 

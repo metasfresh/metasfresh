@@ -7,7 +7,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.mobileui.job.InventoryJob;
 import de.metas.inventory.mobileui.job.InventoryJobId;
-import de.metas.inventory.mobileui.job.InventoryJobService;
+import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.inventory.mobileui.launchers.InventoryWFProcessStartParams;
 import de.metas.inventory.mobileui.launchers.InventoryWorkflowLaunchersProvider;
 import de.metas.inventory.mobileui.workflows_api.activity_handlers.CompleteWFActivityHandler;

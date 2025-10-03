@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inventory.InventoryQuery;
 import de.metas.inventory.mobileui.job.InventoryJobId;
-import de.metas.inventory.mobileui.job.InventoryJobService;
+import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncher.WorkflowLauncherBuilder;

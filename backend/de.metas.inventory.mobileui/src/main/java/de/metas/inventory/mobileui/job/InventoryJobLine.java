@@ -8,12 +8,14 @@ import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
 
 @Value
 @Builder
 public class InventoryJobLine
 {
 	@NonNull InventoryLineId id;
+	@NonNull LocatorId locatorId;
 	@NonNull ProductId productId;
 	@NonNull String productNo;
 	@NonNull ITranslatableString productName;
@@ -25,4 +27,11 @@ public class InventoryJobLine
 	{
 		return Quantity.getCommonUomIdOfAll(qtyBooked, qtyCount);
 	}
+
+	public String getUOMSymbol()
+	{
+		Quantity.getCommonUomIdOfAll(qtyBooked, qtyCount);
+		return qtyBooked.getUOMSymbol();
+	}
+
 }

@@ -124,13 +124,13 @@ public class RepoIdAwares
 	@Nullable
 	public static <T extends RepoIdAware> T ofObjectOrNull(
 			@Nullable final Object repoIdObj,
-			@NonNull final Class<T> repoIdClass)
+			@NonNull final Class<T> repoIdClass,
+			@NonNull final IntFunction<T> ofRepoIdFunction)
 	{
 		if (repoIdObj == null)
 		{
 			return null;
 		}
-
 		if (repoIdClass.isInstance(repoIdObj))
 		{
 			return repoIdClass.cast(repoIdObj);
@@ -142,10 +142,15 @@ public class RepoIdAwares
 			return null;
 		}
 
-		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
-		final IntFunction<RepoIdAware> ofRepoIdOrNullFunction = repoIdAwareDescriptor.getOfRepoIdOrNullFunction();
-		@SuppressWarnings("unchecked") final T id = (T)ofRepoIdOrNullFunction.apply(repoId);
-		return id;
+		return ofRepoIdFunction.apply(repoId);
+	}
+
+	@Nullable
+	public static <T extends RepoIdAware> T ofObjectOrNull(
+			@Nullable final Object repoIdObj,
+			@NonNull final Class<T> repoIdClass)
+	{
+		return ofObjectOrNull(repoIdObj, repoIdClass, getOfRepoIdFunction(repoIdClass));
 	}
 
 	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, final Class<T> repoIdClass)
