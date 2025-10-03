@@ -147,6 +147,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 		final Language bpLanguage = Language.asLanguage(deliverToBPartner.getAD_Language());
 		return ContactPerson.builder()
+				.name(deliverToBPartner.getName())
 				.emailAddress(deliverToBPartner.getEMail())
 				.simplePhoneNumber(deliverToPhoneNumber)
 				.languageCode(bpLanguage != null ? bpLanguage.getLanguageCode() : null)

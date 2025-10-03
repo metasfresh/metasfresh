@@ -191,6 +191,7 @@ public class DerKurierDeliveryOrderRepository
 		if (!Check.isEmpty(email, true) || !Check.isEmpty(phone, true))
 		{
 			final ContactPerson contactPerson = ContactPerson.builder()
+					.name(lineRecord.getDK_Consignee_Name())
 					.emailAddress(email)
 					.simplePhoneNumber(phone)
 					.build();

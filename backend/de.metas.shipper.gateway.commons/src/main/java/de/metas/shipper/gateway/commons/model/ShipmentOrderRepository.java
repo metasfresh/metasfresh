@@ -76,7 +76,6 @@ public class ShipmentOrderRepository
 				.andCollectChildren(I_Carrier_ShipmentOrder_Item.COLUMNNAME_Carrier_ShipmentOrder_Parcel_ID, I_Carrier_ShipmentOrder_Item.class)
 				.create()
 				.stream()
-				// FIXME: not sure we have a link from parcel to item
 				.collect(ImmutableListMultimap.toImmutableListMultimap(item -> DeliveryOrderParcelId.ofRepoId(item.getCarrier_ShipmentOrder_Parcel_ID()), ShipmentOrderRepository::fromRecord));
 
 		final ImmutableList<DeliveryOrderParcel> parcels = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
@@ -87,6 +86,23 @@ public class ShipmentOrderRepository
 				.collect(ImmutableList.toImmutableList());
 
 		return fromRecord(shipmentOrder, parcels);
+	}
+
+	public DeliveryOrderParcel getParcelById(@NonNull final DeliveryOrderParcelId parcelId)
+	{
+		final ImmutableList<DeliveryOrderItem> items = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Item.class)
+				.addEqualsFilter(I_Carrier_ShipmentOrder_Item.COLUMNNAME_Carrier_ShipmentOrder_Parcel_ID, parcelId)
+				.create()
+				.stream()
+				.map(ShipmentOrderRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		final I_Carrier_ShipmentOrder_Parcel parcelPO = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
+				.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_Parcel_ID, parcelId)
+				.create()
+				.firstOnly();
+
+		return fromRecord(parcelPO, items);
 	}
 
 	private static DeliveryOrderItem fromRecord(@NonNull final I_Carrier_ShipmentOrder_Item item)

@@ -132,7 +132,9 @@ public class DerKurierTestTools
 						.country(COUNTRY_CODE_DE)
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name("to company")
 						.emailAddress("test@testmail.org")
+						.languageCode("de")
 						.build())
 				.customerReference("some info for customer");
 		return deliveryOrderBuilder;

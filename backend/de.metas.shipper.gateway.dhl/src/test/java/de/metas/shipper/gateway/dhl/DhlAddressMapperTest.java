@@ -86,6 +86,7 @@ public class DhlAddressMapperTest
 				.build();
 
 		final ContactPerson contactPerson = ContactPerson.builder()
+				.name("testContact")
 				.emailAddress("contact@example.com")
 				.simplePhoneNumber("555-1234")
 				.languageCode("de_DE")
@@ -125,6 +126,7 @@ public class DhlAddressMapperTest
 				.build();
 
 		final ContactPerson contactPerson = ContactPerson.builder()
+				.name("testContact")
 				.emailAddress("co")
 				.simplePhoneNumber("555-1234")
 				.languageCode("de_DE")
@@ -202,6 +204,7 @@ public class DhlAddressMapperTest
 				.build();
 
 		final ContactPerson contactPerson = ContactPerson.builder()
+				.name("testContact")
 				.emailAddress(ninetyLongString)
 				.simplePhoneNumber(sixtyTwoLongString)
 				.languageCode("de_DE")

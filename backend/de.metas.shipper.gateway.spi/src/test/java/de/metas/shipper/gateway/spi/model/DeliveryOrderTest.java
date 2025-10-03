@@ -28,6 +28,7 @@ class DeliveryOrderTest
 						//
 						.deliveryAddress(address("delivery"))
 						.deliveryContact(ContactPerson.builder()
+								.name("testContact")
 								.simplePhoneNumber("+49123456789")
 								.emailAddress("test@test.com")
 								.languageCode("de_DE")
