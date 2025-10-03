@@ -42,8 +42,8 @@ Feature: Invoice to comply with RKSV export via postgREST
       | salesInvoice10022025 | product_10022025_010 | 1 PCE       |
     And the invoice identified by salesInvoice10022025 is completed
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.GrandTotal |
-      | salesInvoice10022025    | customer1                | bpartner_location_1               | 30 Tage netto | true      | CO        | 5.95 EUR       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal |
+      | salesInvoice10022025    | customer1                | bpartner_location_1               | 10 Tage 1 % | true      | CO        | 5.95 EUR       |
     And metasfresh contains C_Invoice:
       | Identifier             | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
       | salesInvoice10022025_2 | customer1     | Ausgangsrechnung        | 10022025_2 | 2025-05-01   | true    | EUR                 |
