@@ -252,7 +252,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 
 		}
-		
+
 		final DocTypeId targetDocTypeId = getTarget_DocType_ID(invoice, creditCtx.getDocTypeId());
 		//
 		// create the credit memo as a copy of the original invoice
@@ -273,7 +273,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	private DocTypeId getTarget_DocType_ID(
-			@NonNull final I_C_Invoice invoice, 
+			@NonNull final I_C_Invoice invoice,
 			@Nullable final DocTypeId docTypeId)
 	{
 		if (docTypeId != null)
