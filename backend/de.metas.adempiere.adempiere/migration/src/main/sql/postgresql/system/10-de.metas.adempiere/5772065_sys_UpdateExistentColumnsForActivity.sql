@@ -32,7 +32,8 @@ SELECT p.AD_Val_Rule_ID,
        p.columnname,
        p.ad_process_id,
        p.name AS ProcessName,
-       pr.value AS ProcessValue
+       pr.value AS ProcessValue,
+	   p.ad_process_para
 FROM ad_process_para p
          JOIN ad_reference r ON p.ad_reference_id = r.ad_reference_id
 join ad_process pr on p.ad_process_id = pr.ad_process_id
