@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -15,18 +16,18 @@ import java.util.List;
 @ToString(doNotUseGetters = true)
 public final class LocatorScannedCodeResolverResult
 {
-	@Nullable LocatorId locatorId;
+	@Nullable LocatorQRCode locatorQRCode;
 	@NonNull @Getter ImmutableList<LocatorNotResolvedReason> notResolvedReasons;
 
-	private LocatorScannedCodeResolverResult(@NonNull final LocatorId locatorId)
+	private LocatorScannedCodeResolverResult(@NonNull LocatorQRCode locatorQRCode)
 	{
-		this.locatorId = locatorId;
+		this.locatorQRCode = locatorQRCode;
 		this.notResolvedReasons = ImmutableList.of();
 	}
 
 	private LocatorScannedCodeResolverResult(@NonNull final List<LocatorNotResolvedReason> notResolvedReasons)
 	{
-		this.locatorId = null;
+		this.locatorQRCode = null;
 		this.notResolvedReasons = ImmutableList.copyOf(notResolvedReasons);
 	}
 
@@ -40,22 +41,28 @@ public final class LocatorScannedCodeResolverResult
 		return new LocatorScannedCodeResolverResult(notFoundReasons);
 	}
 
-	public static LocatorScannedCodeResolverResult found(@NonNull final LocatorId locatorId)
+	public static LocatorScannedCodeResolverResult found(@NonNull final LocatorQRCode locatorQRCode)
 	{
-		return new LocatorScannedCodeResolverResult(locatorId);
+		return new LocatorScannedCodeResolverResult(locatorQRCode);
 	}
 
-	public boolean isFound() {return locatorId != null;}
+	public boolean isFound() {return locatorQRCode != null;}
 
 	@NonNull
 	public LocatorId getLocatorId()
 	{
-		if (locatorId == null)
+		return getLocatorQRCode().getLocatorId();
+	}
+
+	@NonNull
+	public LocatorQRCode getLocatorQRCode()
+	{
+		if (locatorQRCode == null)
 		{
 			throw AdempiereException.notFound()
 					.setParameter("notResolvedReasons", notResolvedReasons);
 		}
 
-		return locatorId;
+		return locatorQRCode;
 	}
 }

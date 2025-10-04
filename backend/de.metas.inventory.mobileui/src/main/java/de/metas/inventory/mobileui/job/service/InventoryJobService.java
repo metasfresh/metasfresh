@@ -33,10 +33,10 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class InventoryJobService
 {
-	@NonNull final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull final LocatorScannedCodeResolverService locatorScannedCodeResolver;
-	@NonNull final HUQRCodesService huQRCodesService;
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	@NotNull
 	private InventoryJobLoaderAndSaver newLoaderAndSaver() {return new InventoryJobLoaderAndSaver();}

@@ -8,6 +8,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.adempiere.warehouse.qrcode.resolver.global_qr_code.LocatorGlobalQRCodeResolver;
 import org.compiere.model.I_M_Locator;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,11 @@ public class LocatorScannedCodeResolverService
 	{
 		this.globalQRCodeResolvers = globalQRCodeResolvers.map(ImmutableList::copyOf).orElseGet(ImmutableList::of);
 		logger.info("Registered global QR code resolvers: {}", this.globalQRCodeResolvers);
+	}
+
+	public LocatorScannedCodeResolverResult resolve(@NonNull final ScannedCode scannedCode)
+	{
+		return resolve(scannedCode, LocatorScannedCodeResolveContext.NO_CONTEXT);
 	}
 
 	public LocatorScannedCodeResolverResult resolve(@NonNull final ScannedCode scannedCode, @NonNull final LocatorScannedCodeResolveContext context)
@@ -75,25 +81,24 @@ public class LocatorScannedCodeResolverService
 
 	private LocatorScannedCodeResolverResult resolveByLocatorValue(final @NotNull ScannedCode scannedCode, final @NotNull LocatorScannedCodeResolveContext context)
 	{
-		final ImmutableList<LocatorId> locatorIds = warehouseBL.getActiveLocatorsByValue(scannedCode.getAsString())
+		final ImmutableList<LocatorQRCode> locatorQRCodes = warehouseBL.getActiveLocatorsByValue(scannedCode.getAsString())
 				.stream()
-				.map(LocatorScannedCodeResolverService::extractLocatorId)
+				.map(LocatorQRCode::ofLocator)
 				.filter(context::isMatching)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 
-		if (locatorIds.isEmpty())
+		if (locatorQRCodes.isEmpty())
 		{
 			return LocatorScannedCodeResolverResult.notFound(RESOLVER_KEY_resolveByLocatorValue, "No locator found for " + scannedCode.getAsString());
 		}
-		else if (locatorIds.size() > 1)
+		else if (locatorQRCodes.size() > 1)
 		{
-			return LocatorScannedCodeResolverResult.notFound(RESOLVER_KEY_resolveByLocatorValue, "Multiple locators found for " + scannedCode.getAsString());
+			return LocatorScannedCodeResolverResult.notFound(RESOLVER_KEY_resolveByLocatorValue, "Multiple locatorQRCodes found for " + scannedCode.getAsString());
 		}
 		else
 		{
-			final LocatorId locatorId = locatorIds.get(0);
-			return LocatorScannedCodeResolverResult.found(locatorId);
+			return LocatorScannedCodeResolverResult.found(locatorQRCodes.get(0));
 		}
 	}
 

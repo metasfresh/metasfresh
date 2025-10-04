@@ -4,8 +4,14 @@ import { apiBasePath } from '../../constants';
 
 const inventoryBasePath = `${apiBasePath}/mobile/inventory`;
 
-export const resolveHU = ({ scannedCode, wfProcessId, lineId }) => {
+export const resolveLocator = ({ scannedBarcode, wfProcessId, lineId }) => {
   return axios
-    .post(toUrl(`${inventoryBasePath}/resolveHU`), { scannedCode, wfProcessId, lineId })
+    .post(toUrl(`${inventoryBasePath}/resolveLocator`), { scannedCode: scannedBarcode, wfProcessId, lineId })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const resolveHU = ({ scannedBarcode, wfProcessId, lineId }) => {
+  return axios
+    .post(toUrl(`${inventoryBasePath}/resolveHU`), { scannedCode: scannedBarcode, wfProcessId, lineId })
     .then((response) => unboxAxiosResponse(response));
 };

@@ -1,9 +1,8 @@
 import React from 'react';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { resolveHU } from '../api';
+import { resolveHU, resolveLocator } from '../api';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { inventoryJobLocation } from '../routes';
-import { parseLocatorQRCodeString } from '../../../utils/qrCode/locator';
 
 const STATUS_ScanLocator = 'ScanLocator';
 const STATUS_ScanHU = 'ScanHU';
@@ -18,12 +17,13 @@ const InventoryScanScreen = () => {
   const [status] = React.useState(STATUS_ScanLocator);
 
   const onLocatorScanned = ({ scannedBarcode }) => {
-    const parsedLocatorQRCode = parseLocatorQRCodeString(scannedBarcode);
-    console.log('onLocatorScanned', { scannedBarcode });
+    resolveLocator({ scannedBarcode, wfProcessId, lineId }).then((response) => {
+      console.log('onBarcodeScanned', { response });
+    });
   };
 
   const onHUScanned = ({ scannedBarcode }) => {
-    resolveHU({ scannedCode: scannedBarcode, wfProcessId, lineId }).then((response) => {
+    resolveHU({ scannedBarcode, wfProcessId, lineId }).then((response) => {
       console.log('onBarcodeScanned', { response });
     });
   };

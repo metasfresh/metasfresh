@@ -16,6 +16,7 @@ import java.util.List;
 public class JsonResolveLocatorResponse
 {
 	@Nullable Integer locatorId;
+	@Nullable String qrCode;
 	@Nullable List<String> notFoundReasons;
 
 	public static JsonResolveLocatorResponse of(final LocatorScannedCodeResolverResult result)
@@ -24,6 +25,7 @@ public class JsonResolveLocatorResponse
 		{
 			return builder()
 					.locatorId(result.getLocatorId().getRepoId())
+					.qrCode(result.getLocatorQRCode().toGlobalQRCodeJsonString())
 					.build();
 		}
 		else

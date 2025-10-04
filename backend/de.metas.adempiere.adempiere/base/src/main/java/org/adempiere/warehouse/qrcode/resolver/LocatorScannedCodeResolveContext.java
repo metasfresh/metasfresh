@@ -5,15 +5,23 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 @Value
 @Builder
 public class LocatorScannedCodeResolveContext
 {
+	public static final LocatorScannedCodeResolveContext NO_CONTEXT = builder().build();
+
 	@NonNull @Builder.Default ImmutableSet<LocatorId> eligibleLocatorIds = ImmutableSet.of();
 
 	public boolean isMatching(@NonNull LocatorId locatorId)
 	{
 		return (eligibleLocatorIds.isEmpty() || eligibleLocatorIds.contains(locatorId));
+	}
+
+	public boolean isMatching(@NonNull LocatorQRCode locatorQRCode)
+	{
+		return isMatching(locatorQRCode.getLocatorId());
 	}
 }

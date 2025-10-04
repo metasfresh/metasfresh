@@ -2,7 +2,6 @@ package org.adempiere.warehouse.qrcode.resolver.global_qr_code;
 
 import de.metas.global_qrcodes.GlobalQRCode;
 import lombok.NonNull;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.adempiere.warehouse.qrcode.resolver.LocatorGlobalQRCodeResolverKey;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolveContext;
@@ -28,9 +27,8 @@ public class LocatorQRCodeResolver implements LocatorGlobalQRCodeResolver
 
 	private LocatorScannedCodeResolverResult resolveLocatorQRCode(@NonNull final LocatorQRCode locatorQRCode, @NonNull final LocatorScannedCodeResolveContext context)
 	{
-		final LocatorId locatorId = locatorQRCode.getLocatorId();
-		return context.isMatching(locatorId)
-				? LocatorScannedCodeResolverResult.found(locatorId)
+		return context.isMatching(locatorQRCode)
+				? LocatorScannedCodeResolverResult.found(locatorQRCode)
 				: LocatorScannedCodeResolverResult.notFound(RESOLVER_KEY, "Locator is not matching the context warehouses");
 	}
 
