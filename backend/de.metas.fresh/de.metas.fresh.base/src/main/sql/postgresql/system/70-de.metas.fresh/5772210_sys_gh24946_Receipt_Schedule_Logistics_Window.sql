@@ -3759,6 +3759,22 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Window SET Overrides_Window_ID=NULL,Updated=TO_TIMESTAMP('2025-10-02 18:33:05.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=541954
 ;
 
+-- 2025-10-05T08:42:17.786Z
+UPDATE AD_Window_Trl SET Name='Wareneingangsdisposition Logistik',Updated=TO_TIMESTAMP('2025-10-05 08:42:17.551000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_Window_ID=541954
+;
+
+-- 2025-10-05T08:42:17.878Z
+UPDATE AD_Window base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Window_Trl trl  WHERE trl.AD_Window_ID=base.AD_Window_ID AND trl.AD_Language='it_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-10-05T08:42:37.173Z
+UPDATE AD_Window_Trl SET Name='Receipt Schedule Logistics',Updated=TO_TIMESTAMP('2025-10-05 08:42:36.942000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Window_ID=541954
+;
+
+-- 2025-10-05T08:42:37.251Z
+UPDATE AD_Window base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Window_Trl trl  WHERE trl.AD_Window_ID=base.AD_Window_ID AND trl.AD_Language='en_GB' AND trl.AD_Language=getBaseLanguage()
+;
+
 -- 2025-10-02T18:36:33.792Z
 UPDATE AD_Window_Trl SET Name='Wareneingangsdisposition Logistik',Updated=TO_TIMESTAMP('2025-10-02 18:36:33.560000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Window_ID=541954
 ;
