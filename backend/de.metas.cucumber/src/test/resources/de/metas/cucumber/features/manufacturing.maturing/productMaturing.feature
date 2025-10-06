@@ -156,6 +156,7 @@ Feature: Maturing scenarios
       | oc_2       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 15 PCE     | 15 PCE       | 0 PCE        | 2023-06-30T22:00:00Z | 2023-06-30T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_20 |
 
 
+  @flaky
   @from:cucumber
   @Id:S0382_300
   Scenario: Maturing candidate created, then HU is disposed. Maturing candidate is deleted.

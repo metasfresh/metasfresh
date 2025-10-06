@@ -1,16 +1,22 @@
 package de.metas.shipper.gateway.commons;
 
 import de.metas.common.util.StringUtils;
+import de.metas.common.util.pair.IPair;
+import de.metas.location.CountryCode;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
+import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
-import de.metas.location.CountryCode;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import de.metas.common.util.pair.IPair;
+import lombok.experimental.UtilityClass;
 import org.compiere.model.I_C_Location;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -33,14 +39,11 @@ import org.compiere.model.I_C_Location;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@UtilityClass
 public final class DeliveryOrderUtil
 {
-	private DeliveryOrderUtil()
-	{
-	}
 
-	public static Address.AddressBuilder prepareAddressFromLocation(@NonNull final I_C_Location location)
+	public Address.AddressBuilder prepareAddressFromLocation(@NonNull final I_C_Location location)
 	{
 		final AddressBuilder addressBuilder = Address.builder();
 
@@ -66,7 +69,7 @@ public final class DeliveryOrderUtil
 				.country(createShipperCountryCode(CountryId.ofRepoId(location.getC_Country_ID())));
 	}
 
-	public static CountryCode createShipperCountryCode(final CountryId countryId)
+	public CountryCode createShipperCountryCode(final CountryId countryId)
 	{
 		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 		return CountryCode.builder()
@@ -74,4 +77,15 @@ public final class DeliveryOrderUtil
 				.alpha3(countryDAO.retrieveCountryCode3ByCountryId(countryId))
 				.build();
 	}
+
+	public String getPOReferences(@NonNull final Collection<DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	{
+		return packageInfos.stream()
+				.map(DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo::getPoReference)
+				.map(de.metas.util.StringUtils::trimBlankToNull)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.joining(", "));
+	}
+
 }

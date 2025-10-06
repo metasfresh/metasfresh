@@ -64,4 +64,8 @@ public interface IPPOrderReceiptHUProducer
 	IPPOrderReceiptHUProducer productionDate(@Nullable LocalDate productionDate);
 
 	Set<PPCostCollectorId> getCreatedCostCollectorIds();
+
+	List<I_M_HU> receiveIndividualPlanningCUs(@NonNull Quantity qtyToReceive);
+
+	IPPOrderReceiptHUProducer withPPOrderLocatorId();
 }

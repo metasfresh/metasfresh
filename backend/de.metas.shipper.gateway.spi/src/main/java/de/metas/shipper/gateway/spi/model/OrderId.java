@@ -2,14 +2,16 @@ package de.metas.shipper.gateway.spi.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipping.ShipperGatewayId;
+import de.metas.util.Check;
 import lombok.Data;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -37,27 +39,38 @@ import lombok.Data;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class OrderId
 {
-	public static final OrderId of(final String shipperGatewayId, final String orderIdAsString)
+	@JsonProperty("gatewayId") @NonNull private final ShipperGatewayId shipperGatewayId;
+	@JsonProperty("orderId") @NonNull private final String orderIdAsString;
+	@JsonIgnore @Nullable private Integer orderIdAsInt = null; // lazy
+
+	@JsonCreator
+	private OrderId(
+			@JsonProperty("gatewayId") @NonNull final ShipperGatewayId shipperGatewayId,
+			@JsonProperty("orderId") @NonNull final String orderIdAsString)
+	{
+		Check.assumeNotEmpty(orderIdAsString, "orderIdAsString is not empty");
+		this.shipperGatewayId = shipperGatewayId;
+		this.orderIdAsString = orderIdAsString;
+		this.orderIdAsInt = null;
+	}
+
+	private OrderId(
+			@NonNull final ShipperGatewayId shipperGatewayId,
+			@NonNull final DeliveryOrderId deliveryOrderId)
+	{
+		this.shipperGatewayId = shipperGatewayId;
+		this.orderIdAsString = String.valueOf(deliveryOrderId.getRepoId());
+		this.orderIdAsInt = deliveryOrderId.getRepoId();
+	}
+
+	public static OrderId of(@NonNull final ShipperGatewayId shipperGatewayId, @NonNull final String orderIdAsString)
 	{
 		return new OrderId(shipperGatewayId, orderIdAsString);
 	}
 
-	@JsonProperty("gatewayId")
-	private final String shipperGatewayId;
-	@JsonProperty("orderId")
-	private final String orderIdAsString;
-	@JsonIgnore
-	private Integer orderIdAsInt = null; // lazy
-
-	@JsonCreator
-	private OrderId(
-			@JsonProperty("gatewayId") final String shipperGatewayId,
-			@JsonProperty("orderId") final String orderIdAsString)
+	public static OrderId of(@NonNull final ShipperGatewayId shipperGatewayId, @NonNull final DeliveryOrderId deliveryOrderId)
 	{
-		Check.assumeNotEmpty(shipperGatewayId, "shipperGatewayId is not empty");
-		Check.assumeNotEmpty(orderIdAsString, "orderIdAsString is not empty");
-		this.shipperGatewayId = shipperGatewayId;
-		this.orderIdAsString = orderIdAsString;
+		return new OrderId(shipperGatewayId, deliveryOrderId);
 	}
 
 	public int getOrderIdAsInt()

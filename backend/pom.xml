@@ -186,6 +186,7 @@
         <module>de.metas.shipper.gateway.derkurier</module>
         <module>de.metas.shipper.gateway.dhl</module>
         <module>de.metas.shipper.gateway.dpd</module>
+        <module>de.metas.shipper.gateway.nshift</module>
 
         <module>de.metas.util</module>
         <module>de.metas.util.web</module>

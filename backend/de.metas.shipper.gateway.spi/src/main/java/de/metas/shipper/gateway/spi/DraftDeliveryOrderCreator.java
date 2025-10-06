@@ -2,10 +2,11 @@ package de.metas.shipper.gateway.spi;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -45,8 +46,9 @@ import java.util.stream.Collectors;
 
 public interface DraftDeliveryOrderCreator
 {
-	String getShipperGatewayId();
+	ShipperGatewayId getShipperGatewayId();
 
+	@NonNull
 	DeliveryOrder createDraftDeliveryOrder(CreateDraftDeliveryOrderRequest request);
 
 	@Value
@@ -107,8 +109,8 @@ public interface DraftDeliveryOrderCreator
 
 		@Builder
 		public DeliveryOrderKey(
-				final ShipperId shipperId,
-				final ShipperTransportationId shipperTransportationId,
+				@NonNull final ShipperId shipperId,
+				@NonNull final ShipperTransportationId shipperTransportationId,
 				final int fromOrgId,
 				final int deliverToBPartnerId,
 				final int deliverToBPartnerLocationId,
@@ -117,8 +119,6 @@ public interface DraftDeliveryOrderCreator
 				@NonNull final LocalTime timeTo,
 				@Nullable final AsyncBatchId asyncBatchId)
 		{
-			Check.assume(shipperId != null, "shipperId != null");
-			Check.assume(shipperTransportationId != null, "shipperTransportationId != null");
 			Check.assume(fromOrgId > 0, "fromOrgId > 0");
 			Check.assume(deliverToBPartnerId > 0, "deliverToBPartnerId > 0");
 			Check.assume(deliverToBPartnerLocationId > 0, "deliverToBPartnerLocationId > 0");
