@@ -56,9 +56,10 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=540095
 ------------------------------
 -- Update custom windows that might exist in the respective DB
 -- Note that Overrides_Window_ID is not reliable because custom C_OLCand windows might be older than that column.
+-- Also note that i'm calling those existing custom windows "Auftragsdisposition (EDI-Import)" without the "legacy" to avoid naming collisions. 
 ------------------------------
 create table fix.c_olcand_window_update_name as
-select ad_window_id, ad_element_id, name, overrides_window_id, replace(name, 'Auftragsdisposition', 'Auftragsdisposition (Legacy-EDI-Import)') as new_name 
+select ad_window_id, ad_element_id, name, overrides_window_id, replace(name, 'Auftragsdisposition', 'Auftragsdisposition (EDI-Import)') as new_name 
 from ad_window
 where ad_window_id in (select ad_window_id from ad_tab where ad_table_id = get_table_id('c_olcand'))
 and name ilike '%Auftragsdisposition%';
