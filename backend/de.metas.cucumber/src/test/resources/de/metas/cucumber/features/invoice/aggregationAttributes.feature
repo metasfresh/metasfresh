@@ -83,7 +83,7 @@ Feature: invoice with aggregation attributes
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_1                              | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.Identifier |

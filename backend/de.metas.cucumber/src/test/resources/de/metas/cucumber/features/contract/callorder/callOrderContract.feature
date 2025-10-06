@@ -55,7 +55,7 @@ Feature: Call order contract
     And there is no M_ShipmentSchedule for C_Order order_1
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | orderLine_1               | order_1               | 2022-03-03  | call_order_product      | 1000       | 0            | 0           | 2     | 0        | EUR          | true      | PCE                   | PCE                       |
 
     And validate created C_Flatrate_Term:
@@ -80,13 +80,13 @@ Feature: Call order contract
       | Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | callOrderLine_1 | callOrder_1           | call_order_product      | 2          |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | callOrderLine_1           | callOrder_1           | 2022-03-04  | call_order_product      | 2          | 0            | 0           | 6     | 0        | EUR          | false     | PCE                   | KRT                       |
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
       | callOrderLine_1           | callOrder_contract_1              |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | callOrderLine_1           | callOrder_1           | 2022-03-04  | call_order_product      | 2          | 0            | 0           | 8     | 0        | EUR          | false     | PCE                   | KRT                       |
 
     When the order identified by callOrder_1 is completed
@@ -202,7 +202,7 @@ Feature: Call order contract
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus |
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | 1000002     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
@@ -251,7 +251,7 @@ Feature: Call order contract
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_3               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus |
       | invoice_3               | bpartner_1               | bpartnerLocation_1                | 1000002     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
@@ -335,7 +335,7 @@ Feature: Call order contract
     And there is no M_ReceiptSchedule for C_OrderLine po_orderLine
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | po_orderLine              | po_order              | 2022-03-03  | call_order_product_PO   | 1000       | 0            | 0           | 2     | 0        | EUR          | true      | PCE                   | PCE                       |
 
     And validate created C_Flatrate_Term:
@@ -360,13 +360,13 @@ Feature: Call order contract
       | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | callOrderLine_po | callOrder_po          | call_order_product_PO   | 2          |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | callOrderLine_po          | callOrder_po          | 2022-03-04  | call_order_product_PO   | 2          | 0            | 0           | 6     | 0        | EUR          | false     | PCE                   | KRT                       |
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
       | callOrderLine_po          | callOrder_contract_1              |
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | callOrderLine_po          | callOrder_po          | 2022-03-04  | call_order_product_PO   | 2          | 0            | 0           | 8     | 0        | EUR          | false     | PCE                   | KRT                       |
 
     When the order identified by callOrder_po is completed
@@ -479,7 +479,7 @@ Feature: Call order contract
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.POReference |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.POReference |
       | invoice_1               | bp_callOrderPO           | bp_callOrderPO_Location           | 1000002     | true      | CO        | poCallOrder_ref |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
@@ -528,7 +528,7 @@ Feature: Call order contract
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_3               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.POReference |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.POReference |
       | invoice_3               | bp_callOrderPO           | bp_callOrderPO_Location           | 1000002     | true      | CO        | poCallOrder_ref |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |

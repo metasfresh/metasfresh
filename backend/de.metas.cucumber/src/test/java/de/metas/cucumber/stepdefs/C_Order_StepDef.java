@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -401,8 +402,8 @@ public class C_Order_StepDef
 
 			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
 			processInfoBuilder.setAD_Process_ID(processId.getRepoId());
-			processInfoBuilder.addParameter("DatePromised_From", new Timestamp(System.currentTimeMillis()));
-			processInfoBuilder.addParameter("DatePromised_To", new Timestamp(System.currentTimeMillis()));
+			processInfoBuilder.addParameter("DatePromised_From", SystemTime.asTimestamp());
+			processInfoBuilder.addParameter("DatePromised_To", SystemTime.asTimestamp());
 			processInfoBuilder.addParameter("C_BPartner_ID", bpartner.getC_BPartner_ID());
 			processInfoBuilder.addParameter("C_Order_ID", order.getC_Order_ID());
 			processInfoBuilder.addParameter("TypeOfPurchase", purchaseType);

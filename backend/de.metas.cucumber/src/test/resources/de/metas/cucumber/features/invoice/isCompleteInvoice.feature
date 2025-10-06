@@ -9,7 +9,7 @@ Feature: completeInvoice option when processing invoice candidates
 
   @from:cucumber
   @Id:S0209_100
-  Scenario: process IC with completeInvoices=N should result in Invoice docstatus=IP and IC should be invoiceable again after voiding Invoice
+  Scenario: process IC with completeInvoices=N should result in Invoice DocStatus=IP and IC should be invoiceable again after voiding Invoice
     Given metasfresh contains M_Products:
       | Identifier | Name              |
       | p_ci_1     | salesProduct_ci_1 |
@@ -54,11 +54,11 @@ Feature: completeInvoice option when processing invoice candidates
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
       | ic_ci_1                           | invoice_ci_1            | IP            |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | DocStatus |
       | invoice_ci_1            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | 1000002     | false     | IP        |
     And the invoice identified by invoice_ci_1 is voided
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | DocStatus |
       | invoice_ci_1            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | 1000002     | true      | VO        |
     And process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices |
@@ -67,7 +67,7 @@ Feature: completeInvoice option when processing invoice candidates
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
       | ic_ci_1                           | invoice_ci_3            | IP            |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | DocStatus |
       | invoice_ci_3            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | 1000002     | false     | IP        |
 
   @from:cucumber
@@ -117,5 +117,5 @@ Feature: completeInvoice option when processing invoice candidates
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_ci_2                           | invoice_ci_2            |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | DocStatus |
       | invoice_ci_2            | endcustomer_ci_2         | l_ci_2                            | po_ref_mock_ci_2 | 1000002     | true      | CO        |

@@ -85,7 +85,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -167,7 +167,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -252,7 +252,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -332,7 +332,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -411,7 +411,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -493,7 +493,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -575,7 +575,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -801,7 +801,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 30 Tage netto | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount | OPT.C_Tax_ID.Identifier |
@@ -883,7 +883,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 30 Tage netto | true      | CO        | Provisionsabrechnung  |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -926,7 +926,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -950,7 +950,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -993,7 +993,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -1017,7 +1017,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -1066,7 +1066,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -1087,7 +1087,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -1136,7 +1136,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -1157,7 +1157,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -1200,7 +1200,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -1224,7 +1224,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -1267,7 +1267,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -1291,7 +1291,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -1334,7 +1334,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -1397,7 +1397,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -1452,7 +1452,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -1479,7 +1479,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount | OPT.C_Tax_ID.Identifier |
@@ -1531,7 +1531,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | s_1                   | s_s_1                            | D                 | Y                  |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -1555,7 +1555,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
@@ -1610,7 +1610,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.C_DocType_ID.Name |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Ausgangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |

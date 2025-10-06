@@ -372,7 +372,7 @@ public class C_Invoice_StepDef
 
 		row.getAsOptionalBoolean("processed")
 				.ifPresent(processed -> softly.assertThat(invoice.isProcessed()).as("Processed for Identifier=%s", identifierStr).isEqualTo(processed));
-		row.getAsOptionalString("docStatus")
+		row.getAsOptionalString(COLUMNNAME_DocStatus)
 				.ifPresent(docStatus -> softly.assertThat(invoice.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
 
 		paymentTermStepDef.extractPaymentTermId(row)
@@ -545,9 +545,9 @@ public class C_Invoice_StepDef
 		return CollectionUtils.singleElement(invoices);
 	}
 
-	private List<I_C_Invoice> waitAndLoadInvoices(final DataTableRow row, final int timeoutSec) throws InterruptedException
+	private void waitAndLoadInvoices(final DataTableRow row, final int timeoutSec) throws InterruptedException
 	{
-		return StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> loadInvoice(row));
+		StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> loadInvoice(row));
 	}
 
 	public ProviderResult<List<I_C_Invoice>> loadInvoice(@NonNull final DataTableRow row)

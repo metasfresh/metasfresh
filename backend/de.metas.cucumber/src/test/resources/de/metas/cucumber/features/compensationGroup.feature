@@ -116,16 +116,16 @@ Feature: Compensation Group
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
       | order_1               | customer_bp_30_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | ref_12301   | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | test_product_30_01      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
       | orderLine_2               | order_1               | 2022-02-02  | test_product_30_02      | 1            | 1          | 1           | 5.0   | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | shipment_1            | customer_bp_30_02        | bpLocation_2                      | 2022-02-02  | ref_12301   | true      | CO        |
 
     And validate the created shipment lines
@@ -134,7 +134,7 @@ Feature: Compensation Group
       | line2                     | shipment_1            | test_product_30_02      | 1           | true      |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.BPartnerAddress                         |
       | invoice_1               | customer_bp_30_02        | bpLocation_2                      | ref_12301       | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
@@ -220,16 +220,16 @@ Feature: Compensation Group
       | order_2               | shipment_2            | invoice_2               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
       | order_2               | customer_bp_30_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | ref_12301   | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_2               | 2022-02-02  | test_product_30_01      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
       | orderLine_2               | order_2               | 2022-02-02  | test_product_30_02      | 1            | 1          | 1           | 5.0   | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | shipment_2            | customer_bp_30_02        | bpLocation_2                      | 2022-02-02  | ref_12302   | true      | CO        |
 
     And validate the created shipment lines
@@ -238,7 +238,7 @@ Feature: Compensation Group
       | lin32                     | shipment_2            | test_product_30_02      | 1           | true      |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.BPartnerAddress                         |
       | invoice_2               | customer_bp_30_02        | bpLocation_2                      | ref_12302       | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
