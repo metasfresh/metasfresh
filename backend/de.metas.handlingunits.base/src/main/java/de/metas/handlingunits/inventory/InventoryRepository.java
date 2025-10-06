@@ -57,6 +57,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -470,11 +471,9 @@ public class InventoryRepository
 		lineRecord.setAD_Org_ID(inventoryLine.getOrgId().getRepoId());
 		lineRecord.setM_Inventory_ID(inventoryId.getRepoId());
 
-		final AttributesKey storageAttributesKey = inventoryLine.getStorageAttributesKey();
-
 		final AttributeSetInstanceId asiId = coalesceSuppliersNotNull(
 				inventoryLine::getAsiId,
-				() -> AttributesKeys.createAttributeSetInstanceFromAttributesKey(storageAttributesKey));
+				() -> AttributesKeys.createAttributeSetInstanceFromAttributesKey(inventoryLine.getStorageAttributesKey()));
 		lineRecord.setM_AttributeSetInstance_ID(asiId.getRepoId());
 
 		lineRecord.setM_Locator_ID(inventoryLine.getLocatorId().getRepoId());
@@ -548,30 +547,45 @@ public class InventoryRepository
 		}
 		else
 		{
-			final HashMap<InventoryLineHUId, I_M_InventoryLine_HU> existingInventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLine.getIdNonNull())
-					.stream()
-					.collect(GuavaCollectors.toHashMapByKey(InventoryRepository::extractInventoryLineHUId));
+			final InventoryLineId inventoryLineId = inventoryLine.getIdNonNull();
+			final OrgId orgId = inventoryLine.getOrgId();
+			final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryLine.getInventoryLineHUs();
 
-			for (final InventoryLineHU lineHU : inventoryLine.getInventoryLineHUs())
+			saveInventoryLineHUs(inventoryLineHUs, inventoryId, inventoryLineId, orgId);
+		}
+	}
+
+	private void saveInventoryLineHUs(
+			@NonNull final ImmutableList<InventoryLineHU> inventoryLineHUs,
+			@NotNull final InventoryId inventoryId,
+			@NotNull final InventoryLineId inventoryLineId,
+			@NotNull final OrgId orgId)
+	{
+		final HashMap<InventoryLineHUId, I_M_InventoryLine_HU> existingInventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLineId)
+				.stream()
+				.collect(GuavaCollectors.toHashMapByKey(InventoryRepository::extractInventoryLineHUId));
+
+		for (final InventoryLineHU lineHU : inventoryLineHUs)
+		{
+			I_M_InventoryLine_HU lineHURecord = lineHU.getId() != null
+					? existingInventoryLineHURecords.remove(lineHU.getId())
+					: null;
+			if (lineHURecord == null)
 			{
-				I_M_InventoryLine_HU lineHURecord = existingInventoryLineHURecords.remove(lineHU.getId());
-				if (lineHURecord == null)
-				{
-					lineHURecord = newInstance(I_M_InventoryLine_HU.class);
-				}
-
-				lineHURecord.setAD_Org_ID(inventoryLine.getOrgId().getRepoId());
-				lineHURecord.setM_Inventory_ID(inventoryId.getRepoId());
-				lineHURecord.setM_InventoryLine_ID(inventoryLine.getIdNonNull().getRepoId());
-				updateInventoryLineHURecord(lineHURecord, lineHU);
-
-				saveRecord(lineHURecord);
-				lineHU.setId(extractInventoryLineHUId(lineHURecord));
+				lineHURecord = newInstance(I_M_InventoryLine_HU.class);
 			}
 
-			// the pre-existing records that we did not see until now are not needed anymore; delete them.
-			InterfaceWrapperHelper.deleteAll(existingInventoryLineHURecords.values());
+			lineHURecord.setAD_Org_ID(orgId.getRepoId());
+			lineHURecord.setM_Inventory_ID(inventoryId.getRepoId());
+			lineHURecord.setM_InventoryLine_ID(inventoryLineId.getRepoId());
+			updateInventoryLineHURecord(lineHURecord, lineHU);
+
+			saveRecord(lineHURecord);
+			lineHU.setId(extractInventoryLineHUId(lineHURecord));
 		}
+
+		// the pre-existing records that we did not see until now are not needed any more; delete them.
+		InterfaceWrapperHelper.deleteAll(existingInventoryLineHURecords.values());
 	}
 
 	public Optional<Quantity> getFreshBookedQtyFromStorage(@NonNull final ProductId productId, @NonNull final UomId inventoryLineUOMId, @NonNull final HuId huId)

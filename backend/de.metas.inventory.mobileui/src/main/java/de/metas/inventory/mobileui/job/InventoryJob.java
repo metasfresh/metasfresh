@@ -57,4 +57,12 @@ public class InventoryJob
 
 		return toBuilder().responsibleId(newResponsibleId).build();
 	}
+
+	public void assertHasAccess(@NonNull final UserId calledId)
+	{
+		if (!UserId.equals(responsibleId, calledId))
+		{
+			throw new AdempiereException("No access");
+		}
+	}
 }

@@ -14,6 +14,8 @@ import de.metas.inventory.mobileui.job.qrcode.ScannedCodeResolveRequest;
 import de.metas.inventory.mobileui.job.qrcode.ScannedCodeResolveResponse;
 import de.metas.inventory.mobileui.job.repository.InventoryJobLoaderAndSaver;
 import de.metas.inventory.mobileui.launchers.InventoryJobReference;
+import de.metas.inventory.mobileui.rest_api.json.JsonCountRequest;
+import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJob;
 import de.metas.product.IProductBL;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -88,7 +90,7 @@ public class InventoryJobService
 	public LocatorScannedCodeResolverResult resolveLocator(@NonNull final ScannedCodeResolveRequest request)
 	{
 		Check.assumeNull(request.getLocatorId(), "locator shall not be provided");
-		
+
 		final List<InventoryJobLine> lines = request.getContextJobLines();
 
 		return locatorScannedCodeResolver.resolve(
@@ -115,5 +117,13 @@ public class InventoryJobService
 				.handlingUnitsBL(handlingUnitsBL)
 				.huQRCodesService(huQRCodesService)
 				.scannedCode(request.getScannedCode());
+	}
+
+	public JsonInventoryJob count(@NonNull final JsonCountRequest request)
+	{
+		final InventoryJobId jobId = InventoryJobId.ofWFProcessId(request.getWfProcessId());
+		final InventoryJob job = getJobById(jobId);
+
+		return JsonInventoryJob.of(job);
 	}
 }
