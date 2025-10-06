@@ -96,6 +96,13 @@ public class RepoIdAwares
 		return (IntFunction<T>)repoIdAwareDescriptor.getOfRepoIdFunction();
 	}
 
+	private static <T extends RepoIdAware> IntFunction<T> getOfRepoIdOrNullFunction(final Class<T> repoIdClass)
+	{
+		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
+		//noinspection unchecked
+		return (IntFunction<T>)repoIdAwareDescriptor.getOfRepoIdOrNullFunction();
+	}
+
 	public static <T extends RepoIdAware> T ofObject(@NonNull final Object repoIdObj, final Class<T> repoIdClass)
 	{
 		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
@@ -150,7 +157,7 @@ public class RepoIdAwares
 			@Nullable final Object repoIdObj,
 			@NonNull final Class<T> repoIdClass)
 	{
-		return ofObjectOrNull(repoIdObj, repoIdClass, getOfRepoIdFunction(repoIdClass));
+		return ofObjectOrNull(repoIdObj, repoIdClass, getOfRepoIdOrNullFunction(repoIdClass));
 	}
 
 	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, final Class<T> repoIdClass)
