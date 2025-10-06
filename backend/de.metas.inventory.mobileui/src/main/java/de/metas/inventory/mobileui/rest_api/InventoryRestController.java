@@ -58,6 +58,7 @@ public class InventoryRestController
 				.scannedCode(request.getScannedCode())
 				.job(job)
 				.lineId(request.getLineId())
+				.locatorId(request.getLocatorQRCode() != null ? request.getLocatorQRCode().getLocatorId() : null)
 				.build();
 	}
 

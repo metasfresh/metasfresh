@@ -8,14 +8,15 @@ import de.metas.inventory.InventoryQuery;
 import de.metas.inventory.mobileui.job.InventoryJob;
 import de.metas.inventory.mobileui.job.InventoryJobId;
 import de.metas.inventory.mobileui.job.InventoryJobLine;
-import de.metas.inventory.mobileui.job.qrcode.InventoryScannedCodeResolveCommand;
-import de.metas.inventory.mobileui.job.qrcode.InventoryScannedCodeResolveCommand.InventoryScannedCodeResolveCommandBuilder;
+import de.metas.inventory.mobileui.job.qrcode.InventoryHUScannedCodeResolveCommand;
+import de.metas.inventory.mobileui.job.qrcode.InventoryHUScannedCodeResolveCommand.InventoryHUScannedCodeResolveCommandBuilder;
 import de.metas.inventory.mobileui.job.qrcode.ScannedCodeResolveRequest;
 import de.metas.inventory.mobileui.job.qrcode.ScannedCodeResolveResponse;
 import de.metas.inventory.mobileui.job.repository.InventoryJobLoaderAndSaver;
 import de.metas.inventory.mobileui.launchers.InventoryJobReference;
 import de.metas.product.IProductBL;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -86,6 +87,8 @@ public class InventoryJobService
 
 	public LocatorScannedCodeResolverResult resolveLocator(@NonNull final ScannedCodeResolveRequest request)
 	{
+		Check.assumeNull(request.getLocatorId(), "locator shall not be provided");
+		
 		final List<InventoryJobLine> lines = request.getContextJobLines();
 
 		return locatorScannedCodeResolver.resolve(
@@ -98,16 +101,16 @@ public class InventoryJobService
 
 	public ScannedCodeResolveResponse resolveHU(@NonNull final ScannedCodeResolveRequest request)
 	{
-		return newScannedCodeResolveCommand(request)
+		return newHUScannedCodeResolveCommand(request)
 				.job(request.getJob())
 				.lineId(request.getLineId())
 				.build()
 				.execute();
 	}
 
-	private InventoryScannedCodeResolveCommandBuilder newScannedCodeResolveCommand(final @NotNull ScannedCodeResolveRequest request)
+	private InventoryHUScannedCodeResolveCommandBuilder newHUScannedCodeResolveCommand(final @NotNull ScannedCodeResolveRequest request)
 	{
-		return InventoryScannedCodeResolveCommand.builder()
+		return InventoryHUScannedCodeResolveCommand.builder()
 				.productBL(productBL)
 				.handlingUnitsBL(handlingUnitsBL)
 				.huQRCodesService(huQRCodesService)

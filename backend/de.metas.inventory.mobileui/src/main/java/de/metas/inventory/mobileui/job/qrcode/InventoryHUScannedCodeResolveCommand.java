@@ -36,7 +36,9 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,7 +48,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class InventoryScannedCodeResolveCommand
+import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_BestBeforeDate;
+import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_LotNumber;
+
+public class InventoryHUScannedCodeResolveCommand
 {
 	private final static AdMessageKey ERR_LMQ_LotNoNotFound = AdMessageKey.of("de.metas.handlingunits.picking.job.L_M_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey ERR_QR_ProductNotMatching = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
@@ -61,23 +66,26 @@ public class InventoryScannedCodeResolveCommand
 	// Params
 	@NonNull private final ScannedCode scannedCode;
 	@NonNull private final ImmutableList<InventoryJobLine> lines;
+	@Nullable private final LocatorId locatorId;
 	@NonNull private final ImmutableSet<ProductId> eligibleProductIds;
 
 	@Builder
-	private InventoryScannedCodeResolveCommand(
+	private InventoryHUScannedCodeResolveCommand(
 			@NonNull final IProductBL productBL,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final HUQRCodesService huQRCodesService,
 			//
 			@NonNull final ScannedCode scannedCode,
 			@NonNull final InventoryJob job,
-			@Nullable final InventoryLineId lineId)
+			@Nullable final InventoryLineId lineId,
+			@Nullable final LocatorId locatorId)
 	{
 		this.productBL = productBL;
 		this.huQRCodesService = huQRCodesService;
 		this.huCache = new HUCache(handlingUnitsBL);
 
 		this.scannedCode = scannedCode;
+		this.locatorId = locatorId;
 		this.lines = lineId != null
 				? ImmutableList.of(job.getLineById(lineId))
 				: job.getLines();
@@ -147,7 +155,7 @@ public class InventoryScannedCodeResolveCommand
 			final ArrayList<ScannedCodeResolveResponse.EligibleHU> eligibleHUs = new ArrayList<>();
 			for (final I_M_HU hu : hus)
 			{
-				final ScannedCodeResolveResponse.EligibleHU eligibleHU = toEligibleHUOrNull(hu, line);
+				final ScannedCodeResolveResponse.EligibleHU eligibleHU = toEligibleHUOrNull(hu, line.getProductId());
 				if (eligibleHU != null)
 				{
 					eligibleHUs.add(eligibleHU);
@@ -168,22 +176,34 @@ public class InventoryScannedCodeResolveCommand
 				.build();
 	}
 
-	private ScannedCodeResolveResponse.EligibleHU toEligibleHUOrNull(final I_M_HU hu, final InventoryJobLine line)
+	private ScannedCodeResolveResponse.EligibleHU toEligibleHUOrNull(
+			@NonNull final I_M_HU hu,
+			@NonNull final ProductId productId)
 	{
-		final ProductId productId = line.getProductId();
-		final Quantity qty = huCache.getQtyOrNull(hu, productId);
-		if (qty != null)
-		{
-			return ScannedCodeResolveResponse.EligibleHU.builder()
-					.huId(HuId.ofRepoId(hu.getM_HU_ID()))
-					.productId(productId)
-					.qty(qty)
-					.build();
-		}
-		else
+		if (locatorId != null && locatorId.getRepoId() != hu.getM_Locator_ID())
 		{
 			return null;
 		}
+
+		final Quantity qty = huCache.getQtyOrNull(hu, productId);
+		if (qty == null)
+		{
+			return null;
+		}
+
+		final ImmutableAttributeSet attributes = huCache.getAttributes(hu);
+		final boolean hasBestBeforeDateAttribute = attributes.hasAttribute(ATTR_BestBeforeDate);
+		final boolean hasLotNoAttribute = attributes.hasAttribute(ATTR_LotNumber);
+
+		return ScannedCodeResolveResponse.EligibleHU.builder()
+				.huId(HuId.ofRepoId(hu.getM_HU_ID()))
+				.productId(productId)
+				.qty(qty)
+				.hasBestBeforeDateAttribute(hasBestBeforeDateAttribute)
+				.bestBeforeDate(hasBestBeforeDateAttribute ? attributes.getValueAsLocalDate(ATTR_BestBeforeDate) : null)
+				.hasLotNoAttribute(hasLotNoAttribute)
+				.lotNo(hasLotNoAttribute ? attributes.getValueAsString(ATTR_LotNumber) : null)
+				.build();
 	}
 
 	private ScannedCodeResolveResponse resolveByLMQRCode(final LMQRCode lmQRCode)
@@ -245,7 +265,7 @@ public class InventoryScannedCodeResolveCommand
 
 		final ImmutableList<ScannedCodeResolveResponse.EligibleHU> eligibleHUs = huCache.queryByJobLine(line)
 				.stream()
-				.map(hu -> toEligibleHUOrNull(hu, line))
+				.map(hu -> toEligibleHUOrNull(hu, line.getProductId()))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 		if (eligibleHUs.isEmpty())
@@ -317,6 +337,7 @@ public class InventoryScannedCodeResolveCommand
 
 		private final HashMap<HuId, I_M_HU> husById = new HashMap<>();
 		private final HashMap<HuId, HUProductStorages> productStoragesByHUId = new HashMap<>();
+		private final HashMap<HuId, ImmutableAttributeSet> attributesByHUId = new HashMap<>();
 
 		public I_M_HU getHUById(final @NotNull HuId huId)
 		{
@@ -372,6 +393,11 @@ public class InventoryScannedCodeResolveCommand
 					.addOnlyWithProductId(line.getProductId())
 					.addOnlyInLocatorId(line.getLocatorId())
 					.setExcludeReserved();
+		}
+
+		public ImmutableAttributeSet getAttributes(final I_M_HU hu)
+		{
+			return attributesByHUId.computeIfAbsent(HuId.ofRepoId(hu.getM_HU_ID()), huId -> handlingUnitsBL.getImmutableAttributeSet(hu));
 		}
 	}
 

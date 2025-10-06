@@ -1,5 +1,6 @@
 package de.metas.inventory.mobileui.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.InventoryLineId;
@@ -13,6 +14,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -69,6 +71,11 @@ public class JsonResolveHUResponse
 		@NonNull String uom;
 		@NonNull BigDecimal qty;
 
+		boolean hasBestBeforeDateAttribute;
+		@Nullable @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate bestBeforeDate;
+		boolean hasLotNoAttribute;
+		@Nullable String lotNo;
+
 		private static JsonEligibleHU of(final ScannedCodeResolveResponse.EligibleHU hu)
 		{
 			return builder()
@@ -76,6 +83,10 @@ public class JsonResolveHUResponse
 					.productId(hu.getProductId())
 					.uom(hu.getQty().getUOMSymbol())
 					.qty(hu.getQty().toBigDecimal())
+					.hasBestBeforeDateAttribute(hu.isHasBestBeforeDateAttribute())
+					.bestBeforeDate(hu.getBestBeforeDate())
+					.hasLotNoAttribute(hu.isHasLotNoAttribute())
+					.lotNo(hu.getLotNo())
 					.build();
 		}
 

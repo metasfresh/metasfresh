@@ -8,6 +8,7 @@ import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -22,6 +23,7 @@ public class ScannedCodeResolveRequest
 	// Context:
 	@NonNull InventoryJob job;
 	@Nullable InventoryLineId lineId;
+	@Nullable LocatorId locatorId;
 
 	@NonNull
 	public List<InventoryJobLine> getContextJobLines()

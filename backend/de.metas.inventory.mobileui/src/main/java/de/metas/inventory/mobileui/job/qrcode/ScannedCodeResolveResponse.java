@@ -11,13 +11,14 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Value
 @Builder
 public class ScannedCodeResolveResponse
 {
 	public static final ScannedCodeResolveResponse EMPTY = ScannedCodeResolveResponse.builder().build();
-	
+
 	@NonNull @Singular ImmutableList<EligibleLine> eligibleLines;
 
 	//
@@ -43,5 +44,10 @@ public class ScannedCodeResolveResponse
 		@Nullable HuId huId;
 		@NonNull ProductId productId;
 		@NonNull Quantity qty;
+
+		boolean hasBestBeforeDateAttribute;
+		@Nullable LocalDate bestBeforeDate;
+		boolean hasLotNoAttribute;
+		@Nullable String lotNo;
 	}
 }
