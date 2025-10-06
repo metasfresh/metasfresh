@@ -130,8 +130,8 @@ Feature: Trade margin commission contract
       | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced |
       | settlement_1                      | margin_salesRep                 | commission_product          | 0                   | false       | 5                  |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm     | processed | DocStatus | OPT.DocSubType |
-      | invoiceSettled_1        | margin_salesRep          | margin_salesRep_location          | NIE fällig (KK) | true      | CO        | CA             |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.DocSubType |
+      | invoiceSettled_1        | margin_salesRep          | margin_salesRep_location          | 1000002     | true      | CO        | CA             |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLineSettled_1        | invoiceSettled_1        | commission_product      | 5.00        | true      |
