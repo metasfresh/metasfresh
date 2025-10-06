@@ -87,14 +87,27 @@ public final class StringUtils
 			return null;
 		}
 
-		final String strTrim = str.replaceAll("^[ ]+|[ ]+$", "");
+		int start = 0;
+		int end = str.length();
 
-		if (strTrim.isEmpty())
+		// Trim leading spaces
+		while (start < end && str.charAt(start) == ' ')
 		{
-			return null;
+			start++;
 		}
 
-		return strTrim;
+		// Trim trailing spaces
+		while (end > start && str.charAt(end - 1) == ' ')
+		{
+			end--;
+		}
+
+		if (start == end)
+		{
+			return null; // all spaces
+		}
+
+		return str.substring(start, end);
 	}
 
 
