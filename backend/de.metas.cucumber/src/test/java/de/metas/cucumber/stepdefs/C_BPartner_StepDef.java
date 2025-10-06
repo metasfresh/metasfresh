@@ -43,6 +43,8 @@ import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService
 import de.metas.order.DeliveryRule;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
@@ -62,7 +64,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -120,6 +121,7 @@ public class C_BPartner_StepDef
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
@@ -287,23 +289,17 @@ public class C_BPartner_StepDef
 		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))
 		{
-			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
-					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
-					.create()
-					.firstOnlyNotNull(I_C_PaymentTerm.class);
-
-			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+			bPartnerRecord.setC_PaymentTerm_ID(paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
+					.value(paymentTermValue)
+					.build()).getRepoId());
 		}
 
 		final String paymentTermPOValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermPOValue))
 		{
-			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
-					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermPOValue)
-					.create()
-					.firstOnlyNotNull(I_C_PaymentTerm.class);
-
-			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
+					.value(paymentTermPOValue)
+					.build()).getRepoId());
 		}
 
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
