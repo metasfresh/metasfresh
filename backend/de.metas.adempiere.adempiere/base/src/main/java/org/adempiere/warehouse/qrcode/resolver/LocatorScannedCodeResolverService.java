@@ -6,11 +6,9 @@ import de.metas.logging.LogManager;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.adempiere.warehouse.qrcode.resolver.global_qr_code.LocatorGlobalQRCodeResolver;
-import org.compiere.model.I_M_Locator;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -100,10 +98,5 @@ public class LocatorScannedCodeResolverService
 		{
 			return LocatorScannedCodeResolverResult.found(locatorQRCodes.get(0));
 		}
-	}
-
-	private static @NotNull LocatorId extractLocatorId(final I_M_Locator locator)
-	{
-		return LocatorId.ofRepoId(locator.getM_Warehouse_ID(), locator.getM_Locator_ID());
 	}
 }
