@@ -1,19 +1,18 @@
 package de.metas.shipper.gateway.commons;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.async.AsyncBatchId;
 import de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest.PackageInfo;
+import de.metas.shipper.gateway.spi.DeliveryOrderKey;
+import de.metas.shipper.gateway.spi.DeliveryOrderKey.DeliveryOrderKeyBuilder;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
@@ -23,19 +22,14 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -66,59 +60,59 @@ public class ShipperGatewayFacade
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry;
+	@NonNull private final MPackageRepository mpackageRepository;
 
-	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
+	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(X12DE355.KILOGRAM);
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public boolean hasServiceSupport(@NonNull final ShipperGatewayId shipperGatewayId)
+	{
+		return shipperRegistry.hasServiceSupport(shipperGatewayId);
+	}
 
 	public void createAndSendDeliveryOrdersForPackages(@NonNull final DeliveryOrderCreateRequest request)
 	{
-		final LocalDate pickupDate = request.getPickupDate();
-		final ShipperTransportationId shipperTransportationId = request.getShipperTransportationId();
-		final LocalTime timeFrom = request.getTimeFrom();
-		final LocalTime timeTo = request.getTimeTo();
-		final AsyncBatchId asyncBatchId = request.getAsyncBatchId();
+		final DeliveryOrderKeyBuilder orderKeyTemplate = DeliveryOrderKey.builder().setFrom(request);
 
-		retrievePackagesByIds(request.getPackageIds())
+		mpackageRepository.getByIds(request.getPackageIds())
 				.stream()
-				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> createDeliveryOrderKey(
-						mpackage,
-						shipperTransportationId,
-						pickupDate,
-						timeFrom,
-						timeTo,
-						asyncBatchId)))
+				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> orderKeyTemplate.setFrom(mpackage).build()))
 				.asMap()
 				.forEach(this::createAndSendDeliveryOrder);
 	}
 
-	private List<I_M_Package> retrievePackagesByIds(final Set<Integer> mpackageIds)
+	private void createAndSendDeliveryOrder(
+			@NonNull final DeliveryOrderKey deliveryOrderKey,
+			@NonNull final Collection<I_M_Package> mpackages)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Package.class)
-				.addInArrayFilter(I_M_Package.COLUMN_M_Package_ID, mpackageIds)
-				.create()
-				.list(I_M_Package.class);
+		final ShipperGatewayId shipperGatewayId = getShipperGatewayId(deliveryOrderKey.getShipperId());
+		final DeliveryOrderService shipperGatewayService = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
+
+		DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(
+				CreateDraftDeliveryOrderRequest.builder()
+						.deliveryOrderKey(deliveryOrderKey)
+						.packageInfos(toPackageInfos(mpackages))
+						.build()
+		);
+		deliveryOrder = shipperGatewayService.save(deliveryOrder);
+		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getIdNotNull(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
 	}
 
-	@NonNull
-	private static DeliveryOrderKey createDeliveryOrderKey(
-			@NonNull final I_M_Package mpackage,
-			final ShipperTransportationId shipperTransportationId,
-			@NonNull final LocalDate pickupDate,
-			@NonNull final LocalTime timeFrom,
-			@NonNull final LocalTime timeTo,
-			@Nullable final AsyncBatchId asyncBatchId)
+	private ShipperGatewayId getShipperGatewayId(final ShipperId shipperId)
 	{
-		return DeliveryOrderKey.builder()
-				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
-				.shipperTransportationId(shipperTransportationId)
-				.fromOrgId(mpackage.getAD_Org_ID())
-				.deliverToBPartnerId(mpackage.getC_BPartner_ID())
-				.deliverToBPartnerLocationId(mpackage.getC_BPartner_Location_ID())
-				.pickupDate(pickupDate)
-				.timeFrom(timeFrom)
-				.timeTo(timeTo)
-				.asyncBatchId(asyncBatchId)
-				.build();
+		return shipperDAO.getShipperGatewayId(shipperId).orElseThrow();
+	}
+
+	private ImmutableSet<PackageInfo> toPackageInfos(final @NotNull Collection<I_M_Package> mpackages)
+	{
+		return mpackages.stream()
+				.map(mpackage -> PackageInfo.builder()
+						.packageId(PackageId.ofRepoId(mpackage.getM_Package_ID()))
+						.poReference(mpackage.getPOReference())
+						.description(StringUtils.trimBlankToNull(mpackage.getDescription()))
+						.weightInKg(extractWeightInKg(mpackage).orElse(null))
+						.build())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private Optional<BigDecimal> extractWeightInKg(@NonNull final I_M_Package mpackage)
@@ -131,46 +125,4 @@ public class ShipperGatewayFacade
 		final BigDecimal weightInKg = kgPrecision.round(mpackage.getPackageWeight()); // we assume it's in Kg
 		return weightInKg.signum() > 0 ? Optional.of(weightInKg) : Optional.empty();
 	}
-
-	private void createAndSendDeliveryOrder(
-			@NonNull final DeliveryOrderKey deliveryOrderKey,
-			@NonNull final Collection<I_M_Package> mpackages)
-	{
-		final ShipperId shipperId = deliveryOrderKey.getShipperId();
-		final ShipperGatewayId shipperGatewayId = getShipperGatewayId(shipperId);
-		final DeliveryOrderService deliveryOrderRepository = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
-
-		final ImmutableSet<PackageInfo> packageInfos = mpackages.stream()
-				.map(mpackage -> PackageInfo.builder()
-						.packageId(PackageId.ofRepoId(mpackage.getM_Package_ID()))
-						.poReference(mpackage.getPOReference())
-						.description(StringUtils.trimBlankToNull(mpackage.getDescription()))
-						.weightInKg(extractWeightInKg(mpackage).orElse(null))
-						.build())
-				.collect(ImmutableSet.toImmutableSet());
-
-		final CreateDraftDeliveryOrderRequest request = CreateDraftDeliveryOrderRequest.builder()
-				.deliveryOrderKey(deliveryOrderKey)
-				.packageInfos(packageInfos)
-				.build();
-
-		final DraftDeliveryOrderCreator shipperGatewayService = shipperRegistry.getShipperGatewayService(shipperGatewayId);
-
-		DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(request);
-
-		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
-		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
-	}
-
-	private ShipperGatewayId getShipperGatewayId(final ShipperId shipperId)
-	{
-		return shipperDAO.getShipperGatewayId(shipperId).orElseThrow();
-	}
-
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean hasServiceSupport(@NonNull final ShipperGatewayId shipperGatewayId)
-	{
-		return shipperRegistry.hasServiceSupport(shipperGatewayId);
-	}
-
 }

@@ -35,6 +35,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
@@ -42,11 +43,14 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomsItem;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
+import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
+import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
@@ -61,8 +65,10 @@ import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -86,11 +92,33 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository;
 	private final CurrencyRepository currencyRepository;
 	private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository;
+	private final DhlDraftDeliveryOrderCreator deliveryOrderCreator;
+	private final DhlShipperGatewayClientFactory clientFactory;
+
+	public static DhlDeliveryOrderService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		final DhlClientConfigRepository configRepo = new DhlClientConfigRepository();
+		return new DhlDeliveryOrderService(
+				new PurchaseOrderToShipperTransportationRepository(),
+				new CurrencyRepository(),
+				new DhlDeliveryOrderRepository(),
+				new DhlDraftDeliveryOrderCreator(configRepo),
+				new DhlShipperGatewayClientFactory(configRepo)
+		);
+	}
 
 	@Override
 	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
+	}
+
+	@NonNull
+	@Override
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	{
+		return deliveryOrderCreator.createDraftDeliveryOrder(request);
 	}
 
 	@NonNull
@@ -209,5 +237,11 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 		return productBL.computeGrossWeight(productId, quantity)
 				.map(weight -> uomConversionBL.convertToKilogram(weight, productId))
 				.map(Quantity::getAsBigDecimal);
+	}
+
+	@Override
+	public @NonNull ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
+	{
+		return clientFactory.newClientForShipperId(shipperId);
 	}
 }

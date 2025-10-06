@@ -7,12 +7,12 @@ import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
+import de.metas.shipper.gateway.spi.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,21 +53,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 @Service
 @RequiredArgsConstructor
-public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
+class DerKurierDraftDeliveryOrderCreator
 {
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@NonNull private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
 
-	@Override
-	public ShipperGatewayId getShipperGatewayId()
-	{
-		return DerKurierConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	public @NotNull DeliveryOrder createDraftDeliveryOrder(
-			@NonNull final CreateDraftDeliveryOrderRequest request)
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<PackageId> mpackageIds = request.getPackageIds();

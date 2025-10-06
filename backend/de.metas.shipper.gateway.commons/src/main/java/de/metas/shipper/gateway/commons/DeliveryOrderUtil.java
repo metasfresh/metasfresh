@@ -5,7 +5,7 @@ import de.metas.common.util.pair.IPair;
 import de.metas.location.CountryCode;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
 import de.metas.util.Check;
@@ -78,10 +78,10 @@ public final class DeliveryOrderUtil
 				.build();
 	}
 
-	public String getPOReferences(@NonNull final Collection<DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	public String getPOReferences(@NonNull final Collection<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
 		return packageInfos.stream()
-				.map(DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo::getPoReference)
+				.map(CreateDraftDeliveryOrderRequest.PackageInfo::getPoReference)
 				.map(de.metas.util.StringUtils::trimBlankToNull)
 				.filter(Objects::nonNull)
 				.distinct()

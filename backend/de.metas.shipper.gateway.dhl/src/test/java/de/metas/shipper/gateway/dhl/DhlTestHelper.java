@@ -24,18 +24,16 @@ package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.currency.CurrencyRepository;
 import de.metas.location.CountryCode;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
-import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
@@ -43,7 +41,6 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
@@ -224,11 +221,7 @@ class DhlTestHelper
 	{
 		//
 		// create all structures
-
-		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
-		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository);
-		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
-		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), new CurrencyRepository(), orderRepository);
+		final DhlDeliveryOrderService orderService = DhlDeliveryOrderService.newInstanceForUnitTesting();
 
 		final UomId dummyUom = UomId.ofRepoId(1);
 
@@ -251,12 +244,12 @@ class DhlTestHelper
 
 		//
 		// check 1: draft DO <->> initial dummy DO
-		final DeliveryOrder draftDeliveryOrder = createDraftDeliveryOrderFromDummy(initialDummyDeliveryOrder, draftDeliveryOrderCreator);
+		final DeliveryOrder draftDeliveryOrder = createDraftDeliveryOrderFromDummy(initialDummyDeliveryOrder);
 		Assertions.assertEquals(initialDummyDeliveryOrder, draftDeliveryOrder, "nothing should be changed");
 
 		//
 		// check 2: persisted DO <-> initial dummy DO => create updatedDummy DO
-		final DeliveryOrder persistedDeliveryOrder = orderRepository.save(draftDeliveryOrder);
+		final DeliveryOrder persistedDeliveryOrder = orderService.save(draftDeliveryOrder);
 		DeliveryOrder updatedDummyDeliveryOrder = initialDummyDeliveryOrder.toBuilder()
 				.id(persistedDeliveryOrder.getId())
 				.build();
@@ -265,7 +258,7 @@ class DhlTestHelper
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
-		final DeliveryOrder deserialisedDO = orderService.getByRepoId(updatedDummyDeliveryOrder.getId());
+		final DeliveryOrder deserialisedDO = orderService.getByRepoId(updatedDummyDeliveryOrder.getIdNotNull());
 		DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.builder()
 				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, PACKAGE_ID_1))
 				.build();
@@ -288,13 +281,13 @@ class DhlTestHelper
 
 		//
 		// check 5: persist the completed delivery order: nothing should be modified
-		final DeliveryOrder savedCompletedDeliveryOrder = orderRepository.save(completedDeliveryOrder);
+		final DeliveryOrder savedCompletedDeliveryOrder = orderService.save(completedDeliveryOrder);
 		Assertions.assertEquals(updatedDummyDeliveryOrder, savedCompletedDeliveryOrder, "nothing should be modified");
 		assertSizeOfCustomDeliveryData(savedCompletedDeliveryOrder);
 
 		//
 		// check 6: retrieve the persisted completed DO. nothing should be modified
-		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderService.getByRepoId(updatedDummyDeliveryOrder.getId());
+		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderService.getByRepoId(updatedDummyDeliveryOrder.getIdNotNull());
 		Assertions.assertEquals(updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder, "nothing should be modified");
 		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
 
@@ -306,7 +299,7 @@ class DhlTestHelper
 				.count(), "there should be 1 database request logs");
 
 		//
-		// check 8: there's no way to test that label printing => create attachment works. :(
+		// check 8: there's no way to test that label printing => creates attachment works. :(
 	}
 
 	private void assertSizeOfCustomDeliveryData(@NonNull final DeliveryOrder deliveryOrder)
@@ -315,6 +308,7 @@ class DhlTestHelper
 		Assertions.assertEquals(5, DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getDetails().size());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private DhlCustomDeliveryDataDetail extractFieldsAfterCompleteDeliveryOrder(@NonNull final DhlCustomDeliveryData customDeliveryData, @NonNull final DeliveryOrder completedDeliveryOrder, final PackageId packageId)
 	{
 		Assertions.assertNotNull(completedDeliveryOrder.getCustomDeliveryData());
@@ -335,6 +329,7 @@ class DhlTestHelper
 				.build();
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private DhlCustomDeliveryDataDetail extractPackageIdAndSequenceNumberFromDO(@NonNull final DeliveryOrder deliveryOrder, final PackageId packageId)
 	{
 		//noinspection ConstantConditions
@@ -346,7 +341,7 @@ class DhlTestHelper
 				.build();
 	}
 
-	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder, @NonNull final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator)
+	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final DeliveryOrderParcel firstDeliveryOrderParcel = deliveryOrder.getDeliveryOrderParcels().get(0);
 
@@ -366,7 +361,6 @@ class DhlTestHelper
 		//noinspection deprecation,ConstantConditions
 		deliverToBPartner.setEMail(deliveryOrder.getDeliveryContact().getEmailAddress());
 		final I_C_Location deliverToLocation = ShipperTestHelper.createLocation(deliveryOrder.getDeliveryAddress());
-		final int deliverToBPartnerLocationId = 0;
 		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
 
 		//
@@ -380,7 +374,7 @@ class DhlTestHelper
 		final String customerReference = null;
 
 		//noinspection ConstantConditions
-		return draftDeliveryOrderCreator.createDeliveryOrderFromParams(
+		return DhlDraftDeliveryOrderCreator.createDeliveryOrderFromParams(
 				ImmutableSet.of(packageInfo),
 				pickupFromBPartner,
 				pickupFromLocation,

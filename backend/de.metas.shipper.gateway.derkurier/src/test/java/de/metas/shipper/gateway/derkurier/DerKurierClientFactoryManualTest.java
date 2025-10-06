@@ -7,6 +7,7 @@ import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -45,17 +46,7 @@ public class DerKurierClientFactoryManualTest
 	@Disabled // remove the ignore to run this test manually
 	public void manualTest()
 	{
-		final Converters converters = new Converters();
-		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
-
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-
-		final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository = new DerKurierDeliveryOrderRepository(converters);
-		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
-				derKurierShipperConfigRepository,
-				new DerKurierDeliveryOrderService(derKurierDeliveryOrderRepository, attachmentEntryService),
-				derKurierDeliveryOrderRepository,
-				converters);
+		final DerKurierDeliveryOrderService derKurierDeliveryOrderService = DerKurierDeliveryOrderService.newInstanceForUnitTesting();
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl("https://leoz.derkurier.de:13000/rs/api/v1")
@@ -66,7 +57,7 @@ public class DerKurierClientFactoryManualTest
 				.desiredTimeFrom(LocalTime.now())
 				.desiredTimeTo(LocalTime.now().plusHours(1))
 				.build();
-		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
+		final DerKurierClient client = derKurierDeliveryOrderService.createClient(shipperConfig);
 
 		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest_times_with_seconds();
 		final Routing routing = client.postRoutingRequest(routingRequest);

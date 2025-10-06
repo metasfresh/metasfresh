@@ -104,7 +104,7 @@ public class UOMDAO implements IUOMDAO
 	{
 		return getUomIdByX12DE355IfExists(x12de355);
 	}
-	
+
 	private Optional<UomId> getUomIdByX12DE355IfExists(@NonNull final X12DE355 x12de355)
 	{
 		return uomIdsByX12DE355.getOrLoad(x12de355, this::retrieveUomIdByX12DE355);
@@ -180,6 +180,12 @@ public class UOMDAO implements IUOMDAO
 					.setParameter("Suggestion", "Create an UOM for that X12DE355 code or activate it if already exists.")
 					.appendParametersToMessage();
 		}
+	}
+
+	@Override
+	public UOMPrecision getStandardPrecision(final X12DE355 x12DE355)
+	{
+		return getStandardPrecision(getUomIdByX12DE355(x12DE355));
 	}
 
 	@Override

@@ -23,33 +23,20 @@
 package de.metas.shipper.gateway.dpd;
 
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
-import de.metas.shipping.ShipperGatewayId;
-import de.metas.shipping.ShipperId;
-import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
-import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
+import de.metas.shipping.ShipperId;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
-public class DpdShipperGatewayClientFactory implements ShipperGatewayClientFactory
+@RequiredArgsConstructor
+class DpdShipperGatewayClientFactory
 {
-	private final DpdClientConfigRepository configRepo;
+	@NonNull private final DpdClientConfigRepository configRepo;
 
-	public DpdShipperGatewayClientFactory(final DpdClientConfigRepository configRepo)
-	{
-		this.configRepo = configRepo;
-	}
-
-	@Override
-	public ShipperGatewayId getShipperGatewayId()
-	{
-		return DpdConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
 	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
 		final DpdClientConfig config = configRepo.getByShipperId(shipperId);

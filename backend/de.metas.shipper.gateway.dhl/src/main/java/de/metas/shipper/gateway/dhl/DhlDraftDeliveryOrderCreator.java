@@ -35,14 +35,14 @@ import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
+import de.metas.shipper.gateway.spi.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
@@ -68,17 +68,11 @@ import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences
 
 @Service
 @RequiredArgsConstructor
-public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
+class DhlDraftDeliveryOrderCreator
 {
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@NonNull private final DhlClientConfigRepository clientConfigRepository;
-
-	@Override
-	public ShipperGatewayId getShipperGatewayId()
-	{
-		return DhlConstants.SHIPPER_GATEWAY_ID;
-	}
 
 	/**
 	 * Create the initial DTO.
@@ -88,7 +82,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 */
 	@SuppressWarnings("JavadocReference")
 	@NonNull
-	@Override
 	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
@@ -182,7 +175,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	}
 
 	@VisibleForTesting
-	DeliveryOrder createDeliveryOrderFromParams(
+	static DeliveryOrder createDeliveryOrderFromParams(
 			@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos,
 			@NonNull final I_C_BPartner pickupFromBPartner,
 			@NonNull final I_C_Location pickupFromLocation,

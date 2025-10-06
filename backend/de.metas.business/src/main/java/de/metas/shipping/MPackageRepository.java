@@ -1,12 +1,19 @@
 package de.metas.shipping;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.shipping.mpackage.PackageId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Package;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -32,6 +39,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class MPackageRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	public I_M_Package getById(final PackageId mPackageId)
 	{
 		final I_M_Package mPackage = load(mPackageId.getRepoId(), I_M_Package.class);
@@ -40,6 +49,15 @@ public class MPackageRepository
 			throw new AdempiereException("@NotFound@: " + mPackageId);
 		}
 		return mPackage;
+	}
+
+	public List<I_M_Package> getByIds(@NonNull final Set<PackageId> mpackageIds)
+	{
+		if (mpackageIds.isEmpty()) {return ImmutableList.of();}
+		return queryBL.createQueryBuilder(I_M_Package.class)
+				.addInArrayFilter(I_M_Package.COLUMNNAME_M_Package_ID, mpackageIds)
+				.create()
+				.list();
 	}
 
 	public void closeMPackage(PackageId mPackageId)

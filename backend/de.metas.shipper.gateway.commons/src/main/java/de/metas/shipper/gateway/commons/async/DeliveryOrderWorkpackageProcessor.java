@@ -87,25 +87,22 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName_NOTUSED)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
-		final DeliveryOrder draftedDeliveryOrder = retrieveDeliveryOrder();
-
 		@NonNull final ShipperGatewayId shipperGatewayId = getShipperGatewayId();
+		final DeliveryOrderService deliveryOrderService = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
 
-		final ShipperGatewayClient client = shipperRegistry
-				.getClientFactory(shipperGatewayId)
-				.newClientForShipperId(draftedDeliveryOrder.getShipperId());
+		final DeliveryOrder draftedDeliveryOrder = deliveryOrderService.getByRepoId(getDeliveryOrderRepoId());
 
-		final DeliveryOrderService deliveryOrderRepo = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
+		final ShipperGatewayClient client = deliveryOrderService.newClientForShipperId(draftedDeliveryOrder.getShipperId());
 
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(draftedDeliveryOrder);
-		deliveryOrderRepo.save(completedDeliveryOrder);
+		deliveryOrderService.save(completedDeliveryOrder);
 
 		final List<PackageLabels> packageLabelsList = client.getPackageLabelsList(completedDeliveryOrder);
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
 
-		printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo, asyncBatchId);
+		final ITableRecordReference deliveryOrderRef = deliveryOrderService.toTableRecordReference(completedDeliveryOrder);
+		printLabels(completedDeliveryOrder, deliveryOrderRef, packageLabelsList);
 
 		return Result.SUCCESS;
 	}
@@ -118,15 +115,6 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		));
 	}
 
-	private DeliveryOrder retrieveDeliveryOrder()
-	{
-		@NonNull final ShipperGatewayId shipperGatewayId = getShipperGatewayId();
-		final DeliveryOrderService deliveryOrderRepo = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
-
-		final DeliveryOrderId deliveryOrderRepoId = getDeliveryOrderRepoId();
-		return deliveryOrderRepo.getByRepoId(deliveryOrderRepoId);
-	}
-
 	public DeliveryOrderId getDeliveryOrderRepoId()
 	{
 		final int repoId = getParameters().getParameterAsInt(PARAM_DeliveryOrderRepoId, -1);
@@ -135,22 +123,20 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 	public void printLabels(
 			@NonNull final DeliveryOrder deliveryOrder,
-			@NonNull final List<PackageLabels> packageLabels,
-			@NonNull final DeliveryOrderService deliveryOrderRepo,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@NonNull final ITableRecordReference deliveryOrderRef,
+			@NonNull final List<PackageLabels> packageLabels)
 	{
 		for (final PackageLabels packageLabel : packageLabels)
 		{
 			final PackageLabel defaultPackageLabel = packageLabel.getDefaultPackageLabel();
-			printLabel(deliveryOrder, defaultPackageLabel, deliveryOrderRepo, asyncBatchId);
+			printLabel(deliveryOrder, deliveryOrderRef, defaultPackageLabel);
 		}
 	}
 
 	private void printLabel(
 			final DeliveryOrder deliveryOrder,
-			final PackageLabel packageLabel,
-			@NonNull final DeliveryOrderService deliveryOrderRepo,
-			@Nullable final AsyncBatchId asyncBatchId)
+			final ITableRecordReference deliveryOrderRef,
+			final PackageLabel packageLabel)
 	{
 		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 
@@ -162,7 +148,6 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		final IArchiveStorage archiveStorage = archiveStorageFactory.getArchiveStorage(ctx);
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(archiveStorage.newArchive(ctx, ITrx.TRXNAME_ThreadInherited), I_AD_Archive.class);
 
-		final ITableRecordReference deliveryOrderRef = deliveryOrderRepo.toTableRecordReference(deliveryOrder);
 		archive.setAD_Table_ID(deliveryOrderRef.getAD_Table_ID());
 		archive.setRecord_ID(deliveryOrderRef.getRecord_ID());
 		archive.setC_BPartner_ID(deliveryOrder.getDeliveryAddress().getBpartnerId());
@@ -173,7 +158,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		archive.setIsDirectEnqueue(true);
 		archive.setIsDirectProcessQueueItem(true);
 
-		archive.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
+		archive.setC_Async_Batch_ID(AsyncBatchId.toRepoId(getAsyncBatchIdOrNull()));
 
 		InterfaceWrapperHelper.save(archive);
 	}

@@ -1,16 +1,14 @@
 package de.metas.shipper.gateway.derkurier.restapi.models;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalTime;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.shipper.gateway.derkurier.DerKurierDeliveryOrderService;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalTime;
 
-import de.metas.shipper.gateway.derkurier.DerKurierClientFactory;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -47,7 +45,7 @@ public class RequestParticipantTest
 				.timeTo(LocalTime.of(11, 21, 31, 41))
 				.build();
 
-		final ObjectMapper objectMapper = DerKurierClientFactory.extractAndConfigureObjectMapperOfRestTemplate(new RestTemplate());
+		final ObjectMapper objectMapper = DerKurierDeliveryOrderService.extractAndConfigureObjectMapperOfRestTemplate(new RestTemplate());
 		final String string = objectMapper.writeValueAsString(sender);
 		assertThat(string).contains("10:20");
 	}

@@ -6,31 +6,18 @@ import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.oauth2.CustomOAuth2TokenRetriever;
 import de.metas.shipper.gateway.dhl.oauth2.OAuth2AuthorizationInterceptor;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
-import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
-import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
-public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFactory
+@RequiredArgsConstructor
+class DhlShipperGatewayClientFactory
 {
+	@NonNull private final DhlClientConfigRepository configRepo; // Holds the DHL client config
 
-	private final DhlClientConfigRepository configRepo; // Holds the DHL client config
-
-	public DhlShipperGatewayClientFactory(@NonNull final DhlClientConfigRepository configRepo)
-	{
-		this.configRepo = configRepo;
-	}
-
-	@Override
-	public ShipperGatewayId getShipperGatewayId()
-	{
-		return DhlConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
 	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
 		final DhlClientConfig config = configRepo.getByShipperId(shipperId);

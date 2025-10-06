@@ -1,5 +1,6 @@
 package de.metas.async.spi;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_Element;
@@ -14,6 +15,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.api.IParams;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -49,8 +51,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	@NonNull
 	protected final I_C_Queue_WorkPackage getC_Queue_WorkPackage()
 	{
-		Check.assumeNotNull(workpackage, "workpackage not null");
-		return this.workpackage;
+		return Check.assumeNotNull(this.workpackage, "workpackage not null");
 	}
 
 	@NonNull
@@ -132,5 +133,12 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	public final Set<Integer> retrieveAllItemIds()
 	{
 		return Services.get(IQueueDAO.class).retrieveAllItemIds(getC_Queue_WorkPackage());
+	}
+
+	@Nullable
+	protected final AsyncBatchId getAsyncBatchIdOrNull()
+	{
+		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
+		return AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID());
 	}
 }

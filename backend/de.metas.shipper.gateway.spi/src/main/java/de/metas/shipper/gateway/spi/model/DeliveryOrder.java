@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -110,6 +111,8 @@ public class DeliveryOrder
 
 	String shipperEORI;
 	String receiverEORI;
+
+	public DeliveryOrderId getIdNotNull() {return Check.assumeNotNull(id, "expected delivery order to be saved: {}", this);}
 
 	public DeliveryOrder withCustomDeliveryData(@NonNull final CustomDeliveryData customDeliveryData)
 	{

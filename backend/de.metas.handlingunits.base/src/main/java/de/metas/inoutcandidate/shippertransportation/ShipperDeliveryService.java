@@ -45,6 +45,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -54,6 +55,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -62,9 +64,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 @Service
 @RequiredArgsConstructor
@@ -164,22 +163,23 @@ public class ShipperDeliveryService
 			return;
 		}
 
-		final Set<Integer> mPackageIds = packages.stream()
-				.map(I_M_Package::getM_Package_ID)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
+		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationId);
 
 		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
 				.pickupDate(getPickupDate(shipperTransportation))
 				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
 				.timeTo(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeTo()))
-				.packageIds(mPackageIds)
+				.packageIds(extractPackageIds(packages))
 				.shipperTransportationId(shipperTransportationId)
 				.shipperGatewayId(shipperGatewayId)
 				.asyncBatchId(asyncBatchId)
 				.build();
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
+	}
+
+	private static ImmutableSet<PackageId> extractPackageIds(final @NotNull Collection<I_M_Package> packages)
+	{
+		return packages.stream().map(mpackage -> PackageId.ofRepoId(mpackage.getM_Package_ID())).collect(ImmutableSet.toImmutableSet());
 	}
 
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)

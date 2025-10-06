@@ -1,18 +1,18 @@
 package de.metas.shipper.gateway.go;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.shipping.ShipperGatewayId;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
 import de.metas.shipper.gateway.go.schema.GOShipperProduct;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
+import de.metas.shipper.gateway.spi.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
@@ -50,17 +50,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  */
 
 @Service
-public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
+class GODraftDeliveryOrderCreator
 {
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
-	@Override
-	public ShipperGatewayId getShipperGatewayId()
-	{
-		return GOConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
 	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();

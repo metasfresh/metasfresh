@@ -35,7 +35,8 @@ import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
+import de.metas.shipper.gateway.spi.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -43,7 +44,6 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
-import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
@@ -68,23 +68,16 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
+class DpdDraftDeliveryOrderCreator
 {
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@NonNull private final DpdClientConfigRepository clientConfigRepository;
 
-	@Override
-	public ShipperGatewayId getShipperGatewayId()
-	{
-		return DpdConstants.SHIPPER_GATEWAY_ID;
-	}
-
 	/**
 	 * Create the initial DTO.
 	 */
 	@NonNull
-	@Override
 	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();

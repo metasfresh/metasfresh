@@ -27,6 +27,7 @@ import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
@@ -41,6 +42,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.SpringContextHolder.Lazy;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -50,8 +52,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -99,11 +99,11 @@ public class HUShippingFacade
 
 	//
 	// Parameters
-	private final int addToShipperTransportationId;
+	@Nullable private final ShipperTransportationId addToShipperTransportationId;
 	private final boolean completeShipments;
-	private final BillAssociatedInvoiceCandidates invoiceMode;
+	@Nullable private final BillAssociatedInvoiceCandidates invoiceMode;
 	private final boolean createShipperDeliveryOrders;
-	private final ImmutableList<I_M_HU> hus;
+	@NonNull private final ImmutableList<I_M_HU> hus;
 	private final boolean failIfNoShipmentCandidatesFound;
 
 	//
@@ -124,7 +124,7 @@ public class HUShippingFacade
 		Check.assumeNotEmpty(hus, "hus is not empty");
 
 		this.hus = ImmutableList.copyOf(hus);
-		this.addToShipperTransportationId = addToShipperTransportationId;
+		this.addToShipperTransportationId = ShipperTransportationId.ofRepoIdOrNull(addToShipperTransportationId);
 		this.completeShipments = completeShipments;
 		this.invoiceMode = invoiceMode;
 		this.createShipperDeliveryOrders = createShipperDeliveryOrders;
@@ -167,12 +167,12 @@ public class HUShippingFacade
 	 */
 	private void addHUsToShipperTransportationIfNeeded()
 	{
-		if (addToShipperTransportationId > 0)
+		if (addToShipperTransportationId != null)
 		{
 			final List<I_M_Package> result = trxManager
 					//dev-note: call in new trx so they are available in ServerBoot when generating the shipments
 					.callInNewTrx(() -> huShipperTransportationBL.addHUsToShipperTransportation(
-							ShipperTransportationId.ofRepoId(addToShipperTransportationId),
+							addToShipperTransportationId,
 							CreatePackageForHURequest.ofHUsList(hus)
 					));
 
@@ -256,7 +256,7 @@ public class HUShippingFacade
 		{
 			return;
 		}
-		Check.errorIf(addToShipperTransportationId <= 0, "If createShipperDeliveryOrders=true, then addToShipperTransportationId needs to be > 0; this={}", this);
+		Check.errorIf(addToShipperTransportationId == null, "If createShipperDeliveryOrders=true, then addToShipperTransportationId needs to be > 0; this={}", this);
 
 		mPackagesCreated
 				.stream()
@@ -287,22 +287,26 @@ public class HUShippingFacade
 			return;
 		}
 
-		final Set<Integer> mPackageIds = mPackages.stream()
-				.map(I_M_Package::getM_Package_ID)
+		@NonNull final ShipperTransportationId addToShipperTransportationId = Check.assumeNotNull(this.addToShipperTransportationId, "addToShipperTransportationId > 0");
+		final I_M_ShipperTransportation shipperTransportation = huShipperTransportationBL.getById(addToShipperTransportationId);
+
+		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(
+				DeliveryOrderCreateRequest.builder()
+						.pickupDate(getPickupDate(shipperTransportation))
+						.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
+						.timeTo(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeTo()))
+						.packageIds(extractPackageIds(mPackages))
+						.shipperTransportationId(addToShipperTransportationId)
+						.shipperGatewayId(shipperGatewayId)
+						.build()
+		);
+	}
+
+	private static ImmutableSet<PackageId> extractPackageIds(final @NotNull Collection<I_M_Package> mPackages)
+	{
+		return mPackages.stream()
+				.map(mpackage -> PackageId.ofRepoId(mpackage.getM_Package_ID()))
 				.collect(ImmutableSet.toImmutableSet());
-
-		Check.assume(addToShipperTransportationId > 0, "addToShipperTransportationId > 0");
-		final I_M_ShipperTransportation shipperTransportation = load(addToShipperTransportationId, I_M_ShipperTransportation.class);
-
-		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
-				.pickupDate(getPickupDate(shipperTransportation))
-				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
-				.timeTo(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeTo()))
-				.packageIds(mPackageIds)
-				.shipperTransportationId(ShipperTransportationId.ofRepoId(addToShipperTransportationId))
-				.shipperGatewayId(shipperGatewayId)
-				.build();
-		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}
 
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)

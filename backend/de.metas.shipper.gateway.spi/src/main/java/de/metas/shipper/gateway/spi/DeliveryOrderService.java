@@ -2,6 +2,8 @@ package de.metas.shipper.gateway.spi;
 
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.ShipperId;
+import lombok.NonNull;
 import org.adempiere.util.lang.ITableRecordReference;
 
 /*
@@ -30,9 +32,12 @@ public interface DeliveryOrderService
 {
 	ShipperGatewayId getShipperGatewayId();
 
+	@NonNull
+	DeliveryOrder createDraftDeliveryOrder(CreateDraftDeliveryOrderRequest request);
+
 	/**
 	 * @return a reference to the internal {@code AD_Table_ID} and {@code Record_ID} of the record that backs the given {@code deliveryOrder}.
-	 *         Note that the reference's {@code Record_ID} is coming from {@link DeliveryOrder#getId()}.
+	 * Note that the reference's {@code Record_ID} is coming from {@link DeliveryOrder#getId()}.
 	 */
 	ITableRecordReference toTableRecordReference(DeliveryOrder deliveryOrder);
 
@@ -46,4 +51,6 @@ public interface DeliveryOrderService
 	 */
 	DeliveryOrder save(DeliveryOrder order);
 
+	@NonNull
+	ShipperGatewayClient newClientForShipperId(@NonNull ShipperId shipperId);
 }

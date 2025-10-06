@@ -1,14 +1,18 @@
 package de.metas.shipper.gateway.go;
 
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
+import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 /*
@@ -41,6 +45,15 @@ import org.springframework.stereotype.Service;
 public class GODeliveryOrderService implements DeliveryOrderService
 {
 	private final GODeliveryOrderRepository goDeliveryOrderRepository;
+	private final GODraftDeliveryOrderCreator deliveryOrderCreator;
+	private final GOClientFactory clientFactory;
+
+	@NonNull
+	@Override
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	{
+		return deliveryOrderCreator.createDraftDeliveryOrder(request);
+	}
 
 	@Override
 	public TableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
@@ -66,5 +79,11 @@ public class GODeliveryOrderService implements DeliveryOrderService
 	public ShipperGatewayId getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
+	}
+
+	@Override
+	public @NonNull ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
+	{
+		return clientFactory.newClientForShipperId(shipperId);
 	}
 }

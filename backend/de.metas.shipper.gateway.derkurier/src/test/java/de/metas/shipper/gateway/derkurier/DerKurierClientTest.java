@@ -1,11 +1,8 @@
 package de.metas.shipper.gateway.derkurier;
 
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
-import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
@@ -44,7 +41,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
  * #L%
  */
 
-public class DerKurierClientFactoryTest
+public class DerKurierClientTest
 {
 	private static final String REST_API_BASE_URL = "https://leoz.derkurier.de:13000/rs/api/v1";
 
@@ -53,20 +50,10 @@ public class DerKurierClientFactoryTest
 	@Test
 	public void postRoutingRequest()
 	{
-		final Converters converters = new Converters();
-		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
-
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		final DerKurierDeliveryOrderService derKurierDeliveryOrderService = DerKurierDeliveryOrderService.newInstanceForUnitTesting();
 
 		final IDocumentNoBuilderFactory documentNoBuilderFactory = new DocumentNoBuilderFactory(Optional.empty());
 		Services.registerService(IDocumentNoBuilderFactory.class, documentNoBuilderFactory);
-
-		final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository = new DerKurierDeliveryOrderRepository(converters);
-		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
-				derKurierShipperConfigRepository,
-				new DerKurierDeliveryOrderService(derKurierDeliveryOrderRepository, attachmentEntryService),
-				derKurierDeliveryOrderRepository,
-				converters);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(REST_API_BASE_URL)
@@ -78,7 +65,7 @@ public class DerKurierClientFactoryTest
 				.desiredTimeTo(LocalTime.of(17, 0))
 				.build();
 
-		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
+		final DerKurierClient client = derKurierDeliveryOrderService.createClient(shipperConfig);
 
 		final MockRestServiceServer mockServer = MockRestServiceServer.createServer(client.getRestTemplate());
 

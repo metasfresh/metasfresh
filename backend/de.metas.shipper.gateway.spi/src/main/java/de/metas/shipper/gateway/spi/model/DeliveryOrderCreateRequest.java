@@ -4,6 +4,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,7 +41,7 @@ import java.util.Set;
 @Value
 public class DeliveryOrderCreateRequest
 {
-	Set<Integer> packageIds;
+	Set<PackageId> packageIds;
 	ShipperTransportationId shipperTransportationId;
 
 	ShipperGatewayId shipperGatewayId;
@@ -53,7 +54,7 @@ public class DeliveryOrderCreateRequest
 	@Builder
 	public DeliveryOrderCreateRequest(
 			@NonNull final LocalDate pickupDate,
-			@NonNull @Singular final Set<Integer> packageIds,
+			@NonNull @Singular final Set<PackageId> packageIds,
 			final ShipperTransportationId shipperTransportationId,
 			@NonNull final ShipperGatewayId shipperGatewayId,
 			@Nullable final LocalTime timeFrom,

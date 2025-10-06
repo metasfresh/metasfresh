@@ -32,8 +32,8 @@ import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -101,7 +101,7 @@ public class DhlDeliveryOrderRepository
 	/**
 	 * Read the DHL specific PO and return a DTO.
 	 * <p>
-	 * keep in sync with {@link #createShipmentOrderRequestPO(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
+	 * keep in sync with {@link #createShipmentOrderRequestPO(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(CreateDraftDeliveryOrderRequest)}
 	 */
 	@NonNull
 	private DeliveryOrder toDeliveryOrderFromPO(final @NonNull DeliveryOrderId deliveryOrderId)
@@ -191,7 +191,7 @@ public class DhlDeliveryOrderRepository
 	 * Persists the shipper-dependant DeliveryOrder details
 	 * <p>
 	 * keep in sync with {@link #toDeliveryOrderFromPO(DeliveryOrderId)}
-	 * and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
+	 * and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(CreateDraftDeliveryOrderRequest)}
 	 */
 	@NonNull
 	private I_DHL_ShipmentOrderRequest createShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)

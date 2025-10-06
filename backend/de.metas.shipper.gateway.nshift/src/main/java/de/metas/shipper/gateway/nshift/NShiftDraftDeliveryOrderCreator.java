@@ -22,7 +22,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.nshift.client.NShiftShipperProduct;
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
+import de.metas.shipper.gateway.spi.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -31,7 +32,6 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
-import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
@@ -58,7 +58,7 @@ import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences
 
 @Component
 @RequiredArgsConstructor
-public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
+class NShiftDraftDeliveryOrderCreator
 {
 	// @NonNull private final ExternalSystemMessageSender externalSystemMessageSender;
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -75,11 +75,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	private final static UomId HARDCODE_CM_UOM_ID = UomId.ofRepoId(540047);//CM
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
-	@Override
-	public ShipperGatewayId getShipperGatewayId() {return NShiftConstants.SHIPPER_GATEWAY_ID;}
-
 	@NonNull
-	@Override
 	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();

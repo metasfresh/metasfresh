@@ -22,22 +22,35 @@
 
 package de.metas.shipper.gateway.derkurier;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
+import de.metas.shipper.gateway.spi.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
+import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -53,20 +66,41 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DerKurierDeliveryOrderService implements DeliveryOrderService
 {
 	public static final String SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME = "DerKurier.csv";
 
-	private final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
+	@NonNull private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
+	@NonNull private final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
+	@NonNull private final AttachmentEntryService attachmentEntryService;
+	@NonNull private final DerKurierDraftDeliveryOrderCreator deliveryOrderCreator;
+	@NonNull private final Converters converters;
 
-	private final AttachmentEntryService attachmentEntryService;
+	public static DerKurierDeliveryOrderService newInstanceForUnitTesting()
+	{
+		final DerKurierShipperConfigRepository configRepo = new DerKurierShipperConfigRepository();
+		final Converters converters = new Converters();
+		return new DerKurierDeliveryOrderService(
+				configRepo,
+				new DerKurierDeliveryOrderRepository(converters),
+				AttachmentEntryService.createInstanceForUnitTesting(),
+				new DerKurierDraftDeliveryOrderCreator(configRepo),
+				converters
+		);
+	}
 
 	@Override
 	@NonNull
 	public ShipperGatewayId getShipperGatewayId()
 	{
 		return SHIPPER_GATEWAY_ID;
+	}
+
+	@Override
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	{
+		return deliveryOrderCreator.createDraftDeliveryOrder(request);
 	}
 
 	@Override
@@ -186,5 +220,51 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
+	}
+
+	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
+	{
+		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository.retrieveConfigForShipperId(shipperId.getRepoId());
+		return createClient(shipperConfig);
+	}
+
+	@VisibleForTesting
+	DerKurierClient createClient(@NonNull final DerKurierShipperConfig shipperConfig)
+	{
+		final RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder()
+				.rootUri(shipperConfig.getRestApiBaseUrl());
+
+		final RestTemplate restTemplate = restTemplateBuilder.build();
+		extractAndConfigureObjectMapperOfRestTemplate(restTemplate);
+
+		return new DerKurierClient(
+				restTemplate,
+				converters,
+				this,
+				derKurierDeliveryOrderRepository);
+	}
+
+	/**
+	 * Put JavaTimeModule into the rest template's jackson object mapper.
+	 * <b>
+	 * Note 1: there have to be better ways to achieve this, but i don't know them.
+	 * thx to https://stackoverflow.com/a/47176770/1012103
+	 * <b>
+	 * Note 2: visible because this is the object mapper we run with; we want our unit tests to use it as well.
+	 */
+	@VisibleForTesting
+	public static ObjectMapper extractAndConfigureObjectMapperOfRestTemplate(@NonNull final RestTemplate restTemplate)
+	{
+		final MappingJackson2HttpMessageConverter messageConverter = restTemplate
+				.getMessageConverters()
+				.stream()
+				.filter(MappingJackson2HttpMessageConverter.class::isInstance)
+				.map(MappingJackson2HttpMessageConverter.class::cast)
+				.findFirst().orElseThrow(() -> new RuntimeException("MappingJackson2HttpMessageConverter not found"));
+
+		final ObjectMapper objectMapper = messageConverter.getObjectMapper();
+		objectMapper.registerModule(new JavaTimeModule());
+
+		return objectMapper;
 	}
 }
