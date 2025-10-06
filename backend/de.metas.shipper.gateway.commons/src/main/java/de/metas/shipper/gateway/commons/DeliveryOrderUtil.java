@@ -72,10 +72,8 @@ public final class DeliveryOrderUtil
 	public CountryCode createShipperCountryCode(final CountryId countryId)
 	{
 		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-		return CountryCode.builder()
-				.alpha2(countryDAO.retrieveCountryCode2ByCountryId(countryId))
-				.alpha3(countryDAO.retrieveCountryCode3ByCountryId(countryId))
-				.build();
+		final String countryCode2 = countryDAO.retrieveCountryCode2ByCountryId(countryId);
+		return CountryCode.ofAlpha2(countryCode2);
 	}
 
 	public String getPOReferences(@NonNull final Collection<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)

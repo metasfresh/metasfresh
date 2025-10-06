@@ -69,11 +69,6 @@ class DpdTestHelper
 	static final String DELIS_ID = "sandboxdpd";
 	static final String DELIS_PASSWORD = "a";
 
-	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
-	private static final CountryCode COUNTRY_CODE_AT = CountryCode.builder().alpha2("AT").alpha3("AUT").build();
-	private static final CountryCode COUNTRY_CODE_CH = CountryCode.builder().alpha2("CH").alpha3("CHE").build();
-	private static final CountryCode COUNTRY_CODE_US = CountryCode.builder().alpha2("US").alpha3("USA").build();
-
 	private final DpdDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DpdDraftDeliveryOrderCreator(new DpdClientConfigRepository());
 	private final DpdDeliveryOrderRepository orderRepository = new DpdDeliveryOrderRepository();
 	private final DpdShipperGatewayClient client = DpdShipperGatewayClient.builder()
@@ -99,7 +94,7 @@ class DpdTestHelper
 						.houseNo("10")
 						.zipCode("53129")
 						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
+						.country(CountryCode.DE)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
@@ -114,7 +109,7 @@ class DpdTestHelper
 						.houseNo("8")
 						.zipCode("10117")
 						.city("Berlin")
-						.country(COUNTRY_CODE_DE)
+						.country(CountryCode.DE)
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress("cristian.pasat@metasfresh.com")
@@ -147,7 +142,7 @@ class DpdTestHelper
 						.houseNo("10")
 						.zipCode("53129")
 						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
+						.country(CountryCode.DE)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
@@ -162,7 +157,7 @@ class DpdTestHelper
 						.houseNo("3")
 						.zipCode("6003")
 						.city("Luzern")
-						.country(COUNTRY_CODE_CH)
+						.country(CountryCode.CH)
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress("cristian.pasat@metasfresh.com")
@@ -195,7 +190,7 @@ class DpdTestHelper
 						.houseNo("10")
 						.zipCode("53129")
 						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
+						.country(CountryCode.DE)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
@@ -210,7 +205,7 @@ class DpdTestHelper
 						.houseNo("22")
 						.zipCode("8051")
 						.city("Graz")
-						.country(COUNTRY_CODE_AT)
+						.country(CountryCode.AT)
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress("cristian.pasat@metasfresh.com")
@@ -243,7 +238,7 @@ class DpdTestHelper
 						.houseNo("10")
 						.zipCode("53129")
 						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
+						.country(CountryCode.DE)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
@@ -258,7 +253,7 @@ class DpdTestHelper
 						.houseNo("2400")
 						.zipCode("20059")
 						.city("Washington DC")
-						.country(COUNTRY_CODE_US)
+						.country(CountryCode.ofAlpha2("US"))
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress("cristian.pasat@metasfresh.com")

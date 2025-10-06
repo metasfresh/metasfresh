@@ -22,13 +22,14 @@
 
 package de.metas.location;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Locale;
 
@@ -37,6 +38,7 @@ public class CountryCode
 {
 	public static final CountryCode DE;
 	public static final CountryCode CH;
+	public static final CountryCode AT;
 
 	@JsonProperty("alpha2") String alpha2;
 	@JsonProperty("alpha3") String alpha3;
@@ -53,10 +55,7 @@ public class CountryCode
 		{
 			final Locale locale = new Locale("", countryCodeAlpha2);
 			final String countryCodeAlpha3 = locale.getISO3Country();
-			final CountryCode countryCode = CountryCode.builder()
-					.alpha2(countryCodeAlpha2)
-					.alpha3(countryCodeAlpha3)
-					.build();
+			final CountryCode countryCode = new CountryCode(countryCodeAlpha2, countryCodeAlpha3);
 			byAlpha2Builder.put(countryCodeAlpha2, countryCode);
 			byAlpha3Builder.put(countryCodeAlpha3, countryCode);
 		}
@@ -65,11 +64,17 @@ public class CountryCode
 		byAlpha3 = byAlpha3Builder.build();
 
 		DE = Check.assumeNotNull(byAlpha2.get("DE"), "DE shall exist");
-		CH = Check.assumeNotNull(byAlpha2.get("CH"), "DE shall exist");
+		CH = Check.assumeNotNull(byAlpha2.get("CH"), "CH shall exist");
+		AT = Check.assumeNotNull(byAlpha2.get("AT"), "AT shall exist");
 	}
 
+	@JsonCreator
 	public static CountryCode ofAlpha2(@NonNull final String countryCodeAlpha2)
 	{
+		if (countryCodeAlpha2.length() != 2)
+		{
+			throw new AdempiereException("Invalid alpha-2 country code: " + countryCodeAlpha2);
+		}
 		final CountryCode countryCode = byAlpha2.get(countryCodeAlpha2);
 		Check.assumeNotNull(countryCode, "countyCode shall exist for '{}' (alpha2)", countryCodeAlpha2);
 		return countryCode;
@@ -77,14 +82,23 @@ public class CountryCode
 
 	public static CountryCode ofAlpha3(@NonNull final String countryCodeAlpha3)
 	{
+		if (countryCodeAlpha3.length() != 3)
+		{
+			throw new AdempiereException("Invalid alpha-3 country code: " + countryCodeAlpha3);
+		}
 		final CountryCode countryCode = byAlpha3.get(countryCodeAlpha3);
 		Check.assumeNotNull(countryCode, "countyCode shall exist for '{}' (alpha3)", countryCodeAlpha3);
 		return countryCode;
 	}
 
-	@Builder
-	@Jacksonized
-	public CountryCode(@NonNull final String alpha2, @NonNull final String alpha3)
+	@Override
+	@Deprecated
+	public String toString() {return toJson();}
+
+	@JsonValue
+	private String toJson() {return alpha2;}
+
+	private CountryCode(@NonNull final String alpha2, @NonNull final String alpha3)
 	{
 		Check.assumeNotEmpty(alpha2, "alpha2 is not empty");
 		Check.assumeNotEmpty(alpha3, "alpha3 is not empty");

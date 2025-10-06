@@ -86,8 +86,8 @@ public class C_BP_BankAccount
 		final int countryId = bp_bankAccount.getA_Country_ID();
 		if (countryId > 0)
 		{
-			final String countryCode = countryDAO.getCountryCode(CountryId.ofRepoId(countryId));
-			bp_bankAccount.setA_Country(countryCode);
+			final String countryCode2 = countryDAO.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(countryId));
+			bp_bankAccount.setA_Country(countryCode2);
 		}
 		else
 		{

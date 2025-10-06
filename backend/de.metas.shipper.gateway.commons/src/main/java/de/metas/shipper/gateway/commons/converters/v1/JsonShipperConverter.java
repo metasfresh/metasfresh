@@ -80,7 +80,6 @@ public class JsonShipperConverter
 
 	private JsonAddress toJsonAddress(@NonNull final Address address)
 	{
-		final Integer bpartnerId = address.getBpartnerId() > 0 ? address.getBpartnerId() : null;
 		return JsonAddress.builder()
 				.companyName1(address.getCompanyName1())
 				.companyName2(address.getCompanyName2())
@@ -91,7 +90,7 @@ public class JsonShipperConverter
 				.country(address.getCountry().getAlpha2())
 				.zipCode(address.getZipCode())
 				.city(address.getCity())
-				.bpartnerId(bpartnerId)
+				.bpartnerId(address.getBpartnerId() != null ? address.getBpartnerId().getRepoId() : null)
 				.build();
 	}
 

@@ -65,10 +65,6 @@ class DhlTestHelper
 	static final String PASSWORD = "pass";
 	static final String APP_TOKEN = "TXzU0LrbOdFj3xAW7CMD7kGvyhz2Uowj";
 
-	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
-	private static final CountryCode COUNTRY_CODE_CH = CountryCode.builder().alpha2("CH").alpha3("CHE").build();
-	private static final CountryCode COUNTRY_CODE_AT = CountryCode.builder().alpha2("AT").alpha3("AUT").build();
-
 	// special account number, depending on target country. why dhl why?????
 	static final String ACCOUNT_NUMBER_DE = "22222222220104";
 	static final String ACCOUNT_NUMBER_AT = "22222222225301";
@@ -88,7 +84,7 @@ class DhlTestHelper
 						.houseNo("10")
 						.zipCode("53129")
 						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
+						.country(CountryCode.DE)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
@@ -101,7 +97,7 @@ class DhlTestHelper
 						.houseNo("20")
 						.zipCode("53113")
 						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
+						.country(CountryCode.DE)
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress("tbp@tbp.com")
@@ -135,7 +131,7 @@ class DhlTestHelper
 						.houseNo("10")
 						.zipCode("53129")
 						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
+						.country(CountryCode.DE)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
@@ -148,7 +144,7 @@ class DhlTestHelper
 						.houseNo("3")
 						.zipCode("6003")
 						.city("Luzern")
-						.country(COUNTRY_CODE_CH)
+						.country(CountryCode.CH)
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress("tbp@tbp.com")
@@ -182,7 +178,7 @@ class DhlTestHelper
 						.houseNo("10")
 						.zipCode("53129")
 						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
+						.country(CountryCode.DE)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
@@ -195,7 +191,7 @@ class DhlTestHelper
 						.houseNo("22")
 						.zipCode("8051")
 						.city("Graz")
-						.country(COUNTRY_CODE_AT)
+						.country(CountryCode.AT)
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress("tbp@tbp.com")

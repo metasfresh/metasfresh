@@ -26,6 +26,7 @@ import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryCode;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -144,7 +145,7 @@ public class ShipmentOrderRepository
 						.street2(po.getShipper_StreetName2())
 						.houseNo(po.getShipper_StreetNumber())
 						.country(CountryCode.ofAlpha2(po.getShipper_CountryISO2Code()))
-						.bpartnerId(po.getC_BPartner_ID())
+						.bpartnerId(BPartnerId.ofRepoIdOrNull(po.getC_BPartner_ID()))
 						.build())
 				.deliveryAddress(Address.builder()
 						.companyName1(po.getReceiver_Name1())
@@ -245,7 +246,7 @@ public class ShipmentOrderRepository
 		final I_Carrier_ShipmentOrder po = InterfaceWrapperHelper.newInstance(I_Carrier_ShipmentOrder.class);
 		final ContactPerson deliveryContact = request.getDeliveryContact();
 		po.setCarrier_Product(request.getShipperProduct().getCode());
-		po.setC_BPartner_ID(request.getDeliveryAddress().getBpartnerId());
+		po.setC_BPartner_ID(BPartnerId.toRepoId(request.getDeliveryAddress().getBpartnerId()));
 		po.setCustomerReference(request.getCustomerReference());
 		po.setInternationalDelivery(!Objects.equals(request.getDeliveryAddress().getCountry(), request.getPickupAddress().getCountry()));
 		po.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));

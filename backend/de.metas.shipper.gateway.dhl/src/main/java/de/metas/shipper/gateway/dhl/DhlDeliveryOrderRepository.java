@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryCode;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
@@ -119,7 +120,7 @@ public class DhlDeliveryOrderRepository
 		return DeliveryOrder.builder()
 				.id(deliveryOrderId)
 				.deliveryAddress(Address.builder()
-						.bpartnerId(firstOrder.getC_BPartner_ID())
+						.bpartnerId(BPartnerId.ofRepoIdOrNull(firstOrder.getC_BPartner_ID()))
 						.companyName1(firstOrder.getDHL_Receiver_Name1())
 						.companyName2(firstOrder.getDHL_Receiver_Name2())
 						.street1(firstOrder.getDHL_Receiver_StreetName1())
@@ -127,10 +128,7 @@ public class DhlDeliveryOrderRepository
 						.houseNo(firstOrder.getDHL_Receiver_StreetNumber())
 						.zipCode(firstOrder.getDHL_Receiver_ZipCode())
 						.city(firstOrder.getDHL_Receiver_City())
-						.country(CountryCode.builder()
-								.alpha2(firstOrder.getDHL_Receiver_CountryISO2Code())
-								.alpha3(firstOrder.getDHL_Receiver_CountryISO3Code())
-								.build())
+						.country(CountryCode.ofAlpha2(firstOrder.getDHL_Receiver_CountryISO2Code()))
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.name(firstOrder.getDHL_Receiver_Name1())
@@ -145,10 +143,7 @@ public class DhlDeliveryOrderRepository
 						.houseNo(firstOrder.getDHL_Shipper_StreetNumber())
 						.zipCode(firstOrder.getDHL_Shipper_ZipCode())
 						.city(firstOrder.getDHL_Shipper_City())
-						.country(CountryCode.builder()
-								.alpha2(firstOrder.getDHL_Shipper_CountryISO2Code())
-								.alpha3(firstOrder.getDHL_Shipper_CountryISO3Code())
-								.build())
+						.country(CountryCode.ofAlpha2(firstOrder.getDHL_Shipper_CountryISO2Code()))
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.parse(firstOrder.getDHL_ShipmentDate(), DateTimeFormatter.ISO_LOCAL_DATE))
@@ -211,7 +206,7 @@ public class DhlDeliveryOrderRepository
 				final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 
 				shipmentOrder.setM_Package_ID(deliveryOrderParcel.getPackageId().getRepoId());
-				shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
+				shipmentOrder.setC_BPartner_ID(BPartnerId.toRepoId(deliveryAddress.getBpartnerId()));
 				shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
 				shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
 				shipmentOrder.setInternationalDelivery(!Objects.equals(deliveryOrder.getDeliveryAddress().getCountry(), deliveryOrder.getPickupAddress().getCountry()));

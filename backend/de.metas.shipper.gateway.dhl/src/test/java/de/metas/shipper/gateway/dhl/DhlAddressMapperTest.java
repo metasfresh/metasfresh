@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dhl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryCode;
 import de.metas.shipper.gateway.dhl.json.JsonDhlAddress;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -45,11 +46,8 @@ public class DhlAddressMapperTest
 				.houseNo("123A")
 				.zipCode(" 12345")
 				.city("Testville")
-				.country(CountryCode.builder()
-						.alpha2("XX")
-						.alpha3("AFG")
-						.build())
-				.bpartnerId(1)
+				.country(CountryCode.ofAlpha3("AFG"))
+				.bpartnerId(BPartnerId.ofRepoId(1))
 				.build();
 
 		final JsonDhlAddress result = DhlAddressMapper.getShipperAddress(address);
@@ -78,11 +76,8 @@ public class DhlAddressMapperTest
 				.houseNo("456B")
 				.zipCode("SW1W 0NY ")
 				.city("Exampletown")
-				.country(CountryCode.builder()
-						.alpha2("XX")
-						.alpha3("AFG")
-						.build())
-				.bpartnerId(2)
+				.country(CountryCode.ofAlpha3("AFG"))
+				.bpartnerId(BPartnerId.ofRepoId(2))
 				.build();
 
 		final ContactPerson contactPerson = ContactPerson.builder()
@@ -118,11 +113,8 @@ public class DhlAddressMapperTest
 				.houseNo("456B")
 				.zipCode("67890")
 				.city("Exampletown")
-				.country(CountryCode.builder()
-						.alpha2("XX")
-						.alpha3("AFG")
-						.build())
-				.bpartnerId(2)
+				.country(CountryCode.ofAlpha3("AFG"))
+				.bpartnerId(BPartnerId.ofRepoId(2))
 				.build();
 
 		final ContactPerson contactPerson = ContactPerson.builder()
@@ -153,11 +145,8 @@ public class DhlAddressMapperTest
 				.houseNo("789C")
 				.zipCode("11111")
 				.city("MockCity")
-				.country(CountryCode.builder()
-						.alpha2("XX")
-						.alpha3("AFG")
-						.build())
-				.bpartnerId(3)
+				.country(CountryCode.ofAlpha3("AFG"))
+				.bpartnerId(BPartnerId.ofRepoId(3))
 				.build();
 
 		final JsonDhlAddress result = DhlAddressMapper.getConsigneeAddress(address, null);
@@ -196,11 +185,8 @@ public class DhlAddressMapperTest
 				.houseNo(sixtyTwoLongString)
 				.zipCode(sixtyTwoLongString)
 				.city(sixtyTwoLongString)
-				.country(CountryCode.builder()
-						.alpha2("XX")
-						.alpha3("AFG")
-						.build())
-				.bpartnerId(42)
+				.country(CountryCode.ofAlpha3("AFG"))
+				.bpartnerId(BPartnerId.ofRepoId(42))
 				.build();
 
 		final ContactPerson contactPerson = ContactPerson.builder()
@@ -234,11 +220,8 @@ public class DhlAddressMapperTest
 				.houseNo("123A")
 				.zipCode("12")
 				.city("Testville")
-				.country(CountryCode.builder()
-						.alpha2("XX")
-						.alpha3("AFG")
-						.build())
-				.bpartnerId(1)
+				.country(CountryCode.ofAlpha3("AFG"))
+				.bpartnerId(BPartnerId.ofRepoId(1))
 				.build();
 
 		// when
@@ -247,7 +230,7 @@ public class DhlAddressMapperTest
 				() -> DhlAddressMapper.getShipperAddress(address));
 
 		// then
-		assertThat(thrown).hasMessage("Assumption failure: postalCode has minimum three characters");
+		assertThat(thrown).hasMessageContaining("Assumption failure: postalCode has minimum three characters");
 	}
 
 	@Test
@@ -262,11 +245,8 @@ public class DhlAddressMapperTest
 				.houseNo("123A")
 				.zipCode("12")
 				.city("Testville")
-				.country(CountryCode.builder()
-						.alpha2("XX")
-						.alpha3("IRL")
-						.build())
-				.bpartnerId(1)
+				.country(CountryCode.ofAlpha3("IRL"))
+				.bpartnerId(BPartnerId.ofRepoId(1))
 				.build();
 
 		final JsonDhlAddress result = DhlAddressMapper.getShipperAddress(address);
@@ -281,33 +261,5 @@ public class DhlAddressMapperTest
 		assertThat(result.getAdditionalAddressInformation1()).isNull();
 		assertThat(result.getEmail()).isNull();
 		assertThat(result.getPhone()).isNull();
-	}
-
-	@Test
-	public void testGetShipperAddress_invalidPostalCode()
-	{
-		final Address address = Address.builder()
-				.companyName1("Company A")
-				.companyName2("Dept A")
-				.companyDepartment("Dept X")
-				.street1("Main Street")
-				.street2("Suite 1")
-				.houseNo("123A")
-				.zipCode("12")
-				.city("Testville")
-				.country(CountryCode.builder()
-						.alpha2("XX")
-						.alpha3("DE")
-						.build())
-				.bpartnerId(1)
-				.build();
-
-		// when
-		final RuntimeException thrown = Assertions.assertThrows(
-				RuntimeException.class,
-				() -> DhlAddressMapper.getShipperAddress(address));
-
-		// then
-		assertThat(thrown).hasMessage("Assumption failure: Invalid ISO alpha-3 country code: DE");
 	}
 }

@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.spi.model;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryCode;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipping.ShipperId;
@@ -73,7 +74,7 @@ class DeliveryOrderTest
 	private static Address address(final String prefix)
 	{
 		return Address.builder()
-				.bpartnerId(55)
+				.bpartnerId(BPartnerId.ofRepoId(55))
 				.companyName1(prefix + " - companyName1")
 				.companyName2(prefix + " - companyName2")
 				.street1(prefix + " - street1")
@@ -81,10 +82,7 @@ class DeliveryOrderTest
 				.houseNo(prefix + " - houseNo")
 				.zipCode(prefix + "-123456")
 				.city(prefix + " - city")
-				.country(CountryCode.builder()
-						.alpha2("DE")
-						.alpha3("DEU")
-						.build())
+				.country(CountryCode.DE)
 				.build();
 	}
 

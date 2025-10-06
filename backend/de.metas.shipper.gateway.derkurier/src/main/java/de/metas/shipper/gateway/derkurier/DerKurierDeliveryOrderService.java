@@ -107,7 +107,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 	@NonNull
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getId());
+		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getIdNotNull());
 	}
 
 	@Override
@@ -122,22 +122,21 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 		return derKurierDeliveryOrderRepository.save(deliveryOrder);
 	}
 
-	public AttachmentEntry attachCsvToDeliveryOrder(
+	public void attachCsvToDeliveryOrder(
 			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<String> csvLines)
 	{
 		final I_DerKurier_DeliveryOrder record = load(
-				deliveryOrder.getId(),
+				deliveryOrder.getIdNotNull(),
 				I_DerKurier_DeliveryOrder.class);
 
 		final String attachmentFileName = "DeliveryOrder-" + deliveryOrder.getId() + ".csv";
 
-		return attachCsvToRecord(csvLines, attachmentFileName, record);
+		attachCsvToRecord(csvLines, attachmentFileName, record);
 	}
 
-	public AttachmentEntry attachCsvToShippertransportation(
+	public void attachCsvToShippertransportation(
 			@NonNull final ShipperTransportationId shipperTransportationId,
-			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<String> csvLines)
 	{
 		final I_M_ShipperTransportation record = loadOutOfTrx(shipperTransportationId, I_M_ShipperTransportation.class);
@@ -147,7 +146,8 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 				SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME);
 		if (existingAttachment == null)
 		{
-			return attachCsvToRecord(csvLines, SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME, record);
+			attachCsvToRecord(csvLines, SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME, record);
+			return;
 		}
 
 		final byte[] exitingEntryData = attachmentEntryService.retrieveData(existingAttachment.getId());
@@ -158,14 +158,14 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 
 		if (existingCsvLines.size() == originalSize)
 		{
-			return existingAttachment; // nothing new was added
+			return; // nothing new was added
 		}
 
 		attachmentEntryService.unattach(TableRecordReference.of(record), existingAttachment);
-		return attachCsvToRecord(ImmutableList.copyOf(existingCsvLines), SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME, record);
+		attachCsvToRecord(ImmutableList.copyOf(existingCsvLines), SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME, record);
 	}
 
-	private AttachmentEntry attachCsvToRecord(
+	private void attachCsvToRecord(
 			@NonNull final List<String> csvLines,
 			@NonNull final String attachmentFileName,
 			@NonNull final Object targetRecordModel)
@@ -180,7 +180,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 		}
 		final byte[] byteArray = baos.toByteArray();
 
-		return attachmentEntryService.createNewAttachment(
+		attachmentEntryService.createNewAttachment(
 				TableRecordReference.of(targetRecordModel),
 				attachmentFileName,
 				byteArray);
@@ -222,7 +222,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 		}
 	}
 
-	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
+	public @NotNull ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
 		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository.retrieveConfigForShipperId(shipperId.getRepoId());
 		return createClient(shipperConfig);

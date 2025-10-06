@@ -53,6 +53,12 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	}
 
 	@Override
+	public I_C_BPartner retrieveLinkedBPartner(@NonNull final OrgId adOrgId)
+	{
+		return retrieveLinkedBPartner(Env.getCtx(), adOrgId.getRepoId(), ITrx.TRXNAME_None);
+	}
+
+	@Override
 	public Optional<BPartnerId> retrieveLinkedBPartnerId(@NonNull final OrgId orgId)
 	{
 		assume(orgId.isRegular(), "Given orgId={} needs to be a regular >0 (i.e. not 'any') Org-ID", orgId);

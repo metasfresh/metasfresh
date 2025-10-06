@@ -105,7 +105,7 @@
 		 if (!IRL_COUNTRY.equals(country))
 		 {
 			 Check.assumeNotNull(postalCode, "postalCode is not NULL");
-			 Check.assume(postalCode.length() > 2, "postalCode has minimum three characters");
+			 Check.assume(postalCode.length() > 2, "postalCode has minimum three characters: {}", postalCode);
 		 }
 
 		 addressBuilder.name1(StringUtils.trunc(address.getCompanyName1(), 50, ON_TRUNC))

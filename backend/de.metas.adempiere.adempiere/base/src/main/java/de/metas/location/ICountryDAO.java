@@ -94,11 +94,9 @@ public interface ICountryDAO extends ISingletonService
 
 	String retrieveCountryCode2ByCountryId(CountryId countryId);
 
-	String retrieveCountryCode3ByCountryId(CountryId countryId);
-
 	ITranslatableString getCountryNameById(CountryId countryId);
 
 	Optional<CurrencyId> getCountryCurrencyId(CountryId countryId);
 
-	String getCountryCode(@NonNull CountryId countryId);
+	CountryCode getCountryCode(@NonNull CountryId countryId);
 }

@@ -90,7 +90,7 @@ public class DpdDeliveryOrderService implements DeliveryOrderService
 	}
 	
 	@Override
-	public @NonNull ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
+	public @NonNull @NotNull ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
 		return clientFactory.newClientForShipperId(shipperId);
 	}

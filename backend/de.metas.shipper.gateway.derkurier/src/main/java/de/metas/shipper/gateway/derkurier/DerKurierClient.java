@@ -136,7 +136,7 @@ public class DerKurierClient implements ShipperGatewayClient
 
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
 		derKurierDeliveryOrderService.attachCsvToShippertransportation(
-				shipperTransportationId, deliveryOrder, csvLines);
+				shipperTransportationId, csvLines);
 
 		printPackageLabels(deliveryOrder);
 

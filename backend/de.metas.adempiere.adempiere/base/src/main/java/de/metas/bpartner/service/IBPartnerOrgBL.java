@@ -43,6 +43,8 @@ public interface IBPartnerOrgBL extends ISingletonService
 
 	I_C_BPartner retrieveLinkedBPartner(int adOrgId);
 
+	I_C_BPartner retrieveLinkedBPartner(@NonNull OrgId adOrgId);
+
 	Optional<BPartnerId> retrieveLinkedBPartnerId(OrgId orgId);
 
 	I_C_Location retrieveOrgLocation(final OrgId orgId);

@@ -1,7 +1,7 @@
 package de.metas.shipper.gateway.go;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.location.ICountryDAO;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -11,6 +11,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
@@ -52,10 +53,9 @@ import java.util.Set;
  * Helper methods used to convert {@link I_GO_DeliveryOrder} to/from {@link DeliveryOrder}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
-/* package */ class GODeliveryOrderConverters
+		/* package */ class GODeliveryOrderConverters
 {
 	public static Address pickupAddressFromPO(final I_GO_DeliveryOrder orderPO)
 	{
@@ -77,7 +77,7 @@ import java.util.Set;
 				.companyName1(orderPO.getGO_DeliverToCompanyName())
 				.companyName2(orderPO.getGO_DeliverToCompanyName2())
 				.companyDepartment(orderPO.getGO_DeliverToDepartment())
-				.bpartnerId(orderPO.getGO_DeliverToBPartner_ID())
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(orderPO.getGO_DeliverToBPartner_ID()))
 				.build();
 	}
 
@@ -88,7 +88,7 @@ import java.util.Set;
 		orderPO.setGO_DeliverToDepartment(deliveryAddress.getCompanyDepartment());
 		orderPO.setGO_DeliverToLocation_ID(createC_Location_ID(deliveryAddress));
 
-		orderPO.setGO_DeliverToBPartner_ID(deliveryAddress.getBpartnerId());
+		orderPO.setGO_DeliverToBPartner_ID(BPartnerId.toRepoId(deliveryAddress.getBpartnerId()));
 	}
 
 	public static PickupDate pickupDateFromPO(final I_GO_DeliveryOrder orderPO)

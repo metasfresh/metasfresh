@@ -24,11 +24,12 @@ package de.metas.shipper.gateway.dhl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
@@ -90,13 +91,13 @@ class DhlDraftDeliveryOrderCreator
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
-		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
+		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(deliveryOrderKey.getFromOrgId());
 		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
 
-		final int deliverToBPartnerId = deliveryOrderKey.getDeliverToBPartnerId();
+		final BPartnerLocationId deliverToBPartnerLocationId = deliveryOrderKey.getDeliverToBPartnerLocationId();
+		final BPartnerId deliverToBPartnerId = deliverToBPartnerLocationId.getBpartnerId();
 		final I_C_BPartner deliverToBPartner = InterfaceWrapperHelper.load(deliverToBPartnerId, I_C_BPartner.class);
 
-		final int deliverToBPartnerLocationId = deliveryOrderKey.getDeliverToBPartnerLocationId();
 		final I_C_BPartner_Location deliverToBPLocation = InterfaceWrapperHelper.load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
@@ -220,7 +221,7 @@ class DhlDraftDeliveryOrderCreator
 				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
 						.companyName1(deliverToBPartner.getName())
 						.companyName2(deliverToBPartner.getName2())
-						.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
+						.bpartnerId(BPartnerId.ofRepoId(deliverToBPartner.getC_BPartner_ID())) // afaics used only for logging
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.name(deliverToBPartner.getName())

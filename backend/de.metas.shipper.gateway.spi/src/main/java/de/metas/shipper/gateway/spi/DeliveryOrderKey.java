@@ -1,11 +1,11 @@
 package de.metas.shipper.gateway.spi;
 
 import de.metas.async.AsyncBatchId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -16,44 +16,17 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Value
+@Builder
 public class DeliveryOrderKey
 {
-	ShipperId shipperId;
-	ShipperTransportationId shipperTransportationId;
-	OrgId fromOrgId;
-	int deliverToBPartnerId;
-	int deliverToBPartnerLocationId;
-	LocalDate pickupDate;
-	LocalTime timeFrom;
-	LocalTime timeTo;
-	AsyncBatchId asyncBatchId;
-
-	@Builder
-	public DeliveryOrderKey(
-			@NonNull final ShipperId shipperId,
-			@NonNull final ShipperTransportationId shipperTransportationId,
-			@NonNull final OrgId fromOrgId,
-			final int deliverToBPartnerId,
-			final int deliverToBPartnerLocationId,
-			@NonNull final LocalDate pickupDate,
-			@NonNull final LocalTime timeFrom,
-			@NonNull final LocalTime timeTo,
-			@Nullable final AsyncBatchId asyncBatchId)
-	{
-		Check.assume(deliverToBPartnerId > 0, "deliverToBPartnerId > 0");
-		Check.assume(deliverToBPartnerLocationId > 0, "deliverToBPartnerLocationId > 0");
-
-		this.shipperId = shipperId;
-		this.shipperTransportationId = shipperTransportationId;
-		this.fromOrgId = fromOrgId;
-		this.deliverToBPartnerId = deliverToBPartnerId;
-		this.deliverToBPartnerLocationId = deliverToBPartnerLocationId;
-		this.pickupDate = pickupDate;
-		this.timeFrom = timeFrom;
-		this.timeTo = timeTo;
-
-		this.asyncBatchId = asyncBatchId;
-	}
+	@NonNull ShipperId shipperId;
+	@NonNull ShipperTransportationId shipperTransportationId;
+	@NonNull OrgId fromOrgId;
+	@NonNull BPartnerLocationId deliverToBPartnerLocationId;
+	@NonNull LocalDate pickupDate;
+	@NonNull LocalTime timeFrom;
+	@NonNull LocalTime timeTo;
+	@Nullable AsyncBatchId asyncBatchId;
 
 	public static class DeliveryOrderKeyBuilder
 	{
@@ -70,8 +43,7 @@ public class DeliveryOrderKey
 		{
 			return shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
 					.fromOrgId(OrgId.ofRepoId(mpackage.getAD_Org_ID()))
-					.deliverToBPartnerId(mpackage.getC_BPartner_ID())
-					.deliverToBPartnerLocationId(mpackage.getC_BPartner_Location_ID());
+					.deliverToBPartnerLocationId(BPartnerLocationId.ofRepoId(mpackage.getC_BPartner_ID(), mpackage.getC_BPartner_Location_ID()));
 		}
 
 	}

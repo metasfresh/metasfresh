@@ -4,6 +4,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
@@ -150,7 +151,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 		archive.setAD_Table_ID(deliveryOrderRef.getAD_Table_ID());
 		archive.setRecord_ID(deliveryOrderRef.getRecord_ID());
-		archive.setC_BPartner_ID(deliveryOrder.getDeliveryAddress().getBpartnerId());
+		archive.setC_BPartner_ID(BPartnerId.toRepoId(deliveryOrder.getDeliveryAddress().getBpartnerId()));
 		// archive.setAD_Org_ID(); // TODO: do we need to orgId too?
 		archive.setName(fileName);
 		archiveStorage.setBinaryData(archive, labelData);

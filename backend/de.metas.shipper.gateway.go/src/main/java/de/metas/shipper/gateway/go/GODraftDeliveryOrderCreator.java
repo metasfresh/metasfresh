@@ -1,7 +1,8 @@
 package de.metas.shipper.gateway.go;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
@@ -61,13 +62,13 @@ class GODraftDeliveryOrderCreator
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
-		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
+		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(deliveryOrderKey.getFromOrgId());
 		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
 
-		final int deliverToBPartnerId = deliveryOrderKey.getDeliverToBPartnerId();
+		final @NonNull BPartnerLocationId deliverToBPartnerLocationId = deliveryOrderKey.getDeliverToBPartnerLocationId();
+		final @NonNull BPartnerId deliverToBPartnerId = deliverToBPartnerLocationId.getBpartnerId();
 		final I_C_BPartner deliverToBPartner = load(deliverToBPartnerId, I_C_BPartner.class);
 
-		final int deliverToBPartnerLocationId = deliveryOrderKey.getDeliverToBPartnerLocationId();
 		final I_C_BPartner_Location deliverToBPLocation = load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 

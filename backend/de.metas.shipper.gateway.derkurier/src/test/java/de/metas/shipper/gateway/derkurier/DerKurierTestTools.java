@@ -54,7 +54,7 @@ public class DerKurierTestTools
 	public static final ShipperId M_SHIPPER_ID = ShipperId.ofRepoId(50);
 	public static final ShipperTransportationId M_SHIPPER_TRANSPORTATION_ID = ShipperTransportationId.ofRepoId(60);
 
-	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
+	private static final CountryCode COUNTRY_CODE_DE = CountryCode.DE;
 
 	public static DeliveryOrder createTestDeliveryOrderwithOneLine()
 	{

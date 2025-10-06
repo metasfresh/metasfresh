@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.spi.model;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryCode;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -52,7 +53,7 @@ public class Address
 	 * Only used for logging in {@link de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor#printLabel} and nothing more.
 	 */
 	@SuppressWarnings("JavadocReference")
-	int bpartnerId;
+	@Nullable BPartnerId bpartnerId;
 
 	@Builder
 	@Jacksonized
@@ -67,7 +68,7 @@ public class Address
 			@NonNull final String zipCode,
 			@NonNull final String city,
 			//
-			final int bpartnerId)
+			@Nullable final BPartnerId bpartnerId)
 	{
 		Check.assumeNotEmpty(companyName1, "companyName1 is not empty");
 		Check.assumeNotEmpty(street1, "street1 is not empty");

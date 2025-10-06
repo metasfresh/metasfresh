@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.nshift;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -81,10 +82,10 @@ class NShiftDraftDeliveryOrderCreator
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
-		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
+		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(deliveryOrderKey.getFromOrgId());
 		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
 
-		final BPartnerLocationId deliverToBPartnerLocationId = BPartnerLocationId.ofRepoId(deliveryOrderKey.getDeliverToBPartnerId(), deliveryOrderKey.getDeliverToBPartnerLocationId());
+		final BPartnerLocationId deliverToBPartnerLocationId = deliveryOrderKey.getDeliverToBPartnerLocationId();
 		final I_C_BPartner deliverToBPartner = bpartnerBL.getById(deliverToBPartnerLocationId.getBpartnerId());
 		final I_C_BPartner_Location deliverToBPLocation = Check.assumeNotNull(bpartnerDAO.getBPartnerLocationByIdInTrx(deliverToBPartnerLocationId), "bp location not null");
 		final I_C_Location deliverToLocation = locationDAO.getById(LocationId.ofRepoId(deliverToBPLocation.getC_Location_ID()));
@@ -133,7 +134,7 @@ class NShiftDraftDeliveryOrderCreator
 		return DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
 				.companyName1(deliverToBPartner.getName())
 				.companyName2(deliverToBPartner.getName2())
-				.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(deliverToBPartner.getC_BPartner_ID())) // afaics used only for logging
 				.build();
 	}
 

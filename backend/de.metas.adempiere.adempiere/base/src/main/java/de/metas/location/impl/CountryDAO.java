@@ -1,6 +1,5 @@
 package de.metas.location.impl;
 
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -10,6 +9,7 @@ import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
+import de.metas.location.CountryCode;
 import de.metas.location.CountryCustomInfo;
 import de.metas.location.CountryId;
 import de.metas.location.CountrySequences;
@@ -41,7 +41,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -70,20 +69,6 @@ public class CountryDAO implements ICountryDAO
 			.build();
 
 	private static final CountryId DEFAULT_C_Country_ID = CountryId.ofRepoId(101); // Germany
-	private static final ImmutableBiMap<String, String> alpha2to3CountryCodes = buildAlpha2to3CountryCodes();
-
-	private static ImmutableBiMap<String, String> buildAlpha2to3CountryCodes()
-	{
-		final ImmutableBiMap.Builder<String, String> alpha2to3CountryCodesBuilder = ImmutableBiMap.builder();
-		for (final String countryCodeAlpha2 : Locale.getISOCountries())
-		{
-			final Locale locale = new Locale("", countryCodeAlpha2);
-			final String countryCodeAlpha3 = locale.getISO3Country();
-			alpha2to3CountryCodesBuilder.put(countryCodeAlpha2, countryCodeAlpha3);
-		}
-
-		return alpha2to3CountryCodesBuilder.build();
-	}
 
 	@NonNull
 	private static IndexedCountries retrieveIndexedCountries()
@@ -279,18 +264,6 @@ public class CountryDAO implements ICountryDAO
 	}
 
 	@Override
-	public String retrieveCountryCode3ByCountryId(@NonNull final CountryId countryId)
-	{
-		final String countryCode2 = retrieveCountryCode2ByCountryId(countryId);
-		final String countryCode3 = alpha2to3CountryCodes.get(countryCode2);
-		if (countryCode3 == null)
-		{
-			throw new AdempiereException("No country code alpha3 found for '" + countryCode2 + "'");
-		}
-		return countryCode3;
-	}
-
-	@Override
 	public ITranslatableString getCountryNameById(final CountryId countryId)
 	{
 		final I_C_Country country = getIndexedCountries().getByIdOrNull(countryId);
@@ -312,21 +285,27 @@ public class CountryDAO implements ICountryDAO
 
 	@NonNull
 	@Override
-	public String getCountryCode(@NonNull final CountryId countryId)
+	public CountryCode getCountryCode(@NonNull final CountryId countryId)
 	{
 		final I_C_Country country = getById(countryId);
-		return country.getCountryCode();
+		return CountryCode.ofAlpha2(country.getCountryCode());
 	}
 
 	private static final class IndexedCountries
 	{
-		/** contains also inactive countries */
+		/**
+		 * contains also inactive countries
+		 */
 		private final ImmutableList<I_C_Country> countries;
-		
-		/** contains also inactive countries */
+
+		/**
+		 * contains also inactive countries
+		 */
 		private final ImmutableMap<CountryId, I_C_Country> countriesById;
-		
-		/** contains only active countries */
+
+		/**
+		 * contains only active countries
+		 */
 		private final ImmutableMap<String, I_C_Country> countriesByCountryCode;
 
 		private IndexedCountries(final List<I_C_Country> countries)
