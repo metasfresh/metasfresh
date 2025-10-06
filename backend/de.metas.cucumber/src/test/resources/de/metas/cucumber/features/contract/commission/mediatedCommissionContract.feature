@@ -34,8 +34,8 @@ Feature: Mediated commission
       | pp_1       | plv_pl_so                         | commission_product      | 1.0      | PTS               | Normal                        |
       | pp_4       | plv_pl_po                         | transaction_product     | 20.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier      | OPT.C_BPartner_Location_ID.Identifier | Name            | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.CompanyName     | OPT.GLN       |
-      | mediated_vendor | mediated_vendor_location              | mediated_vendor | psv_1                         | Y            | Y              | Y              | 1000009              | mediated_vendor cmp | 1234567891236 |
+      | Identifier      | OPT.C_BPartner_Location_ID.Identifier | Name            | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | PO_PaymentTerm_ID.Value | OPT.CompanyName     | OPT.GLN       |
+      | mediated_vendor | mediated_vendor_location              | mediated_vendor | psv_1                         | Y            | Y              | Y              | 10 Tage 1 %             | mediated_vendor cmp | 1234567891236 |
     And metasfresh contains C_MediatedCommissionSettings:
       | C_MediatedCommissionSettings_ID.Identifier | Name       | Commission_Product_ID.Identifier | PointsPrecision |
       | mediatedSettings_1                         | mediated_1 | commission_product               | 2               |

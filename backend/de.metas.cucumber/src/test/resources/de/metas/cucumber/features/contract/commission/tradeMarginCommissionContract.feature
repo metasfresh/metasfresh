@@ -41,9 +41,9 @@ Feature: Trade margin commission contract
       | customer_product_so_price | customer_so_plv                   | transaction_product     | 25.0     | PCE               | Normal                        |
       | salesRep_product_so_price | salesRep_so_plv                   | transaction_product     | 15.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier      | OPT.C_BPartner_Location_ID.Identifier | Name            | M_PricingSystem_ID.Identifier | OPT.PO_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName     | OPT.GLN       |
-      | margin_salesRep | margin_salesRep_location              | margin_salesRep | salesRep_so_ps                | salesRep_po_ps                     | Y            | Y              | Y              | 1000009              |                                       | margin_salesRep cmp |               |
-      | margin_customer | margin_customer_location              | margin_customer | customer_so_ps                |                                    | N            | Y              | N              | 1000009              | margin_salesRep                       | margin_customer cmp | 1234567891237 |
+      | Identifier      | OPT.C_BPartner_Location_ID.Identifier | Name            | M_PricingSystem_ID.Identifier | OPT.PO_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | C_PaymentTerm_ID.Value | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName     | OPT.GLN       |
+      | margin_salesRep | margin_salesRep_location              | margin_salesRep | salesRep_so_ps                | salesRep_po_ps                     | Y            | Y              | Y              | 10 Tage 1 %            |                                       | margin_salesRep cmp |               |
+      | margin_customer | margin_customer_location              | margin_customer | customer_so_ps                |                                    | N            | Y              | N              | 10 Tage 1 %            | margin_salesRep                       | margin_customer cmp | 1234567891237 |
     And metasfresh contains C_Customer_Trade_Margin:
       | C_Customer_Trade_Margin_ID.Identifier | Name     | Commission_Product_ID.Identifier | PointsPrecision |
       | marginSettings_1                      | margin_1 | commission_product               | 2               |
@@ -130,8 +130,8 @@ Feature: Trade margin commission contract
       | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced |
       | settlement_1                      | margin_salesRep                 | commission_product          | 0                   | false       | 5                  |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.DocSubType |
-      | invoiceSettled_1        | margin_salesRep          | margin_salesRep_location          | 10 Tage 1 % | true      | CO        | CA             |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm     | processed | DocStatus | OPT.DocSubType |
+      | invoiceSettled_1        | margin_salesRep          | margin_salesRep_location          | NIE fällig (KK) | true      | CO        | CA             |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLineSettled_1        | invoiceSettled_1        | commission_product      | 5.00        | true      |

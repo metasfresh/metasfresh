@@ -530,7 +530,9 @@ public class C_Order_StepDef
 	@And("validate the created orders")
 	public void validate_created_order(@NonNull final DataTable table)
 	{
-		DataTableRows.of(table).forEach(this::validateOrder);
+		DataTableRows.of(table)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_Order_ID)
+				.forEach(this::validateOrder);
 	}
 
 	@And("update order")
@@ -590,7 +592,7 @@ public class C_Order_StepDef
 
 	private void validateOrder(@NonNull final DataTableRow row)
 	{
-		final StepDefDataIdentifier identifier = row.getAsIdentifier(COLUMNNAME_C_Order_ID);
+		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 		final String identifierStr = identifier.getAsString();
 		final I_C_Order order = identifier.lookupNotNullIn(orderTable);
 		InterfaceWrapperHelper.refresh(order);

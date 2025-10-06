@@ -63,7 +63,7 @@ Feature: Dhl Shipment
 
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_BPartners:
-      | Identifier   | Name         | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | Identifier   | Name         | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
       | dhl_customer | dhl_customer | ps_dhl_1                      | Y              | dhl_customer    | I               | 1000002                    |
 
     And metasfresh contains C_Location:

@@ -38,8 +38,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | location_1 | 0123411217731 | bpartner_1               | Y                   | Y                   |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | order_1    | true    | bpartner_1               | 2022-03-20  | 1000012              | SO_DirectDebit  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | order_1    | true    | bpartner_1               | 2022-03-20  | SO_DirectDebit  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | product_1               | 10         |
@@ -64,8 +64,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
     # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | SO_DirectDebit  | 1000002     | true      | CO        | D               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | SO_DirectDebit  | true      | CO        | D               |
 
 
   @from:cucumber
@@ -78,8 +78,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | location_1 | 0123456795211 | bpartner_1               | Y                   | Y                   |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | order_1    | true    | bpartner_1               | 2022-03-20  | 1000012              | SO_OnCredit     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | order_1    | true    | bpartner_1               | 2022-03-20  | SO_OnCredit     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | product_1               | 10         |
@@ -106,8 +106,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | SO_OnCredit     | 1000002     | true      | CO        | P               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | SO_OnCredit     | true      | CO        | P               |
 
 
   @from:cucumber
@@ -120,8 +120,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | location_1 | 0123189751011 | bpartner_1               | Y                   | Y                   |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | order_1    | true    | bpartner_1               | 2022-03-20  | 1000012              | SO_Cash         |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | order_1    | true    | bpartner_1               | 2022-03-20  | SO_Cash         |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | product_1               | 10         |
@@ -146,8 +146,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
      # C_Order.PaymentRule => C_Invoice.PaymentRule
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.PaymentRule |
-      | invoice_1               | bpartner_1               | location_1                        | SO_Cash         | 1000002     | true      | CO        | B               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus | OPT.PaymentRule |
+      | invoice_1               | bpartner_1               | location_1                        | SO_Cash         | true      | CO        | B               |
 
 
   @from:cucumber

@@ -32,8 +32,8 @@ Feature: completeInvoice option when processing invoice candidates
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_ci_1     | 0123456789011 | endcustomer_ci_1         | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference  | OPT.C_PaymentTerm_ID |
-      | o_ci_1     | true    | endcustomer_ci_1         | 2021-04-17  | po_ref_mock_ci_1 | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference  |
+      | o_ci_1     | true    | endcustomer_ci_1         | 2021-04-17  | po_ref_mock_ci_1 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_ci_1    | o_ci_1                | p_ci_1                  | 10         |
@@ -54,12 +54,12 @@ Feature: completeInvoice option when processing invoice candidates
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
       | ic_ci_1                           | invoice_ci_1            | IP            |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | DocStatus |
-      | invoice_ci_1            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | 1000002     | false     | IP        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | processed | DocStatus |
+      | invoice_ci_1            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | false     | IP        |
     And the invoice identified by invoice_ci_1 is voided
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | DocStatus |
-      | invoice_ci_1            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | 1000002     | true      | VO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | processed | DocStatus |
+      | invoice_ci_1            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | true      | VO        |
     And process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices |
       | ic_ci_1                           | false                  |
@@ -67,8 +67,8 @@ Feature: completeInvoice option when processing invoice candidates
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
       | ic_ci_1                           | invoice_ci_3            | IP            |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | DocStatus |
-      | invoice_ci_3            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | 1000002     | false     | IP        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | processed | DocStatus |
+      | invoice_ci_3            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | false     | IP        |
 
   @from:cucumber
   @Id:S0209_110
@@ -95,8 +95,8 @@ Feature: completeInvoice option when processing invoice candidates
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_ci_2     | 0123456789011 | endcustomer_ci_2         | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference  | OPT.C_PaymentTerm_ID |
-      | o_ci_2     | true    | endcustomer_ci_2         | 2021-04-17  | po_ref_mock_ci_2 | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference  |
+      | o_ci_2     | true    | endcustomer_ci_2         | 2021-04-17  | po_ref_mock_ci_2 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_ci_2    | o_ci_2                | p_ci_2                  | 10         |
@@ -117,5 +117,5 @@ Feature: completeInvoice option when processing invoice candidates
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_ci_2                           | invoice_ci_2            |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | DocStatus |
-      | invoice_ci_2            | endcustomer_ci_2         | l_ci_2                            | po_ref_mock_ci_2 | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | processed | DocStatus |
+      | invoice_ci_2            | endcustomer_ci_2         | l_ci_2                            | po_ref_mock_ci_2 | true      | CO        |

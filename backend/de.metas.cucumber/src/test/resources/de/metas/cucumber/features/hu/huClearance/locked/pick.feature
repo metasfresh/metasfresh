@@ -86,8 +86,8 @@ Feature: Locked HUs can not be picked
       | location_1 | 0442101293001 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | DeliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-30  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-30  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |
@@ -119,8 +119,8 @@ Feature: Locked HUs can not be picked
       | location_1 | 0184031044041 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | DeliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-28  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-28  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |
@@ -147,8 +147,8 @@ Feature: Locked HUs can not be picked
       | location_1 | 01231508912441 | bpartner_1               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | DeliveryRule |
-      | order_1    | true    | bpartner_1               | 2022-03-28  | 1000012              | F            |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DeliveryRule |
+      | order_1    | true    | bpartner_1               | 2022-03-28  | F            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | order_1               | huProduct               | 10         |

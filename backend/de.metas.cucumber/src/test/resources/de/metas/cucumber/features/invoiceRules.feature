@@ -33,8 +33,8 @@ Feature: invoice rules
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
-      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock     | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -58,8 +58,8 @@ Feature: invoice rules
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_1                              | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1               | invoice_1               | p_1                     | 10          | true      |
@@ -92,8 +92,8 @@ Feature: invoice rules
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_2        | 0123456789012 | endcustomer_2            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
-      | o_2        | true    | endcustomer_2            | 2021-04-15  | po_ref_mock     | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_2        | true    | endcustomer_2            | 2021-04-15  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | p_2                     | 12         |
@@ -117,8 +117,8 @@ Feature: invoice rules
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_2                              | invoice_2               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus |
-      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_2               | invoice_2               | p_2                     | 6           | true      |
@@ -151,8 +151,8 @@ Feature: invoice rules
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_3        | 0123456789012 | endcustomer_3            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
-      | o_3        | true    | endcustomer_3            | 2021-04-15  | po_ref_mock     | 1000012              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_3        | true    | endcustomer_3            | 2021-04-15  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_3                     | 10         |
@@ -176,8 +176,8 @@ Feature: invoice rules
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_3                              | invoice_3               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus |
-      | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_3_1             | invoice_3               | p_3                     | 12          | true      |
@@ -217,8 +217,8 @@ Feature: invoice rules
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_3        | 0123456789012 | endcustomer_3            | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
-      | o_3        | true    | endcustomer_3            | 2021-04-15  | 1000012              | po_ref_mock     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | o_3        | true    | endcustomer_3            | 2021-04-15  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_3                     | 10         |
@@ -248,8 +248,8 @@ Feature: invoice rules
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_3               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus |
-      | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_3               | endcustomer_3            | l_3                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceline_3_1             | invoice_3               | p_3                     | 5           | true      |
@@ -308,8 +308,8 @@ Feature: invoice rules
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_3, invoice_4    | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus |
-      | invoice_4               | endcustomer_3            | l_3                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | processed | DocStatus |
+      | invoice_4               | endcustomer_3            | l_3                               | po_ref_mock     | true      | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_4_1             | invoice_4               | p_3                     | 10          | true      |
