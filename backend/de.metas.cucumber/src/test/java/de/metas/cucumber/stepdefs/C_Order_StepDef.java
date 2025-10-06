@@ -666,7 +666,18 @@ public class C_Order_StepDef
 				.ifPresent(billUser -> softly.assertThat(order.getBill_User_ID()).as("Bill_User_ID for Identifier=%s", identifierStr).isEqualTo(billUser.getAD_User_ID()));
 
 		row.getAsOptionalString(COLUMNNAME_EMail)
-				.ifPresent(email -> softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isEqualTo(email));
+				.ifPresent(email -> {
+					if(DataTableUtil.NULL_STRING.equals(email))
+					{
+						softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isNull();
+					}
+					else
+					{
+						softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isEqualTo(email);
+					}
+				}
+				);
+
 
 		row.getAsOptionalString(COLUMNNAME_InvoiceRule)
 				.ifPresent(invoiceRule -> softly.assertThat(order.getInvoiceRule()).as("InvoiceRule for Identifier=%s", identifierStr).isEqualTo(invoiceRule));

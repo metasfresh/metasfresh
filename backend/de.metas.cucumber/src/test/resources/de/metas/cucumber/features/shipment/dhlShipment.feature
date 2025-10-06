@@ -142,8 +142,8 @@ Feature: Dhl Shipment
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | test_product_dhl_01     | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
-      | orderLine_2               | order_1               | 2022-02-02  | packing_product_1       | 0            | 1          | 0           | 0.0   | 0        | EUR          | true      |
+      | orderLine_1               | order_1               | 2022-12-12  | test_product_dhl_01     | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
+      | orderLine_2               | order_1               | 2022-12-12  | packing_product_1       | 0            | 1          | 0           | 0.0   | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
