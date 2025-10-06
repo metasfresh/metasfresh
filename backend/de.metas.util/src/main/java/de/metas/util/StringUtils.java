@@ -79,6 +79,25 @@ public final class StringUtils
 		return strTrim;
 	}
 
+	@Nullable
+	public static String trimSpacesToNull(@Nullable final String str)
+	{
+		if (str == null || str.isEmpty())
+		{
+			return null;
+		}
+
+		final String strTrim = str.replaceAll("^[ ]+|[ ]+$", "");
+
+		if (strTrim.isEmpty())
+		{
+			return null;
+		}
+
+		return strTrim;
+	}
+
+
 	@NonNull
 	public static Optional<String> trimBlankToOptional(@Nullable final String str)
 	{
