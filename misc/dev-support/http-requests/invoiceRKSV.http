@@ -1,0 +1,13 @@
+POST {{baseURL}}/api/v2/processes/Invoice_RKSV_JSON/invoke
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": 1000010
+    }
+  ]
+}
