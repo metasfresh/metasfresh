@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.Builder;
 import lombok.NonNull;

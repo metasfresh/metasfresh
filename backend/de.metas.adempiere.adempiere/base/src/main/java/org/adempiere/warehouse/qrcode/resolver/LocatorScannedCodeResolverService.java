@@ -36,11 +36,14 @@ public class LocatorScannedCodeResolverService
 
 	public LocatorScannedCodeResolverResult resolve(@NonNull final ScannedCode scannedCode)
 	{
-		return resolve(scannedCode, LocatorScannedCodeResolveContext.NO_CONTEXT);
+		return resolve(LocatorScannedCodeResolverRequest.ofScannedCode(scannedCode));
 	}
 
-	public LocatorScannedCodeResolverResult resolve(@NonNull final ScannedCode scannedCode, @NonNull final LocatorScannedCodeResolveContext context)
+	public LocatorScannedCodeResolverResult resolve(@NonNull LocatorScannedCodeResolverRequest request)
 	{
+		final ScannedCode scannedCode = request.getScannedCode();
+		final LocatorScannedCodeResolveContext context = request.getContext();
+
 		final ArrayList<LocatorNotResolvedReason> notFoundReasons = new ArrayList<>();
 
 		final GlobalQRCode globalQRCode = scannedCode.toGlobalQRCodeIfMatching().orNullIfError();

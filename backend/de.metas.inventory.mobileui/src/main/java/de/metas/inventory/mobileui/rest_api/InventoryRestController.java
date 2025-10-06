@@ -4,19 +4,23 @@ import de.metas.Profiles;
 import de.metas.inventory.mobileui.InventoryMobileApplication;
 import de.metas.inventory.mobileui.job.InventoryJob;
 import de.metas.inventory.mobileui.job.InventoryJobId;
-import de.metas.inventory.mobileui.job.qrcode.ScannedCodeResolveRequest;
-import de.metas.inventory.mobileui.job.qrcode.ScannedCodeResolveResponse;
+import de.metas.inventory.mobileui.job.qrcode.ResolveHURequest;
+import de.metas.inventory.mobileui.job.qrcode.ResolveHUResponse;
 import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.inventory.mobileui.rest_api.json.JsonCountRequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJob;
+import de.metas.inventory.mobileui.rest_api.json.JsonResolveHURequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHUResponse;
+import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorRequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorResponse;
-import de.metas.inventory.mobileui.rest_api.json.JsonScannedCodeResolveRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolveContext;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverRequest;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
@@ -41,21 +45,44 @@ public class InventoryRestController
 		mobileApplicationService.assertAccess(InventoryMobileApplication.APPLICATION_ID, permissions);
 	}
 
+	private @NotNull InventoryJob getJob(final WFProcessId wfProcessId)
+	{
+		final InventoryJob job = jobService.getJobById(InventoryJobId.ofWFProcessId(wfProcessId));
+		job.assertHasAccess(Env.getLoggedUserId());
+		return job;
+	}
+
 	@PostMapping("/resolveLocator")
-	public JsonResolveLocatorResponse resolveLocator(@RequestBody @NonNull final JsonScannedCodeResolveRequest request)
+	public JsonResolveLocatorResponse resolveLocator(@RequestBody @NonNull final JsonResolveLocatorRequest request)
 	{
 		assertApplicationAccess();
 
-		final LocatorScannedCodeResolverResult result = jobService.resolveLocator(fromJson(request));
+		final InventoryJob job = getJob(request.getWfProcessId());
+
+		final LocatorScannedCodeResolverResult result = jobService.resolveLocator(
+				LocatorScannedCodeResolverRequest.builder()
+						.scannedCode(request.getScannedCode())
+						.context(LocatorScannedCodeResolveContext.builder()
+								.eligibleLocatorIds(job.getLocatorIds(request.getLineId()))
+								.build())
+						.build()
+		);
 		return JsonResolveLocatorResponse.of(result);
 	}
 
 	@PostMapping("/resolveHU")
-	public JsonResolveHUResponse resolveHU(@RequestBody @NonNull final JsonScannedCodeResolveRequest request)
+	public JsonResolveHUResponse resolveHU(@RequestBody @NonNull final JsonResolveHURequest request)
 	{
 		assertApplicationAccess();
 
-		final ScannedCodeResolveResponse response = jobService.resolveHU(fromJson(request));
+		final ResolveHUResponse response = jobService.resolveHU(
+				ResolveHURequest.builder()
+						.scannedCode(request.getScannedCode())
+						.job(getJob(request.getWfProcessId()))
+						.lineId(request.getLineId())
+						.locatorId(request.getLocatorQRCode().getLocatorId())
+						.build()
+		);
 		return JsonResolveHUResponse.of(response);
 	}
 
@@ -64,23 +91,6 @@ public class InventoryRestController
 	{
 		assertApplicationAccess();
 
-		return jobService.count(request);
+		return jobService.count(request, Env.getLoggedUserId());
 	}
-
-	@NotNull
-	private ScannedCodeResolveRequest fromJson(final @NotNull JsonScannedCodeResolveRequest request)
-	{
-		final InventoryJobId jobId = InventoryJobId.ofWFProcessId(request.getWfProcessId());
-		final InventoryJob job = jobService.getJobById(jobId);
-
-		job.assertHasAccess(Env.getLoggedUserId());
-
-		return ScannedCodeResolveRequest.builder()
-				.scannedCode(request.getScannedCode())
-				.job(job)
-				.lineId(request.getLineId())
-				.locatorId(request.getLocatorQRCode() != null ? request.getLocatorQRCode().getLocatorId() : null)
-				.build();
-	}
-
 }

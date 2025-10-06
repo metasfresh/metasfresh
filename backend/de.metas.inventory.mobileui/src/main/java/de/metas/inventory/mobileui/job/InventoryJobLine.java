@@ -24,6 +24,7 @@ public class InventoryJobLine
 	@NonNull String locatorName;
 
 
+	boolean isCounted;
 	@NonNull Quantity qtyBooked;
 	@NonNull Quantity qtyCount;
 

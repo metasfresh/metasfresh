@@ -1,12 +1,14 @@
 package de.metas.inventory.mobileui.job;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.inventory.InventoryLineId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -64,5 +66,12 @@ public class InventoryJob
 		{
 			throw new AdempiereException("No access");
 		}
+	}
+
+	public ImmutableSet<LocatorId> getLocatorIds(@Nullable final InventoryLineId lineId)
+	{
+		return lineId != null
+				? ImmutableSet.of(getLineById(lineId).getLocatorId())
+				: lines.stream().map(InventoryJobLine::getLocatorId).collect(ImmutableSet.toImmutableSet());
 	}
 }

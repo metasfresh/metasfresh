@@ -7,14 +7,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
 @Jacksonized
-public class JsonScannedCodeResolveRequest
+public class JsonResolveLocatorRequest
 {
 	@NonNull ScannedCode scannedCode;
 
@@ -22,5 +21,4 @@ public class JsonScannedCodeResolveRequest
 	// Context:
 	@NonNull WFProcessId wfProcessId;
 	@Nullable InventoryLineId lineId;
-	@Nullable LocatorQRCode locatorQRCode;
 }
