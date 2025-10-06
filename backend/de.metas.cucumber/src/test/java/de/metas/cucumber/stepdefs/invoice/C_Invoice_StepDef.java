@@ -184,7 +184,9 @@ public class C_Invoice_StepDef
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
 	{
-		DataTableRows.of(table).forEach(this::validateInvoice);
+		DataTableRows.of(table)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_Invoice_ID)
+				.forEach(this::validateInvoice);
 	}
 
 	@And("^the invoice identified by (.*) is (completed|reversed|voided)$")
@@ -344,7 +346,7 @@ public class C_Invoice_StepDef
 
 	private void validateInvoice(@NonNull final DataTableRow row)
 	{
-		final StepDefDataIdentifier identifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID);
+		final StepDefDataIdentifier identifier = row.getAsIdentifier();
 		final String identifierStr = identifier.getAsString();
 		final I_C_Invoice invoice = identifier.lookupNotNullIn(invoiceTable);
 		InterfaceWrapperHelper.refresh(invoice);

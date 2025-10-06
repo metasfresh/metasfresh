@@ -311,8 +311,8 @@ Feature: Call order contract
       | huItemPurchaseProduct              | huPiItemTU                 | call_order_product_PO   | 10  | 2022-02-01 |
 
     And metasfresh contains C_BPartners:
-      | Identifier     | IsVendor | M_PricingSystem_ID   | C_PaymentTerm_ID.Value |
-      | bp_callOrderPO | Y        | defaultPricingSystem | 1000002                |
+      | Identifier     | IsVendor | M_PricingSystem_ID   | PO_PaymentTerm_ID.Value |
+      | bp_callOrderPO | Y        | defaultPricingSystem | 1000002                 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | bp_callOrderPO_Location | 5802098505483 | bp_callOrderPO           | true                | true                |

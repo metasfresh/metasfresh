@@ -261,13 +261,6 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setPO_PricingSystem_ID(poPricingSystemId);
 		}
 
-		final int paymentTermId = row.getAsOptionalInt("C_PaymentTerm_ID").orElse(-1);
-		if (paymentTermId > 0)
-		{
-			bPartnerRecord.setC_PaymentTerm_ID(paymentTermId);
-			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermId);
-		}
-
 		bPartnerRecord.setAD_Language(row.getAsOptionalString(COLUMNNAME_AD_Language).orElse(null));
 
 		final StepDefDataIdentifier salesRepIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_SalesRep_ID).orElse(null);
