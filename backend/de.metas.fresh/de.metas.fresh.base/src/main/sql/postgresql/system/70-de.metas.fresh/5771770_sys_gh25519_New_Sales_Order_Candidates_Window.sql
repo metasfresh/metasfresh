@@ -51,6 +51,47 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=540095
 /* DDL */ select AD_Element_Link_Create_Missing_Window(540095)
 ;
 
+------------------------------------------------------------
+
+------------------------------
+-- Update custom windows that might exist in the respective DB
+-- Note that Overrides_Window_ID is not reliable because custom C_OLCand windows might be older than that column.
+------------------------------
+create table fix.c_olcand_window_update_name as
+select ad_window_id, ad_element_id, name, overrides_window_id, replace(name, 'Auftragsdisposition', 'Auftragsdisposition (Legacy-EDI-Import)') as new_name 
+from ad_window
+where ad_window_id in (select ad_window_id from ad_tab where ad_table_id = get_table_id('c_olcand'))
+and name ilike '%Auftragsdisposition%';
+
+UPDATE AD_Element e set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_element_id=e.ad_element_id;
+
+UPDATE AD_Element_Trl e set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_element_id=e.ad_element_id;
+
+UPDATE AD_Window w set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_window_id=w.ad_window_id;
+
+UPDATE AD_Window_Trl w set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_window_id=w.ad_window_id;
+
+UPDATE AD_Menu m set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_window_id=m.ad_window_id;
+
+UPDATE AD_Menu_Trl mt set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+FROM fix.c_olcand_window_update_name d
+WHERE mt.ad_menu_id IN (SELECT ad_menu_id FROM ad_menu m WHERE m.ad_window_id = d.ad_window_id)
+;
+
+DELETE FROM AD_Element_Link WHERE AD_Window_ID IN (SELECT ad_window_id FROM fix.c_olcand_window_update_name)
+;
+
+select AD_Element_Link_Create_Missing_Window(ad_window_id) from fix.c_olcand_window_update_name;
+---------------------------------------------
+
+
+    
+
 -- Window: Auftragsdisposition, InternalName=null
 -- 2025-09-30T14:54:22.652Z
 INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority) VALUES (0,574745,0,541952,TO_TIMESTAMP('2025-09-30 14:54:21.758000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N','N','N','N','N','Y','Auftragsdisposition','N',TO_TIMESTAMP('2025-09-30 14:54:21.758000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M',0,0,100)
@@ -5402,6 +5443,28 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('
 -- 2025-09-30T15:12:17.646Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2025-09-30 15:12:17.646000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637321
 ;
+
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 -- UI Element: Auftragsdisposition(541952,de.metas.ordercandidate) -> Kandidat(548442,de.metas.ordercandidate) -> main -> 10 -> default.ExternalLineId
 -- Column: C_OLCand.ExternalLineId
