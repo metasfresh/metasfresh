@@ -300,6 +300,16 @@ public class C_BPartner_StepDef
 					.firstOnlyNotNull(I_C_PaymentTerm.class);
 
 			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		}
+
+		final String paymentTermPOValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID + ".Value").orElse(null);
+		if (Check.isNotBlank(paymentTermPOValue))
+		{
+			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermPOValue)
+					.create()
+					.firstOnlyNotNull(I_C_PaymentTerm.class);
+
 			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		}
 

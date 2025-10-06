@@ -47,7 +47,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
-import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyCode;
@@ -81,7 +81,6 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.util.Optionals;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
@@ -179,7 +178,7 @@ public class C_Invoice_StepDef
 	private final C_Activity_StepDefData activityTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final M_Warehouse_StepDefData warehouseTable;
-	private final C_PaymentTerm_StepDefData paymentTermTable;
+	private final C_PaymentTerm_StepDef paymentTermStepDef;
 	private final TestContext restTestContext;
 
 	@And("validate created invoices")
@@ -376,7 +375,7 @@ public class C_Invoice_StepDef
 		row.getAsOptionalString("docStatus")
 				.ifPresent(docStatus -> softly.assertThat(invoice.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
 
-		extractPaymentTermId(row)
+		paymentTermStepDef.extractPaymentTermId(row)
 				.ifPresent(paymentTermId -> softly.assertThat(PaymentTermId.ofRepoIdOrNull(invoice.getC_PaymentTerm_ID())).as("C_PaymentTerm_ID for Identifier=%s", identifierStr).isEqualTo(paymentTermId));
 
 		row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocBaseType)
@@ -791,52 +790,12 @@ public class C_Invoice_StepDef
 				.map(dataSourceTable::getId)
 				.ifPresent(dataSourceId -> invoice.setAD_InputDataSource_ID(dataSourceId.getRepoId()));
 
-		extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
+		paymentTermStepDef.extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		invoiceDAO.save(invoice);
 
 		row.getAsIdentifier().putOrReplace(invoiceTable, invoice);
 		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
-	}
-
-	private Optional<PaymentTermId> extractPaymentTermId(final @NonNull DataTableRow row)
-	{
-		final StepDefDataIdentifier paymentTermIdentifier = Optionals.firstPresentOfSuppliers(
-						() -> row.getAsOptionalIdentifier("paymentTerm"),
-						() -> row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID)
-				)
-				.orElse(null);
-		if (paymentTermIdentifier == null)
-		{
-			return Optional.empty();
-		}
-
-		//
-		// Lookup C_PaymentTerm table
-		PaymentTermId paymentTermId = paymentTermTable.getIdOptional(paymentTermIdentifier).orElse(null);
-		if (paymentTermId != null)
-		{
-			return Optional.of(paymentTermId);
-		}
-
-		//
-		// Search by name
-		paymentTermId = paymentTermRepo.retrievePaymentTermId(
-						PaymentTermQuery.builder()
-								.orgId(StepDefConstants.ORG_ID)
-								.value(paymentTermIdentifier.getAsString())
-								.build()
-				)
-				.orElse(null);
-		if (paymentTermId != null)
-		{
-			return Optional.of(paymentTermId);
-		}
-
-		//
-		// Consider it numeric ID
-		paymentTermId = paymentTermIdentifier.getAsId(PaymentTermId.class);
-		return Optional.of(paymentTermId);
 	}
 
 	@And("update C_Invoice:")
