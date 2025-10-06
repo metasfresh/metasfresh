@@ -326,6 +326,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
 
+	List<I_M_HU> retrieveIncludedHUs(I_M_HU huId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery
