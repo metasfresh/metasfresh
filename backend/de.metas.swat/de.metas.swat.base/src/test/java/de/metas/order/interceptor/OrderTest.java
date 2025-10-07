@@ -137,6 +137,7 @@ public class OrderTest
 	{
 		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
 		paymentTerm.setName("Paymentterm1");
+		paymentTerm.setValue("PaymenttermValue1");
 		save(paymentTerm);
 		return paymentTerm;
 	}
