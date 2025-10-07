@@ -535,7 +535,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huItemTU_S0316_030      | createdTU_S0316_030 | huPiItemTU_S0316_030       | 10  | pm_2_S0316_030                     | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | DeliveryRule |
       | o_1_S0316_030 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:
@@ -709,7 +709,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huItemTU_11212023_2     | createdTU_11212023_2 | huPiItemTU_11212023_2      | 10  | pm_2_11212023_2                    | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | DeliveryRule |
       | o_1_11212023_2 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:
@@ -874,7 +874,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huItemTU_11212023_3     | createdTU_11212023_3 | huPiItemTU_11212023_3      | 10  | pm_2_11212023_3                    | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | DeliveryRule |
       | o_1_11212023_3 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:
@@ -1072,7 +1072,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huItemTU_S0316_040      | createdTU_S0316_040 | huPiItemTU_S0316_040       | 10  | pm_2_S0316_040                     | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | DeliveryRule |
       | o_1_S0316_040 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:
@@ -1250,7 +1250,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huItemTU_2_S0457_010    | createdTU_2_2_S0457_010 | huPiItemTU_S0457_010       | 20  | pm_2_S0457_010                     | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | DeliveryRule |
       | o_1_S0457_010 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:
@@ -1451,7 +1451,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huItemTU_2_S0457_020    | createdTU_2_S0457_020   | huPiItemTU_S0457_020       | 10  | pm_2_S0457_020                     | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | DeliveryRule |
       | o_1_S0457_020 | true    | endcustomer   | 2021-04-17  | po_ref_@Date@ | 1000012          | F            |
 
     And metasfresh contains C_OrderLines:

@@ -255,8 +255,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | huItemTU_S0317_020      | createdTU_S0317_020 | huPiItemTU_S0317_020       | 10  | pm_2_S0317_020                     | PM           |
 
     And metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID | deliveryRule |
-      | o_1_S0317_020 | true    | endcustomer_1_S0317_020  | 2021-04-17  | po_ref_@Date@   | 1000012              | F            |
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | DeliveryRule |
+      | o_1_S0317_020 | true    | endcustomer_1_S0317_020  | 2021-04-17  | po_ref_@Date@   | F            |
 
     # Setting UOM=COLI; since the M_HU_PI_Item_Product_ID has a capacity of 10, we'll expect 100CUs to be shipped
     # Note that both UOM and QtyItemCapacity can'T be set in the UOM. They are both coming from C_OLCand, where the QtyItemCapacity may be taken from M_HU_PI_Item_Product_ID

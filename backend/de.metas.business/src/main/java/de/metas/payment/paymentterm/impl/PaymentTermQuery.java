@@ -61,9 +61,9 @@ public class PaymentTermQuery
 			@Nullable final SOTrx soTrx,
 			@Nullable final Boolean fallBackToDefault)
 	{
-		if (bPartnerId == null && orgId == null)
+		if (bPartnerId == null && externalId == null && value == null)
 		{
-			throw new AdempiereException("Either bPartnerId or orgId needs to be not-null");
+			throw new AdempiereException("Either bPartnerId, externalId or value needs to be not-null");
 		}
 
 		this.orgId = orgId;

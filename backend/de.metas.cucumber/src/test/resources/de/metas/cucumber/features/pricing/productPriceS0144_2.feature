@@ -209,7 +209,7 @@ Feature: Product price validation (S0144_2)
       | C_Order_ID.Identifier |
       | order_S0144.2_120     |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference    | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference    | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName |
       | order_S0144.2_120     | 89676577   | bpartner_03062022        | bpLocation_03062022               | 2022-06-05  | SOO         | EUR          | F            | S               | po_S0144.2_120 | true      | CO        | Shopware                               |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |

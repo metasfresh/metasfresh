@@ -125,7 +125,7 @@ Feature: Match Invoice
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | vendorInvoice           | invoiceCand_1                     |
     And validate created invoices
-      | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | docStatus |
+      | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | DocStatus |
       | vendorInvoice | bpartner_1    | l_1                    | CO        |
     And validate created invoice lines
       | C_InvoiceLine_ID  | C_Invoice_ID  | M_Product_ID | QtyInvoiced |

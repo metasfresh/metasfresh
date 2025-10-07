@@ -63,7 +63,7 @@ Feature: Dhl Shipment
 
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_BPartners:
-      | Identifier   | Name         | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
+      | Identifier   | Name         | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
       | dhl_customer | dhl_customer | ps_dhl_1                      | Y              | dhl_customer    | I               | 1000002                    |
 
     And metasfresh contains C_Location:
@@ -137,16 +137,16 @@ Feature: Dhl Shipment
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
       | order_1               | dhl_customer             | dhl_location                      | 2022-12-12  | SOO         | EUR          | F            | S               | ref_12301   | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | test_product_dhl_01     | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
-      | orderLine_2               | order_1               | 2022-02-02  | packing_product_1       | 0            | 1          | 0           | 0.0   | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2022-12-12  | test_product_dhl_01     | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
+      | orderLine_2               | order_1               | 2022-12-12  | packing_product_1       | 0            | 1          | 0           | 0.0   | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | shipment_1            | dhl_customer             | dhl_location                      | 2022-12-12  | ref_12301   | true      | CO        |
 
     And validate the created shipment lines
@@ -155,7 +155,7 @@ Feature: Dhl Shipment
       | line2                     | shipment_1            | packing_product_1       | 1           | true      |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.BPartnerAddress                         |
       | invoice_1               | dhl_customer             | dhl_location                      | ref_12301       | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
