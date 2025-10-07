@@ -276,7 +276,6 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 				Check.assumeNotEmpty(tableIdColumnName, "The table {} must have an AD_Table_ID column", originTableName);
 
 				queryWhereClause
-
 						.append(fromDocument.getAD_Table_ID())
 						.append(" = ")
 						.append(originTableName)
