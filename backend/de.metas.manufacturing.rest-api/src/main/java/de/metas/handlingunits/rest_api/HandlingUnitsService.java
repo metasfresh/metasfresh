@@ -79,6 +79,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.report.PrintCopies;
 import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -617,26 +618,30 @@ public class HandlingUnitsService
 	@Nullable
 	private GetByIdRequest toGetByIdRequest(@NonNull final GetByQRCodeRequest request)
 	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode().getAsString()).orNullIfError();
+		final ScannedCode scannedCode = request.getQrCode();
+		final GlobalQRCode globalQRCode = GlobalQRCode.parse(scannedCode.getAsString()).orNullIfError();
 		if (globalQRCode != null)
 		{
 			final HuId huId = resolveHuId(globalQRCode);
-			if (huId == null)
+			if (huId != null)
 			{
-				return null;
+				return GetByIdRequest.builderFrom(request)
+						.huId(huId)
+						.expectedQRCode(HUQRCode.fromGlobalQRCode(globalQRCode))
+						.build();
 			}
+		}
 
-			return GetByIdRequest.builderFrom(request)
-					.huId(huId)
-					.expectedQRCode(HUQRCode.fromGlobalQRCode(globalQRCode))
-					.build();
-		}
-		else
+		//
+		// M_HU.Value / ExternalBarcode attribute
+		final HuId huId = handlingUnitsBL.getHUIdByValueOrExternalBarcode(scannedCode).orElse(null);
+		if (huId != null)
 		{
-			return GetByIdRequest.builderFrom(request)
-					.huId(HuId.ofHUValue(request.getQrCode().getAsString()))
-					.build();
+			return GetByIdRequest.builderFrom(request).huId(huId).build();
 		}
+
+		// not found
+		return null;
 	}
 
 	@Nullable
