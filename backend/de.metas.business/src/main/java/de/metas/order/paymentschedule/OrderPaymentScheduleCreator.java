@@ -31,6 +31,8 @@ import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.payment.paymentterm.ReferenceDateType;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
+import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -48,6 +50,11 @@ import java.sql.Timestamp;
 @Service
 public class OrderPaymentScheduleCreator
 {
+	public static OrderPaymentScheduleCreator newInstanceForUnitTesting()
+	{
+		final OrderPayScheduleService orderPayScheduleService = new OrderPayScheduleService(new OrderPayScheduleRepository());
+		return new OrderPaymentScheduleCreator(new PaymentTermService(), orderPayScheduleService);
+	}
 
 	private static final Timestamp PENDING_DATE = Timestamp.valueOf("9999-01-01 00:00:00");
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);

@@ -13,6 +13,10 @@ import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.order.paymentschedule.OrderPayScheduleRepository;
+import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.order.paymentschedule.OrderPaymentScheduleCreator;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
@@ -73,7 +77,8 @@ public class OrderTest
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
 		final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, purchaseOrderToShipperTransportationService));
+		final OrderPaymentScheduleCreator orderPaymentScheduleCreator =  OrderPaymentScheduleCreator.newInstanceForUnitTesting();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPaymentScheduleCreator));
 	}
 
 	@Test
