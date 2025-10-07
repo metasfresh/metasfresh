@@ -8,7 +8,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.Inventory;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.InventoryTestHelper;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
@@ -69,7 +69,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-@ExtendWith({ SnapshotExtension.class, AdempiereTestWatcher.class})
+@ExtendWith({ SnapshotExtension.class, AdempiereTestWatcher.class })
 class DraftInventoryLinesCreatorTest
 {
 	private final ProductId PRODUCT_ID_40 = ProductId.ofRepoId(40);
@@ -84,7 +84,7 @@ class DraftInventoryLinesCreatorTest
 
 	private LocatorId locatorId;
 
-	private InventoryRepository inventoryRepo;
+	private InventoryService inventoryService;
 
 	private Expect expect;
 
@@ -96,7 +96,7 @@ class DraftInventoryLinesCreatorTest
 
 		orgId = AdempiereTestHelper.createOrgWithTimeZone(orgTimeZone);
 
-		inventoryRepo = new InventoryRepository();
+		inventoryService = InventoryService.newInstanceForUnitTesting();
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
@@ -142,7 +142,7 @@ class DraftInventoryLinesCreatorTest
 		// execute the method under test
 		new DraftInventoryLinesCreator(ctx).execute();
 
-		final Inventory result = inventoryRepo.getById(inventoryId);
+		final Inventory result = inventoryService.getById(inventoryId);
 		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
@@ -154,7 +154,9 @@ class DraftInventoryLinesCreatorTest
 		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
-	/** Verifies that the creator also works if an inventory already has some lines/HUs*/
+	/**
+	 * Verifies that the creator also works if an inventory already has some lines/HUs
+	 */
 	@Test
 	void execute_MultipleHUInventoryLineAggregator_preAddedHUs()
 	{
@@ -173,7 +175,7 @@ class DraftInventoryLinesCreatorTest
 		new DraftInventoryLinesCreator(ctx).execute();
 
 		// then
-		final Inventory result = inventoryRepo.getById(inventoryId);
+		final Inventory result = inventoryService.getById(inventoryId);
 		assertThat(result.getHuIds()).containsExactlyInAnyOrder(
 				HuId.ofRepoId(100),
 				HuId.ofRepoId(200),
@@ -193,7 +195,7 @@ class DraftInventoryLinesCreatorTest
 		// execute the method under test
 		new DraftInventoryLinesCreator(ctx).execute();
 
-		return inventoryRepo.getById(inventoryId);
+		return inventoryService.getById(inventoryId);
 
 	}
 
@@ -243,8 +245,8 @@ class DraftInventoryLinesCreatorTest
 			@NonNull final InventoryLineAggregator aggregator)
 	{
 		return InventoryLinesCreationCtx.builder()
-				.inventory(inventoryRepo.getById(inventoryId))
-				.inventoryRepo(inventoryRepo)
+				.inventory(inventoryService.getById(inventoryId))
+				.inventoryService(inventoryService)
 				.inventoryLineAggregator(aggregator)
 				.strategy(strategy)
 				.build();

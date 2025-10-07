@@ -78,7 +78,7 @@ class InventoryRepositoryTest
 	private static final ZoneId orgTimeZone = ZoneId.of("UTC-8");
 	private OrgId orgId;
 
-	private InventoryRepository inventoryLineRepository;
+	private InventoryRepository inventoryRepository;
 	private I_C_UOM uomRecord;
 	private I_M_Locator locatorRecord;
 
@@ -106,7 +106,7 @@ class InventoryRepositoryTest
 		final I_M_AttributeSetInstance asi = InventoryTestHelper.createAsi();
 		asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
-		inventoryLineRepository = new InventoryRepository();
+		inventoryRepository = new InventoryRepository();
 	}
 
 	@SuppressWarnings("SameParameterValue")
@@ -150,7 +150,7 @@ class InventoryRepositoryTest
 				.movementDate("2020-06-15")
 				.build();
 
-		final Inventory inventory = inventoryLineRepository.getById(inventoryId);
+		final Inventory inventory = inventoryRepository.getById(inventoryId);
 		assertThat(inventory.getMovementDate())
 				.isEqualTo(LocalDate.parse("2020-06-15").atStartOfDay(orgTimeZone));
 		assertThat(inventory.getDocStatus()).isEqualTo(DocStatus.Drafted);
@@ -203,9 +203,9 @@ class InventoryRepositoryTest
 				.forEach(lineHU -> InventoryTestHelper.createStorageFor(inventoryLine.getProductId(), lineHU.getQtyBook(), lineHU.getHuId()));
 
 		// invoke the method under test
-		inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId);
+		inventoryRepository.saveInventoryLine(inventoryLine, inventoryId);
 
-		final Inventory reloadedResult = inventoryLineRepository.getById(inventoryId);
+		final Inventory reloadedResult = inventoryRepository.getById(inventoryId);
 		expect.toMatchSnapshot(reloadedResult);
 
 		assertThat(reloadedResult.getLineById(inventoryLineId)).isEqualTo(inventoryLine);
@@ -230,7 +230,7 @@ class InventoryRepositoryTest
 			inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
 		}
 
-		final InventoryLine result = inventoryLineRepository
+		final InventoryLine result = inventoryRepository
 				.getById(inventoryId)
 				.getLineById(inventoryLineId);
 
@@ -268,7 +268,7 @@ class InventoryRepositoryTest
 			saveRecord(inventoryLineHURecord);
 		}
 
-		final InventoryLine result = inventoryLineRepository
+		final InventoryLine result = inventoryRepository
 				.getById(inventoryId)
 				.getLineById(inventoryLineId);
 		assertThat(result.getInventoryLineHUs())

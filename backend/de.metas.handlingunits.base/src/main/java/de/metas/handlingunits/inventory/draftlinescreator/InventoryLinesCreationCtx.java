@@ -1,15 +1,12 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregationKey;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
-import org.compiere.model.I_M_Inventory;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregationKey;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.util.GuavaCollectors;
@@ -17,6 +14,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_M_Inventory;
 
 /*
  * #%L
@@ -48,25 +46,25 @@ import lombok.Value;
 @Value
 public class InventoryLinesCreationCtx
 {
-	IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
-	InventoryRepository inventoryRepo;
+	@NonNull IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	@NonNull InventoryService inventoryService;
 
-	Inventory inventory;
-	HUsForInventoryStrategy strategy;
-	InventoryLineAggregator inventoryLineAggregator;
+	@NonNull Inventory inventory;
+	@NonNull HUsForInventoryStrategy strategy;
+	@NonNull InventoryLineAggregator inventoryLineAggregator;
 
-	ImmutableMap<InventoryLineAggregationKey, InventoryLine> preExistingInventoryLines;
+	@NonNull ImmutableMap<InventoryLineAggregationKey, InventoryLine> preExistingInventoryLines;
 
 	@Builder
 	private InventoryLinesCreationCtx(
 			@NonNull final Inventory inventory,
-			@NonNull final InventoryRepository inventoryRepo,
+			@NonNull final InventoryService inventoryService,
 			@NonNull final InventoryLineAggregator inventoryLineAggregator,
 			@NonNull final HUsForInventoryStrategy strategy)
 	{
 		this.inventory = inventory;
-		this.inventoryRepo = inventoryRepo;
+		this.inventoryService = inventoryService;
 		this.inventoryLineAggregator = inventoryLineAggregator;
 		this.strategy = strategy;
 

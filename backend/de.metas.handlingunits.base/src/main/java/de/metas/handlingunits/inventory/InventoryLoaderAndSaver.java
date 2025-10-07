@@ -61,6 +61,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
@@ -179,11 +180,10 @@ class InventoryLoaderAndSaver
 		final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
 
 		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoId(inventoryLineRecord.getM_Locator_ID());
-
 		final I_C_UOM uom = uomDAO.getById(inventoryLineRecord.getC_UOM_ID());
 
 		final InventoryLine.InventoryLineBuilder lineBuilder = InventoryLine.builder()
-				.id(extractInventoryLineIdOrNull(inventoryLineRecord))
+				.id(inventoryLineId)
 				.orgId(OrgId.ofRepoId(inventoryLineRecord.getAD_Org_ID()))
 				.locatorId(locatorId)
 				.productId(ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID()))
@@ -193,7 +193,7 @@ class InventoryLoaderAndSaver
 				.qtyBookFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom))
 				.storageAttributesKey(storageAttributesKey);
 
-		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
+		final HUAggregationType huAggregationType = extractHUAggregationType(inventoryLineRecord);
 		lineBuilder.huAggregationType(huAggregationType);
 
 		lineBuilder.counted(inventoryLineRecord.isCounted());
@@ -225,6 +225,11 @@ class InventoryLoaderAndSaver
 		}
 
 		return lineBuilder.build();
+	}
+
+	static @Nullable HUAggregationType extractHUAggregationType(final @NotNull I_M_InventoryLine inventoryLineRecord)
+	{
+		return HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
 	}
 
 	private static InventoryLinePackingInstructions extractPackingInstructions(final @NonNull I_M_InventoryLine inventoryLineRecord)
@@ -532,28 +537,15 @@ class InventoryLoaderAndSaver
 
 	public Optional<Quantity> getFreshBookedQtyFromStorage(@NonNull final ProductId productId, @NonNull final UomId inventoryLineUOMId, @NonNull final HuId huId)
 	{
-		Optional<Quantity> bookedQty = Optional.empty();
-
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
-
 		final IHUStorageFactory huStorageFactory = handlingUnitsBL.getStorageFactory();
-		final List<IHUProductStorage> huProductStorages = huStorageFactory.getHUProductStorages(ImmutableList.of(hu), productId);
-		if (!huProductStorages.isEmpty())
+		final IHUProductStorage huProductStorage = huStorageFactory.getStorage(hu).getProductStorageOrNull(productId);
+		if (huProductStorage == null)
 		{
-			final IHUProductStorage huStorage = huProductStorages.get(0);
-
-			final I_C_UOM inventoryLineUOM = uomDAO.getById(inventoryLineUOMId);
-
-			final BigDecimal qtyInInventoryUOM = uomConversionBL.convertQty(
-					UOMConversionContext.of(productId),
-					huStorage.getQty().toBigDecimal(),
-					huStorage.getQty().getUOM(),
-					inventoryLineUOM);
-
-			bookedQty = Optional.of(Quantity.of(qtyInInventoryUOM, inventoryLineUOM));
+			return Optional.empty();
 		}
 
-		return bookedQty;
+		return Optional.of(huProductStorage.getQty(inventoryLineUOMId));
 	}
 
 	private static void updateInventoryLineHURecord(
@@ -705,4 +697,24 @@ class InventoryLoaderAndSaver
 				.create()
 				.delete();
 	}
+
+	Quantity extractQtyCount(final I_M_InventoryLine inventoryLineRecord)
+	{
+		final I_C_UOM uom = uomDAO.getById(inventoryLineRecord.getC_UOM_ID());
+		return Quantity.of(inventoryLineRecord.getQtyCount(), uom);
+	}
+
+	public void updateInventoryLineByRecord(final I_M_InventoryLine inventoryLineRecord, UnaryOperator<InventoryLine> updater)
+	{
+		final InventoryId inventoryId = extractInventoryId(inventoryLineRecord);
+		final InventoryLine inventoryLine = toInventoryLine(inventoryLineRecord);
+		final InventoryLine inventoryLineChanged = updater.apply(inventoryLine);
+		if (Objects.equals(inventoryLine, inventoryLineChanged))
+		{
+			return;
+		}
+
+		saveInventoryLineHURecords(inventoryLine, inventoryId);
+	}
+
 }

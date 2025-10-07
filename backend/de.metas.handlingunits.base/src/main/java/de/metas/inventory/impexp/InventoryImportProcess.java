@@ -13,7 +13,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
@@ -95,7 +95,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
+	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
 
 	private final Timestamp now = SystemTime.asDayTimestamp();
@@ -355,11 +355,11 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		}
 
 		//
-		final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord)
+		final InventoryLine inventoryLine = inventoryService.toInventoryLine(inventoryLineRecord)
 				.withInventoryLineHUs(inventoryLineHUs)
 				.distributeQtyCountToHUs(qtyCount, uomConversionBL);
 
-		inventoryRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
+		inventoryService.saveInventoryLineHURecords(inventoryLine, inventoryId);
 
 		//
 		importRecord.setM_Inventory_ID(inventoryId.getRepoId());

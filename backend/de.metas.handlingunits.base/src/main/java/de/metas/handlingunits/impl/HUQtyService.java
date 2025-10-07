@@ -153,7 +153,7 @@ public class HUQtyService
 				.build());
 
 		final InventoryLinesCreationCtx inventoryLinesCreationCtx = InventoryLinesCreationCtx.builder()
-				.inventoryRepo(inventoryService.getInventoryRepository())
+				.inventoryService(inventoryService)
 				.inventoryLineAggregator(InventoryLineAggregatorFactory.getForAggregationMode(AggregationType.SINGLE_HU))
 				.inventory(inventoryHeader)
 				.strategy(HUsForInventoryStrategies.of(inventoryLineCandidate))

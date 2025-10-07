@@ -21,6 +21,7 @@ import de.metas.inventory.AggregationType;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
@@ -42,9 +43,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Objects;
+import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -75,7 +75,7 @@ public class InventoryService
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull @Getter private final InventoryRepository inventoryRepository;
+	@NonNull @Getter private final InventoryRepository inventoryRepository = new InventoryRepository();
 	@NonNull private final SourceHUsService sourceHUsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 
@@ -84,8 +84,8 @@ public class InventoryService
 	public static InventoryService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
+
 		return new InventoryService(
-				new InventoryRepository(),
 				SourceHUsService.get(),
 				HUQRCodesService.newInstanceForUnitTesting()
 		);
@@ -182,7 +182,7 @@ public class InventoryService
 		}
 	}
 
-	public void setQtyBookedFromStorage(@NonNull final I_M_InventoryLine inventoryLine)
+	public void updateQtyBookedFromHUStorage(@NonNull final I_M_InventoryLine inventoryLine)
 	{
 		inventoryLine.setQtyBook(BigDecimal.ZERO);
 
@@ -190,29 +190,25 @@ public class InventoryService
 		final ProductId productId = ProductId.ofRepoIdOrNull(inventoryLine.getM_Product_ID());
 		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
 		final UomId uomId = UomId.ofRepoIdOrNull(inventoryLine.getC_UOM_ID());
-
-		final boolean idsAreMissing = Stream.of(productId, huId, uomId)
-				.anyMatch(Objects::isNull);
-
-		if (idsAreMissing)
+		if (productId == null || huId == null || uomId == null)
 		{
 			return;
 		}
 
-		final Optional<Quantity> bookedQty = inventoryRepository.getFreshBookedQtyFromStorage(productId, uomId, huId);
+		final Quantity bookedQty = inventoryRepository.getFreshBookedQtyFromStorage(productId, uomId, huId).orElse(null);
 
-		if (bookedQty.isPresent())
+		if (bookedQty != null)
 		{
-			if (bookedQty.get().getUomId().getRepoId() != inventoryLine.getC_UOM_ID())
+			if (bookedQty.getUomId().getRepoId() != inventoryLine.getC_UOM_ID())
 			{
 				// this should never happen as InventoryRepository#getFreshBookedQtyFromStorage() returns the qty in the inventory line's uom.
 				throw new QuantitiesUOMNotMatchingExpection("Booked and counted quantities don't have the same UOM!")
 						.appendParametersToMessage()
 						.setParameter("InventoryLineUOMID", inventoryLine.getC_UOM_ID())
-						.setParameter("BookedQtyUOMID", bookedQty.get().getUomId());
+						.setParameter("BookedQtyUOMID", bookedQty.getUomId());
 			}
 
-			inventoryLine.setQtyBook(bookedQty.get().toBigDecimal());
+			inventoryLine.setQtyBook(bookedQty.toBigDecimal());
 		}
 	}
 
@@ -311,5 +307,35 @@ public class InventoryService
 		{
 			return AggregationType.getByHUAggregationType(huAggregationType).getDocBaseAndSubType();
 		}
+	}
+
+	public void distributeQuantityToHUs(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	{
+		inventoryRepository.updateInventoryLineByRecord(inventoryLineRecord, InventoryLine::distributeQtyCountToHUs);
+	}
+
+	public void deleteInventoryLineHUs(@NonNull final InventoryLineId inventoryLineId)
+	{
+		inventoryRepository.deleteInventoryLineHUs(inventoryLineId);
+	}
+
+	public void saveInventoryLines(@NonNull final Collection<InventoryLine> lines, @NonNull final InventoryId inventoryId)
+	{
+		lines.forEach(line -> inventoryRepository.saveInventoryLine(line, inventoryId));
+	}
+
+	public InventoryLine toInventoryLine(final I_M_InventoryLine inventoryLineRecord)
+	{
+		return inventoryRepository.toInventoryLine(inventoryLineRecord);
+	}
+
+	public Collection<I_M_InventoryLine> retrieveAllLinesForHU(final HuId huId)
+	{
+		return inventoryRepository.retrieveAllLinesForHU(huId);
+	}
+
+	public void saveInventoryLineHURecords(final InventoryLine inventoryLine, final @NonNull InventoryId inventoryId)
+	{
+		inventoryRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
 	}
 }

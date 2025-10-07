@@ -58,14 +58,11 @@ import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class InventoryLine
 {
-	/**
-	 * If not null then {@link InventoryRepository} saving will load and sync the respective {@code M_InventoryLine} record
-	 */
 	@Nullable @NonFinal InventoryLineId id;
 	@NonNull OrgId orgId;
 
 	/**
-	 * If not null then {@link InventoryRepository} saving will assume that there is an existing persisted ASI which is in sync with {@link #storageAttributesKey}.
+	 * If not null then saving will assume that there is an existing persisted ASI which is in sync with {@link #storageAttributesKey}.
 	 */
 	@Nullable AttributeSetInstanceId asiId;
 	@NonNull AttributesKey storageAttributesKey;
@@ -208,6 +205,11 @@ public class InventoryLine
 				.map(InventoryLineHU::getQtyCount)
 				.reduce(Quantity::add)
 				.orElseThrow(() -> new AdempiereException("No HUs found for " + this));
+	}
+
+	public InventoryLine distributeQtyCountToHUs()
+	{
+		return distributeQtyCountToHUs(getQtyCountFixed());
 	}
 
 	public InventoryLine distributeQtyCountToHUs(

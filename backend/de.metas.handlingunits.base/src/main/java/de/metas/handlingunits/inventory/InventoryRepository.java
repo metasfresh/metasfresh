@@ -34,14 +34,13 @@ import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -68,17 +67,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-@Repository
-public class InventoryRepository
+public final class InventoryRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	InventoryRepository()
+	{
+	}
 
 	private InventoryLoaderAndSaver newLoaderAndSaver()
 	{
@@ -229,7 +231,7 @@ public class InventoryRepository
 		return newLoaderAndSaver().getLineRecords(inventoryAndLineIds).values();
 	}
 
-	private InventoryAndLineIdSet retrieveAllLineIdsForHU(final @NotNull HuId huId)
+	private InventoryAndLineIdSet retrieveAllLineIdsForHU(final @NonNull HuId huId)
 	{
 		final List<I_M_HU> includedHUs = handlingUnitsBL.retrieveIncludedHUs(handlingUnitsBL.getById(huId));
 
@@ -280,6 +282,11 @@ public class InventoryRepository
 	private static InventoryAndLineId extractInventoryAndLineId(final I_M_InventoryLine_HU inventoryLineHU)
 	{
 		return InventoryAndLineId.ofRepoIds(inventoryLineHU.getM_Inventory_ID(), inventoryLineHU.getM_InventoryLine_ID());
+	}
+
+	public void updateInventoryLineByRecord(final I_M_InventoryLine inventoryLineRecord, UnaryOperator<InventoryLine> updater)
+	{
+		newLoaderAndSaver().updateInventoryLineByRecord(inventoryLineRecord, updater);
 	}
 }
 

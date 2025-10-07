@@ -9,7 +9,7 @@ import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.inventory.InventoryLineHU;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregationKey;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
@@ -83,10 +83,10 @@ public class DraftInventoryLinesCreator
 		final HUsForInventoryStrategy strategy = inventoryLinesCreationCtx.getStrategy();
 
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
-		final InventoryRepository inventoryLineRepository = inventoryLinesCreationCtx.getInventoryRepo();
+		final InventoryService inventoryService = inventoryLinesCreationCtx.getInventoryService();
 
 		final InventoryId inventoryId = inventoryLinesCreationCtx.getInventoryId();
-		final Inventory inventory = inventoryLineRepository.getById(inventoryId);
+		final Inventory inventory = inventoryService.getById(inventoryId);
 		final ImmutableSet<HuId> preAddedHuIds = inventory.getHuIds(); // needed in case we want to add further lines when some already pre-exist
 
 		final Iterator<HuForInventoryLine> hus = strategy.streamHus().iterator();
@@ -113,10 +113,7 @@ public class DraftInventoryLinesCreator
 			countInventoryLines++;
 		}
 
-		createdOrUpdatedLines
-				.values()
-				.forEach(line -> inventoryLineRepository.saveInventoryLine(line, inventoryId));
-
+		inventoryService.saveInventoryLines(createdOrUpdatedLines.values(), inventoryId);
 	}
 
 	/**
