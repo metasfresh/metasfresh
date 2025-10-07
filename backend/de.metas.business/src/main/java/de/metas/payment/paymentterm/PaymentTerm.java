@@ -30,8 +30,8 @@ import lombok.Value;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
-@Builder
 @Value
 public class PaymentTerm
 {
@@ -53,5 +53,48 @@ public class PaymentTerm
 	int netDays;
 	boolean allowOverrideDueDate;
 	boolean _default;
+	boolean isComplex;
+
+	@Nullable List<PaymentTermBreak> breaks;
+
+	@Builder
+	private PaymentTerm(
+			final @NonNull PaymentTermId id,
+			final @NonNull OrgId orgId,
+			final @NonNull ClientId clientId,
+			final @NonNull String value,
+			final @NonNull String name,
+			final @Nullable String description,
+			final @Nullable Percent discount,
+			final @Nullable Percent discount2,
+			final @Nullable String netDay,
+			final int discountDays,
+			final int discountDays2,
+			final int graceDays,
+			final int netDays,
+			final boolean allowOverrideDueDate,
+			final boolean _default,
+			final boolean isComplex,
+			final @Nullable List<PaymentTermBreak> breaks)
+	{
+		this.id = id;
+		this.orgId = orgId;
+		this.clientId = clientId;
+		this.value = value;
+		this.name = name;
+		this.description = description;
+		this.discount = discount;
+		this.discount2 = discount2;
+		this.netDay = netDay;
+		this.discountDays = discountDays;
+		this.discountDays2 = discountDays2;
+		this.graceDays = graceDays;
+		this.netDays = netDays;
+		this.allowOverrideDueDate = allowOverrideDueDate;
+		this._default = _default;
+		this.isComplex = isComplex;
+
+		this.breaks = breaks;
+	}
 }
 

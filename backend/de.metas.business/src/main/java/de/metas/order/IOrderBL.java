@@ -31,6 +31,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -349,4 +350,6 @@ public interface IOrderBL extends ISingletonService
 		final BigDecimal luQty = orderLine.getQtyLU();
 		return luQty != null && luQty.signum() > 0;
 	}
+
+	PaymentTermId getPaymentTermId(@NonNull I_C_Order orderRecord);
 }

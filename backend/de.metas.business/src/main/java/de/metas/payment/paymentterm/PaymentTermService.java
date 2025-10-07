@@ -5,6 +5,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Util.ArrayKey;
@@ -42,6 +43,7 @@ public class PaymentTermService
 {
 	private final CCache<ArrayKey, PaymentTermId> cache = CCache.newCache(I_C_PaymentTerm.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	/**
 	 * @param basePaymentTermId may be null
 	 * @param discount may be null
@@ -106,5 +108,10 @@ public class PaymentTermService
 		saveRecord(newPaymentTerm);
 
 		return PaymentTermId.ofRepoId(newPaymentTerm.getC_PaymentTerm_ID());
+	}
+
+	public PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
+	{
+		return paymentTermRepository.getById(paymentTermId);
 	}
 }

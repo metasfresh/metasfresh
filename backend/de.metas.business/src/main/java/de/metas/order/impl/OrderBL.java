@@ -72,6 +72,7 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -1414,5 +1415,11 @@ public class OrderBL implements IOrderBL
 	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
 	{
 		return partnerDAO.getShipperId(partnerId);
+	}
+
+	@Override
+	public PaymentTermId getPaymentTermId(@NonNull final I_C_Order orderRecord)
+	{
+		return  PaymentTermId.ofRepoId(orderRecord.getC_PaymentTerm_ID());
 	}
 }
