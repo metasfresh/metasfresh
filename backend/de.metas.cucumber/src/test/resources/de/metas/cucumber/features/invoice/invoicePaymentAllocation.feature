@@ -2527,8 +2527,8 @@ Feature: invoice payment allocation
       | paymentAllocPLV_01112022_2 | paymentAllocPriceList_01112022_2 | 2022-05-01 |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | PO_PaymentTerm_ID.Value |
-      | bpartner_01112022_1 | BPartnerTest_01112022_1 | Y            | Y              | paymentAllocPricingSystem_01112022_1 | 10 Tage 1 %             |
+      | Identifier          | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | PO_PaymentTerm_ID.Value | C_PaymentTerm_ID.Value |
+      | bpartner_01112022_1 | BPartnerTest_01112022_1 | Y            | Y              | paymentAllocPricingSystem_01112022_1 | 10 Tage 1 %             | 10 Tage 1 %            |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
