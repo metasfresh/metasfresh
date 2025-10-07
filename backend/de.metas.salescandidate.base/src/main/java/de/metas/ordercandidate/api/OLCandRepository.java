@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -157,6 +158,9 @@ public class OLCandRepository
 					olCandPO.setPhone(bPartnerLocation.getPhone());
 				}
 			}
+
+			final I_C_BPartner partnerRecord = bpartnerDAO.getById(bpartner.getBpartnerId());
+			olCandPO.setDeliveryRule(CoalesceUtil.firstNotBlank(request.getDeliveryRule(),partnerRecord.getDeliveryRule()));
 		}
 
 		if (request.getBillBPartner() != null)
@@ -298,7 +302,6 @@ public class OLCandRepository
 		}
 
 		olCandPO.setDescription(request.getDescription());
-		olCandPO.setDeliveryRule(request.getDeliveryRule());
 		olCandPO.setDeliveryViaRule(request.getDeliveryViaRule());
 		olCandPO.setImportWarningMessage(request.getImportWarningMessage());
 		if (request.getPrice() == null)
