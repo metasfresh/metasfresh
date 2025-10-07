@@ -397,3 +397,98 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Bezahlt',Updated=TO_TIMESTAMP
 UPDATE AD_Ref_List base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Ref_List_Trl trl  WHERE trl.AD_Ref_List_ID=base.AD_Ref_List_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
 ;
 
+
+
+
+-- Field: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> Prozent
+-- Column: C_OrderPaySchedule.Percent
+-- 2025-10-07T14:22:45.137Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,591279,754840,0,548449,TO_TIMESTAMP('2025-10-07 14:22:44.992000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Prozentsatz',22,'D','Der Prozentsatz gibt den verwendeten Prozentsatz an.','Y','N','N','N','N','N','N','N','Prozent',TO_TIMESTAMP('2025-10-07 14:22:44.992000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-10-07T14:22:45.143Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=754840 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-10-07T14:22:45.148Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(951)
+;
+
+-- 2025-10-07T14:22:45.171Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=754840
+;
+
+-- 2025-10-07T14:22:45.182Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(754840)
+;
+
+-- Field: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> Status
+-- Column: C_OrderPaySchedule.Status
+-- 2025-10-07T14:22:45.293Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,591280,754841,0,548449,TO_TIMESTAMP('2025-10-07 14:22:45.195000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'',3,'D','','Y','N','N','N','N','N','N','N','Status',TO_TIMESTAMP('2025-10-07 14:22:45.195000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-10-07T14:22:45.295Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=754841 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-10-07T14:22:45.297Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(3020)
+;
+
+-- 2025-10-07T14:22:45.340Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=754841
+;
+
+-- 2025-10-07T14:22:45.342Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(754841)
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> main -> 20 -> main.Status
+-- Column: C_OrderPaySchedule.Status
+-- 2025-10-07T14:23:32.037Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,754841,0,548449,553583,637774,'F',TO_TIMESTAMP('2025-10-07 14:23:31.882000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'','','Y','N','N','Y','Y','N','N','Status',12,60,0,TO_TIMESTAMP('2025-10-07 14:23:31.882000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> main -> 10 -> main.Prozent
+-- Column: C_OrderPaySchedule.Percent
+-- 2025-10-07T14:24:09.310Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,754840,0,548449,553582,637775,'F',TO_TIMESTAMP('2025-10-07 14:24:09.151000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Prozentsatz','Der Prozentsatz gibt den verwendeten Prozentsatz an.','Y','N','N','Y','Y','N','N','Prozent',32,30,0,TO_TIMESTAMP('2025-10-07 14:24:09.151000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> main -> 10 -> main.Referenzdatumstyp
+-- Column: C_OrderPaySchedule.ReferenceDateType
+-- 2025-10-07T14:24:20.073Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2025-10-07 14:24:20.073000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637527
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> main -> 10 -> main.Fälliger Betrag
+-- Column: C_OrderPaySchedule.DueAmt
+-- 2025-10-07T14:24:20.084Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2025-10-07 14:24:20.084000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637528
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> main -> 10 -> main.Datum Fälligkeit
+-- Column: C_OrderPaySchedule.DueDate
+-- 2025-10-07T14:24:20.094Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2025-10-07 14:24:20.093000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637529
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> main -> 20 -> main.Status
+-- Column: C_OrderPaySchedule.Status
+-- 2025-10-07T14:24:20.102Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2025-10-07 14:24:20.102000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637774
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> main -> 20 -> main.Aktiv
+-- Column: C_OrderPaySchedule.IsActive
+-- 2025-10-07T14:24:20.111Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2025-10-07 14:24:20.111000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637530
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Zahlungsplan(548449,D) -> main -> 20 -> main.Sektion
+-- Column: C_OrderPaySchedule.AD_Org_ID
+-- 2025-10-07T14:24:20.120Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2025-10-07 14:24:20.120000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637531
+;
+
