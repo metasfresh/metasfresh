@@ -26,6 +26,7 @@ import de.metas.currency.Amount;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,14 +43,12 @@ import java.sql.Timestamp;
 public class OrderPayScheduleRequest
 {
 	@NonNull OrderId orderId;
-
 	@NonNull PaymentTermBreakId paymentTermBreakId;
-
 	@NonNull ReferenceDateType referenceDateType;
-
 	@NonNull Amount dueAmount;
-
-	@Nullable Timestamp dueDate;
+	@NonNull Timestamp dueDate;
+	@NonNull Percent percent;
+	@Nullable OrderPayScheduleStatus orderPayScheduleStatus;
 
 	int seqNo;
 
@@ -62,7 +61,8 @@ public class OrderPayScheduleRequest
 				.referenceDateType(referenceDateType)
 				.dueAmount(dueAmount)
 				.dueDate(dueDate)
-				.seqNo(seqNo)
+				.percent(percent)
+				.orderPayScheduleStatus(orderPayScheduleStatus)
 				.build();
 	}
 }

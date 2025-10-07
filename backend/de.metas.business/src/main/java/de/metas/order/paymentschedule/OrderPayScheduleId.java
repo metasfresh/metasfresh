@@ -2,10 +2,8 @@ package de.metas.order.paymentschedule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;

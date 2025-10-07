@@ -162,27 +162,6 @@ public interface I_C_PaymentTerm_Break
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set SeqNo..
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setLine (int Line);
-
-	/**
-	 * Get SeqNo..
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getLine();
-
-	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_Line = new ModelColumn<>(I_C_PaymentTerm_Break.class, "Line", null);
-	String COLUMNNAME_Line = "Line";
-
-	/**
 	 * Set Offset days.
 	 *
 	 * <br>Type: Integer
@@ -248,6 +227,27 @@ public interface I_C_PaymentTerm_Break
 
 	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_ReferenceDateType = new ModelColumn<>(I_C_PaymentTerm_Break.class, "ReferenceDateType", null);
 	String COLUMNNAME_ReferenceDateType = "ReferenceDateType";
+
+	/**
+	 * Set SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_PaymentTerm_Break.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.

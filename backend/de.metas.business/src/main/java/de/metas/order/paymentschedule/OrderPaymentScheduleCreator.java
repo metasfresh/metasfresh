@@ -117,7 +117,7 @@ public class OrderPaymentScheduleCreator
 
 		final ReferenceDateType referenceDateType = termBreak.getReferenceDateType();
 		Timestamp referenceDate = null;
-		String status = "Pending reference";
+		OrderPayScheduleStatus status = OrderPayScheduleStatus.Pending;
 
 		// --- Get the initial reference date from available order data ---
 		switch (referenceDateType)
@@ -141,18 +141,18 @@ public class OrderPaymentScheduleCreator
 			default:
 		}
 
-		Timestamp finalDueDate;
+		final Timestamp finalDueDate;
 
 		if (referenceDate != null)
 		{
 			finalDueDate = TimeUtil.addDays(referenceDate, termBreak.getOffsetDays());
-			status = "WaitingPayment"; // Financial obligation is now calculable/existing
+			status = OrderPayScheduleStatus.Awaiting_Pay; // Financial obligation is now calculable/existing
 		}
 		else
 		{
 			// Reference date is missing (BLDate, ETA, or missing LCDate)
 			finalDueDate = PENDING_DATE;
-			status = "Pending reference"; // Status remains Pending
+			// Status remains Pending
 		}
 
 		return new ReferenceDateResult(finalDueDate, status);
@@ -168,6 +168,6 @@ public class OrderPaymentScheduleCreator
 	static class ReferenceDateResult
 	{
 		@NonNull Timestamp calculatedDueDate;
-		@NonNull String status;
+		@NonNull OrderPayScheduleStatus status;
 	}
 }

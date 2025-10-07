@@ -30,6 +30,7 @@ import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -68,15 +69,26 @@ public class OrderPayScheduleRepository
 	}
 
 	@NonNull
-	public List<OrderPaySchedule> getByOrderId(@NonNull OrderId orderId)
+	public List<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId)
 	{
-		return queryBL.createQueryBuilder(I_C_OrderPaySchedule.class).addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId).orderBy(I_C_OrderPaySchedule.COLUMNNAME_Line).create().stream().map(this::fromRecord).collect(Collectors.toList());
+		return queryBL
+				.createQueryBuilder(I_C_OrderPaySchedule.class)
+				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_C_OrderPaySchedule.COLUMNNAME_SeqNo)
+				.create()
+				.stream()
+				.map(this::fromRecord)
+				.collect(Collectors.toList());
 
 	}
 
-	public void deleteByOrderId(@NonNull OrderId orderId)
+	public void deleteByOrderId(@NonNull final OrderId orderId)
 	{
-		queryBL.createQueryBuilder(I_C_OrderPaySchedule.class).addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId).create().delete();
+		queryBL
+				.createQueryBuilder(I_C_OrderPaySchedule.class)
+				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.delete();
 
 	}
 
@@ -96,8 +108,9 @@ public class OrderPayScheduleRepository
 		record.setC_PaymentTerm_Break_ID(schedule.getPaymentTermBreakId().getRepoId());
 		record.setDueAmt(schedule.getDueAmount().getAsBigDecimal());
 		record.setDueDate(schedule.getDueDate());
-		record.setLine(schedule.getSeqNo());
+		record.setPercent(schedule.getPercent().toInt());
 		record.setReferenceDateType(schedule.getReferenceDateType().getCode());
+		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(schedule.getOrderPayScheduleStatus()));
 
 		return record;
 	}
@@ -108,8 +121,18 @@ public class OrderPayScheduleRepository
 		final PaymentTermId paymentTermId = orderBL.getPaymentTermId(order);
 		final CurrencyCode currencyCode = orderBL.getCurrencyCode(order);
 
-		return OrderPaySchedule.builder().id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID())).orderId(OrderId.ofRepoId(record.getC_Order_ID())).paymentTermBreakId(PaymentTermBreakId.ofRepoId(paymentTermId, record.getC_PaymentTerm_Break_ID())).dueAmount(Amount.of(record.getDueAmt(), currencyCode)) // Get currency from order
-				.dueDate(record.getDueDate()).seqNo(record.getLine()).referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType())).build();
+		return OrderPaySchedule
+				.builder()
+				.id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
+				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
+				.paymentTermBreakId(PaymentTermBreakId.ofRepoId(paymentTermId, record.getC_PaymentTerm_Break_ID()))
+				.dueAmount(Amount.of(record.getDueAmt(), currencyCode)) // Get currency from order
+				.dueDate(record.getDueDate())
+				.percent(Percent.of(record.getPercent()))
+				.seqNo(record.getSeqNo())
+				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
+				.orderPayScheduleStatus(OrderPayScheduleStatus.ofNullableCode(record.getStatus()))
+				.build();
 	}
 
 }

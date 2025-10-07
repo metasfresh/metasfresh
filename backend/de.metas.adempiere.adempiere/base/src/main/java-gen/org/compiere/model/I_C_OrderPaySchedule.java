@@ -211,25 +211,27 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set SeqNo..
+	 * Set Percent.
+	 * Percentage
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setLine (int Line);
+	void setPercent (int Percent);
 
 	/**
-	 * Get SeqNo..
+	 * Get Percent.
+	 * Percentage
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getLine();
+	int getPercent();
 
-	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_Line = new ModelColumn<>(I_C_OrderPaySchedule.class, "Line", null);
-	String COLUMNNAME_Line = "Line";
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_Percent = new ModelColumn<>(I_C_OrderPaySchedule.class, "Percent", null);
+	String COLUMNNAME_Percent = "Percent";
 
 	/**
 	 * Set Reference Date Type.
@@ -253,6 +255,48 @@ public interface I_C_OrderPaySchedule
 
 	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_ReferenceDateType = new ModelColumn<>(I_C_OrderPaySchedule.class, "ReferenceDateType", null);
 	String COLUMNNAME_ReferenceDateType = "ReferenceDateType";
+
+	/**
+	 * Set SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_OrderPaySchedule.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStatus (@Nullable java.lang.String Status);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getStatus();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_Status = new ModelColumn<>(I_C_OrderPaySchedule.class, "Status", null);
+	String COLUMNNAME_Status = "Status";
 
 	/**
 	 * Get Updated.
