@@ -3,6 +3,7 @@ package de.metas.user.api.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailRequest;
@@ -293,6 +294,7 @@ public class UserBL implements IUserBL
 
 		final String newPasswordEncrypted = HashableString.ofPlainValue(newPassword).hash().getValue();
 		user.setPassword(newPasswordEncrypted);
+		user.setPasswordChangeDate(SystemTime.asTimestamp());
 
 		InterfaceWrapperHelper.save(user);
 	}
@@ -301,6 +303,11 @@ public class UserBL implements IUserBL
 	{
 		// Changing your own password always requires entering the old password
 		if (UserId.equals(request.getContextUserId(), request.getUserId()))
+		{
+			return true;
+		}
+
+		if(request.getContextRoleId() == null)
 		{
 			return true;
 		}

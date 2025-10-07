@@ -59,5 +59,5 @@ public class ChangeUserPasswordRequest
 	/** i.e. logged in user */
 	@NonNull UserId contextUserId;
 	@NonNull LocalDate contextDate;
-	@NonNull RoleId contextRoleId;
+	@Nullable RoleId contextRoleId;
 }
