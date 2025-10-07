@@ -105,6 +105,8 @@ public class PurchaseOrderToShipperTransportationService
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(purchaseOrder.getM_Shipper_ID());
 		if (shipperId == null)
 		{
+			Loggables.addLog("Skipping purchase order with ID: {}, because no Shipper is set on it",
+					purchaseOrder.getC_Order_ID());
 			return;
 		}
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
