@@ -79,10 +79,10 @@ public class WebuiDocumentReferencesService
 			@NonNull final RelatedDocumentsPermissions permissions)
 	{
 		// Document with composed keys does not support references
-		if (documentPath.isComposedKey())
-		{
-			return ImmutableList.of();
-		}
+		// if (documentPath.isComposedKey())
+		// {
+		// 	return ImmutableList.of();
+		// }
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final ImmutableList<WebuiDocumentReferenceCandidate> documentReferences = documentCollection.forDocumentReadonly(
