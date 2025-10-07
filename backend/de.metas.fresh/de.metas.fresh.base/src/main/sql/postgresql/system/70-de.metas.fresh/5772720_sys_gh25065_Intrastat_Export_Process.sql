@@ -11,3 +11,8 @@ INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,Crea
 UPDATE AD_Process_Para SET AD_Val_Rule_ID=540749,Updated=TO_TIMESTAMP('2025-10-07 14:28:59.546000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543005
 ;
 
+-- Name: C_Period of Year (Optional)
+-- 2025-10-07T15:37:31.935Z
+UPDATE AD_Val_Rule SET Code='(CASE WHEN @C_Year_ID@>0 THEN C_Period.C_Year_ID=@C_Year_ID@ ELSE C_Period.C_Year_ID IN(SELECT y.C_Year_ID FROM C_Year y WHERE y.FiscalYear::Numeric >= 2025) END)',Updated=TO_TIMESTAMP('2025-10-07 15:37:31.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540749
+;
+
