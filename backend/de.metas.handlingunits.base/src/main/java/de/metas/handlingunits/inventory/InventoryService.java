@@ -22,6 +22,7 @@ import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.inventory.InventoryQuery;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
@@ -45,6 +46,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -338,4 +341,15 @@ public class InventoryService
 	{
 		inventoryRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
 	}
+
+	public Stream<InventoryReference> streamReferences(@NonNull final InventoryQuery query)
+	{
+		return inventoryRepository.streamReferences(query);
+	}
+
+	public Inventory updateById(final InventoryId inventoryId, UnaryOperator<Inventory> updater)
+	{
+		return inventoryRepository.updateById(inventoryId, updater);
+	}
+
 }

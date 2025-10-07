@@ -18,6 +18,7 @@ import de.metas.inventory.InventoryAndLineId;
 import de.metas.inventory.InventoryAndLineIdSet;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.inventory.InventoryQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -287,6 +289,16 @@ public final class InventoryRepository
 	public void updateInventoryLineByRecord(final I_M_InventoryLine inventoryLineRecord, UnaryOperator<InventoryLine> updater)
 	{
 		newLoaderAndSaver().updateInventoryLineByRecord(inventoryLineRecord, updater);
+	}
+
+	public Inventory updateById(final InventoryId inventoryId, UnaryOperator<Inventory> updater)
+	{
+		return newLoaderAndSaver().updateById(inventoryId, updater);
+	}
+
+	public Stream<InventoryReference> streamReferences(@NonNull final InventoryQuery query)
+	{
+		return newLoaderAndSaver().streamReferences(query);
 	}
 }
 

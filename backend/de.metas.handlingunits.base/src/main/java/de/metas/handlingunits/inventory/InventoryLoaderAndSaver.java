@@ -23,6 +23,7 @@ import de.metas.inventory.InventoryAndLineId;
 import de.metas.inventory.InventoryAndLineIdSet;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.inventory.InventoryQuery;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -33,6 +34,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -53,6 +55,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +66,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
 
@@ -115,24 +119,35 @@ class InventoryLoaderAndSaver
 			throw new AdempiereException("Failed extracting DocBaseType and DocSubType from " + inventoryRecord);
 		}
 
-		final OrgId orgId = OrgId.ofRepoId(inventoryRecord.getAD_Org_ID());
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-
 		return Inventory.builder()
 				.id(inventoryId)
-				.orgId(orgId)
+				.orgId(OrgId.ofRepoId(inventoryRecord.getAD_Org_ID()))
 				.docBaseAndSubType(docBaseAndSubType)
-				.movementDate(TimeUtil.asZonedDateTime(inventoryRecord.getMovementDate(), timeZone))
+				.movementDate(extractMovementDate(inventoryRecord))
 				.warehouseId(WarehouseId.ofRepoIdOrNull(inventoryRecord.getM_Warehouse_ID()))
 				.description(inventoryRecord.getDescription())
 				.activityId(ActivityId.ofRepoIdOrNull(inventoryRecord.getC_Activity_ID()))
 				.docStatus(DocStatus.ofCode(inventoryRecord.getDocStatus()))
 				.documentNo(inventoryRecord.getDocumentNo())
+				.responsibleId(extractResponsibleId(inventoryRecord))
 				.lines(getLineRecords(inventoryId)
 						.stream()
 						.map(this::toInventoryLine)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	private ZonedDateTime extractMovementDate(final @NotNull I_M_Inventory inventoryRecord)
+	{
+		final OrgId orgId = OrgId.ofRepoId(inventoryRecord.getAD_Org_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		return TimeUtil.asZonedDateTime(inventoryRecord.getMovementDate(), timeZone);
+	}
+
+	@Nullable
+	private static UserId extractResponsibleId(final @NotNull I_M_Inventory inventoryRecord)
+	{
+		return UserId.ofRegularUserRepoIdOrNull(inventoryRecord.getAD_User_Responsible_ID());
 	}
 
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(@Nullable final I_M_Inventory inventoryRecord)
@@ -387,6 +402,25 @@ class InventoryLoaderAndSaver
 				.map(InventoryLine::getId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private void saveInventory(@NonNull final Inventory inventory)
+	{
+		final InventoryId inventoryId = inventory.getId();
+		final I_M_Inventory inventoryRecord = getRecordById(inventoryId);
+		updateRecord(inventoryRecord, inventory);
+		InterfaceWrapperHelper.save(inventoryRecord);
+
+		inventory.getLines().forEach(line -> {
+			saveInventoryLine(line, inventoryId);
+		});
+
+		// TODO: consider deleting missing lines?!
+	}
+
+	private void updateRecord(final I_M_Inventory record, final @NonNull Inventory from)
+	{
+		record.setAD_User_Responsible_ID(UserId.toRepoId(from.getResponsibleId()));
 	}
 
 	public void saveInventoryLine(
@@ -698,10 +732,17 @@ class InventoryLoaderAndSaver
 				.delete();
 	}
 
-	Quantity extractQtyCount(final I_M_InventoryLine inventoryLineRecord)
+	public Inventory updateById(final InventoryId inventoryId, UnaryOperator<Inventory> updater)
 	{
-		final I_C_UOM uom = uomDAO.getById(inventoryLineRecord.getC_UOM_ID());
-		return Quantity.of(inventoryLineRecord.getQtyCount(), uom);
+		final Inventory inventory = loadById(inventoryId);
+		final Inventory inventoryChanged = updater.apply(inventory);
+		if (Objects.equals(inventory, inventoryChanged))
+		{
+			return inventory;
+		}
+
+		saveInventory(inventoryChanged);
+		return inventoryChanged;
 	}
 
 	public void updateInventoryLineByRecord(final I_M_InventoryLine inventoryLineRecord, UnaryOperator<InventoryLine> updater)
@@ -715,6 +756,23 @@ class InventoryLoaderAndSaver
 		}
 
 		saveInventoryLineHURecords(inventoryLine, inventoryId);
+	}
+
+	public Stream<InventoryReference> streamReferences(InventoryQuery query)
+	{
+		final ImmutableList<I_M_Inventory> inventories = inventoryDAO.stream(query).collect(ImmutableList.toImmutableList());
+		return inventories.stream().map(this::toInventoryJobReference);
+	}
+
+	private InventoryReference toInventoryJobReference(final I_M_Inventory inventory)
+	{
+		return InventoryReference.builder()
+				.inventoryId(InventoryId.ofRepoId(inventory.getM_Inventory_ID()))
+				.documentNo(inventory.getDocumentNo())
+				.movementDate(extractMovementDate(inventory))
+				.warehouseId(WarehouseId.ofRepoId(inventory.getM_Warehouse_ID()))
+				.responsibleId(extractResponsibleId(inventory))
+				.build();
 	}
 
 }
