@@ -102,7 +102,7 @@ Feature: create purchase simulation
       | po_1                  | pol_1                     |
 
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus |
       | po_1                  | vendor_1                 | vendor_location_1                 | 2021-04-04  | POO         | EUR          | F            | P               | true      | CO        |
 
     And validate C_OrderLine:

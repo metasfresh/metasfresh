@@ -1,6 +1,6 @@
-@report
 @from:cucumber
-Feature: Jasper Report Tests
+@ghActions:run_on_executor4
+Feature: Payment Term propagation
 
   Background:
     Given infrastructure and metasfresh are running
@@ -8,12 +8,6 @@ Feature: Jasper Report Tests
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
-    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
-    And set sys config boolean value false for sys config de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant
-    And all periods are open
-    And update AD_Client
-      | Identifier | StoreArchiveOnFileSystem |
-      | 1000000    | true                     |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID |
       | wh             |
@@ -44,16 +38,15 @@ Feature: Jasper Report Tests
       | vendorLocation   | vendor        | CH           | Y               | Y               |
       | customerLocation | customer      | CH           | Y               | Y               |
     And metasfresh contains C_Tax
-      | Identifier        | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | de_ch_tax         | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
-      | ch_ch_tax         | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
+      | Identifier | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | de_ch_tax  | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
+      | ch_ch_tax  | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
 
-  @S0471_100
   @from:cucumber
-  Scenario: Purchase Report Test
+  Scenario: Purchase Order non default Payment Term is propagated to invoice
     When metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID |
-      | po1        | N       | vendor        | 2025-04-01  | POO         | ps_1               | wh             |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID | paymentTerm   |
+      | po1        | N       | vendor        | 2025-04-01  | POO         | ps_1               | wh             | 10 Tage netto |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | po1_l1     | po1        | product      | 10         |
@@ -61,9 +54,6 @@ Feature: Jasper Report Tests
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
       | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | wh             |
-    And The jasper process is run
-      | Value               | Record_ID  |
-      | Bestellung (Jasper) | po1        |
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID |
       | LU         |
@@ -90,9 +80,6 @@ Feature: Jasper Report Tests
     And validate the created material receipt lines
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | C_OrderLine_ID |
       | receipt1_l1    | receipt1   | product      | po1_l1         |
-    And The jasper process is run
-      | Value                 | Record_ID  |
-      | Wareneingang (Jasper) | receipt1   |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID | C_OrderLine_ID |
       | po_ic_1                | po1_l1         |
@@ -105,18 +92,16 @@ Feature: Jasper Report Tests
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID      | C_Invoice_Candidate_ID |
       | purchaseInvoice_1 | po_ic_1                |
-    And The jasper process is run
-      | Value                     | Record_ID         |
-      | Eingangsrechnung (Jasper) | purchaseInvoice_1 |
+    And validate created invoices
+      | Identifier        | paymentTerm   |
+      | purchaseInvoice_1 | 10 Tage netto |
 
 
-
-  @S0471_200
   @from:cucumber
-  Scenario: Sales Report Test
+  Scenario: Sales Order on default Payment Term is propagated to invoice
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
-      | so1        | true    | customer      | 2025-04-01  | wh             |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | paymentTerm   |
+      | so1        | true    | customer      | 2025-04-01  | wh             | 10 Tage netto |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so1_l1     | so1        | product      | 10         |
@@ -124,18 +109,12 @@ Feature: Jasper Report Tests
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
       | ss1        | so1_l1         | N             | wh             |
-    And The jasper process is run
-      | Value            | Record_ID  |
-      | Auftrag (Jasper) | so1        |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | ss1                   | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ss1                   | shipment1  |
-    And The jasper process is run
-      | Value                 | Record_ID  |
-      | Lieferschein (Jasper) | shipment1  |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | so_ic1                            | so1_l1                    | 10           |
@@ -146,17 +125,69 @@ Feature: Jasper Report Tests
       | C_Invoice_Candidate_ID | C_Invoice_ID  |
       | so_ic1                 | salesInvoice1 |
     And validate created invoices
-      | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | processed | DocStatus |
-      | salesInvoice1 | customer      | customerLocation       | true      | CO        |
-    And The jasper process is run
-      | Value             | Record_ID     |
-      | Rechnung (Jasper) | salesInvoice1 |
-
-
-
+      | C_Invoice_ID  | paymentTerm   |
+      | salesInvoice1 | 10 Tage netto |
 
   @from:cucumber
-  Scenario: Deactivate StoreArchiveOnFileSystem
-    And update AD_Client
-      | Identifier | StoreArchiveOnFileSystem |
-      | 1000000    | false                    |
+  Scenario: Purchase Order default Payment Term is used, if no BPartner Payment Term is set
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID |
+      | po2        | N       | vendor        | 2025-04-01  | POO         | ps_1               | wh             |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po2_l1     | po2        | product      | 10         |
+    And the order identified by po2 is completed
+    Then validate the created orders
+      | Identifier | paymentTerm   |
+      | po2        | 30 Tage netto |
+
+  @from:cucumber
+  Scenario: Sales Order default Payment Term is used, if no BPartner Payment Term is set
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so2        | true    | customer      | 2025-04-01  | wh             |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so2_l1     | so2        | product      | 10         |
+    And the order identified by so2 is completed
+    Then validate the created orders
+      | Identifier | paymentTerm   |
+      | so2        | 30 Tage netto |
+
+  @from:cucumber
+  Scenario: Purchase Order BPartner Payment Term is used
+    When metasfresh contains C_BPartners without locations:
+      | Identifier     | IsVendor | IsCustomer | M_PricingSystem_ID | PO_PaymentTerm_ID.Value |
+      | vendorWithTerm | Y        | N          | ps_1               | 10 Tage netto           |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | C_BPartner_ID  | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | vendorLocationWithTerm | vendorWithTerm | CH           | Y               | Y               |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID  | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID |
+      | po3        | N       | vendorWithTerm | 2025-04-01  | POO         | ps_1               | wh             |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po3_l1     | po3        | product      | 10         |
+    And the order identified by po3 is completed
+    Then validate the created orders
+      | Identifier | paymentTerm   |
+      | po3        | 10 Tage netto |
+
+  @from:cucumber
+  Scenario: Sales Order BPartner Payment Term is used
+    When metasfresh contains C_BPartners without locations:
+      | Identifier       | IsVendor | IsCustomer | M_PricingSystem_ID | C_PaymentTerm_ID.Value |
+      | customerWithTerm | N        | Y          | ps_1               | 10 Tage netto          |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier               | C_BPartner_ID    | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | customerLocationWithTerm | customerWithTerm | CH           | Y               | Y               |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID    | DateOrdered | M_Warehouse_ID | paymentTerm   |
+      | so3        | true    | customerWithTerm | 2025-04-01  | wh             | 10 Tage netto |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so3_l1     | so3        | product      | 10         |
+    And the order identified by so3 is completed
+    Then validate the created orders
+      | Identifier | paymentTerm   |
+      | so3        | 10 Tage netto |

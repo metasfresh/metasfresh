@@ -89,27 +89,27 @@ public class DataTableRow
 	@SuppressWarnings("unused")
 	public static class DataTableRowBuilder
 	{
-		public DataTableRowBuilder value(final String name, String value)
+		public DataTableRowBuilder value(final String name, final String value)
 		{
 			return _value(name, value);
 		}
 
-		public DataTableRowBuilder value(final String name, int value)
+		public DataTableRowBuilder value(final String name, final int value)
 		{
 			return value(name, Integer.toString(value));
 		}
 
-		public DataTableRowBuilder value(final String name, BigDecimal value)
+		public DataTableRowBuilder value(final String name, final BigDecimal value)
 		{
 			return value(name, value != null ? value.toPlainString() : null);
 		}
 
-		public DataTableRowBuilder value(final String name, RepoIdAware value)
+		public DataTableRowBuilder value(final String name, final RepoIdAware value)
 		{
 			return value(name, value != null ? Integer.toString(value.getRepoId()) : null);
 		}
 
-		public DataTableRowBuilder value(final String name, boolean value)
+		public DataTableRowBuilder value(final String name, final boolean value)
 		{
 			return value(name, StringUtils.ofBoolean(value));
 		}
@@ -534,7 +534,8 @@ public class DataTableRow
 		return Optionals.firstPresentOfSuppliers(
 						() -> getAsOptionalString("C_Currency.ISO_Code"),
 						() -> getAsOptionalString("C_Currency." + StepDefDataIdentifier.SUFFIX),
-						() -> getAsOptionalString("C_Currency_ID")
+						() -> getAsOptionalString("C_Currency_ID"),
+						() -> getAsOptionalString("currencyCode")
 				)
 				.map(CurrencyCode::ofThreeLetterCode);
 	}
@@ -807,7 +808,7 @@ public class DataTableRow
 		return ImmutableList.copyOf(map.keySet());
 	}
 
-	public void setValueIfMissing(@NonNull String columnName, @NonNull Supplier<String> valueSupplier)
+	public void setValueIfMissing(@NonNull final String columnName, @NonNull final Supplier<String> valueSupplier)
 	{
 		final String existingValue = map.get(columnName);
 		if (existingValue != null)
