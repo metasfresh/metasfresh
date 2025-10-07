@@ -47,7 +47,7 @@ Feature: campaign prices
       | ol_190     | o_190                 | salesProduct_1          | 1          |
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_150                    | o_150                 | 2022-05-05  | salesProduct_1          | 1          | 0            | 0           | 3     | 0        | EUR          | false     |
       | ol_160                    | o_160                 | 2022-05-17  | salesProduct_1          | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
       | ol_190                    | o_190                 | 2022-05-30  | salesProduct_1          | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
@@ -86,7 +86,7 @@ Feature: campaign prices
       | ol_200     | o_200                 | salesProduct_2          | 1          |
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_100                    | o_100                 | 2022-05-03  | salesProduct_2          | 1          | 0            | 0           | 3     | 0        | EUR          | false     |
       | ol_110                    | o_110                 | 2022-05-15  | salesProduct_2          | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
       | ol_170                    | o_170                 | 2022-05-21  | salesProduct_2          | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
@@ -126,7 +126,7 @@ Feature: campaign prices
       | ol_180     | o_180                 | salesProduct_3          | 1          |
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_120                    | o_120                 | 2022-05-03  | salesProduct_3          | 1          | 0            | 0           | 3     | 0        | EUR          | false     |
       | ol_130                    | o_130                 | 2022-05-15  | salesProduct_3          | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
       | ol_140                    | o_140                 | 2022-05-21  | salesProduct_3          | 1          | 0            | 0           | 5     | 0        | EUR          | false     |

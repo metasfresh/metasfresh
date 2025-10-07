@@ -22,10 +22,18 @@
 
 package de.metas.cucumber.stepdefs.paymentterm;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.util.Optionals;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import java.util.Optional;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
@@ -36,6 +44,7 @@ import java.util.Map;
 public class C_PaymentTerm_StepDef
 {
 	final C_PaymentTerm_StepDefData paymentTermTable;
+	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
 	public C_PaymentTerm_StepDef(@NonNull final C_PaymentTerm_StepDefData paymentTermTable)
 	{
@@ -74,5 +83,43 @@ public class C_PaymentTerm_StepDef
 
 			softly.assertAll();
 		}
+	}
+
+	public Optional<PaymentTermId> extractPaymentTermId(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier paymentTermIdentifier = Optionals.firstPresentOfSuppliers(
+						() -> row.getAsOptionalIdentifier("paymentTerm"),
+						() -> row.getAsOptionalIdentifier(I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID))
+				.orElse(null);
+		if (paymentTermIdentifier == null)
+		{
+			return Optional.empty();
+		}
+
+		//
+		// Lookup C_PaymentTerm table
+		PaymentTermId paymentTermId = paymentTermTable.getIdOptional(paymentTermIdentifier).orElse(null);
+		if (paymentTermId != null)
+		{
+			return Optional.of(paymentTermId);
+		}
+
+		//
+		// Search by name
+		paymentTermId = paymentTermRepo.retrievePaymentTermId(
+						PaymentTermQuery.builder()
+								.orgId(StepDefConstants.ORG_ID)
+								.value(paymentTermIdentifier.getAsString())
+								.build())
+				.orElse(null);
+		if (paymentTermId != null)
+		{
+			return Optional.of(paymentTermId);
+		}
+
+		//
+		// Consider it numeric ID
+		paymentTermId = paymentTermIdentifier.getAsId(PaymentTermId.class);
+		return Optional.of(paymentTermId);
 	}
 }

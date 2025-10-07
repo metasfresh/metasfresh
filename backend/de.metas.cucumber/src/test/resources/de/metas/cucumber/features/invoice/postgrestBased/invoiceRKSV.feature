@@ -20,8 +20,8 @@ Feature: Invoice to comply with RKSV export via postgREST
       | Identifier | M_PriceList_ID |
       | salesPLV   | salesPriceList |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsCustomer | IsVendor | REST.Context.Name | M_PricingSystem_ID | OPT.C_PaymentTerm_ID | PaymentRule |
-      | customer1  | Y          | Y        | partnerName       | pricingSystem      | 1000009              | B           |
+      | Identifier | IsCustomer | IsVendor | REST.Context.Name | M_PricingSystem_ID | C_PaymentTerm_ID.Value | PaymentRule |
+      | customer1  | Y          | Y        | partnerName       | pricingSystem      | 10 Tage 1 %            | B           |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | City | Postal |
       | bpartner_location_1 | customer1     | Y               | Y               | Bonn | 53175  |
@@ -42,7 +42,7 @@ Feature: Invoice to comply with RKSV export via postgREST
       | salesInvoice10022025 | product_10022025_010 | 1 PCE       |
     And the invoice identified by salesInvoice10022025 is completed
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.GrandTotal |
       | salesInvoice10022025    | customer1                | bpartner_location_1               | 10 Tage 1 % | true      | CO        | 5.95 EUR       |
     And metasfresh contains C_Invoice:
       | Identifier             | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
