@@ -75,6 +75,7 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer
 				.add(WebsocketTopicNames.TOPIC_Document)
 				.add(WebsocketTopicNames.TOPIC_Board)
 				.add(WebsocketTopicNames.TOPIC_Dashboard)
+				.add(WebsocketTopicNames.TOPIC_Chat)
 				.addAll(extractTopicPrefixes(producerFactories, outboundTopicNamePrefixAwares))
 				.build();
 	}

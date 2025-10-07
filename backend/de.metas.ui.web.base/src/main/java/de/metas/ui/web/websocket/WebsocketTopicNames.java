@@ -41,6 +41,7 @@ public class WebsocketTopicNames
 	static final String TOPIC_Document = "/document";
 	static final String TOPIC_Board = "/board";
 	public static final String TOPIC_Dashboard = "/dashboard";
+	static final String TOPIC_Chat = "/chat";
 
 	public static final DeviceWebsocketNamingStrategy DEVICES_NAMING_STRATEGY = new DeviceWebsocketNamingStrategy("/devices");
 
@@ -72,4 +73,10 @@ public class WebsocketTopicNames
 		Preconditions.checkArgument(boardId > 0);
 		return WebsocketTopicName.ofString(TOPIC_Board + "/" + boardId);
 	}
+
+	public static WebsocketTopicName buildChatTopicName(@NonNull final UserId adUserId)
+	{
+		return WebsocketTopicName.ofString(TOPIC_Chat + "/" + adUserId.getRepoId());
+	}
+
 }
