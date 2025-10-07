@@ -35,7 +35,7 @@ public interface IUserRolePermissions
 	Permission PERMISSION_ChangeLog = ResourceAsPermission.ofName("IsChangeLog");
 	Permission PERMISSION_MenuAvailable = ResourceAsPermission.ofName("IsMenuAvailable");
 	Permission PERMISSION_AllowLoginDateOverride = ResourceAsPermission.ofName(Env.CTXNAME_IsAllowLoginDateOverride);
-	Permission PERMISSION_IsAllowPasswordChangeForOthers = ResourceAsPermission.ofName(Env.CTXNAME_IsAllowPasswordChangeForOthers);
+	Permission PERMISSION_AllowPasswordChangeForOthers = ResourceAsPermission.ofName(Env.CTXNAME_IsAllowPasswordChangeForOthers);
 	Permission PERMISSION_UseBetaFunctions = ResourceAsPermission.ofName("UseBetaFunctions");
 	Permission PERMISSION_IsAttachmentDeletionAllowed = ResourceAsPermission.ofName("IsAttachmentDeletionAllowed");
 

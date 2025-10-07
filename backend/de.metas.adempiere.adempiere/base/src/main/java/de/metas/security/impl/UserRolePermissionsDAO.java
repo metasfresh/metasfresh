@@ -344,7 +344,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	{
 		final IUserRolePermissions userRolePermissions = getUserRolePermissions(adRoleId, adUserId, clientId, date);
-		return userRolePermissions.hasPermission(IUserRolePermissions.PERMISSION_IsAllowPasswordChangeForOthers);
+		return userRolePermissions.hasPermission(IUserRolePermissions.PERMISSION_AllowPasswordChangeForOthers);
 	}
 
 
