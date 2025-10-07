@@ -1,4 +1,3 @@
-
 /*
  * #%L
  * de.metas.shipper.gateway.nshift
@@ -20,45 +19,20 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+package de.metas.shipper.gateway.nshift.json.request;
 
-package de.metas.shipper.gateway.nshift.json;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.shipper.gateway.nshift.json.JsonShipmentData;
+import de.metas.shipper.gateway.nshift.json.JsonShipmentOptions;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
 @Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonShipmentResponseLabel
+public class JsonShipAdvisorRequest
 {
-	@JsonProperty("Content")
-	String content;
-
-	@JsonProperty("Type")
-	Integer type;
-
-	@JsonProperty("DocumentID")
-	Integer documentID;
-
-	@JsonProperty("DocumentName")
-	String documentName;
-
-	@JsonProperty("Copies")
-	Integer copies;
-
-	@JsonProperty("PkgCSID")
-	Integer pkgCSID;
-
-	@JsonProperty("PkgTag")
-	String pkgTag;
-
-	@JsonProperty("PkgNo")
-	String pkgNo;
-
-	@JsonProperty("Tag")
-	String tag;
+	@NonNull JsonShipmentData data;
+	@NonNull JsonShipmentOptions options;
 }

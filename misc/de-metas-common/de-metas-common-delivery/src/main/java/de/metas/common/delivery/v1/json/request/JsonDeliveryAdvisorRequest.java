@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.nshift
+ * de-metas-common-delivery
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -19,18 +19,36 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-package de.metas.shipper.gateway.nshift.json;
 
+package de.metas.common.delivery.v1.json.request;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.common.delivery.v1.json.JsonAddress;
+import de.metas.common.delivery.v1.json.JsonContact;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
-public class JsonShipmentRequest
+public class JsonDeliveryAdvisorRequest
 {
-	@NonNull JsonShipmentData data;
-	@NonNull JsonShipmentOptions options;
+	@Builder.Default
+	@NonNull String id = UUID.randomUUID().toString();
+	@NonNull JsonAddress pickupAddress;
+	@NonNull String pickupDate;
+	@Nullable String pickupNote;
+	@NonNull JsonAddress deliveryAddress;
+	@Nullable JsonContact deliveryContact;
+	@Nullable String deliveryDate;
+	@Nullable String deliveryNote;
+	@Nullable String customerReference;
+	@NonNull JsonDeliveryAdvisorItem item;
+	@NonNull JsonShipperConfig shipperConfig;
 }

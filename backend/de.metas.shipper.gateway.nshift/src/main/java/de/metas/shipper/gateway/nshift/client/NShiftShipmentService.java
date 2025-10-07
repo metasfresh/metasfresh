@@ -27,9 +27,9 @@ import de.metas.shipper.gateway.nshift.json.JsonShipmentData;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentOptions;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentReference;
 import de.metas.shipper.gateway.nshift.json.JsonShipmentReferenceKind;
-import de.metas.shipper.gateway.nshift.json.JsonShipmentRequest;
-import de.metas.shipper.gateway.nshift.json.JsonShipmentResponse;
-import de.metas.shipper.gateway.nshift.json.JsonShipmentResponseLabel;
+import de.metas.shipper.gateway.nshift.json.request.JsonShipmentRequest;
+import de.metas.shipper.gateway.nshift.json.response.JsonShipmentResponse;
+import de.metas.shipper.gateway.nshift.json.response.JsonShipmentResponseLabel;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -185,7 +185,7 @@ public class NShiftShipmentService
 
 	private String getActorId(@NonNull final JsonShipperConfig config)
 	{
-		return Check.assumeNotNull(config.getAdditionalProperties().get("ActorId"),
+		return Check.assumeNotNull(config.getAdditionalProperties().get(NShiftConstants.ACTOR_ID),
 				"No actorId found in (ShipperConfig.additionalProperties.actorId): {} "
 				, config.getAdditionalProperties()
 		);
@@ -254,6 +254,7 @@ public class NShiftShipmentService
 				.actorCSID(Integer.valueOf(actorId))
 				.orderNo(String.valueOf(deliveryRequest.getDeliveryOrderId()))
 				.prodConceptID(prodConceptId)
+				//.service(412001)//dhl-euro:337010/NightStarExpress:412001
 				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
 
 		// Add Addresses
@@ -350,8 +351,6 @@ public class NShiftShipmentService
 				.width(widthMM)
 				.height(heightMM)
 				.goodsTypeID(goodsType.getGoodsTypeID())
-				.goodsTypeKey1(goodsType.getGoodsTypeKey1())
-				.goodsTypeKey2(goodsType.getGoodsTypeKey2())
 				.goodsTypeName(goodsType.getGoodsTypeName())
 				.reference(JsonLineReference.builder()
 						.kind(JsonLineReferenceKind.ESRK_CUSTOM_LINE_FIELD_1)

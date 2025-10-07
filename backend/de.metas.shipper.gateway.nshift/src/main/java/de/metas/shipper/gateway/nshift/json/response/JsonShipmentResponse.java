@@ -20,10 +20,14 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.nshift.json;
+package de.metas.shipper.gateway.nshift.json.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.shipper.gateway.nshift.json.JsonAddress;
+import de.metas.shipper.gateway.nshift.json.JsonLine;
+import de.metas.shipper.gateway.nshift.json.JsonShipmentDocument;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -129,6 +133,7 @@ public class JsonShipmentResponse
 	List<JsonLine> lines;
 
 	@JsonProperty("Labels")
+	@Singular
 	List<JsonShipmentResponseLabel> labels;
 
 	@JsonProperty("ShpDocuments")
