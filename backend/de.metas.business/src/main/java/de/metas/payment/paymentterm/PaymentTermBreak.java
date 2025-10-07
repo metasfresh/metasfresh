@@ -28,6 +28,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Builder
 @Value
@@ -41,7 +42,7 @@ public class PaymentTermBreak
 	@NonNull ReferenceDateType referenceDateType;
 
 	@Nullable Percent percent;
-
+	int offsetDays;
 	int line;
 }
 

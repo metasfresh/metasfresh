@@ -39,6 +39,7 @@ public interface IPaymentTermRepository extends ISingletonService
 	@NonNull
 	Optional<PaymentTermId> getDefaultPaymentTermId();
 
+	@NonNull
 	PaymentTerm getById(PaymentTermId paymentTermId);
 
 	@NonNull

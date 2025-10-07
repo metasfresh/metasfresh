@@ -22,6 +22,7 @@
 
 package de.metas.payment.paymentterm;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -30,6 +31,7 @@ import lombok.Value;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
 
 @Value
@@ -95,6 +97,23 @@ public class PaymentTerm
 		this.isComplex = isComplex;
 
 		this.breaks = breaks;
+	}
+
+	public ImmutableList<PaymentTermBreak> getSortedBreaks()
+	{
+		if (breaks == null || breaks.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return breaks.stream()
+				.sorted(Comparator.comparing(PaymentTermBreak::getLine))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public boolean hasBreaks()
+	{
+		return isComplex() && breaks != null && !breaks.isEmpty();
 	}
 }
 

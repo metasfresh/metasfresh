@@ -27,6 +27,7 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -67,7 +68,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			.build();
 
 	@Override
-	public PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
+	public @NonNull PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
 		return getByIdIfExists(paymentTermId)
 				.orElseThrow(() -> new AdempiereException("No active payment term found for " + paymentTermId));
@@ -285,6 +286,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.description(record.getDescription())
 				.percent(percent)
 				.referenceDateType(referenceDateType)
+				.offsetDays(record.getOffsetDays())
 				.build();
 
 	}

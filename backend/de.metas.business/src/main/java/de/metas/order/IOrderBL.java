@@ -25,6 +25,7 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
@@ -352,4 +353,6 @@ public interface IOrderBL extends ISingletonService
 	}
 
 	PaymentTermId getPaymentTermId(@NonNull I_C_Order orderRecord);
+
+	Amount getGrandTotal(@NonNull I_C_Order order);
 }

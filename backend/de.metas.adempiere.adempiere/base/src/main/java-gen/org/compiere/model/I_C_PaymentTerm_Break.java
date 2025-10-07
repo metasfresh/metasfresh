@@ -185,6 +185,27 @@ public interface I_C_PaymentTerm_Break
 	String COLUMNNAME_Line = "Line";
 
 	/**
+	 * Set Offset days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOffsetDays (int OffsetDays);
+
+	/**
+	 * Get Offset days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getOffsetDays();
+
+	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_OffsetDays = new ModelColumn<>(I_C_PaymentTerm_Break.class, "OffsetDays", null);
+	String COLUMNNAME_OffsetDays = "OffsetDays";
+
+	/**
 	 * Set Percent.
 	 * Percentage
 	 *

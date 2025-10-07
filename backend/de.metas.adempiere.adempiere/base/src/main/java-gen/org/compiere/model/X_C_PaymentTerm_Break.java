@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PaymentTerm_Break extends org.compiere.model.PO implements I_C_PaymentTerm_Break, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1637073841L;
+	private static final long serialVersionUID = 2040939261L;
 
     /** Standard Constructor */
     public X_C_PaymentTerm_Break (final Properties ctx, final int C_PaymentTerm_Break_ID, @Nullable final String trxName)
@@ -90,6 +90,18 @@ public class X_C_PaymentTerm_Break extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setOffsetDays (final int OffsetDays)
+	{
+		set_Value (COLUMNNAME_OffsetDays, OffsetDays);
+	}
+
+	@Override
+	public int getOffsetDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OffsetDays);
+	}
+
+	@Override
 	public void setPercent (final @Nullable BigDecimal Percent)
 	{
 		set_Value (COLUMNNAME_Percent, Percent);
@@ -115,6 +127,8 @@ public class X_C_PaymentTerm_Break extends org.compiere.model.PO implements I_C_
 	public static final String REFERENCEDATETYPE_OrderDate = "OD";
 	/** LCDate = LC */
 	public static final String REFERENCEDATETYPE_LCDate = "LC";
+	/** ETADate = ET */
+	public static final String REFERENCEDATETYPE_ETADate = "ET";
 	@Override
 	public void setReferenceDateType (final java.lang.String ReferenceDateType)
 	{

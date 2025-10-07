@@ -32,9 +32,11 @@ import org.compiere.model.X_C_PaymentTerm_Break;
 @AllArgsConstructor
 public enum ReferenceDateType implements ReferenceListAwareEnum
 {
-	InvoicDate(X_C_PaymentTerm_Break.REFERENCEDATETYPE_InvoiceDate),
+	InvoiceDate(X_C_PaymentTerm_Break.REFERENCEDATETYPE_InvoiceDate),
 	BLDate(X_C_PaymentTerm_Break.REFERENCEDATETYPE_BLDate),
-	OrderDate(X_C_PaymentTerm_Break.REFERENCEDATETYPE_OrderDate);
+	LCDate(X_C_PaymentTerm_Break.REFERENCEDATETYPE_LCDate),
+	OrderDate(X_C_PaymentTerm_Break.REFERENCEDATETYPE_OrderDate),
+	ETADate(X_C_PaymentTerm_Break.REFERENCEDATETYPE_ETADate);
 
 	@Getter @NonNull final String code;
 

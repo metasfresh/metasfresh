@@ -37,6 +37,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -57,6 +59,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
@@ -1421,5 +1424,13 @@ public class OrderBL implements IOrderBL
 	public PaymentTermId getPaymentTermId(@NonNull final I_C_Order orderRecord)
 	{
 		return  PaymentTermId.ofRepoId(orderRecord.getC_PaymentTerm_ID());
+	}
+
+	@Override
+	public Amount getGrandTotal(@NonNull final I_C_Order order)
+	{
+		final BigDecimal grandTotal = order.getGrandTotal();
+		final CurrencyCode curencyCode = currencyBL.getCurrencyCodeById(CurrencyId.ofRepoId(order.getC_Currency_ID()));
+		return Amount.of(grandTotal, curencyCode);
 	}
 }
