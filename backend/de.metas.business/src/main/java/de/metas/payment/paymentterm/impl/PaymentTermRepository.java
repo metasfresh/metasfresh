@@ -278,7 +278,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		return PaymentTermBreak.builder()
 				.id(id)
 				.paymentTermId(paymentTermId)
-				.line(record.getLine())
+				.seqNo(record.getLine())
 				.description(record.getDescription())
 				.percent(percent)
 				.referenceDateType(referenceDateType)

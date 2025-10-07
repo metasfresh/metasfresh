@@ -25,6 +25,7 @@ package de.metas.order.paymentschedule;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -49,10 +50,12 @@ public class OrderPaymentScheduleCreator
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final PaymentTermService paymentTermService;
+	private final OrderPayScheduleService orderPayScheduleService;
 
-	public OrderPaymentScheduleCreator(@NonNull final PaymentTermService paymentTermService)
+	public OrderPaymentScheduleCreator(@NonNull final PaymentTermService paymentTermService, @NonNull final OrderPayScheduleService orderPayScheduleService)
 	{
 		this.paymentTermService = paymentTermService;
+		this.orderPayScheduleService = orderPayScheduleService;
 	}
 
 	/**
@@ -82,6 +85,7 @@ public class OrderPaymentScheduleCreator
 		}
 
 		final CurrencyPrecision precision = orderBL.getAmountPrecision(orderRecord);
+		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
 
 		for (final PaymentTermBreak termBreak : paymentTerm.getSortedBreaks())
 		{
@@ -93,14 +97,16 @@ public class OrderPaymentScheduleCreator
 			// Determine reference date and status
 			final ReferenceDateResult result = getReferenceDate(orderRecord, termBreak);
 
-			createOrderPaySchedule(termBreak, dueAmount, result);
-		}
-	}
+			final OrderPayScheduleRequest orderPayScheduleRequest = OrderPayScheduleRequest.builder()
+					.orderId(orderId)
+					.dueDate(result.getCalculatedDueDate())
+					.dueAmount(dueAmount)
+					.paymentTermBreakId(termBreak.getId())
+					.referenceDateType(termBreak.getReferenceDateType())
+					.build();
 
-	private static void createOrderPaySchedule(final PaymentTermBreak termBreak, final Amount dueAmount, final ReferenceDateResult result)
-	{
-		// Create the new schedule record
-		// TODO to be implemented
+			orderPayScheduleService.createSchedule(orderPayScheduleRequest);
+		}
 	}
 
 	/**

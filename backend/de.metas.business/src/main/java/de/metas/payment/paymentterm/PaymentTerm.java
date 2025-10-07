@@ -107,7 +107,7 @@ public class PaymentTerm
 		}
 
 		return breaks.stream()
-				.sorted(Comparator.comparing(PaymentTermBreak::getLine))
+				.sorted(Comparator.comparing(PaymentTermBreak::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
 	}
 

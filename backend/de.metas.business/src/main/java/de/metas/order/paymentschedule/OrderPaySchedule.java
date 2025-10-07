@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,32 @@
  * #L%
  */
 
-package de.metas.payment.paymentterm;
+package de.metas.order.paymentschedule;
 
-import de.metas.util.lang.Percent;
+
+import de.metas.currency.Amount;
+import de.metas.order.OrderId;
+import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.ReferenceDateType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Builder
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.Instant;
+
 @Value
-public class PaymentTermBreak
+@Builder(toBuilder = true)
+public class OrderPaySchedule
 {
+	@Nullable OrderPayScheduleId id;
+	@Nullable Timestamp dueDate;
 
-	@NonNull PaymentTermBreakId id;
-	@NonNull PaymentTermId paymentTermId;
-
-	@NonNull String description;
+	@NonNull OrderId orderId;
 	@NonNull ReferenceDateType referenceDateType;
-	@NonNull Percent percent;
-	int offsetDays;
+	@NonNull Amount dueAmount;
+	@NonNull PaymentTermBreakId paymentTermBreakId;
+
 	int seqNo;
 }
-

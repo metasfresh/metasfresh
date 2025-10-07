@@ -1433,4 +1433,10 @@ public class OrderBL implements IOrderBL
 		final CurrencyCode curencyCode = currencyBL.getCurrencyCodeById(CurrencyId.ofRepoId(order.getC_Currency_ID()));
 		return Amount.of(grandTotal, curencyCode);
 	}
+
+	@Override
+	public CurrencyCode getCurrencyCode(@NonNull final I_C_Order order)
+	{
+		return currencyBL.getCurrencyCodeById(CurrencyId.ofRepoId(order.getC_Currency_ID()));
+	}
 }
