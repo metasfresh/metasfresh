@@ -88,13 +88,16 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -941,7 +944,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final HuPackingInstructionsItemId packingInstructionsItemId = HuPackingInstructionsItemId.ofRepoId(huPIItemProduct.getM_HU_PI_Item_ID());
 		return getPI(packingInstructionsItemId);
 	}
-	
+
 	@Override
 	public I_M_HU_PI_Version getPIVersion(final I_M_HU hu)
 	{
@@ -1485,5 +1488,29 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.collect(ImmutableSet.toImmutableSet());
 
 		return warehouseBL.getLocatorIdsByRepoId(locatorIds);
+	}
+
+	@Override
+	public Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull final ScannedCode scannedCode)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getHUIdByValue(scannedCode.getAsString()),
+				() -> getByExternalBarcode(scannedCode)
+		);
+	}
+
+	private Optional<HuId> getHUIdByValue(final String value)
+	{
+		final HuId huId = HuId.ofHUValueOrNull(value);
+		return huId != null && existsById(huId) ? Optional.of(huId) : Optional.empty();
+	}
+
+	private Optional<HuId> getByExternalBarcode(@NonNull final ScannedCode scannedCode)
+	{
+		return handlingUnitsRepo.createHUQueryBuilder()
+				.setOnlyActiveHUs(true)
+				.setOnlyTopLevelHUs()
+				.addOnlyWithAttribute(AttributeConstants.ATTR_ExternalBarcode, scannedCode.getAsString())
+				.firstIdOnly();
 	}
 }
