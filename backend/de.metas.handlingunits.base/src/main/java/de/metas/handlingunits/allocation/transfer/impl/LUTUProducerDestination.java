@@ -46,13 +46,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -68,6 +68,8 @@ public class LUTUProducerDestination
 		extends AbstractProducerDestination
 		implements ILUTUProducerAllocationDestination
 {
+
+	private static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 
 	// Services
 	private final transient IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
@@ -421,18 +423,7 @@ public class LUTUProducerDestination
 			final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
 			final BPartnerId bpartnerId = getBPartnerId();
 			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
-					.orElseThrow(
-							// TODO: Add ad-message with
-							// "LU-Packvorschrift "+ _luPI.getName() + " hat keine TU-Unterpackvorschrift "+tuPI.getName()
-							// throw new HUException(<that-userfriendly-AD_Message>).markAsUserValidationError()
-							// 		.appendParametersToMessage()
-							// 		.setParameter("LU-M_HU_PI_ID", _luPI.getM_HU_PI_ID())
-							// 		.setParameter("TU-HU_PI_ID", tuPI.getM_HU_PI_ID());
-							() -> new AdempiereException("No PI-Item found to connect LU-PI \"" + _luPI.getName() + "\" to TU-PI \"" + tuPI.getName() + "\" with " + bpartnerId)
-									.appendParametersToMessage()
-									.setParameter("LU-M_HU_PI_ID", _luPI.getM_HU_PI_ID())
-									.setParameter("TU-HU_PI_ID", tuPI.getM_HU_PI_ID())
-					);
+					.orElseThrow(() -> new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, _luPI.getName(), tuPI.getName()).markAsUserValidationError());
 		}
 		return _luPIItem;
 	}
