@@ -11,8 +11,6 @@ import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.ReferenceDateType;
-import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -27,11 +25,9 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.util.Env;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 import static de.metas.util.Check.isNotBlank;
@@ -276,7 +272,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				record.getC_PaymentTerm_Break_ID());
 
 		final PaymentTermId paymentTermId =	id.getPaymentTermId();
-		final Percent percent = Percent.ofNullable(record.getPercent());
+		final Percent percent = Percent.of(record.getPercent());
 		final ReferenceDateType referenceDateType = ReferenceDateType.ofCode(record.getReferenceDateType());
 
 		return PaymentTermBreak.builder()
@@ -291,6 +287,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 	}
 
+	@Override
 	public ImmutableList<PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
 	{
 		return queryBL

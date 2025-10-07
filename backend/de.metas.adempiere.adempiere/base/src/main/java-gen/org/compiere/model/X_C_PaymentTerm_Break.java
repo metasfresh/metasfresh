@@ -1,7 +1,6 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -13,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_PaymentTerm_Break extends org.compiere.model.PO implements I_C_PaymentTerm_Break, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2040939261L;
+	private static final long serialVersionUID = 1641604903L;
 
     /** Standard Constructor */
     public X_C_PaymentTerm_Break (final Properties ctx, final int C_PaymentTerm_Break_ID, @Nullable final String trxName)
@@ -102,16 +101,15 @@ public class X_C_PaymentTerm_Break extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setPercent (final @Nullable BigDecimal Percent)
+	public void setPercent (final int Percent)
 	{
 		set_Value (COLUMNNAME_Percent, Percent);
 	}
 
 	@Override
-	public BigDecimal getPercent() 
+	public int getPercent() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Percent);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsInt(COLUMNNAME_Percent);
 	}
 
 	/** 

@@ -121,3 +121,35 @@ UPDATE C_PaymentTerm_Break SET OffsetDays=0 WHERE OffsetDays IS NULL
 INSERT INTO t_alter_column values('c_paymentterm_break','OffsetDays',null,'NOT NULL',null)
 ;
 
+
+
+-- Column: C_PaymentTerm_Break.Percent
+-- 2025-10-07T11:40:31.864Z
+UPDATE AD_Column SET DefaultValue='100', IsMandatory='Y',Updated=TO_TIMESTAMP('2025-10-07 11:40:31.864000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591198
+;
+
+-- 2025-10-07T11:40:35.936Z
+INSERT INTO t_alter_column values('c_paymentterm_break','Percent','NUMERIC',null,'100')
+;
+
+-- 2025-10-07T11:40:35.939Z
+UPDATE C_PaymentTerm_Break SET Percent=100 WHERE Percent IS NULL
+;
+
+-- 2025-10-07T11:40:35.940Z
+INSERT INTO t_alter_column values('c_paymentterm_break','Percent',null,'NOT NULL',null)
+;
+
+-- Column: C_PaymentTerm_Break.Percent
+-- 2025-10-07T11:55:58.121Z
+UPDATE AD_Column SET AD_Reference_ID=11,Updated=TO_TIMESTAMP('2025-10-07 11:55:58.121000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591198
+;
+
+-- 2025-10-07T11:56:00.406Z
+INSERT INTO t_alter_column values('c_paymentterm_break','Percent','NUMERIC(10)',null,'100')
+;
+
+-- 2025-10-07T11:56:00.422Z
+UPDATE C_PaymentTerm_Break SET Percent=100 WHERE Percent IS NULL
+;
+

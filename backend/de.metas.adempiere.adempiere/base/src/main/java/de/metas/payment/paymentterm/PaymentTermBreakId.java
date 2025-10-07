@@ -96,7 +96,7 @@ public class PaymentTermBreakId implements RepoIdAware
 		return paymentTermBreakId != null ? paymentTermBreakId.getRepoId() : null;
 	}
 
-	public static boolean equals(final PaymentTermBreakId id1, final PaymentTermBreakId id2)
+	public static boolean equals(final  @Nullable PaymentTermBreakId id1, final @Nullable PaymentTermBreakId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

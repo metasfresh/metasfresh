@@ -1,5 +1,6 @@
 package de.metas.payment.paymentterm;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
@@ -53,4 +54,6 @@ public interface IPaymentTermRepository extends ISingletonService
 	 */
 	@NonNull
 	PaymentTermId retrievePaymentTermIdNotNull(@NonNull PaymentTermQuery build);
+
+	ImmutableList<PaymentTermBreak> retrievePaymentTermBreaks(@NonNull PaymentTermId paymentTermId);
 }

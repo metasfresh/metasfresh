@@ -1,7 +1,5 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_PaymentTerm_Break
@@ -209,21 +207,21 @@ public interface I_C_PaymentTerm_Break
 	 * Set Percent.
 	 * Percentage
 	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPercent (@Nullable BigDecimal Percent);
+	void setPercent (int Percent);
 
 	/**
 	 * Get Percent.
 	 * Percentage
 	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getPercent();
+	int getPercent();
 
 	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_Percent = new ModelColumn<>(I_C_PaymentTerm_Break.class, "Percent", null);
 	String COLUMNNAME_Percent = "Percent";
