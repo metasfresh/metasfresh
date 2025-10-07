@@ -14,6 +14,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -26,7 +27,7 @@ class Warehouses
 
 	public <T> void warnUp(final Collection<T> objects, Function<T, WarehouseId> idMapper)
 	{
-		final ImmutableSet<WarehouseId> ids = objects.stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<WarehouseId> ids = objects.stream().map(idMapper).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 		getByIds(ids);
 	}
 

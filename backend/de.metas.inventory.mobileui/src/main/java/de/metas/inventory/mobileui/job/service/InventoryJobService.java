@@ -1,6 +1,7 @@
 package de.metas.inventory.mobileui.job.service;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryQuery;
@@ -15,6 +16,7 @@ import de.metas.inventory.mobileui.launchers.InventoryJobReference;
 import de.metas.inventory.mobileui.rest_api.json.JsonCountRequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJob;
 import de.metas.product.IProductBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -33,12 +35,20 @@ import java.util.stream.Stream;
 public class InventoryJobService
 {
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final InventoryService inventoryService;
 	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 	@NonNull private final HUQRCodesService huQRCodesService;
 
 	@NotNull
-	private InventoryJobLoaderAndSaver newLoaderAndSaver() {return new InventoryJobLoaderAndSaver();}
+	private InventoryJobLoaderAndSaver newLoaderAndSaver()
+	{
+		return InventoryJobLoaderAndSaver.builder()
+				.uomDAO(uomDAO)
+				.inventoryService(inventoryService)
+				.build();
+	}
 
 	public Stream<InventoryJobReference> streamReferences(@NonNull final InventoryQuery query)
 	{
@@ -112,8 +122,6 @@ public class InventoryJobService
 		final InventoryJobId jobId = InventoryJobId.ofWFProcessId(request.getWfProcessId());
 		final InventoryJob job = getJobById(jobId);
 		job.assertHasAccess(callerId);
-		
-		
 
 		return JsonInventoryJob.of(job);
 	}

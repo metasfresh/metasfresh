@@ -411,9 +411,7 @@ class InventoryLoaderAndSaver
 		updateRecord(inventoryRecord, inventory);
 		InterfaceWrapperHelper.save(inventoryRecord);
 
-		inventory.getLines().forEach(line -> {
-			saveInventoryLine(line, inventoryId);
-		});
+		inventory.getLines().forEach(line -> saveInventoryLine(line, inventoryId));
 
 		// TODO: consider deleting missing lines?!
 	}

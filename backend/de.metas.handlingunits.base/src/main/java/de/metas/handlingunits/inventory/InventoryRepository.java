@@ -118,7 +118,7 @@ public final class InventoryRepository
 		return newLoaderAndSaver().extractDocBaseAndSubTypeOrNull(inventoryRecord);
 	}
 
-	public final Map<InventoryAndLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@NonNull InventoryAndLineIdSet inventoryAndLineIds)
+	public Map<InventoryAndLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@NonNull InventoryAndLineIdSet inventoryAndLineIds)
 	{
 		return newLoaderAndSaver().getLineRecords(inventoryAndLineIds);
 	}
