@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.security.RoleId;
 import org.adempiere.service.ClientId;
 
 import de.metas.user.UserId;
@@ -23,12 +24,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,28 +42,22 @@ import lombok.Value;
 public class ChangeUserPasswordRequest
 {
 	/** The user of which password we are changing */
-	@NonNull
-	final UserId userId;
+	@NonNull UserId userId;
 
 	/** Old password entered by user */
-	@Nullable
-	final HashableString oldPassword;
+	@Nullable HashableString oldPassword;
 
 	/** New password entered by user */
-	@Nullable
-	final String newPassword;
+	@Nullable String newPassword;
 
 	/** New password retyped by user */
-	@Nullable
-	final String newPasswordRetype;
+	@Nullable String newPasswordRetype;
 
 	//
 	// Context
-	@NonNull
-	final ClientId contextClientId;
+	@NonNull ClientId contextClientId;
 	/** i.e. logged in user */
-	@NonNull
-	final UserId contextUserId;
-	@NonNull
-	final LocalDate contextDate;
+	@NonNull UserId contextUserId;
+	@NonNull LocalDate contextDate;
+	@NonNull RoleId contextRoleId;
 }
