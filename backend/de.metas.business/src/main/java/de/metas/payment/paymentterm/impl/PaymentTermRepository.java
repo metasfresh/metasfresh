@@ -60,6 +60,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 	private final CCache<Integer, PaymentTermMap> cache = CCache.<Integer, PaymentTermMap>builder()
 			.tableName(I_C_PaymentTerm.Table_Name)
+			.additionalTableNameToResetFor(I_C_PaymentTerm_Break.Table_Name)
 			.initialCapacity(1)
 			.build();
 
@@ -240,6 +241,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.discountDays(record.getDiscountDays())
 				._default(record.isDefault())
 				.discount(Percent.of(record.getDiscount()))
+				.breaks(paymentTermBreaks)
 				.build();
 
 	}
