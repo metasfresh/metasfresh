@@ -46,6 +46,7 @@ import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
+import de.metas.order.paymentschedule.OrderPaymentScheduleCreator;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -108,6 +109,7 @@ public class C_Order
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
+	private final OrderPaymentScheduleCreator orderPaymentScheduleCreator;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -118,13 +120,15 @@ public class C_Order
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
-			@NonNull final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService)
+			@NonNull final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService,
+			@NonNull final OrderPaymentScheduleCreator orderPaymentScheduleCreator)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
 		this.purchaseOrderToShipperTransportationService = purchaseOrderToShipperTransportationService;
+		this.orderPaymentScheduleCreator = orderPaymentScheduleCreator;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -619,5 +623,11 @@ public class C_Order
 				}
 			}
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void createOrderPaySchedules(final I_C_Order order)
+	{
+		orderPaymentScheduleCreator.createComplexSchedules(order);
 	}
 }

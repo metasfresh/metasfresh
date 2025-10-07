@@ -33,11 +33,14 @@ import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -61,12 +64,12 @@ public class OrderPaymentScheduleCreator
 	/**
 	 * Entry point to create schedules for a completed Order.
 	 */
-	public void createSchedules(@NonNull final I_C_Order orderRecord)
+	public void createComplexSchedules(@NonNull final I_C_Order orderRecord)
 	{
 		final PaymentTermId paymenttermId = orderBL.getPaymentTermId(orderRecord);
 		final PaymentTerm paymentTerm = paymentTermService.getById(paymenttermId);
 
-		if (paymentTerm.hasBreaks())
+		if (!paymentTerm.hasBreaks())
 		{
 			return;
 		}
@@ -85,77 +88,92 @@ public class OrderPaymentScheduleCreator
 		}
 
 		final CurrencyPrecision precision = orderBL.getAmountPrecision(orderRecord);
-		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
 
 		for (final PaymentTermBreak termBreak : paymentTerm.getSortedBreaks())
 		{
 
-			// Calculate portion amount (e.g., 40% of total)
-			final Percent percentage = termBreak.getPercent();
-			final Amount dueAmount = grandTotal.multiply(percentage, precision);
-
-			// Determine reference date and status
-			final ReferenceDateResult result = getReferenceDate(orderRecord, termBreak);
-
-			final OrderPayScheduleRequest orderPayScheduleRequest = OrderPayScheduleRequest.builder()
-					.orderId(orderId)
-					.dueDate(result.getCalculatedDueDate())
-					.dueAmount(dueAmount)
-					.paymentTermBreakId(termBreak.getId())
-					.referenceDateType(termBreak.getReferenceDateType())
-					.build();
-
-			orderPayScheduleService.createSchedule(orderPayScheduleRequest);
+			createSingleOrderPaySchedule(OrderSchedulingContext.builder()
+					.order(orderRecord)
+					.grandTotal(grandTotal)
+					.precision(precision)
+					.termBreak(termBreak)
+					.build());
 		}
+
+	}
+
+
+	/**
+	 * Processes a single PaymentTermBreak, calculates the due amount, determines the due date/status,
+	 * and creates the corresponding OrderPaySchedule record.
+	 */
+	private void createSingleOrderPaySchedule(@NonNull final OrderSchedulingContext context)
+	{
+		final Amount grandTotal = context.getGrandTotal();
+		final CurrencyPrecision precision = context.getPrecision();
+		final PaymentTermBreak termBreak = context.getTermBreak();
+		final I_C_Order orderRecord = context.getOrder();
+		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
+
+		final Percent percentage = termBreak.getPercent();
+		final Amount dueAmount = grandTotal.multiply(percentage, precision);
+
+		final ReferenceDateResult result = computeReferenceDate(orderRecord, termBreak);
+
+		final OrderPayScheduleRequest orderPayScheduleRequest = OrderPayScheduleRequest.builder()
+				.orderId(orderId)
+				.dueDate(result.getCalculatedDueDate())
+				.dueAmount(dueAmount)
+				.paymentTermBreakId(termBreak.getId())
+				.referenceDateType(termBreak.getReferenceDateType())
+				.build();
+
+		orderPayScheduleService.createSchedule(orderPayScheduleRequest);
 	}
 
 	/**
 	 * Determines the initial reference date and calculates the due date.
 	 */
-	private ReferenceDateResult getReferenceDate(final @NonNull I_C_Order order, final @NonNull PaymentTermBreak termBreak)
+	private ReferenceDateResult computeReferenceDate(final @NonNull I_C_Order order, final @NonNull PaymentTermBreak termBreak)
 	{
-
-		final ReferenceDateType referenceDateType = termBreak.getReferenceDateType();
-		Timestamp referenceDate = null;
-		OrderPayScheduleStatus status = OrderPayScheduleStatus.Pending;
-
-		// --- Get the initial reference date from available order data ---
-		switch (referenceDateType)
-		{
-			case OrderDate:
-				referenceDate = order.getDateOrdered();
-				break;
-
-			case LCDate:
-				referenceDate = order.getLC_Date();
-				break;
-
-			case BLDate:
-			case ETADate:
-				// BL/ETA is captured later on M_ShipperTransportation. Not available here.
-				break;
-
-			case InvoiceDate:
-				// InvoiceDate is captured later on Invoice. Not available here.
-				break;
-			default:
-		}
-
+		final Timestamp referenceDate = getAvailableReferenceDate(order, termBreak.getReferenceDateType());
 		final Timestamp finalDueDate;
+		final OrderPayScheduleStatus status;
 
 		if (referenceDate != null)
 		{
+			// Date is available (OrderDate or existing LCDate): calculate the due date
 			finalDueDate = TimeUtil.addDays(referenceDate, termBreak.getOffsetDays());
-			status = OrderPayScheduleStatus.Awaiting_Pay; // Financial obligation is now calculable/existing
+			status = OrderPayScheduleStatus.Awaiting_Pay;
 		}
 		else
 		{
-			// Reference date is missing (BLDate, ETA, or missing LCDate)
+			// Date is missing (BLDate, ETADate, etc.): set sentinel date and pending status
 			finalDueDate = PENDING_DATE;
-			// Status remains Pending
+			status = OrderPayScheduleStatus.Pending;
 		}
 
 		return new ReferenceDateResult(finalDueDate, status);
+	}
+
+	private @Nullable Timestamp getAvailableReferenceDate(
+			final @NonNull I_C_Order order,
+			final @NonNull ReferenceDateType referenceDateType)
+	{
+		switch (referenceDateType)
+		{
+			case OrderDate:
+				return order.getDateOrdered();
+			case LCDate:
+				// LC Date is captured directly on the Order
+				return order.getLC_Date();
+			case BLDate:
+			case ETADate:
+			case InvoiceDate:
+			default:
+				// These dates are not available yet. We return null to signal 'Pending reference' status.
+				return null;
+		}
 	}
 
 	private boolean orderHasLegacyPaySchedule(@NonNull final I_C_Order order)
@@ -169,5 +187,15 @@ public class OrderPaymentScheduleCreator
 	{
 		@NonNull Timestamp calculatedDueDate;
 		@NonNull OrderPayScheduleStatus status;
+	}
+
+	@Builder
+	@Getter
+	static class OrderSchedulingContext
+	{
+		@NonNull I_C_Order order;
+		@NonNull Amount grandTotal;
+		@NonNull CurrencyPrecision precision;
+		@NonNull PaymentTermBreak termBreak;
 	}
 }
