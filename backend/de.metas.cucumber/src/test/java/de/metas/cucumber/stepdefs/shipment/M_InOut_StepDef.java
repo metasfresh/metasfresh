@@ -164,10 +164,10 @@ public class M_InOut_StepDef
 		final SoftAssertions softly = new SoftAssertions();
 
 		final StepDefDataIdentifier identifier = row.getAsIdentifier("M_InOut_ID");
-		final LocalDate dateOrdered = row.getAsLocalDate("dateordered");
+		final LocalDate dateOrdered = row.getAsLocalDate(I_M_InOut.COLUMNNAME_DateOrdered);
 		final String poReference = row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference).orElse(null);
 		final boolean processed = row.getAsBoolean("processed");
-		final String docStatus = row.getAsString("docStatus");
+		final String docStatus = row.getAsString(I_M_InOut.COLUMNNAME_DocStatus);
 
 		final @NonNull StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 		final int expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)

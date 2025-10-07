@@ -78,13 +78,13 @@ Feature: Product items invoice candidates: receipts
       | ic_1                              | ol_1                      |
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2021-04-17  | p_1                     | 100        | 100          | 0           | 10    | 0        | EUR          | true      |
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 100              |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | CO        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -119,13 +119,13 @@ Feature: Product items invoice candidates: receipts
       | ic_1                              | ol_1                      |
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2021-04-17  | p_1                     | 100        | 100          | 0           | 10    | 0        | EUR          | true      |
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 100              |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | CO        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -137,7 +137,7 @@ Feature: Product items invoice candidates: receipts
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 0                |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | false     | IP        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -174,13 +174,13 @@ Feature: Product items invoice candidates: receipts
     When the material receipt identified by material_receipt_1 is reactivated
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2021-04-17  | p_1                     | 100        | 0            | 0           | 10    | 0        | EUR          | true      |
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 0                |
     And validate the created material receipt
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | false     | IP        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -192,7 +192,7 @@ Feature: Product items invoice candidates: receipts
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 100              |
     And validate the created material receipt
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | CO        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -227,13 +227,13 @@ Feature: Product items invoice candidates: receipts
       | ic_1                              | ol_1                      |
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2021-04-17  | p_1                     | 100        | 100          | 0           | 10    | 0        | EUR          | true      |
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 100              |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | CO        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -247,7 +247,7 @@ Feature: Product items invoice candidates: receipts
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 0                |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | VO        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -282,13 +282,13 @@ Feature: Product items invoice candidates: receipts
       | ic_1                              | ol_1                      |
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2021-04-17  | p_1                     | 100        | 100          | 0           | 10    | 0        | EUR          | true      |
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 100              |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | CO        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -300,7 +300,7 @@ Feature: Product items invoice candidates: receipts
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 0                |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | RE        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -335,13 +335,13 @@ Feature: Product items invoice candidates: receipts
       | ic_1                              | ol_1                      |
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2021-04-17  | p_1                     | 100        | 100          | 0           | 10    | 0        | EUR          | true      |
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 100              |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | CO        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -353,7 +353,7 @@ Feature: Product items invoice candidates: receipts
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 100              |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | CL        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
@@ -416,13 +416,13 @@ Feature: Product items invoice candidates: receipts
       | ic_1                              | ol_1                      |
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2021-04-17  | p_1                     | 330        | 42           | 0           | 10    | 0        | EUR          | true      |
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 42               |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | processed | DocStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | CO        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |

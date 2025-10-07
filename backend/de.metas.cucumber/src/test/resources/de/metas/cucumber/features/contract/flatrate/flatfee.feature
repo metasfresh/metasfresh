@@ -89,8 +89,8 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
       | matching_1_S0433_1 | flatFeeConditions_1_S0433_1         | 10    | transaction_category_S0433_1         |
 
     And metasfresh contains C_BPartners:
-      | Identifier              | OPT.C_BPartner_Location_ID.Identifier | Name                    | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID |
-      | shipToPartner_1_S0433_1 | shipToPartner_location_1_S0433_1      | shipToPartner_1_S0433_1 | ps_1_S0433_1                  | Y            | Y              | Y              | 1000009              |
+      | Identifier              | OPT.C_BPartner_Location_ID.Identifier | Name                    | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep |
+      | shipToPartner_1_S0433_1 | shipToPartner_location_1_S0433_1      | shipToPartner_1_S0433_1 | ps_1_S0433_1                  | Y            | Y              | Y              |
     And metasfresh contains C_BPartner_Departments:
       | Identifier           | C_BPartner_ID.Identifier | Value | Name         |
       | department_1_S0433_1 | shipToPartner_1_S0433_1  | 1     | Department 1 |
