@@ -1,10 +1,12 @@
-package de.metas.inventory.mobileui.job.repository;
+package de.metas.inventory.mobileui.deps.warehouse;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -18,15 +20,18 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
-class Warehouses
+@Builder(access = AccessLevel.PACKAGE)
+public class WarehousesLoadingCache
 {
-	private final IWarehouseDAO dao = Services.get(IWarehouseDAO.class);
+	@NonNull private final IWarehouseDAO dao;
 
 	private final HashMap<WarehouseId, WarehouseInfo> warehousesByWarehouseId = new HashMap<>();
 	private final HashMap<WarehouseId, WarehouseLocatorsInfo> locatorsByWarehouseId = new HashMap<>();
 
-	public <T> void warnUp(final Collection<T> objects, Function<T, WarehouseId> idMapper)
+	public <T> void warnUp(@NonNull final Collection<T> objects, Function<T, WarehouseId> idMapper)
 	{
+		if (objects.isEmpty()) {return;}
+		
 		final ImmutableSet<WarehouseId> ids = objects.stream().map(idMapper).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 		getByIds(ids);
 	}
@@ -47,7 +52,7 @@ class Warehouses
 
 		return dao.getByIds(ids)
 				.stream()
-				.map(Warehouses::fromRecord)
+				.map(WarehousesLoadingCache::fromRecord)
 				.collect(ImmutableMap.toImmutableMap(WarehouseInfo::getWarehouseId, Function.identity()));
 	}
 
@@ -75,7 +80,7 @@ class Warehouses
 				.warehouseId(warehouseId)
 				.locators(dao.getLocators(warehouseId)
 						.stream()
-						.map(Warehouses::fromRecord)
+						.map(WarehousesLoadingCache::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 

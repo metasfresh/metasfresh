@@ -1,6 +1,5 @@
 package de.metas.inventory.mobileui.launchers;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.InventoryId;
 import lombok.Builder;
 import lombok.NonNull;

@@ -10,8 +10,8 @@ export const resolveLocator = ({ scannedBarcode, wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const resolveHU = ({ scannedBarcode, wfProcessId, lineId }) => {
+export const resolveHU = ({ scannedBarcode, wfProcessId, lineId, locatorQRCode }) => {
   return axios
-    .post(toUrl(`${inventoryBasePath}/resolveHU`), { scannedCode: scannedBarcode, wfProcessId, lineId })
+    .post(toUrl(`${inventoryBasePath}/resolveHU`), { scannedCode: scannedBarcode, wfProcessId, lineId, locatorQRCode })
     .then((response) => unboxAxiosResponse(response));
 };

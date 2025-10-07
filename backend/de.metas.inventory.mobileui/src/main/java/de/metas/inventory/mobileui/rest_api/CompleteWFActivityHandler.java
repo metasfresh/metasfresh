@@ -1,8 +1,8 @@
-package de.metas.inventory.mobileui.workflows_api.activity_handlers;
+package de.metas.inventory.mobileui.rest_api;
 
+import de.metas.handlingunits.inventory.Inventory;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.mobileui.InventoryMobileApplication;
-import de.metas.inventory.mobileui.job.InventoryJob;
 import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
@@ -49,7 +49,7 @@ public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirm
 		return WFActivityStatus.NOT_STARTED;
 	}
 
-	public static WFActivityStatus computeActivityState(final InventoryJob job)
+	public static WFActivityStatus computeActivityState(final Inventory inventory)
 	{
 		// TODO
 		return WFActivityStatus.NOT_STARTED;

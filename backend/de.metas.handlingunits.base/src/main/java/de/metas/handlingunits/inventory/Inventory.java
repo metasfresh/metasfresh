@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -65,7 +66,7 @@ public class Inventory
 
 	@NonNull ImmutableList<InventoryLine> lines;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private Inventory(
 			@NonNull final InventoryId id,
 			@NonNull final OrgId orgId,
@@ -129,4 +130,51 @@ public class Inventory
 	{
 		return InventoryLineHU.extractHuIds(streamLineHUs());
 	}
+
+	public Inventory assigningTo(@NonNull final UserId newResponsibleId)
+	{
+		return assigningTo(newResponsibleId, false);
+	}
+
+	public Inventory reassigningTo(@NonNull final UserId newResponsibleId)
+	{
+		return assigningTo(newResponsibleId, true);
+	}
+
+	private Inventory assigningTo(@NonNull final UserId newResponsibleId, boolean allowReassignment)
+	{
+		// no responsible change
+		if (UserId.equals(responsibleId, newResponsibleId))
+		{
+			return this;
+		}
+
+		if (!newResponsibleId.isRegularUser())
+		{
+			throw new AdempiereException("Only regular users can be assigned to an inventory");
+		}
+
+		if (!allowReassignment && responsibleId != null)
+		{
+			throw new AdempiereException("Inventory is already assigned");
+		}
+
+		return toBuilder().responsibleId(newResponsibleId).build();
+	}
+
+	public void assertHasAccess(@NonNull final UserId calledId)
+	{
+		if (!UserId.equals(responsibleId, calledId))
+		{
+			throw new AdempiereException("No access");
+		}
+	}
+
+	public ImmutableSet<LocatorId> getLocatorIds(@Nullable final InventoryLineId lineId)
+	{
+		return lineId != null
+				? ImmutableSet.of(getLineById(lineId).getLocatorId())
+				: lines.stream().map(InventoryLine::getLocatorId).collect(ImmutableSet.toImmutableSet());
+	}
+
 }

@@ -160,6 +160,14 @@ public class InventoryLine
 		}
 	}
 
+	public String getUOMSymbol()
+	{
+		final Quantity qtyBookFixed = getQtyBookFixed();
+		final Quantity qtyCountFixed = getQtyCountFixed();
+		Quantity.assertSameUOM(qtyBookFixed, qtyCountFixed);
+		return qtyBookFixed.getUOMSymbol();
+	}
+
 	public Quantity getQtyBookFixed()
 	{
 		if (qtyBookFixed == null)

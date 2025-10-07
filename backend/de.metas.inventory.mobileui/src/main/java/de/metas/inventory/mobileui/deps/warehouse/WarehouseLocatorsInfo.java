@@ -1,4 +1,4 @@
-package de.metas.inventory.mobileui.job.repository;
+package de.metas.inventory.mobileui.deps.warehouse;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -11,7 +11,7 @@ import org.adempiere.warehouse.WarehouseId;
 import java.util.List;
 
 @Value
-public class WarehouseLocatorsInfo
+class WarehouseLocatorsInfo
 {
 	@NonNull WarehouseId warehouseId;
 	@NonNull ImmutableMap<LocatorId, LocatorInfo> locatorsById;

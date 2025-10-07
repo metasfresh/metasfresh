@@ -16,12 +16,12 @@ const InventoryScanScreen = () => {
   });
 
   const [status, setStatus] = React.useState(STATUS_ScanLocator);
-  const [locatorId, setLocatorId] = React.useState();
+  const [locatorQRCode, setLocatorQRCode] = React.useState();
 
   const onLocatorScanned = ({ scannedBarcode }) => {
     resolveLocator({ scannedBarcode, wfProcessId, lineId }).then((response) => {
-      if (response.locatorId) {
-        setLocatorId(response.locatorId);
+      if (response.qrCode) {
+        setLocatorQRCode(response.qrCode);
         setStatus(STATUS_ScanHU);
       } else {
         toastError({ messageKey: 'error.qrCode.invalid', context: { scannedBarcode, wfProcessId, lineId, response } });
@@ -31,12 +31,12 @@ const InventoryScanScreen = () => {
 
   const onHUScanned = ({ scannedBarcode }) => {
     console.log('**** onHUScanned', { scannedBarcode });
-    resolveHU({ scannedBarcode, wfProcessId, lineId }).then((response) => {
+    resolveHU({ scannedBarcode, wfProcessId, lineId, locatorQRCode }).then((response) => {
       console.log('onBarcodeScanned', { response });
     });
   };
 
-  console.log('InventoryScanScreen', { status, locatorId });
+  console.log('InventoryScanScreen', { status, locatorQRCode });
 
   if (status === STATUS_ScanLocator) {
     return (

@@ -1,4 +1,4 @@
-package de.metas.inventory.mobileui.job.repository;
+package de.metas.inventory.mobileui.deps.products;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
@@ -8,7 +8,7 @@ import lombok.Value;
 
 @Value
 @Builder
-class ProductInfo
+public class ProductInfo
 {
 	@NonNull ProductId productId;
 	@NonNull String productNo;

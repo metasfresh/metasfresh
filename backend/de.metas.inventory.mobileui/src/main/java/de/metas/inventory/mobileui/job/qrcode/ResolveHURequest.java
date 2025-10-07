@@ -1,8 +1,11 @@
 package de.metas.inventory.mobileui.job.qrcode;
 
+import de.metas.handlingunits.inventory.Inventory;
+import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
-import de.metas.inventory.mobileui.job.InventoryJob;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.user.UserId;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -18,7 +21,8 @@ public class ResolveHURequest
 
 	//
 	// Context:
-	@NonNull InventoryJob job;
+	@NonNull UserId callerId;
+	@NonNull WFProcessId wfProcessId;
 	@Nullable InventoryLineId lineId;
 	@NonNull LocatorId locatorId;
 }

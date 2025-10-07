@@ -1,4 +1,4 @@
-package de.metas.inventory.mobileui.job.repository;
+package de.metas.inventory.mobileui.deps.warehouse;
 
 import lombok.Builder;
 import lombok.NonNull;

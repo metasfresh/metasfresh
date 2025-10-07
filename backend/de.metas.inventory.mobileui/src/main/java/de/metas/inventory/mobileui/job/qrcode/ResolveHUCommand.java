@@ -6,17 +6,17 @@ import com.google.common.collect.Maps;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inventory.Inventory;
+import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inventory.InventoryLineId;
-import de.metas.inventory.mobileui.job.InventoryJob;
-import de.metas.inventory.mobileui.job.InventoryJobLine;
-import de.metas.product.IProductBL;
+import de.metas.inventory.mobileui.deps.handlingunits.HandlingUnitsService;
+import de.metas.inventory.mobileui.deps.products.ProductService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -43,32 +43,31 @@ public class ResolveHUCommand
 {
 	//
 	// Services
-	@NonNull private final IProductBL productBL;
-	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final ProductService productService;
+	@NonNull private final HandlingUnitsService huService;
 	@NonNull private final HUCache huCache;
 
 	//
 	// Params
 	@NonNull private final ScannedCode scannedCode;
-	@NonNull private final ImmutableList<InventoryJobLine> lines;
+	@NonNull private final ImmutableList<InventoryLine> lines;
 
 	@Builder
 	private ResolveHUCommand(
-			@NonNull final IProductBL productBL,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL,
-			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final ProductService productService,
+			@NonNull final HandlingUnitsService huService,
 			//
 			@NonNull final ScannedCode scannedCode,
-			@NonNull final InventoryJob job,
+			@NonNull final Inventory inventory,
 			@Nullable final InventoryLineId lineId,
 			@NonNull final LocatorId locatorId)
 	{
-		this.productBL = productBL;
-		this.huQRCodesService = huQRCodesService;
-		this.huCache = new HUCache(handlingUnitsBL);
+		this.productService = productService;
+		this.huService = huService;
+		this.huCache = new HUCache(huService);
 
 		this.scannedCode = scannedCode;
-		this.lines = (lineId != null ? Stream.of(job.getLineById(lineId)) : job.getLines().stream())
+		this.lines = (lineId != null ? Stream.of(inventory.getLineById(lineId)) : inventory.getLines().stream())
 				.filter(line -> !line.isCounted()
 						&& LocatorId.equals(line.getLocatorId(), locatorId))
 				.collect(ImmutableList.toImmutableList());
@@ -82,7 +81,7 @@ public class ResolveHUCommand
 			throw new AdempiereException("No eligible lines found");
 		}
 
-		final IHUQRCode parsedScannedCode = huQRCodesService.parse(scannedCode);
+		final IHUQRCode parsedScannedCode = huService.parse(scannedCode);
 		try
 		{
 			if (parsedScannedCode instanceof HUQRCode)
@@ -109,16 +108,16 @@ public class ResolveHUCommand
 
 	private ResolveHUResponse resolveByHUQRCode(@NonNull final HUQRCode huQRCode)
 	{
-		final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
+		final HuId huId = huService.getHuIdByQRCode(huQRCode);
 		final I_M_HU hu = huCache.getHUById(huId);
-		final InventoryJobLine matchingLine = findFirstMatchingLine(line -> isLineMatchingHU(line, hu));
+		final InventoryLine matchingLine = findFirstMatchingLine(line -> isLineMatchingHU(line, hu));
 		final ImmutableAttributeSet attributes = huCache.getAttributes(hu);
 
 		final boolean hasBestBeforeDateAttribute = attributes.hasAttribute(ATTR_BestBeforeDate);
 		final boolean hasLotNoAttribute = attributes.hasAttribute(ATTR_LotNumber);
 
 		return ResolveHUResponse.builder()
-				.lineId(matchingLine.getId())
+				.lineId(matchingLine.getIdNonNull())
 				.huId(huId)
 				.productId(matchingLine.getProductId())
 				.qtyBooked(huCache.getQty(hu, matchingLine.getProductId()))
@@ -132,16 +131,16 @@ public class ResolveHUCommand
 
 	private ResolveHUResponse resolveByEAN13(@NonNull final EAN13 ean13)
 	{
-		for (final InventoryJobLine line : lines)
+		for (final InventoryLine line : lines)
 		{
 			final ProductId lineProductId = line.getProductId();
-			if (!productBL.isValidEAN13Product(ean13, lineProductId))
+			if (!productService.isValidEAN13Product(ean13, lineProductId))
 			{
 				continue;
 			}
 
 			return ResolveHUResponse.builder()
-					.lineId(line.getId())
+					.lineId(line.getIdNonNull())
 					.huId(null)
 					.productId(lineProductId)
 					.qtyBooked(Quantitys.zero(lineProductId))
@@ -157,7 +156,7 @@ public class ResolveHUCommand
 		throw new AdempiereException("No line found for the given HU QR code");
 	}
 
-	private InventoryJobLine findFirstMatchingLine(final Predicate<InventoryJobLine> predicate)
+	private InventoryLine findFirstMatchingLine(final Predicate<InventoryLine> predicate)
 	{
 		return lines.stream()
 				.filter(predicate)
@@ -165,7 +164,7 @@ public class ResolveHUCommand
 				.orElseThrow(() -> new AdempiereException("No line found for the given HU QR code"));
 	}
 
-	private boolean isLineMatchingHU(final InventoryJobLine line, final I_M_HU hu)
+	private boolean isLineMatchingHU(final InventoryLine line, final I_M_HU hu)
 	{
 		return !line.isCounted()
 				&& LocatorId.equals(line.getLocatorId(), huCache.getLocatorId(hu))
@@ -212,7 +211,7 @@ public class ResolveHUCommand
 	@RequiredArgsConstructor
 	private static class HUCache
 	{
-		@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+		@NonNull private final HandlingUnitsService huService;
 
 		private final HashMap<HuId, LocatorId> huLocatorsByHUId = new HashMap<>();
 		private final HashMap<HuId, I_M_HU> husById = new HashMap<>();
@@ -221,7 +220,7 @@ public class ResolveHUCommand
 
 		public I_M_HU getHUById(final @NotNull HuId huId)
 		{
-			return husById.computeIfAbsent(huId, handlingUnitsBL::getById);
+			return husById.computeIfAbsent(huId, huService::getById);
 		}
 
 		@NonNull
@@ -243,12 +242,12 @@ public class ResolveHUCommand
 
 		private HUProductStorages retrieveProductStorages(final I_M_HU hu)
 		{
-			return new HUProductStorages(handlingUnitsBL.getStorageFactory().getProductStorages(hu));
+			return new HUProductStorages(huService.getProductStorages(hu));
 		}
 
 		public ImmutableAttributeSet getAttributes(final I_M_HU hu)
 		{
-			return attributesByHUId.computeIfAbsent(HuId.ofRepoId(hu.getM_HU_ID()), huId -> handlingUnitsBL.getImmutableAttributeSet(hu));
+			return attributesByHUId.computeIfAbsent(HuId.ofRepoId(hu.getM_HU_ID()), huId -> huService.getImmutableAttributeSet(hu));
 		}
 
 		public LocatorId getLocatorId(@NonNull final I_M_HU hu)

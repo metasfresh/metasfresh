@@ -1,4 +1,4 @@
-package de.metas.inventory.mobileui.job.repository;
+package de.metas.inventory.mobileui.deps.warehouse;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -7,7 +7,7 @@ import org.adempiere.warehouse.WarehouseId;
 
 @Value
 @Builder
-class WarehouseInfo
+public class WarehouseInfo
 {
 	@NonNull WarehouseId warehouseId;
 	@NonNull String warehouseName;

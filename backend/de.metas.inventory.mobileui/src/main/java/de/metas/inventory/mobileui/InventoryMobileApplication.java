@@ -1,21 +1,13 @@
 package de.metas.inventory.mobileui;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import de.metas.document.engine.IDocument;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.handlingunits.inventory.Inventory;
 import de.metas.inventory.InventoryId;
-import de.metas.inventory.mobileui.job.InventoryJob;
-import de.metas.inventory.mobileui.job.InventoryJobId;
 import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.inventory.mobileui.launchers.InventoryWFProcessStartParams;
 import de.metas.inventory.mobileui.launchers.InventoryWorkflowLaunchersProvider;
-import de.metas.inventory.mobileui.workflows_api.activity_handlers.CompleteWFActivityHandler;
-import de.metas.inventory.mobileui.workflows_api.activity_handlers.InventoryJobWFActivityHandler;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.WFActivity;
-import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -29,6 +21,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.function.UnaryOperator;
+
+import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toInventoryId;
+import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toWFProcess;
 
 @Component
 @RequiredArgsConstructor
@@ -52,24 +47,23 @@ public class InventoryMobileApplication implements WorkflowBasedMobileApplicatio
 		final UserId invokerId = request.getInvokerId();
 		final InventoryId inventoryId = InventoryWFProcessStartParams.ofParams(request.getWfParameters()).getInventoryId();
 
-		final InventoryJob job = jobService.startJob(inventoryId, invokerId);
-		return toWFProcess(job);
+		final Inventory inventory = jobService.startJob(inventoryId, invokerId);
+		return toWFProcess(inventory);
 
 	}
 
 	@Override
 	public WFProcess continueWorkflow(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		final InventoryJobId jobId = InventoryJobId.ofWFProcessId(wfProcessId);
-		final InventoryJob job = jobService.assignJob(jobId, callerId);
-		return toWFProcess(job);
+		final InventoryId inventoryId = toInventoryId(wfProcessId);
+		final Inventory inventory = jobService.reassignJob(inventoryId, callerId);
+		return toWFProcess(inventory);
 	}
 
 	@Override
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		final InventoryJobId jobId = InventoryJobId.ofWFProcessId(wfProcessId);
-		jobService.abort(jobId, callerId);
+		jobService.abort(wfProcessId, callerId);
 	}
 
 	@Override
@@ -81,9 +75,8 @@ public class InventoryMobileApplication implements WorkflowBasedMobileApplicatio
 	@Override
 	public WFProcess getWFProcessById(final WFProcessId wfProcessId)
 	{
-		final InventoryJobId jobId = InventoryJobId.ofWFProcessId(wfProcessId);
-		final InventoryJob job = jobService.getJobById(jobId);
-		return toWFProcess(job);
+		final Inventory inventory = jobService.getById(toInventoryId(wfProcessId));
+		return toWFProcess(inventory);
 	}
 
 	@Override
@@ -92,40 +85,17 @@ public class InventoryMobileApplication implements WorkflowBasedMobileApplicatio
 		return WFProcessHeaderProperties.EMPTY;
 	}
 
-	private static WFProcess toWFProcess(final InventoryJob job)
-	{
-		return WFProcess.builder()
-				.id(job.getId().toWFProcessId())
-				.responsibleId(job.getResponsibleId())
-				.document(job)
-				.activities(ImmutableList.of(
-						WFActivity.builder()
-								.id(WFActivityId.ofString("A1"))
-								.caption(TranslatableStrings.empty())
-								.wfActivityType(InventoryJobWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-								.status(InventoryJobWFActivityHandler.computeActivityState(job))
-								.build(),
-						WFActivity.builder()
-								.id(WFActivityId.ofString("A2"))
-								.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
-								.wfActivityType(CompleteWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-								.status(CompleteWFActivityHandler.computeActivityState(job))
-								.build()
-				))
-				.build();
-	}
-
 	@NonNull
-	public static InventoryJob getInventoryJob(final @NonNull WFProcess wfProcess)
+	public static Inventory getInventory(final @NonNull WFProcess wfProcess)
 	{
-		return wfProcess.getDocumentAs(InventoryJob.class);
+		return wfProcess.getDocumentAs(Inventory.class);
 	}
 
-	public static WFProcess mapJob(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<InventoryJob> mapper)
+	public static WFProcess mapJob(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<Inventory> mapper)
 	{
-		final InventoryJob job = getInventoryJob(wfProcess);
-		final InventoryJob jobChanged = mapper.apply(job);
-		return !Objects.equals(job, jobChanged) ? toWFProcess(jobChanged) : wfProcess;
+		final Inventory inventory = getInventory(wfProcess);
+		final Inventory inventoryChanged = mapper.apply(inventory);
+		return !Objects.equals(inventory, inventoryChanged) ? toWFProcess(inventoryChanged) : wfProcess;
 	}
 
 }
