@@ -29,6 +29,7 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -97,6 +98,9 @@ public class OrderTest
 
 		final I_C_Order order = createOrder(partner1, shipper1);
 
+		final I_C_PaymentTerm paymentTerm = createPaymentTerm();
+		order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+
 		order.setC_DocTypeTarget_ID(docType1.getC_DocType_ID());
 		save(order);
 
@@ -127,6 +131,14 @@ public class OrderTest
 		shipper.setName("ShipperName");
 		save(shipper);
 		return shipper;
+	}
+
+	private I_C_PaymentTerm createPaymentTerm()
+	{
+		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
+		paymentTerm.setName("Paymentterm1");
+		save(paymentTerm);
+		return paymentTerm;
 	}
 
 	@SuppressWarnings("SameParameterValue")
@@ -172,6 +184,7 @@ public class OrderTest
 		order.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
 		order.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		order.setDatePromised(SystemTime.asTimestamp());
+
 
 		save(order);
 
