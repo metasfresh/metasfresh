@@ -77,7 +77,7 @@ public class PaymentTerm
 			final boolean allowOverrideDueDate,
 			final boolean _default,
 			final boolean isComplex,
-			final @Nullable ImmutableList<PaymentTermBreak> breaks)
+			final @NonNull ImmutableList<PaymentTermBreak> breaks)
 	{
 		this.id = id;
 		this.orgId = orgId;

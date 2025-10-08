@@ -1,6 +1,7 @@
 package de.metas.payment.paymentterm.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
@@ -11,6 +12,7 @@ import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.ReferenceDateType;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
@@ -205,20 +207,56 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	private PaymentTermMap retrieveIndexedPaymentTerms()
 	{
 
-		final ImmutableList<PaymentTerm> paymentTerms = queryBL
+		// Fetch all payment terms
+		final ImmutableList<I_C_PaymentTerm> paymentTermRecords = queryBL
 				.createQueryBuilder(I_C_PaymentTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_C_PaymentTerm.class)
+				.collect(ImmutableList.toImmutableList());
+
+		if (paymentTermRecords.isEmpty())
+		{
+			return new PaymentTermMap(ImmutableList.of());
+		}
+
+		final ImmutableList<PaymentTermId> paymentTermIds = paymentTermRecords.stream()
+				.map(PaymentTermRepository::extractId)
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableListMultimap<PaymentTermId, PaymentTermBreak> breaksByPaymentTermId = retrievePaymentTermBreaks(paymentTermIds);
+
+		// Build payment terms with their breaks
+		final ImmutableList<PaymentTerm> paymentTerms = paymentTermRecords.stream()
 				.map(record -> {
 					final PaymentTermId paymentTermId = extractId(record);
-					final ImmutableList<PaymentTermBreak> breaks = retrievePaymentTermBreaks(paymentTermId);
+					final ImmutableList<PaymentTermBreak> breaks = breaksByPaymentTermId.get(paymentTermId);
 					return fromRecord(record, breaks);
 				})
-
 				.collect(ImmutableList.toImmutableList());
+
 		return new PaymentTermMap(paymentTerms);
 	}
+
+	private ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final Collection<PaymentTermId> paymentTermIds)
+	{
+		if (paymentTermIds.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_PaymentTerm_Break.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
+				.orderBy(I_M_DiscountSchemaBreak.COLUMNNAME_C_PaymentTerm_ID)
+				.orderBy(I_M_DiscountSchemaBreak.COLUMNNAME_SeqNo)
+				.create()
+				.stream(I_C_PaymentTerm_Break.class)
+				.map(PaymentTermRepository::toPaymentTermBreak)
+				.collect(GuavaCollectors.toImmutableListMultimap(termBreak -> termBreak.getId().getPaymentTermId()));
+	}
+
 
 	private static PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
 	{
@@ -287,16 +325,9 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	}
 
 	@Override
-	public ImmutableList<PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
+	public ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
 	{
-		return queryBL
-				.createQueryBuilder(I_C_PaymentTerm_Break.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
-				.orderBy(I_M_DiscountSchemaBreak.COLUMNNAME_SeqNo)
-				.create()
-				.stream(I_C_PaymentTerm_Break.class)
-				.map(PaymentTermRepository::toPaymentTermBreak)
-				.collect(ImmutableList.toImmutableList());
+		return retrievePaymentTermBreaks(ImmutableList.of(paymentTermId));
 	}
+
 }

@@ -48,7 +48,7 @@ public class C_PaymentTerm_Break
 	{
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
 		final PaymentTermBreakId currentBreakIdToExclude = PaymentTermBreakId.ofRepoIdOrNull(paymentTermId, record.getC_PaymentTerm_Break_ID());
-		final ImmutableList<PaymentTermBreak> allBreaksForTerm = paymentTermRepository.retrievePaymentTermBreaks(paymentTermId);
+		final ImmutableList<PaymentTermBreak> allBreaksForTerm = paymentTermRepository.retrievePaymentTermBreaksList(paymentTermId);
 
 		if (allBreaksForTerm.isEmpty())
 		{
