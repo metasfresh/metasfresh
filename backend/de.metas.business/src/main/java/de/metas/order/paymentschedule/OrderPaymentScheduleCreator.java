@@ -24,6 +24,7 @@ package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -61,12 +62,13 @@ public class OrderPaymentScheduleCreator
 		return new OrderPaymentScheduleCreator(new PaymentTermService(), orderPayScheduleService);
 	}
 
-	public static final Instant PENDING_DATE = LocalDateTime.of(9999, Month.JANUARY, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
-
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final PaymentTermService paymentTermService;
 	private final OrderPayScheduleService orderPayScheduleService;
+
+	public static final Instant PENDING_DATE = LocalDateTime.of(9999, Month.JANUARY, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
+	private static final AdMessageKey ORDERPAYMENTSHEDULECREATOR_ComplexTermConflict = AdMessageKey.of("OrderPaymentScheduleCreator_ComplexTermConflict");
 
 	/**
 	 * Entry point to create schedules for a completed Order.
@@ -81,10 +83,9 @@ public class OrderPaymentScheduleCreator
 			return;
 		}
 
-		if (orderHasLegacyPaySchedule(orderRecord))
+		if (paymentTermService.hasPaySchedule(paymenttermId))
 		{
-			throw new AdempiereException("Payment Term " + paymentTerm.getValue() +
-					" is flagged as complex and cannot coexist with legacy C_PaySchedule records.");
+			throw new AdempiereException(ORDERPAYMENTSHEDULECREATOR_ComplexTermConflict, paymentTerm.getName());
 		}
 
 		final Money grandTotal = orderBL.getGrandTotal(orderRecord);
@@ -184,12 +185,6 @@ public class OrderPaymentScheduleCreator
 				// These dates are not available yet. We return null to signal 'Pending reference' status.
 				return null;
 		}
-	}
-
-	private boolean orderHasLegacyPaySchedule(@NonNull final I_C_Order order)
-	{
-		//TODO to be implemented
-		return false;
 	}
 
 	@Value

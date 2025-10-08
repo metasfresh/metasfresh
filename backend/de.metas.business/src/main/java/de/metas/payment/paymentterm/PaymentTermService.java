@@ -7,6 +7,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_PaySchedule;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
@@ -113,5 +114,10 @@ public class PaymentTermService
 	public PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
 		return paymentTermRepository.getById(paymentTermId);
+	}
+
+	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
+	{
+		return paymentTermRepository.hasPaySchedule(paymentTermId);
 	}
 }

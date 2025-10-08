@@ -24,6 +24,7 @@ import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_PaySchedule;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -319,4 +320,15 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.offsetDays(record.getOffsetDays())
 				.build();
 	}
+
+	@Override
+	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_PaySchedule.class)
+				.addEqualsFilter(I_C_PaySchedule.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
+				.create()
+				.anyMatch();
+	}
+
 }
