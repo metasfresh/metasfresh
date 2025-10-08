@@ -144,7 +144,8 @@ class PaymentRestEndpointTest
 				documentLocationBL,
 				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
 				PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting(),
-		       OrderPaymentScheduleCreator.newInstanceForUnitTesting())
+		       OrderPaymentScheduleCreator.newInstanceForUnitTesting(),
+				new OrderPayScheduleService(new OrderPayScheduleRepository()))
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment

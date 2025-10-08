@@ -31,6 +31,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
 	private final OrderPaymentScheduleCreator orderPaymentScheduleCreator = SpringContextHolder.instance.getBean(OrderPaymentScheduleCreator.class);
+	private final OrderPayScheduleService orderPayScheduleService = SpringContextHolder.instance.getBean(OrderPayScheduleService.class);
 
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
@@ -41,7 +42,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPaymentScheduleCreator)); // FRESH-348
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPaymentScheduleCreator, orderPayScheduleService)); // FRESH-348
 		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository, bPartnerSupplierApprovalService));
 	}
 }
