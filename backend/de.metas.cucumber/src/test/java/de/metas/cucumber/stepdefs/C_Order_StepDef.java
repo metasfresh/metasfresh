@@ -80,6 +80,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.PO;
@@ -132,6 +133,7 @@ public class C_Order_StepDef
 	private final @NonNull AD_InputDataSource_StepDefData dataSourceTable;
 	private final @NonNull TestContext restTestContext;
 	private final @NonNull C_PaymentTerm_StepDef paymentTermStepDef;
+	private final @NonNull C_OrderPaySchedule_StepDefData orderPayScheduleTable;
 
 
 	@Given("metasfresh contains C_Orders:")
@@ -848,6 +850,35 @@ public class C_Order_StepDef
 			endpointPath = endpointPath.replace(orderIdentifierGroup, String.valueOf(order.getC_Order_ID()));
 
 			restTestContext.setEndpointPath(endpointPath);
+		}
+	}
+
+
+	@Then("An order identified by (.*) has order pay schedules after complete")
+	public void verifyOrderPaySchedules(@NonNull final String orderIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_SeqNo);
+			final BigDecimal dueAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueAmt);
+			final Timestamp dueDate = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueDate);
+			final String status = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_Status	);
+			final int percent = DataTableUtil.extractIntForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_Percent	);
+
+
+			final Optional<I_C_OrderPaySchedule> paySchedule = queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
+					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
+					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_SeqNo, seqNo)
+					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_DueAmt, dueAmt)
+					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_DueDate, dueDate)
+					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_Status, status)
+					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_Percent, percent)
+					.create()
+					.firstOnlyOptional(I_C_OrderPaySchedule.class);
+
+			assertThat(paySchedule).isPresent();
 		}
 	}
 }

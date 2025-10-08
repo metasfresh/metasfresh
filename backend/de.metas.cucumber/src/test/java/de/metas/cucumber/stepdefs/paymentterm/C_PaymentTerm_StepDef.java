@@ -33,22 +33,27 @@ import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import java.util.Optional;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_PaymentTerm_Break;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class C_PaymentTerm_StepDef
 {
-	final C_PaymentTerm_StepDefData paymentTermTable;
+	private final C_PaymentTerm_StepDefData paymentTermTable;
+	private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
+
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
-	public C_PaymentTerm_StepDef(@NonNull final C_PaymentTerm_StepDefData paymentTermTable)
+	public C_PaymentTerm_StepDef(@NonNull final C_PaymentTerm_StepDefData paymentTermTable, @NonNull final C_PaymentTerm_Break_StepDefData paymentTermBreakTable)
+
 	{
 		this.paymentTermTable = paymentTermTable;
+		this.paymentTermBreakTable = paymentTermBreakTable;
 	}
 
 	@And("load C_PaymentTerm by id:")
@@ -62,6 +67,20 @@ public class C_PaymentTerm_StepDef
 
 			final String paymentTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			paymentTermTable.put(paymentTermIdentifier, paymentTerm);
+		}
+	}
+
+	@And("load C_PaymentTerm_Break by id:")
+	public void loadC_PaymentTerm_Break(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final int paymentTermBreakId = DataTableUtil.extractIntForColumnName(row, I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID);
+
+			final I_C_PaymentTerm_Break paymentTermBreak = InterfaceWrapperHelper.load(paymentTermBreakId, I_C_PaymentTerm_Break.class);
+
+			final String paymentTermBreakIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			paymentTermBreakTable.put(paymentTermBreakIdentifier, paymentTermBreak);
 		}
 	}
 

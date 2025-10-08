@@ -253,6 +253,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.collect(GuavaCollectors.toImmutableListMultimap(termBreak -> termBreak.getId().getPaymentTermId()));
 	}
 
+	@NonNull
 	@Override
 	public ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
 	{
@@ -261,8 +262,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 	private static PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
 	{
-		final boolean isComplexPaymentTerm = record.isComplex();
-
 		return PaymentTerm.builder()
 				.id(extractId(record))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
