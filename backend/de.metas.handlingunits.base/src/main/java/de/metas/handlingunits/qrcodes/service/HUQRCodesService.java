@@ -399,9 +399,10 @@ public class HUQRCodesService
 			return customHUQRCode;
 		}
 
+		// M_HU.Value / ExternalBarcode attribute
 		{
-			final HuId huId = HuId.ofHUValueOrNull(scannedCode.getAsString());
-			if (huId != null && handlingUnitsBL.existsById(huId))
+			final HuId huId = handlingUnitsBL.getHUIdByValueOrExternalBarcode(scannedCode).orElse(null);
+			if (huId != null)
 			{
 				return getFirstQRCodeByHuId(huId);
 			}

@@ -672,6 +672,12 @@ import java.util.stream.Stream;
 	}
 
 	@Override
+	public Optional<HuId> firstIdOnly()
+	{
+		return createQuery().firstIdOnlyOptional(HuId::ofRepoIdOrNull);
+	}
+
+	@Override
 	public int count()
 	{
 		return createQuery()

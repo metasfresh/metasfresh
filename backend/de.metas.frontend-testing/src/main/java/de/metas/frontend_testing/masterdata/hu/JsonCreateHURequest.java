@@ -20,4 +20,5 @@ public class JsonCreateHURequest
 	@Nullable BigDecimal weightNet;
 	@Nullable String lotNo;
 	@Nullable String bestBeforeDate;
+	@Nullable String externalBarcode;
 }
