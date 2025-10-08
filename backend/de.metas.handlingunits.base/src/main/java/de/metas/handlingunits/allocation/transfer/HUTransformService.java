@@ -82,6 +82,7 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -165,6 +166,8 @@ public class HUTransformService
 
 	private final IHUContext huContext;
 	private final ImmutableList<TableRecordReference> referencedObjects;
+
+	private static final AdMessageKey MSG_HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND = AdMessageKey.of("HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND");
 
 	/**
 	 * Uses {@link IHUContextFactory#createMutableHUContext(Properties, String)} with the given {@code ctx} and {@code trxName} and returns a new {@link HUTransformService} instance with that huContext.
@@ -1307,8 +1310,8 @@ public class HUTransformService
 					.findFirst().orElse(null);
 			if (materialItem == null)
 			{
-				throw new HUException("@NotFound@ @M_HU_PI_Item_ID@")
-						.setParameter("tuPI", tuPI);
+				throw new HUException(MSG_HU_PACK_INSTR_MATERIAL_LINE_NOT_FOUND, tuPI.getName(), tuPI.getM_HU_PI_ID(), sourceTuHU.getM_HU_ID())
+						.markAsUserValidationError();
 			}
 			destination.setTUPI(tuPI);
 			destination.addCUPerTU(cuProductId, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
