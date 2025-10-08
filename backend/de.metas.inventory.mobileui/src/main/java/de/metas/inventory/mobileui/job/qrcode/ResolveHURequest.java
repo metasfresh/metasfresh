@@ -1,7 +1,5 @@
 package de.metas.inventory.mobileui.job.qrcode;
 
-import de.metas.handlingunits.inventory.Inventory;
-import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;

@@ -3,7 +3,6 @@ package de.metas.inventory.mobileui.deps.warehouse;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
 import lombok.Builder;

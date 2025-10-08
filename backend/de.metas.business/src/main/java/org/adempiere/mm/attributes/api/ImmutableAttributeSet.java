@@ -576,6 +576,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 		public Builder(@NonNull final Builder other)
 		{
+			this._attributesRepo = other._attributesRepo;
 			this.attributesById = new LinkedHashMap<>(other.attributesById);
 			this.attributesByCode = new LinkedHashMap<>(other.attributesByCode);
 			this.valuesByAttributeCode = new LinkedHashMap<>(other.valuesByAttributeCode);

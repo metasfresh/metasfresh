@@ -1,6 +1,5 @@
 package de.metas.inventory.mobileui.rest_api.json;
 
-import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.InventoryLineId;
 import de.metas.product.ProductId;
