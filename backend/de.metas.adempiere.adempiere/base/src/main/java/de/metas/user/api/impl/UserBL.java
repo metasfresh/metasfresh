@@ -312,6 +312,11 @@ public class UserBL implements IUserBL
 			return true;
 		}
 
+		if(userRolePermissionsDAO.isAdministrator(request.getContextClientId(), request.getContextUserId(), request.getContextDate()))
+		{
+			return false;
+		}
+
 		// If the role permits it, there is no need to enter the old password
 		return !userRolePermissionsDAO.isAllowPasswordChangeForOthers(request.getContextRoleId(), request.getContextClientId(), request.getContextUserId(), request.getContextDate());// old password is required
 	}
