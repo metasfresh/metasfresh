@@ -23,6 +23,7 @@
 package de.metas.payment.paymentterm;
 
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,14 +32,13 @@ import lombok.Value;
 @Value
 public class PaymentTermBreak
 {
-
 	@NonNull PaymentTermBreakId id;
 	@NonNull PaymentTermId paymentTermId;
-
 	@NonNull String description;
 	@NonNull ReferenceDateType referenceDateType;
 	@NonNull Percent percent;
+	@NonNull SeqNo seqNo;
+
 	int offsetDays;
-	int seqNo;
 }
 

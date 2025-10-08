@@ -13,6 +13,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -240,6 +241,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.netDay(record.getNetDay())
 				.discountDays(record.getDiscountDays())
 				._default(record.isDefault())
+				.isComplex(record.isComplex())
 				.discount(Percent.of(record.getDiscount()))
 				.breaks(paymentTermBreaks)
 				.build();
@@ -280,7 +282,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		return PaymentTermBreak.builder()
 				.id(id)
 				.paymentTermId(paymentTermId)
-				.seqNo(record.getSeqNo())
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.description(record.getDescription())
 				.percent(percent)
 				.referenceDateType(referenceDateType)

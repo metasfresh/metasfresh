@@ -27,12 +27,13 @@ import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * Request object containing all information needed to create an OrderPaySchedule.
@@ -46,23 +47,9 @@ public class OrderPayScheduleRequest
 	@NonNull PaymentTermBreakId paymentTermBreakId;
 	@NonNull ReferenceDateType referenceDateType;
 	@NonNull Amount dueAmount;
-	@NonNull Timestamp dueDate;
+	@NonNull Instant dueDate;
 	@NonNull Percent percent;
+	@NonNull SeqNo seqNo;
+
 	@Nullable OrderPayScheduleStatus orderPayScheduleStatus;
-
-	int seqNo;
-
-	public OrderPaySchedule toOrderPaySchedule()
-	{
-		return OrderPaySchedule.builder()
-				.id(null) // New record, no ID yet
-				.orderId(orderId)
-				.paymentTermBreakId(paymentTermBreakId)
-				.referenceDateType(referenceDateType)
-				.dueAmount(dueAmount)
-				.dueDate(dueDate)
-				.percent(percent)
-				.orderPayScheduleStatus(orderPayScheduleStatus)
-				.build();
-	}
 }

@@ -22,16 +22,12 @@
 
 package de.metas.order.paymentschedule;
 
-import de.metas.currency.Amount;
 import de.metas.order.OrderId;
-import de.metas.payment.paymentterm.PaymentTermBreak;
-import de.metas.payment.paymentterm.ReferenceDateType;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -46,7 +42,17 @@ public class OrderPayScheduleService
 
 	public void createSchedule(@NonNull final OrderPayScheduleRequest orderPayScheduleRequest)
 	{
-		final OrderPaySchedule schedule = orderPayScheduleRequest.toOrderPaySchedule();
+		final OrderPaySchedule schedule = OrderPaySchedule.builder()
+				.id(null) // New record, no ID yet
+				.orderId(orderPayScheduleRequest.getOrderId())
+				.paymentTermBreakId(orderPayScheduleRequest.getPaymentTermBreakId())
+				.referenceDateType(orderPayScheduleRequest.getReferenceDateType())
+				.dueAmount(orderPayScheduleRequest.getDueAmount())
+				.dueDate(TimeUtil.asInstant(orderPayScheduleRequest.getDueDate()))
+				.percent(orderPayScheduleRequest.getPercent())
+				.seqNo(orderPayScheduleRequest.getSeqNo())
+				.orderPayScheduleStatus(orderPayScheduleRequest.getOrderPayScheduleStatus())
+				.build();
 		orderPayScheduleRepo.save(schedule);
 	}
 
@@ -59,5 +65,10 @@ public class OrderPayScheduleService
 	public void deleteByOrderId(@NonNull final OrderId orderId)
 	{
 		orderPayScheduleRepo.deleteByOrderId(orderId);
+	}
+
+	public SeqNo getNextSeqNo(@NonNull final OrderId orderId)
+	{
+		return orderPayScheduleRepo.getNextSeqNo(orderId);
 	}
 }

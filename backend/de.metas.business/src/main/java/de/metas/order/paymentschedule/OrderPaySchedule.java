@@ -22,25 +22,25 @@
 
 package de.metas.order.paymentschedule;
 
-
 import de.metas.currency.Amount;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Value
 @Builder(toBuilder = true)
 public class OrderPaySchedule
 {
 	@Nullable OrderPayScheduleId id;
-	@Nullable Timestamp dueDate;
+	@Nullable Instant dueDate;
 	@Nullable OrderPayScheduleStatus orderPayScheduleStatus;
 
 	@NonNull OrderId orderId;
@@ -48,6 +48,5 @@ public class OrderPaySchedule
 	@NonNull Amount dueAmount;
 	@NonNull PaymentTermBreakId paymentTermBreakId;
 	@NonNull Percent percent;
-
-	int seqNo;
+	@NonNull SeqNo seqNo;
 }

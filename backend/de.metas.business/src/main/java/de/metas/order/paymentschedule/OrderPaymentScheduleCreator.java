@@ -31,10 +31,9 @@ import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.payment.paymentterm.ReferenceDateType;
-import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
-import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -45,7 +44,10 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneOffset;
 
 @Service
 public class OrderPaymentScheduleCreator
@@ -56,7 +58,10 @@ public class OrderPaymentScheduleCreator
 		return new OrderPaymentScheduleCreator(new PaymentTermService(), orderPayScheduleService);
 	}
 
-	private static final Timestamp PENDING_DATE = Timestamp.valueOf("9999-01-01 00:00:00");
+	public static final Instant PENDING_DATE =
+			LocalDateTime
+					.of(9999, Month.JANUARY, 1, 0, 0, 0) // Create the local date and time
+					.toInstant(ZoneOffset.UTC);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final PaymentTermService paymentTermService;
@@ -109,7 +114,6 @@ public class OrderPaymentScheduleCreator
 
 	}
 
-
 	/**
 	 * Processes a single PaymentTermBreak, calculates the due amount, determines the due date/status,
 	 * and creates the corresponding OrderPaySchedule record.
@@ -124,8 +128,8 @@ public class OrderPaymentScheduleCreator
 
 		final Percent percentage = termBreak.getPercent();
 		final Amount dueAmount = grandTotal.multiply(percentage, precision);
-
 		final ReferenceDateResult result = computeReferenceDate(orderRecord, termBreak);
+		final SeqNo seqNo = orderPayScheduleService.getNextSeqNo(orderId);
 
 		final OrderPayScheduleRequest orderPayScheduleRequest = OrderPayScheduleRequest.builder()
 				.orderId(orderId)
@@ -133,6 +137,9 @@ public class OrderPaymentScheduleCreator
 				.dueAmount(dueAmount)
 				.paymentTermBreakId(termBreak.getId())
 				.referenceDateType(termBreak.getReferenceDateType())
+				.percent(percentage)
+				.seqNo(seqNo)
+				.orderPayScheduleStatus(result.getStatus())
 				.build();
 
 		orderPayScheduleService.createSchedule(orderPayScheduleRequest);
@@ -143,8 +150,8 @@ public class OrderPaymentScheduleCreator
 	 */
 	private ReferenceDateResult computeReferenceDate(final @NonNull I_C_Order order, final @NonNull PaymentTermBreak termBreak)
 	{
-		final Timestamp referenceDate = getAvailableReferenceDate(order, termBreak.getReferenceDateType());
-		final Timestamp finalDueDate;
+		final Instant referenceDate = getAvailableReferenceDate(order, termBreak.getReferenceDateType());
+		final Instant finalDueDate;
 		final OrderPayScheduleStatus status;
 
 		if (referenceDate != null)
@@ -163,17 +170,17 @@ public class OrderPaymentScheduleCreator
 		return new ReferenceDateResult(finalDueDate, status);
 	}
 
-	private @Nullable Timestamp getAvailableReferenceDate(
+	private @Nullable Instant getAvailableReferenceDate(
 			final @NonNull I_C_Order order,
 			final @NonNull ReferenceDateType referenceDateType)
 	{
 		switch (referenceDateType)
 		{
 			case OrderDate:
-				return order.getDateOrdered();
+				return TimeUtil.asInstant(order.getDateOrdered());
 			case LCDate:
 				// LC Date is captured directly on the Order
-				return order.getLC_Date();
+				return TimeUtil.asInstant(order.getLC_Date());
 			case BLDate:
 			case ETADate:
 			case InvoiceDate:
@@ -192,7 +199,7 @@ public class OrderPaymentScheduleCreator
 	@Value
 	static class ReferenceDateResult
 	{
-		@NonNull Timestamp calculatedDueDate;
+		@NonNull Instant calculatedDueDate;
 		@NonNull OrderPayScheduleStatus status;
 	}
 
