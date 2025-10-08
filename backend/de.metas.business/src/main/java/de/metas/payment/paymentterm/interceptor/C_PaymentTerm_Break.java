@@ -23,10 +23,10 @@
 package de.metas.payment.paymentterm.interceptor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.i18n.AdMessageKey;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -43,7 +43,6 @@ import org.springframework.stereotype.Component;
 public class C_PaymentTerm_Break
 {
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	private static final AdMessageKey C_PAYMENTTERM_BREAK_TotalPercentTooHigh = AdMessageKey.of("C_PaymentTerm_Break_TotalPercentTooHigh");
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_C_PaymentTerm_Break.COLUMNNAME_Percent)
 	public void assertTotalPercentageUnderLimit(@NonNull final I_C_PaymentTerm_Break record)
@@ -68,7 +67,7 @@ public class C_PaymentTerm_Break
 
 		if (totalPercent > 100)
 		{
-			throw new AdempiereException(C_PAYMENTTERM_BREAK_TotalPercentTooHigh, totalPercent);
+			throw new AdempiereException(PaymentTermConstants.C_PAYMENTTERM_BREAK_TotalPercentTooHigh, totalPercent);
 		}
 	}
 }

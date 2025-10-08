@@ -24,12 +24,12 @@ package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.i18n.AdMessageKey;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
+import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.payment.paymentterm.ReferenceDateType;
@@ -67,9 +67,6 @@ public class OrderPaymentScheduleCreator
 	private final PaymentTermService paymentTermService;
 	private final OrderPayScheduleService orderPayScheduleService;
 
-	public static final Instant PENDING_DATE = LocalDateTime.of(9999, Month.JANUARY, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
-	private static final AdMessageKey ORDERPAYMENTSHEDULECREATOR_ComplexTermConflict = AdMessageKey.of("OrderPaymentScheduleCreator_ComplexTermConflict");
-
 	/**
 	 * Entry point to create schedules for a completed Order.
 	 */
@@ -85,7 +82,10 @@ public class OrderPaymentScheduleCreator
 
 		if (paymentTermService.hasPaySchedule(paymenttermId))
 		{
-			throw new AdempiereException(ORDERPAYMENTSHEDULECREATOR_ComplexTermConflict, paymentTerm.getName());
+			throw new AdempiereException(PaymentTermConstants.MSG_ComplexTermConflict)
+					.appendParametersToMessage()
+					.setParameter("PaymentTerm", paymentTerm.getName());
+
 		}
 
 		final Money grandTotal = orderBL.getGrandTotal(orderRecord);
@@ -159,7 +159,7 @@ public class OrderPaymentScheduleCreator
 		else
 		{
 			// Date is missing (BLDate, ETADate, etc.): set sentinel date and pending status
-			finalDueDate = PENDING_DATE;
+			finalDueDate = PaymentTermConstants.PENDING_DATE;
 			status = OrderPayScheduleStatus.Pending;
 		}
 

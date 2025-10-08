@@ -150,3 +150,9 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Zahlungsbedingung {0} ist k
 UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
 ;
 
+
+-- Value: C_PaymentTerm_ComplexTermConflict
+-- 2025-10-08T12:27:40.005Z
+UPDATE AD_Message SET Value='C_PaymentTerm_ComplexTermConflict',Updated=TO_TIMESTAMP('2025-10-08 12:27:40.002000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Message_ID=545596
+;
+
