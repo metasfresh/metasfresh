@@ -1,17 +1,16 @@
 package de.metas.shipping;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.OrderId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -53,11 +52,17 @@ public class PurchaseOrderToShipperTransportationService
 				.create()
 				.listIds(OrderId::ofRepoId)
 				.stream()
-				.filter(orderId -> repo.purchaseOrderNotInShipperTransportation(orderId))
+				.filter(repo::purchaseOrderNotInShipperTransportation)
 				.collect(ImmutableList.toImmutableList());
 
+		if (validPurchaseOrdersIds.isEmpty())
+		{
+			Loggables.addLog("No purchase orders found for shipper transportation with ID: {}", shipperTransportationId);
+		}
+		
 		for (final OrderId purchaseOrderId : validPurchaseOrdersIds)
 		{
+			Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", purchaseOrderId, shipperTransportationId);
 			repo.addPurchaseOrderToShipperTransportation(purchaseOrderId, shipperTransportationId);
 		}
 
