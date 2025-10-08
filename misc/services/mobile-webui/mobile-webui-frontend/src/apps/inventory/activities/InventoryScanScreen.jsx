@@ -1,22 +1,63 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { resolveHU, resolveLocator } from '../api';
+import { reportInventoryCounting, resolveHU, resolveLocator } from '../api';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { inventoryJobLocation } from '../routes';
-import { toastError } from '../../../utils/toast';
+import { toastError, toastErrorFromObj } from '../../../utils/toast';
+import InventoryCountComponent from './InventoryCountComponent';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { useDispatch } from 'react-redux';
 
 const STATUS_ScanLocator = 'ScanLocator';
 const STATUS_ScanHU = 'ScanHU';
 const STATUS_FillData = 'FillData';
 
+const DEBUGGING = false;
+
 const InventoryScanScreen = () => {
-  const { wfProcessId, lineId } = useScreenDefinition({
+  const { applicationId, wfProcessId, lineId, history } = useScreenDefinition({
     screenId: 'InventoryScanScreen',
     back: inventoryJobLocation,
   });
+  const dispatch = useDispatch();
 
-  const [status, setStatus] = React.useState(STATUS_ScanLocator);
-  const [locatorQRCode, setLocatorQRCode] = React.useState();
+  const [processing, setProcessing] = useState(false);
+  const [status, setStatus] = useState(STATUS_ScanLocator);
+  const [locatorQRCode, setLocatorQRCode] = useState();
+  const [resolvedHU, setResolvedHU] = useState();
+
+  const isReadonly = processing;
+
+  // FIXME: DEBUGGING
+  if (DEBUGGING) {
+    useEffect(() => {
+      setLocatorQRCode('LOC#1#{"warehouseId":1000229,"locatorId":1000119,"caption":"wh_20251002T093155523_Locator"}');
+      setResolvedHU({
+        lineId: 1000169,
+        huId: 1003822,
+        productId: 2007215,
+        uom: 'Stk',
+        qtyBooked: 68,
+        attributes: [
+          {
+            code: 'HU_BestBeforeDate',
+            caption: 'Mindesthaltbarkeit',
+            valueType: 'DATE',
+            value: null,
+          },
+          {
+            code: 'Lot-Nummer',
+            caption: 'Lot-Nummer',
+            valueType: 'STRING',
+            value: null,
+          },
+        ],
+      });
+      setStatus(STATUS_FillData);
+    }, []);
+  }
+  // console.log('InventoryScanScreen - locatorQRCode: ' + JSON.stringify(locatorQRCode, null, 2));
+  // console.log('InventoryScanScreen - resolvedHU: ' + JSON.stringify(resolvedHU, null, 2));
 
   const onLocatorScanned = ({ scannedBarcode }) => {
     resolveLocator({ scannedBarcode, wfProcessId, lineId }).then((response) => {
@@ -30,13 +71,30 @@ const InventoryScanScreen = () => {
   };
 
   const onHUScanned = ({ scannedBarcode }) => {
-    console.log('**** onHUScanned', { scannedBarcode });
     resolveHU({ scannedBarcode, wfProcessId, lineId, locatorQRCode }).then((response) => {
-      console.log('onBarcodeScanned', { response });
+      setResolvedHU(response);
+      setStatus(STATUS_FillData);
     });
   };
 
-  console.log('InventoryScanScreen', { status, locatorQRCode });
+  const onInventoryCountSubmit = ({ qtyCount, attributes, lineCountingDone }) => {
+    setProcessing(true);
+    reportInventoryCounting({
+      wfProcessId,
+      lineId: resolvedHU?.lineId,
+      scannedBarcode: 'TODO', // TODO
+      huId: resolvedHU?.huId,
+      qtyCount,
+      lineCountingDone,
+      attributes,
+    })
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
+        history.goTo(inventoryJobLocation({ applicationId, wfProcessId }));
+      })
+      .catch((error) => toastErrorFromObj(error))
+      .finally(() => setProcessing(false));
+  };
 
   if (status === STATUS_ScanLocator) {
     return (
@@ -57,7 +115,13 @@ const InventoryScanScreen = () => {
       />
     );
   } else if (status === STATUS_FillData) {
-    return <div>Fill data</div>;
+    return (
+      <InventoryCountComponent
+        disabled={isReadonly}
+        resolvedHU={resolvedHU}
+        onInventoryCountSubmit={onInventoryCountSubmit}
+      />
+    );
   }
 };
 

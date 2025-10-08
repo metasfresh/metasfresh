@@ -1,6 +1,7 @@
 package de.metas.inventory.mobileui.job.service;
 
 import de.metas.handlingunits.inventory.Inventory;
+import de.metas.handlingunits.inventory.InventoryLineCountRequest;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
@@ -12,11 +13,14 @@ import de.metas.inventory.mobileui.job.qrcode.ResolveHUCommand.ResolveHUCommandB
 import de.metas.inventory.mobileui.job.qrcode.ResolveHURequest;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHUResponse;
 import de.metas.inventory.mobileui.rest_api.json.JsonCountRequest;
+import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.resolver.LocatorGlobalQRCodeResolverKey;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolveContext;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverRequest;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
@@ -24,6 +28,7 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toInventoryId;
 
@@ -82,11 +87,17 @@ public class InventoryJobService
 	{
 		final Inventory inventory = getById(wfProcessId, callerId);
 
+		final Set<LocatorId> eligibleLocatorIds = inventory.getLocatorIdsEligibleForCounting(lineId);
+		if (eligibleLocatorIds.isEmpty())
+		{
+			return LocatorScannedCodeResolverResult.notFound(LocatorGlobalQRCodeResolverKey.ofString("InventoryJobService"), "no such locator in current inventory");
+		}
+
 		return warehouseService.resolveLocator(
 				LocatorScannedCodeResolverRequest.builder()
 						.scannedCode(scannedCode)
 						.context(LocatorScannedCodeResolveContext.builder()
-								.eligibleLocatorIds(inventory.getLocatorIdsEligibleForCounting(lineId))
+								.eligibleLocatorIds(eligibleLocatorIds)
 								.build())
 						.build()
 		);
@@ -110,13 +121,22 @@ public class InventoryJobService
 				.huService(huService);
 	}
 
-	public Inventory count(@NonNull final JsonCountRequest request, final UserId callerId)
+	public Inventory reportCounting(@NonNull final JsonCountRequest request, final UserId callerId)
 	{
-		final Inventory inventory = getById(toInventoryId(request.getWfProcessId()));
-		inventory.assertHasAccess(callerId);
-
-		// TODO
-
-		return inventory;
+		final InventoryId inventoryId = toInventoryId(request.getWfProcessId());
+		return inventoryService.updateById(inventoryId, inventory -> {
+			inventory.assertHasAccess(callerId);
+			return inventory.updatingLineById(request.getLineId(), line -> {
+				// TODO handle the case when huId is null
+				final Quantity qtyBook = huService.getQty(request.getHuId(), line.getProductId());
+				final Quantity qtyCount = Quantity.of(request.getQtyCount(), qtyBook.getUOM());
+				return line.addingOrUpdating(InventoryLineCountRequest.builder()
+						.huId(request.getHuId())
+						.scannedCode(request.getScannedCode())
+						.qtyBook(qtyBook)
+						.qtyCount(qtyCount)
+						.build());
+			});
+		});
 	}
 }

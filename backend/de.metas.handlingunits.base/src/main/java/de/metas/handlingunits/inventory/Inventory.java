@@ -12,6 +12,7 @@ import de.metas.inventory.InventoryLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.reducers.Reducers;
 import lombok.Builder;
 import lombok.NonNull;
@@ -25,6 +26,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 /*
@@ -184,6 +186,18 @@ public class Inventory
 				.filter(InventoryLine::isEligibleForCounting)
 				.map(InventoryLine::getLocatorId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Inventory updatingLineById(@NonNull final InventoryLineId lineId, @NonNull UnaryOperator<InventoryLine> updater)
+	{
+		final ImmutableList<InventoryLine> newLines = CollectionUtils.map(
+				this.lines,
+				line -> InventoryLineId.equals(line.getId(), lineId) ? updater.apply(line) : line
+		);
+
+		return this.lines == newLines
+				? this
+				: toBuilder().lines(newLines).build();
 	}
 
 }

@@ -76,11 +76,11 @@ public class InventoryRestController
 	}
 
 	@PostMapping("/count")
-	public JsonWFProcess count(@NonNull final JsonCountRequest request)
+	public JsonWFProcess reportCounting(@RequestBody @NonNull final JsonCountRequest request)
 	{
 		assertApplicationAccess();
 
-		final Inventory inventory = jobService.count(request, Env.getLoggedUserId());
+		final Inventory inventory = jobService.reportCounting(request, Env.getLoggedUserId());
 		return toJsonWFProcess(inventory);
 	}
 

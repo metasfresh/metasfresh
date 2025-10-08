@@ -7,6 +7,8 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -40,6 +42,12 @@ public class HandlingUnitsService
 	{
 		final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory().getProductStorages(hu);
 		return new HUProductStorages(productStorages);
+	}
+
+	public Quantity getQty(final HuId huId, final ProductId productId)
+	{
+		final I_M_HU hu = getById(huId);
+		return getProductStorages(hu).getQty(productId);
 	}
 
 	public ImmutableAttributeSet getImmutableAttributeSet(final I_M_HU hu) {return handlingUnitsBL.getImmutableAttributeSet(hu);}

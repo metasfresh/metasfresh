@@ -3,6 +3,7 @@ package de.metas.handlingunits.inventory;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
@@ -23,6 +24,7 @@ import lombok.experimental.NonFinal;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -162,10 +164,15 @@ public class InventoryLine
 
 	public String getUOMSymbol()
 	{
+		return getUOM().getUOMSymbol();
+	}
+
+	public I_C_UOM getUOM()
+	{
 		final Quantity qtyBookFixed = getQtyBookFixed();
 		final Quantity qtyCountFixed = getQtyCountFixed();
 		Quantity.assertSameUOM(qtyBookFixed, qtyCountFixed);
-		return qtyBookFixed.getUOMSymbol();
+		return qtyBookFixed.getUOM();
 	}
 
 	public Quantity getQtyBookFixed()
@@ -208,7 +215,12 @@ public class InventoryLine
 
 	public Quantity getQtyCount()
 	{
-		return getInventoryLineHUs()
+		return computeQtyCountSum(inventoryLineHUs);
+	}
+
+	private Quantity computeQtyCountSum(final List<InventoryLineHU> inventoryLineHUs)
+	{
+		return inventoryLineHUs
 				.stream()
 				.map(InventoryLineHU::getQtyCount)
 				.reduce(Quantity::add)
@@ -270,12 +282,51 @@ public class InventoryLine
 		return withInventoryLineHUs(newInventoryLineHUs);
 	}
 
-	public InventoryLine withInventoryLineHUs(@NonNull final List<InventoryLineHU> inventoryLineHUs)
+	public InventoryLine withInventoryLineHUs(@NonNull final List<InventoryLineHU> newInventoryLineHUs)
 	{
 		return toBuilder()
+				.huAggregationType(computeHUAggregationType(newInventoryLineHUs, this.huAggregationType))
 				.clearInventoryLineHUs()
-				.inventoryLineHUs(inventoryLineHUs)
+				.inventoryLineHUs(newInventoryLineHUs)
 				.build();
+	}
+
+	public InventoryLine addingOrUpdating(@NonNull final InventoryLineCountRequest request)
+	{
+		final ArrayList<InventoryLineHU> newLineHUs = new ArrayList<>(inventoryLineHUs.size() + 1);
+		boolean updated = false;
+		for (InventoryLineHU lineHU : inventoryLineHUs)
+		{
+			if (!updated && HuId.equals(lineHU.getHuId(), request.getHuId()))
+			{
+				newLineHUs.add(lineHU.updatingFrom(request));
+				updated = true;
+			}
+			else
+			{
+				newLineHUs.add(lineHU);
+			}
+		}
+
+		if (!updated)
+		{
+			newLineHUs.add(InventoryLineHU.of(request));
+		}
+
+		return toBuilder()
+				.huAggregationType(computeHUAggregationType(newLineHUs, this.huAggregationType))
+				.qtyCountFixed(computeQtyCountSum(newLineHUs))
+				.clearInventoryLineHUs()
+				.inventoryLineHUs(newLineHUs)
+				.build();
+	}
+
+	@Nullable
+	private static HUAggregationType computeHUAggregationType(
+			@NonNull final List<InventoryLineHU> newInventoryLineHUs,
+			@Nullable final HUAggregationType prevHUAggregationType)
+	{
+		return newInventoryLineHUs.size() > 1 ? HUAggregationType.MULTI_HU : prevHUAggregationType;
 	}
 
 	public boolean isEligibleForCounting()

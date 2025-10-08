@@ -34,7 +34,7 @@ public class InventoryJobWFActivityHandler implements WFActivityHandler
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
 		final Inventory inventory = getInventory(wfProcess);
-		final InventoryJsonMapper jsonMapper = jsonMapperService.newMapper();
+		final InventoryJsonMapper jsonMapper = jsonMapperService.newMapper(jsonOpts);
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()

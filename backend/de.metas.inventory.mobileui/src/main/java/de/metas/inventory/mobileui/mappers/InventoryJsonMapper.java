@@ -9,6 +9,7 @@ import de.metas.inventory.mobileui.deps.warehouse.WarehouseInfo;
 import de.metas.inventory.mobileui.deps.warehouse.WarehousesLoadingCache;
 import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJob;
 import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJobLine;
+import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
@@ -19,6 +20,7 @@ public class InventoryJsonMapper
 {
 	@NonNull private final WarehousesLoadingCache warehouses;
 	@NonNull private final ProductsLoadingCache products;
+	@NonNull private final String adLanguage;
 
 	public JsonInventoryJob toJson(final Inventory inventory)
 	{
@@ -27,7 +29,7 @@ public class InventoryJsonMapper
 		return JsonInventoryJob.builder()
 				.id(inventory.getId())
 				.documentNo(inventory.getDocumentNo())
-				.movementDate(inventory.getMovementDate().toString())
+				.movementDate(inventory.getMovementDate().toLocalDate().toString())
 				.warehouseName(warehouseInfo != null ? warehouseInfo.getWarehouseName() : "")
 				.lines(inventory.getLines()
 						.stream()
@@ -48,7 +50,7 @@ public class InventoryJsonMapper
 				.caption(productInfo.getProductNo() + "_" + productInfo.getProductName())
 				.productId(productInfo.getProductId())
 				.productNo(productInfo.getProductNo())
-				.productName(productInfo.getProductName())
+				.productName(productInfo.getProductName().translate(adLanguage))
 				.locatorId(locatorId.getRepoId())
 				.locatorName(locatorName)
 				.uom(line.getUOMSymbol())

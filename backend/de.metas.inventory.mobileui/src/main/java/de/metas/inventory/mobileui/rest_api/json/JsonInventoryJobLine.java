@@ -1,6 +1,5 @@
 package de.metas.inventory.mobileui.rest_api.json;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.InventoryLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -20,7 +19,7 @@ public class JsonInventoryJobLine
 
 	@NonNull ProductId productId;
 	@NonNull String productNo;
-	@NonNull ITranslatableString productName;
+	@NonNull String productName;
 
 	@NonNull Integer locatorId;
 	@NonNull String locatorName;

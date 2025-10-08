@@ -8,6 +8,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,12 @@ public class HUProductStorages
 	@NonNull
 	public Quantity getQty(@NonNull final ProductId productId)
 	{
+		return getProductStorage(productId).getQty();
+	}
+
+	@NotNull
+	private IHUProductStorage getProductStorage(final @NotNull ProductId productId)
+	{
 		final IHUProductStorage huProductStorage = byProductId.get(productId);
 		if (huProductStorage == null)
 		{
@@ -31,7 +38,7 @@ public class HUProductStorages
 					.setParameter("huProductStorages", byProductId.values())
 					.setParameter("productId", productId);
 		}
-		return huProductStorage.getQty();
+		return huProductStorage;
 	}
 
 	public Set<ProductId> getProductIds() {return byProductId.keySet();}

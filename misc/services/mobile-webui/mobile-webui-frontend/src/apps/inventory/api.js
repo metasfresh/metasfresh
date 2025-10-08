@@ -15,3 +15,25 @@ export const resolveHU = ({ scannedBarcode, wfProcessId, lineId, locatorQRCode }
     .post(toUrl(`${inventoryBasePath}/resolveHU`), { scannedCode: scannedBarcode, wfProcessId, lineId, locatorQRCode })
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const reportInventoryCounting = ({
+  wfProcessId,
+  lineId,
+  scannedBarcode,
+  huId,
+  qtyCount,
+  lineCountingDone,
+  attributes,
+}) => {
+  return axios
+    .post(toUrl(`${inventoryBasePath}/count`), {
+      wfProcessId,
+      lineId,
+      scannedCode: scannedBarcode,
+      huId,
+      qtyCount,
+      lineCountingDone,
+      attributes,
+    })
+    .then((response) => unboxAxiosResponse(response));
+};
