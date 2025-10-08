@@ -28,6 +28,7 @@ import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -36,32 +37,32 @@ import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-
 @Interceptor(I_C_PaymentTerm_Break.class)
 @Component
 public class C_PaymentTerm_Break
 {
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_C_PaymentTerm_Break.COLUMNNAME_Percent)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_C_PaymentTerm_Break.COLUMNNAME_Percent)
 	public void assertTotalPercentageUnderLimit(@NonNull final I_C_PaymentTerm_Break record)
 	{
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
 		final PaymentTermBreakId currentBreakIdToExclude = PaymentTermBreakId.ofRepoIdOrNull(paymentTermId, record.getC_PaymentTerm_Break_ID());
-		final ImmutableList<PaymentTermBreak>  allBreaksForTerm = paymentTermRepository.retrievePaymentTermBreaks(paymentTermId);
+		final ImmutableList<PaymentTermBreak> allBreaksForTerm = paymentTermRepository.retrievePaymentTermBreaks(paymentTermId);
 
 		if (allBreaksForTerm.isEmpty())
 		{
 			return;
 		}
-		final int otherBreaksTotalPercent = allBreaksForTerm
+
+		final Percent otherBreaksTotalPercent = allBreaksForTerm
 				.stream()
 				.filter(b -> !PaymentTermBreakId.equals(b.getId(), currentBreakIdToExclude))
-				.mapToInt(b -> b.getPercent().toInt())
-				.sum();
+				.map(PaymentTermBreak::getPercent)
+				.reduce(Percent.ZERO, Percent::add);
+
 		final int currentRecordPercent = record.getPercent();
-		final int totalPercent = otherBreaksTotalPercent + currentRecordPercent;
+		final int totalPercent = otherBreaksTotalPercent.toInt() + currentRecordPercent;
 
 		if (totalPercent > 100)
 		{

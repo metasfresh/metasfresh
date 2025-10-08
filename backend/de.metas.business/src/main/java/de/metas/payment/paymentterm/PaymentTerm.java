@@ -32,6 +32,7 @@ import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.stream.Stream;
 
 @Value
 public class PaymentTerm
@@ -99,16 +100,16 @@ public class PaymentTerm
 
 	}
 
-	public ImmutableList<PaymentTermBreak> getSortedBreaks()
+	public Stream<PaymentTermBreak> getSortedBreaks()
 	{
 		if (breaks == null || breaks.isEmpty())
 		{
-			return ImmutableList.of();
+			return Stream.empty();
 		}
 
 		return breaks.stream()
-				.sorted(Comparator.comparing(PaymentTermBreak::getSeqNo))
-				.collect(ImmutableList.toImmutableList());
+				.sorted(Comparator.comparing(PaymentTermBreak::getSeqNo));
 	}
+
 }
 

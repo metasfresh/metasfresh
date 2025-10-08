@@ -48,7 +48,6 @@ public class OrderPaySchedule
 	@NonNull OrderId orderId;
 	@NonNull ReferenceDateType referenceDateType;
 	@NonNull Money dueAmount;
-	@NonNull CurrencyId currencyId;
 	@NonNull PaymentTermId paymentTermId;
 	@NonNull PaymentTermBreakId paymentTermBreakId;
 	@NonNull Percent percent;

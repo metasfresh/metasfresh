@@ -103,6 +103,7 @@ public class OrderPayScheduleRepository
 		record.setC_Order_ID(schedule.getOrderId().getRepoId());
 		record.setC_PaymentTerm_Break_ID(schedule.getPaymentTermBreakId().getRepoId());
 		record.setDueAmt(schedule.getDueAmount().toBigDecimal());
+		record.setC_Currency_ID(schedule.getDueAmount().getCurrencyId().getRepoId());
 		record.setDueDate(TimeUtil.asTimestamp(schedule.getDueDate()));
 		record.setPercent(schedule.getPercent().toInt());
 		record.setReferenceDateType(schedule.getReferenceDateType().getCode());

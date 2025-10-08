@@ -22,6 +22,7 @@
 
 package de.metas.order.paymentschedule;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.order.OrderId;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
@@ -36,21 +37,9 @@ public class OrderPayScheduleService
 {
 	private @NonNull final OrderPayScheduleRepository orderPayScheduleRepo;
 
-	public void create(@NonNull final OrderPayScheduleCreateRequest orderPayScheduleRequest)
+	public void create(@NonNull final ImmutableList<OrderPaySchedule> schedules)
 	{
-		final OrderPaySchedule schedule = OrderPaySchedule.builder()
-				.id(null) // New record, no ID yet
-				.orderId(orderPayScheduleRequest.getOrderId())
-				.paymentTermBreakId(orderPayScheduleRequest.getPaymentTermBreakId())
-				.referenceDateType(orderPayScheduleRequest.getReferenceDateType())
-				.dueAmount(orderPayScheduleRequest.getDueAmount())
-				.dueDate(orderPayScheduleRequest.getDueDate())
-				.percent(orderPayScheduleRequest.getPercent())
-				.seqNo(orderPayScheduleRequest.getSeqNo())
-				.orderPayScheduleStatus(orderPayScheduleRequest.getOrderPayScheduleStatus())
-				.build();
-
-		orderPayScheduleRepo.save(schedule);
+		schedules.forEach(orderPayScheduleRepo::save);
 	}
 
 	@NonNull

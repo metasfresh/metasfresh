@@ -134,7 +134,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 						.appendParametersToMessage()
 						.setParameter("PaymentTermQuery", query));
 	}
-	
+
 	@NonNull
 	@Override
 	public Optional<PaymentTermId> retrievePaymentTermId(@NonNull final PaymentTermQuery query)
@@ -275,20 +275,15 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				record.getC_PaymentTerm_ID(),
 				record.getC_PaymentTerm_Break_ID());
 
-		final PaymentTermId paymentTermId =	id.getPaymentTermId();
-		final Percent percent = Percent.of(record.getPercent());
-		final ReferenceDateType referenceDateType = ReferenceDateType.ofCode(record.getReferenceDateType());
-
 		return PaymentTermBreak.builder()
 				.id(id)
-				.paymentTermId(paymentTermId)
+				.paymentTermId(id.getPaymentTermId())
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.description(record.getDescription())
-				.percent(percent)
-				.referenceDateType(referenceDateType)
+				.percent(Percent.of(record.getPercent()))
+				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
 				.offsetDays(record.getOffsetDays())
 				.build();
-
 	}
 
 	@Override

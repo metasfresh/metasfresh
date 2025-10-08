@@ -22,6 +22,7 @@
 
 package de.metas.order.paymentschedule;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -32,6 +33,8 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
+import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -92,40 +95,47 @@ public class OrderPaymentScheduleCreator
 			return; // Nothing to schedule
 		}
 
-		for (final PaymentTermBreak termBreak : paymentTerm.getSortedBreaks())
-		{
+		final OrderSchedulingContext context = OrderSchedulingContext.builder()
+				.orderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
+				.orderDate(TimeUtil.asInstant(orderRecord.getDateOrdered()))
+				.letterOfCreditDate(TimeUtil.asInstant(orderRecord.getLC_Date()))
+				.grandTotal(grandTotal)
+				.precision(precision)
+				.build();
 
-			createSingleOrderPaySchedule(OrderSchedulingContext.builder()
-					.orderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
-					.orderDate(TimeUtil.asInstant(orderRecord.getDateOrdered()))
-					.letterOfCreditDate(TimeUtil.asInstant(orderRecord.getLC_Date()))
-					.grandTotal(grandTotal)
-					.precision(precision)
-					.build(), termBreak);
+		final SeqNo lastSeqNo = orderPayScheduleService.getNextSeqNo(context.getOrderId());
+		final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(lastSeqNo.toInt());
 
-		}
 
+		final ImmutableList<OrderPaySchedule> schedules = paymentTerm
+				.getSortedBreaks()
+				.map(termBreak -> createOrderPaySchedule(context, termBreak, seqNoProvider))
+				.collect(ImmutableList.toImmutableList());
+
+		orderPayScheduleService.create(schedules);
 	}
 
 	/**
 	 * Processes a single PaymentTermBreak, calculates the due amount, determines the due date/status,
-	 * and creates the corresponding OrderPaySchedule record.
+	 * and creates the corresponding OrderPaySchedule object.
 	 */
-	private void createSingleOrderPaySchedule(@NonNull final OrderSchedulingContext context, @NonNull final PaymentTermBreak termBreak)
+	private OrderPaySchedule createOrderPaySchedule(@NonNull final OrderSchedulingContext context, @NonNull final PaymentTermBreak termBreak, @NonNull final SeqNoProvider seqNoProvider
+	)
 	{
 		final ReferenceDateResult result = computeReferenceDate(context.getOrderDate(), context.getLetterOfCreditDate(), termBreak);
 
-		orderPayScheduleService.create(OrderPayScheduleCreateRequest.builder()
+		return OrderPaySchedule.builder()
+				.id(null) // New record, no ID yet
 				.orderId(context.getOrderId())
 				.dueDate(result.getCalculatedDueDate())
 				.dueAmount(context.getGrandTotal().multiply(termBreak.getPercent(), context.getPrecision()))
+				.paymentTermId(termBreak.getId().getPaymentTermId())
 				.paymentTermBreakId(termBreak.getId())
 				.referenceDateType(termBreak.getReferenceDateType())
 				.percent(termBreak.getPercent())
-				.seqNo(orderPayScheduleService.getNextSeqNo(context.getOrderId()))
+				.seqNo(seqNoProvider.getAndIncrement())
 				.orderPayScheduleStatus(result.getStatus())
-				.build());
-
+				.build();
 	}
 
 	/**
