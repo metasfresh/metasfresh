@@ -448,7 +448,7 @@ public class C_OrderLine
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge})
 	public void updatePriceToStd(final I_C_OrderLine orderLine)
 	{
