@@ -1,7 +1,6 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OrderPaySchedule
@@ -213,20 +212,20 @@ public interface I_C_OrderPaySchedule
 	 * Date when the payment is due
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDueDate (@Nullable java.sql.Timestamp DueDate);
+	void setDueDate (java.sql.Timestamp DueDate);
 
 	/**
 	 * Get Due Date.
 	 * Date when the payment is due
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDueDate();
+	java.sql.Timestamp getDueDate();
 
 	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_DueDate = new ModelColumn<>(I_C_OrderPaySchedule.class, "DueDate", null);
 	String COLUMNNAME_DueDate = "DueDate";
@@ -325,19 +324,19 @@ public interface I_C_OrderPaySchedule
 	 * Set Status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setStatus (@Nullable java.lang.String Status);
+	void setStatus (java.lang.String Status);
 
 	/**
 	 * Get Status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getStatus();
+	java.lang.String getStatus();
 
 	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_Status = new ModelColumn<>(I_C_OrderPaySchedule.class, "Status", null);
 	String COLUMNNAME_Status = "Status";

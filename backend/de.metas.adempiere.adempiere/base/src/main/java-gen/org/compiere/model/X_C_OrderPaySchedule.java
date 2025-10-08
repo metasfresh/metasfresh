@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_OrderPaySchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 444674424L;
+	private static final long serialVersionUID = -2027894248L;
 
     /** Standard Constructor */
     public X_C_OrderPaySchedule (final Properties ctx, final int C_OrderPaySchedule_ID, @Nullable final String trxName)
@@ -124,7 +124,7 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	}
 
 	@Override
-	public void setDueDate (final @Nullable java.sql.Timestamp DueDate)
+	public void setDueDate (final java.sql.Timestamp DueDate)
 	{
 		set_Value (COLUMNNAME_DueDate, DueDate);
 	}
@@ -198,7 +198,7 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	/** Paid = P */
 	public static final String STATUS_Paid = "P";
 	@Override
-	public void setStatus (final @Nullable java.lang.String Status)
+	public void setStatus (final java.lang.String Status)
 	{
 		set_Value (COLUMNNAME_Status, Status);
 	}

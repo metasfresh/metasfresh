@@ -124,11 +124,11 @@ public class OrderPayScheduleRepository
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.paymentTermBreakId(PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID()))
 				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
-				.dueDate(TimeUtil.asInstant(record.getDueDate())) // FIXME nullable
+				.dueDate(record.getDueDate().toInstant())
 				.percent(Percent.of(record.getPercent()))
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
-				.orderPayScheduleStatus(OrderPayScheduleStatus.ofCode(record.getStatus())) // FIXME nullable
+				.orderPayScheduleStatus(OrderPayScheduleStatus.ofCode(record.getStatus()))
 				.build();
 	}
 }
