@@ -3,22 +3,27 @@ package de.metas.inventory.mobileui.job.service;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
 import de.metas.inventory.mobileui.deps.handlingunits.HandlingUnitsService;
 import de.metas.inventory.mobileui.deps.products.ProductService;
+import de.metas.inventory.mobileui.deps.warehouse.WarehouseService;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHUCommand;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHUCommand.ResolveHUCommandBuilder;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHURequest;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHUResponse;
 import de.metas.inventory.mobileui.rest_api.json.JsonCountRequest;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolveContext;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverRequest;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
-import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toInventoryId;
 
@@ -27,9 +32,9 @@ import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toInv
 public class InventoryJobService
 {
 	@NonNull private final ProductService productService;
+	@NonNull private final WarehouseService warehouseService;
 	@NonNull private final HandlingUnitsService huService;
 	@NonNull private final InventoryService inventoryService;
-	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	public Inventory getById(final WFProcessId wfProcessId, @NonNull final UserId calledId)
 	{
@@ -69,9 +74,22 @@ public class InventoryJobService
 		return inventory;
 	}
 
-	public LocatorScannedCodeResolverResult resolveLocator(@NonNull final LocatorScannedCodeResolverRequest request)
+	public LocatorScannedCodeResolverResult resolveLocator(
+			@NonNull ScannedCode scannedCode,
+			@NonNull WFProcessId wfProcessId,
+			@Nullable InventoryLineId lineId,
+			@NonNull UserId callerId)
 	{
-		return locatorScannedCodeResolver.resolve(request);
+		final Inventory inventory = getById(wfProcessId, callerId);
+
+		return warehouseService.resolveLocator(
+				LocatorScannedCodeResolverRequest.builder()
+						.scannedCode(scannedCode)
+						.context(LocatorScannedCodeResolveContext.builder()
+								.eligibleLocatorIds(inventory.getLocatorIdsEligibleForCounting(lineId))
+								.build())
+						.build()
+		);
 	}
 
 	public ResolveHUResponse resolveHU(@NonNull final ResolveHURequest request)

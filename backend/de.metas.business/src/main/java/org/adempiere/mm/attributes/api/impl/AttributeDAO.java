@@ -16,10 +16,7 @@ import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -36,7 +33,9 @@ import org.adempiere.mm.attributes.AttributeSetAttributeIdsList;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.AttributeValuesOrderByType;
@@ -53,6 +52,7 @@ import org.compiere.model.I_M_AttributeUse;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -287,6 +287,12 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	public @NotNull Attribute getAttributeByCode(@NonNull final AttributeCode attributeCode)
+	{
+		return getAttributesMap().getAttributeByCode(attributeCode);
+	}
+
+	@Override
 	@Nullable
 	public <T extends I_M_Attribute> T retrieveAttributeByValueOrNull(@NonNull final AttributeCode attributeCode, @NonNull final Class<T> clazz)
 	{
@@ -349,26 +355,22 @@ public class AttributeDAO implements IAttributeDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(AttributeDAO::toAttribute)
+				.map(AttributeDAO::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 
 		return new AttributesMap(attributes);
 	}
 
-	private static Attribute toAttribute(final I_M_Attribute record)
+	private static Attribute fromRecord(final I_M_Attribute record)
 	{
-		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(record);
-		final ITranslatableString displayName = modelTranslationMap
-				.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, record.getName());
-
-		final ITranslatableString description = modelTranslationMap
-				.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, record.getDescription());
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
 
 		return Attribute.builder()
 				.attributeId(AttributeId.ofRepoId(record.getM_Attribute_ID()))
 				.attributeCode(AttributeCode.ofString(record.getValue()))
-				.displayName(displayName)
-				.description(description)
+				.valueType(AttributeValueType.ofCode(record.getAttributeValueType()))
+				.displayName(trls.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, record.getName()))
+				.description(trls.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, record.getDescription()))
 				.build();
 	}
 
@@ -405,7 +407,7 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final List<I_M_Attribute> attributeRecords = getAttributesByAttributeSetId(attributeSetId);
 		final ImmutableList.Builder<AttributeListValue> result = ImmutableList.builder();
 
@@ -656,7 +658,7 @@ public class AttributeDAO implements IAttributeDAO
 				.map(AttributeValuesOrderByType::ofCode)
 				.map(Enum::name)
 				.orElse(I_M_AttributeValue.COLUMNNAME_Value);  // order attributes by value, so we can have names like breakfast, lunch, dinner in their "temporal" order
-		
+
 		return retrieveAttributeValuesMap(ctx, attributeId, includeInactive, validationRuleQueryFilter, orderByColumnName);
 	}
 
@@ -1031,89 +1033,5 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			return map.get(value);
 		}
-	}
-
-	@Value
-	@Builder
-	private static class Attribute
-	{
-		@NonNull
-		AttributeId attributeId;
-
-		@NonNull
-		AttributeCode attributeCode;
-
-		@NonNull
-		ITranslatableString displayName;
-
-		@Nullable
-		ITranslatableString description;
-	}
-
-	@ToString
-	private static class AttributesMap
-	{
-		private final ImmutableMap<AttributeId, Attribute> attributesById;
-		private final ImmutableMap<AttributeCode, Attribute> attributesByCode;
-
-		AttributesMap(@NonNull final List<Attribute> attributes)
-		{
-			this.attributesById = Maps.uniqueIndex(attributes, Attribute::getAttributeId);
-			this.attributesByCode = Maps.uniqueIndex(attributes, Attribute::getAttributeCode);
-		}
-
-		public Attribute getAttributeByCodeOrNull(final AttributeCode attributeCode)
-		{
-			return attributesByCode.get(attributeCode);
-		}
-
-		@Nullable
-		public AttributeId getAttributeIdByCodeOrNull(@NonNull final AttributeCode attributeCode)
-		{
-			final Attribute attribute = getAttributeByCodeOrNull(attributeCode);
-			return attribute != null ? attribute.getAttributeId() : null;
-		}
-
-		@NonNull
-		public AttributeCode getAttributeCodeById(@NonNull final AttributeId id)
-		{
-			return getAttributeById(id).getAttributeCode();
-		}
-
-		@NonNull
-		public Attribute getAttributeById(@NonNull final AttributeId id)
-		{
-			final Attribute attribute = attributesById.get(id);
-			if (attribute == null)
-			{
-				throw new AdempiereException("No Attribute found for ID: " + id);
-			}
-			return attribute;
-		}
-
-		@NonNull
-		public AttributeId getAttributeIdByCode(@NonNull final AttributeCode attributeCode)
-		{
-			final AttributeId attributeId = getAttributeIdByCodeOrNull(attributeCode);
-			if (attributeId == null)
-			{
-				throw new AdempiereException("No active attribute found for `" + attributeCode + "`");
-			}
-			return attributeId;
-		}
-
-		@NonNull
-		public ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds)
-		{
-			if (orderedAttributeIds.isEmpty())
-			{
-				return ImmutableList.of();
-			}
-
-			return orderedAttributeIds.stream()
-					.map(this::getAttributeCodeById)
-					.collect(ImmutableList.toImmutableList());
-		}
-
 	}
 }

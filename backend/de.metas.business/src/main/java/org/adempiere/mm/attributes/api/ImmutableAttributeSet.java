@@ -249,6 +249,12 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return attribute;
 	}
 
+	public String getAttributeNameByCode(@NonNull final AttributeCode attributeCode)
+	{
+		final I_M_Attribute attribute = getAttributeByCode(attributeCode);
+		return attribute.getName();
+	}
+
 	@Override
 	public String getAttributeValueType(@NonNull final I_M_Attribute attribute)
 	{

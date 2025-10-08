@@ -11,6 +11,9 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.Attribute;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.springframework.stereotype.Service;
 
@@ -21,11 +24,23 @@ import java.util.List;
 public class HandlingUnitsService
 {
 	@NonNull final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final HUQRCodesService huQRCodesService;
+
+	public HULoadingCache newLoadingCache()
+	{
+		return HULoadingCache.builder()
+				.huService(this)
+				.build();
+	}
 
 	public I_M_HU getById(HuId huId) {return handlingUnitsBL.getById(huId);}
 
-	public List<IHUProductStorage> getProductStorages(final I_M_HU hu) {return handlingUnitsBL.getStorageFactory().getProductStorages(hu);}
+	public HUProductStorages getProductStorages(final I_M_HU hu)
+	{
+		final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory().getProductStorages(hu);
+		return new HUProductStorages(productStorages);
+	}
 
 	public ImmutableAttributeSet getImmutableAttributeSet(final I_M_HU hu) {return handlingUnitsBL.getImmutableAttributeSet(hu);}
 
@@ -37,5 +52,10 @@ public class HandlingUnitsService
 	public HuId getHuIdByQRCode(final @NonNull HUQRCode huQRCode)
 	{
 		return huQRCodesService.getHuIdByQRCode(huQRCode);
+	}
+
+	public @NonNull Attribute getAttribute(final AttributeCode attributeCode)
+	{
+		return attributeDAO.getAttributeByCode(attributeCode);
 	}
 }

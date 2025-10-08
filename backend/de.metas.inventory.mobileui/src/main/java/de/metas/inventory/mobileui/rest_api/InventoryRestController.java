@@ -19,8 +19,6 @@ import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolveContext;
-import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverRequest;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
@@ -50,15 +48,11 @@ public class InventoryRestController
 	{
 		assertApplicationAccess();
 
-		final Inventory inventory = jobService.getById(request.getWfProcessId(), Env.getLoggedUserId());
-
 		final LocatorScannedCodeResolverResult result = jobService.resolveLocator(
-				LocatorScannedCodeResolverRequest.builder()
-						.scannedCode(request.getScannedCode())
-						.context(LocatorScannedCodeResolveContext.builder()
-								.eligibleLocatorIds(inventory.getLocatorIds(request.getLineId()))
-								.build())
-						.build()
+				request.getScannedCode(),
+				request.getWfProcessId(),
+				request.getLineId(),
+				Env.getLoggedUserId()
 		);
 		return JsonResolveLocatorResponse.of(result);
 	}
@@ -77,7 +71,8 @@ public class InventoryRestController
 						.locatorId(request.getLocatorQRCode().getLocatorId())
 						.build()
 		);
-		return JsonResolveHUResponse.of(response);
+
+		return JsonResolveHUResponse.of(response, Env.getADLanguageOrBaseLanguage());
 	}
 
 	@PostMapping("/count")

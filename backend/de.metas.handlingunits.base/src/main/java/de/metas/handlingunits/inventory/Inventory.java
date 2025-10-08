@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -170,11 +171,19 @@ public class Inventory
 		}
 	}
 
-	public ImmutableSet<LocatorId> getLocatorIds(@Nullable final InventoryLineId lineId)
+	public Stream<InventoryLine> streamLines(@Nullable final InventoryLineId onlyLineId)
 	{
-		return lineId != null
-				? ImmutableSet.of(getLineById(lineId).getLocatorId())
-				: lines.stream().map(InventoryLine::getLocatorId).collect(ImmutableSet.toImmutableSet());
+		return onlyLineId != null
+				? Stream.of(getLineById(onlyLineId))
+				: lines.stream();
+	}
+
+	public Set<LocatorId> getLocatorIdsEligibleForCounting(@Nullable final InventoryLineId onlyLineId)
+	{
+		return streamLines(onlyLineId)
+				.filter(InventoryLine::isEligibleForCounting)
+				.map(InventoryLine::getLocatorId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }

@@ -3,6 +3,7 @@ package org.adempiere.warehouse.qrcode.resolver;
 import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
@@ -13,7 +14,7 @@ public class LocatorScannedCodeResolveContext
 {
 	public static final LocatorScannedCodeResolveContext NO_CONTEXT = builder().build();
 
-	@NonNull @Builder.Default ImmutableSet<LocatorId> eligibleLocatorIds = ImmutableSet.of();
+	@NonNull @Singular ImmutableSet<LocatorId> eligibleLocatorIds;
 
 	public boolean isMatching(@NonNull LocatorId locatorId)
 	{

@@ -1,6 +1,6 @@
 package de.metas.inventory.mobileui.rest_api.json;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHUResponse;
@@ -12,7 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.List;
 
 @Value
 @Builder
@@ -24,13 +24,9 @@ public class JsonResolveHUResponse
 	@NonNull ProductId productId;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyBooked;
+	@NonNull List<JsonResolveHUResponseAttribute> attributes;
 
-	boolean hasBestBeforeDateAttribute;
-	@Nullable @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate bestBeforeDate;
-	boolean hasLotNoAttribute;
-	@Nullable String lotNo;
-
-	public static JsonResolveHUResponse of(@NonNull final ResolveHUResponse response)
+	public static JsonResolveHUResponse of(@NonNull final ResolveHUResponse response, @NonNull final String adLanguage)
 	{
 		return builder()
 				.lineId(response.getLineId())
@@ -38,10 +34,10 @@ public class JsonResolveHUResponse
 				.productId(response.getProductId())
 				.uom(response.getQtyBooked().getUOMSymbol())
 				.qtyBooked(response.getQtyBooked().toBigDecimal())
-				.hasBestBeforeDateAttribute(response.isHasBestBeforeDateAttribute())
-				.bestBeforeDate(response.getBestBeforeDate())
-				.hasLotNoAttribute(response.isHasLotNoAttribute())
-				.lotNo(response.getLotNo())
+				.attributes(response.getAttributes()
+						.stream()
+						.map(attribute -> JsonResolveHUResponseAttribute.of(attribute, adLanguage))
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 }

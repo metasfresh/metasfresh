@@ -277,4 +277,9 @@ public class InventoryLine
 				.inventoryLineHUs(inventoryLineHUs)
 				.build();
 	}
+
+	public boolean isEligibleForCounting()
+	{
+		return !isCounted();
+	}
 }
