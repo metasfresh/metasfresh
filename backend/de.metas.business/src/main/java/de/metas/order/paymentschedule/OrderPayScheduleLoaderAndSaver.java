@@ -19,7 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
@@ -48,41 +47,62 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
+import static de.metas.payment.paymentterm.PaymentTermConstants.PENDING_DATE;
+
+/**
+ * Loads existing payment schedules and creates new ones based on the Order's payment terms.
+ * Delegates actual database persistence to {@link OrderPayScheduleRepository}.
+ */
 @Service
 @RequiredArgsConstructor
-public class OrderPaymentScheduleCreator
+public class OrderPayScheduleLoaderAndSaver
 {
-	public static OrderPaymentScheduleCreator newInstanceForUnitTesting()
-	{
-		final OrderPayScheduleService orderPayScheduleService = new OrderPayScheduleService(new OrderPayScheduleRepository());
-		return new OrderPaymentScheduleCreator(new PaymentTermService(), orderPayScheduleService);
-	}
-
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final PaymentTermService paymentTermService;
+	@NonNull private final OrderPayScheduleRepository repository;
 
-	private final PaymentTermService paymentTermService;
-	private final OrderPayScheduleService orderPayScheduleService;
 
-	/**
-	 * Entry point to create schedules for a completed Order.
-	 */
-	public void createOrderPaySchedules(@NonNull final I_C_Order orderRecord)
+	public void saveSchedulesForOrder(@NonNull final I_C_Order orderRecord)
 	{
 		final OrderSchedulingContext context = extractContext(orderRecord);
+		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
+
 		if (context == null)
 		{
+			repository.deleteByOrderId(orderId);
 			return; // Nothing to schedule
 		}
 
-		orderPayScheduleService.create(
-				OrderPayScheduleCreateRequest.builder()
-						.orderId(context.getOrderId())
-						.lines(context.getPaymentTerm().getSortedBreaks()
-								.map(termBreak -> toOrderPayScheduleCreateRequestLine(context, termBreak))
-								.collect(ImmutableList.toImmutableList()))
-						.build()
-		);
+		final OrderPayScheduleCreateRequest request = OrderPayScheduleCreateRequest.builder()
+				.orderId(context.getOrderId())
+				.lines(context.getPaymentTerm().getSortedBreaks()
+						.map(termBreak -> toOrderPayScheduleCreateRequestLine(context, termBreak))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+
+		save(request);
+	}
+
+	/**
+	 * Deletes existing schedules for the OrderId in the request and creates new records from the lines.
+	 */
+	public void save(@NonNull final OrderPayScheduleCreateRequest request)
+	{
+		repository.deleteByOrderId(request.getOrderId());
+		repository.create(request);
+	}
+
+	@NonNull
+	public Optional<OrderPaySchedule> loadByOrderId(@NonNull final OrderId orderId)
+	{
+		return repository.getByOrderId(orderId);
+	}
+
+	public void deleteByOrderId(@NonNull final OrderId orderId)
+	{
+		repository.deleteByOrderId(orderId);
 	}
 
 	private @Nullable OrderSchedulingContext extractContext(final @NotNull I_C_Order orderRecord)
@@ -98,7 +118,6 @@ public class OrderPaymentScheduleCreator
 			throw new AdempiereException(PaymentTermConstants.MSG_ComplexTermConflict)
 					.appendParametersToMessage()
 					.setParameter("PaymentTerm", paymentTerm.getName());
-
 		}
 
 		final Money grandTotal = orderBL.getGrandTotal(orderRecord);
@@ -134,9 +153,6 @@ public class OrderPaymentScheduleCreator
 				.build();
 	}
 
-	/**
-	 * Determines the initial reference date and calculates the due date.
-	 */
 	private static ReferenceDateResult computeReferenceDate(
 			final @Nullable Instant orderDate,
 			final @Nullable Instant letterOfCreditDate,
@@ -145,17 +161,14 @@ public class OrderPaymentScheduleCreator
 		final Instant referenceDate = getAvailableReferenceDate(orderDate, letterOfCreditDate, termBreak.getReferenceDateType());
 		if (referenceDate != null)
 		{
-			// Date is available (OrderDate or existing letterOfCreditDate): calculate the due date
 			final Instant finalDueDate = referenceDate.plus(termBreak.getOffsetDays(), ChronoUnit.DAYS);
 			final OrderPayScheduleStatus status = OrderPayScheduleStatus.Awaiting_Pay;
 			return new ReferenceDateResult(finalDueDate, status);
 		}
 		else
 		{
-			// Date is missing (BLDate, ETADate, etc.): set sentinel date and pending status
-			final Instant finalDueDate = PaymentTermConstants.PENDING_DATE;
 			final OrderPayScheduleStatus status = OrderPayScheduleStatus.Pending;
-			return new ReferenceDateResult(finalDueDate, status);
+			return new ReferenceDateResult(PENDING_DATE, status);
 		}
 	}
 
@@ -169,13 +182,11 @@ public class OrderPaymentScheduleCreator
 			case OrderDate:
 				return orderDate;
 			case LetterOfCreditDate:
-				// LC Date is captured directly on the Order
 				return letterOfCreditDate;
 			case BillOfLadingDate:
 			case ETADate:
 			case InvoiceDate:
 			default:
-				// These dates are not available yet. We return null to signal 'Pending reference' status.
 				return null;
 		}
 	}

@@ -24,6 +24,7 @@ package de.metas.order.paymentschedule;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.OrderId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,28 +35,21 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OrderPayScheduleService
 {
-	@NonNull private final OrderPayScheduleRepository orderPayScheduleRepo;
-	@NonNull private final OrderPaymentScheduleCreator orderPaymentScheduleCreator;
 
-	public void createOrderPaySchedules(final I_C_Order order)
+	public static OrderPayScheduleService newInstanceForUnitTesting()
 	{
-		orderPaymentScheduleCreator.createOrderPaySchedules(order);
+		final OrderPayScheduleLoaderAndSaver orderPayScheduleLoaderAndSaver = new OrderPayScheduleLoaderAndSaver(new PaymentTermService(), new OrderPayScheduleRepository());
+		return new OrderPayScheduleService(orderPayScheduleLoaderAndSaver);
 	}
 
-	public void create(@NonNull final OrderPayScheduleCreateRequest request)
-	{
-		orderPayScheduleRepo.deleteByOrderId(request.getOrderId());
-		orderPayScheduleRepo.create(request);
-	}
+	@NonNull private final OrderPayScheduleLoaderAndSaver loaderAndSaver;
+
+	public void createOrderPaySchedules(final I_C_Order order) {loaderAndSaver.saveSchedulesForOrder(order);}
+
+	public void create(@NonNull final OrderPayScheduleCreateRequest request) {loaderAndSaver.save(request);}
 
 	@NonNull
-	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId)
-	{
-		return orderPayScheduleRepo.getByOrderId(orderId);
-	}
+	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId) {return loaderAndSaver.loadByOrderId(orderId);}
 
-	public void deleteByOrderId(@NonNull final OrderId orderId)
-	{
-		orderPayScheduleRepo.deleteByOrderId(orderId);
-	}
+	public void deleteByOrderId(@NonNull final OrderId orderId) {loaderAndSaver.deleteByOrderId(orderId);}
 }

@@ -9,8 +9,6 @@ import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.paymentschedule.OrderPayScheduleService;
-import de.metas.order.paymentschedule.OrderPaymentScheduleCreator;
-import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -30,7 +28,6 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	private final IBPartnerBL bpartnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class);
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
-	private final OrderPaymentScheduleCreator orderPaymentScheduleCreator = SpringContextHolder.instance.getBean(OrderPaymentScheduleCreator.class);
 	private final OrderPayScheduleService orderPayScheduleService = SpringContextHolder.instance.getBean(OrderPayScheduleService.class);
 
 	@Override
@@ -42,7 +39,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPaymentScheduleCreator, orderPayScheduleService)); // FRESH-348
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPayScheduleService)); // FRESH-348
 		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository, bPartnerSupplierApprovalService));
 	}
 }
