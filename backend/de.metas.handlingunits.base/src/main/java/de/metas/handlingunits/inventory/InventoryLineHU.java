@@ -220,6 +220,7 @@ public class InventoryLineHU
 	//
 	//
 
+	@SuppressWarnings("unused")
 	public static class InventoryLineHUBuilder
 	{
 		InventoryLineHUBuilder updatingFrom(@NonNull final InventoryLineCountRequest request)

@@ -9,7 +9,6 @@ import de.metas.inventory.mobileui.deps.warehouse.WarehouseInfo;
 import de.metas.inventory.mobileui.deps.warehouse.WarehousesLoadingCache;
 import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJob;
 import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJobLine;
-import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
