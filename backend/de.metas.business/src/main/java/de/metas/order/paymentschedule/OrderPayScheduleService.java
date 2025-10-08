@@ -25,22 +25,18 @@ package de.metas.order.paymentschedule;
 import de.metas.order.OrderId;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
-import org.compiere.util.TimeUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class OrderPayScheduleService
 {
-	private final OrderPayScheduleRepository orderPayScheduleRepo;
+	private @NonNull final OrderPayScheduleRepository orderPayScheduleRepo;
 
-	public OrderPayScheduleService(@NonNull final OrderPayScheduleRepository orderPayScheduleRepo)
-	{
-		this.orderPayScheduleRepo = orderPayScheduleRepo;
-	}
-
-	public void createSchedule(@NonNull final OrderPayScheduleRequest orderPayScheduleRequest)
+	public void create(@NonNull final OrderPayScheduleCreateRequest orderPayScheduleRequest)
 	{
 		final OrderPaySchedule schedule = OrderPaySchedule.builder()
 				.id(null) // New record, no ID yet
@@ -48,11 +44,12 @@ public class OrderPayScheduleService
 				.paymentTermBreakId(orderPayScheduleRequest.getPaymentTermBreakId())
 				.referenceDateType(orderPayScheduleRequest.getReferenceDateType())
 				.dueAmount(orderPayScheduleRequest.getDueAmount())
-				.dueDate(TimeUtil.asInstant(orderPayScheduleRequest.getDueDate()))
+				.dueDate(orderPayScheduleRequest.getDueDate())
 				.percent(orderPayScheduleRequest.getPercent())
 				.seqNo(orderPayScheduleRequest.getSeqNo())
 				.orderPayScheduleStatus(orderPayScheduleRequest.getOrderPayScheduleStatus())
 				.build();
+
 		orderPayScheduleRepo.save(schedule);
 	}
 

@@ -22,7 +22,8 @@
 
 package de.metas.order.paymentschedule;
 
-import de.metas.currency.Amount;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
@@ -41,12 +42,13 @@ import java.time.Instant;
  */
 @Value
 @Builder
-public class OrderPayScheduleRequest
+public class OrderPayScheduleCreateRequest
 {
 	@NonNull OrderId orderId;
 	@NonNull PaymentTermBreakId paymentTermBreakId;
 	@NonNull ReferenceDateType referenceDateType;
-	@NonNull Amount dueAmount;
+	@NonNull Money dueAmount;
+	@NonNull CurrencyId currencyId;
 	@NonNull Instant dueDate;
 	@NonNull Percent percent;
 	@NonNull SeqNo seqNo;

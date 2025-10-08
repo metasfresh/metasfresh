@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_OrderPaySchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 210596624L;
+	private static final long serialVersionUID = 444674424L;
 
     /** Standard Constructor */
     public X_C_OrderPaySchedule (final Properties ctx, final int C_OrderPaySchedule_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
@@ -78,6 +93,21 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	public int getC_PaymentTerm_Break_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_Break_ID);
+	}
+
+	@Override
+	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
+	{
+		if (C_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
+	}
+
+	@Override
+	public int getC_PaymentTerm_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
 	}
 
 	@Override

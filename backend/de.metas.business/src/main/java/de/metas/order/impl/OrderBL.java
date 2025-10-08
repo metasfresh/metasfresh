@@ -60,6 +60,7 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
@@ -1427,16 +1428,9 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public Amount getGrandTotal(@NonNull final I_C_Order order)
+	public Money getGrandTotal(@NonNull final I_C_Order order)
 	{
 		final BigDecimal grandTotal = order.getGrandTotal();
-		final CurrencyCode curencyCode = currencyBL.getCurrencyCodeById(CurrencyId.ofRepoId(order.getC_Currency_ID()));
-		return Amount.of(grandTotal, curencyCode);
-	}
-
-	@Override
-	public CurrencyCode getCurrencyCode(@NonNull final I_C_Order order)
-	{
-		return currencyBL.getCurrencyCodeById(CurrencyId.ofRepoId(order.getC_Currency_ID()));
+		return Money.of(grandTotal, CurrencyId.ofRepoId(order.getC_Currency_ID()));
 	}
 }

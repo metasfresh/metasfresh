@@ -22,9 +22,11 @@
 
 package de.metas.order.paymentschedule;
 
-import de.metas.currency.Amount;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
@@ -45,7 +47,9 @@ public class OrderPaySchedule
 
 	@NonNull OrderId orderId;
 	@NonNull ReferenceDateType referenceDateType;
-	@NonNull Amount dueAmount;
+	@NonNull Money dueAmount;
+	@NonNull CurrencyId currencyId;
+	@NonNull PaymentTermId paymentTermId;
 	@NonNull PaymentTermBreakId paymentTermBreakId;
 	@NonNull Percent percent;
 	@NonNull SeqNo seqNo;

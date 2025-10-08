@@ -32,7 +32,6 @@ import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
-import java.util.List;
 
 @Value
 public class PaymentTerm
@@ -57,7 +56,7 @@ public class PaymentTerm
 	boolean _default;
 	boolean isComplex;
 
-	@Nullable List<PaymentTermBreak> breaks;
+	@Nullable ImmutableList<PaymentTermBreak> breaks;
 
 	@Builder
 	private PaymentTerm(
@@ -77,7 +76,7 @@ public class PaymentTerm
 			final boolean allowOverrideDueDate,
 			final boolean _default,
 			final boolean isComplex,
-			final @Nullable List<PaymentTermBreak> breaks)
+			final @Nullable ImmutableList<PaymentTermBreak> breaks)
 	{
 		this.id = id;
 		this.orgId = orgId;
@@ -96,7 +95,8 @@ public class PaymentTerm
 		this._default = _default;
 		this.isComplex = isComplex;
 
-		this.breaks = breaks;
+		this.breaks = isComplex ? breaks : null;
+
 	}
 
 	public ImmutableList<PaymentTermBreak> getSortedBreaks()
@@ -109,11 +109,6 @@ public class PaymentTerm
 		return breaks.stream()
 				.sorted(Comparator.comparing(PaymentTermBreak::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public boolean hasBreaks()
-	{
-		return isComplex() && breaks != null && !breaks.isEmpty();
 	}
 }
 

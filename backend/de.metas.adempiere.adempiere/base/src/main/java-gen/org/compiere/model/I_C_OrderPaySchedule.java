@@ -52,6 +52,28 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Set Sales order.
 	 * Order
 	 *
@@ -115,6 +137,28 @@ public interface I_C_OrderPaySchedule
 
 	ModelColumn<I_C_OrderPaySchedule, org.compiere.model.I_C_PaymentTerm_Break> COLUMN_C_PaymentTerm_Break_ID = new ModelColumn<>(I_C_OrderPaySchedule.class, "C_PaymentTerm_Break_ID", org.compiere.model.I_C_PaymentTerm_Break.class);
 	String COLUMNNAME_C_PaymentTerm_Break_ID = "C_PaymentTerm_Break_ID";
+
+	/**
+	 * Set Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
+
+	/**
+	 * Get Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_PaymentTerm_ID();
+
+	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
 	 * Get Created.
