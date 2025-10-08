@@ -19,4 +19,6 @@ public class Attribute
 	@NonNull AttributeValueType valueType;
 	@NonNull ITranslatableString displayName;
 	@Nullable ITranslatableString description;
+	boolean isInstanceAttribute;
+	boolean isMandatory;
 }

@@ -371,6 +371,8 @@ public class AttributeDAO implements IAttributeDAO
 				.valueType(AttributeValueType.ofCode(record.getAttributeValueType()))
 				.displayName(trls.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, record.getName()))
 				.description(trls.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, record.getDescription()))
+				.isInstanceAttribute(record.isInstanceAttribute())
+				.isMandatory(record.isMandatory())
 				.build();
 	}
 
