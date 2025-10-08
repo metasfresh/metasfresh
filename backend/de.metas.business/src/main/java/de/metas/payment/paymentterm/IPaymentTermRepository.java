@@ -56,10 +56,11 @@ public interface IPaymentTermRepository extends ISingletonService
 	@NonNull
 	PaymentTermId retrievePaymentTermIdNotNull(@NonNull PaymentTermQuery build);
 
-	ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull PaymentTermId paymentTermId);
+	@NonNull
+	ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId);
 
 	@NonNull
-	default ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull PaymentTermId paymentTermId)
+	default ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull final PaymentTermId paymentTermId)
 	{
 		return ImmutableList.copyOf(retrievePaymentTermBreaks(paymentTermId).get(paymentTermId));
 	}

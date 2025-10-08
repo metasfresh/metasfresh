@@ -98,8 +98,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			return Percent.ZERO;
 		}
 
-		final PaymentTerm paymentTerm = getById(paymentTermId);
-		return paymentTerm.getDiscount();
+		return getById(paymentTermId).getDiscount();
 	}
 
 	// this method is implemented after a code block from MOrder.beforeSave()
@@ -206,8 +205,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 	private PaymentTermMap retrieveIndexedPaymentTerms()
 	{
-
-		// Fetch all payment terms
 		final ImmutableList<I_C_PaymentTerm> paymentTermRecords = queryBL
 				.createQueryBuilder(I_C_PaymentTerm.class)
 				.addOnlyActiveRecordsFilter()
@@ -224,21 +221,19 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.map(PaymentTermRepository::extractId)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableListMultimap<PaymentTermId, PaymentTermBreak> breaksByPaymentTermId = retrievePaymentTermBreaks(paymentTermIds);
+		final ImmutableListMultimap<PaymentTermId, PaymentTermBreak> breaksByPaymentTermId =
+				retrievePaymentTermBreaksForMultipleTerms(paymentTermIds);
 
-		// Build payment terms with their breaks
 		final ImmutableList<PaymentTerm> paymentTerms = paymentTermRecords.stream()
-				.map(record -> {
-					final PaymentTermId paymentTermId = extractId(record);
-					final ImmutableList<PaymentTermBreak> breaks = breaksByPaymentTermId.get(paymentTermId);
-					return fromRecord(record, breaks);
-				})
+				.map(record -> fromRecord(record, breaksByPaymentTermId.get(extractId(record))))
 				.collect(ImmutableList.toImmutableList());
 
 		return new PaymentTermMap(paymentTerms);
+
 	}
 
-	private ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final Collection<PaymentTermId> paymentTermIds)
+	private ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaksForMultipleTerms(
+			@NonNull final Collection<PaymentTermId> paymentTermIds)
 	{
 		if (paymentTermIds.isEmpty())
 		{
@@ -249,7 +244,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.createQueryBuilder(I_C_PaymentTerm_Break.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
-				.orderBy(I_M_DiscountSchemaBreak.COLUMNNAME_C_PaymentTerm_ID)
+				.orderBy(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID)
 				.orderBy(I_M_DiscountSchemaBreak.COLUMNNAME_SeqNo)
 				.create()
 				.stream(I_C_PaymentTerm_Break.class)
@@ -257,14 +252,15 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.collect(GuavaCollectors.toImmutableListMultimap(termBreak -> termBreak.getId().getPaymentTermId()));
 	}
 
+	@Override
+	public ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
+	{
+		return retrievePaymentTermBreaksForMultipleTerms(ImmutableList.of(paymentTermId));
+	}
 
 	private static PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
 	{
 		final boolean isComplexPaymentTerm = record.isComplex();
-
-		final ImmutableList<PaymentTermBreak> paymentTermBreaks = isComplexPaymentTerm
-				? breaks
-				: ImmutableList.of();
 
 		return PaymentTerm.builder()
 				.id(extractId(record))
@@ -281,7 +277,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				._default(record.isDefault())
 				.isComplex(record.isComplex())
 				.discount(Percent.of(record.getDiscount()))
-				.breaks(paymentTermBreaks)
+				.breaks(breaks)
 				.build();
 
 	}
@@ -323,11 +319,4 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.offsetDays(record.getOffsetDays())
 				.build();
 	}
-
-	@Override
-	public ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
-	{
-		return retrievePaymentTermBreaks(ImmutableList.of(paymentTermId));
-	}
-
 }
