@@ -47,7 +47,6 @@ import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.order.paymentschedule.OrderPayScheduleService;
-import de.metas.order.paymentschedule.OrderPaymentScheduleCreator;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -110,7 +109,6 @@ public class C_Order
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
-	private final OrderPaymentScheduleCreator orderPaymentScheduleCreator;
 	private final OrderPayScheduleService orderPayScheduleService;
 
 	@VisibleForTesting
@@ -123,7 +121,6 @@ public class C_Order
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
 			@NonNull final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService,
-			@NonNull final OrderPaymentScheduleCreator orderPaymentScheduleCreator,
 			@NonNull final OrderPayScheduleService orderPayScheduleService)
 	{
 		this.bpartnerBL = bpartnerBL;
@@ -131,7 +128,6 @@ public class C_Order
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
 		this.purchaseOrderToShipperTransportationService = purchaseOrderToShipperTransportationService;
-		this.orderPaymentScheduleCreator = orderPaymentScheduleCreator;
 		this.orderPayScheduleService = orderPayScheduleService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -632,7 +628,7 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createOrderPaySchedules(final I_C_Order order)
 	{
-		orderPaymentScheduleCreator.createComplexSchedules(order);
+		orderPayScheduleService.createOrderPaySchedules(order);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)

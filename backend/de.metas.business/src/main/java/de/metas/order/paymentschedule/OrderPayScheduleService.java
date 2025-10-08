@@ -22,28 +22,34 @@
 
 package de.metas.order.paymentschedule;
 
-import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.OrderId;
-import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class OrderPayScheduleService
 {
-	private @NonNull final OrderPayScheduleRepository orderPayScheduleRepo;
+	@NonNull private final OrderPayScheduleRepository orderPayScheduleRepo;
+	@NonNull private final OrderPaymentScheduleCreator orderPaymentScheduleCreator;
 
-	public void create(@NonNull final ImmutableList<OrderPaySchedule> schedules)
+	public void createOrderPaySchedules(final I_C_Order order)
 	{
-		schedules.forEach(orderPayScheduleRepo::save);
+		orderPaymentScheduleCreator.createOrderPaySchedules(order);
+	}
+
+	public void create(@NonNull final OrderPayScheduleCreateRequest request)
+	{
+		orderPayScheduleRepo.deleteByOrderId(request.getOrderId());
+		orderPayScheduleRepo.create(request);
 	}
 
 	@NonNull
-	public List<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId)
+	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId)
 	{
 		return orderPayScheduleRepo.getByOrderId(orderId);
 	}
@@ -51,10 +57,5 @@ public class OrderPayScheduleService
 	public void deleteByOrderId(@NonNull final OrderId orderId)
 	{
 		orderPayScheduleRepo.deleteByOrderId(orderId);
-	}
-
-	public SeqNo getNextSeqNo(@NonNull final OrderId orderId)
-	{
-		return orderPayScheduleRepo.getNextSeqNo(orderId);
 	}
 }
