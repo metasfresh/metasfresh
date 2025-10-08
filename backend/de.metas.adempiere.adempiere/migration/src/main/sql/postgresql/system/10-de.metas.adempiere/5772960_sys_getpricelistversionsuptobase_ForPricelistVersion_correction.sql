@@ -47,8 +47,8 @@ with recursive priceListVersion as (
     --
     select
         plv2.SeqNo + 1 as SeqNo,
-        basePLV2.M_PriceList_Version_ID as M_PriceList_Version_ID,  -- ADVANCE to base
-        nextBasePLV.M_PriceList_Version_ID as basePLVID,            -- peek next base (optional)
+        basePLV2.M_PriceList_Version_ID as M_PriceList_Version_ID,
+        nextBasePLV.M_PriceList_Version_ID as basePLVID,
         basePLV2.M_Pricelist_ID,
         basePLV2.validFrom,
         (plv2.path || basePLV2.M_PriceList_Version_ID)::numeric(10,0)[] as path
