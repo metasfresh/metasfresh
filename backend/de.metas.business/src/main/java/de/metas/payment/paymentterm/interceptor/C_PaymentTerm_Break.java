@@ -23,6 +23,7 @@
 package de.metas.payment.paymentterm.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Component;
 public class C_PaymentTerm_Break
 {
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	private static final AdMessageKey C_PAYMENTTERM_BREAK_TotalPercentTooHigh = AdMessageKey.of("C_PaymentTerm_Break_TotalPercentTooHigh");
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_C_PaymentTerm_Break.COLUMNNAME_Percent)
 	public void assertTotalPercentageUnderLimit(@NonNull final I_C_PaymentTerm_Break record)
@@ -66,9 +68,7 @@ public class C_PaymentTerm_Break
 
 		if (totalPercent > 100)
 		{
-			// TODO Add message to the exception
-			throw new AdempiereException("The total percentage for all payment term allBreaksForTerm (" + totalPercent + "%) " +
-					"exceeds 100% and cannot be saved.");
+			throw new AdempiereException(C_PAYMENTTERM_BREAK_TotalPercentTooHigh, totalPercent);
 		}
 	}
 }
