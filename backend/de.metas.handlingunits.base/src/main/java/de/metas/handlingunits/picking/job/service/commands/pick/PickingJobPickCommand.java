@@ -21,6 +21,7 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -112,6 +113,7 @@ public class PickingJobPickCommand
 	private final static AdMessageKey ERR_NotEnoughTUsFound = AdMessageKey.of("de.metas.handlingunits.picking.job.NOT_ENOUGH_TUS_ERROR_MSG");
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
+	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
 
 	//
 	// Services
@@ -1022,9 +1024,20 @@ public class PickingJobPickCommand
 
 		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
 		final WarehouseId warehouseId = shipmentScheduleInfo.getWarehouseId();
+		final ImmutableSet<LocatorId> pickFromLocatorIds = warehouseBL.getLocatorIdsOfTheSamePickingGroup(warehouseId);
+		final LocatorId pickFromLocatorId = handlingUnitsBL.getLocatorId(huIdToBePicked);
+		if (!pickFromLocatorIds.contains(pickFromLocatorId))
+		{
+			throw new HUException(HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG)
+					.setParameter("HU_ID", huIdToBePicked)
+					.setParameter("Locator", pickFromLocatorId)
+					.setParameter("PickingGroupLocators", pickFromLocatorIds)
+					.markAsUserValidationError();
+		}
+
 		final BPartnerId customerId = shipmentScheduleInfo.getBpartnerId();
 		final PickFromHUsGetRequest request = PickFromHUsGetRequest.builder()
-				.pickFromLocatorIds(warehouseBL.getLocatorIdsOfTheSamePickingGroup(warehouseId))
+				.pickFromLocatorIds(pickFromLocatorIds)
 				.partnerId(customerId)
 				.productId(shipmentScheduleInfo.getProductId())
 				.asiId(shipmentScheduleInfo.getAsiId())
