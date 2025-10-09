@@ -40,14 +40,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_PaymentTerm_Break;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
@@ -92,11 +93,9 @@ public class C_PaymentTerm_StepDef
 
 					assertThat(paymentTermRecord).isNotNull();
 
-					final boolean isComplex = row.getAsOptionalBoolean(I_C_PaymentTerm.COLUMNNAME_IsComplex).orElse(false);
-
 					paymentTermRecord.setValue(valueAndName.getValue());
 					paymentTermRecord.setName(valueAndName.getName());
-					paymentTermRecord.setIsComplex(isComplex);
+					row.getAsOptionalBoolean(I_C_PaymentTerm.COLUMNNAME_IsComplex).ifPresent(paymentTermRecord::setIsComplex);
 
 					saveRecord(paymentTermRecord);
 
@@ -108,31 +107,34 @@ public class C_PaymentTerm_StepDef
 	@And("metasfresh contains C_PaymentTerm_Break")
 	public void add_C_PaymentTerm_Break(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createC_PaymentTerm_Break(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createC_PaymentTerm_Break);
 	}
 
-	private void createC_PaymentTerm_Break(@NonNull final Map<String, String> tableRow)
+	private void createC_PaymentTerm_Break(@NonNull final DataTableRow tableRow)
 	{
-		final int paymentTermId = DataTableUtil.extractIntForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID);
-		final int percent = DataTableUtil.extractIntForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_Percent);
-		final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_SeqNo);
-		final String referenceDateType = DataTableUtil.extractStringForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType);
+		final PaymentTermId paymentTermId = tableRow.getAsIdentifier(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID).lookupIdIn(paymentTermTable);
+		final int seqno = tableRow.getAsInt(I_C_PaymentTerm_Break.COLUMNNAME_SeqNo);
 
-		final I_C_PaymentTerm_Break paymentTermBreak = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm_Break.class);
+		final ValueAndName valueAndName = tableRow.suggestValueAndName();
+		final I_C_PaymentTerm_Break breakRecord = CoalesceUtil.coalesceSuppliers(
+				() -> queryBL.createQueryBuilder(I_C_PaymentTerm_Break.class)
+						.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
+						.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_SeqNo, seqno)
+						.create()
+						.firstOnlyOrNull(I_C_PaymentTerm_Break.class),
+				() -> newInstanceOutOfTrx(I_C_PaymentTerm_Break.class));
 
-		paymentTermBreak.setC_PaymentTerm_ID(paymentTermId);
-		paymentTermBreak.setPercent(percent);
-		paymentTermBreak.setReferenceDateType(referenceDateType);
-		paymentTermBreak.setSeqNo(seqNo);
+		AssertionsForClassTypes.assertThat(breakRecord).isNotNull();
 
-		InterfaceWrapperHelper.saveRecord(paymentTermBreak);
+		breakRecord.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		breakRecord.setSeqNo(seqno);
+		tableRow.getAsOptionalInt(I_C_PaymentTerm_Break.COLUMNNAME_Percent)
+				.ifPresent(breakRecord::setPercent);
+		tableRow.getAsOptionalString(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType)
+				.ifPresent(breakRecord::setReferenceDateType);
+		saveRecord(breakRecord);
 
-		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_C_PaymentTerm_Break.Table_Name);
-		paymentTermBreakTable.putOrReplace(recordIdentifier, paymentTermBreak);
+		paymentTermBreakTable.putOrReplace(tableRow.getAsIdentifier(), breakRecord);
 	}
 
 	@And("validate C_PaymentTerm:")
