@@ -55,6 +55,6 @@ Feature: Purchase order with complex payment term
       | po1_l1     | po1        | product      | 10         |
     And the order identified by po1 is completed
     Then The order pay schedules were created :
-      | Identifier | C_PaymentTerm_Break | DueDate    | DueAmount | Status   ｜
-      | poPT1      | PTB1                | 2025-10-10 | 40        | WP   ｜
-      | poPT1      | PTB2                | 9999-01-01 | 40        | PR   ｜
+      | Identifier | C_PaymentTerm_Break | DueDate    | DueAmount | Status   ｜ C_Order_ID ｜
+      | poPT1      | PTB1                | 2025-10-10 | 40        | WP       ｜ po1          |
+      | poPT1      | PTB2                | 9999-01-01 | 40        | PR       ｜ po1          |
