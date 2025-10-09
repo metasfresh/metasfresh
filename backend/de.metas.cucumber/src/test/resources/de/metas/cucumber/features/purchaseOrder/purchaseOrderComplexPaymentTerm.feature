@@ -48,8 +48,8 @@ Feature: Purchase order with complex payment term
   @from:cucumber
   Scenario: Purchase Order with complex Payment Term has order pay schedules after completion
     When metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID | C_PaymentTerm_ID |
-      | po1        | N       | vendor        | 2025-10-09  | POO         | ps_1               | wh             | pt_PO            |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po1        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | po1_l1     | po1        | product      | 10         |
