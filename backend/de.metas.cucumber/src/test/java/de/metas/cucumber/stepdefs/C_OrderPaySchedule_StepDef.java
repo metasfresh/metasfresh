@@ -52,7 +52,7 @@ public class C_OrderPaySchedule_StepDef
 	private final @NonNull C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
 	private final @NonNull OrderPayScheduleService orderPayScheduleService;
 
-	@Then("The order pay schedules were created :")
+	@Then("The order pay schedules were created:")
 	public void verifyOrderPaySchedules(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
