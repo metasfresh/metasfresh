@@ -1,26 +1,3 @@
-/*
- * #%L
- * de.metas.shipper.nshift
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-// Create a new file, e.g., AbstractNShiftClient.java
 package de.metas.shipper.nshift;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,14 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,16 +22,26 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-@RequiredArgsConstructor
-public abstract class AbstractNShiftApiClient
+import static de.metas.shipper.nshift.NShiftClientConfig.NSHIFT_OBJECT_MAPPER;
+import static de.metas.shipper.nshift.NShiftClientConfig.NSHIFT_REST_TEMPLATE;
+
+@Component
+class NShiftRestClient
 {
+	private static final Logger logger = LogManager.getLogger(NShiftRestClient.class);
 
-	private static final Logger logger = LogManager.getLogger(AbstractNShiftApiClient.class);
+	@NonNull private final RestTemplate restTemplate;
+	@NonNull private final ObjectMapper objectMapper;
 
-	@NonNull protected final RestTemplate restTemplate;
-	@NonNull protected final ObjectMapper objectMapper;
+	public NShiftRestClient(
+			@Qualifier(NSHIFT_REST_TEMPLATE) @NonNull final RestTemplate restTemplate,
+			@Qualifier(NSHIFT_OBJECT_MAPPER) @NonNull final ObjectMapper objectMapper)
+	{
+		this.restTemplate = restTemplate;
+		this.objectMapper = objectMapper;
+	}
 
-	protected <T_Req, T_Resp> T_Resp post(
+	public <T_Req, T_Resp> T_Resp post(
 			@NonNull final String endpoint,
 			@NonNull final T_Req request,
 			@NonNull final JsonShipperConfig config,

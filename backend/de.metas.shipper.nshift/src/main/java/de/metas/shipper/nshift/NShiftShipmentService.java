@@ -22,13 +22,12 @@
 
 package de.metas.shipper.nshift;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
-
+import de.metas.common.util.Check;
 import de.metas.shipper.nshift.json.JsonAddress;
 import de.metas.shipper.nshift.json.JsonAddressKind;
 import de.metas.shipper.nshift.json.JsonCustomsArticleDetail;
@@ -48,12 +47,11 @@ import de.metas.shipper.nshift.json.JsonShipmentReferenceKind;
 import de.metas.shipper.nshift.json.request.JsonShipmentRequest;
 import de.metas.shipper.nshift.json.response.JsonShipmentResponse;
 import de.metas.shipper.nshift.json.response.JsonShipmentResponseLabel;
-import de.metas.common.util.Check;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -61,21 +59,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
 import java.util.stream.Collectors;
 
 @Service
-public class NShiftShipmentService extends AbstractNShiftApiClient
+@RequiredArgsConstructor
+public class NShiftShipmentService
 {
 	private static final Logger logger = LogManager.getLogger(NShiftShipmentService.class);
 	private static final String CREATE_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/Shipments";
 
-	public NShiftShipmentService(
-			@NonNull final RestTemplate restTemplate,
-			@NonNull final ObjectMapper objectMapper)
-	{
-		super(restTemplate, objectMapper);
-	}
+	@NonNull private final NShiftRestClient restClient;
 
 	public JsonDeliveryResponse createShipment(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
@@ -83,14 +76,14 @@ public class NShiftShipmentService extends AbstractNShiftApiClient
 		{
 			logger.debug("Creating shipment for request: {}", deliveryRequest);
 			final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryRequest);
-			final JsonShipmentResponse response = post(CREATE_SHIPMENT_ENDPOINT, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);
+			final JsonShipmentResponse response = restClient.post(CREATE_SHIPMENT_ENDPOINT, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
 			return buildJsonDeliveryResponse(response, deliveryRequest.getId());
 		}
 		catch (final Throwable throwable)
 		{
-			logger.error(throwable.toString());
+			logger.error("Got error", throwable);
 			return JsonDeliveryResponse.builder()
 					.requestId(deliveryRequest.getId())
 					.errorMessage(throwable.getMessage())
@@ -98,7 +91,7 @@ public class NShiftShipmentService extends AbstractNShiftApiClient
 		}
 	}
 
-	private JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
+	private static JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.submit(false)
@@ -159,7 +152,7 @@ public class NShiftShipmentService extends AbstractNShiftApiClient
 				.build();
 	}
 
-	private JsonLine buildNShiftLine(@NonNull final JsonDeliveryOrderParcel deliveryLine, @NonNull final JsonShipperConfig config)
+	private static JsonLine buildNShiftLine(@NonNull final JsonDeliveryOrderParcel deliveryLine, @NonNull final JsonShipperConfig config)
 	{
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = deliveryLine.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
@@ -183,7 +176,7 @@ public class NShiftShipmentService extends AbstractNShiftApiClient
 				.build();
 	}
 
-	private JsonDetailGroup buildCustomsArticleGroup(@NonNull final JsonDeliveryOrderParcel deliveryLine, final int lineNo, @NonNull final String countryOfOrigin)
+	private static JsonDetailGroup buildCustomsArticleGroup(@NonNull final JsonDeliveryOrderParcel deliveryLine, final int lineNo, @NonNull final String countryOfOrigin)
 	{
 		final JsonCustomsArticleInfo.JsonCustomsArticleInfoBuilder<?, ?> customsArticleInfoBuilder = JsonCustomsArticleInfo.builder();
 
@@ -208,7 +201,7 @@ public class NShiftShipmentService extends AbstractNShiftApiClient
 		return customsArticleInfoBuilder.build();
 	}
 
-	private JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final String requestId)
+	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final String requestId)
 	{
 		final Map<String, JsonShipmentResponseLabel> labelsByPkgNo = response.getLabels() != null
 				? response.getLabels().stream()

@@ -22,11 +22,11 @@
 
 package de.metas.shipper.nshift;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import de.metas.common.util.Check;
 import de.metas.shipper.nshift.json.JsonAddress;
 import de.metas.shipper.nshift.json.JsonAddressKind;
 import de.metas.shipper.nshift.json.JsonLine;
@@ -36,33 +36,23 @@ import de.metas.shipper.nshift.json.request.JsonShipAdvisorRequest;
 import de.metas.shipper.nshift.json.response.JsonShipAdvisorResponse;
 import de.metas.shipper.nshift.json.response.JsonShipAdvisorResponseGoodsType;
 import de.metas.shipper.nshift.json.response.JsonShipAdvisorResponseProduct;
-import de.metas.common.util.Check;
 import de.metas.shipper.nshift.json.response.JsonShipAdvisorResponseService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 
-import static de.metas.shipper.nshift.NShiftClientConfig.NSHIFT_OBJECT_MAPPER;
-import static de.metas.shipper.nshift.NShiftClientConfig.NSHIFT_REST_TEMPLATE;
-
 @Service
-public class NShiftShipAdvisorService extends AbstractNShiftApiClient
+@RequiredArgsConstructor
+public class NShiftShipAdvisorService
 {
-
 	private static final Logger logger = LogManager.getLogger(NShiftShipAdvisorService.class);
 	private static final String SHIP_ADVISES_ENDPOINT = "/ShipServer/{ID}/shipAdvises";
 
-	public NShiftShipAdvisorService(
-			@Qualifier(NSHIFT_REST_TEMPLATE) @NonNull final RestTemplate restTemplate,
-			@Qualifier(NSHIFT_OBJECT_MAPPER) @NonNull final ObjectMapper objectMapper)
-	{
-		super(restTemplate, objectMapper);
-	}
+	@NonNull private final NShiftRestClient restClient;
 
 	public JsonDeliveryAdvisorResponse getShipAdvises(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
 	{
@@ -70,14 +60,14 @@ public class NShiftShipAdvisorService extends AbstractNShiftApiClient
 		{
 			logger.debug("Getting Ship Advises for request: {}", deliveryAdvisorRequest);
 			final JsonShipAdvisorRequest requestBody = buildRequest(deliveryAdvisorRequest);
-			final JsonShipAdvisorResponse response = post(SHIP_ADVISES_ENDPOINT, requestBody, deliveryAdvisorRequest.getShipperConfig(), JsonShipAdvisorResponse.class);
+			final JsonShipAdvisorResponse response = restClient.post(SHIP_ADVISES_ENDPOINT, requestBody, deliveryAdvisorRequest.getShipperConfig(), JsonShipAdvisorResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
 			return buildJsonDeliveryResponse(response, deliveryAdvisorRequest.getId());
 		}
 		catch (final Throwable throwable)
 		{
-			logger.error(throwable.toString());
+			logger.error("Got error", throwable);
 			return JsonDeliveryAdvisorResponse.builder()
 					.requestId(deliveryAdvisorRequest.getId())
 					.errorMessage(throwable.toString())
@@ -85,7 +75,7 @@ public class NShiftShipAdvisorService extends AbstractNShiftApiClient
 		}
 	}
 
-	private JsonShipAdvisorRequest buildRequest(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
+	private static JsonShipAdvisorRequest buildRequest(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
 	{
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.serviceLevel(deliveryAdvisorRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.SERVICE_LEVEL))
@@ -105,20 +95,19 @@ public class NShiftShipAdvisorService extends AbstractNShiftApiClient
 
 		dataBuilder.line(buildNShiftLine(deliveryAdvisorRequest.getItem()));
 
-
 		return JsonShipAdvisorRequest.builder()
 				.options(options)
 				.data(dataBuilder.build())
 				.build();
 	}
 
-	private JsonLine buildNShiftLine(@NonNull final JsonDeliveryAdvisorRequestItem item)
+	private static JsonLine buildNShiftLine(@NonNull final JsonDeliveryAdvisorRequestItem item)
 	{
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = item.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
 		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
 				.lineWeight(weightGrams);
-		if(item.getPackageDimensions() != null)
+		if (item.getPackageDimensions() != null)
 		{
 			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
 			final int widthMM = item.getPackageDimensions().getWidthInCM() * 10;
@@ -129,11 +118,10 @@ public class NShiftShipAdvisorService extends AbstractNShiftApiClient
 			lineBuilder.height(heightMM);
 		}
 
-
 		return lineBuilder.build();
 	}
 
-	private JsonDeliveryAdvisorResponse buildJsonDeliveryResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)
+	private static JsonDeliveryAdvisorResponse buildJsonDeliveryResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)
 	{
 		Check.assumeEquals(response.getProducts().size(), 1, "response should only contain 1 shipperProduct, pls check defined shipment rules");
 		final JsonShipAdvisorResponseProduct product = response.getProducts().get(0);
