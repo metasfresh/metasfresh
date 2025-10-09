@@ -197,7 +197,7 @@ export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
 
     // console.log('allResults: ' + JSON.stringify(allResults, null, 2));
   } catch (error) {
-    console.trace(`Got error while parsing QR code string: ${string}`, { error });
+    console.trace('Got error while parsing QR code string:', string, { error });
     result.error = trl('error.qrCode.invalid');
     delete result.errorDetail;
     result.errorCause = errorToString(error);
