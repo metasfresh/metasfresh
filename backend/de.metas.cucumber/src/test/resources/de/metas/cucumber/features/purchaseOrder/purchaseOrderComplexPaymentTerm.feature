@@ -25,7 +25,7 @@ Feature: Purchase order with complex payment term
       | plv_purchase | pl_purchase    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | plv_purchase           | product      | 8.0      | PCE      |
+      | plv_purchase           | product      | 8.75      | PCE      |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | vendor     | Y        | N          | ps_1               |
@@ -41,8 +41,8 @@ Feature: Purchase order with complex payment term
       | pt_PO      | Y         |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
-      | PTB1       | pt_PO            | 50      | 1          | OD                | 10    |
-      | PTB2       | pt_PO            | 50      | 0          | BL                | 20    |
+      | PTB1       | pt_PO            | 25      | 1          | OD                | 10    |
+      | PTB2       | pt_PO            | 75      | 0          | BL                | 20    |
 
 
   @from:cucumber
@@ -56,5 +56,5 @@ Feature: Purchase order with complex payment term
     And the order identified by po1 is completed
     Then The order pay schedules were created:
       | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status | C_Order_ID |
-      | poPT1      | PTB1                   | 2025-10-10 | 41     | WP     | po1        |
-      | poPT1      | PTB2                   | 9999-01-01 | 41     | PR     | po1        |
+      | poPT1      | PTB1                   | 2025-10-10 | 22.42     | WP     | po1        |
+      | poPT1      | PTB2                   | 9999-01-01 | 67.27     | PR     | po1        |
