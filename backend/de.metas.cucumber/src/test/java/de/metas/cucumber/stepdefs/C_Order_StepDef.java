@@ -32,7 +32,9 @@ import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyRepository;
@@ -51,9 +53,13 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPaySchedule;
+import de.metas.order.paymentschedule.OrderPayScheduleLine;
+import de.metas.order.paymentschedule.OrderPayScheduleService;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -82,11 +88,13 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -105,9 +113,41 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
-import static org.compiere.model.I_C_Order.*;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_InputDataSource_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_BPartnerName;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DateOrdered;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DeliveryRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DeliveryViaRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocSubType;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocumentNo;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_EMail;
+import static org.compiere.model.I_C_Order.COLUMNNAME_ExternalId;
+import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_Partner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_InvoiceRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_IsDropShip;
+import static org.compiere.model.I_C_Order.COLUMNNAME_IsUseHandOver_Location;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_POReference;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 @RequiredArgsConstructor
 public class C_Order_StepDef
@@ -133,8 +173,9 @@ public class C_Order_StepDef
 	private final @NonNull AD_InputDataSource_StepDefData dataSourceTable;
 	private final @NonNull TestContext restTestContext;
 	private final @NonNull C_PaymentTerm_StepDef paymentTermStepDef;
-	private final @NonNull C_OrderPaySchedule_StepDefData orderPayScheduleTable;
-
+	private final @NonNull C_PaymentTerm_StepDefData paymentTermTable;
+	private final @NonNull C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
+	private final @NonNull OrderPayScheduleService orderPayScheduleService;
 
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
@@ -671,17 +712,16 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_EMail)
 				.ifPresent(email -> {
-					if(DataTableUtil.NULL_STRING.equals(email))
-					{
-						softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isNull();
-					}
-					else
-					{
-						softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isEqualTo(email);
-					}
-				}
+							if (DataTableUtil.NULL_STRING.equals(email))
+							{
+								softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isNull();
+							}
+							else
+							{
+								softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isEqualTo(email);
+							}
+						}
 				);
-
 
 		row.getAsOptionalString(COLUMNNAME_InvoiceRule)
 				.ifPresent(invoiceRule -> softly.assertThat(order.getInvoiceRule()).as("InvoiceRule for Identifier=%s", identifierStr).isEqualTo(invoiceRule));
@@ -730,7 +770,6 @@ public class C_Order_StepDef
 		row.getAsOptionalIdentifier(COLUMNNAME_HandOver_User_ID)
 				.map(userTable::get)
 				.ifPresent(handoverUser -> softly.assertThat(order.getHandOver_User_ID()).as("HandOver_User_ID for Identifier=%s", identifierStr).isEqualTo(handoverUser.getAD_User_ID()));
-
 
 		softly.assertAll();
 	}
@@ -853,32 +892,52 @@ public class C_Order_StepDef
 		}
 	}
 
-
-	@Then("An order identified by (.*) has order pay schedules after complete")
-	public void verifyOrderPaySchedules(@NonNull final String orderIdentifier, @NonNull final DataTable dataTable)
+	@Then("The order pay schedules were created :")
+	public void verifyOrderPaySchedules(@NonNull final DataTable dataTable)
 	{
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_SeqNo);
-			final BigDecimal dueAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueAmt);
-			final Timestamp dueDate = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueDate);
-			final String status = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_Status	);
-			final int percent = DataTableUtil.extractIntForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_Percent	);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID)
+				.forEach(this::verifyOrderPaySchedule);
 
+	}
 
-			final Optional<I_C_OrderPaySchedule> paySchedule = queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
-					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
-					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_SeqNo, seqNo)
-					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_DueAmt, dueAmt)
-					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_DueDate, dueDate)
-					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_Status, status)
-					.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_Percent, percent)
-					.create()
-					.firstOnlyOptional(I_C_OrderPaySchedule.class);
+	private void verifyOrderPaySchedule(@NonNull final DataTableRow tableRow)
+	{
 
-			assertThat(paySchedule).isPresent();
-		}
+		final OrderId orderId = tableRow.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID)
+				.map(orderTable::getId)
+				.orElseThrow(() -> new AdempiereException(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID + " is mandatory"));
+
+		final Optional<OrderPaySchedule> paySchedule = orderPayScheduleService.getByOrderId(orderId);
+
+		assertThat(paySchedule).isPresent();
+
+		final List<OrderPayScheduleLine> actualLines = paySchedule.get().getLines();
+
+		final PaymentTermBreakId expectedPaymentTermBreakId = tableRow.getAsOptionalIdentifier(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID)
+				.map(paymentTermBreakTable::getId)
+				.orElseThrow(() -> new AdempiereException(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID + " is mandatory for line verification"));
+
+		final Optional<OrderPayScheduleLine> actualLine = actualLines.stream()
+				.filter(line -> line.getPaymentTermBreakId().equals(expectedPaymentTermBreakId))
+				.findFirst();
+
+		assertThat(actualLine).isPresent();
+
+		final BigDecimal expectedDueAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueAmt);
+		final Timestamp expectedDueDate = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueDate);
+		final String expectedStatus = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_Status);
+
+		// Assertions
+
+		Assertions.assertEquals(expectedDueAmt, actualLine.get().getDueAmount().toBigDecimal(),
+				"Due amount mismatch for line based on C_PaymentTerm_Break_ID: " + expectedPaymentTermBreakId);
+
+		Assertions.assertEquals(expectedDueDate.toInstant(), actualLine.get().getDueDate(),
+				"Due date mismatch for line based on C_PaymentTerm_Break_ID: " + expectedPaymentTermBreakId);
+
+		Assertions.assertEquals(expectedStatus, actualLine.get().getOrderPayScheduleStatus().getCode(),
+				"Status mismatch for line based on C_PaymentTerm_Break_ID: " + expectedPaymentTermBreakId);
+
 	}
 }

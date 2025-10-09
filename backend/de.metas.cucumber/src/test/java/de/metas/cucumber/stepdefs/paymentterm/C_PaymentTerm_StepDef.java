@@ -34,27 +34,23 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_PaymentTerm_Break;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class C_PaymentTerm_StepDef
 {
-	private final C_PaymentTerm_StepDefData paymentTermTable;
-	private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
+	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
+	@Nullable private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
 
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
-
-	public C_PaymentTerm_StepDef(@NonNull final C_PaymentTerm_StepDefData paymentTermTable, @NonNull final C_PaymentTerm_Break_StepDefData paymentTermBreakTable)
-
-	{
-		this.paymentTermTable = paymentTermTable;
-		this.paymentTermBreakTable = paymentTermBreakTable;
-	}
 
 	@And("load C_PaymentTerm by id:")
 	public void loadC_PaymentTerm(@NonNull final DataTable dataTable)

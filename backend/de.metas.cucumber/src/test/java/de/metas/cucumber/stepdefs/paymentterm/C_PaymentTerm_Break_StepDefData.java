@@ -23,13 +23,23 @@
 package de.metas.cucumber.stepdefs.paymentterm;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.payment.paymentterm.PaymentTermBreakId;
 import org.compiere.model.I_C_PaymentTerm_Break;
 
 public class C_PaymentTerm_Break_StepDefData extends StepDefData<I_C_PaymentTerm_Break>
+		implements StepDefDataGetIdAware<PaymentTermBreakId, I_C_PaymentTerm_Break>
 {
 	public C_PaymentTerm_Break_StepDefData()
 	{
 		super(I_C_PaymentTerm_Break.class);
 
 	}
+
+	@Override
+	public PaymentTermBreakId extractIdFromRecord(final I_C_PaymentTerm_Break record)
+	{
+		return PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID());
+	}
+
 }

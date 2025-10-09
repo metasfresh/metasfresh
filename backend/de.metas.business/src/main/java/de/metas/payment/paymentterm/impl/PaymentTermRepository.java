@@ -260,7 +260,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		return retrievePaymentTermBreaksForMultipleTerms(ImmutableList.of(paymentTermId));
 	}
 
-	private static PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
+	static PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
 	{
 		return PaymentTerm.builder()
 				.id(extractId(record))

@@ -1,6 +1,7 @@
 package de.metas.payment.paymentterm;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,9 +34,8 @@ import java.util.Optional;
  */
 
 @Value
-public class PaymentTermBreakId
+public class PaymentTermBreakId implements RepoIdAware
 {
-
 	int repoId;
 
 	@NonNull
@@ -98,21 +98,5 @@ public class PaymentTermBreakId
 	public static boolean equals(final  @Nullable PaymentTermBreakId id1, final @Nullable PaymentTermBreakId id2)
 	{
 		return Objects.equals(id1, id2);
-	}
-
-	public static boolean matchingPaymentTermId(@Nullable final PaymentTermId id, @Nullable final PaymentTermBreakId breakId)
-	{
-		if (id == null)
-		{
-			return breakId == null;
-		}
-		else if (breakId == null)
-		{
-			return true;
-		}
-		else
-		{
-			return PaymentTermId.equals(id, breakId.getPaymentTermId());
-		}
 	}
 }
