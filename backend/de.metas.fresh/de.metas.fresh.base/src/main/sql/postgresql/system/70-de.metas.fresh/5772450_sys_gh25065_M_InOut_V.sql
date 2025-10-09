@@ -42,8 +42,8 @@ from (
                                                                                    order by isdefault desc
                                                                                    limit 1),
                                                   iol.qtyentered) -- hard coded UOM for KG
-                              else iol.qtyentered
-                    end), 0)    as movementqty,
+                                  else iol.qtyentered
+                          end), 0)    as movementqty,
 
                 (case
                      when uomConvert(iol.M_Product_ID, iol.C_UOM_ID, (select C_UOM_ID
@@ -52,9 +52,9 @@ from (
                                                                       order by isdefault desc
                                                                       limit 1), iol.qtyentered) is not null
                          then uom.UOMSymbol
-                     else uom_iol.UOMSymbol
-                    end)
-                                as UOMSymbol,
+                         else uom_iol.UOMSymbol
+                 end)
+                    as UOMSymbol,
 
                 il.linenetamt   as grandtotal,
                 c.cursymbol,

@@ -79,6 +79,38 @@ public final class StringUtils
 		return strTrim;
 	}
 
+	@Nullable
+	public static String trimSpacesToNull(@Nullable final String str)
+	{
+		if (str == null || str.isEmpty())
+		{
+			return null;
+		}
+
+		int start = 0;
+		int end = str.length();
+
+		// Trim leading spaces
+		while (start < end && str.charAt(start) == ' ')
+		{
+			start++;
+		}
+
+		// Trim trailing spaces
+		while (end > start && str.charAt(end - 1) == ' ')
+		{
+			end--;
+		}
+
+		if (start == end)
+		{
+			return null; // all spaces
+		}
+
+		return str.substring(start, end);
+	}
+
+
 	@NonNull
 	public static Optional<String> trimBlankToOptional(@Nullable final String str)
 	{

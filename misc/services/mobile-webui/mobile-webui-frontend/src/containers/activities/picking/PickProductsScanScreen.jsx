@@ -3,9 +3,8 @@ import { shallowEqual, useSelector } from 'react-redux';
 import { getActivityById, getCustomQRCodeFormats } from '../../../reducers/wfProcesses';
 import { getNextEligibleLineToPick } from '../../../utils/picking';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
-import { NEXT_PickingJob } from './PickLineScanScreen';
+import { convertScannedBarcodeToResolvedResult, NEXT_PickingJob } from './PickLineScanScreen';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
@@ -19,9 +18,13 @@ const PickProductsScanScreen = () => {
   const { activity } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId }), shallowEqual);
   const customQRCodeFormats = getCustomQRCodeFormats({ activity });
 
-  const onBarcodeScanned = ({ scannedBarcode }) => {
-    const qrCode = parseQRCodeString({ string: scannedBarcode, customQRCodeFormats });
+  const onBarcodeScanned = async ({ scannedBarcode }) => {
+    const { qrCode } = await convertScannedBarcodeToResolvedResult({
+      scannedBarcode,
+      customQRCodeFormats,
+    });
     // console.log('onBarcodeScanned', { scannedBarcode, qrCode });
+
     const line = getNextEligibleLineToPick({ activity, productId: qrCode.productId });
     if (!line) {
       throw 'No matching lines found'; // TODO trl
