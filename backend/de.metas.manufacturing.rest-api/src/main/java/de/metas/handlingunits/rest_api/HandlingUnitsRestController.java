@@ -302,13 +302,11 @@ public class HandlingUnitsRestController
 	public void moveHU(
 			@RequestBody @NonNull final JsonMoveHURequest request)
 	{
-		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
-
 		handlingUnitsService.move(MoveHURequest.builder()
 				.huId(request.getHuId())
-				.huQRCode(huQRCode)
+				.huQRCode(HUQRCode.fromNullable(request.getHuQRCode()))
 				.numberOfTUs(request.getNumberOfTUs())
-				.targetQRCode(ScannedCode.ofString(request.getTargetQRCode()))
+				.targetQRCode(request.getTargetQRCode())
 				.build());
 	}
 
@@ -362,7 +360,7 @@ public class HandlingUnitsRestController
 
 		return handlingUnitsService.getByIdSupplier(() -> GetByIdRequest.builder()
 				.huId(huId)
-				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.expectedQRCode(HUQRCode.fromNullable(request.getHuQRCode()))
 				.build());
 	}
 
