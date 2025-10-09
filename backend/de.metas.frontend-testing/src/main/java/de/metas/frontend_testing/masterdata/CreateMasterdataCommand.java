@@ -359,6 +359,7 @@ public class CreateMasterdataCommand
 	private JsonInventoryResponse createInventory(String identifier, JsonInventoryRequest request)
 	{
 		return InventoryCreateCommand.builder()
+				.inventoryService(services.inventoryService)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

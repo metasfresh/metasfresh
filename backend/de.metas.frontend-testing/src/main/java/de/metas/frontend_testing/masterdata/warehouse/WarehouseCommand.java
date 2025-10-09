@@ -51,6 +51,7 @@ public class WarehouseCommand
 		return JsonWarehouseResponse.builder()
 				.warehouseCode(warehouseRecord.getValue())
 				.warehouseName(warehouseRecord.getName())
+				.locatorId(locator.getM_Locator_ID())
 				.locatorCode(locator.getValue())
 				.locatorQRCode(locatorQRCode.toGlobalQRCodeJsonString())
 				.build();

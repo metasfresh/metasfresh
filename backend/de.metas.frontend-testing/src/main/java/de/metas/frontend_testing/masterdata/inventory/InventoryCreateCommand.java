@@ -1,29 +1,26 @@
 package de.metas.frontend_testing.masterdata.inventory;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryHeaderCreateRequest;
-import de.metas.handlingunits.inventory.InventoryLineCreateRequest;
 import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateRequest;
 import de.metas.inventory.HUAggregationType;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.warehouse.LocatorId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
-
-import java.math.BigDecimal;
 
 @Builder
 public class InventoryCreateCommand
@@ -47,32 +44,33 @@ public class InventoryCreateCommand
 	{
 		final OrgId orgId = MasterdataContext.ORG_ID;
 
-		final Inventory inventory = inventoryService.createInventoryHeader(InventoryHeaderCreateRequest.builder()
-				.orgId(orgId)
-				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
-				.docTypeId(inventoryService.getDocTypeIdByAggregationType(HUAggregationType.MULTI_HU, orgId))
-				.movementDate(request.getDate() != null ? request.getDate() : SystemTime.asZonedDateTime())
-				.build());
+		final Inventory inventory = inventoryService.createInventoryHeader(
+				InventoryHeaderCreateRequest.builder()
+						.orgId(orgId)
+						.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
+						.docTypeId(inventoryService.getDocTypeIdByAggregationType(HUAggregationType.MULTI_HU, orgId))
+						.movementDate(request.getDate() != null ? request.getDate() : SystemTime.asZonedDateTime())
+						.build()
+		);
 
-		final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(inventory.getWarehouseId());
+		final ImmutableSet<ProductId> productIds = context.getIds(request.getProducts(), ProductId.class);
+		if (productIds.isEmpty())
+		{
+			throw new AdempiereException("Inventory shall specify at least one product: " + identifier + "=" + request);
+		}
 
-		request.getLines().forEach(line -> {
-			final ProductId productId = context.getId(line.getProduct(), ProductId.class);
-			final I_C_UOM uom = productBL.getStockUOM(productId);
-			inventoryService.createInventoryLine(InventoryLineCreateRequest.builder()
-					.inventoryId(inventory.getId())
-					.locatorId(locatorId)
-					.aggregationType(HUAggregationType.MULTI_HU)
-					.productId(productId)
-					//.attributeSetId(attributeSetInstanceId)
-					.qtyBooked(Quantity.of(BigDecimal.ZERO, uom))
-					.qtyCount(Quantity.of(BigDecimal.ZERO, uom))
-					// .inventoryLineHUList(productHUInv.toInventoryLineHUs(conversionBL, UomId.ofRepoId(stockingUOM.getC_UOM_ID())))
-					.build());
-		});
-		
-		
-		throw new UnsupportedOperationException(); // TODO
+		inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+						.inventory(inventory)
+						.onlyProductIds(productIds)
+						.build()
+		);
+
+		context.putIdentifier(identifier, inventory.getId());
+
+		return JsonInventoryResponse.builder()
+				.id(inventory.getId())
+				.documentNo(inventory.getDocumentNo())
+				.build();
 	}
-
 }
