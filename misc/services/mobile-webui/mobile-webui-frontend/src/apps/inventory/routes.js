@@ -11,7 +11,7 @@ export const inventoryLineScreenLocation = ({ applicationId, wfProcessId, activi
 };
 export const inventoryScanScreenLocation = ({ applicationId, wfProcessId, activityId }) => {
   const baseUrl = inventoryJobLocation({ applicationId, wfProcessId });
-  return `${baseUrl}/line/${activityId}/scan`;
+  return `${baseUrl}/scan/${activityId}`;
 };
 
 export const inventoryRoutes = [
