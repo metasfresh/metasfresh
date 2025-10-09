@@ -96,33 +96,33 @@ const InventoryScanScreen = () => {
       .finally(() => setProcessing(false));
   };
 
-  if (status === STATUS_ScanLocator) {
-    return (
+  const panels = {
+    [STATUS_ScanLocator]: (
       <BarcodeScannerComponent
         key="scanLocator"
         inputPlaceholderText="Scan Locator"
         onResolvedResult={onLocatorScanned}
         continuousRunning={true}
       />
-    );
-  } else if (status === STATUS_ScanHU) {
-    return (
+    ),
+    [STATUS_ScanHU]: (
       <BarcodeScannerComponent
         key="scanHU"
         inputPlaceholderText="Scan HU"
         onResolvedResult={onHUScanned}
         continuousRunning={true}
       />
-    );
-  } else if (status === STATUS_FillData) {
-    return (
+    ),
+    [STATUS_FillData]: (
       <InventoryCountComponent
         disabled={isReadonly}
         resolvedHU={resolvedHU}
         onInventoryCountSubmit={onInventoryCountSubmit}
       />
-    );
-  }
+    ),
+  };
+
+  return <div className={`panel-${status}`}>{panels[status] || null}</div>;
 };
 
 export default InventoryScanScreen;

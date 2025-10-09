@@ -36,6 +36,8 @@ const InventoryActivity = ({ applicationId, wfProcessId, activityId }) => {
           uom={line.uom}
           qtyBooked={line.qtyBooked}
           qtyCount={line.qtyCount}
+          productId={line.productId}
+          locatorId={line.locatorId}
           onClick={() => onButtonClicked({ line })}
         />
       ))}

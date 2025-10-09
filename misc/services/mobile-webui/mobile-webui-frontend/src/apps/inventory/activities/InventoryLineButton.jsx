@@ -4,7 +4,7 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import ButtonDetails from '../../../components/buttons/ButtonDetails';
 
-const InventoryLineButton = ({ lineId, caption, uom, qtyBooked, qtyCount, onClick }) => {
+const InventoryLineButton = ({ lineId, caption, uom, qtyBooked, qtyCount, productId, locatorId, onClick }) => {
   // console.log('InventoryLineButton', { lineId, caption, uom, qtyBooked, qtyCount });
 
   const qtyBookedStr = formatQtyToHumanReadableStr({ qty: qtyBooked, uom });
@@ -12,12 +12,10 @@ const InventoryLineButton = ({ lineId, caption, uom, qtyBooked, qtyCount, onClic
 
   return (
     <ButtonWithIndicator
-      testId={`line-${lineId}-button`}
       key={lineId}
       caption={caption}
-      // completeStatus={line.completeStatus || CompleteStatus.NOT_STARTED}
-      // disabled={!isUserEditable || isLineReadOnly({ activity, line })}
       onClick={onClick}
+      testId={`line-P${productId}-L${locatorId}-button`}
     >
       <ButtonDetails
         caption1={'Booked' /* TODO trl */}
@@ -34,6 +32,8 @@ InventoryLineButton.propTypes = {
   uom: PropTypes.string.isRequired,
   qtyBooked: PropTypes.number.isRequired,
   qtyCount: PropTypes.number.isRequired,
+  productId: PropTypes.number.isRequired,
+  locatorId: PropTypes.number.isRequired,
   onClick: PropTypes.func.isRequired,
 };
 
