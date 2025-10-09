@@ -82,7 +82,7 @@ public class CreateHUCommand
 
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
-		updateAttributes(huId);
+		final IAttributeStorage huAttributes = updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
 
@@ -101,6 +101,7 @@ public class CreateHUCommand
 				.qrCode(huQRCodeStr)
 				.productId(getProductId())
 				.warehouseId(getWarehouseId())
+				.externalBarcode(huAttributes != null && huAttributes.hasAttribute(AttributeConstants.ATTR_ExternalBarcode) ? huAttributes.getValueAsString(AttributeConstants.ATTR_ExternalBarcode) : null)
 				.build();
 	}
 
@@ -256,7 +257,7 @@ public class CreateHUCommand
 		return HuId.ofRepoId(newLU.getM_HU_ID());
 	}
 
-	private void updateAttributes(final HuId huId)
+	private IAttributeStorage updateAttributes(final HuId huId)
 	{
 		final BigDecimal weightNet = request.getWeightNet();
 		final String lotNo = request.getLotNo();
@@ -267,7 +268,7 @@ public class CreateHUCommand
 
 		if (CoalesceUtil.countNotNulls(weightNet, lotNo, bestBeforeDate, externalBarcode) <= 0)
 		{
-			return;
+			return null;
 		}
 
 		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(huId);
@@ -293,6 +294,8 @@ public class CreateHUCommand
 		{
 			huAttributes.setValue(AttributeConstants.ATTR_ExternalBarcode, externalBarcode);
 		}
+
+		return huAttributes;
 	}
 
 }

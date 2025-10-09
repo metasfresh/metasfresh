@@ -18,4 +18,5 @@ public class JsonCreateHUResponse
 	@Nullable String qrCode;
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
+	@Nullable String externalBarcode;
 }
