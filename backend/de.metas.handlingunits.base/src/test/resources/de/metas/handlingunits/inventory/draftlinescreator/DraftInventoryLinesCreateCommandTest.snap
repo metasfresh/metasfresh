@@ -1,4 +1,4 @@
-de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator=[
+de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommandTest.execute_MultipleHUInventoryLineAggregator=[
   {
     "docBaseAndSubType": {
       "docBaseType": "MMI",
@@ -143,7 +143,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
 ]
 
 
-de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator_preAddedHUs=[
+de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommandTest.execute_MultipleHUInventoryLineAggregator_preAddedHUs=[
   {
     "docBaseAndSubType": {
       "docBaseType": "MMI",
@@ -263,7 +263,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
 ]
 
 
-de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_SingleHUInventoryLineAggregator=[
+de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommandTest.execute_SingleHUInventoryLineAggregator=[
   {
     "docBaseAndSubType": {
       "docBaseType": "MMI",

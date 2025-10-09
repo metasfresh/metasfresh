@@ -11,7 +11,6 @@ import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.InventoryTestHelper;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.MultipleHUInventoryLineAggregator;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.SingleHUInventoryLineAggregator;
 import de.metas.inventory.AggregationType;
@@ -20,7 +19,6 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
@@ -70,7 +68,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 @ExtendWith({ SnapshotExtension.class, AdempiereTestWatcher.class })
-class DraftInventoryLinesCreatorTest
+class DraftInventoryLinesCreateCommandTest
 {
 	private final ProductId PRODUCT_ID_40 = ProductId.ofRepoId(40);
 	private final ProductId PRODUCT_ID_2 = ProductId.ofRepoId(2);
@@ -134,13 +132,15 @@ class DraftInventoryLinesCreatorTest
 	void execute_SingleHUInventoryLineAggregator()
 	{
 		final InventoryId inventoryId = createInventoryRecord(AggregationType.SINGLE_HU.getDocBaseAndSubType());
-		final InventoryLinesCreationCtx ctx = createContext(
-				inventoryId,
-				this::createAndStreamTestHUs,
-				SingleHUInventoryLineAggregator.INSTANCE);
 
 		// execute the method under test
-		new DraftInventoryLinesCreator(ctx).execute();
+		inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+						.inventory(inventoryService.getById(inventoryId))
+						.lineAggregator(SingleHUInventoryLineAggregator.INSTANCE)
+						.strategy(this::createAndStreamTestHUs)
+						.build()
+		);
 
 		final Inventory result = inventoryService.getById(inventoryId);
 		expect.serializer("orderedJson").toMatchSnapshot(result);
@@ -166,13 +166,15 @@ class DraftInventoryLinesCreatorTest
 		assertThat(initialInventoryWithHus.getHuIds()).containsExactlyInAnyOrder(HuId.ofRepoId(100), HuId.ofRepoId(200), HuId.ofRepoId(300)); // guard
 
 		final InventoryId inventoryId = createInventoryRecord(AggregationType.MULTIPLE_HUS.getDocBaseAndSubType());
-		final InventoryLinesCreationCtx ctx = createContext(
-				inventoryId,
-				this::createAndStreamAdditionalTestHU,
-				MultipleHUInventoryLineAggregator.INSTANCE);
 
 		// when
-		new DraftInventoryLinesCreator(ctx).execute();
+		inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+						.inventory(inventoryService.getById(inventoryId))
+						.lineAggregator(MultipleHUInventoryLineAggregator.INSTANCE)
+						.strategy(this::createAndStreamAdditionalTestHU)
+						.build()
+		);
 
 		// then
 		final Inventory result = inventoryService.getById(inventoryId);
@@ -187,13 +189,15 @@ class DraftInventoryLinesCreatorTest
 	private Inventory execute_MultipleHUInventoryLineAggregator_performTest()
 	{
 		final InventoryId inventoryId = createInventoryRecord(AggregationType.MULTIPLE_HUS.getDocBaseAndSubType());
-		final InventoryLinesCreationCtx ctx = createContext(
-				inventoryId,
-				this::createAndStreamTestHUs,
-				MultipleHUInventoryLineAggregator.INSTANCE);
 
 		// execute the method under test
-		new DraftInventoryLinesCreator(ctx).execute();
+		inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+				.inventory(inventoryService.getById(inventoryId))
+				.lineAggregator(MultipleHUInventoryLineAggregator.INSTANCE)
+				.strategy(this::createAndStreamTestHUs)
+				.build()
+		);
 
 		return inventoryService.getById(inventoryId);
 
@@ -238,18 +242,4 @@ class DraftInventoryLinesCreatorTest
 
 		return ImmutableList.of(hu1, hu2, hu3, hu4).stream();
 	}
-
-	private InventoryLinesCreationCtx createContext(
-			@NonNull final InventoryId inventoryId,
-			@NonNull final HUsForInventoryStrategy strategy,
-			@NonNull final InventoryLineAggregator aggregator)
-	{
-		return InventoryLinesCreationCtx.builder()
-				.inventory(inventoryService.getById(inventoryId))
-				.inventoryService(inventoryService)
-				.inventoryLineAggregator(aggregator)
-				.strategy(strategy)
-				.build();
-	}
-
 }

@@ -34,10 +34,9 @@ import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryHeaderCreateRequest;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateRequest;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -152,14 +151,13 @@ public class HUQtyService
 				.description(request.getDescription())
 				.build());
 
-		final InventoryLinesCreationCtx inventoryLinesCreationCtx = InventoryLinesCreationCtx.builder()
-				.inventoryService(inventoryService)
-				.inventoryLineAggregator(InventoryLineAggregatorFactory.getForAggregationMode(AggregationType.SINGLE_HU))
-				.inventory(inventoryHeader)
-				.strategy(HUsForInventoryStrategies.of(inventoryLineCandidate))
-				.build();
-
-		new DraftInventoryLinesCreator(inventoryLinesCreationCtx).execute();
+		inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+						.lineAggregator(InventoryLineAggregatorFactory.getForAggregationMode(AggregationType.SINGLE_HU))
+						.inventory(inventoryHeader)
+						.strategy(HUsForInventoryStrategies.of(inventoryLineCandidate))
+						.build()
+		);
 
 		inventoryService.completeDocument(inventoryHeader.getId());
 		return inventoryService.getById(inventoryHeader.getId());

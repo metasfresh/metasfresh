@@ -373,8 +373,8 @@ class InventoryLoaderAndSaver
 		saveInventoryLines(inventory.getLines(), inventoryId);
 	}
 
-	private void saveInventoryLines(
-			@NonNull final List<InventoryLine> lines,
+	public void saveInventoryLines(
+			@NonNull final Collection<InventoryLine> lines,
 			@NonNull final InventoryId inventoryId)
 	{
 		final ImmutableSet<InventoryLineId> inventoryLineIds = extractInventoryLineIds(lines);
@@ -396,7 +396,7 @@ class InventoryLoaderAndSaver
 				.get(inventoryAndLineId);
 	}
 
-	private static ImmutableSet<InventoryLineId> extractInventoryLineIds(final List<InventoryLine> lines)
+	private static ImmutableSet<InventoryLineId> extractInventoryLineIds(final Collection<InventoryLine> lines)
 	{
 		return lines.stream()
 				.map(InventoryLine::getId)

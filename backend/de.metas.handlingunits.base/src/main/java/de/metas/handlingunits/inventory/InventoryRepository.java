@@ -136,6 +136,11 @@ public final class InventoryRepository
 		newLoaderAndSaver().saveInventoryLines(inventory);
 	}
 
+	public void saveInventoryLines(@NonNull final Collection<InventoryLine> lines, @NonNull final InventoryId inventoryId)
+	{
+		newLoaderAndSaver().saveInventoryLines(lines, inventoryId);
+	}
+
 	public void saveInventoryLine(
 			@NonNull final InventoryLine inventoryLine,
 			@NonNull final InventoryId inventoryId)

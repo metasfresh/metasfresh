@@ -103,7 +103,7 @@ public class ProductHUInventory
 	{
 		final UnaryOperator<Quantity> uomConverter = qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 		return huForInventoryLineList.stream()
-				.map(DraftInventoryLinesCreator::toInventoryLineHU)
+				.map(DraftInventoryLinesCreateCommand::toInventoryLineHU)
 				.map(inventoryLineHU -> inventoryLineHU.convertQuantities(uomConverter))
 				.collect(ImmutableList.toImmutableList());
 	}

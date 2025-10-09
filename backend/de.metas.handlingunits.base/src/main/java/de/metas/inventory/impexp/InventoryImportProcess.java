@@ -14,7 +14,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommand;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
@@ -373,7 +373,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	{
 		final UnaryOperator<Quantity> uomConverter = qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 		return hus.stream()
-				.map(DraftInventoryLinesCreator::toInventoryLineHU)
+				.map(DraftInventoryLinesCreateCommand::toInventoryLineHU)
 				.map(inventoryLineHU -> inventoryLineHU.convertQuantities(uomConverter))
 				.collect(ImmutableList.toImmutableList());
 	}

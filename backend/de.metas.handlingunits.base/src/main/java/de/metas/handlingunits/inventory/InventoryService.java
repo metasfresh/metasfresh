@@ -9,6 +9,10 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommand;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateRequest;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateResponse;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
@@ -79,6 +83,7 @@ public class InventoryService
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull @Getter private final InventoryRepository inventoryRepository = new InventoryRepository();
+	@NonNull HuForInventoryLineFactory huForInventoryLineFactory;
 	@NonNull private final SourceHUsService sourceHUsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 
@@ -89,6 +94,7 @@ public class InventoryService
 		Adempiere.assertUnitTestMode();
 
 		return new InventoryService(
+				new HuForInventoryLineFactory(),
 				SourceHUsService.get(),
 				HUQRCodesService.newInstanceForUnitTesting()
 		);
@@ -322,11 +328,6 @@ public class InventoryService
 		inventoryRepository.deleteInventoryLineHUs(inventoryLineId);
 	}
 
-	public void saveInventoryLines(@NonNull final Collection<InventoryLine> lines, @NonNull final InventoryId inventoryId)
-	{
-		lines.forEach(line -> inventoryRepository.saveInventoryLine(line, inventoryId));
-	}
-
 	public InventoryLine toInventoryLine(final I_M_InventoryLine inventoryLineRecord)
 	{
 		return inventoryRepository.toInventoryLine(inventoryLineRecord);
@@ -350,6 +351,16 @@ public class InventoryService
 	public Inventory updateById(final InventoryId inventoryId, UnaryOperator<Inventory> updater)
 	{
 		return inventoryRepository.updateById(inventoryId, updater);
+	}
+
+	public DraftInventoryLinesCreateResponse createDraftLines(@NonNull final DraftInventoryLinesCreateRequest request)
+	{
+		return DraftInventoryLinesCreateCommand.builder()
+				.inventoryRepository(inventoryRepository)
+				.huForInventoryLineFactory(huForInventoryLineFactory)
+				.request(request)
+				.build()
+				.execute();
 	}
 
 }

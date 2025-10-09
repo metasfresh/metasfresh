@@ -1,19 +1,15 @@
 package de.metas.handlingunits.inventory.draftlinescreator.process;
 
-import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateRequest;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateResponse;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Check;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Inventory;
 
@@ -63,30 +59,16 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 	@Override
 	final protected String doIt()
 	{
-		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
-		final Inventory inventory = inventoryService.getById(inventoryId);
-		final DocBaseAndSubType docBaseAndSubType = inventory.getDocBaseAndSubType();
+		final Inventory inventory = inventoryService.getById(InventoryId.ofRepoId(getRecord_ID()));
 
-		final HUsForInventoryStrategy strategy = createStrategy(inventory);
+		final DraftInventoryLinesCreateResponse response = inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+						.inventory(inventory)
+						.strategy(createStrategy(inventory))
+						.build()
+		);
 
-		final InventoryLineAggregator inventoryLineAggregator = InventoryLineAggregatorFactory.getForDocBaseAndSubType(docBaseAndSubType);
-
-		Check.errorUnless(
-				inventory.getDocStatus().isDraftedOrInProgress(),
-				"the given inventory record needs to be in status 'DR' or 'IP', but is in status={}; inventory={}",
-				inventory.getDocStatus(), inventory);
-
-		final InventoryLinesCreationCtx draftLines = InventoryLinesCreationCtx.builder()
-				.inventory(inventoryService.getById(inventoryId))
-				.inventoryService(inventoryService)
-				.inventoryLineAggregator(inventoryLineAggregator)
-				.strategy(strategy)
-				.build();
-
-		final DraftInventoryLinesCreator draftLinesCreator = new DraftInventoryLinesCreator(draftLines);
-		draftLinesCreator.execute();
-
-		return "@Created@/@Updated@ #" + draftLinesCreator.getCountInventoryLines();
+		return "@Created@/@Updated@ #" + response.getCountInventoryLines();
 	}
 
 	protected abstract HUsForInventoryStrategy createStrategy(Inventory inventory);

@@ -6,11 +6,11 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -57,14 +57,10 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull HuForInventoryLineFactory huForInventoryLineFactory;
 
-	@Nullable
-	WarehouseId warehouseId;
-	@Nullable
-	LocatorId locatorId;
-	@Nullable
-	ProductId productId;
-	@Nullable
-	Boolean onlyStockedProducts;
+	@Nullable WarehouseId warehouseId;
+	@Nullable LocatorId locatorId;
+	@Nullable ProductId productId;
+	@Nullable Boolean onlyStockedProducts;
 	@NonNull AttributeSetInstanceId asiId;
 
 	@Builder
@@ -85,11 +81,9 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 		this.onlyStockedProducts = onlyStockedProducts;
 		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
 
-		if (warehouseId != null && locatorId != null)
+		if (warehouseId != null && locatorId != null && !WarehouseId.equals(warehouseId, locatorId.getWarehouseId()))
 		{
-			Check.errorUnless(warehouseId.equals(locatorId.getWarehouseId()),
-							  "If both a warehouse and locator are specified, then the locator's WH needs to be the given WH; warehouseId={}; locatorId={}",
-							  warehouseId, locatorId);
+			throw new AdempiereException("If both a warehouse and locator are specified, the warehouse shall match: " + warehouseId + ", " + locatorId);
 		}
 	}
 
@@ -122,8 +116,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 			appendAttributeFilters(huQueryBuilder);
 		}
 
-		return huQueryBuilder
-				.createQueryBuilder()
+		return huQueryBuilder.createQueryBuilder()
 				.clearOrderBys().orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
 				.create()
 				.iterateAndStream()
