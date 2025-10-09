@@ -121,7 +121,7 @@ public interface I_C_PaymentTerm_Break
 	 * Set Description.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setDescription (java.lang.String Description);
@@ -130,7 +130,7 @@ public interface I_C_PaymentTerm_Break
 	 * Get Description.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	java.lang.String getDescription();
