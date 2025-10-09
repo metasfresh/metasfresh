@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.paymentterm;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -29,6 +30,9 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxUtils;
+import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -37,18 +41,28 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_PaymentTerm_Break;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_M_ProductPrice;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class C_PaymentTerm_StepDef
 {
 	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
-	@Nullable private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
+	@NonNull private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
 
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
@@ -66,18 +80,58 @@ public class C_PaymentTerm_StepDef
 		}
 	}
 
-	@And("load C_PaymentTerm_Break by id:")
-	public void loadC_PaymentTerm_Break(@NonNull final DataTable dataTable)
+	@And("metasfresh contains C_PaymentTerm")
+	public void add_C_PaymentTerm(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
 		{
-			final int paymentTermBreakId = DataTableUtil.extractIntForColumnName(row, I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID);
-
-			final I_C_PaymentTerm_Break paymentTermBreak = InterfaceWrapperHelper.load(paymentTermBreakId, I_C_PaymentTerm_Break.class);
-
-			final String paymentTermBreakIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			paymentTermBreakTable.put(paymentTermBreakIdentifier, paymentTermBreak);
+			createC_PaymentTerm(tableRow);
 		}
+	}
+
+	private void createC_PaymentTerm(@NonNull final Map<String, String> tableRow)
+	{
+		final boolean isComplex = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_PaymentTerm.COLUMNNAME_IsComplex);
+
+		final I_C_PaymentTerm paymentTerm =  InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+
+		paymentTerm.setIsComplex(isComplex);
+
+		InterfaceWrapperHelper.saveRecord(paymentTerm);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_C_PaymentTerm.Table_Name);
+		paymentTermTable.putOrReplace(recordIdentifier, paymentTerm);
+	}
+
+	@And("metasfresh contains C_PaymentTerm_Break")
+	public void add_C_PaymentTerm_Break(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			createC_PaymentTerm_Break(tableRow);
+		}
+	}
+
+	private void createC_PaymentTerm_Break(@NonNull final Map<String, String> tableRow)
+	{
+		final int paymentTermId = DataTableUtil.extractIntForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID);
+		final int percent = DataTableUtil.extractIntForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_Percent);
+		final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_SeqNo);
+		final String referenceDateType = DataTableUtil.extractStringForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType);
+
+		final I_C_PaymentTerm_Break paymentTermBreak =  InterfaceWrapperHelper.newInstance(I_C_PaymentTerm_Break.class);
+
+		paymentTermBreak.setC_PaymentTerm_ID(paymentTermId);
+		paymentTermBreak.setPercent(percent);
+		paymentTermBreak.setReferenceDateType(referenceDateType);
+		paymentTermBreak.setSeqNo(seqNo);
+
+		InterfaceWrapperHelper.saveRecord(paymentTermBreak);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_C_PaymentTerm_Break.Table_Name);
+		paymentTermBreakTable.putOrReplace(recordIdentifier, paymentTermBreak);
 	}
 
 	@And("validate C_PaymentTerm:")

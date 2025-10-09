@@ -36,13 +36,13 @@ Feature: Purchase order with complex payment term
       | Identifier | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | de_ch_tax  | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
       | ch_ch_tax  | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
-    And load C_PaymentTerm by id:
+    And metasfresh contains C_PaymentTerm
       | Identifier | IsComplex |
       | pt_PO      | Y         |
-    And load C_PaymentTerm_Break by id:
-      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType |
-      | PTB1       | Y                | 50      | 1          | OD                |
-      | PTB2       | Y                | 50      | 0          | BL                |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB1       | Y                | 50      | 1          | OD                | 10    |
+      | PTB2       | Y                | 50      | 0          | BL                | 20    |
 
 
   @from:cucumber
