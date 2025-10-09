@@ -22,10 +22,13 @@
 
 package de.metas.cucumber.stepdefs.paymentterm;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
@@ -33,23 +36,31 @@ import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import java.util.Optional;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_PaymentTerm_Break;
 
 import java.util.Map;
+import java.util.Optional;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
+
+@RequiredArgsConstructor
 public class C_PaymentTerm_StepDef
 {
-	final C_PaymentTerm_StepDefData paymentTermTable;
-	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
+	@NonNull private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
 
-	public C_PaymentTerm_StepDef(@NonNull final C_PaymentTerm_StepDefData paymentTermTable)
-	{
-		this.paymentTermTable = paymentTermTable;
-	}
+	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@And("load C_PaymentTerm by id:")
 	public void loadC_PaymentTerm(@NonNull final DataTable dataTable)
@@ -63,6 +74,70 @@ public class C_PaymentTerm_StepDef
 			final String paymentTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			paymentTermTable.put(paymentTermIdentifier, paymentTerm);
 		}
+	}
+
+	@And("metasfresh contains C_PaymentTerm")
+	public void add_C_PaymentTerm(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID)
+				.forEach((row) -> {
+					final ValueAndName valueAndName = row.suggestValueAndName();
+
+					final I_C_PaymentTerm paymentTermRecord = InterfaceWrapperHelper.loadOrNew(paymentTermRepo.retrievePaymentTermId(
+									PaymentTermQuery.builder()
+											.orgId(StepDefConstants.ORG_ID)
+											.value(valueAndName.getValue())
+											.build())
+							.orElse(null), I_C_PaymentTerm.class);
+
+					assertThat(paymentTermRecord).isNotNull();
+
+					paymentTermRecord.setValue(valueAndName.getValue());
+					paymentTermRecord.setName(valueAndName.getName());
+					row.getAsOptionalBoolean(I_C_PaymentTerm.COLUMNNAME_IsComplex).ifPresent(paymentTermRecord::setIsComplex);
+
+					saveRecord(paymentTermRecord);
+
+					row.getAsOptionalIdentifier()
+							.ifPresent(identifier -> paymentTermTable.put(identifier, paymentTermRecord));
+
+				});
+	}
+
+	@And("metasfresh contains C_PaymentTerm_Break")
+	public void add_C_PaymentTerm_Break(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::createC_PaymentTerm_Break);
+	}
+
+	private void createC_PaymentTerm_Break(@NonNull final DataTableRow tableRow)
+	{
+		final PaymentTermId paymentTermId = tableRow.getAsIdentifier(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID).lookupIdIn(paymentTermTable);
+		final int seqno = tableRow.getAsInt(I_C_PaymentTerm_Break.COLUMNNAME_SeqNo);
+
+		final I_C_PaymentTerm_Break breakRecord = CoalesceUtil.coalesceSuppliers(
+				() -> queryBL.createQueryBuilder(I_C_PaymentTerm_Break.class)
+						.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
+						.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_SeqNo, seqno)
+						.create()
+						.firstOnlyOrNull(I_C_PaymentTerm_Break.class),
+				() -> newInstanceOutOfTrx(I_C_PaymentTerm_Break.class));
+
+		AssertionsForClassTypes.assertThat(breakRecord).isNotNull();
+
+		breakRecord.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		breakRecord.setSeqNo(seqno);
+		tableRow.getAsOptionalInt(I_C_PaymentTerm_Break.COLUMNNAME_Percent)
+				.ifPresent(breakRecord::setPercent);
+		tableRow.getAsOptionalString(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType)
+				.ifPresent(breakRecord::setReferenceDateType);
+		tableRow.getAsOptionalInt(I_C_PaymentTerm_Break.COLUMNNAME_OffsetDays)
+				.ifPresent(breakRecord::setOffsetDays);
+		saveRecord(breakRecord);
+
+		tableRow.getAsOptionalIdentifier()
+				.ifPresent(identifier -> paymentTermBreakTable.put(identifier, breakRecord));
 	}
 
 	@And("validate C_PaymentTerm:")
