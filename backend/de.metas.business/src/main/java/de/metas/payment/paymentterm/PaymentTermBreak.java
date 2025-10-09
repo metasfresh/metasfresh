@@ -28,13 +28,15 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Builder
 @Value
 public class PaymentTermBreak
 {
 	@NonNull PaymentTermBreakId id;
 	@NonNull PaymentTermId paymentTermId;
-	@NonNull String description;
+	@Nullable String description;
 	@NonNull ReferenceDateType referenceDateType;
 	@NonNull Percent percent;
 	@NonNull SeqNo seqNo;
