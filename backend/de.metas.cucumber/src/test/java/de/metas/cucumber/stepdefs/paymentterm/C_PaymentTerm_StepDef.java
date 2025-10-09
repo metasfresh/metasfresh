@@ -84,12 +84,12 @@ public class C_PaymentTerm_StepDef
 				.forEach((row) -> {
 					final ValueAndName valueAndName = row.suggestValueAndName();
 
-					final I_C_PaymentTerm paymentTermRecord = CoalesceUtil.coalesceSuppliers(
-							() -> queryBL.createQueryBuilder(I_C_PaymentTerm.class)
-									.addEqualsFilter(COLUMNNAME_Value, valueAndName.getValue())
-									.create()
-									.firstOnlyOrNull(I_C_PaymentTerm.class),
-							() -> InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class));
+					final I_C_PaymentTerm paymentTermRecord = InterfaceWrapperHelper.loadOrNew(paymentTermRepo.retrievePaymentTermId(
+									PaymentTermQuery.builder()
+											.orgId(StepDefConstants.ORG_ID)
+											.value(valueAndName.getValue())
+											.build())
+							.orElse(null), I_C_PaymentTerm.class);
 
 					assertThat(paymentTermRecord).isNotNull();
 
@@ -99,7 +99,8 @@ public class C_PaymentTerm_StepDef
 
 					saveRecord(paymentTermRecord);
 
-					row.getAsIdentifier().put(paymentTermTable, paymentTermRecord);
+					row.getAsOptionalIdentifier()
+							.ifPresent(identifier -> paymentTermTable.put(identifier, paymentTermRecord));
 
 				});
 	}
@@ -115,7 +116,6 @@ public class C_PaymentTerm_StepDef
 		final PaymentTermId paymentTermId = tableRow.getAsIdentifier(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID).lookupIdIn(paymentTermTable);
 		final int seqno = tableRow.getAsInt(I_C_PaymentTerm_Break.COLUMNNAME_SeqNo);
 
-		final ValueAndName valueAndName = tableRow.suggestValueAndName();
 		final I_C_PaymentTerm_Break breakRecord = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_PaymentTerm_Break.class)
 						.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
@@ -132,9 +132,12 @@ public class C_PaymentTerm_StepDef
 				.ifPresent(breakRecord::setPercent);
 		tableRow.getAsOptionalString(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType)
 				.ifPresent(breakRecord::setReferenceDateType);
+		tableRow.getAsOptionalInt(I_C_PaymentTerm_Break.COLUMNNAME_OffsetDays)
+				.ifPresent(breakRecord::setOffsetDays);
 		saveRecord(breakRecord);
 
-		paymentTermBreakTable.putOrReplace(tableRow.getAsIdentifier(), breakRecord);
+		tableRow.getAsOptionalIdentifier()
+				.ifPresent(identifier -> paymentTermBreakTable.put(identifier, breakRecord));
 	}
 
 	@And("validate C_PaymentTerm:")

@@ -32,9 +32,7 @@ import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
-import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
-import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyRepository;
@@ -53,13 +51,9 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPaySchedule;
-import de.metas.order.paymentschedule.OrderPayScheduleLine;
-import de.metas.order.paymentschedule.OrderPayScheduleService;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -86,15 +80,12 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
-import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -173,9 +164,6 @@ public class C_Order_StepDef
 	private final @NonNull AD_InputDataSource_StepDefData dataSourceTable;
 	private final @NonNull TestContext restTestContext;
 	private final @NonNull C_PaymentTerm_StepDef paymentTermStepDef;
-	private final @NonNull C_PaymentTerm_StepDefData paymentTermTable;
-	private final @NonNull C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
-	private final @NonNull OrderPayScheduleService orderPayScheduleService;
 
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
@@ -890,54 +878,5 @@ public class C_Order_StepDef
 
 			restTestContext.setEndpointPath(endpointPath);
 		}
-	}
-
-	@Then("The order pay schedules were created :")
-	public void verifyOrderPaySchedules(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID)
-				.forEach(this::verifyOrderPaySchedule);
-
-	}
-
-	private void verifyOrderPaySchedule(@NonNull final DataTableRow tableRow)
-	{
-
-		final OrderId orderId = tableRow.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID)
-				.map(orderTable::getId)
-				.orElseThrow(() -> new AdempiereException(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID + " is mandatory"));
-
-		final Optional<OrderPaySchedule> paySchedule = orderPayScheduleService.getByOrderId(orderId);
-
-		assertThat(paySchedule).isPresent();
-
-		final List<OrderPayScheduleLine> actualLines = paySchedule.get().getLines();
-
-		final PaymentTermBreakId expectedPaymentTermBreakId = tableRow.getAsOptionalIdentifier(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID)
-				.map(paymentTermBreakTable::getId)
-				.orElseThrow(() -> new AdempiereException(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID + " is mandatory for line verification"));
-
-		final Optional<OrderPayScheduleLine> actualLine = actualLines.stream()
-				.filter(line -> line.getPaymentTermBreakId().equals(expectedPaymentTermBreakId))
-				.findFirst();
-
-		assertThat(actualLine).isPresent();
-
-		final BigDecimal expectedDueAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueAmt);
-		final Timestamp expectedDueDate = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueDate);
-		final String expectedStatus = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_Status);
-
-		// Assertions
-
-		Assertions.assertEquals(expectedDueAmt, actualLine.get().getDueAmount().toBigDecimal(),
-				"Due amount mismatch for line based on C_PaymentTerm_Break_ID: " + expectedPaymentTermBreakId);
-
-		Assertions.assertEquals(expectedDueDate.toInstant(), actualLine.get().getDueDate(),
-				"Due date mismatch for line based on C_PaymentTerm_Break_ID: " + expectedPaymentTermBreakId);
-
-		Assertions.assertEquals(expectedStatus, actualLine.get().getOrderPayScheduleStatus().getCode(),
-				"Status mismatch for line based on C_PaymentTerm_Break_ID: " + expectedPaymentTermBreakId);
-
 	}
 }
