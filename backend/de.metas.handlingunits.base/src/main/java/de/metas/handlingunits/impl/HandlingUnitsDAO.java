@@ -63,6 +63,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -113,6 +114,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
+	private static final AdMessageKey ERR_NoCurrentVersionFound = AdMessageKey.of("de.metas.handlingunits.HUPI.NoCurrentVersionFound");
+	
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
@@ -724,7 +727,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(pi);
 		if (piVersion == null)
 		{
-			throw new HUException("No current version found for " + pi);
+			throw new HUException(ERR_NoCurrentVersionFound, pi)
+					.markAsUserValidationError();
 		}
 		return piVersion;
 	}
@@ -736,7 +740,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);
 		if (piVersion == null)
 		{
-			throw new HUException("No current version found for " + piId);
+			throw new HUException(ERR_NoCurrentVersionFound, piId)
+					.markAsUserValidationError();
 		}
 		return piVersion;
 	}
