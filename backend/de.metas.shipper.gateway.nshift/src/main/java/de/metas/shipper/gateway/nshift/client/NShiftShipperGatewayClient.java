@@ -61,6 +61,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	private static final Logger logger = LogManager.getLogger(NShiftShipperGatewayClient.class);
 
 	@NonNull private final NShiftShipmentService shipmentService;
+	@NonNull private final ShipAdvisorService shipAdvisorService;
 	//TODO Adrian to be removed in next iteration(s), once the API changes so that we pass a JsonDeliveryRequest and we get a JsonDeliveryResponse
 	@NonNull private final JsonShipperConverter jsonConverter;
 	@NonNull private final ShipmentOrderLogRepository shipmentOrderLogRepository;
@@ -80,12 +81,15 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder);
+
+		final JsonDeliveryRequest deliveryRequestJsonWithAdvise = shipAdvisorService.advise(deliveryRequestJson);
+
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final JsonDeliveryResponse response = shipmentService.createShipment(deliveryRequestJson);
+		final JsonDeliveryResponse response = shipmentService.createShipment(deliveryRequestJsonWithAdvise);
 		logger.debug("Received nShift response: {}", response);
 
 		shipmentOrderLogRepository.save(ShipmentOrderLogCreateRequest.builder()
-				.request(deliveryRequestJson)
+				.request(deliveryRequestJsonWithAdvise)
 				.response(response)
 				.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
 				.build());
@@ -108,12 +112,12 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.collect(ImmutableMap.toImmutableMap(JsonDeliveryResponseItem::getLineId, Function.identity()));
 		final ImmutableList<DeliveryOrderParcel> updatedDeliveryOrderParcels = deliveryOrder.getDeliveryOrderParcels()
 				.stream()
-				.map(line -> updateDeliveryOrderLine(line, lineIdToResponseMap.get(String.valueOf(line.getId().getRepoId())), language))
+				.map(line -> updateDeliveryOrderLine(line, lineIdToResponseMap.get(String.valueOf(line.getId().getRepoId()))))
 				.collect(ImmutableList.toImmutableList());
 		return deliveryOrder.withDeliveryOrderParcels(updatedDeliveryOrderParcels);
 	}
 
-	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryResponseItem, @NonNull final String language)
+	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryResponseItem)
 	{
 		final String awb = jsonDeliveryResponseItem.getAwb();
 		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryResponseItem.getLabelPdfBase64());
