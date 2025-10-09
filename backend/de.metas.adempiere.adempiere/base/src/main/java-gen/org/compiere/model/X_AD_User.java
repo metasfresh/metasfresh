@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 68237672L;
+	private static final long serialVersionUID = -469375936L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -1001,6 +1001,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getPassword() 
 	{
 		return get_ValueAsString(COLUMNNAME_Password);
+	}
+
+	@Override
+	public void setPasswordChangeDate (final @Nullable java.sql.Timestamp PasswordChangeDate)
+	{
+		set_Value (COLUMNNAME_PasswordChangeDate, PasswordChangeDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getPasswordChangeDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PasswordChangeDate);
 	}
 
 	@Override
