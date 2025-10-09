@@ -637,7 +637,13 @@ public class HandlingUnitsService
 		final HuId huId = handlingUnitsBL.getHUIdByValueOrExternalBarcode(scannedCode).orElse(null);
 		if (huId != null)
 		{
-			return GetByIdRequest.builderFrom(request).huId(huId).build();
+			// Create the HU QR code if missing because most of the BLs are expecting that (e.g. mobile HU manager - Bulk actions)
+			final HUQRCode huQRCode = huQRCodeService.getQRCodeByHuId(huId);
+
+			return GetByIdRequest.builderFrom(request)
+					.huId(huId)
+					.expectedQRCode(huQRCode)
+					.build();
 		}
 
 		// not found

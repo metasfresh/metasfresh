@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 public class MoveHURequest
 {
 	@NonNull HuId huId;
-	@NonNull HUQRCode huQRCode;
+	@Nullable HUQRCode huQRCode;
 	@Nullable QtyTU numberOfTUs;
 
 	@NonNull ScannedCode targetQRCode;

@@ -195,9 +195,9 @@ public class HUManagerRestController
 
 		handlingUnitsService.move(MoveHURequest.builder()
 				.huId(request.getHuId())
-				.huQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.huQRCode(HUQRCode.fromNullable(request.getHuQRCode()))
 				.numberOfTUs(request.getNumberOfTUs())
-				.targetQRCode(ScannedCode.ofString(request.getTargetQRCode()))
+				.targetQRCode(request.getTargetQRCode())
 				.build());
 	}
 

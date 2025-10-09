@@ -101,6 +101,8 @@ const HUManagerScreen = () => {
     isSingleStorage && //
     (isExistingHU || !!currentLocatorQRCode?.locatorId); // either we have an huId or we scanned the locator where the new HU will be created
 
+  const isAllowBulkActions = actions.includes('bulkActions') && !!handlingUnitInfo?.qrCode?.code;
+
   if (handlingUnitInfo) {
     return (
       <>
@@ -163,7 +165,7 @@ const HUManagerScreen = () => {
               testId="set-current-locator-button"
             />
           )}
-          {actions.includes('bulkActions') && (
+          {isAllowBulkActions && (
             <ButtonWithIndicator
               caption={trl('huManager.action.bulkActions.buttonCaption')}
               onClick={onBulkActionsClick}
