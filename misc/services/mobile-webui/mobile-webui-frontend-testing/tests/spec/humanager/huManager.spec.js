@@ -86,7 +86,7 @@ test('Move HU using locator code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Change Qty', async ({ page }) => {
     const masterdata = await createMasterdataAndScanByHUQRCode({ page });
-    
+
     await HUManagerScreen.changeQty({ expectQtyEntered: '80', qtyEntered: '100', description: 'test' });
     await HUManagerScreen.waitForScreen();
     await HUManagerScreen.expectVisible();
@@ -122,7 +122,7 @@ test('Change Locator of a generated HU QR Code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Bulk actions - Move', async ({ page }) => {
     const masterdata = await createMasterdataAndScanByHUQRCode({ page });
-    
+
     await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: masterdata.warehouses.wh1.locatorCode });
     await HUManagerScreen.bulkActions({ targetLocator: masterdata.warehouses.wh2.locatorQRCode });
 
