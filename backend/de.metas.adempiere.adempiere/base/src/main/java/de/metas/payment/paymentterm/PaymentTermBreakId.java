@@ -2,6 +2,7 @@ package de.metas.payment.paymentterm;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,6 +35,7 @@ import java.util.Optional;
  */
 
 @Value
+@RepoIdAwares.SkipTest
 public class PaymentTermBreakId implements RepoIdAware
 {
 	int repoId;
