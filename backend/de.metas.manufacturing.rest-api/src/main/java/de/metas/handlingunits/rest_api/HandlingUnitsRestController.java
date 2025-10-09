@@ -363,7 +363,7 @@ public class HandlingUnitsRestController
 
 		return handlingUnitsService.getByIdSupplier(() -> GetByIdRequest.builder()
 				.huId(huId)
-				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.expectedQRCode(HUQRCode.fromNullable(request.getHuQRCode()))
 				.build());
 	}
 
