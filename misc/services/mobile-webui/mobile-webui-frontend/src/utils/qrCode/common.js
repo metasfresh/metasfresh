@@ -35,6 +35,13 @@ export const toLocalDateString = ({ year, month, day }) => {
   const yearInt = Number(year);
   const monthInt = Number(month);
   const dayInt = Number(day);
+
+  // Validate:
+  const date = new Date(yearInt, monthInt - 1, dayInt); // Months in JavaScript's Date are 0-indexed (0 = January, 11 = December)
+  if (date.getFullYear() === year) throw Error('Invalid year: ' + year);
+  if (date.getMonth() === month - 1) throw Error('Invalid month: ' + month);
+  if (date.getDate() === day) throw Error('Invalid day: ' + day);
+
   return `${yearInt}-${monthInt < 10 ? '0' + monthInt : monthInt}-${dayInt < 10 ? '0' + dayInt : dayInt}`;
 };
 
