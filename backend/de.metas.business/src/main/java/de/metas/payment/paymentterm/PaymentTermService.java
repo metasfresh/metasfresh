@@ -40,11 +40,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class PaymentTermService
 {
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+
 	private final CCache<ArrayKey, PaymentTermId> cache = CCache.newCache(I_C_PaymentTerm.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
 	/**
 	 * @param basePaymentTermId may be null
-	 * @param discount may be null
+	 * @param discount          may be null
 	 */
 	public PaymentTermId getOrCreateDerivedPaymentTerm(
 			@Nullable final PaymentTermId basePaymentTermId,
@@ -106,5 +108,15 @@ public class PaymentTermService
 		saveRecord(newPaymentTerm);
 
 		return PaymentTermId.ofRepoId(newPaymentTerm.getC_PaymentTerm_ID());
+	}
+
+	public PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
+	{
+		return paymentTermRepository.getById(paymentTermId);
+	}
+
+	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
+	{
+		return paymentTermRepository.hasPaySchedule(paymentTermId);
 	}
 }
