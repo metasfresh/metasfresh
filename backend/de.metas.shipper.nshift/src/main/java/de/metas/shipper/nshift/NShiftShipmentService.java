@@ -117,6 +117,8 @@ public class NShiftShipmentService extends AbstractNShiftApiClient
 				.prodConceptID(prodConceptId)
 				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
 
+		deliveryRequest.getShipperProductServices().forEach(service -> dataBuilder.service(Integer.parseInt(service)));
+
 		// Add Addresses
 		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER)
 				.attention(deliveryRequest.getPickupAddress().getCompanyName1())

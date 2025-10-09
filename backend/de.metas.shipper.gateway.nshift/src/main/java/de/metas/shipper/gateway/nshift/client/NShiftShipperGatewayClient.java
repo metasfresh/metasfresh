@@ -46,6 +46,7 @@ import de.metas.shipper.nshift.NShiftShipmentService;
 import de.metas.shipping.ShipperGatewayId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import java.util.Base64;
@@ -81,12 +82,23 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder);
-
-		final JsonDeliveryRequest deliveryRequestJsonWithAdvise = shipAdvisorService.advise(deliveryRequestJson);
-
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final JsonDeliveryResponse response = shipmentService.createShipment(deliveryRequestJsonWithAdvise);
-		logger.debug("Received nShift response: {}", response);
+		JsonDeliveryRequest deliveryRequestJsonWithAdvise;
+		JsonDeliveryResponse response;
+		try
+		{
+			deliveryRequestJsonWithAdvise = shipAdvisorService.advise(deliveryRequestJson);
+			response = shipmentService.createShipment(deliveryRequestJsonWithAdvise);
+			logger.debug("Received nShift response: {}", response);
+		}
+		catch (final AdempiereException ex)
+		{
+			deliveryRequestJsonWithAdvise = deliveryRequestJson;
+			response = JsonDeliveryResponse.builder()
+					.requestId(deliveryRequestJson.getId())
+					.errorMessage(ex.getLocalizedMessage())
+					.build();
+		}
 
 		shipmentOrderLogRepository.save(ShipmentOrderLogCreateRequest.builder()
 				.request(deliveryRequestJsonWithAdvise)
@@ -106,8 +118,6 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	 */
 	private DeliveryOrder updateDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder, @NonNull final JsonDeliveryResponse response)
 	{
-		final String language = deliveryOrder.getDeliveryContact().getLanguageCode();
-
 		final ImmutableMap<String, JsonDeliveryResponseItem> lineIdToResponseMap = response.getItems().stream()
 				.collect(ImmutableMap.toImmutableMap(JsonDeliveryResponseItem::getLineId, Function.identity()));
 		final ImmutableList<DeliveryOrderParcel> updatedDeliveryOrderParcels = deliveryOrder.getDeliveryOrderParcels()

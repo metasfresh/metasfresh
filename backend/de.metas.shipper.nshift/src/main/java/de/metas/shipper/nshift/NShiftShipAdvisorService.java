@@ -37,6 +37,7 @@ import de.metas.shipper.nshift.json.response.JsonShipAdvisorResponse;
 import de.metas.shipper.nshift.json.response.JsonShipAdvisorResponseGoodsType;
 import de.metas.shipper.nshift.json.response.JsonShipAdvisorResponseProduct;
 import de.metas.common.util.Check;
+import de.metas.shipper.nshift.json.response.JsonShipAdvisorResponseService;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -149,6 +150,7 @@ public class NShiftShipAdvisorService extends AbstractNShiftApiClient
 		}
 
 		responseBuilder.shipperProductServices(product.getServices().stream()
+				.map(JsonShipAdvisorResponseService::getServiceId)
 				.map(String::valueOf)
 				.collect(ImmutableList.toImmutableList())
 		);

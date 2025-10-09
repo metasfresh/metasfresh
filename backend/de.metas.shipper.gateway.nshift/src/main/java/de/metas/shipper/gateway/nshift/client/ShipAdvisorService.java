@@ -34,6 +34,7 @@ import de.metas.shipper.nshift.NShiftShipAdvisorService;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -75,6 +76,12 @@ public class ShipAdvisorService
 										.build())
 								.build()
 		);
+
+		if(response.isError())
+		{
+			//noinspection DataFlowIssue
+			throw new AdempiereException(response.getErrorMessage());
+		}
 
 		final JsonShipperConfig updatedShipperConfig = deliveryRequest.getShipperConfig().toBuilder()
 				.additionalProperties(response.getResponseItems())
