@@ -27,6 +27,7 @@ import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -35,21 +36,31 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OrderPayScheduleService
 {
+	@NonNull private final OrderPayScheduleRepository orderPayScheduleRepository;
+	@NonNull private final PaymentTermService paymentTermService;
 
 	public static OrderPayScheduleService newInstanceForUnitTesting()
 	{
-		final OrderPayScheduleLoaderAndSaver orderPayScheduleLoaderAndSaver = new OrderPayScheduleLoaderAndSaver(new PaymentTermService(), new OrderPayScheduleRepository());
-		return new OrderPayScheduleService(orderPayScheduleLoaderAndSaver);
+		Adempiere.assertUnitTestMode();
+		
+		return new OrderPayScheduleService(
+				new OrderPayScheduleRepository(),
+				new PaymentTermService()
+		);
 	}
 
-	@NonNull private final OrderPayScheduleLoaderAndSaver loaderAndSaver;
-
-	public void createOrderPaySchedules(final I_C_Order order) {loaderAndSaver.saveSchedulesForOrder(order);}
-
-	public void create(@NonNull final OrderPayScheduleCreateRequest request) {loaderAndSaver.save(request);}
+	public void createOrderPaySchedules(final I_C_Order order)
+	{
+		OrderPayScheduleCreateCommand.builder()
+				.orderPayScheduleRepository(orderPayScheduleRepository)
+				.paymentTermService(paymentTermService)
+				.orderRecord(order)
+				.build()
+				.execute();
+	}
 
 	@NonNull
-	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId) {return loaderAndSaver.loadByOrderId(orderId);}
+	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId) {return orderPayScheduleRepository.getByOrderId(orderId);}
 
-	public void deleteByOrderId(@NonNull final OrderId orderId) {loaderAndSaver.deleteByOrderId(orderId);}
+	public void deleteByOrderId(@NonNull final OrderId orderId) {orderPayScheduleRepository.deleteByOrderId(orderId);}
 }

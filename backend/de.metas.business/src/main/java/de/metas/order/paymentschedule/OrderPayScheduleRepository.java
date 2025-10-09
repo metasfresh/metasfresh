@@ -32,6 +32,7 @@ import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderPaySchedule;
@@ -39,6 +40,7 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -52,12 +54,11 @@ public class OrderPayScheduleRepository
 	public void create(@NonNull final OrderPayScheduleCreateRequest request)
 	{
 		final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(10);
-
 		request.getLines()
-				.forEach(line -> create(line, request.getOrderId(), seqNoProvider.getAndIncrement()));
+				.forEach(line -> createLine(line, request.getOrderId(), seqNoProvider.getAndIncrement()));
 	}
 
-	private void create(@NonNull final OrderPayScheduleCreateRequest.Line request, @NonNull OrderId orderId, @NonNull SeqNo seqNo)
+	private void createLine(@NonNull final OrderPayScheduleCreateRequest.Line request, @NonNull OrderId orderId, @NonNull SeqNo seqNo)
 	{
 		final I_C_OrderPaySchedule record = newInstance(I_C_OrderPaySchedule.class);
 		record.setC_Order_ID(orderId.getRepoId());
@@ -131,4 +132,18 @@ public class OrderPayScheduleRepository
 				.orderPayScheduleStatus(OrderPayScheduleStatus.ofCode(record.getStatus()))
 				.build();
 	}
+
+	//
+	//
+	//
+	//
+	//
+
+	@Value
+	private static class ReferenceDateResult
+	{
+		@NonNull Instant calculatedDueDate;
+		@NonNull OrderPayScheduleStatus status;
+	}
+
 }

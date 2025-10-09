@@ -1,24 +1,3 @@
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
@@ -36,42 +15,40 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 import static de.metas.payment.paymentterm.PaymentTermConstants.PENDING_DATE;
 
-/**
- * Loads existing payment schedules and creates new ones based on the Order's payment terms.
- * Delegates actual database persistence to {@link OrderPayScheduleRepository}.
- */
-@Service
-@RequiredArgsConstructor
-public class OrderPayScheduleLoaderAndSaver
+@Builder
+class OrderPayScheduleCreateCommand
 {
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final OrderPayScheduleRepository orderPayScheduleRepository;
 	@NonNull private final PaymentTermService paymentTermService;
-	@NonNull private final OrderPayScheduleRepository repository;
+	@NonNull private final I_C_Order orderRecord;
 
-
-	public void saveSchedulesForOrder(@NonNull final I_C_Order orderRecord)
+	public void execute()
 	{
-		final OrderSchedulingContext context = extractContext(orderRecord);
-		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
+		trxManager.runInThreadInheritedTrx(this::execute0);
+	}
 
+	private void execute0()
+	{
+		orderPayScheduleRepository.deleteByOrderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
+
+		final OrderSchedulingContext context = extractContext(orderRecord);
 		if (context == null)
 		{
-			repository.deleteByOrderId(orderId);
 			return; // Nothing to schedule
 		}
 
@@ -82,27 +59,7 @@ public class OrderPayScheduleLoaderAndSaver
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 
-		save(request);
-	}
-
-	/**
-	 * Deletes existing schedules for the OrderId in the request and creates new records from the lines.
-	 */
-	public void save(@NonNull final OrderPayScheduleCreateRequest request)
-	{
-		repository.deleteByOrderId(request.getOrderId());
-		repository.create(request);
-	}
-
-	@NonNull
-	public Optional<OrderPaySchedule> loadByOrderId(@NonNull final OrderId orderId)
-	{
-		return repository.getByOrderId(orderId);
-	}
-
-	public void deleteByOrderId(@NonNull final OrderId orderId)
-	{
-		repository.deleteByOrderId(orderId);
+		orderPayScheduleRepository.create(request);
 	}
 
 	private @Nullable OrderSchedulingContext extractContext(final @NotNull I_C_Order orderRecord)
@@ -121,7 +78,6 @@ public class OrderPayScheduleLoaderAndSaver
 		}
 
 		final Money grandTotal = orderBL.getGrandTotal(orderRecord);
-		final CurrencyPrecision precision = orderBL.getAmountPrecision(orderRecord);
 		if (grandTotal.isZero())
 		{
 			return null;
@@ -132,7 +88,7 @@ public class OrderPayScheduleLoaderAndSaver
 				.orderDate(TimeUtil.asInstant(orderRecord.getDateOrdered()))
 				.letterOfCreditDate(TimeUtil.asInstant(orderRecord.getLC_Date()))
 				.grandTotal(grandTotal)
-				.precision(precision)
+				.precision(orderBL.getAmountPrecision(orderRecord))
 				.paymentTerm(paymentTerm)
 				.build();
 	}
@@ -191,6 +147,12 @@ public class OrderPayScheduleLoaderAndSaver
 		}
 	}
 
+	//
+	//
+	//
+	//
+	//
+
 	@Value
 	private static class ReferenceDateResult
 	{
@@ -209,4 +171,5 @@ public class OrderPayScheduleLoaderAndSaver
 		@NonNull CurrencyPrecision precision;
 		@NonNull PaymentTerm paymentTerm;
 	}
+
 }
