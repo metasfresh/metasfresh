@@ -24,39 +24,33 @@ package de.metas.cucumber.stepdefs.paymentterm;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxUtils;
-import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_PaymentTerm_Break;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_M_ProductPrice;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 
 @RequiredArgsConstructor
 public class C_PaymentTerm_StepDef
@@ -65,6 +59,7 @@ public class C_PaymentTerm_StepDef
 	@NonNull private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
 
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@And("load C_PaymentTerm by id:")
 	public void loadC_PaymentTerm(@NonNull final DataTable dataTable)
@@ -83,25 +78,31 @@ public class C_PaymentTerm_StepDef
 	@And("metasfresh contains C_PaymentTerm")
 	public void add_C_PaymentTerm(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createC_PaymentTerm(tableRow);
-		}
-	}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID)
+				.forEach((row) -> {
+					final ValueAndName valueAndName = row.suggestValueAndName();
 
-	private void createC_PaymentTerm(@NonNull final Map<String, String> tableRow)
-	{
-		final boolean isComplex = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_PaymentTerm.COLUMNNAME_IsComplex);
+					final I_C_PaymentTerm paymentTermRecord = CoalesceUtil.coalesceSuppliers(
+							() -> queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+									.addEqualsFilter(COLUMNNAME_Value, valueAndName.getValue())
+									.create()
+									.firstOnlyOrNull(I_C_PaymentTerm.class),
+							() -> InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class));
 
-		final I_C_PaymentTerm paymentTerm =  InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+					assertThat(paymentTermRecord).isNotNull();
 
-		paymentTerm.setIsComplex(isComplex);
+					final boolean isComplex = row.getAsOptionalBoolean(I_C_PaymentTerm.COLUMNNAME_IsComplex).orElse(false);
 
-		InterfaceWrapperHelper.saveRecord(paymentTerm);
+					paymentTermRecord.setValue(valueAndName.getValue());
+					paymentTermRecord.setName(valueAndName.getName());
+					paymentTermRecord.setIsComplex(isComplex);
 
-		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_C_PaymentTerm.Table_Name);
-		paymentTermTable.putOrReplace(recordIdentifier, paymentTerm);
+					saveRecord(paymentTermRecord);
+
+					row.getAsIdentifier().put(paymentTermTable, paymentTermRecord);
+
+				});
 	}
 
 	@And("metasfresh contains C_PaymentTerm_Break")
@@ -121,7 +122,7 @@ public class C_PaymentTerm_StepDef
 		final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_SeqNo);
 		final String referenceDateType = DataTableUtil.extractStringForColumnName(tableRow, I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType);
 
-		final I_C_PaymentTerm_Break paymentTermBreak =  InterfaceWrapperHelper.newInstance(I_C_PaymentTerm_Break.class);
+		final I_C_PaymentTerm_Break paymentTermBreak = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm_Break.class);
 
 		paymentTermBreak.setC_PaymentTerm_ID(paymentTermId);
 		paymentTermBreak.setPercent(percent);

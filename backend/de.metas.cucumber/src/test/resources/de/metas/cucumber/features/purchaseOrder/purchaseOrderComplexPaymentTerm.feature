@@ -41,8 +41,8 @@ Feature: Purchase order with complex payment term
       | pt_PO      | Y         |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
-      | PTB1       | Y                | 50      | 1          | OD                | 10    |
-      | PTB2       | Y                | 50      | 0          | BL                | 20    |
+      | PTB1       | pt_PO            | 50      | 1          | OD                | 10    |
+      | PTB2       | pt_PO            | 50      | 0          | BL                | 20    |
 
 
   @from:cucumber
