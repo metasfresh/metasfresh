@@ -156,3 +156,45 @@ UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=t
 UPDATE AD_Message SET Value='C_PaymentTerm_ComplexTermConflict',Updated=TO_TIMESTAMP('2025-10-08 12:27:40.002000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Message_ID=545596
 ;
 
+-----------------------------------------------------
+
+
+-- Column: C_OrderPaySchedule.DueDate
+-- 2025-10-08T15:11:47.375Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-10-08 15:11:47.374000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591212
+;
+
+-- 2025-10-08T15:11:48.984Z
+INSERT INTO t_alter_column values('c_orderpayschedule','DueDate','TIMESTAMP WITHOUT TIME ZONE',null,null)
+;
+
+-- 2025-10-08T15:11:49.001Z
+INSERT INTO t_alter_column values('c_orderpayschedule','DueDate',null,'NOT NULL',null)
+;
+
+-- Column: C_OrderPaySchedule.Status
+-- 2025-10-08T15:11:57.622Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-10-08 15:11:57.622000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591280
+;
+
+-- 2025-10-08T15:12:02.083Z
+INSERT INTO t_alter_column values('c_orderpayschedule','Status','VARCHAR(3)',null,null)
+;
+
+-- 2025-10-08T15:12:02.088Z
+INSERT INTO t_alter_column values('c_orderpayschedule','Status',null,'NOT NULL',null)
+;
+
+-- Column: C_PaymentTerm_Break.Description
+-- 2025-10-09T14:49:23.679Z
+UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2025-10-09 14:49:23.679000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591199
+;
+
+-- 2025-10-09T14:49:25.589Z
+INSERT INTO t_alter_column values('c_paymentterm_break','Description','VARCHAR(255)',null,null)
+;
+
+-- 2025-10-09T14:49:25.598Z
+INSERT INTO t_alter_column values('c_paymentterm_break','Description',null,'NULL',null)
+;
+
