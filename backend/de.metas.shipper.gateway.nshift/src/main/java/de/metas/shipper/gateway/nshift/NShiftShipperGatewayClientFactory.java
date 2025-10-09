@@ -4,7 +4,7 @@ import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
-import de.metas.shipper.gateway.nshift.client.NShiftShipmentService;
+import de.metas.shipper.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.nshift.client.NShiftShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;

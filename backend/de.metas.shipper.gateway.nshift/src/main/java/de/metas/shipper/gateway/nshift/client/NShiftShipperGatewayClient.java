@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.shipper.gateway.nshift
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.shipper.gateway.nshift.client;
 
 import com.google.common.base.Stopwatch;
@@ -20,13 +42,12 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipper.nshift.NShiftShipmentService;
 import de.metas.shipping.ShipperGatewayId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -96,22 +117,13 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	{
 		final String awb = jsonDeliveryResponseItem.getAwb();
 		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryResponseItem.getLabelPdfBase64());
-		final String trackingUrl = getTrackingUrlOrNull(shipperConfig.getTrackingUrlTemplate(), awb, language);
+		final String trackingUrl = jsonDeliveryResponseItem.getTrackingUrl();
 
 		return line.toBuilder()
 				.awb(awb)
 				.trackingUrl(trackingUrl)
 				.labelPdfBase64(labelData)
 				.build();
-	}
-
-	@Nullable
-	private static String getTrackingUrlOrNull(@Nullable final String url, @NonNull final String shipmentId, @NonNull final String language)
-	{
-
-		return Check.isBlank(url) ? null : url
-				.replace("{lang}", language)
-				.replace("{shipmentNo}", shipmentId);
 	}
 
 	@NonNull

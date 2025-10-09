@@ -81,7 +81,7 @@ class JsonDeliveryRequestTest {
                 .pickupAddress(aPickupAddress())
                 .pickupDate("2025-10-01")
                 .deliveryAddress(aDeliveryAddress())
-                .deliveryOrderLine(aParcel())
+                .deliveryOrderParcel(aParcel())
                 .shipperConfig(aConfig())
                 .build();
 
@@ -101,7 +101,7 @@ class JsonDeliveryRequestTest {
                 .deliveryDate("2025-10-02")
                 .deliveryNote("leave at door")
                 .customerReference("SO-123")
-                .deliveryOrderLine(aParcel())
+                .deliveryOrderParcel(aParcel())
                 .shipperProduct("EXPRESS")
                 .shipperEORI("DE123")
                 .receiverEORI("DE999")

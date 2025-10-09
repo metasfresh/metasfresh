@@ -20,25 +20,30 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.nshift.client;
+package de.metas.shipper.nshift.json;
 
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
+import lombok.ToString;
 
-@RequiredArgsConstructor
-public enum NShiftShipperProduct implements ShipperProduct
+import java.util.List;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString
+public class JsonDetailRow<T>
 {
-	// TODO next iteration consider replacing with String.intern so it's more flexible with Ship Advisors
-	// TODO this iteration adjust values to match Names returned by Ship Advisor
-	DHL_NATIONAL("DHL - Domestic"),
-	DHL_INTERNATIONAL("V53PAK"),
-	DHL_DHLPAKET("DHL Paket"), //DeutschePostDomesticDHLPaket
-	DHL_DEPICKUP("DeutschePostDomesticParcelDEPickup"), //DeutschePostDomesticParcelDEPickup
-	DHL_WARENPOST("DeutschePostDomesticWarenpost"),
-	DHL_NIGHTSTAR("NightStarExpress"),
 
-	;
-	@Getter
-	private final String code;
-	}
+	@JsonProperty("LineNo")
+	int lineNo;
+
+	@JsonProperty("Details")
+	@Singular
+	private List<T> details;
+}

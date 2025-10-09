@@ -20,25 +20,26 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.nshift.client;
+package de.metas.shipper.nshift.json;
 
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Defines the kind of dangerous goods regulation.
+ *
+ * @see <a href="https://helpcenter.nshift.com/hc/en-us/articles/16926110939292-Objects-and-Fields">nShift Documentation (Dangerous goods object)</a>
+ */
 @RequiredArgsConstructor
-public enum NShiftShipperProduct implements ShipperProduct
+@Getter
+public enum JsonDGKind
 {
-	// TODO next iteration consider replacing with String.intern so it's more flexible with Ship Advisors
-	// TODO this iteration adjust values to match Names returned by Ship Advisor
-	DHL_NATIONAL("DHL - Domestic"),
-	DHL_INTERNATIONAL("V53PAK"),
-	DHL_DHLPAKET("DHL Paket"), //DeutschePostDomesticDHLPaket
-	DHL_DEPICKUP("DeutschePostDomesticParcelDEPickup"), //DeutschePostDomesticParcelDEPickup
-	DHL_WARENPOST("DeutschePostDomesticWarenpost"),
-	DHL_NIGHTSTAR("NightStarExpress"),
+	ADR_RID(0),
+	IMDG(1),
+	LIMITED_QUANTITIES(2),
+	EXCEPTED_QUANTITIES(3);
 
-	;
-	@Getter
-	private final String code;
-	}
+	@JsonValue
+	private final int jsonValue;
+}

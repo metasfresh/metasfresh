@@ -20,25 +20,18 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.nshift.client;
+package de.metas.shipper.nshift.json;
 
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum NShiftShipperProduct implements ShipperProduct
+@Getter
+public enum JsonUnknownDetailKind
 {
-	// TODO next iteration consider replacing with String.intern so it's more flexible with Ship Advisors
-	// TODO this iteration adjust values to match Names returned by Ship Advisor
-	DHL_NATIONAL("DHL - Domestic"),
-	DHL_INTERNATIONAL("V53PAK"),
-	DHL_DHLPAKET("DHL Paket"), //DeutschePostDomesticDHLPaket
-	DHL_DEPICKUP("DeutschePostDomesticParcelDEPickup"), //DeutschePostDomesticParcelDEPickup
-	DHL_WARENPOST("DeutschePostDomesticWarenpost"),
-	DHL_NIGHTSTAR("NightStarExpress"),
+	UNKNOWN(0);
 
-	;
-	@Getter
-	private final String code;
-	}
+	@JsonValue
+	private final int jsonValue;
+}

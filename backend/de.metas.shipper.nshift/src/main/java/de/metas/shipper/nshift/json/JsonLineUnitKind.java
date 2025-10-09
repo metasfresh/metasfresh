@@ -19,26 +19,31 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+package de.metas.shipper.nshift.json;
 
-package de.metas.shipper.gateway.nshift.client;
-
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-public enum NShiftShipperProduct implements ShipperProduct
-{
-	// TODO next iteration consider replacing with String.intern so it's more flexible with Ship Advisors
-	// TODO this iteration adjust values to match Names returned by Ship Advisor
-	DHL_NATIONAL("DHL - Domestic"),
-	DHL_INTERNATIONAL("V53PAK"),
-	DHL_DHLPAKET("DHL Paket"), //DeutschePostDomesticDHLPaket
-	DHL_DEPICKUP("DeutschePostDomesticParcelDEPickup"), //DeutschePostDomesticParcelDEPickup
-	DHL_WARENPOST("DeutschePostDomesticWarenpost"),
-	DHL_NIGHTSTAR("NightStarExpress"),
+import java.util.stream.Stream;
 
-	;
-	@Getter
-	private final String code;
+@RequiredArgsConstructor
+@Getter
+public enum JsonLineUnitKind
+{
+	UNKNOWN(0);
+
+	@JsonValue
+	private final int jsonValue;
+
+	@JsonCreator
+	public static JsonLineUnitKind fromJsonValue(final int value)
+	{
+		return Stream.of(values())
+				.filter(kind -> kind.jsonValue == value)
+				.findFirst()
+				.orElse(UNKNOWN);
 	}
+
+}
