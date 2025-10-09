@@ -27,21 +27,16 @@ import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
 import de.metas.order.paymentschedule.OrderPayScheduleLine;
 import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.model.I_C_PaymentTerm_Break;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class C_OrderPaySchedule_StepDef
@@ -63,44 +58,21 @@ public class C_OrderPaySchedule_StepDef
 
 	private void verifyOrderPaySchedule(@NonNull final DataTableRow tableRow)
 	{
+		final OrderId orderId = tableRow.getAsIdentifier(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID).lookupNotNullIdIn(orderTable);
+		final OrderPaySchedule paySchedule = orderPayScheduleService.getByOrderId(orderId).orElseThrow(() -> new AdempiereException("No pay schedule found for orderId: " + orderId));
 
-		final OrderId orderId = tableRow.getAsOptionalIdentifier(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID)
-				.map(orderTable::getId)
-				.orElseThrow(() -> new AdempiereException(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID + " is mandatory"));
+		final PaymentTermBreakId paymentTermBreakId = tableRow.getAsIdentifier(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID).lookupNotNullIdIn(paymentTermBreakTable);
+		final OrderPayScheduleLine payScheduleLine = paySchedule.getLineByPaymentTermBreakId(paymentTermBreakId);
 
-		final OrderPaySchedule paySchedule = orderPayScheduleService.getByOrderId(orderId).orElse(null);
+		final SoftAssertions softly = new SoftAssertions();
 
-		assertThat(paySchedule).isNotNull();
+		tableRow.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_DueAmt)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueAmount().toBigDecimal()).as("DueAmt").isEqualByComparingTo(expected));
+		tableRow.getAsOptionalInstant(I_C_OrderPaySchedule.COLUMNNAME_DueDate)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
+		tableRow.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getOrderPayScheduleStatus()).as("Status").isEqualTo(expected));
 
-		final List<OrderPayScheduleLine> actualLines = paySchedule.getLines();
-
-		final PaymentTermBreakId expectedPaymentTermBreakId = tableRow.getAsOptionalIdentifier(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID)
-				.map(paymentTermBreakTable::getId)
-				.orElseThrow(() -> new AdempiereException(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_Break_ID + " is mandatory for line verification"));
-
-		final Optional<OrderPayScheduleLine> actualLine = actualLines.stream()
-				.filter(line -> line.getPaymentTermBreakId().equals(expectedPaymentTermBreakId))
-				.findFirst();
-
-		assertThat(actualLine).isPresent();
-
-		final BigDecimal expectedDueAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueAmt);
-		final Timestamp expectedDueDate = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_DueDate);
-		final String expectedStatus = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderPaySchedule.COLUMNNAME_Status);
-
-		// Assertions
-
-		assertThat(actualLine.get().getDueAmount().toBigDecimal())
-				.as("Due amount mismatch for line based on C_PaymentTerm_Break_ID: %s", expectedPaymentTermBreakId)
-				.isEqualByComparingTo(expectedDueAmt);
-
-		assertThat(actualLine.get().getDueDate())
-				.as("Due date mismatch for line based on C_PaymentTerm_Break_ID: %s", expectedPaymentTermBreakId)
-				.isEqualTo(expectedDueDate.toInstant());
-
-		assertThat(actualLine.get().getOrderPayScheduleStatus().getCode())
-				.as("Status mismatch for line based on C_PaymentTerm_Break_ID: %s", expectedPaymentTermBreakId)
-				.isEqualTo(expectedStatus);
-
+		softly.assertAll();
 	}
 }

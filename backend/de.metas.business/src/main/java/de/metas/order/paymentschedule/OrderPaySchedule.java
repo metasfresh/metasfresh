@@ -1,12 +1,14 @@
 package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,5 +45,13 @@ public class OrderPaySchedule
 	public void updateById(final OrderPayScheduleId id, UnaryOperator<OrderPayScheduleLine> updater)
 	{
 		throw new UnsupportedOperationException(); // TODO
+	}
+
+	public OrderPayScheduleLine getLineByPaymentTermBreakId(@NonNull PaymentTermBreakId paymentTermBreakId)
+	{
+		return lines.stream()
+				.filter(line -> PaymentTermBreakId.equals(line.getPaymentTermBreakId(), paymentTermBreakId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No line found for " + paymentTermBreakId));
 	}
 }
