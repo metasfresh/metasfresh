@@ -211,7 +211,7 @@ export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
   } else {
     const errorMsg = result?.error ? result.error : trl('error.qrCode.invalid');
     const errorContext = { ...result, string, allResults, errorCause: result?.errorCause };
-    console.trace(`parseQRCodeString: ${errorMsg}`, errorContext);
+    console.trace('parseQRCodeString:', errorMsg, errorContext);
     throw new ContextualError(errorMsg, errorContext);
   }
 };
