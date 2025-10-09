@@ -7,13 +7,15 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @Jacksonized
 public class JsonCreateHUResponse
 {
 	@NonNull String huId;
-	@NonNull String qrCode;
+	@Nullable String qrCode;
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
 }

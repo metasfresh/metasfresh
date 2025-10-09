@@ -4,8 +4,9 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
 import { CLEARANCE_STATUS_Quarantined } from '../../utils/screens/huManager/ClearanceDialog';
+import { expect } from '@playwright/test';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({ externalBarcode, generateHUQRCode = true } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -23,7 +24,7 @@ const createMasterdata = async () => {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh1', qty: 80 }
+                "HU1": { product: 'P1', warehouse: 'wh1', qty: 80, externalBarcode, generateHUQRCode }
             },
             generatedHUQRCodes: { g1: { packingInstructions: 'LU', product: 'P1' } }
         }
@@ -79,6 +80,26 @@ test('Change Qty', async ({ page }) => {
     await HUManagerScreen.waitForScreen();
     await HUManagerScreen.expectVisible();
     await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
+    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '100 PCE' });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Change Qty - scanning be ExternalBarcode attribute', async ({ page }) => {
+    const externalBarcode = "EXT" + Date.now();
+    const masterdata = await createMasterdata({ externalBarcode, generateHUQRCode: false });
+    expect(masterdata.handlingUnits.HU1.qrCode).toBeNull();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
+    await HUManagerScreen.scanHUQRCode({ huQRCode: externalBarcode });
+    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+
+    await HUManagerScreen.changeQty({ expectQtyEntered: '80', qtyEntered: '100', description: 'test' });
+    await HUManagerScreen.waitForScreen();
+    await HUManagerScreen.expectVisible();
+    await HUManagerScreen.scanHUQRCode({ huQRCode: externalBarcode });
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '100 PCE' });
 });
 
