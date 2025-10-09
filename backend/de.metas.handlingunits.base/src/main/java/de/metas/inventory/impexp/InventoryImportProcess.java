@@ -388,7 +388,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				//
 				// .warehouseId(null)
 				.locatorId(locatorId)
-				.productId(productId)
+				.onlyProductId(productId)
 				.asiId(asiId)
 				//
 				.build();

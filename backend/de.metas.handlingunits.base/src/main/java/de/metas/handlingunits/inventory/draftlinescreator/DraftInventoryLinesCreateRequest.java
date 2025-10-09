@@ -2,11 +2,13 @@ package de.metas.handlingunits.inventory.draftlinescreator;
 
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 /*
  * #%L
@@ -35,6 +37,7 @@ import javax.annotation.Nullable;
 public class DraftInventoryLinesCreateRequest
 {
 	@NonNull Inventory inventory;
-	@Nullable HUsForInventoryStrategy strategy;
 	@Nullable InventoryLineAggregator lineAggregator;
+	@Nullable HUsForInventoryStrategy strategy;
+	@Nullable Set<ProductId> onlyProductIds;
 }

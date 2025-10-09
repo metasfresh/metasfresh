@@ -1,5 +1,6 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -9,6 +10,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -19,6 +21,8 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -59,7 +63,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 
 	@Nullable WarehouseId warehouseId;
 	@Nullable LocatorId locatorId;
-	@Nullable ProductId productId;
+	@NonNull ImmutableSet<ProductId> onlyProductIds;
 	@Nullable Boolean onlyStockedProducts;
 	@NonNull AttributeSetInstanceId asiId;
 
@@ -69,7 +73,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 			//
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final LocatorId locatorId,
-			@Nullable final ProductId productId,
+			@Nullable @Singular final Set<ProductId> onlyProductIds,
 			@Nullable final Boolean onlyStockedProducts,
 			@Nullable final AttributeSetInstanceId asiId)
 	{
@@ -77,7 +81,9 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 
 		this.locatorId = locatorId;
 		this.warehouseId = warehouseId;
-		this.productId = productId;
+		this.onlyProductIds = onlyProductIds != null && !onlyProductIds.isEmpty()
+				? onlyProductIds.stream().filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet())
+				: ImmutableSet.of();
 		this.onlyStockedProducts = onlyStockedProducts;
 		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
 
@@ -106,9 +112,9 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 		{
 			huQueryBuilder.addOnlyInLocatorId(locatorId);
 		}
-		if (productId != null)
+		if (!onlyProductIds.isEmpty())
 		{
-			huQueryBuilder.addOnlyWithProductId(productId);
+			huQueryBuilder.addOnlyWithProductIds(onlyProductIds);
 		}
 
 		if (asiId.isRegular())

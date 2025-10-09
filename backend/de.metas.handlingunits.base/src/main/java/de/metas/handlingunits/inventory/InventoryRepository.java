@@ -177,13 +177,14 @@ public final class InventoryRepository
 
 		inventoryRecord.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
 		inventoryRecord.setDescription(StringUtils.trimBlankToNull(request.getDescription()));
+		inventoryRecord.setPOReference(request.getPoReference());
+		StringUtils.trimBlankToOptional(request.getDocumentNo()).ifPresent(inventoryRecord::setDocumentNo);
 
 		if (request.getDocTypeId() != null)
 		{
 			inventoryRecord.setC_DocType_ID(request.getDocTypeId().getRepoId());
 		}
 
-		inventoryRecord.setPOReference(request.getPoReference());
 		saveRecord(inventoryRecord);
 
 		return toInventory(inventoryRecord);

@@ -26,7 +26,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -61,17 +60,15 @@ public class DraftInventoryLinesCreateCommand
 	@NonNull private final static Logger logger = LogManager.getLogger(DraftInventoryLinesCreateCommand.class);
 	@NonNull private final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 	@NonNull private final InventoryRepository inventoryRepository;
-	@NonNull private final HuForInventoryLineFactory huForInventoryLineFactory;
 
 	//
 	// Params
 	@NonNull private final Inventory inventory;
-	@Nullable private final HUsForInventoryStrategy strategyParam;
-	@Nullable private final InventoryLineAggregator lineAggregatorParam;
+	@NonNull private final InventoryLineAggregator lineAggregator;
+	@NonNull private final HUsForInventoryStrategy strategy;
 
 	//
 	// Status
-	private InventoryLineAggregator lineAggregator;
 	private ImmutableMap<InventoryLineAggregationKey, InventoryLine> preExistingInventoryLines;
 	private final Set<LocatorId> seenLocatorIds = new HashSet<>();
 	private final LinkedHashMap<InventoryLineAggregationKey, InventoryLine> createdOrUpdatedLines = new LinkedHashMap<>();
@@ -83,11 +80,37 @@ public class DraftInventoryLinesCreateCommand
 			@NonNull final DraftInventoryLinesCreateRequest request)
 	{
 		this.inventoryRepository = inventoryRepository;
-		this.huForInventoryLineFactory = huForInventoryLineFactory;
-
 		this.inventory = request.getInventory();
-		this.strategyParam = request.getStrategy();
-		this.lineAggregatorParam = request.getLineAggregator();
+
+		this.lineAggregator = createLineAggregator(request);
+		this.strategy = createStrategy(huForInventoryLineFactory, request);
+	}
+
+	private static InventoryLineAggregator createLineAggregator(@NonNull final DraftInventoryLinesCreateRequest request)
+	{
+		if (request.getLineAggregator() != null)
+		{
+			return request.getLineAggregator();
+		}
+
+		return InventoryLineAggregatorFactory.getForDocBaseAndSubType(request.getInventory().getDocBaseAndSubType());
+	}
+
+	private static HUsForInventoryStrategy createStrategy(
+			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory,
+			@NonNull final DraftInventoryLinesCreateRequest request)
+	{
+		if (request.getStrategy() != null)
+		{
+			return request.getStrategy();
+		}
+
+		return HUsForInventoryStrategies.locatorAndProduct()
+				.huForInventoryLineFactory(huForInventoryLineFactory)
+				.warehouseId(request.getInventory().getWarehouseId())
+				.onlyProductIds(request.getOnlyProductIds() != null ? request.getOnlyProductIds() : ImmutableSet.of())
+				.onlyStockedProducts(true)
+				.build();
 	}
 
 	/**
@@ -101,10 +124,6 @@ public class DraftInventoryLinesCreateCommand
 					.setParameter("inventoryId", inventory.getId());
 		}
 
-		this.lineAggregator = lineAggregatorParam != null
-				? lineAggregatorParam
-				: InventoryLineAggregatorFactory.getForDocBaseAndSubType(inventory.getDocBaseAndSubType());
-
 		preExistingInventoryLines = inventory.getLines()
 				.stream()
 				.filter(il -> !il.getInventoryLineHUs().isEmpty())
@@ -113,7 +132,6 @@ public class DraftInventoryLinesCreateCommand
 		final ImmutableSet<HuId> preAddedHuIds = inventory.getHuIds(); // needed in case we want to add further lines when some already pre-exist
 
 		long countInventoryLines = 0;
-		final HUsForInventoryStrategy strategy = strategyParam != null ? strategyParam : createStrategy(inventory);
 		final Iterator<HuForInventoryLine> hus = strategy.streamHus().iterator();
 		while (hus.hasNext())
 		{
@@ -141,16 +159,8 @@ public class DraftInventoryLinesCreateCommand
 		inventoryRepository.saveInventoryLines(createdOrUpdatedLines.values(), inventory.getId());
 
 		return DraftInventoryLinesCreateResponse.builder()
+				.inventoryId(inventory.getId())
 				.countInventoryLines(countInventoryLines)
-				.build();
-	}
-
-	private LocatorAndProductStrategy createStrategy(@NonNull final Inventory inventory)
-	{
-		return HUsForInventoryStrategies.locatorAndProduct()
-				.huForInventoryLineFactory(huForInventoryLineFactory)
-				.warehouseId(inventory.getWarehouseId())
-				.onlyStockedProducts(true)
 				.build();
 	}
 

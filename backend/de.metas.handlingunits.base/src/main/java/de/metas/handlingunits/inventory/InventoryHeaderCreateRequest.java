@@ -43,6 +43,7 @@ public class InventoryHeaderCreateRequest
 	@NonNull WarehouseId warehouseId;
 	@Nullable DocTypeId docTypeId;
 	@Nullable ActivityId activityId;
+	@Nullable String documentNo;
 	@Nullable String description;
 	@Nullable String poReference;
 	@Nullable PickingJobId pickingJobId;
