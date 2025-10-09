@@ -46,6 +46,27 @@ const createMasterdataAndScanByHUQRCode = async ({ page }) => {
 }
 
 // noinspection JSUnusedLocalSymbols
+test('Check action buttons order', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
+    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
+
+    await HUManagerScreen.expectButtonsInOrder([
+        'move-button',
+        'set-clearance-button',
+        'bulk-actions-button',
+        'change-qty-button',
+        'print-labels-button',
+        'dispose-button',
+        'scan-again-button'
+    ]);
+});
+
+// noinspection JSUnusedLocalSymbols
 test('Dispose HU', async ({ page }) => {
     await createMasterdataAndScanByHUQRCode({ page });
     await HUManagerScreen.dispose();

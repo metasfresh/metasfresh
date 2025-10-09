@@ -137,13 +137,6 @@ const HUManagerScreen = () => {
         )}
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} currentLocatorQRCode={currentLocatorQRCode} />
         <div className="pt-3 section">
-          {actions.includes('dispose') && isExistingHU && (
-            <ButtonWithIndicator
-              captionKey="huManager.action.dispose.buttonCaption"
-              onClick={onDisposeClick}
-              testId="dispose-button"
-            />
-          )}
           {actions.includes('move') && (
             <ButtonWithIndicator
               captionKey="huManager.action.move.buttonCaption"
@@ -184,6 +177,13 @@ const HUManagerScreen = () => {
               captionKey="huManager.action.printLabels.buttonCaption"
               onClick={onPrintLabelsClicked}
               testId="print-labels-button"
+            />
+          )}
+          {actions.includes('dispose') && isExistingHU && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.dispose.buttonCaption"
+              onClick={onDisposeClick}
+              testId="dispose-button"
             />
           )}
           <ButtonWithIndicator
