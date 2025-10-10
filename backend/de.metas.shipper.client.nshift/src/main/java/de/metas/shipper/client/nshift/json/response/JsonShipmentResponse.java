@@ -70,7 +70,7 @@ public class JsonShipmentResponse
 	String submitDt;
 
 	@JsonProperty("Vol")
-	Integer vol;
+	Long vol;
 
 	@JsonProperty("Weight")
 	Integer weight;
