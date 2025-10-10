@@ -92,6 +92,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
 
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
+	private static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	@NonNull
 	public static POJOLookupMap get()
@@ -426,6 +427,13 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					{
 						wrapper.setValue(POJOWrapper.COLUMNNAME_UpdatedBy, loggedUserRepoId);
 					}
+				}
+
+				//
+ 				// DocumentNo
+				if (isNew && wrapper.hasColumnName(COLUMNNAME_DocumentNo) && wrapper.getValue(COLUMNNAME_DocumentNo, String.class) == null)
+				{
+					wrapper.setValue(COLUMNNAME_DocumentNo, "DOCNO_" + id);
 				}
 
 				// we use LinkedHashMap to preserve the order in which the objects are saved
