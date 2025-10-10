@@ -104,9 +104,41 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
-import static org.compiere.model.I_C_Order.*;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_InputDataSource_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_BPartnerName;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DateOrdered;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DeliveryRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DeliveryViaRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocSubType;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocumentNo;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_EMail;
+import static org.compiere.model.I_C_Order.COLUMNNAME_ExternalId;
+import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_Partner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_InvoiceRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_IsDropShip;
+import static org.compiere.model.I_C_Order.COLUMNNAME_IsUseHandOver_Location;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_POReference;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 @RequiredArgsConstructor
 public class C_Order_StepDef
@@ -132,7 +164,6 @@ public class C_Order_StepDef
 	private final @NonNull AD_InputDataSource_StepDefData dataSourceTable;
 	private final @NonNull TestContext restTestContext;
 	private final @NonNull C_PaymentTerm_StepDef paymentTermStepDef;
-
 
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
@@ -669,17 +700,16 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_EMail)
 				.ifPresent(email -> {
-					if(DataTableUtil.NULL_STRING.equals(email))
-					{
-						softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isNull();
-					}
-					else
-					{
-						softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isEqualTo(email);
-					}
-				}
+							if (DataTableUtil.NULL_STRING.equals(email))
+							{
+								softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isNull();
+							}
+							else
+							{
+								softly.assertThat(order.getEMail()).as("EMail for Identifier=%s", identifierStr).isEqualTo(email);
+							}
+						}
 				);
-
 
 		row.getAsOptionalString(COLUMNNAME_InvoiceRule)
 				.ifPresent(invoiceRule -> softly.assertThat(order.getInvoiceRule()).as("InvoiceRule for Identifier=%s", identifierStr).isEqualTo(invoiceRule));
@@ -728,7 +758,6 @@ public class C_Order_StepDef
 		row.getAsOptionalIdentifier(COLUMNNAME_HandOver_User_ID)
 				.map(userTable::get)
 				.ifPresent(handoverUser -> softly.assertThat(order.getHandOver_User_ID()).as("HandOver_User_ID for Identifier=%s", identifierStr).isEqualTo(handoverUser.getAD_User_ID()));
-
 
 		softly.assertAll();
 	}

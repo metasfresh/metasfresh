@@ -37,6 +37,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -57,6 +59,8 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
@@ -72,6 +76,7 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -1414,5 +1419,18 @@ public class OrderBL implements IOrderBL
 	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
 	{
 		return partnerDAO.getShipperId(partnerId);
+	}
+
+	@Override
+	public PaymentTermId getPaymentTermId(@NonNull final I_C_Order orderRecord)
+	{
+		return  PaymentTermId.ofRepoId(orderRecord.getC_PaymentTerm_ID());
+	}
+
+	@Override
+	public Money getGrandTotal(@NonNull final I_C_Order order)
+	{
+		final BigDecimal grandTotal = order.getGrandTotal();
+		return Money.of(grandTotal, CurrencyId.ofRepoId(order.getC_Currency_ID()));
 	}
 }

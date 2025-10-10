@@ -4,7 +4,8 @@ import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
-import de.metas.shipper.gateway.nshift.client.NShiftShipmentService;
+import de.metas.shipper.gateway.nshift.client.ShipAdvisorService;
+import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.nshift.client.NShiftShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
@@ -22,6 +23,7 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 	@NonNull private final JsonShipperConverter jsonConverter;
 	@NonNull private final ShipmentOrderLogRepository shipmentOrderLogRepository;
 	@NonNull private final NShiftShipmentService shipmentService;
+	@NonNull private final ShipAdvisorService shipAdvisorService;
 
 
 	@Override
@@ -37,6 +39,7 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 				.jsonConverter(jsonConverter)
 				.shipmentOrderLogRepository(shipmentOrderLogRepository)
 				.shipmentService(shipmentService)
+				.shipAdvisorService(shipAdvisorService)
 				.build();
 	}
 }

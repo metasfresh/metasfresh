@@ -22,6 +22,8 @@
 
 package de.metas.common.delivery.v1.json.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -32,7 +34,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class JsonShipperConfig
 {
@@ -43,4 +45,19 @@ public class JsonShipperConfig
 	@Nullable String clientSecret;
 	@Nullable String trackingUrlTemplate;
 	@NonNull @Singular("additionalProperty") Map<String, String> additionalProperties;
+
+	@JsonIgnore
+	@NonNull
+	public String getAdditionalPropertyNotNull(@NonNull final String key)
+	{
+		return Check.assumeNotNull( getAdditionalProperty(key), "No ShipperConfig.additionalProperty found for key '%s'. Available keys: %s", key, additionalProperties.keySet());
+	}
+
+
+	@JsonIgnore
+	@Nullable
+	public String getAdditionalProperty(@NonNull final String key)
+	{
+		return additionalProperties.get(key);
+	}
 }

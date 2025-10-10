@@ -94,5 +94,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>de.metas.common.util</groupId>
+            <artifactId>de-metas-common-util</artifactId>
+            <version>10.0.0</version>
+        </dependency>
     </dependencies>
 </project>

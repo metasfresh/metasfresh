@@ -3,6 +3,7 @@ package de.metas.handlingunits.rest_api;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.handlingunits.HuId;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -17,7 +18,7 @@ import java.time.LocalDate;
 @Jacksonized
 public class JsonHUQtyChangeRequest
 {
-	@NonNull String huQRCode;
+	@Nullable ScannedCode huQRCode;
 	@Nullable HuId huId;
 	@NonNull JsonQuantity qty;
 	@Nullable String description;

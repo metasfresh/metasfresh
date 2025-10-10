@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.ordercandidates.v2.request.JsonApplySalesRepFrom;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
@@ -93,6 +94,7 @@ public class JsonConverters
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
@@ -100,7 +102,6 @@ public class JsonConverters
 	{
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
-
 	}
 
 	public final OLCandCreateRequestBuilder fromJson(
@@ -186,6 +187,7 @@ public class JsonConverters
 				.map(DocSubType::ofNullableCode)
 				.orElse(DocSubType.ANY);
 
+
 		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
 
 		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());
@@ -195,6 +197,9 @@ public class JsonConverters
 		final int huPIItemProductId = CoalesceUtil.firstGreaterThanZero(
 				JsonMetasfreshId.toValueInt(request.getPackingMaterialId()),
 				HUPIItemProductId.toRepoIdVirtualToZero(productInfo.getHupiItemProductId()));
+
+		final String deliveryRule = CoalesceUtil.firstNotBlank(request.getDeliveryRule(),
+				bpartnerDAO.getById(bPartnerInfo.getBpartnerId()).getDeliveryRule());
 
 		return OLCandCreateRequest.builder()
 				//
@@ -254,7 +259,7 @@ public class JsonConverters
 				.line(request.getLine())
 				.isManualPrice(request.getIsManualPrice())
 				.importWarningMessage(request.getImportWarningMessage())
-				.deliveryRule(request.getDeliveryRule())
+				.deliveryRule(deliveryRule)
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
 
@@ -357,7 +362,7 @@ public class JsonConverters
 	{
 		return JsonObjectMapperHolder.fromJsonNonNull(errorMsg, JsonErrorItem.class);
 	}
-	
+
 	private JsonOLCand toJson(
 			@NonNull final OLCand olCand,
 			@NonNull final MasterdataProvider masterdataProvider)

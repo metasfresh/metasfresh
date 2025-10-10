@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
@@ -506,6 +505,7 @@ public interface I_C_Order
 	int getC_BPartner_SalesRep_ID();
 
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
+
 	/**
 	 * Set Partner Bank Account.
 	 * Bank Account of the Business Partner
@@ -648,7 +648,7 @@ public interface I_C_Order
 	 * Set Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -658,7 +658,7 @@ public interface I_C_Order
 	 * Get Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -762,6 +762,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Order.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
 	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
+	 * Set Commission Date From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCommission_DateFrom (@Nullable java.sql.Timestamp Commission_DateFrom);
+
+	/**
+	 * Get Commission Date From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getCommission_DateFrom();
+
+	ModelColumn<I_C_Order, Object> COLUMN_Commission_DateFrom = new ModelColumn<>(I_C_Order.class, "Commission_DateFrom", null);
+	String COLUMNNAME_Commission_DateFrom = "Commission_DateFrom";
 
 	/**
 	 * Set Discount %.
@@ -1356,7 +1377,7 @@ public interface I_C_Order
 	/**
 	 * Set Ship Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1365,7 +1386,7 @@ public interface I_C_Order
 	/**
 	 * Get Ship Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1893,7 +1914,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Ship After Date.
+	 * Set Ship after above date.
 	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
 	 *
 	 * <br>Type: YesNo
@@ -1903,7 +1924,7 @@ public interface I_C_Order
 	void setIsFixedDatePromised (boolean IsFixedDatePromised);
 
 	/**
-	 * Get Ship After Date.
+	 * Get Ship after above date.
 	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
 	 *
 	 * <br>Type: YesNo
@@ -1916,8 +1937,8 @@ public interface I_C_Order
 	String COLUMNNAME_IsFixedDatePromised = "IsFixedDatePromised";
 
 	/**
-	 * Set Picking After Date.
-	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 * Set Pick after above date.
+	 * Prevents picking before the provisioning date. Use when materials or goods must not be staged or picked earlier than planned.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1926,8 +1947,8 @@ public interface I_C_Order
 	void setIsFixedPreparationDate (boolean IsFixedPreparationDate);
 
 	/**
-	 * Get Picking After Date.
-	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 * Get Pick after above date.
+	 * Prevents picking before the provisioning date. Use when materials or goods must not be staged or picked earlier than planned.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2203,6 +2224,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsUseHandOver_Location = new ModelColumn<>(I_C_Order.class, "IsUseHandOver_Location", null);
 	String COLUMNNAME_IsUseHandOver_Location = "IsUseHandOver_Location";
+
+	/**
+	 * Set Letter of Credit Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLC_Date (@Nullable java.sql.Timestamp LC_Date);
+
+	/**
+	 * Get Letter of Credit Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getLC_Date();
+
+	ModelColumn<I_C_Order, Object> COLUMN_LC_Date = new ModelColumn<>(I_C_Order.class, "LC_Date", null);
+	String COLUMNNAME_LC_Date = "LC_Date";
 
 	/**
 	 * Set Linked Order.
@@ -2723,6 +2765,32 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_PromotionCode = new ModelColumn<>(I_C_Order.class, "PromotionCode", null);
 	String COLUMNNAME_PromotionCode = "PromotionCode";
+
+	/**
+	 * Set Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setPurchaser_User_ID (int Purchaser_User_ID);
+
+	/**
+	 * Get Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getPurchaser_User_ID();
+
+	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
 
 	/**
 	 * Set Qty without Trading Unit.

@@ -29,12 +29,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum NShiftShipperProduct implements ShipperProduct
 {
-	DHL_NATIONAL("V01PAK"),
-	DHL_INTERNATIONAL("V53PAK"),
-	DHL_DHLPAKET("DeutschePostDomesticDHLPaket"),
-	DHL_DEPICKUP("DeutschePostDomesticParcelDEPickup"),
-	DHL_WARENPOST("DeutschePostDomesticWarenpost"),
-	DHL_NIGHTSTAR("NightStarExpress"),
+	// TODO next iteration consider replacing with String.intern so it's more flexible and new shipper doesn't imply code changes
+	DHL_NATIONAL("DHL - Domestic"),
+	DHL_INTERNATIONAL("DHL - Euroconnect"),
+	DHL_DHLPAKET("Deutsche Post - DHL Paket"),
+	DHL_DEPICKUP("Deutsche Post - Parcel DE Pickup"),
+	DHL_WARENPOST("Deutsche Post - Warenpost"),
+	DHL_NIGHTSTAR("Night Star Express"),
 
 	;
 	@Getter
