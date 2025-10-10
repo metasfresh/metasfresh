@@ -45,6 +45,10 @@ public class TableRelatedDocumentsProvider implements IRelatedDocumentsProvider
 		{
 			return ImmutableList.of();
 		}
+		if (!fromDocument.isSingleKeyRecord())
+		{
+			return ImmutableList.of();
+		}
 		final AdTableId adTableId = AdTableId.ofRepoId(fromDocument.getRecord_ID());
 
 		final AdWindowId windowsWindowId = RecordWindowFinder.findAdWindowId(I_AD_Window.Table_Name).orElse(null);

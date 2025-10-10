@@ -35,6 +35,12 @@ export const toLocalDateString = ({ year, month, day }) => {
   const yearInt = Number(year);
   const monthInt = Number(month);
   const dayInt = Number(day);
+
+  // Validate:
+  if (dayInt < 1 || dayInt > 31) throw `Invalid day: ${dayInt}`;
+  if (monthInt < 1 || monthInt > 12) throw `Invalid month: ${monthInt}`;
+  if (yearInt < 2000 || yearInt > 2500) throw `Invalid year: ${yearInt}`;
+
   return `${yearInt}-${monthInt < 10 ? '0' + monthInt : monthInt}-${dayInt < 10 ? '0' + dayInt : dayInt}`;
 };
 

@@ -47,7 +47,16 @@ export const HUManagerScreen = {
     clickButton: async ({ testId }) => await test.step(`${NAME} - Click "${testId}" button`, async () => {
         await page.getByTestId(testId).tap();
     }),
+    
+    expectButtonsInOrder: async (testIds) => await test.step(`${NAME} - Expect buttons in "${testIds.join()}" order`, async () => {
+        const buttons = page.locator('.section .complete-btn');
+        const actualTestIds = await buttons.evaluateAll((elements) =>
+            elements.map((el) => el.getAttribute('data-testid'))
+        );
 
+        expect(actualTestIds).toEqual(testIds);
+    }),
+        
     dispose: async ({ reason = DISPOSAL_REASON_DAMAGED } = {}) => await test.step(`${NAME} - Dispose HU`, async () => {
         await HUManagerScreen.clickButton({ testId: 'dispose-button' });
         await HUDisposalScreen.waitForScreen();

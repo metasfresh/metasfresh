@@ -31,6 +31,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -107,7 +108,7 @@ public interface IOrderBL extends ISingletonService
 
 	@Nullable
 	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_C_Order orderRecord);
-	
+
 	/**
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
 	 * Be sure to first check with {@link #hasBillToContactId(I_C_Order)}.
@@ -349,4 +350,8 @@ public interface IOrderBL extends ISingletonService
 		final BigDecimal luQty = orderLine.getQtyLU();
 		return luQty != null && luQty.signum() > 0;
 	}
+
+	PaymentTermId getPaymentTermId(@NonNull I_C_Order orderRecord);
+
+	Money getGrandTotal(@NonNull I_C_Order order);
 }

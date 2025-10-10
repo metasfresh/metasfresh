@@ -37,6 +37,11 @@ public class DocumentAcctLogsRelatedDocumentsProvider implements IRelatedDocumen
 			@NonNull final IZoomSource fromDocument,
 			@Nullable final AdWindowId targetWindowId)
 	{
+		if (!fromDocument.isSingleKeyRecord())
+		{
+			return ImmutableList.of();
+		}
+
 		final AdWindowId logsWindowId = RecordWindowFinder.findAdWindowId(I_Document_Acct_Log.Table_Name).orElse(null);
 		if (logsWindowId == null)
 		{
