@@ -14,9 +14,9 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
   @from:cucumber
   @topic:orderCandidate
   Scenario: Process C_OLCand in batches:
-    - create 4 olcands - they would end of in 3 C_Orders
-    - deactivate the productprice of one of the C_OLcand's products
-    - verify that three C_Orders are still created
+  - create 4 olcands - they would end of in 3 C_Orders
+  - deactivate the productprice of one of the C_OLcand's products
+  - verify that three C_Orders are still created
     Given metasfresh contains M_PricingSystems
       | Identifier           | Name                             | Value                            | OPT.IsActive |
       | ps_scenario_14042022 | pricing_system_scenario_14042022 | pricing_system_scenario_14042022 | true         |
@@ -35,8 +35,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | pp_product             | plv_scenario_14042022             | product_14042022             | 10.0     | PCE               | Normal                        |
       | pp_product_priceChange | plv_scenario_14042022             | product_priceChange_14042022 | 20.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier      | Name                     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier |
-      | olCand_Customer | olCand_Customer_14042022 | Y              | N            | ps_scenario_14042022          |
+      | Identifier      | Name                     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | deliveryRule |
+      | olCand_Customer | olCand_Customer_14042022 | Y              | N            | ps_scenario_14042022          | F            |
     And metasfresh contains C_BPartner_Locations:
       | Identifier               | GLN           | C_BPartner_ID.Identifier |
       | olCand_Customer_location | 1354423215434 | olCand_Customer          |
@@ -67,8 +67,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "currencyCode": "EUR",
             "discount": 0,
             "poReference": "14042022",
-            "deliveryViaRule": "S",
-            "deliveryRule": "F"
+            "deliveryViaRule": "S"
         },
         {
             "orgCode": "001",
@@ -88,8 +87,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "currencyCode": "EUR",
             "discount": 0,
             "poReference": "14042022",
-            "deliveryViaRule": "S",
-            "deliveryRule": "F"
+            "deliveryViaRule": "S"
         },
         {
             "orgCode": "001",
