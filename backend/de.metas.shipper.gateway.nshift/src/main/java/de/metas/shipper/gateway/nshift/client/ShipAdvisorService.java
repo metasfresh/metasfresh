@@ -83,15 +83,10 @@ public class ShipAdvisorService
 			throw new AdempiereException(response.getErrorMessage());
 		}
 
-		final JsonShipperConfig updatedShipperConfig = deliveryRequest.getShipperConfig().toBuilder()
-				.additionalProperties(response.getResponseItems())
-				.build();
-
 		return deliveryRequest.toBuilder()
 				.shipperProduct(response.getShipperProduct())
 				.shipperProductServices(response.getShipperProductServices())
-
-				.shipperConfig(updatedShipperConfig)
+				.shipAdvises(response.getResponseItems())
 				.build();
 	}
 	
