@@ -26,7 +26,7 @@ with recursive priceListVersion as (
     select
         1 as SeqNo,
         plv1.M_PriceList_Version_ID,
-        basePLV1.M_PriceList_Version_ID as basePLVID,
+        basePLV1.M_PriceList_Version_ID::numeric(10,0) as basePLVID,
         plv1.M_Pricelist_ID,
         plv1.validFrom,
         ARRAY[plv1.M_PriceList_Version_ID]::numeric(10,0)[] as path -- used to prevent running forever in case of cycles
@@ -47,11 +47,11 @@ with recursive priceListVersion as (
     --
     select
         plv2.SeqNo + 1 as SeqNo,
-        basePLV2.M_PriceList_Version_ID as M_PriceList_Version_ID,
-        nextBasePLV.M_PriceList_Version_ID as basePLVID,
+        basePLV2.M_PriceList_Version_ID as M_PriceList_Version_ID, -- advance to base
+        null::numeric(10,0) as basePLVID, -- keep column type consistent
         basePLV2.M_Pricelist_ID,
         basePLV2.validFrom,
-        (plv2.path || basePLV2.M_PriceList_Version_ID)::numeric(10,0)[] as path
+        (plv2.path || basePLV2.M_PriceList_Version_ID)::numeric(10,0)[] as path -- add new base-plv array
     from priceListVersion as plv2
              inner join M_Pricelist pl2 on plv2.M_Pricelist_ID = pl2.M_Pricelist_ID
              left join M_Pricelist basePL2 on pl2.basePricelist_ID = basePL2.M_PriceList_ID
@@ -61,20 +61,11 @@ with recursive priceListVersion as (
                                   where isActive = 'Y'
                                     and M_Pricelist_ID = basePL2.M_Pricelist_ID
                                     and validFrom <= p_datePromised)
-             left join M_Pricelist nextBasePL on basePLV2.M_Pricelist_ID = nextBasePL.M_PriceList_ID
-             left join M_Pricelist_Version nextBasePLV on nextBasePLV.M_Pricelist_ID = nextBasePL.basePricelist_ID
-        and nextBasePLV.validFrom = (
-            select max(ValidFrom)
-            from M_Pricelist_Version
-            where isActive = 'Y'
-              and M_Pricelist_ID = nextBasePL.basePricelist_ID
-              and validFrom <= p_datePromised
-        )
     where
-        basePLV2.IsActive = 'Y'
+        basePLV2.IsActive='Y'
       and basePLV2.M_PriceList_Version_ID is not null
-      and basePLV2.M_PriceList_Version_ID <> plv2.M_PriceList_Version_ID -- avoid self-transition
-      and NOT plv2.path @> ARRAY[basePLV2.M_PriceList_Version_ID]         -- avoid cycles
+      and basePLV2.M_PriceList_Version_ID <> plv2.M_PriceList_Version_ID -- prevent self-transition
+      and NOT plv2.path @> ARRAY[basePLV2.M_PriceList_Version_ID] -- stop recursing if we already saw the current base-plv's M_PriceList_Version_ID
 )
 select array_agg(M_PriceList_Version_ID order by SeqNo) from priceListVersion;
 $BODY$
