@@ -6,6 +6,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
+import { expect } from '@playwright/test';
 
 const createMasterdata = async ({ showLastPickedBestBeforeDateForLines } = {}) => {
     return await Backend.createMasterdata({
@@ -229,7 +230,6 @@ test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
         });
     });
 });
-
 
 // noinspection JSUnusedLocalSymbols
 test('Check Last BestBeforeDate is displayed when MobileUIPickingProfile.ShowLastPickedBestBeforeDateForLines = Y', async ({ page }) => {
