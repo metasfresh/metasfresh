@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.nshift
+ * de.metas.shipper.client.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,24 +20,19 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.nshift.client;
+package de.metas.shipper.client.nshift.json;
 
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum NShiftShipperProduct implements ShipperProduct
+@Getter
+public enum JsonOrderDataDetailKind
 {
-	// TODO next iteration consider replacing with String.intern so it's more flexible and new shipper doesn't imply code changes
-	DHL_NATIONAL("DHL - Domestic"),
-	DHL_INTERNATIONAL("DHL - Euroconnect"),
-	DHL_DHLPAKET("Deutsche Post - DHL Paket"),
-	DHL_DEPICKUP("Deutsche Post - Parcel DE Pickup"),
-	DHL_WARENPOST("Deutsche Post - Warenpost"),
-	DHL_NIGHTSTAR("Night Star Express"),
+	ORDER_TOTAL_VALUE(514),
+	ORDER_VAT(515);
 
-	;
-	@Getter
-	private final String code;
-	}
+	@JsonValue
+	private final int jsonValue;
+}

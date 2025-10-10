@@ -20,10 +20,10 @@
  * #L%
  */
 
-package de.metas.common.delivery.v1.json.request;
+package de.metas.common.delivery.v1.json.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.metas.common.util.Check;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -32,32 +32,23 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Set;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder(toBuilder = true)
 @Jacksonized
-public class JsonShipperConfig
+public class JsonDeliveryAdvisorResponse
 {
-	@NonNull String url;
-	@Nullable String username;
-	@Nullable String password;
-	@Nullable String clientId;
-	@Nullable String clientSecret;
-	@Nullable String trackingUrlTemplate;
-	@NonNull @Singular("additionalProperty") Map<String, String> additionalProperties;
+	@NonNull String requestId;
+	@Nullable String errorMessage;
+	@Nullable String shipperProduct;
+	@NonNull @Singular Set<String> shipperProductServices;
+	@NonNull @Singular Map<String, String> responseItems;
 
 	@JsonIgnore
-	@NonNull
-	public String getAdditionalPropertyNotNull(@NonNull final String key)
+	public boolean isError()
 	{
-		return Check.assumeNotNull( getAdditionalProperty(key), "No ShipperConfig.additionalProperty found for key '%s'. Available keys: %s", key, additionalProperties.keySet());
-	}
-
-
-	@JsonIgnore
-	@Nullable
-	public String getAdditionalProperty(@NonNull final String key)
-	{
-		return additionalProperties.get(key);
+		return (getErrorMessage() != null && !getErrorMessage().isEmpty());
 	}
 }

@@ -22,42 +22,21 @@
 
 package de.metas.common.delivery.v1.json.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.metas.common.util.Check;
+import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.util.Map;
+import java.math.BigDecimal;
 
 @Value
 @Builder(toBuilder = true)
 @Jacksonized
-public class JsonShipperConfig
+public class JsonDeliveryAdvisorRequestItem
 {
-	@NonNull String url;
-	@Nullable String username;
-	@Nullable String password;
-	@Nullable String clientId;
-	@Nullable String clientSecret;
-	@Nullable String trackingUrlTemplate;
-	@NonNull @Singular("additionalProperty") Map<String, String> additionalProperties;
-
-	@JsonIgnore
-	@NonNull
-	public String getAdditionalPropertyNotNull(@NonNull final String key)
-	{
-		return Check.assumeNotNull( getAdditionalProperty(key), "No ShipperConfig.additionalProperty found for key '%s'. Available keys: %s", key, additionalProperties.keySet());
-	}
-
-
-	@JsonIgnore
-	@Nullable
-	public String getAdditionalProperty(@NonNull final String key)
-	{
-		return additionalProperties.get(key);
-	}
+	int numberOfItems;
+	@NonNull BigDecimal grossWeightKg;
+	@Nullable JsonPackageDimensions packageDimensions;
 }

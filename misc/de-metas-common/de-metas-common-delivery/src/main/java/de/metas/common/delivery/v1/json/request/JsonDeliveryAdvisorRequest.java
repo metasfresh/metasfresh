@@ -22,32 +22,25 @@
 
 package de.metas.common.delivery.v1.json.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
-import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder(toBuilder = true)
 @Jacksonized
-public class JsonDeliveryRequest
+public class JsonDeliveryAdvisorRequest
 {
 	@Builder.Default
 	@NonNull String id = UUID.randomUUID().toString();
-	int deliveryOrderId;
 	@NonNull JsonAddress pickupAddress;
 	@NonNull String pickupDate;
 	@Nullable String pickupNote;
@@ -56,25 +49,6 @@ public class JsonDeliveryRequest
 	@Nullable String deliveryDate;
 	@Nullable String deliveryNote;
 	@Nullable String customerReference;
-	@NonNull @Singular ImmutableList<JsonDeliveryOrderParcel> deliveryOrderParcels;
-	@Nullable String shipperProduct;
-	@NonNull @Singular Set<String> shipperProductServices;
-	@Nullable String shipperEORI;
-	@Nullable String receiverEORI;
+	@NonNull JsonDeliveryAdvisorRequestItem item;
 	@NonNull JsonShipperConfig shipperConfig;
-	@NonNull @Singular Map<String, String> shipAdvises;
-
-	@JsonIgnore
-	@NonNull
-	public String getShipAdviceNotNull(@NonNull final String key)
-	{
-		return Check.assumeNotNull( getShipAdvice(key), "No ShipAdvice found for key '%s'. Available keys: %s", key, shipAdvises.keySet());
-	}
-
-	@JsonIgnore
-	@Nullable
-	public String getShipAdvice(@NonNull final String key)
-	{
-		return shipAdvises.get(key);
-	}
 }

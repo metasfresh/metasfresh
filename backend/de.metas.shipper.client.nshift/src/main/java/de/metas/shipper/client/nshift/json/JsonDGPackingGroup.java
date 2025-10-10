@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.nshift
+ * de.metas.shipper.client.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -19,25 +19,37 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+package de.metas.shipper.client.nshift.json;
 
-package de.metas.shipper.gateway.nshift.client;
-
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Defines the packing group for dangerous goods, as specified by nShift.
+ * The packing group indicates the degree of danger.
+ */
 @RequiredArgsConstructor
-public enum NShiftShipperProduct implements ShipperProduct
+@Getter
+public enum JsonDGPackingGroup
 {
-	// TODO next iteration consider replacing with String.intern so it's more flexible and new shipper doesn't imply code changes
-	DHL_NATIONAL("DHL - Domestic"),
-	DHL_INTERNATIONAL("DHL - Euroconnect"),
-	DHL_DHLPAKET("Deutsche Post - DHL Paket"),
-	DHL_DEPICKUP("Deutsche Post - Parcel DE Pickup"),
-	DHL_WARENPOST("Deutsche Post - Warenpost"),
-	DHL_NIGHTSTAR("Night Star Express"),
+	/**
+	 * Packing Group None: Not applicable.
+	 */
+	NONE(0),
+	/**
+	 * Packing Group I: High danger.
+	 */
+	I(1),
+	/**
+	 * Packing Group II: Medium danger.
+	 */
+	II(2),
+	/**
+	 * Packing Group III: Low danger.
+	 */
+	III(3);
 
-	;
-	@Getter
-	private final String code;
-	}
+	@JsonValue
+	private final int jsonValue;
+}
