@@ -27,7 +27,6 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
-import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.shipper.client.nshift.NShiftConstants;
 import de.metas.shipper.client.nshift.NShiftShipAdvisorService;
@@ -51,7 +50,6 @@ public class ShipAdvisorService
 
 		final ImmutableList<JsonDeliveryOrderParcel> deliveryOrderParcels = deliveryRequest.getDeliveryOrderParcels();
 		Check.assumeNotEmpty(deliveryOrderParcels, "deliveryOrderParcels is not empty");
-		final JsonShipperConfig config = deliveryRequest.getShipperConfig();
 		final JsonDeliveryAdvisorResponse response = shipAdvisorService.getShipAdvises(JsonDeliveryAdvisorRequest.builder()
 						.pickupAddress(deliveryRequest.getPickupAddress())
 						.pickupDate(deliveryRequest.getPickupDate())
@@ -60,13 +58,7 @@ public class ShipAdvisorService
 						.deliveryContact(deliveryRequest.getDeliveryContact())
 						.deliveryDate(deliveryRequest.getDeliveryDate())
 						.deliveryNote(deliveryRequest.getDeliveryNote())
-						.shipperConfig(JsonShipperConfig.builder()
-								.url(config.getUrl())
-								.username(config.getUsername())
-								.password(config.getPassword())
-								.clientId(config.getClientId())
-								.clientSecret(config.getClientSecret())
-								.additionalProperty(NShiftConstants.ACTOR_ID, config.getAdditionalPropertyNotNull(NShiftConstants.ACTOR_ID))
+						.shipperConfig(deliveryRequest.getShipperConfig().toBuilder()
 								.additionalProperty(NShiftConstants.SERVICE_LEVEL, "Test") //FIXME hardcoded NShift.ShippingRule.ServiceLevel should be come from config repo, so the config isn't mutated
 								.build())
 						.item(JsonDeliveryAdvisorRequestItem.builder() // When moved to shipment schedule we only have "1 line", so I only use one here as well
