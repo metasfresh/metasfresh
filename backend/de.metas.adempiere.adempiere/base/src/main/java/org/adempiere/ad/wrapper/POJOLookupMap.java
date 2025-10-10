@@ -56,6 +56,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
@@ -430,10 +431,12 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				}
 
 				//
- 				// DocumentNo
+				// DocumentNo
 				if (isNew && wrapper.hasColumnName(COLUMNNAME_DocumentNo) && wrapper.getValue(COLUMNNAME_DocumentNo, String.class) == null)
 				{
-					wrapper.setValue(COLUMNNAME_DocumentNo, "DOCNO_" + id);
+					final String documentNo = "DOCNO_" + id;
+					wrapper.setValue(COLUMNNAME_DocumentNo, documentNo);
+					logger.info("Generated DocumentNo on saving: \n\t documentNo: {} \n\t model: {} \n\t trace: {}", documentNo, wrapper, Trace.toOneLineStackTraceString());
 				}
 
 				// we use LinkedHashMap to preserve the order in which the objects are saved
