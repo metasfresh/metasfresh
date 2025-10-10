@@ -80,8 +80,8 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>de.metas.shipper.nshift</groupId>
-            <artifactId>de.metas.shipper.nshift</artifactId>
+            <groupId>de.metas.shipper.client.nshift</groupId>
+            <artifactId>de.metas.shipper.client.nshift</artifactId>
             <version>10.0.0</version>
             <scope>compile</scope>
         </dependency>

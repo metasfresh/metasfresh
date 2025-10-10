@@ -29,8 +29,8 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
-import de.metas.shipper.nshift.NShiftConstants;
-import de.metas.shipper.nshift.NShiftShipAdvisorService;
+import de.metas.shipper.client.nshift.NShiftConstants;
+import de.metas.shipper.client.nshift.NShiftShipAdvisorService;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -67,10 +67,10 @@ public class ShipAdvisorService
 								.clientId(config.getClientId())
 								.clientSecret(config.getClientSecret())
 								.additionalProperty(NShiftConstants.ACTOR_ID, config.getAdditionalPropertyNotNull(NShiftConstants.ACTOR_ID))
-								.additionalProperty(NShiftConstants.SERVICE_LEVEL, "Test") //FIXME hardcoded NShift.ShippingRule.ServiceLevel
+								.additionalProperty(NShiftConstants.SERVICE_LEVEL, "Test") //FIXME hardcoded NShift.ShippingRule.ServiceLevel should be come from config repo, so the config isn't mutated
 								.build())
 						.item(JsonDeliveryAdvisorRequestItem.builder() // When moved to shipment schedule we only have "1 line", so I only use one here as well
-								.grossWeightKg(getGrossWeight(deliveryOrderParcels))
+								.grossWeightKg(computeTotalGrossWeightKg(deliveryOrderParcels))
 								.packageDimensions(deliveryOrderParcels.get(0).getPackageDimensions())
 								.numberOfItems(deliveryOrderParcels.size())
 										.build())
@@ -90,11 +90,12 @@ public class ShipAdvisorService
 		return deliveryRequest.toBuilder()
 				.shipperProduct(response.getShipperProduct())
 				.shipperProductServices(response.getShipperProductServices())
+
 				.shipperConfig(updatedShipperConfig)
 				.build();
 	}
 	
-	private static BigDecimal getGrossWeight(@NonNull final ImmutableList<JsonDeliveryOrderParcel> parcels)
+	private static BigDecimal computeTotalGrossWeightKg(@NonNull final ImmutableList<JsonDeliveryOrderParcel> parcels)
 	{
 		return parcels.stream()
 				.map(JsonDeliveryOrderParcel::getGrossWeightKg)

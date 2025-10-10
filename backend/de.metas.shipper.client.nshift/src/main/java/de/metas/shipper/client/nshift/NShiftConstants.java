@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.nshift
+ * de.metas.shipper.client.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,24 +20,19 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.nshift.client;
+package de.metas.shipper.client.nshift;
 
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
 
-@RequiredArgsConstructor
-public enum NShiftShipperProduct implements ShipperProduct
+@UtilityClass
+public class NShiftConstants
 {
-	// TODO next iteration consider replacing with String.intern so it's more flexible and new shipper doesn't imply code changes
-	DHL_NATIONAL("DHL - Domestic"),
-	DHL_INTERNATIONAL("DHL - Euroconnect"),
-	DHL_DHLPAKET("Deutsche Post - DHL Paket"),
-	DHL_DEPICKUP("Deutsche Post - Parcel DE Pickup"),
-	DHL_WARENPOST("Deutsche Post - Warenpost"),
-	DHL_NIGHTSTAR("Night Star Express"),
+	// config.additionalProperties
+	public static final String ACTOR_ID = "ActorId";
+	public static final String SERVICE_LEVEL = "ServiceLevel";
 
-	;
-	@Getter
-	private final String code;
-	}
+	// shipAdvises
+	public static final String PROD_CONCEPT_ID = "ProdConceptId";
+	public static final String GOODS_TYPE_ID = "GoodsTypeID";
+	public static final String GOODS_TYPE_NAME = "GoodsTypeName";
+}

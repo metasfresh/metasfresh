@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-delivery
+ * de.metas.shipper.client.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -19,36 +19,20 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+package de.metas.shipper.client.nshift.json.request;
 
-package de.metas.common.delivery.v1.json.response;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.shipper.client.nshift.json.JsonShipmentData;
+import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.Set;
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder(toBuilder = true)
+@Builder
 @Jacksonized
-public class JsonDeliveryAdvisorResponse
+public class JsonShipmentRequest
 {
-	@NonNull String requestId;
-	@Nullable String errorMessage;
-	@Nullable String shipperProduct;
-	@NonNull @Singular Set<String> shipperProductServices;
-	@NonNull @Singular Map<String, String> responseItems;
-
-	@JsonIgnore
-	public boolean isError()
-	{
-		return (getErrorMessage() != null && !getErrorMessage().isEmpty());
-	}
+	@NonNull JsonShipmentData data;
+	@NonNull JsonShipmentOptions options;
 }

@@ -5,7 +5,7 @@ import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
 import de.metas.shipper.gateway.nshift.client.ShipAdvisorService;
-import de.metas.shipper.nshift.NShiftShipmentService;
+import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.nshift.client.NShiftShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;

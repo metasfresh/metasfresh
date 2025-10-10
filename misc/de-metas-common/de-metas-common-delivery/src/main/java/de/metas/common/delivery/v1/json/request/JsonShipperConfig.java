@@ -23,6 +23,7 @@
 package de.metas.common.delivery.v1.json.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -31,7 +32,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -50,9 +50,7 @@ public class JsonShipperConfig
 	@NonNull
 	public String getAdditionalPropertyNotNull(@NonNull final String key)
 	{
-		return Optional.ofNullable(getAdditionalProperty(key))
-				.orElseThrow(() -> new IllegalArgumentException(
-						String.format("No ShipperConfig.additionalProperty found for key '%s'. Available keys: %s", key, additionalProperties.keySet())));
+		return Check.assumeNotNull( getAdditionalProperty(key), "No ShipperConfig.additionalProperty found for key '%s'. Available keys: %s", key, additionalProperties.keySet());
 	}
 
 

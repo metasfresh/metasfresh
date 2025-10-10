@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.nshift
+ * de.metas.shipper.client.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -19,25 +19,25 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+package de.metas.shipper.client.nshift.json;
 
-package de.metas.shipper.gateway.nshift.client;
+import com.fasterxml.jackson.databind.util.StdConverter;
 
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import javax.annotation.Nullable;
 
-@RequiredArgsConstructor
-public enum NShiftShipperProduct implements ShipperProduct
+/**
+ * Jackson converter to serialize a Java {@link Boolean} to an integer (1 for true, 0 for false).
+ */
+public class BooleanToIntConverter extends StdConverter<Boolean, Integer>
 {
-	// TODO next iteration consider replacing with String.intern so it's more flexible and new shipper doesn't imply code changes
-	DHL_NATIONAL("DHL - Domestic"),
-	DHL_INTERNATIONAL("DHL - Euroconnect"),
-	DHL_DHLPAKET("Deutsche Post - DHL Paket"),
-	DHL_DEPICKUP("Deutsche Post - Parcel DE Pickup"),
-	DHL_WARENPOST("Deutsche Post - Warenpost"),
-	DHL_NIGHTSTAR("Night Star Express"),
-
-	;
-	@Getter
-	private final String code;
+	@Override
+	@Nullable
+	public Integer convert(final Boolean value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		return value ? 1 : 0;
 	}
+}

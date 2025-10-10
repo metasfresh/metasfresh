@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-delivery
+ * de.metas.shipper.client.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -19,36 +19,24 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+package de.metas.shipper.client.nshift.json;
 
-package de.metas.common.delivery.v1.json.response;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder(toBuilder = true)
-@Jacksonized
-public class JsonDeliveryAdvisorResponse
+@Builder
+public class JsonAmount
 {
-	@NonNull String requestId;
-	@Nullable String errorMessage;
-	@Nullable String shipperProduct;
-	@NonNull @Singular Set<String> shipperProductServices;
-	@NonNull @Singular Map<String, String> responseItems;
+	@JsonProperty("Kind")
+	JsonShipmentAmountKind kind;
 
-	@JsonIgnore
-	public boolean isError()
-	{
-		return (getErrorMessage() != null && !getErrorMessage().isEmpty());
-	}
+	@JsonProperty("CurrencyCode")
+	String currencyCode;
+
+	@JsonProperty("Value")
+	Double value;
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-delivery
+ * de.metas.shipper.client.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -19,36 +19,35 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+package de.metas.shipper.client.nshift.json;
 
-package de.metas.common.delivery.v1.json.response;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder(toBuilder = true)
+@Builder
 @Jacksonized
-public class JsonDeliveryAdvisorResponse
+public class JsonPackage
 {
-	@NonNull String requestId;
-	@Nullable String errorMessage;
-	@Nullable String shipperProduct;
-	@NonNull @Singular Set<String> shipperProductServices;
-	@NonNull @Singular Map<String, String> responseItems;
 
-	@JsonIgnore
-	public boolean isError()
-	{
-		return (getErrorMessage() != null && !getErrorMessage().isEmpty());
-	}
+	@JsonProperty("ItemNo")
+	Integer itemNo;
+
+	@JsonProperty("PkgNo")
+	String pkgNo;
+
+	@JsonProperty("Barcode1")
+	String barcode1;
+
+	@JsonProperty("Barcode2")
+	String barcode2;
+
+	@JsonProperty("References")
+	List<JsonLineReference> references;
 }

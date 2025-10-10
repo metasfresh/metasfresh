@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ #%L
-  ~ de-metas-common-delivery
+  ~ de.metas.parent
   ~ %%
   ~ Copyright (C) 2025 metas GmbH
   ~ %%
@@ -26,27 +26,71 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>de.metas.common</groupId>
-        <artifactId>de-metas-common</artifactId>
+        <groupId>de.metas</groupId>
+        <artifactId>de.metas.parent</artifactId>
         <version>10.0.0</version>
     </parent>
 
-    <groupId>de.metas.common.delivery</groupId>
-    <artifactId>de-metas-common-delivery</artifactId>
-    <version>10.0.0</version>
+    <groupId>de.metas.shipper.client.nshift</groupId>
+    <artifactId>de.metas.shipper.client.nshift</artifactId>
 
     <properties>
+        <metasfresh.version>10.0.0</metasfresh.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ws</groupId>
+            <artifactId>spring-ws-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+                <groupId>de.metas.common.delivery</groupId>
+                <artifactId>de-metas-common-delivery</artifactId>
+                <version>10.0.0</version>
+                <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.util</groupId>
+            <artifactId>de-metas-common-util</artifactId>
+            <version>10.0.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -62,12 +106,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -81,8 +123,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -93,11 +133,6 @@
                     <artifactId>jackson-annotations</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>de.metas.common.util</groupId>
-            <artifactId>de-metas-common-util</artifactId>
-            <version>10.0.0</version>
         </dependency>
     </dependencies>
 </project>

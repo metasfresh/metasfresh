@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-delivery
+ * de.metas.shipper.client.nshift
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,35 +20,31 @@
  * #L%
  */
 
-package de.metas.common.delivery.v1.json.response;
+package de.metas.shipper.client.nshift.json;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.Set;
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder(toBuilder = true)
+@Builder
 @Jacksonized
-public class JsonDeliveryAdvisorResponse
+public class JsonShipmentDocument
 {
-	@NonNull String requestId;
-	@Nullable String errorMessage;
-	@Nullable String shipperProduct;
-	@NonNull @Singular Set<String> shipperProductServices;
-	@NonNull @Singular Map<String, String> responseItems;
 
-	@JsonIgnore
-	public boolean isError()
-	{
-		return (getErrorMessage() != null && !getErrorMessage().isEmpty());
-	}
+	@JsonProperty("DocumentType")
+	String documentType;
+
+	/**
+	 * Base64-encoded content of the document.
+	 */
+	@JsonProperty("Content")
+	String content;
+
+	@JsonProperty("DocumentName")
+	String documentName;
+
+	@JsonProperty("PkgNo")
+	String pkgNo;
 }

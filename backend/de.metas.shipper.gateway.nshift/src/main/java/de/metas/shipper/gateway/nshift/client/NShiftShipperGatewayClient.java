@@ -42,7 +42,7 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
-import de.metas.shipper.nshift.NShiftShipmentService;
+import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipping.ShipperGatewayId;
 import lombok.Builder;
 import lombok.NonNull;
