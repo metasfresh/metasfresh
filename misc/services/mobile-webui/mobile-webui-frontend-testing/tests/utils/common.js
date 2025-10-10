@@ -54,7 +54,7 @@ const runAndWatchForErrors = async (func) => {
     }
 }
 
-export const expectErrorToast = async (title, func) => {
+export const expectErrorToast = async (title, func, toastValidator) => {
     const watcherId = ++nextErrorWatcherId;
 
     return await test.step(`Expect error: ${title} (watcherId=${watcherId})`, async () => {
@@ -77,6 +77,11 @@ export const expectErrorToast = async (title, func) => {
 
                     const textContent = await toastLocator.textContent();
                     console.log(`[ OK ] Expected error toast detected (watcherId=${watcherId}): ${textContent}`)
+
+                    if (toastValidator) {
+                        await toastValidator({ textContent, toast: toastLocator });
+                    }
+
                     await ErrorToast.closePopup();
                 })
             ]);

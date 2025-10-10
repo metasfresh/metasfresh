@@ -6,14 +6,15 @@ import 'react-toastify/dist/ReactToastify.css';
 import * as uiTrace from './ui_trace';
 import React from 'react';
 import PropTypes from 'prop-types';
+import { ContextualError } from './ContextualError';
 
 export const toastErrorFromObj = (obj) => {
   console.log('toastErrorFromObj', { obj });
   if (!obj) {
     // shall not happen
     console.error('toastErrorFromObj called without any error');
-  } else if (isError(obj)) {
-    toastError({ axiosError: obj });
+  } else if (isError(obj) || obj instanceof ContextualError) {
+    toastError({ axiosError: obj, context: obj?.context });
   } else if (typeof obj === 'object') {
     toastError(obj);
   } else {
@@ -48,6 +49,9 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   uiTrace.trace({
     eventName: 'error',
     message,
+    errorCode: code,
+    exception: axiosError ? errorToString(axiosError) : null,
+    callstack: new Error().stack,
     context,
   });
 };
@@ -62,10 +66,12 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
       const data = axiosError.response && unboxAxiosResponse(axiosError.response);
       if (data && data.errors && data.errors[0] && data.errors[0].message) {
         const error = data.errors[0];
-        return extractUserFriendlyErrorSingleErrorObject(error);
+        return extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey });
       } else if (axiosError.response.data.error) {
-        return extractUserFriendlyErrorSingleErrorObject(axiosError.response.data.error);
+        return extractUserFriendlyErrorSingleErrorObject({ error: axiosError.response.data.error, fallbackMessageKey });
       }
+    } else if (axiosError.message) {
+      return extractUserFriendlyErrorSingleErrorObject({ error: axiosError, fallbackMessageKey });
     }
   }
 
@@ -100,17 +106,17 @@ export const extractErrorResponseFromAxiosError = (axiosError) => {
   return unboxAxiosResponse(axiosError.response);
 };
 
-function extractUserFriendlyErrorSingleErrorObject(error) {
+function extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey }) {
   if (!error) {
     // null/empty error message... shall not happen
-    return trl('error.PleaseTryAgain');
+    return trl(fallbackMessageKey ?? 'error.PleaseTryAgain');
   }
   if (typeof error === 'object') {
     if (error.userFriendlyError || window.showAllErrorMessages) {
       return error.message;
     } else {
       // don't scare the user with weird errors. Better show him some generic error.
-      return trl('error.PleaseTryAgain');
+      return trl(fallbackMessageKey ?? 'error.PleaseTryAgain');
     }
   } else {
     // assume it's a string
@@ -118,6 +124,17 @@ function extractUserFriendlyErrorSingleErrorObject(error) {
     return `${error}`;
   }
 }
+
+export const errorToString = (error) => {
+  if (!error) {
+    return null;
+  } else if (error instanceof Error) {
+    return `${error.name}: ${error.message}\n${error.stack}`;
+  } else {
+    // Handle scenarios where the input might not be a proper Error object
+    return String(error);
+  }
+};
 
 const ToastMessage = ({ message, code }) => {
   if (!code) return message;
