@@ -89,7 +89,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 {
 	// services
 	private static final POJOLookupMap instance = new POJOLookupMap("GLOBAL");
-	private static final transient Logger logger = LogManager.getLogger(POJOLookupMap.class);
+	private static final Logger logger = LogManager.getLogger(POJOLookupMap.class);
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
 
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
@@ -191,7 +191,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	/**
 	 * Database name
 	 */
-	private final String databaseName;
+	@Getter private final String databaseName;
 
 	/**
 	 * Map of cached objects (TableName -> Record_ID -> Object)
@@ -967,11 +967,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		tableName2interceptors.clear();
 	}
 
-	public String getDatabaseName()
-	{
-		return databaseName;
-	}
-
 	private ObjectName jmxName = null;
 
 	private void registerJMX()
@@ -1029,6 +1024,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		catch (final MBeanRegistrationException | InstanceNotFoundException e)
 		{
 			// TODO Auto-generated catch block
+			//noinspection CallToPrintStackTrace
 			e.printStackTrace();
 		}
 	}
@@ -1168,7 +1164,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 		sb.append("\n");
 
-		System.out.println(sb.toString());
+		System.out.println(sb);
 	}
 
 	/**
