@@ -8,6 +8,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.request.api.IRequestBL;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
@@ -192,6 +193,8 @@ public class RequestBLTest
 	{
 		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
 		attribute.setValue(QualityNoteDAO.QualityNoteAttribute.getCode());
+		attribute.setName(QualityNoteDAO.QualityNoteAttribute.getCode());
+		attribute.setAttributeValueType(AttributeValueType.STRING.getCode());
 
 		save(attribute);
 	}

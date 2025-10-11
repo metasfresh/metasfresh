@@ -68,7 +68,6 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
@@ -412,11 +411,11 @@ public class HandlingUnitsRestController
 
 	private JsonHUAttribute toJsonHUAttribute(final HUQRCodeAttribute huQRCodeAttribute)
 	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 		final AttributeCode attributeCode = huQRCodeAttribute.getCode();
-		final I_M_Attribute attribute = attributeDAO.getAttributeByCode(attributeCode);
 		return JsonHUAttribute.builder()
 				.code(attributeCode.getCode())
-				.caption(attribute.getName())
+				.caption(attributeDAO.getAttributeByCode(attributeCode).getDisplayName().translate(adLanguage))
 				.value(huQRCodeAttribute.getValueRendered())
 				.build();
 	}

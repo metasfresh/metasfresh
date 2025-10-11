@@ -2,10 +2,13 @@ package de.metas.inventory;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -34,7 +37,6 @@ public class InventoryLineId implements RepoIdAware
 {
 	int repoId;
 
-	@JsonCreator
 	public static InventoryLineId ofRepoId(final int repoId)
 	{
 		return new InventoryLineId(repoId);
@@ -43,6 +45,13 @@ public class InventoryLineId implements RepoIdAware
 	public static InventoryLineId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	@JsonCreator
+	@Nullable
+	public static InventoryLineId ofNullableObject(@Nullable final Object obj)
+	{
+		return RepoIdAwares.ofObjectOrNull(obj, InventoryLineId.class, InventoryLineId::ofRepoIdOrNull);
 	}
 
 	private InventoryLineId(final int repoId)
@@ -56,5 +65,7 @@ public class InventoryLineId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static boolean equals(@Nullable final InventoryLineId id1, @Nullable final InventoryLineId id2) {return Objects.equals(id1, id2);}
 
 }

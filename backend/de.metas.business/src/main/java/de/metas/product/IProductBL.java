@@ -261,6 +261,8 @@ public interface IProductBL extends ISingletonService
 
 	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
 
+	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId);
+
 	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId, @Nullable BPartnerId bpartnerId);
 
 	Set<ProductId> getProductIdsMatchingQueryString(

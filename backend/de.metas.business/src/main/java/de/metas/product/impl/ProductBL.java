@@ -832,6 +832,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId)
+	{
+		return isValidEAN13Product(ean13, expectedProductId);
+	}
+
+	@Override
 	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId, @Nullable final BPartnerId bpartnerId)
 	{
 		return getGS1ProductCodesCollection(expectedProductId).isValidProductNo(ean13, bpartnerId);

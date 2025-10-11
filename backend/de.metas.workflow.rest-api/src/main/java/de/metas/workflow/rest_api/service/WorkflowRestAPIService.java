@@ -84,9 +84,9 @@ public class WorkflowRestAPIService
 		mobileApplicationService.assertAccess(applicationId, permissions);
 	}
 
-	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final IUserRolePermissions userPermissions)
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
-		return mobileApplicationService.streamMobileApplicationInfos(userPermissions);
+		return mobileApplicationService.streamMobileApplicationInfos(userId, permissions);
 	}
 
 	public WorkflowLaunchersList getLaunchers(@NonNull final WorkflowLaunchersQuery query)
@@ -113,9 +113,9 @@ public class WorkflowRestAPIService
 		}
 	}
 
-	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications(@NonNull final IUserRolePermissions permissions)
+	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
-		return mobileApplicationService.streamMobileApplicationsOfType(WorkflowBasedMobileApplication.class, permissions);
+		return mobileApplicationService.streamMobileApplicationsOfType(WorkflowBasedMobileApplication.class, userId, permissions);
 	}
 
 	private QueryLimit getLaunchersLimit()
@@ -163,10 +163,10 @@ public class WorkflowRestAPIService
 				.abort(wfProcessId, callerId);
 	}
 
-	public void abortAllWFProcesses(@NonNull final IUserRolePermissions permissions)
+	public void abortAllWFProcesses(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
-		streamWorkflowBasedMobileApplications(permissions)
-				.forEach(application -> abortAllNoFail(application, permissions.getUserId()));
+		streamWorkflowBasedMobileApplications(userId, permissions)
+				.forEach(application -> abortAllNoFail(application, userId));
 	}
 
 	private static void abortAllNoFail(@NonNull final WorkflowBasedMobileApplication application, final @NonNull UserId callerId)

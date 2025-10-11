@@ -35,17 +35,15 @@ package org.compiere.FA;
  * #L%
  */
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import org.compiere.util.DB;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-
-import org.compiere.util.DB;
-
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 /**
  *	Import Assets
@@ -368,11 +366,11 @@ public class ImportAsset extends JavaProcess
 				
 				if (A_Asset_ID == 0)
 				{				
-				A_Asset_ID = DB.getNextID(m_AD_Client_ID, "A_Asset", null);
-				A_Asset_Acct_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Acct", null);
-				A_DEPRECIATION_WORKFILE_ID = DB.getNextID(m_AD_Client_ID, "A_Depreciation_Workfile", null);				
-				A_ASSET_ADDITION_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Addition", null);
-				A_ASSET_CHANGE_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Change", null);
+				A_Asset_ID = DB.getNextID(m_AD_Client_ID, "A_Asset");
+				A_Asset_Acct_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Acct");
+				A_DEPRECIATION_WORKFILE_ID = DB.getNextID(m_AD_Client_ID, "A_Depreciation_Workfile");				
+				A_ASSET_ADDITION_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Addition");
+				A_ASSET_CHANGE_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Change");
 			
 				newAsset = true;
 				}
@@ -385,10 +383,10 @@ public class ImportAsset extends JavaProcess
 					{
 			
 						newAsset = true;
-						A_DEPRECIATION_WORKFILE_ID = DB.getNextID(m_AD_Client_ID, "A_Depreciation_Workfile", null);				
-						A_ASSET_ADDITION_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Addition", null);
-						A_ASSET_CHANGE_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Change", null);
-						A_Asset_Acct_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Acct", null);
+						A_DEPRECIATION_WORKFILE_ID = DB.getNextID(m_AD_Client_ID, "A_Depreciation_Workfile");				
+						A_ASSET_ADDITION_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Addition");
+						A_ASSET_CHANGE_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Change");
+						A_Asset_Acct_ID = DB.getNextID(m_AD_Client_ID, "A_Asset_Acct");
 					}
 					else
 					{

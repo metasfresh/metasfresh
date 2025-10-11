@@ -35,7 +35,7 @@ const DialogButton = ({
 DialogButton.propTypes = {
   id: PropTypes.string,
   testId: PropTypes.string,
-  captionKey: PropTypes.string.isRequired,
+  captionKey: PropTypes.string,
   caption: PropTypes.string,
   className: PropTypes.string,
   disabled: PropTypes.bool,

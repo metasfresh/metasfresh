@@ -325,7 +325,7 @@ public class WarehouseService
 	{
 		final LocatorAndProductStrategy husFinder = HUsForInventoryStrategies.locatorAndProduct()
 				.huForInventoryLineFactory(huForInventoryLineFactory)
-				.productId(productId)
+				.onlyProductId(productId)
 				.asiId(attributeSetInstanceId)
 				.warehouseId(warehouseId)
 				//

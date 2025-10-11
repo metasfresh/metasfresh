@@ -58,10 +58,10 @@ public class MultipleHUInventoryLineAggregator implements InventoryLineAggregato
 	}
 
 	@Value
-	public static class MultipleHUInventoryLineInventoryLineAggregationKey implements InventoryLineAggregationKey
+	private static class MultipleHUInventoryLineInventoryLineAggregationKey implements InventoryLineAggregationKey
 	{
 		@NonNull ProductId productId;
-		// needed for the case that stocking UOM has changed and there are still HUs with an old UOM
+		// needed for the case that stocking UOM has changed, and there are still HUs with an old UOM
 		@Nullable UomId uomId;
 		@NonNull AttributesKey storageAttributesKey;
 		@NonNull LocatorId locatorId;

@@ -1724,24 +1724,9 @@ public class DB
 		}
 	}    // isSOTrx
 
-	/**************************************************************************
-	 * Get next number for Key column = 0 is Error. * @param ctx client
-	 *
-	 * @param TableName table name
-	 * @param trxName optionl transaction name
-	 * @return next no
-	 */
-	public int getNextID(final Properties ctx, final String TableName, final String trxName)
+	public int getNextID(@NonNull final Properties ctx, @NonNull final String TableName)
 	{
-		if (ctx == null)
-		{
-			throw new IllegalArgumentException("Context missing");
-		}
-		if (TableName == null || TableName.length() == 0)
-		{
-			throw new IllegalArgumentException("TableName missing");
-		}
-		return getNextID(Env.getAD_Client_ID(ctx), TableName, trxName);
+		return getNextID(Env.getAD_Client_ID(ctx), TableName);
 	}    // getNextID
 
 	/**
@@ -1750,26 +1735,24 @@ public class DB
 	 * <p>
 	 * <b>WARNING:</b> the underlying sequence might be reset, depending on existing primary keys in the DB
 	 * <p>
-	 *
-	 * @param trxName optional Transaction Name
-	 * @return next primary key number
 	 */
-	public int getNextID(final int AD_Client_ID, @NonNull final String TableName, @Nullable final String trxName)
+	public int getNextID(final int AD_Client_ID, @NonNull final String TableName)
 	{
 		if (Adempiere.isUnitTestMode())
 		{
 			return POJOLookupMap.get().nextId(TableName);
 		}
 
-		final boolean useNativeSequences = DB.isUseNativeSequences(AD_Client_ID, TableName);
+		final boolean useNativeSequences = isUseNativeSequences(AD_Client_ID, TableName);
 		if (useNativeSequences)
 		{
 			final String sequenceName = getTableSequenceName(TableName);
-			final int nextId = CConnection.get().getDatabase().getNextID(sequenceName);
-			return nextId;
+			return CConnection.get().getDatabase().getNextID(sequenceName);
 		}
-
-		return MSequence.getNextID(AD_Client_ID, TableName, trxName);
+		else
+		{
+			return MSequence.getNextID(AD_Client_ID, TableName);
+		}
 	}    // getNextID
 
 	public String TO_TABLESEQUENCE_NEXTVAL(final String tableName)

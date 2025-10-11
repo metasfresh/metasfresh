@@ -1,10 +1,6 @@
 package de.metas.vertical.pharma.securpharm.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmActionsDispatcher;
-import de.metas.vertical.pharma.securpharm.actions.SecurPharmActionsHandler;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRequest;
 import lombok.NonNull;
 
@@ -30,20 +26,15 @@ import lombok.NonNull;
  * #L%
  */
 
-public final class DirectSecurPharmActionsDispatcher implements SecurPharmActionsDispatcher
+public final class NOPSecurPharmActionsDispatcher implements SecurPharmActionsDispatcher
 {
-	private final List<SecurPharmActionsHandler> handlers = new ArrayList<>();
+	public static final NOPSecurPharmActionsDispatcher instance = new NOPSecurPharmActionsDispatcher();
+
+	private NOPSecurPharmActionsDispatcher() {}
 
 	@Override
-	public void post(@NonNull final SecurPharmaActionRequest request)
-	{
-		handlers.forEach(handler -> handler.handleActionRequest(request));
-	}
+	public void setSecurPharmService(@NonNull final SecurPharmService securPharmService) {}
 
 	@Override
-	public void subscribe(@NonNull final SecurPharmActionsHandler handler)
-	{
-		handlers.add(handler);
-	}
-
+	public void post(@NonNull final SecurPharmaActionRequest request) {}
 }

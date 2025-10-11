@@ -103,7 +103,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		final ClientId adClientId = UserSession.getCurrent().getClientId();
 		final String tableName = dataBinding.getTableName();
-		final int nextId = DB.getNextID(adClientId.getRepoId(), tableName, ITrx.TRXNAME_ThreadInherited);
+		final int nextId = DB.getNextID(adClientId.getRepoId(), tableName);
 		if (nextId <= 0)
 		{
 			throw new DBException("Cannot retrieve next ID from database for " + entityDescriptor);

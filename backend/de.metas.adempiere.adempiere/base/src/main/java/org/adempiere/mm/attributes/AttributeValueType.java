@@ -41,14 +41,14 @@ public enum AttributeValueType implements ReferenceListAwareEnum
 	LIST(X_M_Attribute.ATTRIBUTEVALUETYPE_List),
 	;
 
+	private static final ValuesIndex<AttributeValueType> index = ReferenceListAwareEnums.index(values());
+
 	@NonNull private final String code;
 
 	public static AttributeValueType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
-
-	private static final ValuesIndex<AttributeValueType> index = ReferenceListAwareEnums.index(values());
 
 	public interface CaseMapper<T>
 	{
