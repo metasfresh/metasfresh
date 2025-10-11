@@ -137,18 +137,22 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541952
 /* DDL */ select AD_Element_Link_Create_Missing_Window(541952)
 ;
 
+---
+-- We can't override a window, because it might be already overridden in many users' custom instances!
+-- The "INSERT INTO AD_Window_Trl" will this way cause duplicated AD_Window_Trl.Names
+---
 -- Window: Auftragsdisposition, InternalName=null
 -- 2025-09-30T14:54:49.517Z
-UPDATE AD_Window SET AD_Client_ID=0, AD_Color_ID=NULL, AD_Image_ID=NULL, AD_Org_ID=0, EntityType='de.metas.ordercandidate', IsActive='Y', IsBetaFunctionality='N', IsDefault='N', IsEnableRemoteCacheInvalidation='Y', IsExcludeFromZoomTargets='N', IsOneInstanceOnly='N', IsOverrideInMenu='N', IsSOTrx='Y', Overrides_Window_ID=540095, WindowType='T', WinHeight=0, WinWidth=0, ZoomIntoPriority=100,Updated=TO_TIMESTAMP('2025-09-30 14:54:49.517000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=541952
-;
-
--- 2025-09-30T14:54:49.748Z
-DELETE FROM AD_Window_Trl WHERE AD_Window_ID = 541952
-;
-
--- 2025-09-30T14:54:49.806Z
-INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 541952, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Window_Trl WHERE AD_Window_ID = 540095
-;
+-- UPDATE AD_Window SET AD_Client_ID=0, AD_Color_ID=NULL, AD_Image_ID=NULL, AD_Org_ID=0, EntityType='de.metas.ordercandidate', IsActive='Y', IsBetaFunctionality='N', IsDefault='N', IsEnableRemoteCacheInvalidation='Y', IsExcludeFromZoomTargets='N', IsOneInstanceOnly='N', IsOverrideInMenu='N', IsSOTrx='Y', Overrides_Window_ID=540095, WindowType='T', WinHeight=0, WinWidth=0, ZoomIntoPriority=100,Updated=TO_TIMESTAMP('2025-09-30 14:54:49.517000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=541952
+-- ;
+-- 
+-- -- 2025-09-30T14:54:49.748Z
+-- DELETE FROM AD_Window_Trl WHERE AD_Window_ID = 541952
+-- ;
+-- 
+-- -- 2025-09-30T14:54:49.806Z
+-- INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 541952, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Window_Trl WHERE AD_Window_ID = 540095
+-- ;
 
 -- Tab: Auftragsdisposition(541952,de.metas.ordercandidate) -> Kandidat
 -- Table: C_OLCand

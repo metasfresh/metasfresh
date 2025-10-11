@@ -52,7 +52,7 @@ UPDATE AD_Window SET IsOverrideInMenu='N', Overrides_Window_ID=NULL,Updated=TO_T
 ----------------------------------------------------------------
 
 ---
--- "Wareneingangsdisposition Logistik" can't override "Wareneingangsdisposition", because it is already overridden in many user's custom instances!
+-- "Wareneingangsdisposition Logistik" can't override "Wareneingangsdisposition", because it might be already overridden in many users' custom instances!
 -- The "INSERT INTO AD_Window_Trl" will this way cause duplicated AD_Window_Trl.Names
 ---
 -- Window: Wareneingangsdisposition Logistik, InternalName=null
