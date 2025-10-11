@@ -51,18 +51,22 @@ UPDATE AD_Window SET IsOverrideInMenu='N', Overrides_Window_ID=NULL,Updated=TO_T
 
 ----------------------------------------------------------------
 
+---
+-- "Wareneingangsdisposition Logistik" can't override "Wareneingangsdisposition", because it is already overridden in many user's custom instances!
+-- The "INSERT INTO AD_Window_Trl" will this way cause duplicated AD_Window_Trl.Names
+---
 -- Window: Wareneingangsdisposition Logistik, InternalName=null
 -- 2025-10-02T18:27:45.130Z
-UPDATE AD_Window SET AD_Client_ID=0, AD_Color_ID=NULL, AD_Image_ID=NULL, AD_Org_ID=0, EntityType='de.metas.inoutcandidate', IsActive='Y', IsBetaFunctionality='N', IsDefault='N', IsEnableRemoteCacheInvalidation='Y', IsExcludeFromZoomTargets='N', IsOneInstanceOnly='N', IsOverrideInMenu='N', IsSOTrx='Y', Overrides_Window_ID=540196, WindowType='T', WinHeight=0, WinWidth=0, ZoomIntoPriority=100,Updated=TO_TIMESTAMP('2025-10-02 18:27:45.130000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=541954
-;
+-- UPDATE AD_Window SET AD_Client_ID=0, AD_Color_ID=NULL, AD_Image_ID=NULL, AD_Org_ID=0, EntityType='de.metas.inoutcandidate', IsActive='Y', IsBetaFunctionality='N', IsDefault='N', IsEnableRemoteCacheInvalidation='Y', IsExcludeFromZoomTargets='N', IsOneInstanceOnly='N', IsOverrideInMenu='N', IsSOTrx='Y', Overrides_Window_ID=540196, WindowType='T', WinHeight=0, WinWidth=0, ZoomIntoPriority=100,Updated=TO_TIMESTAMP('2025-10-02 18:27:45.130000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=541954
+-- ;
 
 -- 2025-10-02T18:27:45.437Z
-DELETE FROM AD_Window_Trl WHERE AD_Window_ID = 541954
-;
-
--- 2025-10-02T18:27:45.515Z
-INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 541954, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Window_Trl WHERE AD_Window_ID = 540196
-;
+-- DELETE FROM AD_Window_Trl WHERE AD_Window_ID = 541954
+-- ;
+-- 
+-- -- 2025-10-02T18:27:45.515Z
+-- INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 541954, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Window_Trl WHERE AD_Window_ID = 540196
+-- ;
 
 -- Tab: Wareneingangsdisposition Logistik(541954,de.metas.inoutcandidate) -> Wareneingangsdisposition
 -- Table: M_ReceiptSchedule
