@@ -105,6 +105,8 @@ public interface IHUQueryBuilder
 
 	Optional<HuId> firstId();
 
+	Optional<HuId> firstIdOnly();
+
 	/** Counts how many {@link I_M_HU}s are matched by our criteria */
 	int count();
 

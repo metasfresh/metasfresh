@@ -134,7 +134,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
 
 		return applicationInfo.toBuilder()
-				.requiresWorkplace(true)
+				.requiresWorkplace(profile.isActiveWorkplaceRequired())
 				.showFilterByDocumentNo(true)
 				.showFilters(true)
 				.showFilterByQRCode(profile.isFilterByBarcode())
@@ -580,7 +580,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				wfProcessId,
 				(wfProcess, pickingJob) -> {
 					wfProcess.assertHasAccess(callerId);
-					return pickingJobRestService.closeLUPickingTarget(pickingJob, lineId);
+					return pickingJobRestService.closeLUAndTUPickingTargets(pickingJob, lineId);
 				});
 
 	}
@@ -597,6 +597,14 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 					return pickingJobRestService.closeTUPickingTarget(pickingJob, lineId);
 				});
 
+	}
+
+	public boolean hasClosedLUs(
+			@NonNull final WFProcessId wfProcessId,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final UserId callerId)
+	{
+		return !getClosedLUs(wfProcessId, lineId, callerId).isEmpty();
 	}
 
 	@NonNull

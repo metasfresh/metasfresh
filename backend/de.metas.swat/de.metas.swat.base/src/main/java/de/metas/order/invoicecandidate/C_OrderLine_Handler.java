@@ -9,6 +9,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.interfaces.I_C_OrderLine;
@@ -58,6 +59,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -69,6 +71,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
@@ -89,6 +92,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+	private static final AdMessageKey MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED = AdMessageKey.of("C_OrderLine.onProductChanged.Msg_Error_Invoice_Candidate_Is_Processed");
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -123,7 +128,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final @NotNull QueryLimit limit_IGNORED)
 	{
 		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
@@ -150,19 +155,20 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate icRecord = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 
 		icRecord.setAD_Org_ID(orderLine.getAD_Org_ID());
+		icRecord.setC_ILCandHandler(getHandlerRecord());
 
 		icRecord.setAD_Table_ID(tableDAO.retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
 		icRecord.setRecord_ID(orderLine.getC_OrderLine_ID());
 
 		icRecord.setC_OrderLine(orderLine);
 
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()), I_C_Order.class);
+		icRecord.setIsSOTrx(order.isSOTrx());
 		setOrderedData(icRecord, orderLine);
 
 		icRecord.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
-
-		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
 		setBPartnerData(icRecord, orderLine);
 		setGroupCompensationData(icRecord, orderLine);
@@ -177,9 +183,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
 		}
-
-		// 05265
-		icRecord.setIsSOTrx(order.isSOTrx());
 
 		icRecord.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
@@ -214,7 +217,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
 
-		if(orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
+		if (orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
 		{
 			icRecord.setEMail(order.getEMail());
 		}
@@ -289,6 +292,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(ic, orderLine);
+
 		// Product related data
 		{
 			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
@@ -327,6 +332,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setPaymentRule(ic, orderLine);
 	}
 
+	public static void assertOrderLineProductNotChangedIfInvoiceCandidateIsProcessed(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final ProductId orderLineProductId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final ProductId icProductId = ProductId.ofRepoIdOrNull(ic.getM_Product_ID());
+		if (icProductId != null && ic.isProcessed() && !ProductId.equals(icProductId, orderLineProductId))
+		{
+			throw new AdempiereException(MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED);
+		}
+	}
+
 	private void setPaymentRule(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
@@ -353,24 +368,18 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 	}
 
-
 	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+							  @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
 		ic.setIncotermLocation(order.getIncotermLocation());
 	}
-	
+
 	private void setC_PaymentTerm(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		if (!ic.isSOTrx())
-		{
-			return;
-		}
-
 		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLine);
 		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 	}

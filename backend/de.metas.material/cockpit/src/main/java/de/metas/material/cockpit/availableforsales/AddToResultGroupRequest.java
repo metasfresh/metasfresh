@@ -27,19 +27,25 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Util.ArrayKey;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
-public final class AddToResultGroupRequest
+public class AddToResultGroupRequest
 {
 	int queryNo;
 
+	@NonNull
 	ProductId productId;
 
+	@NonNull
 	AttributesKey storageAttributesKey;
+
+	@NonNull
+	WarehouseId warehouseId;
 
 	@Nullable
 	BigDecimal qtyOnHandStock;
@@ -52,11 +58,13 @@ public final class AddToResultGroupRequest
 			final int queryNo,
 			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
+			@NonNull final WarehouseId warehouseId,
 			@Nullable final BigDecimal qtyOnHandStock,
 			@Nullable final BigDecimal qtyToBeShipped)
 	{
 		this.queryNo = queryNo;
 		this.productId = productId;
+		this.warehouseId = warehouseId;
 		this.storageAttributesKey = storageAttributesKey;
 
 		this.qtyOnHandStock = qtyOnHandStock;
@@ -65,6 +73,6 @@ public final class AddToResultGroupRequest
 
 	public ArrayKey computeKey()
 	{
-		return ArrayKey.of(productId, storageAttributesKey);
+		return ArrayKey.of(productId, storageAttributesKey, warehouseId);
 	}
 }

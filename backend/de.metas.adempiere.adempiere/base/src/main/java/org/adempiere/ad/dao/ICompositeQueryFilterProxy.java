@@ -61,7 +61,7 @@ public interface ICompositeQueryFilterProxy<T, RT>
 
 	default ICompositeQueryFilter<T> addCompositeQueryFilter()
 	{
-		final ICompositeQueryFilter<T> filter = new CompositeQueryFilter<>(getModelTableName());
+		final ICompositeQueryFilter<T> filter = CompositeQueryFilter.newInstance(getModelTableName());
 		addFilter(filter);
 		return filter;
 	}

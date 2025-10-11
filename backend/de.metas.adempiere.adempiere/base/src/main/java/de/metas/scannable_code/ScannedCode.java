@@ -46,6 +46,7 @@ public class ScannedCode
 	}
 
 	@Override
+	@Deprecated
 	public String toString() {return getAsString();}
 
 	@JsonValue

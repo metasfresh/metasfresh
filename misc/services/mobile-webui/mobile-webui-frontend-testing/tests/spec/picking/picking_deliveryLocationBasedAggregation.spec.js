@@ -18,8 +18,7 @@ const createMasterdata = async () => {
                     allowPickingAnyCustomer: false,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
-                    pickWithNewLU: true,
-                    allowNewTU: true,
+                    pickTo: ['LU_TU'],
                     filterByQRCode: false,
                     anonymousPickHUsOnTheFly: false,
                     customers: [

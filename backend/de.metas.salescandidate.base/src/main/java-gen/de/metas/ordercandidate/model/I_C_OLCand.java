@@ -2681,4 +2681,25 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Error Message.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setErrorMsgJSON (@Nullable String ErrorMsgJSON);
+
+	/**
+	 * Get Error Message.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getErrorMsgJSON();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ErrorMsgJSON = new ModelColumn<>(I_C_OLCand.class, "ErrorMsgJSON", null);
+	String COLUMNNAME_ErrorMsgJSON = "ErrorMsgJSON";
 }

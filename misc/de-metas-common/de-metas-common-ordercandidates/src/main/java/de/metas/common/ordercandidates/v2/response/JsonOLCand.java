@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.metas.common.rest_api.common.JsonMetasfreshId;import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -40,6 +40,9 @@ public class JsonOLCand
 	int id;
 	String externalLineId;
 	String externalHeaderId;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonMetasfreshId adIssueId;
 
 	String poReference;
 
@@ -103,6 +106,7 @@ public class JsonOLCand
 			@JsonProperty("id") final int id,
 			@JsonProperty("externalLineId") final String externalLineId,
 			@JsonProperty("externalHeaderId") final String externalHeaderId,
+			@JsonProperty("adIssueId") final JsonMetasfreshId adIssueId,
 			@JsonProperty("poReference") final String poReference,
 			@JsonProperty("org") final String orgCode,
 			@JsonProperty("bpartner") final JsonResponseBPartnerLocationAndContact bpartner,
@@ -130,6 +134,7 @@ public class JsonOLCand
 		this.id = id;
 		this.externalLineId = externalLineId;
 		this.externalHeaderId = externalHeaderId;
+		this.adIssueId = adIssueId;
 		this.poReference = poReference;
 		this.orgCode = orgCode;
 		this.bpartner = bpartner;

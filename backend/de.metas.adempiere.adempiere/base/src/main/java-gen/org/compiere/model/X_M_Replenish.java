@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Replenish
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenish, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1411381810L;
+	private static final long serialVersionUID = -271265011L;
 
     /** Standard Constructor */
     public X_M_Replenish (final Properties ctx, final int M_Replenish_ID, @Nullable final String trxName)
@@ -102,7 +102,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	@Override
-	public void setLevel_Max (final BigDecimal Level_Max)
+	public void setLevel_Max (final @Nullable BigDecimal Level_Max)
 	{
 		set_Value (COLUMNNAME_Level_Max, Level_Max);
 	}

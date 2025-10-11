@@ -28,6 +28,7 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.util.Check;
 import jakarta.xml.bind.JAXBElement;
 import lombok.Builder;
@@ -40,6 +41,7 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 
+import javax.xml.bind.JAXBElement;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -92,7 +94,7 @@ public class GOClient implements ShipperGatewayClient
 		final HttpComponentsMessageSender messageSender = createMessageSender(config.getAuthUsername(), config.getAuthPassword());
 
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setPackagesToScan(de.metas.shipper.gateway.go.schema.ObjectFactory.class.getPackage().getName());
+		marshaller.setPackagesToScan(ObjectFactory.class.getPackage().getName());
 
 		webServiceTemplate = new WebServiceTemplate();
 		webServiceTemplate.setDefaultUri(config.getUrl());
@@ -128,13 +130,12 @@ public class GOClient implements ShipperGatewayClient
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Deprecated
-	@Override
 	@VisibleForTesting
 	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder)
 	{
@@ -219,8 +220,8 @@ public class GOClient implements ShipperGatewayClient
 	}
 
 	private Object sendAndReceive(final JAXBElement<?> goRequestElement,
-			final String action, // for logging
-			final int deliveryOrderRepoId // for logging
+								  final String action, // for logging
+								  final int deliveryOrderRepoId // for logging
 	)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -305,7 +306,7 @@ public class GOClient implements ShipperGatewayClient
 		goRequest.setZustelldatum(createGODeliveryDateOrNull(request.getDeliveryDate())); // Delivery date (not mandatory)
 		goRequest.setZustellhinweise(request.getDeliveryNote()); // Delivery note (an128, not mandatory)
 
-		goRequest.setService(request.getShipperProduct().getCode()); // Service type (mandatory)
+		goRequest.setService(request.getShipperProduct() != null ? request.getShipperProduct().getCode() : null); // Service type (mandatory)
 		goRequest.setUnfrei(goDeliveryOrderData.getPaidMode().getCode()); // Flag unpaid (mandatory)
 		goRequest.setSelbstanlieferung(goDeliveryOrderData.getSelfDelivery().getCode()); // Flag self delivery (mandatory)
 		goRequest.setSelbstabholung(goDeliveryOrderData.getSelfPickup().getCode()); // Flag self pickup (mandatory)

@@ -14,6 +14,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.huQRCodes.GenerateHUQRCodeCommand;
+import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
+import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
@@ -40,6 +43,8 @@ import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
+import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
+import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -67,11 +72,13 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
+		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
+		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
@@ -86,8 +93,10 @@ public class CreateMasterdataCommand
 				.productPlannings(productPlannings)
 				.pickingSlots(pickingSlots)
 				.warehouses(warehouses)
+				.workplaces(workplaces)
 				.packingInstructions(packingInstructions)
 				.handlingUnits(hus)
+				.generatedHUQRCodes(generatedHUQRCodes)
 				.salesOrders(salesOrders)
 				.distributionOrders(distributionOrders)
 				.manufacturingOrders(manufacturingOrders)
@@ -116,6 +125,7 @@ public class CreateMasterdataCommand
 	{
 		return LoginUserCommand.builder()
 				.userAuthTokenService(services.userAuthTokenService)
+				.workplaceService(services.workplaceService)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
@@ -213,6 +223,18 @@ public class CreateMasterdataCommand
 				.execute();
 	}
 
+	private ImmutableMap<String, JsonWorkplaceResponse> createWorkplaces()
+	{
+		if (request.getWorkplaces() == null) {return ImmutableMap.of();}
+
+		return CreateWorkplaceCommand.builder()
+				.workplaceService(services.workplaceService)
+				.context(context)
+				.createWorkplaceRequests(request.getWorkplaces())
+				.loginRequests(this.request.getLogin())
+				.build().execute();
+	}
+
 	private @NonNull Map<String, JsonPackingInstructionsResponse> createPackingInstructions()
 	{
 		return process(request.getPackingInstructions(), this::createPackingInstruction);
@@ -238,6 +260,7 @@ public class CreateMasterdataCommand
 				.mobileConfigService(services.mobileConfigService)
 				.mobilePickingConfigRepository(services.mobilePickingConfigRepository)
 				.mobileDistributionConfigRepository(services.mobileDistributionConfigRepository)
+				.mobileManufacturingConfigRepository(services.mobileManufacturingConfigRepository)
 				//
 				.context(context)
 				.request(request.getMobileConfig())
@@ -262,6 +285,22 @@ public class CreateMasterdataCommand
 				.execute();
 	}
 
+	private ImmutableMap<String, JsonGenerateHUQRCodeResponse> generateHUQRCodes()
+	{
+		return process(request.getGeneratedHUQRCodes(), this::generateHUQRCode);
+	}
+
+	private JsonGenerateHUQRCodeResponse generateHUQRCode(final String identifier, final JsonGenerateHUQRCodeRequest request)
+	{
+		return GenerateHUQRCodeCommand.builder()
+				.huQRCodesService(services.huQRCodesService)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonSalesOrderCreateResponse> createSalesOrders()
 	{
 		return process(request.getSalesOrders(), this::createSalesOrder);
@@ -270,6 +309,7 @@ public class CreateMasterdataCommand
 	private JsonSalesOrderCreateResponse createSalesOrder(String identifier, JsonSalesOrderCreateRequest request)
 	{
 		return SalesOrderCreateCommand.builder()
+				.pickingJobScheduleService(services.pickingJobScheduleService)
 				.context(context)
 				.request(request)
 				.build()

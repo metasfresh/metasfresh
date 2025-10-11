@@ -437,7 +437,6 @@ public class MRPTestHelper
 		product.setName(name);
 		product.setM_Product_Category_ID(productCategoryDefault == null ? -1 : productCategoryDefault.getM_Product_Category_ID());
 		product.setC_UOM_ID(uom.getC_UOM_ID());
-		product.setLowLevel(0);
 		InterfaceWrapperHelper.save(product);
 
 		return product;

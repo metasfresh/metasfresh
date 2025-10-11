@@ -32,6 +32,7 @@ import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.order.paymentschedule.OrderPayScheduleService;
 import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.pricing.productprice.ProductPriceRepository;
@@ -139,7 +140,8 @@ class PaymentRestEndpointTest
 				new OrderLineDetailRepository(),
 				documentLocationBL,
 				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
-				PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting())
+				PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting(),
+				OrderPayScheduleService.newInstanceForUnitTesting())
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment

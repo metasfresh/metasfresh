@@ -131,6 +131,8 @@ public class CreatePurchaseCandidatesService
 				.metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
 				.externalHeaderId(JsonExternalId.of(purchaseCandidate.getExternalHeaderId().getValue()))
 				.externalLineId(JsonExternalId.of(purchaseCandidate.getExternalLineId().getValue()))
+				.purchaseDateOrdered(purchaseCandidate.getPurchaseDateOrdered())
+				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
 				.externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
 				.processed(false)
 				.build());

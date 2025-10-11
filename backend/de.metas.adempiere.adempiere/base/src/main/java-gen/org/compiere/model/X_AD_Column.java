@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1082024214L;
+	private static final long serialVersionUID = 505707030L;
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
@@ -400,6 +400,18 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
+	public void setIsAdvancedText (final boolean IsAdvancedText)
+	{
+		set_Value (COLUMNNAME_IsAdvancedText, IsAdvancedText);
+	}
+
+	@Override
+	public boolean isAdvancedText() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAdvancedText);
+	}
+
+	@Override
 	public void setIsAllowLogging (final boolean IsAllowLogging)
 	{
 		set_Value (COLUMNNAME_IsAllowLogging, IsAllowLogging);
@@ -457,6 +469,18 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isCalculated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCalculated);
+	}
+
+	@Override
+	public void setIsDLMPartitionBoundary (final boolean IsDLMPartitionBoundary)
+	{
+		set_Value (COLUMNNAME_IsDLMPartitionBoundary, IsDLMPartitionBoundary);
+	}
+
+	@Override
+	public boolean isDLMPartitionBoundary() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDLMPartitionBoundary);
 	}
 
 	/** 

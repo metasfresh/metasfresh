@@ -21,6 +21,7 @@ import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer.PackT
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
+import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inout.ShipmentScheduleId;
@@ -38,16 +39,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPOrderId;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
-import org.eevolution.api.PPOrderId;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import java.util.HashMap;
 import java.util.List;
@@ -213,31 +204,17 @@ public class ProcessPickingCandidatesCommand
 				qtyPicked,
 				pickingCandidateId);
 
-		addShipmentScheduleQtyPickedAndUpdateHU(shipmentSchedule, packedToHU, qtyPicked, huContext);
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
+				.shipmentSchedule(shipmentSchedule)
+				.qtyPicked(CatchWeightHelper.extractQtys(huContext, productId, qtyPicked, packedToHU))
+				.tuOrVHU(packedToHU)
+				.huContext(huContext)
+				.anonymousHuPickedOnTheFly(false)
+				.build());
+		
 		huContext.flush();
 
 		return HuId.ofRepoId(packedToHU.getM_HU_ID());
-	}
-
-	private void addShipmentScheduleQtyPickedAndUpdateHU(
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final I_M_HU hu,
-			@NonNull final Quantity qtyPicked,
-			@NonNull final IHUContext huContext)
-	{
-		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
-
-		final boolean anonymousHuPickedOnTheFly = false;
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(
-				shipmentSchedule,
-				CatchWeightHelper.extractQtys(
-						huContext,
-						productId,
-						qtyPicked,
-						hu),
-				hu,
-				huContext,
-				anonymousHuPickedOnTheFly);
 	}
 
 	private void issueRawProductsToPickingOrder(

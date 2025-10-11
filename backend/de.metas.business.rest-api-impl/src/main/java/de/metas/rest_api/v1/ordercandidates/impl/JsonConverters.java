@@ -12,9 +12,9 @@ import de.metas.common.ordercandidates.v1.response.JsonResponseBPartnerLocationA
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.document.DocBaseAndSubType;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;

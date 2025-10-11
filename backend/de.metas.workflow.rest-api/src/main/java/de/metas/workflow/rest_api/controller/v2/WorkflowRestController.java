@@ -32,6 +32,8 @@ import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -94,7 +96,8 @@ public class WorkflowRestController
 
 	private void assertAccess(final MobileApplicationId applicationId)
 	{
-		workflowRestAPIService.assertAccess(applicationId, Env.getUserRolePermissions());
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+		workflowRestAPIService.assertAccess(applicationId, permissions);
 	}
 
 	private JsonOpts newJsonOpts()
@@ -114,10 +117,13 @@ public class WorkflowRestController
 	public JsonMobileApplicationsList getMobileApplications()
 	{
 		final JsonOpts jsonOpts = newJsonOpts();
+		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions();
+		final MobileApplicationPermissions mobileApplicationPermissions = userRolePermissions.getMobileApplicationPermissions();
+		
 		return JsonMobileApplicationsList.builder()
 				.applications(
-						workflowRestAPIService.streamMobileApplicationInfos(Env.getUserRolePermissions())
-								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
+						workflowRestAPIService.streamMobileApplicationInfos(userRolePermissions)
+								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts, mobileApplicationPermissions))
 								.sorted(Comparator.comparing(JsonMobileApplication::getSortNo).thenComparing(JsonMobileApplication::getCaption))
 								.collect(ImmutableList.toImmutableList()))
 				.build();

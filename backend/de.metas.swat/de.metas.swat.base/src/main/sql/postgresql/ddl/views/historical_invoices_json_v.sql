@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 DROP VIEW IF EXISTS historical_invoices_json_v
 ;
 
@@ -138,7 +116,7 @@ FROM edi_cctop_invoic_v invoic_v
                                             'Product_Buyer_ProductNo', v.CustomerProductNo,
                                             'Product_Supplier_TU_GTIN', v.Supplier_GTIN_CU,
                                             'Product_Supplier_ProductNo', v.Value,
-                                            'ExternalId', v.ExternalId,
+                                            'ExternalId', v.ExternalId
                                         ) ORDER BY v.line) AS json_data
                     FROM edi_cctop_invoic_500_v v
                              LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
@@ -156,5 +134,5 @@ FROM edi_cctop_invoic_v invoic_v
                                         ) ORDER BY rate DESC) AS json_data
                     FROM edi_cctop_901_991_v
                     GROUP BY c_invoice_id) edi_901_991_v ON edi_901_991_v.c_invoice_id = invoic_v.c_invoice_id
-ORDER BY invoic_v.DateInvoiced, invoic_v.c_invoice_id
+ORDER BY invoic_v.updated, invoic_v.c_invoice_id
 ;

@@ -33,7 +33,7 @@ import lombok.Value;
 @Value
 public class JsonSingleExternalReferenceCreateReq
 {
-	@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	JsonExternalSystemName systemName;
 
 	JsonExternalReferenceItem externalReferenceItem;

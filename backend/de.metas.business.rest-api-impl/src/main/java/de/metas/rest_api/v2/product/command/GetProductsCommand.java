@@ -107,7 +107,7 @@ public class GetProductsCommand
 	@Nullable
 	private final String orgCode;
 
-	private final ExternalSystemType externalSystemType;
+	@Nullable private final ExternalSystemType externalSystemType;
 	private final String externalSystemConfigValue;
 	private final ExternalIdentifier productIdentifier;
 
@@ -237,6 +237,7 @@ public class GetProductsCommand
 				.description(trls.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()).translate(adLanguage))
 				.ean(productRecord.getUPC())
 				.uom(servicesFacade.getUOMSymbol(uomId))
+				.uomX12DE355(servicesFacade.getX12DE355(uomId))
 				.discontinuedFrom(discontinuedFrom)
 				.bpartners(productBPartners.get(productId))
 				.albertaProductInfo(getJsonAlbertaProductInfoFor(productId))
@@ -309,8 +310,8 @@ public class GetProductsCommand
 	private JsonProductUOMConversion toJsonProductUOMConversion(final UOMConversionRate record)
 	{
 		return JsonProductUOMConversion.builder()
-				.fromUomCode(servicesFacade.getUOMSymbol(record.getFromUomId()))
-				.toUomCode(servicesFacade.getUOMSymbol(record.getToUomId()))
+				.uomX12DE355From(servicesFacade.getX12DE355(record.getFromUomId()))
+				.uomX12DE355To(servicesFacade.getX12DE355(record.getToUomId()))
 				.fromToMultiplier(record.getFromToMultiplier())
 				.catchUOMForProduct(record.isCatchUOMForProduct())
 				.build();
@@ -337,8 +338,7 @@ public class GetProductsCommand
 				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartnerId)))
 				.name(record.getName())
 				.qty(record.getQty())
-				.uom(uomId != null ? servicesFacade.getUOMSymbol(uomId) : null)
-
+				.uom(uomId != null ? servicesFacade.getX12DE355(uomId) : null)
 				//
 				.build();
 	}
@@ -442,7 +442,7 @@ public class GetProductsCommand
 	@Nullable
 	private PriceListId getPharmacyPriceListIdOrNull()
 	{
-		if (!ExternalSystemType.Alberta.equals(externalSystemType) || Check.isBlank(externalSystemConfigValue))
+		if (externalSystemType == null || !externalSystemType.isAlberta() || Check.isBlank(externalSystemConfigValue))
 		{
 			return null;
 		}
@@ -467,7 +467,7 @@ public class GetProductsCommand
 			@NonNull final ImmutableList.Builder<I_M_Product> productRecordsBuilder,
 			@NonNull final HashSet<ProductId> loadedProductIds)
 	{
-		if (!ExternalSystemType.Alberta.equals(externalSystemType))
+		if (externalSystemType == null || !externalSystemType.isAlberta())
 		{
 			return;
 		}

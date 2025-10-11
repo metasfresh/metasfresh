@@ -6,19 +6,25 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientCC;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.user.User;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -50,13 +56,15 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		implements DocOutboundLogMailRecipientProvider
 {
 
-	private final DocOutBoundRecipientRepository recipientRepository;
+	private final DocOutBoundRecipientService recipientRepository;
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final IBPartnerBL bpartnerBL;
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
 	public InvoiceDocOutboundLogMailRecipientProvider(
-			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final DocOutBoundRecipientService recipientRepository,
 			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository,
 			@NonNull final IBPartnerBL bpartnerBL)
 	{
@@ -78,53 +86,69 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 	}
 
 	@Override
-	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
+	public Optional<DocOutBoundRecipients> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
-		final I_C_Invoice invoiceRecord = request.getRecordRef().getModel(I_C_Invoice.class);
+		if (request.getRecordRef() == null)
+		{
+			return Optional.empty();
+		}
 
-		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(
-				ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
+		final InvoiceId invoiceId = request.getRecordRef().getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);
+		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
 
-		final String invoiceEmail = propagateToDocOutboundLog? invoiceRecord.getEMail() : null;
+		final DocOutBoundRecipient to = getMailTo(invoiceRecord).orElse(null);
+		final DocOutBoundRecipientCC cc = getMailCC(invoiceRecord);
+		if (to == null && cc == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(
+				DocOutBoundRecipients.builder()
+						.to(to)
+						.cc(cc)
+						.build()
+		);
+	}
+
+	public Optional<DocOutBoundRecipient> getMailTo(final I_C_Invoice invoiceRecord)
+	{
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(invoiceRecord.getAD_Client_ID(), invoiceRecord.getAD_Org_ID());
+		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(clientAndOrgId);
+		final String invoiceEmail = propagateToDocOutboundLog ? invoiceRecord.getEMail() : null;
 
 		final String locationEmail = invoiceBL.getLocationEmail(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
 
-		if (invoiceRecord.getAD_User_ID() > 0)
+		final UserId billContactId = UserId.ofRepoIdOrNull(invoiceRecord.getAD_User_ID());
+		if (billContactId != null && billContactId.isRegularUser())
 		{
-			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
-
+			final DocOutBoundRecipient billRecipient = recipientRepository.getById(DocOutBoundRecipientId.ofUserId(billContactId));
 			if (Check.isNotBlank(invoiceEmail))
 			{
-				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
+				return Optional.of(billRecipient.withEmailAddress(invoiceEmail));
 			}
-
-			if (Check.isNotBlank(invoiceUser.getEmailAddress()))
+			if (billRecipient.isEmailAddressSet())
 			{
-				return Optional.of(invoiceUser);
+				return Optional.of(billRecipient);
 			}
-
 			if (Check.isNotBlank(locationEmail))
 			{
-				return Optional.of(invoiceUser.withEmailAddress(locationEmail));
+				return Optional.of(billRecipient.withEmailAddress(locationEmail));
 			}
-
 		}
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
-
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
 		final User billContact = bpartnerBL.retrieveContactOrNull(
 				RetrieveContactRequest
 						.builder()
-						.bpartnerId(bpartnerId)
-						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, invoiceRecord.getC_BPartner_Location_ID()))
+						.bpartnerId(billPartnerId)
+						.bPartnerLocationId(BPartnerLocationId.ofRepoId(billPartnerId, invoiceRecord.getC_BPartner_Location_ID()))
 						.contactType(ContactType.BILL_TO_DEFAULT)
 						.onlyIfInvoiceEmailEnabled(true)
 						.build());
-
 		if (billContact != null)
 		{
-			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
-			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
+			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.ofUser(billContact);
 
 			if (Check.isNotBlank(invoiceEmail))
 			{
@@ -143,7 +167,51 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		}
 
 		return Optional.empty();
-
 	}
 
+	private DocOutBoundRecipientCC getMailCC(final I_C_Invoice invoiceRecord)
+	{
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
+		if (!partnerBL.isInvoiceEmailCcToMember(billPartnerId))
+		{
+			return null;
+		}
+
+		final OrderId orderId = OrderId.ofRepoIdOrNull(invoiceRecord.getC_Order_ID());
+		if (orderId == null)
+		{
+			return null;
+		}
+
+		final I_C_Order orderRecord = orderBL.getById(orderId);
+		final UserId shipToContactId = UserId.ofRepoIdOrNull(orderRecord.getAD_User_ID());
+		if (shipToContactId != null && shipToContactId.isRegularUser())
+		{
+			final DocOutBoundRecipient shipToRecipient = recipientRepository.getByUserId(shipToContactId)
+					.withEmailAddressIfEmpty(() -> orderBL.getLocationEmail(orderRecord));
+			return shipToRecipient.isEmailAddressSet() ? DocOutBoundRecipientCC.of(shipToRecipient) : null;
+		}
+		else
+		{
+			final BPartnerId shipBPartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+			final User defaultShipToContact = bpartnerBL.retrieveContactOrNull(
+					RetrieveContactRequest
+							.builder()
+							.bpartnerId(shipBPartnerId)
+							.bPartnerLocationId(BPartnerLocationId.ofRepoId(shipBPartnerId, invoiceRecord.getC_BPartner_Location_ID()))
+							.contactType(ContactType.SHIP_TO_DEFAULT)
+							.build());
+			if (defaultShipToContact != null)
+			{
+				final DocOutBoundRecipient defaultShipToRecipient = recipientRepository.ofUser(defaultShipToContact)
+						.withEmailAddressIfEmpty(() -> orderBL.getLocationEmail(orderRecord));
+
+				return defaultShipToRecipient.isEmailAddressSet() ? DocOutBoundRecipientCC.of(defaultShipToRecipient) : null;
+			}
+			else
+			{
+				return null;
+			}
+		}
+	}
 }

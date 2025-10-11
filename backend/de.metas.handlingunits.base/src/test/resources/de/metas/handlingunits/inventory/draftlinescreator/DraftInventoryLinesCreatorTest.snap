@@ -45,6 +45,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 5,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 40,
         "qtyBookFixed": {
           "qty": "11",
@@ -79,6 +83,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 5,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 2,
         "qtyBookFixed": {
           "qty": "1",
@@ -113,6 +121,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 5,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 40,
         "qtyBookFixed": {
           "qty": "2",
@@ -178,6 +190,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 5,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 40,
         "qtyBookFixed": {
           "qty": "11",
@@ -225,6 +241,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 5,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 40,
         "qtyBookFixed": {
           "qty": "4",
@@ -276,6 +296,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 5,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 40,
         "qtyBookFixed": {
           "qty": "10",
@@ -309,6 +333,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 5,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 40,
         "qtyBookFixed": {
           "qty": "1",
@@ -342,6 +370,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 5,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 2,
         "qtyBookFixed": {
           "qty": "1",
@@ -375,6 +407,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "locatorId": "1000000_1000000",
         "orgId": 5,
+        "packingInstructions": {
+          "tuPIItemProductId": 101,
+          "vhu": true
+        },
         "productId": 40,
         "qtyBookFixed": {
           "qty": "2",

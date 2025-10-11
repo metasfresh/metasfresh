@@ -78,7 +78,7 @@ public final class OLCand implements IProductPriceAware
 
 	@Getter
 	private final LocalDate presetDateInvoiced;
-	
+
 	private final BPartnerInfo bpartnerInfo;
 
 	@Getter
@@ -360,6 +360,12 @@ public final class OLCand implements IProductPriceAware
 	public boolean isError()
 	{
 		return olCandRecord.isError();
+	}
+
+	@Nullable
+	public String getErrorMsgJSON()
+	{
+		return olCandRecord.getErrorMsgJSON();
 	}
 
 	public void setGroupingError(final String errorMsg)

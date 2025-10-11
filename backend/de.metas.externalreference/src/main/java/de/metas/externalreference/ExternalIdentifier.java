@@ -202,7 +202,7 @@ public class ExternalIdentifier
 	public enum Type
 	{
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
-		EXTERNAL_REFERENCE(Pattern.compile("^ext-([a-zA-Z0-9]+)-(.+)")),
+		EXTERNAL_REFERENCE(Pattern.compile("^ext-([a-zA-Z0-9_]+)-(.+)$")),
 		GLN(Pattern.compile("^gln-(.+)")),
 		GTIN(Pattern.compile("^gtin-(.+)")),
 		VALUE(Pattern.compile("^val-(.+)"));

@@ -30,6 +30,7 @@ import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.GetScannedBarcodeSuggestionsRequest;
@@ -78,7 +79,7 @@ public class WorkflowRestAPIService
 	@NonNull private final MobileApplicationService mobileApplicationService;
 	@NonNull private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
-	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final IUserRolePermissions permissions)
+	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final MobileApplicationPermissions permissions)
 	{
 		mobileApplicationService.assertAccess(applicationId, permissions);
 	}

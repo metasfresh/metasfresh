@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -171,7 +171,7 @@ public class DB
 		try
 		{
 			// If we are trying to set exactly the same connection then do nothing
-			if (s_connection != null && s_connection.equals(cc))
+			if (cc.equals(s_connection))
 			{
 				return;
 			}
@@ -784,7 +784,7 @@ public class DB
 		//
 		int no = -1;
 		SQLWarning warning = null;
-		CPreparedStatement cs = statementsFactory.newCPreparedStatement(
+		final CPreparedStatement cs = statementsFactory.newCPreparedStatement(
 				ResultSet.TYPE_FORWARD_ONLY,
 				ResultSet.CONCUR_UPDATABLE,
 				request.getSql(),
@@ -2138,7 +2138,7 @@ public class DB
 	 *
 	 * @param conn database connection.
 	 */
-	public void close(final Connection conn)
+	public void close(@Nullable final Connection conn)
 	{
 		if (conn != null)
 		{
@@ -2472,6 +2472,33 @@ public class DB
 		final boolean useNativeSequencesDefault = false;
 		final boolean result = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, useNativeSequencesDefault);
 		return result;
+	}
+
+	/**
+	 * Counts the maximum number of inheritance levels in a hierarchical relationship
+	 * for the given table and parent column. This is determined using a recursive query.
+	 * Assumes the primary key is tableName + "_ID"
+	 *
+	 * @param trxName      the transaction name, which can be null to use the default transaction
+	 * @param tableName    the name of the database table where the hierarchical data resides; must not be null
+	 * @param parentColumn the name of the column representing the parent-child relationship; must not be null
+	 * @return the maximum number of inheritance levels in the hierarchy; returns 1 if there are no child records with a parent defined
+	 * @throws IllegalArgumentException if tableName or parentColumn is null
+	 */
+	public int getMaxDepth(@Nullable final String trxName, @NonNull final String tableName, @NonNull final String parentColumn, final int maxDepth)
+	{
+		final String query = "WITH RECURSIVE GroupHierarchy AS (" +
+				"    SELECT " + tableName + "_ID, " + parentColumn + ", 1 AS Level " +
+				"    FROM " + tableName +
+				"    WHERE " + parentColumn + " IS NOT NULL " +
+				"    UNION ALL " +
+				"    SELECT t1." + tableName + "_ID, t1." + parentColumn + ", t2.Level + 1 AS Level " +
+				"    FROM " + tableName + " t1 " +
+				"    INNER JOIN GroupHierarchy t2 ON t1." + parentColumn + " = t2." + tableName + "_ID" +
+				" WHERE t2.Level <= " + maxDepth +
+				") " +
+				"SELECT COALESCE(max(Level) + 1, 1) FROM GroupHierarchy ";
+		return DB.getSQLValueEx(trxName, query);
 	}
 
 	public boolean isUseNativeSequences(final int AD_Client_ID, final String TableName)
@@ -2889,6 +2916,10 @@ public class DB
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}
+		catch (final DBException ex)
+		{
+			throw ex.setSqlIfAbsent(sql.toString(), sqlParams);
+		}
 		finally
 		{
 			close(rs, pstmt);
@@ -2936,14 +2967,7 @@ public class DB
 
 			//
 			rs = md.getColumns(catalog, schema, tableNameNorm, columnNameNorm);
-			if (rs.next())
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return rs.next();
 		}
 		catch (final SQLException ex)
 		{

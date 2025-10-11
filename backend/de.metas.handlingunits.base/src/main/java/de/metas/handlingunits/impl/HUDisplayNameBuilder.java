@@ -4,27 +4,29 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Properties;
 
 public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(HUDisplayNameBuilder.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL;
 
 	// Options
 	private boolean showIncludedHUCount = false;
@@ -35,14 +37,20 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 	// Formatting
 	private static final String STR_NewLine = "<br>";
 
-	/** HU */
-	private final I_M_HU _hu;
+	/**
+	 * HU
+	 */
+	@Nullable private final I_M_HU _hu;
 
-	public HUDisplayNameBuilder(final I_M_HU hu)
+	@Builder
+	public HUDisplayNameBuilder(
+			@NonNull final IHandlingUnitsBL handlingUnitsBL,
+			@Nullable final I_M_HU hu)
 	{
+		this.handlingUnitsBL = handlingUnitsBL;
 		// NOTE: for convenience, we are accepting null HU,
 		// because we want to be able to use this method in places where we don't want to check if HU is null or not (e.g. exception messages).
-		_hu = hu;
+		this._hu = hu;
 	}
 
 	@Override
@@ -195,22 +203,24 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		}
 		else
 		{
-			final I_M_HU_PI pi = Services.get(IHandlingUnitsBL.class).getPI(hu);
+			final I_M_HU_PI pi = handlingUnitsBL.getPI(hu);
 			piNameRaw = pi != null ? pi.getName() : "?";
 		}
 
 		return escape(piNameRaw);
 	}
 
-	private static String getAggregateHuPiName(final I_M_HU hu)
+	private String getAggregateHuPiName(final I_M_HU hu)
 	{
 		// note: if HU is an aggregate HU, then there won't be an NPE here.
-		final I_M_HU_PI_Item parentPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(hu.getM_HU_Item_Parent());
+		final I_M_HU_Item parentItem = hu.getM_HU_Item_Parent();
+		final I_M_HU_PI_Item parentPIItem = handlingUnitsBL.getPIItem(parentItem);
 
 		if (parentPIItem == null)
 		{
-			//noinspection ThrowableNotThrown
-			new HUException("Aggregate HU's parent item has no M_HU_PI_Item; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
+			// new HUException("Aggregate HU's parent item has no M_HU_PI_Item; parent-item=" + parentItem)
+			// 		.setParameter("parent M_HU_PI_Item_ID", parentItem != null ? parentItem.getM_HU_PI_Item_ID() : null)
+			// 		.throwIfDeveloperModeOrLogWarningElse(logger);
 			return "?";
 		}
 
@@ -218,11 +228,11 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		if (includedPIId == null)
 		{
 			//noinspection ThrowableNotThrown
-			new HUException("Aggregate HU's parent item has M_HU_PI_Item without an Included_HU_PI; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
+			new HUException("Aggregate HU's parent item has M_HU_PI_Item without an Included_HU_PI; parent-item=" + parentItem).throwIfDeveloperModeOrLogWarningElse(logger);
 			return "?";
 		}
 
-		final I_M_HU_PI included_HU_PI = Services.get(IHandlingUnitsDAO.class).getPackingInstructionById(includedPIId);
+		final I_M_HU_PI included_HU_PI = handlingUnitsBL.getPI(includedPIId);
 
 		return included_HU_PI.getName();
 	}

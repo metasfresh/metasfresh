@@ -105,6 +105,12 @@ public class OverrideBillLocationAdapter
 	}
 
 	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentBillLocationAdapter.super.setRenderedAddress(from);
+	}
+
+	@Override
 	public I_C_Invoice_Candidate getWrappedRecord()
 	{
 		return delegate;

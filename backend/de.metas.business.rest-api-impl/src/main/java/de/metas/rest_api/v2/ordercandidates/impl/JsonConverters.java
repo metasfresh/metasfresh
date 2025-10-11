@@ -1,10 +1,12 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.ordercandidates.v2.request.JsonApplySalesRepFrom;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
@@ -13,15 +15,17 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
+import de.metas.error.AdIssueId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.impl.DocTypeService;
@@ -90,6 +94,7 @@ public class JsonConverters
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
@@ -97,7 +102,6 @@ public class JsonConverters
 	{
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
-
 	}
 
 	public final OLCandCreateRequestBuilder fromJson(
@@ -193,7 +197,10 @@ public class JsonConverters
 		final int huPIItemProductId = CoalesceUtil.firstGreaterThanZero(
 				JsonMetasfreshId.toValueInt(request.getPackingMaterialId()),
 				HUPIItemProductId.toRepoIdVirtualToZero(productInfo.getHupiItemProductId()));
-		
+
+		final String deliveryRule = CoalesceUtil.firstNotBlank(request.getDeliveryRule(),
+				bpartnerDAO.getById(bPartnerInfo.getBpartnerId()).getDeliveryRule());
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -228,7 +235,7 @@ public class JsonConverters
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
 				.uomId(uomId)
-				
+
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
@@ -252,7 +259,7 @@ public class JsonConverters
 				.line(request.getLine())
 				.isManualPrice(request.getIsManualPrice())
 				.importWarningMessage(request.getImportWarningMessage())
-				.deliveryRule(request.getDeliveryRule())
+				.deliveryRule(deliveryRule)
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
 
@@ -329,13 +336,31 @@ public class JsonConverters
 				.build();
 	}
 
+	@NonNull
 	public JsonOLCandCreateBulkResponse toJson(
 			@NonNull final List<OLCand> olCands,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		return JsonOLCandCreateBulkResponse.ok(olCands.stream()
+		final List<JsonOLCand> jsonOLCands = olCands.stream()
 				.map(olCand -> toJson(olCand, masterdataProvider))
-				.collect(ImmutableList.toImmutableList()));
+				.collect(ImmutableList.toImmutableList());
+
+		final List<JsonErrorItem> errorItems = olCands.stream()
+				.filter(OLCand::isError)
+				.map(OLCand::getErrorMsgJSON)
+				.filter(Check::isNotBlank)
+				.map(JsonConverters::toJsonErrorItem)
+				.collect(ImmutableList.toImmutableList());
+
+		return Check.isEmpty(errorItems)
+				? JsonOLCandCreateBulkResponse.ok(jsonOLCands)
+				: JsonOLCandCreateBulkResponse.multiStatus(jsonOLCands, errorItems);
+	}
+
+	@NonNull
+	private static JsonErrorItem toJsonErrorItem(@NonNull final String errorMsg)
+	{
+		return JsonObjectMapperHolder.fromJsonNonNull(errorMsg, JsonErrorItem.class);
 	}
 
 	private JsonOLCand toJson(
@@ -388,6 +413,10 @@ public class JsonConverters
 				.jsonOrderLineGroup(jsonOrderLineGroup)
 
 				.description(olCand.unbox().getDescription())
+				.adIssueId(Optional.ofNullable(olCand.getAdIssueId())
+						.map(AdIssueId::getRepoId)
+						.map(JsonMetasfreshId::of)
+						.orElse(null))
 				.line(olCand.getLine())
 				.build();
 	}

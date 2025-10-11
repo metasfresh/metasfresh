@@ -24,17 +24,17 @@ SELECT ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
         COALESCE(REPLACE(qr_iban, ' ', ''), REPLACE(iban, ' ', ''), '') || E'\n' || -- Account
-        'K' || E'\n' || -- CR - AdressTyp = Combined address
+        'S' || E'\n' || -- CR - AdressTyp = Combined address
         orgbp.name || E'\n' || --CR – Name
-        orgl.address1 || E'\n' || --CR –Street and building number of P.O. Box
-        COALESCE(orgl.postal, '') || ' ' || COALESCE(orgl.city, '') || E'\n' || -- CR Postal code and town
-        E'\n' || --Do not fill in
-        E'\n' || --Do not fill in
+        (extract_street_and_number(COALESCE(orgl.address1, ''))).street || E'\n' || --CR –Street
+        (extract_street_and_number(COALESCE(orgl.address1, ''))).number || E'\n' || --CR –Street no
+        COALESCE(orgl.postal, '') || E'\n' || -- CR Postal code
+        COALESCE(orgl.city, '') || E'\n' || -- CR city
         orgc.countrycode || E'\n' || -- CR Country
         E'\n' || -- E'\n' || --UCR – AdressTyp
         E'\n' || -- E'\n' || --UCR – Name
-        E'\n' || -- E'\n' || --UCR - Street or address line 1
-        E'\n' || -- E'\n' || --UCR – Building number or address line 2
+        E'\n' || -- E'\n' || --UCR - Street
+        E'\n' || -- E'\n' || --UCR – Building number
         E'\n' || -- E'\n' || --UCR – Postal code
         E'\n' || -- E'\n' || --UCR – City
         E'\n' || -- E'\n' || --UCR – Country
@@ -43,12 +43,12 @@ SELECT ('SPC' || E'\n' || --QRType
                                                      ELSE i.GrandTotal
                  END), 'FM99999999.00') || E'\n' ||
         cur.iso_code || E'\n' ||
-        'K' || E'\n' || -- UD– AdressTyp = Combined address
+        'S' || E'\n' || -- UD– AdressTyp = Combined address
         SUBSTRING(bpartneraddress FROM 1 FOR POSITION(E'\n' IN bpartneraddress)) || --UD – Name
-        COALESCE(l.address1, '') || E'\n' || --UD –Street and building number of P.O. Box
-        COALESCE(l.postal, '') || ' ' || COALESCE(l.city, '') || E'\n' || -- UD Postal code and town
-        E'\n' || --Do not fill in
-        E'\n' || --Do not fill in
+        (extract_street_and_number(COALESCE(l.address1, ''))).street || E'\n' || --UD –Street
+        (extract_street_and_number(COALESCE(l.address1, ''))).number || E'\n' || --UD –Street no
+        COALESCE(l.postal, '') || E'\n' || -- UD Postal code
+        COALESCE(l.city, '') || E'\n' || -- UD city
         c.countrycode || E'\n' || -- UD Country
         (CASE
              WHEN REPLACE(qr_iban, ' ', '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN 'QRR'

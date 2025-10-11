@@ -8,6 +8,7 @@ Feature: API Audit POST http method
     And all the API audit data is reset
 
   @from:cucumber
+  @Id:S0478_070
   Scenario: Testcase 100, normal POST and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -33,7 +34,19 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+  @Id:S0478_080
   Scenario: Testcase 110, normal POST and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -63,7 +76,19 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+  @Id:S0490_050
   Scenario: Testcase 120, failing POST and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -89,7 +114,19 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+  @Id:S0490_060
   Scenario: Testcase 130, failing POST and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -120,7 +157,19 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '404' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+  @Id:S0478_090
   Scenario: Testcase 140, failing POST and replay
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -156,6 +205,17 @@ Feature: API Audit POST http method
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
   Scenario: Testcase 150, normal POST with IsForceProcessedAsync = Y, IsSynchronousAuditLoggingEnabled = Y and IsWrapApiResponse = N
     And the following API_Audit_Config records are created:
@@ -180,6 +240,7 @@ Feature: API Audit POST http method
 
 
   @from:cucumber
+  @Id:S0478_100
   Scenario: Testcase 160, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true and IsWrapApiResponse is false
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -205,7 +266,19 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
+  @Id:S0478_110
   Scenario: Testcase 170, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and X-Api-Async header is true
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -231,6 +304,17 @@ Feature: API Audit POST http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+
+    Then the metasfresh REST-API responds with
+    """
+   {
+	"messageBody": "\"test-endpoint was called\""
+  }
+"""
+    
   @from:cucumber
   Scenario: Testcase 175, normal POST with IsSynchronousAuditLoggingEnabled is false, IsWrapApiResponse is false and response body is missing
     And the following API_Audit_Config records are created:

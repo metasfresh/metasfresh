@@ -25,28 +25,16 @@ package de.metas.picking.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderId;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.PPOrderId;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -93,17 +81,9 @@ public final class PackageableList implements Iterable<Packageable>
 	@Override
 	public @NonNull Iterator<Packageable> iterator() {return list.iterator();}
 
-	public OrgId getSingleOrgId() {return getSingleValue(Packageable::getOrgId).orElseThrow(() -> new AdempiereException("No single org found in " + list));}
-
 	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
 	{
 		return list.stream().map(Packageable::getShipmentScheduleId).sorted().collect(ImmutableSet.toImmutableSet());
-	}
-
-	public Optional<ShipmentScheduleId> getSingleShipmentScheduleIdIfUnique()
-	{
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getShipmentScheduleIds();
-		return shipmentScheduleIds.size() == 1 ? Optional.of(shipmentScheduleIds.iterator().next()) : Optional.empty();
 	}
 
 	public Optional<BPartnerId> getSingleCustomerId() {return getSingleValue(Packageable::getCustomerId);}
@@ -155,6 +135,7 @@ public final class PackageableList implements Iterable<Packageable>
 				.orElseThrow(() -> new AdempiereException("No QtyToPick found in " + list));
 	}
 
+=======
 	public <T> Optional<T> getSingleValue(@NonNull final Function<Packageable, T> mapper)
 	{
 		if (list.isEmpty())

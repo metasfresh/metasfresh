@@ -66,6 +66,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	<T extends I_M_Warehouse> List<T> getByIds(Collection<WarehouseId> warehouseIds, Class<T> modelType);
 
+	List<I_M_Locator> retrieveActiveLocatorsByValue(@NonNull String locatorValue);
+
 	String getWarehouseName(WarehouseId warehouseId);
 
 	/**

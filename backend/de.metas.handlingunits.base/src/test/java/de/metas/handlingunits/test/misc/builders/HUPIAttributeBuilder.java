@@ -10,28 +10,19 @@ package de.metas.handlingunits.test.misc.builders;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Env;
-
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
@@ -50,6 +41,17 @@ import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Env;
+
+import java.util.Properties;
 
 /**
  * Builder which eases the way {@link I_M_HU_PI_Attribute}s are created. <i>See constructor implementation(s) for initial parameter values.</i>
@@ -69,6 +71,13 @@ public class HUPIAttributeBuilder
 		return new HUPIAttributeBuilder(attribute);
 	}
 
+	public static HUPIAttributeBuilder newInstance(@NonNull final AttributeCode attributeCode)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final I_M_Attribute attribute = attributeDAO.getAttributeByCode(attributeCode);
+		return new HUPIAttributeBuilder(attribute);
+	}
+
 	private final AttributeId attributeId;
 
 	private I_M_HU_PI_Version huPIVersion;
@@ -81,6 +90,7 @@ public class HUPIAttributeBuilder
 	private boolean isInstanceAttribute = true;
 	private boolean isMandatory = false;
 	private Boolean useInASI = false;
+	private Integer seqNo;
 
 	private HUPIAttributeBuilder(final I_M_Attribute attribute)
 	{
@@ -99,6 +109,12 @@ public class HUPIAttributeBuilder
 		splitterStrategyClass = NullSplitterStrategy.class;
 		aggregationStrategyClass = NullAggregationStrategy.class;
 		transferStrategyClass = SkipHUAttributeTransferStrategy.class;
+	}
+
+	public HUPIAttributeBuilder setM_HU_PI(final HuPackingInstructionsId piId)
+	{
+		huPIVersion = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(piId);
+		return this;
 	}
 
 	public HUPIAttributeBuilder setM_HU_PI(final I_M_HU_PI huPI)
@@ -198,6 +214,11 @@ public class HUPIAttributeBuilder
 		huPIAttr.setAggregationStrategy_JavaClass_ID(createADJavaClassFromClass(ctx, aggregationStrategyClass).getAD_JavaClass_ID());
 		huPIAttr.setHU_TansferStrategy_JavaClass_ID(createADJavaClassFromClass(ctx, transferStrategyClass).getAD_JavaClass_ID());
 
+		if (seqNo != null)
+		{
+			huPIAttr.setSeqNo(seqNo);
+		}
+
 		InterfaceWrapperHelper.save(huPIAttr);
 
 		return huPIAttr;
@@ -215,5 +236,11 @@ public class HUPIAttributeBuilder
 		InterfaceWrapperHelper.save(strategyJavaClass);
 
 		return strategyJavaClass;
+	}
+
+	public HUPIAttributeBuilder setSeqNo(final int seqNo)
+	{
+		this.seqNo = seqNo;
+		return this;
 	}
 }

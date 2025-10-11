@@ -2,9 +2,11 @@ package de.metas.shipping;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Shipper;
 
@@ -13,17 +15,13 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- *
  * @author tsa
- *
  */
 public interface IShipperDAO extends ISingletonService
 {
 
-	/**
-	 * @return shipper; if no shippers found it will return an error message
-	 */
-	ShipperId getShipperIdByShipperPartnerId(BPartnerId shipperPartnerId);
+	@NonNull
+	Optional<ShipperId> getShipperIdByShipperPartnerId(BPartnerId shipperPartnerId);
 
 	ShipperId getDefault(ClientId clientId);
 
@@ -35,7 +33,9 @@ public interface IShipperDAO extends ISingletonService
 
 	Optional<I_M_Shipper> getByName(String name);
 
-	Map<ShipperId,I_M_Shipper> getByIds(Set<ShipperId> shipperIds);
+	Map<ShipperId, I_M_Shipper> getByIds(Set<ShipperId> shipperIds);
 
-	ImmutableMap<String,I_M_Shipper> getByInternalName(Set<String> internalNameSet);
+	ImmutableMap<String, I_M_Shipper> getByInternalName(Set<String> internalNameSet);
+
+	ExplainedOptional<ShipperGatewayId> getShipperGatewayId(ShipperId shipperId);
 }

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -43,6 +43,8 @@ import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService
 import de.metas.order.DeliveryRule;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
@@ -62,7 +64,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -120,6 +121,7 @@ public class C_BPartner_StepDef
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
@@ -261,13 +263,6 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setPO_PricingSystem_ID(poPricingSystemId);
 		}
 
-		final int paymentTermId = row.getAsOptionalInt("C_PaymentTerm_ID").orElse(-1);
-		if (paymentTermId > 0)
-		{
-			bPartnerRecord.setC_PaymentTerm_ID(paymentTermId);
-			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermId);
-		}
-
 		bPartnerRecord.setAD_Language(row.getAsOptionalString(COLUMNNAME_AD_Language).orElse(null));
 
 		final StepDefDataIdentifier salesRepIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_SalesRep_ID).orElse(null);
@@ -294,13 +289,17 @@ public class C_BPartner_StepDef
 		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))
 		{
-			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
-					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
-					.create()
-					.firstOnlyNotNull(I_C_PaymentTerm.class);
+			bPartnerRecord.setC_PaymentTerm_ID(paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
+					.value(paymentTermValue)
+					.build()).getRepoId());
+		}
 
-			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
-			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		final String paymentTermPOValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID + ".Value").orElse(null);
+		if (Check.isNotBlank(paymentTermPOValue))
+		{
+			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
+					.value(paymentTermPOValue)
+					.build()).getRepoId());
 		}
 
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
@@ -351,6 +350,14 @@ public class C_BPartner_StepDef
 		row.getAsOptionalIdentifier()
 				.ifPresent(recordIdentifier -> bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord));
 		restTestContext.setIntVariableFromRow(row, bPartnerRecord::getC_BPartner_ID);
+
+		row.getAsOptionalIdentifier("REST.Context.Value")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getValue()));
+		row.getAsOptionalIdentifier("REST.Context.Name")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getName()));
+		row.getAsOptionalIdentifier("REST.Context.C_BPartner_ID")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getC_BPartner_ID()));
+		
 	}
 
 	private void changeBPartner(@NonNull final DataTableRow row)

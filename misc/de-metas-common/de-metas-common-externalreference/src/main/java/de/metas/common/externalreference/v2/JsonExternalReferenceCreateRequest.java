@@ -36,7 +36,7 @@ import java.util.List;
 @Value
 public class JsonExternalReferenceCreateRequest
 {
-	@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	JsonExternalSystemName systemName;
 
 	List<JsonExternalReferenceItem> items;

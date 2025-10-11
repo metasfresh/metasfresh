@@ -51,8 +51,8 @@ public class Product
 	@NonNull @Builder.Default ITranslatableString description = TranslatableStrings.empty();
 	@NonNull @Builder.Default ITranslatableString documentNote = TranslatableStrings.empty();
 	@NonNull String productType;
-	@Nullable String ean;
 	@Nullable String gtin;
+	@Nullable String ean;
 	@Nullable Boolean discontinued;
 	@Nullable LocalDate discontinuedFrom;
 	@Nullable Boolean active;

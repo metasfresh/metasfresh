@@ -7,22 +7,29 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.report.ReportResultData;
+import de.metas.report.server.ReportConstants;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +76,8 @@ public class PurchaseOrderToShipperTransportationService
 		return new PurchaseOrderToShipperTransportationService(new PurchaseOrderToShipperTransportationRepository());
 	}
 
+	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
+
 	public void addPurchaseOrdersToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final IQueryFilter<I_C_Order> queryFilter)
 	{
 		final ImmutableList<OrderId> validPurchaseOrdersIds = Services.get(IQueryBL.class)
@@ -81,8 +90,14 @@ public class PurchaseOrderToShipperTransportationService
 				.filter(repo::purchaseOrderNotInShipperTransportation)
 				.collect(ImmutableList.toImmutableList());
 
+		if (validPurchaseOrdersIds.isEmpty())
+		{
+			Loggables.addLog("No purchase orders found for shipper transportation with ID: {}", shipperTransportationId);
+		}
+
 		for (final OrderId purchaseOrderId : validPurchaseOrdersIds)
 		{
+			Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", purchaseOrderId, shipperTransportationId);
 			addPurchaseOrderToShipperTransportation(purchaseOrderId, shipperTransportationId);
 		}
 	}
@@ -92,12 +107,15 @@ public class PurchaseOrderToShipperTransportationService
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(purchaseOrder.getM_Shipper_ID());
 		if (shipperId == null)
 		{
+			Loggables.addLog("Skipping purchase order with ID: {}, because no Shipper is set on it",
+					purchaseOrder.getC_Order_ID());
 			return;
 		}
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
 				.shipperId(shipperId)
 				.orgId(OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()))
 				.assignAnonymouslyPickedHUs(true)
+				.isSOTrx(SOTrx.PURCHASE)
 				.shipDate(TimeUtil.asLocalDate(purchaseOrder.getDatePromised()))
 				.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(purchaseOrder.getC_BPartner_ID()), purchaseOrder.getC_BPartner_Location_ID()))
 				.build());
@@ -114,6 +132,8 @@ public class PurchaseOrderToShipperTransportationService
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
 		if (shipperId == null)
 		{
+			Loggables.addLog("Skipping purchase order with ID: {}, because no Shipper is set on it",
+					order.getC_Order_ID());
 			return;
 		}
 		final ShipperTransportationId shipperTransportationIdToUse = shipperTransportationId != null
@@ -123,6 +143,7 @@ public class PurchaseOrderToShipperTransportationService
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.shipDate(TimeUtil.asLocalDate(order.getDatePromised()))
 				.assignAnonymouslyPickedHUs(true)
+				.isSOTrx(SOTrx.PURCHASE)
 				.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(order.getC_BPartner_ID()), order.getC_BPartner_Location_ID()))
 				.build());
 
@@ -183,6 +204,34 @@ public class PurchaseOrderToShipperTransportationService
 						.build());
 			}
 		}
+	}
+
+	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return repo.hasPackageIdsByOrderId(orderId);
+	}
+
+	@Nullable
+	public ReportResultData printSSCC18_Labels(@NonNull final OrderId orderId)
+	{
+		//
+		// Create the process info based on AD_Process and AD_PInstance
+		final ProcessExecutionResult result = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setAD_ProcessByValue(AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper)
+				//
+				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
+				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_C_Order_SSCC_Label_Report"
+						+ " where C_Order_ID=" + orderId.getRepoId() + " "
+						+ " order by M_Package_ID")
+				//
+				// Execute the actual printing process
+				.buildAndPrepareExecution()
+				.onErrorThrowException()
+				.executeSync()
+				.getResult();
+
+		return result.getReportData();
 	}
 
 }

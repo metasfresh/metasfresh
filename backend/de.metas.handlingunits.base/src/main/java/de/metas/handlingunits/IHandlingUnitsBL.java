@@ -50,6 +50,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -100,6 +101,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	HUType getHUUnitType(@NonNull I_M_HU hu);
 
+	HUPIItemProduct getPIItemProduct(HUPIItemProductId piItemProductId);
+
 	ImmutableSet<HuId> getVHUIds(HuId huId);
 
 	ImmutableSet<HuId> getVHUIds(Set<HuId> huIds);
@@ -110,9 +113,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
 
+	boolean existsById(@NonNull HuId huId);
+
 	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
 
 	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
+
+	void saveHU(I_M_HU hu);
 
 	/**
 	 * @return default storage factory
@@ -179,7 +186,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	String getDisplayName(I_M_HU hu);
 
-	IHUDisplayNameBuilder buildDisplayName(I_M_HU hu);
+	IHUDisplayNameBuilder buildDisplayName(@Nullable I_M_HU hu);
 
 	/**
 	 * @param hu may be {@code null}
@@ -319,6 +326,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI retrievePIDefaultForPicking();
 
 	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
+
+	Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull ScannedCode scannedCode);
 
 	@Builder
 	@Value
@@ -481,6 +490,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
 
+	@NonNull
+	HuPackingInstructionsId getPIId(I_M_HU hu);
+
 	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Version piVersion);
 
 	I_M_HU_PI getPI(@NonNull HuPackingInstructionsId id);
@@ -493,6 +505,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	@Nullable
 	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
+
+	@NonNull
+	I_M_HU_PI_Item getPIItem(@NonNull HuPackingInstructionsItemId piItemId);
+
+	@NonNull
+	List<I_M_HU_PI_Item> getPIItems(@NonNull Collection<I_M_HU_Item> huItems);
 
 	I_M_HU_PI getPI(@NonNull HuPackingInstructionsItemId piItemId);
 

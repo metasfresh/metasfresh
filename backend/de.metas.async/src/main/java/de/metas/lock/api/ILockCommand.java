@@ -22,12 +22,15 @@ package de.metas.lock.api;
  * #L%
  */
 
+import de.metas.lock.api.impl.LockRecordsByFilter;
 import de.metas.process.PInstanceId;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Future;
 
 /**
@@ -36,12 +39,13 @@ import java.util.concurrent.Future;
  * @author tsa
  *
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface ILockCommand
 {
 	/**
 	 * Also see {@link ILockCommand#setAllowAdditionalLocks(AllowAdditionalLocks)}.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/09849_allow_multiple_locks_with_different_owners_on_the_same_record_%28106402984513%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09849_allow_multiple_locks_with_different_owners_on_the_same_record_%28106402984513%29">task</a>
 	 */
 	enum AllowAdditionalLocks
 	{
@@ -66,7 +70,6 @@ public interface ILockCommand
 
 	/**
 	 * Default value for {@link #isFailIfNothingLocked()} is <code>true</code>.
-	 *
 	 * NOTE: we decided to do so because in most of the cases, when there is nothing inserted it's because the selection is created in a transaction which is not commited yet, and debugging this issue
 	 * could be quite hard.
 	 */
@@ -99,8 +102,7 @@ public interface ILockCommand
 	 * Use case: you are obtaining a lock on the <code>DocumentEngine</code> level and don't care which other code will be invoked that might also lock the same document.<br>
 	 * All you care about is that this document will <b>not</b> concurrently be processed by another <code>DocumentEngine</code>.<br>
 	 * For this case, you can call <code>setAllowAdditionalLocks(AllowAdditionalLocks.FOR_DIFFERENT_OWNERS)</code>.
-	 *
-	 * task http://dewiki908/mediawiki/index.php/09849_allow_multiple_locks_with_different_owners_on_the_same_record_%28106402984513%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09849_allow_multiple_locks_with_different_owners_on_the_same_record_%28106402984513%29">task</a>
 	 */
 	ILockCommand setAllowAdditionalLocks(AllowAdditionalLocks allowAdditionalLocks);
 
@@ -119,10 +121,7 @@ public interface ILockCommand
 
 	/**
 	 * Sets if the lock command shall fail if on {@link #acquire()} nothing was locked.
-	 *
 	 * By default this is {@link #DEFAULT_FailIfNothingLocked}
-	 *
-	 * @param failIfNothingLocked
 	 */
 	ILockCommand setFailIfNothingLocked(boolean failIfNothingLocked);
 
@@ -146,11 +145,13 @@ public interface ILockCommand
 
 	ILockCommand setRecordsBySelection(Class<?> modelClass, PInstanceId adPIstanceId);
 
-	int getSelectionToLock_AD_Table_ID();
+	AdTableId getSelectionToLock_AD_Table_ID();
 
 	PInstanceId getSelectionToLock_AD_PInstance_ID();
 
-	<T> ILockCommand setSetRecordsByFilter(Class<T> modelClass, IQueryFilter<T> filters);
+	<T> ILockCommand setRecordsByFilter(Class<T> modelClass, IQueryFilter<T> filters);
 
-	IQueryFilter<?> getSelectionToLock_Filters();
+	<T> ILockCommand addRecordsByFilter(Class<T> clazz, IQueryFilter<T> filters);
+
+	List<LockRecordsByFilter> getSelectionToLock_Filters();
 }

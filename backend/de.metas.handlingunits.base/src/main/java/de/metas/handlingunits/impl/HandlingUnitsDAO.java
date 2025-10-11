@@ -140,6 +140,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public boolean existsById(@NonNull final HuId huId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU.class)
@@ -224,6 +234,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public List<I_M_HU_PI_Item> getPackingInstructionItemsByIds(@NonNull final Set<HuPackingInstructionsItemId> piItemIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(piItemIds, I_M_HU_PI_Item.class);
+	}
+
+	@Override
 	public IHUBuilder createHUBuilder(final IHUContext huContext)
 	{
 		final IHUBuilder huBuilder = new HUBuilder(huContext);
@@ -240,6 +256,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public void saveHUItem(@NonNull final I_M_HU_Item huItem)
 	{
+		getHUAndItemsDAO().saveHUItem(huItem);
 		InterfaceWrapperHelper.save(huItem);
 	}
 
@@ -256,7 +273,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(final @NonNull I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveParentId(hu);
 	}

@@ -44,6 +44,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -51,6 +52,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
@@ -128,6 +130,11 @@ public final class MPayment extends X_C_Payment
 	 *
 	 */
 	private static final long serialVersionUID = 5273805787122033169L;
+
+	private static final AdMessageKey PAYMENT_BPARTNERMISMATCH_ORDER = AdMessageKey.of("Payment_BPartnerMismatch_Order");
+	private static final AdMessageKey PAYMENT_BPARTNERMISMATCH_INVOICE = AdMessageKey.of("Payment_BPartnerMismatch_Invoice");
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	/**
 	 * Get Payments Of BPartner
@@ -334,17 +341,19 @@ public final class MPayment extends X_C_Payment
 		{
 			if (getC_Invoice_ID() != 0)
 			{
-				final I_C_Invoice inv = getC_Invoice();
-				Check.errorIf(inv.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {} has C_BPartner_ID={}, but invoice {} has C_BPartner_ID={}",
-						this, getC_BPartner_ID(), inv, inv.getC_BPartner_ID());
+				final I_C_Invoice inv = invoiceBL.getById(InvoiceId.ofRepoId(getC_Invoice_ID()));
+				if (getC_BPartner_ID()!= inv.getC_BPartner_ID())
+				{
+					throw new AdempiereException(PAYMENT_BPARTNERMISMATCH_INVOICE, getC_BPartner_ID(), inv.getC_BPartner_ID(), inv.getDocumentNo());
+				}
 			}
 			if (getC_Order_ID() != 0)
 			{
-				final I_C_Order ord = getC_Order();
-				Check.errorIf(ord.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {} has C_BPartner_ID={}, but order {} has C_BPartner_ID={}",
-						this, getC_BPartner_ID(), ord, ord.getC_BPartner_ID());
+				final I_C_Order ord = orderBL.getById(OrderId.ofRepoId(getC_Order_ID()));
+				if (getC_BPartner_ID()!= ord.getBill_BPartner_ID())
+				{
+					throw new AdempiereException(PAYMENT_BPARTNERMISMATCH_ORDER, getC_BPartner_ID(), ord.getBill_BPartner_ID(), ord.getDocumentNo());
+				}
 			}
 		}
 
@@ -367,8 +376,8 @@ public final class MPayment extends X_C_Payment
 	 *
 	 * @param ctx           context
 	 * @param C_BPartner_ID if 0 all
-	 * @param trxName       trx
-	 */
+     * @param trxName       trx
+     */
 	public static void setIsAllocated(final Properties ctx, final int C_BPartner_ID, final String trxName)
 	{
 		String sql = "SELECT * FROM C_Payment "
@@ -429,10 +438,10 @@ public final class MPayment extends X_C_Payment
 	}    // setCreditCardNumber
 
 	/**
-	 * Verification Code
-	 *
-	 * @param newCreditCardVV CC verification
-	 */
+     * Verification Code
+     *
+     * @param newCreditCardVV CC verification
+     */
 	@Override
 	public void setCreditCardVV(final String newCreditCardVV)
 	{
@@ -445,10 +454,10 @@ public final class MPayment extends X_C_Payment
 	}    // setCreditCardVV
 
 	/**
-	 * Two Digit CreditCard MM
-	 *
-	 * @param CreditCardExpMM Exp month
-	 */
+     * Two Digit CreditCard MM
+     *
+     * @param CreditCardExpMM Exp month
+     */
 	@Override
 	public void setCreditCardExpMM(final int CreditCardExpMM)
 	{
@@ -463,10 +472,10 @@ public final class MPayment extends X_C_Payment
 	}    // setCreditCardExpMM
 
 	/**
-	 * Two digit CreditCard YY (til 2020)
-	 *
-	 * @param newCreditCardExpYY 2 or 4 digit year
-	 */
+     * Two digit CreditCard YY (til 2020)
+     *
+     * @param newCreditCardExpYY 2 or 4 digit year
+     */
 	@Override
 	public void setCreditCardExpYY(final int newCreditCardExpYY)
 	{
@@ -479,11 +488,11 @@ public final class MPayment extends X_C_Payment
 	}    // setCreditCardExpYY
 
 	/**
-	 * CreditCard Exp MMYY
-	 *
-	 * @param mmyy Exp in form of mmyy
-	 * @return true if valid
-	 */
+     * CreditCard Exp MMYY
+     *
+     * @param mmyy Exp in form of mmyy
+     * @return true if valid
+     */
 	public boolean setCreditCardExp(final String mmyy)
 	{
 		if (MPaymentValidate.validateCreditCardExp(mmyy).length() != 0)
@@ -500,11 +509,11 @@ public final class MPayment extends X_C_Payment
 	}   // setCreditCardExp
 
 	/**
-	 * CreditCard Exp MMYY
-	 *
-	 * @param delimiter / - or null
-	 * @return Exp
-	 */
+     * CreditCard Exp MMYY
+     *
+     * @param delimiter / - or null
+     * @return Exp
+     */
 	public String getCreditCardExp(final String delimiter)
 	{
 		final String mm = String.valueOf(getCreditCardExpMM());
@@ -532,10 +541,10 @@ public final class MPayment extends X_C_Payment
 	}   // getCreditCardExp
 
 	/**
-	 * MICR
-	 *
-	 * @param MICR MICR
-	 */
+     * MICR
+     *
+     * @param MICR MICR
+     */
 	@Override
 	public void setMicr(final String MICR)
 	{
@@ -543,10 +552,10 @@ public final class MPayment extends X_C_Payment
 	}    // setBankMICR
 
 	/**
-	 * Routing No
-	 *
-	 * @param RoutingNo Routing No
-	 */
+     * Routing No
+     *
+     * @param RoutingNo Routing No
+     */
 	@Override
 	public void setRoutingNo(final String RoutingNo)
 	{
@@ -554,10 +563,10 @@ public final class MPayment extends X_C_Payment
 	}    // setBankRoutingNo
 
 	/**
-	 * Bank Account No
-	 *
-	 * @param AccountNo AccountNo
-	 */
+     * Bank Account No
+     *
+     * @param AccountNo AccountNo
+     */
 	@Override
 	public void setAccountNo(final String AccountNo)
 	{
@@ -565,10 +574,10 @@ public final class MPayment extends X_C_Payment
 	}    // setBankAccountNo
 
 	/**
-	 * Check No
-	 *
-	 * @param CheckNo Check No
-	 */
+     * Check No
+     *
+     * @param CheckNo Check No
+     */
 	@Override
 	public void setCheckNo(final String CheckNo)
 	{
@@ -576,8 +585,8 @@ public final class MPayment extends X_C_Payment
 	}    // setBankCheckNo
 
 	/**
-	 * Set DocumentNo to Payment info. If there is a R_PnRef that is set automatically
-	 */
+     * Set DocumentNo to Payment info. If there is a R_PnRef that is set automatically
+     */
 	private void setDocumentNo()
 	{
 		// Cash Transfer
@@ -663,10 +672,10 @@ public final class MPayment extends X_C_Payment
 	}    // setDocumentNo
 
 	/**
-	 * Set Refernce No (and Document No)
-	 *
-	 * @param R_PnRef reference
-	 */
+     * Set Refernce No (and Document No)
+     *
+     * @param R_PnRef reference
+     */
 	@Override
 	public void setR_PnRef(final String R_PnRef)
 	{
@@ -685,10 +694,10 @@ public final class MPayment extends X_C_Payment
 	// ---------------
 
 	/**
-	 * Set Payment Amount
-	 *
-	 * @param PayAmt Pay Amt
-	 */
+     * Set Payment Amount
+     *
+     * @param PayAmt Pay Amt
+     */
 	@Override
 	public void setPayAmt(final BigDecimal PayAmt)
 	{
@@ -696,12 +705,12 @@ public final class MPayment extends X_C_Payment
 	}    // setPayAmt
 
 	/**
-	 * Set Payment Amount
-	 *
-	 * @param currencyId currency (optional, may be <= 0)
-	 * @param payAmt     amount
-	 * @deprecated Will be deleted because it's used only by legacy API
-	 */
+     * Set Payment Amount
+     *
+     * @param currencyId currency (optional, may be <= 0)
+     * @param payAmt     amount
+     * @deprecated Will be deleted because it's used only by legacy API
+     */
 	@Deprecated
 	public void setAmount(final int currencyId, final BigDecimal payAmt)
 	{
@@ -720,10 +729,10 @@ public final class MPayment extends X_C_Payment
 	}   // setAmount
 
 	/**
-	 * Discount Amt
-	 *
-	 * @param DiscountAmt Discount
-	 */
+     * Discount Amt
+     *
+     * @param DiscountAmt Discount
+     */
 	@Override
 	public void setDiscountAmt(final BigDecimal DiscountAmt)
 	{
@@ -731,10 +740,10 @@ public final class MPayment extends X_C_Payment
 	}    // setDiscountAmt
 
 	/**
-	 * WriteOff Amt
-	 *
-	 * @param WriteOffAmt WriteOff
-	 */
+     * WriteOff Amt
+     *
+     * @param WriteOffAmt WriteOff
+     */
 	@Override
 	public void setWriteOffAmt(final BigDecimal WriteOffAmt)
 	{
@@ -742,10 +751,10 @@ public final class MPayment extends X_C_Payment
 	}    // setWriteOffAmt
 
 	/**
-	 * OverUnder Amt
-	 *
-	 * @param OverUnderAmt OverUnder
-	 */
+     * OverUnder Amt
+     *
+     * @param OverUnderAmt OverUnder
+     */
 	@Override
 	public void setOverUnderAmt(final BigDecimal OverUnderAmt)
 	{
@@ -753,10 +762,10 @@ public final class MPayment extends X_C_Payment
 	}    // setOverUnderAmt
 
 	/**
-	 * Tax Amt
-	 *
-	 * @param TaxAmt Tax
-	 */
+     * Tax Amt
+     *
+     * @param TaxAmt Tax
+     */
 	@Override
 	public void setTaxAmt(final BigDecimal TaxAmt)
 	{
@@ -764,8 +773,8 @@ public final class MPayment extends X_C_Payment
 	}    // setTaxAmt
 
 	/**
-	 * Set Doc Type bases on IsReceipt
-	 */
+     * Set Doc Type bases on IsReceipt
+     */
 	private void setC_DocType_ID()
 	{
 		setIsReceiptAndUpdateDocType(isReceipt());
@@ -786,11 +795,11 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
-	 * Verify Document Type with Invoice
-	 *
-	 * @param pAllocs
-	 * @return true if ok
-	 */
+     * Verify Document Type with Invoice
+     *
+     * @param pAllocs
+     * @return true if ok
+     */
 	private boolean verifyDocType(final MPaymentAllocate[] pAllocs)
 	{
 		if (getC_DocType_ID() <= 0)
@@ -983,11 +992,11 @@ public final class MPayment extends X_C_Payment
 	}    // verifyDocType
 
 	/**
-	 * Verify Payment Allocate is ignored (must not exists) if the payment header has charge/invoice/order
-	 *
-	 * @param pAllocs
-	 * @return true if ok
-	 */
+     * Verify Payment Allocate is ignored (must not exists) if the payment header has charge/invoice/order
+     *
+     * @param pAllocs
+     * @return true if ok
+     */
 	private boolean verifyPaymentAllocateVsHeader(final MPaymentAllocate[] pAllocs)
 	{
 		if (pAllocs.length > 0)
@@ -1001,11 +1010,11 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
-	 * Verify Payment Allocate Sum must be equal to the Payment Amount
-	 *
-	 * @param pAllocs
-	 * @return true if ok
-	 */
+     * Verify Payment Allocate Sum must be equal to the Payment Amount
+     *
+     * @param pAllocs
+     * @return true if ok
+     */
 	private boolean verifyPaymentAllocateSum(final MPaymentAllocate[] pAllocs)
 	{
 		BigDecimal sumPaymentAllocates = BigDecimal.ZERO;
@@ -1024,10 +1033,10 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
-	 * Get Name of Credit Card
-	 *
-	 * @return Name
-	 */
+     * Get Name of Credit Card
+     *
+     * @return Name
+     */
 	public String getCreditCardName()
 	{
 		return getCreditCardName(getCreditCardType());
@@ -1071,10 +1080,10 @@ public final class MPayment extends X_C_Payment
 	}    // getCreditCardName
 
 	/**
-	 * Add to Description
-	 *
-	 * @param description text
-	 */
+     * Add to Description
+     *
+     * @param description text
+     */
 	public void addDescription(final String description)
 	{
 		final String desc = getDescription();
@@ -1089,11 +1098,11 @@ public final class MPayment extends X_C_Payment
 	}    // addDescription
 
 	/**
-	 * Get Pay Amt
-	 *
-	 * @param absolute if true the absolute amount (i.e. negative if payment)
-	 * @return amount
-	 */
+     * Get Pay Amt
+     *
+     * @param absolute if true the absolute amount (i.e. negative if payment)
+     * @return amount
+     */
 	public BigDecimal getPayAmt(final boolean absolute)
 	{
 		if (isReceipt())
@@ -1111,12 +1120,12 @@ public final class MPayment extends X_C_Payment
 	}    // process
 
 	/**
-	 * Process Message
-	 */
+     * Process Message
+     */
 	private String m_processMsg = null;
 	/**
-	 * Just Prepared Flag
-	 */
+     * Just Prepared Flag
+     */
 	private boolean m_justPrepared = false;
 
 	@Override
@@ -1414,8 +1423,8 @@ public final class MPayment extends X_C_Payment
 	}    // completeIt
 
 	/**
-	 * Set the definite document number after completed
-	 */
+     * Set the definite document number after completed
+     */
 	private void setDefiniteDocumentNo()
 	{
 		final I_C_DocType dt = MDocType.get(getCtx(), getC_DocType_ID());
@@ -1438,10 +1447,10 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
-	 * Create Counter Document
-	 *
-	 * @return payment
-	 */
+     * Create Counter Document
+     *
+     * @return payment
+     */
 	private MPayment createCounterDoc()
 	{
 		// Is this a counter doc ?
@@ -1540,10 +1549,10 @@ public final class MPayment extends X_C_Payment
 	}    // createCounterDoc
 
 	/**
-	 * Allocate It. Only call when there is NO allocation as it will create duplicates. If an invoice exists, it allocates that otherwise it allocates Payment Selection.
-	 *
-	 * @return true if allocated
-	 */
+     * Allocate It. Only call when there is NO allocation as it will create duplicates. If an invoice exists, it allocates that otherwise it allocates Payment Selection.
+     *
+     * @return true if allocated
+     */
 	public boolean allocateIt()
 	{
 		// Create invoice Allocation - See also MCash.completeIt
@@ -1608,10 +1617,10 @@ public final class MPayment extends X_C_Payment
 	}    // allocateIt
 
 	/**
-	 * Allocate single AP/AR Invoice
-	 *
-	 * @return true if allocated
-	 */
+     * Allocate single AP/AR Invoice
+     *
+     * @return true if allocated
+     */
 	private boolean allocateInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		// 04627 begin (commented out old code)

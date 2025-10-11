@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/manufacturingorderdoc/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -493,11 +493,6 @@ where pp_order.pp_order_id = $P{RECORD_ID}]]>
 	<field name="seqno" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="seqno"/>
 		<property name="com.jaspersoft.studio.field.label" value="seqno"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
-	</field>
-	<field name="ic114_leichmehl_entered_docno" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="ic114_leichmehl_entered_docno"/>
-		<property name="com.jaspersoft.studio.field.label" value="ic114_leichmehl_entered_docno"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
 	</field>
 	<field name="workstation_id" class="java.math.BigDecimal">

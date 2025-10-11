@@ -67,6 +67,17 @@ public class MasterdataContext
 		identifiers.put(typeAndIdentifier, id);
 	}
 
+	public <T extends RepoIdAware> void putIdentifierIfAbsent(@NonNull final Identifier identifier, @NonNull final T id)
+	{
+		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(id.getClass(), identifier);
+		if (identifiers.containsKey(typeAndIdentifier))
+		{
+			return;
+		}
+
+		identifiers.put(typeAndIdentifier, id);
+	}
+
 	public <T extends RepoIdAware> T getId(@NonNull final Identifier identifier, final Class<T> idClass)
 	{
 		return getOptionalId(identifier, idClass)

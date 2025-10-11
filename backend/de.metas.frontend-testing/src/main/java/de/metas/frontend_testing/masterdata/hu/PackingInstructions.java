@@ -16,13 +16,22 @@ import java.math.BigDecimal;
 public class PackingInstructions
 {
 	@NonNull I_M_HU_PI tuPI;
-	@NonNull BigDecimal qtyCUsPerTU;
+	@Nullable BigDecimal qtyCUsPerTU;
 
 	@Nullable I_M_HU_PI_Item luPIItem;
 	@Nullable QtyTU qtyTUs;
+	
+	public boolean isInfiniteCapacity() {return qtyCUsPerTU == null;}
+
+	public BigDecimal getQtyCUsPerTUNotNull()
+	{
+		return Check.assumeNotNull(qtyCUsPerTU, "qtyCUsPerTU must be set, i.e. finite capacity was expected by caller");
+	}
 
 	public BigDecimal getQtyCUs()
 	{
+		@NonNull final BigDecimal qtyCUsPerTU = getQtyCUsPerTUNotNull();
+
 		if (luPIItem == null)
 		{
 			return qtyCUsPerTU;

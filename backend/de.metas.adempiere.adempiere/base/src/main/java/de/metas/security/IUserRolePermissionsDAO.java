@@ -89,6 +89,8 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	 */
 	Optional<IUserRolePermissions> retrieveFirstUserRolesPermissionsForUserWithOrgAccess(ClientId clientId, OrgId orgId, UserId adUserId, LocalDate localDate);
 
+	boolean isAllowPasswordChangeForOthers(RoleId adRoleId, ClientId clientId, UserId adUserId, LocalDate date);
+
 	boolean matchUserRolesPermissionsForUser(ClientId clientId, UserId adUserId, LocalDate date, Predicate<IUserRolePermissions> matcher);
 
 	/**

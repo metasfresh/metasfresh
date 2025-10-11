@@ -89,6 +89,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU getById(HuId huId);
 
+	boolean existsById(@NonNull HuId huId);
+
 	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
 
 	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
@@ -118,6 +120,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
 
+	List<I_M_HU_PI_Item> getPackingInstructionItemsByIds(@NonNull Set<HuPackingInstructionsItemId> piItemIds);
+
 	/**
 	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.
 	 */
@@ -133,11 +137,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
 
-	/**
-	 * @param hu may not be {@code null}
-	 * @return parent M_HU_ID or -1
-	 */
-	int retrieveParentId(I_M_HU hu);
+	@Nullable HuId retrieveParentId(@NonNull I_M_HU hu);
 
 	/**
 	 * Actually returns {@link I_M_HU#getM_HU_Item_Parent()}, but in a potentially DB decoupled fashion.

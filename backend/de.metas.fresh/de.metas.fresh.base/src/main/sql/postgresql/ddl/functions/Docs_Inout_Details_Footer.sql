@@ -29,7 +29,7 @@ SELECT footer.*,
        COALESCE(o_dr_trl.name, o_dr.name)   AS deliveryrule,
        COALESCE(o_dvr_trl.name, o_dvr.name) AS deliveryviarule,
        shipper.name AS shipper,
-       bpl.routeno as shipper_routeno
+       srno.name as shipper_routeno
 FROM (
          --Docnote DE
          SELECT NULL                                                                                        AS textleft,
@@ -76,7 +76,7 @@ FROM (
          --Descriptionbottom
          SELECT io.descriptionbottom             AS textleft,
                 NULL                             AS textcenter,
-                NULL                             AS language,
+                (SELECT l.AD_Language FROM AD_Language l WHERE l.IsBaseLanguage = 'Y' AND l.isActive = 'Y') AS language,
                 io.m_inout_id                    AS m_inout_id,
                 'descr'                          AS tag,
                 2                                AS pozition,
@@ -96,6 +96,7 @@ FROM (
 
         LEFT JOIN M_shipper shipper ON io.m_shipper_id = shipper.m_shipper_id
         LEFT JOIN C_BPartner_location bpl ON io.c_bpartner_location_id = bpl.c_bpartner_location_id
+         LEFT JOIN M_Shipper_RoutingCode srno ON bpl.M_Shipper_RoutingCode_ID = srno.M_Shipper_RoutingCode_ID
 
 WHERE footer.m_inout_id = p_InOut_ID
   AND footer.language = p_Language

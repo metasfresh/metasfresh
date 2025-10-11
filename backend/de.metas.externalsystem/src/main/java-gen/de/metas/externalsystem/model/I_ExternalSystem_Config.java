@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config
  *  @author metasfresh (generated) 
@@ -58,7 +57,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAuditFileFolder (String AuditFileFolder);
+	void setAuditFileFolder (java.lang.String AuditFileFolder);
 
 	/**
 	 * Get Audit log folder.
@@ -67,7 +66,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getAuditFileFolder();
+	java.lang.String getAuditFileFolder();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_AuditFileFolder = new ModelColumn<>(I_ExternalSystem_Config.class, "AuditFileFolder", null);
 	String COLUMNNAME_AuditFileFolder = "AuditFileFolder";
@@ -104,7 +103,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -113,7 +112,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Description = new ModelColumn<>(I_ExternalSystem_Config.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -138,6 +137,31 @@ public interface I_ExternalSystem_Config
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config.class, "ExternalSystem_Config_ID", null);
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	de.metas.externalsystem.model.I_ExternalSystem getExternalSystem();
+
+	void setExternalSystem(de.metas.externalsystem.model.I_ExternalSystem ExternalSystem);
+
+	ModelColumn<I_ExternalSystem_Config, de.metas.externalsystem.model.I_ExternalSystem> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_ExternalSystem_Config.class, "ExternalSystem_ID", de.metas.externalsystem.model.I_ExternalSystem.class);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Active.
@@ -169,7 +193,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -178,33 +202,10 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Config.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set Type.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setType (String Type);
-
-	/**
-	 * Get Type.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getType();
-
-	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Type = new ModelColumn<>(I_ExternalSystem_Config.class, "Type", null);
-	String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Updated.

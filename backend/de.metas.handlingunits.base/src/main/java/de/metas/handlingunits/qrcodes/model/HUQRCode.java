@@ -66,6 +66,12 @@ public class HUQRCode implements IHUQRCode
 		return qrCodeStringNorm != null ? fromGlobalQRCodeJsonString(qrCodeStringNorm) : null;
 	}
 
+	@Nullable
+	public static HUQRCode fromNullable(@Nullable final ScannedCode scannedCode)
+	{
+		return scannedCode != null ? fromGlobalQRCodeJsonString(scannedCode.getAsString()) : null;
+	}
+
 	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode) {return HUQRCodeJsonConverter.isHandled(globalQRCode);}
 
 	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)

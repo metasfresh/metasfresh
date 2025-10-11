@@ -45,7 +45,9 @@ import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
+	public static final AdMessageKey MSG_NotFound = AdMessageKey.of("NotFound");
 	public static final AdMessageKey MSG_NoLines = AdMessageKey.of("NoLines");
+	public static final AdMessageKey MSG_NoSelection = AdMessageKey.of("NoSelection");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -388,8 +390,10 @@ public class AdempiereException extends RuntimeException
 		this.mdcContextMap = captureMDCContextMap();
 		this.errorCode = extractErrorCodeOrNull(cause);
 	}
-
+	
 	public static AdempiereException noLines() {return new AdempiereException(MSG_NoLines);}
+
+	public static AdempiereException noSelection() {return new AdempiereException(MSG_NoSelection);}
 
 	public static AdempiereException newWithTranslatableMessage(@Nullable final String translatableMessage) {return new AdempiereException(TranslatableStrings.parse(translatableMessage));}
 

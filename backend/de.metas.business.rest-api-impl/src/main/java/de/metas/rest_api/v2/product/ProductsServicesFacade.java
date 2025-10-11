@@ -92,6 +92,13 @@ public class ProductsServicesFacade
 		return uom.getUOMSymbol();
 	}
 
+	@NonNull
+	public String getX12DE355(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uom = uomsRepo.getById(uomId);
+		return uom.getX12DE355();
+	}
+
 	public List<I_C_BPartner_Product> getBPartnerProductRecords(final Set<ProductId> productIds)
 	{
 		return partnerProductsRepo.retrieveForProductIds(productIds);

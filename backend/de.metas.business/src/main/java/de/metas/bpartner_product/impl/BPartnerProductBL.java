@@ -6,6 +6,9 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.bpartner_product.ProductExclude;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -13,6 +16,9 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner_Product;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -73,8 +79,36 @@ public class BPartnerProductBL implements IBPartnerProductBL
 	{
 		final String partnerName = bpartnerDAO.getBPartnerNameById(productExclude.getBpartnerId());
 		final String msg = msgBL.getMsg(adMessage,
-										ImmutableList.of(partnerName, productExclude.getReason()));
+				ImmutableList.of(partnerName, productExclude.getReason()));
 
 		throw new AdempiereException(msg);
 	}
+
+	@Override
+	public void setProductCodeFieldsFromGTIN(@NonNull final I_C_BPartner_Product record, @Nullable final GTIN gtin)
+	{
+		final EAN13 ean13 = gtin != null ? gtin.toEAN13().orElse(null) : null;
+
+		record.setGTIN(gtin != null ? gtin.getAsString() : null);
+		record.setEAN_CU(ean13 != null ? ean13.getAsString() : null);
+		record.setUPC(gtin != null ? gtin.getAsString() : null);
+
+		if (gtin != null)
+		{
+			record.setEAN13_ProductCode(null);
+		}
+	}
+
+	@Override
+	public void setProductCodeFieldsFromEAN13ProductCode(@NonNull final I_C_BPartner_Product record, @Nullable final EAN13ProductCode ean13ProductCode)
+	{
+		record.setEAN13_ProductCode(ean13ProductCode != null ? ean13ProductCode.getAsString() : null);
+		if (ean13ProductCode != null)
+		{
+			record.setGTIN(null);
+			record.setEAN_CU(null);
+			record.setUPC(null);
+		}
+	}
+
 }

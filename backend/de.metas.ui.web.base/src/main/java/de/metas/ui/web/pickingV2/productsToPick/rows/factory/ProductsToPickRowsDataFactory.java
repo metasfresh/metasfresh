@@ -24,6 +24,8 @@ package de.metas.ui.web.pickingV2.productsToPick.rows.factory;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
 import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.IssueToBOMLine;
@@ -84,9 +86,12 @@ public class ProductsToPickRowsDataFactory
 	public ProductsToPickRowsData create(final PackageableRow packageableRow)
 	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-																			.packageables(packageableRow.getPackageables())
-																			.considerAttributes(considerAttributes)
-																			.build());
+				.packageables(packageableRow.getPackageables()
+						.stream()
+						.map(ScheduledPackageable::ofPackageable)
+						.collect(ScheduledPackageableList.collect()))
+				.considerAttributes(considerAttributes)
+				.build());
 		final ImmutableList<ProductsToPickRow> rows = plan.getLines()
 				.stream()
 				.map(this::toRow)
@@ -125,7 +130,7 @@ public class ProductsToPickRowsDataFactory
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.productId(productInfo.getProductId())
-				.shipmentScheduleId(sourceDocumentInfo.getShipmentScheduleId())
+				.shipmentScheduleId(sourceDocumentInfo.getScheduleId().getShipmentScheduleId())
 				.pickFromHUId(pickFromHU.getTopLevelHUId())
 				.build();
 
@@ -160,7 +165,7 @@ public class ProductsToPickRowsDataFactory
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.productId(productInfo.getProductId())
-				.shipmentScheduleId(sourceDocumentInfo.getShipmentScheduleId())
+				.shipmentScheduleId(sourceDocumentInfo.getScheduleId().getShipmentScheduleId())
 				.pickFromPickingOrderId(pickFromPickingOrder.getOrderId())
 				.build();
 
@@ -173,9 +178,9 @@ public class ProductsToPickRowsDataFactory
 				.qty(planLine.getQty())
 				//
 				.includedRows(pickFromPickingOrder.getIssueToBOMLines()
-									  .stream()
-									  .map(this::toRow)
-									  .collect(ImmutableList.toImmutableList()))
+						.stream()
+						.map(this::toRow)
+						.collect(ImmutableList.toImmutableList()))
 				.build()
 				.withUpdatesFromPickingCandidateIfNotNull(sourceDocumentInfo.getExistingPickingCandidate());
 	}
@@ -188,7 +193,7 @@ public class ProductsToPickRowsDataFactory
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.productId(productInfo.getProductId())
-				.shipmentScheduleId(sourceDocumentInfo.getShipmentScheduleId())
+				.shipmentScheduleId(sourceDocumentInfo.getScheduleId().getShipmentScheduleId())
 				.issueToOrderBOMLineId(issueToBOMLine.getIssueToOrderBOMLineId())
 				.build();
 
@@ -211,7 +216,7 @@ public class ProductsToPickRowsDataFactory
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.productId(productInfo.getProductId())
-				.shipmentScheduleId(sourceDocumentInfo.getShipmentScheduleId())
+				.shipmentScheduleId(sourceDocumentInfo.getScheduleId().getShipmentScheduleId())
 				.build();
 
 		return ProductsToPickRow.builder()

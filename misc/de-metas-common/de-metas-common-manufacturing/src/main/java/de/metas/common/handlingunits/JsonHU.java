@@ -23,12 +23,12 @@
 package de.metas.common.handlingunits;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.With;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
@@ -36,8 +36,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Value
-@Builder(toBuilder = true)
-@Jacksonized
+@SuppressWarnings("DeprecatedIsStillUsed")
 public class JsonHU
 {
 	@Nullable String id;
@@ -46,97 +45,89 @@ public class JsonHU
 
 	@NonNull String displayName;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable
-	JsonHUQRCode qrCode;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonHUQRCode qrCode;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) String eanCode;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable
-	String warehouseValue;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) String warehouseValue;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) String locatorValue;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable
-	String locatorValue;
-
+	boolean aggregatedTU;
 	int numberOfAggregatedHUs;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) Integer qtyTUs;
 
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	String topLevelParentId;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) String topLevelParentId;
 
-	@NonNull
-	@Singular
-	List<JsonHUProduct> products;
+	@NonNull List<JsonHUProduct> products;
 
 	/**
 	 * Just a simple map of attribute code and values.
 	 * In the next versions of the API it will be replaced by {@link #attributes2}.
 	 */
-	@Deprecated
-	@NonNull
-	JsonHUAttributeCodeAndValues attributes;
+	@NonNull @Deprecated JsonHUAttributeCodeAndValues attributes;
+	@NonNull JsonHUAttributes attributes2;
 
-	@NonNull
-	JsonHUAttributes attributes2;
+	@Nullable JsonClearanceStatusInfo clearanceStatus;
 
-	@Nullable
-	JsonClearanceStatusInfo clearanceStatus;
+	@Nullable String clearanceNote;
 
-	@Nullable
-	String clearanceNote;
+	@NonNull JsonHUType unitType;
+	@NonNull @Deprecated JsonHUType jsonHUType;
 
-	@Nullable
-	JsonHUType jsonHUType;
+	@Nullable List<JsonHU> includedHUs;
 
-	@Nullable
-	List<JsonHU> includedHUs;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses;
 
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) Boolean isDisposalPending;
 
-	@With
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	Boolean isDisposalPending;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_NULL) String packingInstructionName;
 
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	String packingInstructionName;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) List<String> layoutSections;
 
-	public JsonHU(
+	@Builder(toBuilder = true)
+	@Jacksonized
+	private JsonHU(
 			@Nullable final String id,
 			@Nullable final String huStatus,
 			@Nullable final String huStatusCaption,
 			@NonNull final String displayName,
 			@Nullable final JsonHUQRCode qrCode,
+			@Nullable final String eanCode,
 			@Nullable final String warehouseValue,
 			@Nullable final String locatorValue,
+			final boolean aggregatedTU,
 			final int numberOfAggregatedHUs,
+			@Nullable @Deprecated Integer qtyTUs, // ignored
 			@Nullable final String topLevelParentId,
-			@NonNull final List<JsonHUProduct> products,
+			@NonNull @Singular final List<JsonHUProduct> products,
 			@Nullable final JsonHUAttributeCodeAndValues attributes,
 			@Nullable final JsonHUAttributes attributes2,
 			@Nullable final JsonClearanceStatusInfo clearanceStatus,
 			@Nullable final String clearanceNote,
-			@Nullable final JsonHUType jsonHUType,
+			@Nullable JsonHUType unitType,
+			@Nullable @Deprecated JsonHUType jsonHUType,
 			@Nullable final List<JsonHU> includedHUs,
 			@Nullable final JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses,
-			final Boolean isDisposalPending,
-			@Nullable final String packingInstructionName)
+			@Nullable final Boolean isDisposalPending,
+			@Nullable final String packingInstructionName,
+			@Nullable final List<String> layoutSections
+	)
 	{
 		this.id = id;
 		this.huStatus = huStatus;
 		this.huStatusCaption = huStatusCaption;
+		this.unitType = this.jsonHUType = singleNonNullValue("unitType", unitType, jsonHUType);
 		this.displayName = displayName;
 		this.qrCode = qrCode;
+		this.eanCode = eanCode;
 		this.warehouseValue = warehouseValue;
 		this.locatorValue = locatorValue;
+		this.aggregatedTU = aggregatedTU;
 		this.numberOfAggregatedHUs = numberOfAggregatedHUs;
+		this.qtyTUs = computeQtyTUs(this.unitType, includedHUs);
 		this.topLevelParentId = topLevelParentId;
 		this.products = products;
 		this.clearanceStatus = clearanceStatus;
 		this.clearanceNote = clearanceNote;
-		this.jsonHUType = jsonHUType;
 		this.includedHUs = includedHUs;
 		this.allowedHUClearanceStatuses = allowedHUClearanceStatuses;
 		this.isDisposalPending = isDisposalPending;
@@ -151,8 +142,48 @@ public class JsonHU
 		{
 			this.attributes2 = attributes2;
 		}
-
 		this.attributes = attributes != null ? attributes : this.attributes2.toJsonHUAttributeCodeAndValues();
+
+		this.layoutSections = layoutSections;
+	}
+
+	@NonNull
+	@SuppressWarnings("SameParameterValue")
+	private static <T> T singleNonNullValue(@NonNull final String name, @Nullable final T value1, @Nullable final T value2)
+	{
+		if (value1 == null && value2 == null)
+		{
+			throw new IllegalArgumentException("No value for " + name + " found");
+		}
+		if (value1 != null && value2 != null && !Objects.equals(value2, value1))
+		{
+			throw new IllegalArgumentException("More than one value for " + name + " found: " + value1 + ", " + value2);
+		}
+		else
+		{
+			return value1 != null ? value1 : value2;
+		}
+	}
+
+	private static Integer computeQtyTUs(@NonNull final JsonHUType unitType, final List<JsonHU> includedHUs)
+	{
+		if (unitType == JsonHUType.LU)
+		{
+			return includedHUs.stream()
+					.mapToInt(tu -> tu.isAggregatedTU() ? tu.numberOfAggregatedHUs : 1)
+					.sum();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public JsonHU withIsDisposalPending(@Nullable final Boolean isDisposalPending)
+	{
+		return Objects.equals(this.isDisposalPending, isDisposalPending)
+				? this
+				: toBuilder().isDisposalPending(isDisposalPending).build();
 	}
 
 	public JsonHU withDisplayedAttributesOnly(@Nullable final List<String> displayedAttributeCodesOnly)
@@ -168,7 +199,28 @@ public class JsonHU
 			return this;
 		}
 
-		return toBuilder().attributes2(attributes2New).build();
+		return toBuilder()
+				.attributes2(attributes2New)
+				.attributes(attributes2New.toJsonHUAttributeCodeAndValues())
+				.build();
+	}
+
+	public JsonHU withLayoutSections(@Nullable List<String> layoutSections)
+	{
+		final ImmutableList<String> layoutSectionsNorm = layoutSections == null || layoutSections.isEmpty()
+				? null
+				: ImmutableList.copyOf(layoutSections);
+
+		if (Objects.equals(layoutSectionsNorm, this.layoutSections))
+		{
+			return this;
+		}
+		else
+		{
+			return toBuilder()
+					.layoutSections(layoutSectionsNorm)
+					.build();
+		}
 	}
 
 }

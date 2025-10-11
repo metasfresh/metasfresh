@@ -7,7 +7,7 @@ Feature: Reversal of material receipt
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
-    And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2021-04-14T11:30:13Z
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |
       | warehouseStd   | StdWarehouse |
@@ -32,32 +32,7 @@ Feature: Reversal of material receipt
     And metasfresh contains C_BPartner_Locations:
       | Identifier     | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation | vendor        | CH           | Y               | Y               |
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+ 
     
 # ######################################################################################################################
 # ######################################################################################################################
@@ -84,17 +59,21 @@ Feature: Reversal of material receipt
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu1                | rs1                             | receipt1              |
+    # the receipt with qty=10 came before it was expected; c_1 now has Qty=0; c_2 has the value that was set in the timesource
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected       | Qty | ATP |
-      | c_1        | SUPPLY              | PURCHASE                  | product      | 2021-04-15T15:00:00 | 0   | 10  |
-      | c_2        | UNEXPECTED_INCREASE | PURCHASE                  | product      | 2021-04-14T00:00:00 | 10  | 10  |
+      | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP |
+      | c_1        | SUPPLY              | PURCHASE                  | product      | 2021-04-15T15:00:00  | 0   | 10  |
+      | c_2        | UNEXPECTED_INCREASE | PURCHASE                  | product      | 2021-04-14T11:30:13Z | 10  | 10  |
     And the material receipt identified by receipt1 is reversed
+    # i'm not sure it's right that c_1 did not get its Qty=10 back. So if you think i's wrong => maybe it is.
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected       | Qty | ATP |
-      | c_1        | SUPPLY              | PURCHASE                  | product      | 2021-04-15T15:00:00 | 0   | 0   |
-      | c_2        | UNEXPECTED_INCREASE | PURCHASE                  | product      | 2021-04-14T00:00:00 | 10  | 10  |
-      | c_3        | UNEXPECTED_DECREASE | PURCHASE                  | product      | 2021-04-14T00:00:00 | 10  | 0   |
-
+      | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP |
+      | c_1        | SUPPLY              | PURCHASE                  | product      | 2021-04-15T15:00:00  | 0   | 0   |
+      | c_2        | UNEXPECTED_INCREASE | PURCHASE                  | product      | 2021-04-14T11:30:13Z | 10  | 10  |
+      | c_3        | UNEXPECTED_DECREASE | PURCHASE                  | product      | 2021-04-14T11:30:13Z | 10  | 0   |
+# cleanup
+    And metasfresh has current date and time
+    
 
 
 

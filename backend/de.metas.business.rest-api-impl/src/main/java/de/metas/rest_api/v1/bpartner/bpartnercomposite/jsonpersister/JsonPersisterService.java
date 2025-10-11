@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -124,6 +125,7 @@ public class JsonPersisterService
 	private final transient ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final transient BPGroupRepository bpGroupRepository;
+	private final transient BPGroupService bpGroupService;
 	private final transient CurrencyRepository currencyRepository;
 
 	/**
@@ -137,6 +139,7 @@ public class JsonPersisterService
 			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
+			@NonNull final BPGroupService bpGroupService,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final String identifier)
@@ -146,6 +149,7 @@ public class JsonPersisterService
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
+		this.bpGroupService = bpGroupService;
 		this.currencyRepository = currencyRepository;
 
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
@@ -717,28 +721,18 @@ public class JsonPersisterService
 		// group - attempt to fall back to default group
 		if (jsonBPartner.isGroupSet())
 		{
-			if (jsonBPartner.getGroup() == null)
+			if (Check.isBlank(jsonBPartner.getGroup()))
 			{
 				logger.debug("Setting \"groupId\" to null; -> will attempt to insert default groupId");
 				bpartner.setGroupId(null);
 			}
 			else
 			{
-				final Optional<BPGroup> optionalBPGroup = bpGroupRepository
-						.getByNameAndOrgId(jsonBPartner.getGroup(), bpartnerComposite.getOrgId());
-
-				final BPGroup bpGroup;
-				if (optionalBPGroup.isPresent())
-				{
-					bpGroup = optionalBPGroup.get();
-					bpGroup.setName(jsonBPartner.getGroup().trim());
-				}
-				else
-				{
-					bpGroup = BPGroup.of(bpartnerComposite.getOrgId(), null, jsonBPartner.getGroup().trim());
-				}
-
-				final BPGroupId bpGroupId = bpGroupRepository.save(bpGroup);
+				final BPGroupId bpGroupId = bpGroupService.getOrCreateBPGroup(
+						Check.assumeNotNull(bpartnerComposite.getOrgId(),
+								"orgId was meanwhile set to bpartnerComposite={}", bpartnerComposite),
+						jsonBPartner.getGroup().trim());
+				
 				bpartner.setGroupId(bpGroupId);
 			}
 		}
@@ -1645,7 +1639,7 @@ public class JsonPersisterService
 
 		final boolean ifExistsThenAssumeUnchanged = syncAdvise.getIfExists().isAssertUnchanged();
 		final boolean locationAlreadyExists = originalBPartnerLocation.getId() != null;
-		
+
 		if (locationAlreadyExists && ifExistsThenAssumeUnchanged)
 		{
 			final BPartnerLocation locationToCompare = createLocationToCompare(location);

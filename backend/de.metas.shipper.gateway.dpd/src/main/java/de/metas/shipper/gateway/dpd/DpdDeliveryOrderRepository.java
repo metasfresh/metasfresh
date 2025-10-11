@@ -23,8 +23,7 @@
 package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.location.ICountryCodeFactory;
-import de.metas.shipping.mpackage.PackageId;
+import de.metas.location.CountryCode;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
@@ -36,11 +35,12 @@ import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -55,8 +55,6 @@ import java.util.List;
 @Repository
 public class DpdDeliveryOrderRepository
 {
-	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
-
 	public DeliveryOrder getByRepoId(final DeliveryOrderId deliveryOrderRepoId)
 	{
 
@@ -149,7 +147,7 @@ public class DpdDeliveryOrderRepository
 			// General Shipment Data
 			// dpdStoreOrder.identification number // there's no identification number saved. it needs to be created in the client during the request creation!
 			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-			orderPO.setDpdProduct(deliveryOrder.getShipperProduct().getCode());
+			orderPO.setDpdProduct(deliveryOrder.getShipperProduct() != null ? deliveryOrder.getShipperProduct().getCode() : null);
 			orderPO.setDpdOrderType(customDeliveryData.getOrderType());
 			orderPO.setSendingDepot(customDeliveryData.getSendingDepot());
 			orderPO.setPaperFormat(customDeliveryData.getPaperFormat().getCode());
@@ -159,17 +157,17 @@ public class DpdDeliveryOrderRepository
 			// Parcels aka Packages aka DeliveryOrderLines
 			final List<I_DPD_StoreOrderLine> lines = retrieveAllOrderLines(orderPO.getDPD_StoreOrder_ID());
 
-			for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+			for (final DeliveryOrderParcel deliveryOrderParcel : deliveryOrder.getDeliveryOrderParcels())
 			{
-				final I_DPD_StoreOrderLine orderLinePO = retrieveStoreOrderLinePoByPackageIdOrCreateNew(lines, deliveryOrderLine);
+				final I_DPD_StoreOrderLine orderLinePO = retrieveStoreOrderLinePoByPackageIdOrCreateNew(lines, deliveryOrderParcel);
 
 				//noinspection ConstantConditions
-				orderLinePO.setPackageContent(deliveryOrderLine.getContent());
-				orderLinePO.setWeightInKg(deliveryOrderLine.getGrossWeightKg().intValue());
-				orderLinePO.setM_Package_ID(deliveryOrderLine.getPackageId().getRepoId());
+				orderLinePO.setPackageContent(deliveryOrderParcel.getContent());
+				orderLinePO.setWeightInKg(deliveryOrderParcel.getGrossWeightKg().intValue());
+				orderLinePO.setM_Package_ID(deliveryOrderParcel.getPackageId().getRepoId());
 				orderLinePO.setDPD_StoreOrder_ID(orderPO.getDPD_StoreOrder_ID());
 
-				final PackageDimensions packageDimensions = deliveryOrderLine.getPackageDimensions();
+				final PackageDimensions packageDimensions = deliveryOrderParcel.getPackageDimensions();
 				orderLinePO.setLengthInCm(packageDimensions.getLengthInCM());
 				orderLinePO.setWidthInCm(packageDimensions.getWidthInCM());
 				orderLinePO.setHeightInCm(packageDimensions.getHeightInCM());
@@ -197,10 +195,10 @@ public class DpdDeliveryOrderRepository
 		return orderPO;
 	}
 
-	private I_DPD_StoreOrderLine retrieveStoreOrderLinePoByPackageIdOrCreateNew(@NonNull final List<I_DPD_StoreOrderLine> lines, final DeliveryOrderLine deliveryOrderLine)
+	private I_DPD_StoreOrderLine retrieveStoreOrderLinePoByPackageIdOrCreateNew(@NonNull final List<I_DPD_StoreOrderLine> lines, final DeliveryOrderParcel deliveryOrderParcel)
 	{
 		return lines.stream()
-				.filter(it -> it.getM_Package_ID() == deliveryOrderLine.getPackageId().getRepoId())
+				.filter(it -> it.getM_Package_ID() == deliveryOrderParcel.getPackageId().getRepoId())
 				.findFirst()
 				.orElse(InterfaceWrapperHelper.newInstance(I_DPD_StoreOrderLine.class));
 	}
@@ -213,10 +211,10 @@ public class DpdDeliveryOrderRepository
 	{
 		final List<I_DPD_StoreOrderLine> linesPO = retrieveAllOrderLines(orderPO.getDPD_StoreOrder_ID());
 
-		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLIneBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<DeliveryOrderParcel> deliveryOrderLIneBuilder = ImmutableList.builder();
 		for (final I_DPD_StoreOrderLine linePO : linesPO)
 		{
-			final DeliveryOrderLine line = DeliveryOrderLine.builder()
+			final DeliveryOrderParcel line = DeliveryOrderParcel.builder()
 					.packageId(PackageId.ofRepoId(linePO.getM_Package_ID()))
 					.packageDimensions(PackageDimensions.builder()
 							.lengthInCM(linePO.getLengthInCm())
@@ -244,7 +242,7 @@ public class DpdDeliveryOrderRepository
 						.houseNo(orderPO.getSenderHouseNo())
 						.zipCode(orderPO.getSenderZipCode())
 						.city(orderPO.getSenderCity())
-						.country(countryCodeFactory.getCountryCodeByAlpha2(orderPO.getSenderCountry()))
+						.country(CountryCode.ofAlpha2(orderPO.getSenderCountry()))
 						.build())
 				//
 				// Pickup Date and Time
@@ -262,9 +260,10 @@ public class DpdDeliveryOrderRepository
 						.houseNo(orderPO.getRecipientHouseNo())
 						.zipCode(orderPO.getRecipientZipCode())
 						.city(orderPO.getRecipientCity())
-						.country(countryCodeFactory.getCountryCodeByAlpha2(orderPO.getRecipientCountry()))
+						.country(CountryCode.ofAlpha2(orderPO.getRecipientCountry()))
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name(orderPO.getRecipientName1())
 						.emailAddress(orderPO.getRecipientEmailAddress())
 						.simplePhoneNumber(orderPO.getRecipientPhone())
 						.build())
@@ -283,7 +282,7 @@ public class DpdDeliveryOrderRepository
 				.shipperProduct(DpdShipperProduct.ofCode(orderPO.getDpdProduct()))
 				//
 				// Parcels aka Packages aka DeliveryOrderLines
-				.deliveryOrderLines(deliveryOrderLIneBuilder.build())
+				.deliveryOrderParcels(deliveryOrderLIneBuilder.build())
 				//
 				// Data related to DeliveryOrder completion
 				.trackingNumber(orderPO.getawb())

@@ -13,6 +13,7 @@ import de.metas.document.DocTypeId;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -79,6 +80,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class OLCandBL implements IOLCandBL
 {
 	private static final Logger logger = LogManager.getLogger(OLCandBL.class);
+
+	private static final AdMessageKey ERR_PRICING_SYSTEM_NOT_FOUND = AdMessageKey.of("ERR_PRICING_SYSTEM_NOT_FOUND");
+	private static final AdMessageKey ERR_CURRENCY_NOT_FOUND = AdMessageKey.of("ERR_CURRENCY_NOT_FOUND");
+	private static final AdMessageKey ERR_PRICE_LIST_NOT_FOUND = AdMessageKey.of("ERR_PRICE_LIST_NOT_FOUND");
+	private static final AdMessageKey ERR_ORDER_LINE_CANDIDATES_MISSING = AdMessageKey.of("ERR_ORDER_LINE_CANDIDATES_MISSING");
 
 	private final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
@@ -352,7 +358,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (pricingSystemId == null)
 		{
-			throw new AdempiereException("@M_PricingSystem@ @NotFound@")
+			throw new AdempiereException(ERR_PRICING_SYSTEM_NOT_FOUND)
 					.appendParametersToMessage()
 					.setParameter("effectiveBillPartnerId", effectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord));
 		}
@@ -366,13 +372,15 @@ public class OLCandBL implements IOLCandBL
 		pricingCtx.setDisallowDiscount(olCandRecord.isManualDiscount());
 
 		final CountryId countryId = bpartnerBL.getCountryId(shipToPartnerInfo);
+		final CurrencyId pricelistCurrency = olCandRecord.isManualPrice() ? CurrencyId.ofRepoId(olCandRecord.getC_Currency_ID()) : null;
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
 				countryId,
-				SOTrx.SALES);
+				SOTrx.SALES,
+				pricelistCurrency);
 		if (plId == null)
 		{
-			throw new AdempiereException("@M_PriceList_ID@ @NotFound@: @M_PricingSystem_ID@ " + pricingSystemId + ", @DropShip_Location_ID@ " + shipToPartnerInfo.getBpartnerLocationId());
+			throw new AdempiereException(ERR_PRICE_LIST_NOT_FOUND, pricingSystemId, shipToPartnerInfo.getBpartnerLocationId(), pricelistCurrency);
 		}
 		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCandRecord));
@@ -407,9 +415,10 @@ public class OLCandBL implements IOLCandBL
 
 		if (currencyId == null)
 		{
-			throw new AdempiereException("@NotFound@ @C_Currency@"
-					+ "\n Pricing context: " + pricingCtx
-					+ "\n Pricing result: " + pricingResult);
+			throw new AdempiereException(ERR_CURRENCY_NOT_FOUND)
+					.appendParametersToMessage()
+					.setParameter("Pricing context", pricingCtx)
+					.setParameter("Pricing result:", pricingResult);
 		}
 
 		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, pricingResult.getPrecision().toInt());
@@ -455,9 +464,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (olCandRefs.isEmpty())
 		{
-			throw new AdempiereException("addAttachment - Missing order line candiates for given olCandQuery")
-					.appendParametersToMessage()
-					.setParameter("olCandQuery", olCandQuery);
+			throw new AdempiereException(ERR_ORDER_LINE_CANDIDATES_MISSING, olCandQuery);
 		}
 
 		final TableRecordReference firstOLCandRef = olCandRefs.getFirst();

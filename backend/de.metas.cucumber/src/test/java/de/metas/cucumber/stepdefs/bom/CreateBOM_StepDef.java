@@ -70,6 +70,8 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
+import de.metas.material.planning.pporder.LiberoException;
+import org.eevolution.exceptions.BOMCycleException;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -243,7 +245,7 @@ public class CreateBOM_StepDef
 			final I_M_Product product = productTable.get(productIdentifier);
 			assertThat(product).isNotNull();
 
-			updateProductLLCAndMarkAsVerified(product);
+			checkProductBOMCyclesAndMarkAsVerified(product);
 
 			final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 					.orElse(null);
@@ -254,15 +256,14 @@ public class CreateBOM_StepDef
 			{
 				final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
 				final I_M_Product bomLineProduct = productBL.getById(productId);
-				updateProductLLCAndMarkAsVerified(bomLineProduct);
+				checkProductBOMCyclesAndMarkAsVerified(bomLineProduct);
 			}
 		}
 	}
 
-	private void updateProductLLCAndMarkAsVerified(final I_M_Product product)
+	private void checkProductBOMCyclesAndMarkAsVerified(final I_M_Product product)
 	{
-		final int lowLevelCode = productBOMBL.calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-		product.setLowLevel(lowLevelCode);
+		productBOMBL.checkCycles(ProductId.ofRepoId(product.getM_Product_ID()));
 		product.setIsVerified(true);
 		InterfaceWrapperHelper.save(product);
 	}

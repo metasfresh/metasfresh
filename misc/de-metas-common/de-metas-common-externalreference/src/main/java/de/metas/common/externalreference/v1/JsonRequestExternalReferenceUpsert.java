@@ -35,7 +35,7 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonRequestExternalReferenceUpsert.JsonRequestExternalReferenceUpsertBuilder.class)
 public class JsonRequestExternalReferenceUpsert
 {
-	@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	@NonNull
 	JsonExternalSystemName systemName;
 

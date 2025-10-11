@@ -56,8 +56,8 @@ Feature: desadv and invoic
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | KGM                  | 0.25         |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_1 x 10 PCE | false                   |
+      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct | IsOrderInTuUomWhenMatched |
+      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_1 x 10 PCE | false                   | false                     |
 
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
@@ -115,7 +115,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId              | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId              | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId_29042022_1 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_29042022_1 | true      | CO        |
 
     And validate the created order lines
@@ -155,7 +155,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_29042022_1 | true      | CO        |
 
     And validate the created shipment lines
@@ -163,7 +163,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 50          | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_29042022_1 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -226,8 +226,8 @@ Feature: desadv and invoic
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | TU                   | 0.1          |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_2 x 10 PCE | false                   |
+      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct | IsOrderInTuUomWhenMatched |
+      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_2 x 10 PCE | false                   | false                     |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | pp_1       | 2002141                           | p_1                     | 10.0     | TU                | Normal                        | hu_pi_item_product_1                   |
@@ -283,7 +283,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId02052022_2 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_02052022_2 | true      | CO        |
 
     And validate the created order lines
@@ -321,7 +321,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_02052022_2 | true      | CO        |
 
     And validate the created shipment lines
@@ -329,7 +329,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 50          | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_02052022_2 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -387,8 +387,8 @@ Feature: desadv and invoic
       | Identifier | Name                     | IsStocked |
       | p_1        | desadvProduct_03052022_3 | true      |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_3 x 10 PCE | false                   |
+      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct | IsOrderInTuUomWhenMatched |
+      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_3 x 10 PCE | false                   | false                     |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
@@ -446,7 +446,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId03052022_3 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_3 | true      | CO        |
 
     And validate the created order lines
@@ -484,7 +484,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_03052022_3 | true      | CO        |
 
     And validate the created shipment lines
@@ -492,7 +492,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 5           | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_03052022_3 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -554,8 +554,8 @@ Feature: desadv and invoic
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | KGM                  | 0.25         |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_4 x 10 PCE | false                   |
+      | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct | IsOrderInTuUomWhenMatched |
+      | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_4 x 10 PCE | false                   | false                     |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | KGM               | Normal                        |
@@ -611,7 +611,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId03052022_4 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_4 | true      | CO        |
 
     And validate the created order lines
@@ -649,7 +649,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_03052022_4 | true      | CO        |
 
     And validate the created shipment lines
@@ -657,7 +657,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 5           | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_03052022_4 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -722,8 +722,8 @@ Feature: desadv and invoic
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | KGM                  | 0.25         |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
+      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct | IsOrderInTuUomWhenMatched |
+      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   | false                     |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
@@ -782,7 +782,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId03052022_5 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_5 | true      | CO        |
 
     And validate the created order lines
@@ -820,7 +820,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_03052022_5 | true      | CO        |
 
     And validate the created shipment lines
@@ -828,7 +828,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 20          | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_03052022_5 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -892,8 +892,8 @@ Feature: desadv and invoic
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | TU                   | 1            |
     And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | true                   | false                 | IFCO_Test_6 x 10 PCE | false                   |
+      | M_HU_PI_Item_Product_ID.Identifier | REST.Context         | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct | IsOrderInTuUomWhenMatched |
+      | hu_pi_item_product_1               | hu_pi_item_product_1 | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | true                   | false                 | IFCO_Test_6 x 10 PCE | false                   | false                     |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | 2002141                           | p_1                     | 10.0     | PCE               | Normal                        |
@@ -952,7 +952,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId04052022_6 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_04052022_6 | true      | CO        |
 
     And validate the created order lines
@@ -990,7 +990,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_04052022_6 | true      | CO        |
 
     And validate the created shipment lines
@@ -998,7 +998,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 25          | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_04052022_6 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines

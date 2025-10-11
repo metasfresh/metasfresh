@@ -61,6 +61,11 @@ public class DeliveryOrderId implements RepoIdAware
 		return deliveryOrderId != null ? deliveryOrderId.getRepoId() : defaultValue;
 	}
 
+	public String toString()
+	{
+		return String.valueOf(repoId);
+	}
+
 	@Override
 	@JsonValue
 	public int getRepoId()

@@ -45,15 +45,17 @@ public class JsonProductUOMConversion
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	JsonMetasfreshId productId;
 
-	@Schema(description = "This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_ID.")
+@Schema(description = "This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_ID.")
+>>>>>>> origin/new_dawn_uat
 	@NonNull
-	@JsonProperty("uomFrom")
-	String fromUomCode;
-
-	@Schema(description = "This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_To_ID.")
+	@JsonProperty("uomX12DE355From")
+	String uomX12DE355From;
+@Schema(description = "This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_To_ID.")
+	@ApiModelProperty("This is the `C_UOM.X12DE355` of the C_UOM_Conversion.C_UOM_To_ID.")
+>>>>>>> origin/new_dawn_uat
 	@NonNull
-	@JsonProperty("uomTo")
-	String toUomCode;
+	@JsonProperty("uomX12DE355To")
+	String uomX12DE355To;
 
 	@Schema(description = "Corresponding to C_UOM_Conversion.MultiplyRate")
 	@NonNull

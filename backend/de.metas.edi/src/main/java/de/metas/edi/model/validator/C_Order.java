@@ -24,13 +24,16 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
+import de.metas.order.IOrderBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -43,6 +46,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_Order
 {
+	private final IEDIInputDataSourceBL inputDataSourceBL = Services.get(IEDIInputDataSourceBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
@@ -75,7 +81,7 @@ public class C_Order
 			return;
 		}
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		if (!bpartner.isEdiDesadvRecipient() )
+		if (!bpartner.isEdiDesadvRecipient())
 		{
 			return;
 		}
@@ -102,30 +108,45 @@ public class C_Order
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void setEdiEnabledForNewOrder(final I_C_Order order)
+	public void setEdiEnabledForNewOrder(@NonNull final I_C_Order order)
 	{
 		final boolean ediEnabledByInputDataSource;
-
-		if (order.getAD_InputDataSource_ID()<=0)
+		if (order.getAD_InputDataSource_ID() <= 0)
 		{
 			ediEnabledByInputDataSource = false;
 		}
 		else
 		{
-			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(order.getAD_InputDataSource_ID());
+			ediEnabledByInputDataSource = inputDataSourceBL.isEDIInputDataSource(order.getAD_InputDataSource_ID());
+		}
+		if (ediEnabledByInputDataSource)
+		{
+			order.setIsEdiEnabled(true);
+			return; // no need to look further
 		}
 
-		final boolean ediEnabledByBPartner;
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.edi.model.I_C_BPartner.class);
-		if (partner == null)
+		final BPartnerId buyerBPartnerId = orderBL.getEffectiveBillPartnerId(order);
+		if (buyerBPartnerId != null)
 		{
-			ediEnabledByBPartner = false;
+			final I_C_BPartner buyer = InterfaceWrapperHelper.load(buyerBPartnerId, de.metas.edi.model.I_C_BPartner.class);
+			if (buyer.isEdiInvoicRecipient())
+			{
+				order.setIsEdiEnabled(true);
+				return;
+			}
 		}
-		else
+		final BPartnerId recipientBPartnerId =  orderBL.getEffectiveDropshipPartnerId(order);
+		if (recipientBPartnerId != null)
 		{
-			ediEnabledByBPartner = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
+			final I_C_BPartner recipient = InterfaceWrapperHelper.load(recipientBPartnerId, de.metas.edi.model.I_C_BPartner.class);
+			if (recipient.isEdiDesadvRecipient())
+			{
+				order.setIsEdiEnabled(true);
+				return;
+			}
 		}
-		order.setIsEdiEnabled(ediEnabledByInputDataSource || ediEnabledByBPartner);
+
+		order.setIsEdiEnabled(false);
 	}
 
 	/**
@@ -142,7 +163,7 @@ public class C_Order
 			return;
 		}
 
-		final boolean isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSourceId);
+		final boolean isEdiEnabled = inputDataSourceBL.isEDIInputDataSource(orderInputDataSourceId);
 		if (isEdiEnabled)
 		{
 			order.setIsEdiEnabled(true);

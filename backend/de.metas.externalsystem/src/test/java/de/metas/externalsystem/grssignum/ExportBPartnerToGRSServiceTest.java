@@ -30,14 +30,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
-import de.metas.externalsystem.ExternalSystemTestUtil;
+import de.metas.externalsystem.ExternalSystemConfigTestUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
-import de.metas.externalsystem.model.X_ExternalSystem_Config;
-import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.organization.OrgId;
-import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.process.PInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -54,6 +51,7 @@ import java.io.InputStream;
 import java.util.Optional;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -76,7 +74,7 @@ public class ExportBPartnerToGRSServiceTest
 
 		AdempiereTestHelper.get().init();
 
-		exportBPartnerToGRSService = new ExportBPartnerToGRSService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
+		exportBPartnerToGRSService = new ExportBPartnerToGRSService(ExternalSystemConfigRepo.newInstanceForUnitTesting(),
 																	new DataExportAuditRepository(),
 																	new DataExportAuditLogRepository(),
 																	new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
@@ -93,12 +91,12 @@ public class ExportBPartnerToGRSServiceTest
 	public void givenGRSConfigId_whenToJsonExternalSystemRequest_thenReturnExternalSystemRequest()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(1)
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.build();
 
-		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("grsValue")
 				.syncBPartnersToRestEndpoint(true)
@@ -119,12 +117,12 @@ public class ExportBPartnerToGRSServiceTest
 	public void givenSyncBPartnersToRestEndpointDisabled_whenToJsonExternalSystemRequest_thenReturnNoExternalSystemRequest()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.customParentConfigId(2)
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.build();
 
-		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemTestUtil.createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum externalSystemConfigGrsSignum = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("doesntmatter")
 				.build();

@@ -35,8 +35,11 @@ import javax.annotation.Nullable;
 @Builder
 public class HUManagerProfile
 {
-	public static final HUManagerProfile DEFAULT = builder().build();
+	public static final HUManagerProfile DEFAULT = builder()
+			.layoutSections(HUManagerProfileLayoutSectionList.DEFAULT)
+			.build();
 
 	@NonNull @Builder.Default OrgId orgId = OrgId.ANY;
 	@Nullable ImmutableList<AttributeId> displayedAttributeIdsInOrder;
+	@NonNull HUManagerProfileLayoutSectionList layoutSections;
 }

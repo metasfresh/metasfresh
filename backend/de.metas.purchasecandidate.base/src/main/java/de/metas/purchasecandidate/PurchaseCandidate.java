@@ -505,6 +505,12 @@ public class PurchaseCandidate
 			return this;
 		}
 
+		public OrderItemBuilder dateOrdered(@Nullable final ZonedDateTime dateOrdered)
+		{
+			innerBuilder.dateOrdered(dateOrdered);
+			return this;
+		}
+
 		public OrderItemBuilder purchasedQty(@NonNull final Quantity purchasedQty)
 		{
 			innerBuilder.purchasedQty(purchasedQty);

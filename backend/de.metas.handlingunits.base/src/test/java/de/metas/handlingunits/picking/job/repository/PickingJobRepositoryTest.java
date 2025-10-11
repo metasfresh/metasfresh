@@ -12,12 +12,12 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
@@ -95,7 +95,7 @@ class PickingJobRepositoryTest
 		loadingSupportServices.mockQRCode(HuId.ofRepoId(1001), dummyQRCode("f18c53be-1341-4203-b0f4-fb25fb33a5fa"));
 
 		final OrderAndLineId salesOrderLineId = OrderAndLineId.ofRepoIds(salesOrderId, 8);
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(7);
+		final ShipmentScheduleAndJobScheduleId scheduleId = ShipmentScheduleAndJobScheduleId.ofRepoIds(7, -1);
 		final BPartnerLocationId deliveryBPLocationId = BPartnerLocationId.ofRepoId(3, 4);
 		final PickingJob jobCreated = pickingJobRepository.createNewAndGet(
 				PickingJobCreateRepoRequest.builder()
@@ -111,7 +111,7 @@ class PickingJobRepositoryTest
 						.line(PickingJobCreateRepoRequest.Line.builder()
 								.salesOrderAndLineId(salesOrderLineId)
 								.deliveryBPLocationId(deliveryBPLocationId)
-								.shipmentScheduleId(shipmentScheduleId)
+								.scheduleId(scheduleId)
 								.productId(ProductId.ofRepoId(6))
 								.huPIItemProductId(HUPIItemProductId.ofRepoId(6789))
 								.qtyToPick(Quantity.of(100, uomEach))
@@ -123,7 +123,7 @@ class PickingJobRepositoryTest
 								))
 								.step(PickingJobCreateRepoRequest.Step.builder()
 										.salesOrderLineId(salesOrderLineId)
-										.shipmentScheduleId(shipmentScheduleId)
+										.scheduleId(scheduleId)
 										.productId(ProductId.ofRepoId(6))
 										.qtyToPick(Quantity.of(100, uomEach))
 										.mainPickFrom(PickingJobCreateRepoRequest.StepPickFrom.builder()

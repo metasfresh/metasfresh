@@ -9,7 +9,14 @@ import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 import { generateEAN13 } from '../../utils/ean13';
 
-const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, displayPickingSlotSuggestions, P1_ean13ProductCode } = {}) => {
+const createMasterdata = async ({
+                                    filterByQRCode,
+                                    anonymousPickHUsOnTheFly,
+                                    displayPickingSlotSuggestions,
+                                    P1_EAN13,
+                                    P1_TU_EAN13,
+                                    P2_CUSTOMER1_EAN13,
+                                } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -22,8 +29,7 @@ const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, disp
                     allowPickingAnyCustomer: false,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
-                    pickWithNewLU: true,
-                    allowNewTU: true,
+                    pickTo: ['LU_TU'],
                     filterByQRCode: filterByQRCode ?? false,
                     anonymousPickHUsOnTheFly: anonymousPickHUsOnTheFly ?? false,
                     displayPickingSlotSuggestions,
@@ -48,11 +54,11 @@ const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, disp
                 slot3: {},
             },
             products: {
-                "P1": { price: 1, ean13ProductCode: P1_ean13ProductCode },
-                "P2": { price: 1, bpartners: [{ bpartner: "customer1", cu_ean: '7617027667203' }] },
+                "P1": { price: 1, gtin: P1_EAN13 },
+                "P2": { price: 1, bpartners: [{ bpartner: "customer1", ean13: P2_CUSTOMER1_EAN13 }] },
             },
             packingInstructions: {
-                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4, tu_ean: '7617027667210' },
+                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4, tu_ean: P1_TU_EAN13 },
                 "P2_7x3": { lu: "LU", qtyTUsPerLU: 7, tu: "P2_3CU", product: "P2", qtyCUsPerTU: 3 },
             },
             handlingUnits: {
@@ -104,7 +110,7 @@ test('Product based aggregation', async ({ page }) => {
     await PickingJobsListScreen.waitForScreen();
 
     await test.step('Picking job for P1', async () => {
-        await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 72 });
+        const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 72 });
         await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
         await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P1_20x4.luName });
@@ -133,6 +139,28 @@ test('Product based aggregation', async ({ page }) => {
 
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.complete();
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [
+                                // TODO find out why is not processed/shipped?!
+                                { qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, vhuId: 'tu11', tu: 'tu11', lu: 'lu11', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "24 PCE", qtyTUs: 6, qtyLUs: 1, vhuId: 'tu12', tu: 'tu12', lu: 'lu12', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "28 PCE", qtyTUs: 7, qtyLUs: 1, vhuId: 'tu13', tu: 'tu13', lu: 'lu13', processed: false, shipmentLineId: '-' },
+                            ]
+                        }
+                    }
+                }
+            },
+            hus: {
+                [masterdata.handlingUnits.P1_HU.qrCode]: { huStatus: 'A', storages: { P1: '8  PCE' } },
+                tu11: { huStatus: 'S', storages: { P1: '20 PCE' } },
+                tu12: { huStatus: 'S', storages: { P1: '24 PCE' } },
+                tu13: { huStatus: 'S', storages: { P1: '28 PCE' } },
+            }
+        });
     });
 
     await test.step('Picking job for P2', async () => {
@@ -169,7 +197,7 @@ test('Product based aggregation', async ({ page }) => {
             await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot3.qrCode });
             await PickingJobScreen.clickLineButton({ index: 3 })
             await GetQuantityDialog.waitForDialog();
-            await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 5/*TU*/, qtyEntered: 1/*TU*/, qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
+            await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 1/*TU*/, qtyEntered: 1/*TU*/, qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
             await PickingJobScreen.waitForScreen();
         });
 
@@ -189,6 +217,31 @@ test('Product based aggregation', async ({ page }) => {
 
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.complete();
+
+        /* TODO: to be fixed in some other issue
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P2: {
+                            qtyPicked: [
+                                // TODO find out why is not processed/shipped?!
+                                { qtyPicked: "21 PCE", qtyTUs: 7, qtyLUs: 1, vhuId: 'tu21', tu: 'tu21', lu: 'P2_HU', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "18 PCE", qtyTUs: 6, qtyLUs: 1, vhuId: 'tu22', tu: 'tu22', lu: 'lu21', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "3 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu23', tu: 'tu23', lu: 'P2_HU_2', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "12 PCE", qtyTUs: 4, qtyLUs: 1, vhuId: 'tu24', tu: 'tu24', lu: 'P2_HU_2', processed: false, shipmentLineId: '-' },
+                            ]
+                        }
+                    }
+                }
+            },
+            hus: {
+                'P2_HU': { huStatus: 'S', storages: { P2: '21 PCE' } },
+                'P2_HU_2': { huStatus: 'S', storages: { P2: '15 PCE' } },
+                'P2_HU_3': { huStatus: 'A', storages: { P2: '18 PCE' } },
+            }
+        });
+         */
     });
 
     await PickingJobsListScreen.waitForScreen();
@@ -196,8 +249,15 @@ test('Product based aggregation', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Filter by EAN13', async ({ page }) => {
-    const P1_ean13 = generateEAN13();
-    const masterdata = await createMasterdata({ filterByQRCode: true, P1_ean13ProductCode: P1_ean13.productCode });
+    const P1_EAN13 = generateEAN13();
+    const P1_TU_EAN13 = generateEAN13();
+    const P2_CUSTOMER1_EAN13 = generateEAN13();
+    const masterdata = await createMasterdata({
+        filterByQRCode: true,
+        P1_EAN13: P1_EAN13.ean13,
+        P1_TU_EAN13: P1_TU_EAN13.ean13,
+        P2_CUSTOMER1_EAN13: P2_CUSTOMER1_EAN13.ean13,
+    });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -209,7 +269,7 @@ test('Filter by EAN13', async ({ page }) => {
     ]);
 
     await test.step('Filter by TU EAN (associated to P1)', async () => {
-        await PickingJobsListScreen.filterByQRCode('7617027667210');
+        await PickingJobsListScreen.filterByQRCode(P1_TU_EAN13.ean13);
         await PickingJobsListScreen.expectJobButtons([
             { qtyToDeliver: 72, productId: masterdata.products.P1.id },
         ])
@@ -224,14 +284,14 @@ test('Filter by EAN13', async ({ page }) => {
     });
 
     await test.step('Filter by CU EAN (associated to P2 and customer1)', async () => {
-        await PickingJobsListScreen.filterByQRCode('7617027667203');
+        await PickingJobsListScreen.filterByQRCode(P2_CUSTOMER1_EAN13.ean13);
         await PickingJobsListScreen.expectJobButtons([
             { qtyToDeliver: 21, productId: masterdata.products.P2.id },
         ]);
     });
 
     await test.step('Filter by EAN13 Product Code', async () => {
-        await PickingJobsListScreen.filterByQRCode(P1_ean13.ean13);
+        await PickingJobsListScreen.filterByQRCode(P1_EAN13.ean13);
         await PickingJobsListScreen.expectJobButtons([
             { qtyToDeliver: 72, productId: masterdata.products.P1.id },
         ]);

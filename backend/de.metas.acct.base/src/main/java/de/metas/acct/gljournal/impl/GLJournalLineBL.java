@@ -132,13 +132,16 @@ public class GLJournalLineBL implements IGLJournalLineBL
 		if (group == null)
 		{
 			final int lastGroupNo = glJournalLineDAO.retrieveLastGroupNo(glJournal);
-			groupNo = (lastGroupNo <= 0 ? 0 : lastGroupNo) + 10;
-			allowAccountDr = true;
-			allowAccountCr = true;
+			groupNo = (Math.max(lastGroupNo, 0)) + 10;
+			final boolean hasDebit  = glJournalLine.getAmtSourceDr().signum() != 0;
+			final boolean hasCredit = glJournalLine.getAmtSourceCr().signum() != 0;
+
+			allowAccountDr = hasDebit;
+			allowAccountCr = hasCredit;
 
 			// Split transaction: no, it's not a split transaction because we are just starting a new group.
 			// User would be able to enable it if he wants
-			isSplitAcctTrx = false;
+			isSplitAcctTrx = !hasDebit || !hasCredit;
 		}
 		//
 		// Case: we found an unbalanced group, so this new journal line shall be part of that.

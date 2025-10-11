@@ -90,7 +90,7 @@ public class InvokeGRSSignumAction extends AlterExternalSystemServiceStatusActio
 	@Override
 	protected String getTabName()
 	{
-		return ExternalSystemType.GRSSignum.getName();
+		return ExternalSystemType.GRSSignum.getValue();
 	}
 
 	@Override

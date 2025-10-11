@@ -37,7 +37,6 @@ import de.metas.common.handlingunits.JsonHUList;
 import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -57,6 +56,7 @@ import de.metas.printing.frontend.FrontendPrinterData;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -145,8 +145,7 @@ public class HandlingUnitsRestController
 	@PostMapping("/byQRCode")
 	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByIdSupplier(
-				() -> handlingUnitsService.toGetByIdRequest(request));
+		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByQRCode(GetByQRCodeRequest.of(request));
 
 		//
 		// If no HU was found for given QR Code then try to directly convert given QR code to a "new HU"
@@ -241,7 +240,7 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final ADRefList adRefList, final String adLanguage)
+	public static JsonDisposalReasonsList toJsonDisposalReasonsList(final ADRefList adRefList, final String adLanguage)
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
@@ -303,13 +302,11 @@ public class HandlingUnitsRestController
 	public void moveHU(
 			@RequestBody @NonNull final JsonMoveHURequest request)
 	{
-		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
-
 		handlingUnitsService.move(MoveHURequest.builder()
 				.huId(request.getHuId())
-				.huQRCode(huQRCode)
+				.huQRCode(HUQRCode.fromNullable(request.getHuQRCode()))
 				.numberOfTUs(request.getNumberOfTUs())
-				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.targetQRCode(request.getTargetQRCode())
 				.build());
 	}
 
@@ -322,7 +319,7 @@ public class HandlingUnitsRestController
 
 		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
 				.huQrCodes(huQrCodes)
-				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.targetQRCode(ScannedCode.ofString(request.getTargetQRCode()))
 				.build());
 	}
 
@@ -363,7 +360,7 @@ public class HandlingUnitsRestController
 
 		return handlingUnitsService.getByIdSupplier(() -> GetByIdRequest.builder()
 				.huId(huId)
-				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.expectedQRCode(HUQRCode.fromNullable(request.getHuQRCode()))
 				.build());
 	}
 
@@ -382,7 +379,7 @@ public class HandlingUnitsRestController
 								.map(this::toJsonHUAttribute)
 								.collect(ImmutableList.toImmutableList()))
 						.build())
-				.jsonHUType(toJsonHUType(huQRCode.getPackingInfo().getHuUnitType()))
+				.unitType(toJsonHUType(huQRCode.getPackingInfo().getHuUnitType()))
 				.build();
 	}
 

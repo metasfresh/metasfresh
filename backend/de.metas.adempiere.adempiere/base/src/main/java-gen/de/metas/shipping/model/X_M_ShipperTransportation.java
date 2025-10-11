@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 335272481L;
+	private static final long serialVersionUID = 1717419151L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -60,22 +60,6 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
-	}
-
-	/** Set Sammelrechnung erstellen.
-	 @param CollectiveBillReport Sammelrechnung erstellen	  */
-	@Override
-	public void setCollectiveBillReport (java.lang.String CollectiveBillReport)
-	{
-		set_Value (COLUMNNAME_CollectiveBillReport, CollectiveBillReport);
-	}
-
-	/** Get Sammelrechnung erstellen.
-	 @return Sammelrechnung erstellen	  */
-	@Override
-	public java.lang.String getCollectiveBillReport ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CollectiveBillReport);
 	}
 
 	@Override
@@ -236,6 +220,18 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public boolean isApproved() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsApproved);
+	}
+
+	@Override
+	public void setIsSOTrx (final boolean IsSOTrx)
+	{
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
+	}
+
+	@Override
+	public boolean isSOTrx() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
 	@Override

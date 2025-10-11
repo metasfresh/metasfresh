@@ -122,28 +122,5 @@ public class C_AllocationHdr_StepDef
 
 		final I_C_AllocationHdr allocationHdr = builder.createAndComplete();
 		allocationTable.putOrReplaceIfSameId(identifier, allocationHdr);
-
-		detectAndCrossLinkCounterAllocationLines(builder.getC_AllocationLines());
 	}
-
-	private void detectAndCrossLinkCounterAllocationLines(@NonNull final List<I_C_AllocationLine> lines)
-	{
-		if (lines.size() != 2)
-		{
-			return;
-		}
-
-		final I_C_AllocationLine line1 = lines.get(0);
-		final I_C_AllocationLine line2 = lines.get(1);
-		if ((line1.getC_Invoice_ID() > 0 && line1.getC_Payment_ID() <= 0)
-				&& (line2.getC_Invoice_ID() > 0 && line2.getC_Payment_ID() <= 0)
-				&& line1.getAmount().compareTo(line2.getAmount().negate()) == 0)
-		{
-			line1.setCounter_AllocationLine_ID(line2.getC_AllocationLine_ID());
-			InterfaceWrapperHelper.save(line1);
-			line2.setCounter_AllocationLine_ID(line1.getC_AllocationLine_ID());
-			InterfaceWrapperHelper.save(line2);
-		}
-	}
-
 }

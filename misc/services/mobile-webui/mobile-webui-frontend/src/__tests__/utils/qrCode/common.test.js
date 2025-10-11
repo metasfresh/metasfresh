@@ -46,7 +46,7 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '00027_20250312T233125110',
-          expectedEAN13ProductCode: '4888',
+          expectedGS1ProductCodes: { ean13ProductCode: '4888' },
           barcodeProductNo: '4888',
           barcodeType: 'EAN13',
         })
@@ -56,7 +56,7 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '00027_20250312T233125110',
-          expectedEAN13ProductCode: '4888',
+          expectedGS1ProductCodes: { ean13ProductCode: '4888' },
           barcodeProductNo: '48889',
           barcodeType: 'EAN13',
         })

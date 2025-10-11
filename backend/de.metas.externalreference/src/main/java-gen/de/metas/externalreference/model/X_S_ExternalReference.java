@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalreference.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for S_ExternalReference
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -549777537L;
+	private static final long serialVersionUID = 1215790119L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -35,62 +35,57 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
-	public void setExternalReference (final String ExternalReference)
+	public void setExternalReference (final java.lang.String ExternalReference)
 	{
 		set_Value (COLUMNNAME_ExternalReference, ExternalReference);
 	}
 
 	@Override
-	public String getExternalReference()
+	public java.lang.String getExternalReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalReference);
 	}
 
 	@Override
-	public void setExternalReferenceURL (final @Nullable String ExternalReferenceURL)
+	public void setExternalReferenceURL (final @Nullable java.lang.String ExternalReferenceURL)
 	{
 		set_Value (COLUMNNAME_ExternalReferenceURL, ExternalReferenceURL);
 	}
 
 	@Override
-	public String getExternalReferenceURL()
+	public java.lang.String getExternalReferenceURL() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalReferenceURL);
 	}
 
-	/** 
-	 * ExternalSystem AD_Reference_ID=541117
-	 * Reference name: ExternalSystem
-	 */
-	public static final int EXTERNALSYSTEM_AD_Reference_ID=541117;
-	/** Github = Github */
-	public static final String EXTERNALSYSTEM_Github = "Github";
-	/** Everhour = Everhour */
-	public static final String EXTERNALSYSTEM_Everhour = "Everhour";
-	/** ALBERTA = ALBERTA */
-	public static final String EXTERNALSYSTEM_ALBERTA = "ALBERTA";
-	/** Shopware6 = Shopware6 */
-	public static final String EXTERNALSYSTEM_Shopware6 = "Shopware6";
-	/** Other = Other */
-	public static final String EXTERNALSYSTEM_Other = "Other";
-	/** WooCommerce = WooCommerce */
-	public static final String EXTERNALSYSTEM_WooCommerce = "WooCommerce";
-	/** GRSSignum = GRSSignum */
-	public static final String EXTERNALSYSTEM_GRSSignum = "GRSSignum";
-	/** LeichUndMehl = LeichUndMehl */
-	public static final String EXTERNALSYSTEM_LeichUndMehl = "LeichUndMehl";
-	/** ProCareManagement = ProCareManagement */
-	public static final String EXTERNALSYSTEM_ProCareManagement = "ProCareManagement";
 	@Override
-	public void setExternalSystem (final String ExternalSystem)
+	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
 	{
-		set_Value (COLUMNNAME_ExternalSystem, ExternalSystem);
+		if (ExternalSystem_Config_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
 	}
 
 	@Override
-	public String getExternalSystem()
+	public int getExternalSystem_Config_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_ExternalSystem);
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override
@@ -187,25 +182,25 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	/** Warehouse = Warehouse */
 	public static final String TYPE_Warehouse = "Warehouse";
 	@Override
-	public void setType (final String Type)
+	public void setType (final java.lang.String Type)
 	{
 		set_ValueNoCheck (COLUMNNAME_Type, Type);
 	}
 
 	@Override
-	public String getType()
+	public java.lang.String getType() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
 	}
 
 	@Override
-	public void setVersion (final @Nullable String Version)
+	public void setVersion (final @Nullable java.lang.String Version)
 	{
 		set_Value (COLUMNNAME_Version, Version);
 	}
 
 	@Override
-	public String getVersion()
+	public java.lang.String getVersion() 
 	{
 		return get_ValueAsString(COLUMNNAME_Version);
 	}

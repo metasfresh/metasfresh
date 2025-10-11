@@ -1,234 +1,157 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Forecast
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_Forecast extends org.compiere.model.PO implements I_M_Forecast, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1471546080L;
+	private static final long serialVersionUID = -418626558L;
 
     /** Standard Constructor */
-    public X_M_Forecast (Properties ctx, int M_Forecast_ID, String trxName)
+    public X_M_Forecast (final Properties ctx, final int M_Forecast_ID, @Nullable final String trxName)
     {
       super (ctx, M_Forecast_ID, trxName);
-      /** if (M_Forecast_ID == 0)
-        {
-			setC_Calendar_ID (0);
-			setC_Year_ID (0);
-			setDocAction (null); // CO
-			setDocStatus (null); // DR
-			setIsDefault (false);
-			setM_Forecast_ID (0);
-			setName (null);
-			setProcessed (false); // N
-        } */
     }
 
     /** Load Constructor */
-    public X_M_Forecast (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Forecast (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
+	/** Load Meta Data */
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Calendar getC_Calendar() throws RuntimeException
+	public org.compiere.model.I_C_Calendar getC_Calendar()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class);
 	}
 
 	@Override
-	public void setC_Calendar(org.compiere.model.I_C_Calendar C_Calendar)
+	public void setC_Calendar(final org.compiere.model.I_C_Calendar C_Calendar)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Calendar);
 	}
 
-	/** Set Kalender.
-		@param C_Calendar_ID 
-		Accounting Calendar Name
-	  */
 	@Override
-	public void setC_Calendar_ID (int C_Calendar_ID)
+	public void setC_Calendar_ID (final int C_Calendar_ID)
 	{
 		if (C_Calendar_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Calendar_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Calendar_ID, Integer.valueOf(C_Calendar_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Calendar_ID, C_Calendar_ID);
 	}
 
-	/** Get Kalender.
-		@return Accounting Calendar Name
-	  */
 	@Override
-	public int getC_Calendar_ID () 
+	public int getC_Calendar_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Calendar_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Calendar_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Period getC_Period() throws RuntimeException
+	public org.compiere.model.I_C_Period getC_Period()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
 	}
 
 	@Override
-	public void setC_Period(org.compiere.model.I_C_Period C_Period)
+	public void setC_Period(final org.compiere.model.I_C_Period C_Period)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
 	}
 
-	/** Set Periode.
-		@param C_Period_ID 
-		Periode des Kalenders
-	  */
 	@Override
-	public void setC_Period_ID (int C_Period_ID)
+	public void setC_Period_ID (final int C_Period_ID)
 	{
 		if (C_Period_ID < 1) 
 			set_Value (COLUMNNAME_C_Period_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
+			set_Value (COLUMNNAME_C_Period_ID, C_Period_ID);
 	}
 
-	/** Get Periode.
-		@return Periode des Kalenders
-	  */
 	@Override
-	public int getC_Period_ID () 
+	public int getC_Period_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Period_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Period_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Year getC_Year() throws RuntimeException
+	public org.compiere.model.I_C_Year getC_Year()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Year_ID, org.compiere.model.I_C_Year.class);
 	}
 
 	@Override
-	public void setC_Year(org.compiere.model.I_C_Year C_Year)
+	public void setC_Year(final org.compiere.model.I_C_Year C_Year)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Year_ID, org.compiere.model.I_C_Year.class, C_Year);
 	}
 
-	/** Set Jahr.
-		@param C_Year_ID 
-		Calendar Year
-	  */
 	@Override
-	public void setC_Year_ID (int C_Year_ID)
+	public void setC_Year_ID (final int C_Year_ID)
 	{
 		if (C_Year_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Year_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Year_ID, Integer.valueOf(C_Year_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Year_ID, C_Year_ID);
 	}
 
-	/** Get Jahr.
-		@return Calendar Year
-	  */
 	@Override
-	public int getC_Year_ID () 
+	public int getC_Year_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Year_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Year_ID);
 	}
 
-	/** Set Zugesagter Termin.
-		@param DatePromised 
-		Zugesagter Termin für diesen Auftrag
-	  */
 	@Override
-	public void setDatePromised (java.sql.Timestamp DatePromised)
+	public void setDatePromised (final java.sql.Timestamp DatePromised)
 	{
 		set_Value (COLUMNNAME_DatePromised, DatePromised);
 	}
 
-	/** Get Zugesagter Termin.
-		@return Zugesagter Termin für diesen Auftrag
-	  */
 	@Override
-	public java.sql.Timestamp getDatePromised () 
+	public java.sql.Timestamp getDatePromised() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
+		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -266,24 +189,16 @@ public class X_M_Forecast extends org.compiere.model.PO implements I_M_Forecast,
 	public static final String DOCACTION_WaitComplete = "WC";
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
-	/** Set Belegverarbeitung.
-		@param DocAction 
-		Der zukünftige Status des Belegs
-	  */
 	@Override
-	public void setDocAction (java.lang.String DocAction)
+	public void setDocAction (final java.lang.String DocAction)
 	{
-
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Belegverarbeitung.
-		@return Der zukünftige Status des Belegs
-	  */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
+		return get_ValueAsString(COLUMNNAME_DocAction);
 	}
 
 	/** 
@@ -315,235 +230,132 @@ public class X_M_Forecast extends org.compiere.model.PO implements I_M_Forecast,
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus (final java.lang.String DocStatus)
 	{
-
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Kommentar/Hilfe.
-		@param Help 
-		Comment or Hint
-	  */
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Kommentar/Hilfe.
-		@return Comment or Hint
-	  */
 	@Override
-	public java.lang.String getHelp () 
+	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	/** Set Standard.
-		@param IsDefault 
-		Default value
-	  */
 	@Override
-	public void setIsDefault (boolean IsDefault)
+	public void setIsDefault (final boolean IsDefault)
 	{
-		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
+		set_Value (COLUMNNAME_IsDefault, IsDefault);
 	}
 
-	/** Get Standard.
-		@return Default value
-	  */
 	@Override
-	public boolean isDefault () 
+	public boolean isDefault() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
 	}
 
-	/** Set Prognose.
-		@param M_Forecast_ID 
-		Material Forecast
-	  */
 	@Override
-	public void setM_Forecast_ID (int M_Forecast_ID)
+	public void setM_Forecast_ID (final int M_Forecast_ID)
 	{
 		if (M_Forecast_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, Integer.valueOf(M_Forecast_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, M_Forecast_ID);
 	}
 
-	/** Get Prognose.
-		@return Material Forecast
-	  */
 	@Override
-	public int getM_Forecast_ID () 
+	public int getM_Forecast_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Forecast_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Forecast_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_M_PriceList getM_PriceList() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PriceList_ID, org.compiere.model.I_M_PriceList.class);
-	}
-
-	@Override
-	public void setM_PriceList(org.compiere.model.I_M_PriceList M_PriceList)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PriceList_ID, org.compiere.model.I_M_PriceList.class, M_PriceList);
-	}
-
-	/** Set Preisliste.
-		@param M_PriceList_ID 
-		Unique identifier of a Price List
-	  */
-	@Override
-	public void setM_PriceList_ID (int M_PriceList_ID)
+	public void setM_PriceList_ID (final int M_PriceList_ID)
 	{
 		if (M_PriceList_ID < 1) 
 			set_Value (COLUMNNAME_M_PriceList_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_PriceList_ID, Integer.valueOf(M_PriceList_ID));
+			set_Value (COLUMNNAME_M_PriceList_ID, M_PriceList_ID);
 	}
 
-	/** Get Preisliste.
-		@return Unique identifier of a Price List
-	  */
 	@Override
-	public int getM_PriceList_ID () 
+	public int getM_PriceList_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_PriceList_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
-	}
-
-	/** Set Lager.
-		@param M_Warehouse_ID 
-		Lager oder Ort für Dienstleistung
-	  */
-	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
-	/** Get Lager.
-		@return Lager oder Ort für Dienstleistung
-	  */
 	@Override
-	public int getM_Warehouse_ID () 
+	public int getM_Warehouse_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_ValueNoCheck (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_ValueNoCheck (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 }

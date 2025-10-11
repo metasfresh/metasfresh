@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.expectations.request;
 
+import de.metas.handlingunits.QtyTU;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -16,7 +17,10 @@ public class JsonHUExpectation
 	@Nullable String huStatus;
 	@Nullable Map<String, String> storages;
 	@Nullable Map<String, String> attributes;
+	@Nullable List<JsonHUExpectation> tus;
 	@Nullable List<CU> cus;
+	@Nullable Boolean isAggregatedTU;
+	@Nullable QtyTU qtyTUs;
 	
 	//
  	//

@@ -82,6 +82,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_C_TaxCategory_ID;
+import static org.compiere.model.I_C_OrderLine.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 
@@ -373,6 +374,17 @@ public class C_OrderLine_StepDef
 				orderLine.setQtyOrdered(updatedQtyOrdered);
 			}
 
+			final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (Check.isNotBlank(asiIdentifier))
+			{
+				final Integer asiId = attributeSetInstanceTable.getOptional(asiIdentifier)
+						.map(I_M_AttributeSetInstance::getM_AttributeSetInstance_ID)
+						.orElseGet(() -> Integer.parseInt(asiIdentifier));
+
+				orderLine.setM_AttributeSetInstance_ID(asiId);
+			}
+
 			saveRecord(orderLine);
 
 			orderLineTable.putOrReplace(olIdentifier, orderLine);
@@ -505,7 +517,7 @@ public class C_OrderLine_StepDef
 
 		if (dateOrdered != null)
 		{
-			assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
+			assertThat(orderLine.getDateOrdered()).as(COLUMNNAME_DateOrdered).isEqualTo(dateOrdered);
 		}
 
 		if (taxCategoryIdentifier.isPresent())

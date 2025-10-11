@@ -2,10 +2,10 @@ package de.metas.impex.api.impl;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.InputDataSourceCreateRequest;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -132,7 +132,7 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 
 		queryBuilder.addInArrayFilter(I_AD_InputDataSource.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
 
-		if (!query.getInternalName().isEmpty())
+		if (Check.isNotBlank(query.getInternalName()))
 		{
 			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_InternalName, query.getInternalName());
 		}

@@ -65,8 +65,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.*;
-import org.compiere.util.TimeUtil;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -177,7 +184,7 @@ public class M_PriceList_StepDef
 
 	private Optional<I_M_PriceList> getExistingPriceList(@NonNull final SOTrx soTrx, @NonNull final PricingSystemId pricingSystemId, final CountryId countryId)
 	{
-		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx);
+		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx, null);
 		return existingPriceLists.isEmpty()
 				? Optional.empty()
 				: Optional.of(existingPriceLists.get(0));

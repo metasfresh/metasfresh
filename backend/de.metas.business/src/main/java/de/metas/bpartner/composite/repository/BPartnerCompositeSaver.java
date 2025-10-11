@@ -17,6 +17,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
@@ -35,6 +36,7 @@ import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -50,6 +52,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
@@ -556,7 +559,13 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
 			bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
 			bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
-			bpartnerContactRecord.setName(bpartnerContact.getName());
+
+			final String name = CoalesceUtil.coalesce(
+					StringUtils.trimBlankToNull(bpartnerContact.getName()),
+					StringUtils.trimBlankToNull(IUserBL.buildContactName(bpartnerContact.getFirstName(), bpartnerContact.getLastName())),
+					StringUtils.trimBlankToNull(bpartnerContact.getEmail()));
+			bpartnerContactRecord.setName(name);
+
 			bpartnerContactRecord.setEMail(bpartnerContact.getEmail());
 
 			bpartnerContactRecord.setFirstname(bpartnerContact.getFirstName());

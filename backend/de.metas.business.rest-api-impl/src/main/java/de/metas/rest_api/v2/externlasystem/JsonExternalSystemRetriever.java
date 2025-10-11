@@ -54,7 +54,7 @@ public class JsonExternalSystemRetriever
 
 		return JsonExternalSystemInfo.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(parentConfig.getId().getRepoId()))
-				.externalSystemName(JsonExternalSystemName.of(parentConfig.getType().getName()))
+				.externalSystemName(JsonExternalSystemName.of(parentConfig.getType().getValue()))
 				.externalSystemChildConfigValue(childConfig.getValue())
 				.orgCode(orgCode)
 				.parameters(getParameters(parentConfig))
@@ -64,14 +64,12 @@ public class JsonExternalSystemRetriever
 	@NonNull
 	private static Map<String, String> getParameters(@NonNull final ExternalSystemParentConfig config)
 	{
-		switch (config.getType())
+		if (config.getType().isGRSSignum())
 		{
-			case GRSSignum:
-				final ExternalSystemGRSSignumConfig grsConfig = ExternalSystemGRSSignumConfig.cast(config.getChildConfig());
-				return getGRSSignumParameters(grsConfig);
-			default:
-				throw new AdempiereException("Unsupported externalSystemConfigType=" + config.getType());
+			final ExternalSystemGRSSignumConfig grsConfig = ExternalSystemGRSSignumConfig.cast(config.getChildConfig());
+			return getGRSSignumParameters(grsConfig);
 		}
+		throw new AdempiereException("Unsupported externalSystemConfigType=" + config.getType());
 	}
 
 	@NonNull

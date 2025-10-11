@@ -38,19 +38,22 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReference;
+import de.metas.externalreference.ExternalReferenceQueriesResult;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.IExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -64,23 +67,14 @@ import java.util.Optional;
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
 @Component
+@RequiredArgsConstructor
 public class ExternalReferenceRestControllerService
 {
 	private static final Logger logger = LogManager.getLogger(ExternalReferenceRestControllerService.class);
 
 	private final ExternalReferenceRepository externalReferenceRepository;
-	private final ExternalSystems externalSystems;
+	private final ExternalSystemRepository externalSystemRepository;
 	private final ExternalReferenceTypes externalReferenceTypes;
-
-	public ExternalReferenceRestControllerService(
-			@NonNull final ExternalReferenceRepository externalReferenceRepository,
-			@NonNull final ExternalSystems externalSystems,
-			@NonNull final ExternalReferenceTypes externalReferenceTypes)
-	{
-		this.externalReferenceRepository = externalReferenceRepository;
-		this.externalSystems = externalSystems;
-		this.externalReferenceTypes = externalReferenceTypes;
-	}
 
 	@NonNull
 	public JsonExternalReferenceLookupResponse performLookup(
@@ -89,14 +83,14 @@ public class ExternalReferenceRestControllerService
 	{
 		orgId = orgId != null ? orgId : Env.getOrgId();
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByValue(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
 		final ImmutableSet<JsonExternalReferenceLookupItem> items = ImmutableSet.copyOf(request.getItems());
 
 		final ImmutableMap<JsonExternalReferenceLookupItem, ExternalReferenceQuery> item2Query = extractRepoQueries(items, orgId, externalSystem);
 
-		final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences = externalReferenceRepository.getExternalReferences(item2Query.values());
+		final ExternalReferenceQueriesResult externalReferences = externalReferenceRepository.getExternalReferences(item2Query.values());
 
 		return createResponseFromRepoResult(item2Query, externalReferences);
 	}
@@ -113,7 +107,7 @@ public class ExternalReferenceRestControllerService
 	private ImmutableMap<JsonExternalReferenceLookupItem, ExternalReferenceQuery> extractRepoQueries(
 			@NonNull final ImmutableSet<JsonExternalReferenceLookupItem> items,
 			@NonNull final OrgId orgId,
-			@NonNull final IExternalSystem externalSystem)
+			@NonNull final ExternalSystem externalSystem)
 	{
 		final ImmutableMap.Builder<JsonExternalReferenceLookupItem, ExternalReferenceQuery> lookupItem2Query = ImmutableMap.builder();
 
@@ -137,7 +131,7 @@ public class ExternalReferenceRestControllerService
 	@NonNull
 	private JsonExternalReferenceLookupResponse createResponseFromRepoResult(
 			@NonNull final ImmutableMap<JsonExternalReferenceLookupItem, ExternalReferenceQuery> item2Query,
-			@NonNull final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences)
+			@NonNull final ExternalReferenceQueriesResult externalReferences)
 	{
 		final JsonExternalReferenceLookupResponse.JsonExternalReferenceLookupResponseBuilder result = JsonExternalReferenceLookupResponse.builder();
 
@@ -146,10 +140,10 @@ public class ExternalReferenceRestControllerService
 			final JsonExternalReferenceLookupItem lookupItem = lookupItem2QueryEntry.getKey();
 			final ExternalReferenceQuery query = lookupItem2QueryEntry.getValue();
 
-			final ExternalReference externalReference = externalReferences.get(query);
+			final ExternalReference externalReference = externalReferences.get(query).orElse(null);
 
 			final JsonExternalReferenceItem responseItem;
-			if (ExternalReference.NULL.equals(externalReference))
+			if (externalReference == null)
 			{
 				responseItem = JsonExternalReferenceItem.of(lookupItem);
 			}
@@ -159,7 +153,7 @@ public class ExternalReferenceRestControllerService
 						.lookupItem(lookupItem)
 						.metasfreshId(JsonMetasfreshId.of(externalReference.getRecordId()))
 						.version(externalReference.getVersion())
-						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getCode()))
+						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getType().getValue()))
 						.externalReferenceId(JsonMetasfreshId.of(externalReference.getExternalReferenceId().getRepoId()))
 						.externalReferenceUrl(externalReference.getExternalReferenceUrl())
 						.build();
@@ -174,7 +168,7 @@ public class ExternalReferenceRestControllerService
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByType(ExternalSystemType.ofValue(request.getSystemName().getName()))
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
 		final List<JsonExternalReferenceItem> references = request.getItems();
@@ -259,9 +253,9 @@ public class ExternalReferenceRestControllerService
 		final JsonExternalReferenceLookupRequest lookupRequest = JsonExternalReferenceLookupRequest.builder()
 				.systemName(externalSystemName)
 				.item(JsonExternalReferenceLookupItem.builder()
-							  .type(externalReferenceType.getCode())
-							  .id(externalIdentifier.asExternalValueAndSystem().getValue())
-							  .build())
+						.type(externalReferenceType.getCode())
+						.id(externalIdentifier.asExternalValueAndSystem().getValue())
+						.build())
 				.build();
 
 		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgIdToUse, lookupRequest);
@@ -285,9 +279,9 @@ public class ExternalReferenceRestControllerService
 		final JsonExternalReferenceLookupRequest lookupRequest = JsonExternalReferenceLookupRequest.builder()
 				.systemName(externalSystemName)
 				.item(JsonExternalReferenceLookupItem.builder()
-							  .type(externalReferenceType.getCode())
-							  .id(externalBusinessKey.asExternalValueAndSystem().getValue())
-							  .build())
+						.type(externalReferenceType.getCode())
+						.id(externalBusinessKey.asExternalValueAndSystem().getValue())
+						.build())
 				.build();
 
 		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgIdToUse, lookupRequest);
@@ -335,7 +329,7 @@ public class ExternalReferenceRestControllerService
 		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(request.getExternalReferenceItem().getLookupItem().getType())
 				.orElseThrow(() -> new InvalidIdentifierException("type", request.getExternalReferenceItem().getLookupItem().getType()));
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByType(ExternalSystemType.ofValue(request.getSystemName().getName()))
 				.orElseThrow(() -> new InvalidIdentifierException("externalSystem", request.getSystemName().getName()));
 
 		return ExternalReference.builder()

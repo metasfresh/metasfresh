@@ -22,6 +22,7 @@
 
 package de.metas.externalreference;
 
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
 import lombok.Builder;
@@ -34,25 +35,16 @@ import javax.annotation.Nullable;
 @Value
 public class ExternalReferenceQuery
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	IExternalSystem externalSystem;
-
-	@NonNull
-	IExternalReferenceType externalReferenceType;
-
-	@Nullable
-	String externalReference;
-
-	@Nullable
-	MetasfreshId metasfreshId;
+	@NonNull OrgId orgId;
+	@NonNull ExternalSystem externalSystem;
+	@NonNull IExternalReferenceType externalReferenceType;
+	@Nullable String externalReference;
+	@Nullable MetasfreshId metasfreshId;
 
 	@Builder
 	public ExternalReferenceQuery(
 			@NonNull final OrgId orgId,
-			@NonNull final IExternalSystem externalSystem,
+			@NonNull final ExternalSystem externalSystem,
 			@NonNull final IExternalReferenceType externalReferenceType,
 			@Nullable final String externalReference,
 			@Nullable final MetasfreshId metasfreshId)
