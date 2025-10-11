@@ -44,3 +44,4 @@ It''s important to then also have this statement, before the transaction is comm
 select update_window_translation_from_ad_element(583633);
 
 Where in this case, 583633 is the AD_Element_ID of the custom (new) window''s AD_Window-AD_Element_ID.'
+;
