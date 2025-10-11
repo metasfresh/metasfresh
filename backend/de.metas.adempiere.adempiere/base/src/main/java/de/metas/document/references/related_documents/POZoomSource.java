@@ -152,6 +152,12 @@ public final class POZoomSource implements IZoomSource
 	}
 
 	@Override
+	public boolean isSingleKeyRecord()
+	{
+		return keyColumnName != null;
+	}
+
+	@Override
 	public Properties getCtx()
 	{
 		return po.getCtx();

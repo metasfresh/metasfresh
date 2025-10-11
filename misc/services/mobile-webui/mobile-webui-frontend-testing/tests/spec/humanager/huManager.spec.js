@@ -31,19 +31,22 @@ const createMasterdata = async () => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Scan by M_HU_ID', async ({ page }) => {
+const createMasterdataAndScanByHUQRCode = async ({ page }) => {
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('huManager');
     await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.huId });
+
+    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
-});
+
+    return masterdata;
+}
 
 // noinspection JSUnusedLocalSymbols
-test('Dispose HU', async ({ page }) => {
+test('Check action buttons order', async ({ page }) => {
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -52,25 +55,29 @@ test('Dispose HU', async ({ page }) => {
     await HUManagerScreen.waitForScreen();
     await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
 
-    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    await HUManagerScreen.expectButtonsInOrder([
+        'move-button',
+        'set-clearance-button',
+        'bulk-actions-button',
+        'change-qty-button',
+        'print-labels-button',
+        'dispose-button',
+        'scan-again-button'
+    ]);
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Dispose HU', async ({ page }) => {
+    await createMasterdataAndScanByHUQRCode({ page });
     await HUManagerScreen.dispose();
 });
 
 // noinspection JSUnusedLocalSymbols
 test('Move HU using locator code', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdataAndScanByHUQRCode({ page });
 
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('huManager');
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
-
-    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
     await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: masterdata.warehouses.wh1.locatorCode });
-    
     await HUManagerScreen.move({ qrCode: masterdata.warehouses.wh2.locatorCode });
-
     await HUManagerScreen.waitForScreen();
     await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
     await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: masterdata.warehouses.wh2.locatorCode });
@@ -78,15 +85,8 @@ test('Move HU using locator code', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Change Qty', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdataAndScanByHUQRCode({ page });
 
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('huManager');
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
-
-    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
     await HUManagerScreen.changeQty({ expectQtyEntered: '80', qtyEntered: '100', description: 'test' });
     await HUManagerScreen.waitForScreen();
     await HUManagerScreen.expectVisible();
@@ -96,13 +96,7 @@ test('Change Qty', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Change Clearance Status', async ({ page }) => {
-    const masterdata = await createMasterdata();
-
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('huManager');
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
+    await createMasterdataAndScanByHUQRCode({ page });
 
     await HUManagerScreen.expectValueMissing({ name: 'clearanceStatus-value' });
     await HUManagerScreen.expectValueMissing({ name: 'clearanceNote-value' });
@@ -127,12 +121,8 @@ test('Change Locator of a generated HU QR Code', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Bulk actions - Move', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdataAndScanByHUQRCode({ page });
 
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('huManager');
-    await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
     await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: masterdata.warehouses.wh1.locatorCode });
     await HUManagerScreen.bulkActions({ targetLocator: masterdata.warehouses.wh2.locatorQRCode });
 

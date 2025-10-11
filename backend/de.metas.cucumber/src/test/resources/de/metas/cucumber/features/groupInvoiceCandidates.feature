@@ -169,7 +169,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | creditMemo                        |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_1 | 30 Tage netto | true      | CO        | 4.76 EUR       | dt_cm                       |
 
     And validate created invoice lines
@@ -344,7 +344,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | creditMemo                        |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_2 | 30 Tage netto | true      | CO        | 4.76 EUR       | dt_si                       |
 
     And validate created invoice lines
@@ -515,7 +515,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_2               | creditMemo                        |
 
     And validate created invoices
-      | C_Invoice_ID | OPT.C_DocType_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID | POReference       | paymentTerm   | processed | docStatus | GrandTotal |
+      | C_Invoice_ID | OPT.C_DocType_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID | POReference       | paymentTerm   | processed | DocStatus | GrandTotal |
       | invoice_1    | dt_si                       | customer_SO   | customerLocation_SO    | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 28.56 EUR  |
       | invoice_2    | dt_cm                       | customer_SO   | customerLocation_SO    | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 23.8 EUR   |
 
@@ -633,7 +633,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36 EUR      | dt_si                       |
 
     And validate created invoice lines
@@ -725,7 +725,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO                    |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80 EUR      | A                           |
 
     And validate created invoice lines
@@ -821,7 +821,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO                    |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80 EUR      | A                           |
 
     And validate created invoice lines
@@ -918,7 +918,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO                    |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80 EUR      | C                           |
 
     And validate created invoice lines
@@ -1050,7 +1050,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36 EUR      | A                           |
 
     And validate created invoice lines
@@ -1183,7 +1183,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36 EUR      | B                           |
 
     And validate created invoice lines

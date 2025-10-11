@@ -1,336 +1,121 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_Shipper
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_Shipper 
 {
 
-    /** TableName=M_Shipper */
-    public static final String Table_Name = "M_Shipper";
+	String Table_Name = "M_Shipper";
 
-    /** AD_Table_ID=253 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=253 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_Shipper, Object> COLUMN_Created = new ModelColumn<>(I_M_Shipper.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set Aktiv.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsActive (boolean IsActive);
-
-	/**
-	 * Get Aktiv.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isActive();
-
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsDefault (boolean IsDefault);
-
-	/**
-	 * Get Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isDefault();
-
-    /** Column definition for IsDefault */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_IsDefault = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "IsDefault", null);
-    /** Column name IsDefault */
-    public static final String COLUMNNAME_IsDefault = "IsDefault";
-
-	/**
-	 * Set Lieferweg.
-	 * Method or manner of product delivery
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Shipper_ID (int M_Shipper_ID);
-
-	/**
-	 * Get Lieferweg.
-	 * Method or manner of product delivery
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Shipper_ID();
-
-    /** Column definition for M_Shipper_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "M_Shipper_ID", null);
-    /** Column name M_Shipper_ID */
-    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
-
-	/**
-	 * Set Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setName (java.lang.String Name);
-
-	/**
-	 * Get Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getName();
-
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set Shipper Gateway.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setShipperGateway (java.lang.String ShipperGateway);
-
-	/**
-	 * Get Shipper Gateway.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getShipperGateway();
-
-    /** Column definition for ShipperGateway */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_ShipperGateway = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "ShipperGateway", null);
-    /** Column name ShipperGateway */
-    public static final String COLUMNNAME_ShipperGateway = "ShipperGateway";
-
-	/**
-	 * Set Nachverfolgungs-URL.
-	 * URL of the shipper to track shipments
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setTrackingURL (java.lang.String TrackingURL);
-
-	/**
-	 * Get Nachverfolgungs-URL.
-	 * URL of the shipper to track shipments
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getTrackingURL();
-
-    /** Column definition for TrackingURL */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_TrackingURL = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "TrackingURL", null);
-    /** Column name TrackingURL */
-    public static final String COLUMNNAME_TrackingURL = "TrackingURL";
-
-	/**
-	 * Get Aktualisiert.
-	 * Date this record was updated
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getUpdated();
-
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
-
-	/**
-	 * Get Aktualisiert durch.
-	 * User who updated this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getUpdatedBy();
-
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValue (java.lang.String Value);
-
-	/**
-	 * Get Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getValue();
-
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
-
+	ModelColumn<I_M_Shipper, Object> COLUMN_Description = new ModelColumn<>(I_M_Shipper.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Internal Name.
@@ -340,7 +125,7 @@ public interface I_M_Shipper
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setInternalName (java.lang.String InternalName);
+	void setInternalName (@Nullable java.lang.String InternalName);
 
 	/**
 	 * Get Internal Name.
@@ -350,11 +135,190 @@ public interface I_M_Shipper
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getInternalName();
+	@Nullable java.lang.String getInternalName();
 
-	/** Column definition for InternalName */
-	public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "InternalName", null);
-	/** Column name InternalName */
-	public static final String COLUMNNAME_InternalName = "InternalName";
+	ModelColumn<I_M_Shipper, Object> COLUMN_InternalName = new ModelColumn<>(I_M_Shipper.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
 
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Shipper.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefault (boolean IsDefault);
+
+	/**
+	 * Get Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefault();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_IsDefault = new ModelColumn<>(I_M_Shipper.class, "IsDefault", null);
+	String COLUMNNAME_IsDefault = "IsDefault";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_ID();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_Shipper.class, "M_Shipper_ID", null);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_Name = new ModelColumn<>(I_M_Shipper.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Shipper Gateway.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipperGateway (@Nullable java.lang.String ShipperGateway);
+
+	/**
+	 * Get Shipper Gateway.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShipperGateway();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_ShipperGateway = new ModelColumn<>(I_M_Shipper.class, "ShipperGateway", null);
+	String COLUMNNAME_ShipperGateway = "ShipperGateway";
+
+	/**
+	 * Set Tracking URL.
+	 * URL of the shipper to track shipments
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTrackingURL (@Nullable java.lang.String TrackingURL);
+
+	/**
+	 * Get Tracking URL.
+	 * URL of the shipper to track shipments
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTrackingURL();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_TrackingURL = new ModelColumn<>(I_M_Shipper.class, "TrackingURL", null);
+	String COLUMNNAME_TrackingURL = "TrackingURL";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_Updated = new ModelColumn<>(I_M_Shipper.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setValue (@Nullable java.lang.String Value);
+
+	/**
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getValue();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_Value = new ModelColumn<>(I_M_Shipper.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 }

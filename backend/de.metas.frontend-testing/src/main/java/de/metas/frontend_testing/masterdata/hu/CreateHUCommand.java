@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.hu;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -21,7 +22,6 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
@@ -82,16 +82,26 @@ public class CreateHUCommand
 
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
-		updateAttributes(huId);
+		final IAttributeStorage huAttributes = updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
-		final HUQRCode huQRCode = huQRCodesService.getQRCodeByHuId(huId);
+
+		final String huQRCodeStr;
+		if (request.isGenerateHUQRCode())
+		{
+			huQRCodeStr = huQRCodesService.getQRCodeByHuId(huId).toGlobalQRCodeString();
+		}
+		else
+		{
+			huQRCodeStr = null;
+		}
 
 		return JsonCreateHUResponse.builder()
 				.huId(String.valueOf(huId.getRepoId()))
-				.qrCode(huQRCode.toGlobalQRCodeString())
+				.qrCode(huQRCodeStr)
 				.productId(getProductId())
 				.warehouseId(getWarehouseId())
+				.externalBarcode(huAttributes != null && huAttributes.hasAttribute(AttributeConstants.ATTR_ExternalBarcode) ? huAttributes.getValueAsString(AttributeConstants.ATTR_ExternalBarcode) : null)
 				.build();
 	}
 
@@ -247,16 +257,18 @@ public class CreateHUCommand
 		return HuId.ofRepoId(newLU.getM_HU_ID());
 	}
 
-	private void updateAttributes(final HuId huId)
+	private IAttributeStorage updateAttributes(final HuId huId)
 	{
 		final BigDecimal weightNet = request.getWeightNet();
-		@Nullable final String lotNo = request.getLotNo();
+		final String lotNo = request.getLotNo();
 		final LocalDate bestBeforeDate = request.getBestBeforeDate() != null
 				? LocalDate.parse(request.getBestBeforeDate())
 				: null;
-		if (weightNet == null && lotNo == null && bestBeforeDate == null)
+		final String externalBarcode = request.getExternalBarcode();
+
+		if (CoalesceUtil.countNotNulls(weightNet, lotNo, bestBeforeDate, externalBarcode) <= 0)
 		{
-			return;
+			return null;
 		}
 
 		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(huId);
@@ -277,6 +289,13 @@ public class CreateHUCommand
 		{
 			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 		}
+
+		if (externalBarcode != null)
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_ExternalBarcode, externalBarcode);
+		}
+
+		return huAttributes;
 	}
 
 }

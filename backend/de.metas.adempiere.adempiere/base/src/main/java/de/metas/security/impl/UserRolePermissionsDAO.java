@@ -338,6 +338,16 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return matchUserRolesPermissionsForUser(clientId, adUserId, date, IUserRolePermissions::isSystemAdministrator);
 	}
 
+
+	@Override
+	public boolean isAllowPasswordChangeForOthers(RoleId adRoleId, ClientId clientId, UserId adUserId, LocalDate date)
+
+	{
+		final IUserRolePermissions userRolePermissions = getUserRolePermissions(adRoleId, adUserId, clientId, date);
+		return userRolePermissions.hasPermission(IUserRolePermissions.PERMISSION_AllowPasswordChangeForOthers);
+	}
+
+
 	@Override
 	public boolean matchUserRolesPermissionsForUser(
 			final ClientId clientId,

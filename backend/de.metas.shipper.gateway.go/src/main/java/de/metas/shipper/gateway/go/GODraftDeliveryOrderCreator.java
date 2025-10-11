@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.go;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
@@ -17,6 +18,7 @@ import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -53,13 +55,13 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override
-	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<PackageId> mpackageIds = request.getPackageIds();

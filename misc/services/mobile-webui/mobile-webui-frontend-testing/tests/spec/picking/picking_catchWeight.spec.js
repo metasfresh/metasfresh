@@ -7,6 +7,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
+import { expect } from '@playwright/test';
 
 const createMasterdata = async ({
                                     showLastPickedBestBeforeDateForLines,
@@ -211,6 +212,37 @@ test('Leich+Mehl', async ({ page }) => {
             cu5: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
         }
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Leich+Mehl - invalid code', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
+    await expectErrorToast(
+        'Expect invalid QR code',
+        async () => {
+            await PickingJobScreen.pickHU({
+                qrCode: masterdata.handlingUnits.HU1.qrCode,
+                catchWeightQRCode: [
+                    'LMQ#1#0.101#00.00.000#500',
+                ],
+            });
+        },
+        ({ textContent }) => {
+            expect(textContent).toContain('Invalid QR Code');
+        }
+    );
 });
 
 // noinspection JSUnusedLocalSymbols

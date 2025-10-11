@@ -49,6 +49,7 @@ import org.compiere.model.X_AD_RelationType;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
@@ -181,22 +182,24 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		Check.assumeNotEmpty(zoomOriginTableName, "tableName is not empty");
 
 		final POInfo zoomOriginPOInfo = POInfo.getPOInfo(zoomOriginTableName);
-		final String keyColumnName = zoomOriginPOInfo.getKeyColumnName();
+		final List<String> keyColumnNames = zoomOriginPOInfo.getKeyColumnNames();
 
-		if (keyColumnName == null)
+		if (CollectionUtils.isEmpty(keyColumnNames))
 		{
-			logger.error("{} does not have a single key column", zoomOriginTableName);
+			logger.error("{} does not have a single key column nor a composed key", zoomOriginTableName);
 			throw PORelationException.throwWrongKeyColumnCount(zoomOriginTableName, zoomOriginPOInfo.getKeyColumnNames());
 		}
 
-		final int adTableId = zoomOriginPOInfo.getAD_Table_ID();
-		final AdColumnId keyColumnId = zoomOriginPOInfo.getAD_Column_ID(keyColumnName);
-
-		final Object[] sqlParamsDefaultRelationType = new Object[] { adTableId, keyColumnId };
-
 		final ArrayList<SpecificRelationTypeRelatedDocumentsProvider> providers = new ArrayList<>();
-		providers.addAll(runRelationTypeSQLQuery(SQL_Default_RelationType, sqlParamsDefaultRelationType));
-		providers.addAll(runRelationTypeSQLQuery(SQL_TableRecordIDReference_RelationType, null));
+		keyColumnNames.forEach(keyColumnName -> {
+			final int adTableId = zoomOriginPOInfo.getAD_Table_ID();
+			final AdColumnId keyColumnId = zoomOriginPOInfo.getAD_Column_ID(keyColumnName);
+
+			final Object[] sqlParamsDefaultRelationType = new Object[] { adTableId, keyColumnId };
+
+			providers.addAll(runRelationTypeSQLQuery(SQL_Default_RelationType, sqlParamsDefaultRelationType));
+			providers.addAll(runRelationTypeSQLQuery(SQL_TableRecordIDReference_RelationType, null));
+		});
 
 		logger.debug("There are {} matching types for {}", providers.size(), zoomOriginTableName);
 

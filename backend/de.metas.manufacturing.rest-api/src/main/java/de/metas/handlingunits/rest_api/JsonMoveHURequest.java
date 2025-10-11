@@ -2,6 +2,7 @@ package de.metas.handlingunits.rest_api;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -15,8 +16,8 @@ import javax.annotation.Nullable;
 public class JsonMoveHURequest
 {
 	@NonNull HuId huId;
-	@NonNull String huQRCode;
+	@Nullable ScannedCode huQRCode;
 	@Nullable QtyTU numberOfTUs;
 
-	@NonNull String targetQRCode;
+	@NonNull ScannedCode targetQRCode;
 }

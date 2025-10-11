@@ -53,10 +53,10 @@ Feature: Hierarchy commission and license fee commission combined
       | licenseFeeConditions_1 | licenseFee-test | LicenseFee      |                                                 | licenseFeeSettings_1                   |
 
     And metasfresh contains C_BPartners:
-      | Identifier     | OPT.C_BPartner_Location_ID.Identifier | Name           | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName    | OPT.GLN       |
-      | super_salesRep | super_salesRep_location               | super_salesRep | ps_1                          | Y            | Y              | Y              | 1000009              |                                       | super_salesRep cmp |               |
-      | salesRep_1     | salesRep_location_1                   | salesRep_1     | ps_1                          | Y            | Y              | Y              | 1000009              | super_salesRep                        | salesRep_1 cmp     |               |
-      | customer_1     | customer_location_1                   | customer_1     | ps_1                          | Y            | Y              | Y              | 1000009              | salesRep_1                            | customer_1 cmp     | 1234567891234 |
+      | Identifier     | OPT.C_BPartner_Location_ID.Identifier | Name           | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | C_PaymentTerm_ID.Value | PO_PaymentTerm_ID.Value | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName    | OPT.GLN       |
+      | super_salesRep | super_salesRep_location               | super_salesRep | ps_1                          | Y            | Y              | Y              | 10 Tage 1 %            | 10 Tage 1 %             |                                       | super_salesRep cmp |               |
+      | salesRep_1     | salesRep_location_1                   | salesRep_1     | ps_1                          | Y            | Y              | Y              | 10 Tage 1 %            | 10 Tage 1 %             | super_salesRep                        | salesRep_1 cmp     |               |
+      | customer_1     | customer_location_1                   | customer_1     | ps_1                          | Y            | Y              | Y              | 10 Tage 1 %            | 10 Tage 1 %             | salesRep_1                            | customer_1 cmp     | 1234567891234 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier           | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -102,7 +102,7 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | shipment_1            | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName |
       | invoice_1               | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
@@ -173,8 +173,9 @@ Feature: Hierarchy commission and license fee commission combined
       | hierarchy_settlement_1            | salesRep_1                      | commission_product          | 0                   | false       | 1                  |
       | hierarchy_settlement_2            | super_salesRep                  | commission_product          | 0                   | false       | 0.9                |
       | license_fee_settlement            | salesRep_1                      | commission_product          | 0                   | true        | 0.5                |
+#    TODO check if test is correct, why sales invoice doesn't have payment term of sales order?
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.DocSubType |
       | invoiceSettled_1        | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | CA             |
       | invoiceSettled_2        | super_salesRep           | super_salesRep_location           | 10 Tage 1 % | true      | CO        | CA             |
       | invoiceSettled_3        | salesRep_1               | salesRep_location_1               | 10 Tage 1 % | true      | CO        | LS             |
@@ -235,8 +236,8 @@ Feature: Hierarchy commission and license fee commission combined
       | licenseFeeConditions_1        | licenseFee-test | LicenseFee      |                                                 | licenseFeeSettings_1                   |
 
     And metasfresh contains C_BPartners:
-      | Identifier          | OPT.C_BPartner_Location_ID.Identifier | Name                | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName         | OPT.GLN       |
-      | customer_salesRep_1 | customer_salesRep_location_1          | customer_salesRep_1 | ps_1                          | Y            | Y              | Y              | 1000009              |                                       | customer_salesRep_1 cmp | 1234567891235 |
+      | Identifier          | OPT.C_BPartner_Location_ID.Identifier | Name                | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | C_PaymentTerm_ID.Value | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName         | OPT.GLN       |
+      | customer_salesRep_1 | customer_salesRep_location_1          | customer_salesRep_1 | ps_1                          | Y            | Y              | Y              | 10 Tage 1 %            |                                       | customer_salesRep_1 cmp | 1234567891235 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -322,8 +323,9 @@ Feature: Hierarchy commission and license fee commission combined
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced |
       | settlement_so                     | customer_salesRep_1             | commission_product          | 0                   | true        | 0.5                |
+#    TODO check if test is correct, why sales invoice doesn't have payment term of sales order?
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.DocSubType |
       | invoiceSettled_so       | customer_salesRep_1      | customer_salesRep_location_1      | 10 Tage 1 % | true      | CO        | LS             |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |

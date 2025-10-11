@@ -14,7 +14,11 @@ select commoditynumber,
        C_Period_ID,
        Period,
        AD_Org_ID,
-       OrgName
+       OrgName,
+       CustomsTariff,
+       weight,
+       vataxid,
+       c_year_id
 from (
          select cn.value        as commoditynumber,
                 p.Name          as productName,
@@ -57,7 +61,11 @@ from (
                 C_Period_ID,
                 per.name        as Period,
                 io.AD_Org_ID,
-                o.Name          as OrgName
+                o.Name          as OrgName,
+                ct.value           AS CustomsTariff,
+                iow.catchweight    AS weight,
+                bp.vataxid,
+                per.c_year_id
          from M_InOut io
                   join AD_Org o on io.ad_org_id = o.ad_org_id
                   left join m_warehouse w on w.m_warehouse_id = io.m_warehouse_id
@@ -69,6 +77,7 @@ from (
                   join m_product p on p.m_product_id = iol.m_product_id
                   left join m_commoditynumber cn on cn.m_commoditynumber_id = p.m_commoditynumber_id
                   left join C_country pco on pco.c_country_id = p.rawmaterialorigin_id
+                  JOIN c_bpartner bp ON bp.c_bpartner_id = io.c_bpartner_id
                   join c_bpartner_location bpl on bpl.c_bpartner_location_id = io.c_bpartner_location_id
                   join c_location l on l.c_location_id = bpl.c_location_id
                   join C_country co on co.c_country_id = l.c_country_id
@@ -83,6 +92,9 @@ from (
                   LEFT OUTER JOIN C_UOM uom_iol ON uom_iol.C_UOM_ID = iol.C_UOM_ID
 
                   JOIN C_Period per on i.dateinvoiced >= per.startdate and i.dateinvoiced <= per.enddate
+
+                  LEFT OUTER JOIN M_CustomsTariff ct ON ct.M_CustomsTariff_ID = p.M_CustomsTariff_ID
+                  LEFT OUTER JOIN de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight(io.m_inout_id, 'de_DE') AS iow ON TRUE
 
          where io.issotrx = 'Y'
            and io.isactive = 'Y'
@@ -101,5 +113,9 @@ group by commoditynumber,
          C_Period_ID,
          Period,
          AD_Org_ID,
-         OrgName
+         OrgName,
+         CustomsTariff,
+         weight,
+         vataxid,
+         c_year_id
 order by deliveryCountry, commoditynumber;

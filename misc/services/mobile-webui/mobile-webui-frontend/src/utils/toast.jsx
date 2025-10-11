@@ -6,14 +6,15 @@ import 'react-toastify/dist/ReactToastify.css';
 import * as uiTrace from './ui_trace';
 import React from 'react';
 import PropTypes from 'prop-types';
+import { ContextualError } from './ContextualError';
 
 export const toastErrorFromObj = (obj) => {
   console.log('toastErrorFromObj', { obj });
   if (!obj) {
     // shall not happen
     console.error('toastErrorFromObj called without any error');
-  } else if (isError(obj)) {
-    toastError({ axiosError: obj });
+  } else if (isError(obj) || obj instanceof ContextualError) {
+    toastError({ axiosError: obj, context: obj?.context });
   } else if (typeof obj === 'object') {
     toastError(obj);
   } else {
@@ -48,6 +49,9 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
   uiTrace.trace({
     eventName: 'error',
     message,
+    errorCode: code,
+    exception: axiosError ? errorToString(axiosError) : null,
+    callstack: new Error().stack,
     context,
   });
 };
@@ -120,6 +124,17 @@ function extractUserFriendlyErrorSingleErrorObject({ error, fallbackMessageKey }
     return `${error}`;
   }
 }
+
+export const errorToString = (error) => {
+  if (!error) {
+    return null;
+  } else if (error instanceof Error) {
+    return `${error.name}: ${error.message}\n${error.stack}`;
+  } else {
+    // Handle scenarios where the input might not be a proper Error object
+    return String(error);
+  }
+};
 
 const ToastMessage = ({ message, code }) => {
   if (!code) return message;

@@ -79,6 +79,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.report.PrintCopies;
 import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -617,26 +618,36 @@ public class HandlingUnitsService
 	@Nullable
 	private GetByIdRequest toGetByIdRequest(@NonNull final GetByQRCodeRequest request)
 	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode().getAsString()).orNullIfError();
+		final ScannedCode scannedCode = request.getQrCode();
+		final GlobalQRCode globalQRCode = GlobalQRCode.parse(scannedCode.getAsString()).orNullIfError();
 		if (globalQRCode != null)
 		{
 			final HuId huId = resolveHuId(globalQRCode);
-			if (huId == null)
+			if (huId != null)
 			{
-				return null;
+				return GetByIdRequest.builderFrom(request)
+						.huId(huId)
+						.expectedQRCode(HUQRCode.fromGlobalQRCode(globalQRCode))
+						.build();
 			}
+		}
+
+		//
+		// M_HU.Value / ExternalBarcode attribute
+		final HuId huId = handlingUnitsBL.getHUIdByValueOrExternalBarcode(scannedCode).orElse(null);
+		if (huId != null)
+		{
+			// Create the HU QR code if missing because most of the BLs are expecting that (e.g. mobile HU manager - Bulk actions)
+			final HUQRCode huQRCode = huQRCodeService.getQRCodeByHuId(huId);
 
 			return GetByIdRequest.builderFrom(request)
 					.huId(huId)
-					.expectedQRCode(HUQRCode.fromGlobalQRCode(globalQRCode))
+					.expectedQRCode(huQRCode)
 					.build();
 		}
-		else
-		{
-			return GetByIdRequest.builderFrom(request)
-					.huId(HuId.ofHUValue(request.getQrCode().getAsString()))
-					.build();
-		}
+
+		// not found
+		return null;
 	}
 
 	@Nullable
@@ -664,13 +675,17 @@ public class HandlingUnitsService
 	@NonNull
 	private HuId updateQtyInTrx(@NonNull final JsonHUQtyChangeRequest request)
 	{
-		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
+		@Nullable final HUQRCode qrCode = HUQRCode.fromNullable(request.getHuQRCode());
 
 		boolean isSplitOneIfAggregated = request.isSplitOneIfAggregated();
-		HuId huId = request.getHuId();
+		@Nullable HuId huId = request.getHuId();
 		LocatorId locatorId = null;
 		if (huId == null)
 		{
+			if (qrCode == null)
+			{
+				throw new AdempiereException("Either huId or huQRCode must be provided");
+			}
 			huId = huQRCodeService.getHuIdByQRCodeIfExists(qrCode).orElse(null);
 			if (huId == null)
 			{
@@ -681,7 +696,8 @@ public class HandlingUnitsService
 				isSplitOneIfAggregated = false;
 			}
 		}
-		else
+
+		if (huId != null && qrCode != null)
 		{
 			huQRCodeService.assertQRCodeAssignedToHU(qrCode, huId);
 		}

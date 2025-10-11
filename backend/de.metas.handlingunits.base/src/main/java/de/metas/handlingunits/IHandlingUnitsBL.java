@@ -50,6 +50,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -325,6 +326,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI retrievePIDefaultForPicking();
 
 	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
+
+	Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull ScannedCode scannedCode);
 
 	@Builder
 	@Value

@@ -56,7 +56,6 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.location.CountryId;
-import de.metas.location.ICountryCodeFactory;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
@@ -102,7 +101,6 @@ public class ShipmentService
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -274,7 +272,7 @@ public class ShipmentService
 	{
 		final LocalDateTime deliveryDate = createShipmentInfo.getMovementDate();
 		final BigDecimal qtyToDeliverInStockingUOM = createShipmentInfo.getMovementQuantity();
-		final LocationBasicInfo bPartnerLocation = LocationBasicInfo.ofNullable(createShipmentInfo.getShipToLocation(), countryCodeFactory)
+		final LocationBasicInfo bPartnerLocation = LocationBasicInfo.ofNullable(createShipmentInfo.getShipToLocation())
 				.orElse(null);
 		final String bpartnerCode = createShipmentInfo.getBusinessPartnerSearchKey();
 		final List<JsonAttributeInstance> attributes = createShipmentInfo.getAttributes();

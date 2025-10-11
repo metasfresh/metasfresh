@@ -216,7 +216,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.C_Invoice_ID.Identifier | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier |
       | p_1_S0337               | true                     | 0.00        | 119        | inv_1_S0337_100             | 2022-05-10  | bpartner_1_S0337             | bpb_1_S0337                        |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_1_S0337_100         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
   @from:cucumber
@@ -452,7 +452,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | p_2_1_S0337             | true                     | 0.00        | 119        | inv_1_S0337_200             | 2023-10-26  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_200 |
       | p_2_2_S0337             | true                     | 0.00        | 107.1      | inv_2_S0337_200             | 2023-10-24  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_200 |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_1_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
       | inv_2_S0337_200         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 
@@ -755,7 +755,7 @@ Feature: import bank statement in camt.53.001.04 import format
       | p_3_1_S0337             | true                     | 0.00        | 107.1      | inv_2_S0337_300             | 2023-10-24  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_300 |
       | p_3_2_S0337             | true                     | 0.00        | 119        | inv_1_S0337_300             | 2023-10-26  | bpartner_1_S0337             | bp_bank_account_metasfresh_S0337_300 |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_1_S0337_300         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
       | inv_2_S0337_300         | bpartner_1_S0337         | l_1_S0337                         | 30 Tage netto | true      | CO        | true       |
 

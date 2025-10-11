@@ -1,7 +1,6 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OrderPaySchedule
@@ -50,6 +49,28 @@ public interface I_C_OrderPaySchedule
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Sales order.
@@ -117,6 +138,28 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_C_PaymentTerm_Break_ID = "C_PaymentTerm_Break_ID";
 
 	/**
+	 * Set Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
+
+	/**
+	 * Get Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_PaymentTerm_ID();
+
+	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -169,20 +212,20 @@ public interface I_C_OrderPaySchedule
 	 * Date when the payment is due
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDueDate (@Nullable java.sql.Timestamp DueDate);
+	void setDueDate (java.sql.Timestamp DueDate);
 
 	/**
 	 * Get Due Date.
 	 * Date when the payment is due
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDueDate();
+	java.sql.Timestamp getDueDate();
 
 	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_DueDate = new ModelColumn<>(I_C_OrderPaySchedule.class, "DueDate", null);
 	String COLUMNNAME_DueDate = "DueDate";
@@ -211,25 +254,27 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set SeqNo..
+	 * Set Percent.
+	 * Percentage
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setLine (int Line);
+	void setPercent (int Percent);
 
 	/**
-	 * Get SeqNo..
+	 * Get Percent.
+	 * Percentage
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getLine();
+	int getPercent();
 
-	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_Line = new ModelColumn<>(I_C_OrderPaySchedule.class, "Line", null);
-	String COLUMNNAME_Line = "Line";
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_Percent = new ModelColumn<>(I_C_OrderPaySchedule.class, "Percent", null);
+	String COLUMNNAME_Percent = "Percent";
 
 	/**
 	 * Set Reference Date Type.
@@ -253,6 +298,48 @@ public interface I_C_OrderPaySchedule
 
 	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_ReferenceDateType = new ModelColumn<>(I_C_OrderPaySchedule.class, "ReferenceDateType", null);
 	String COLUMNNAME_ReferenceDateType = "ReferenceDateType";
+
+	/**
+	 * Set SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_OrderPaySchedule.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setStatus (java.lang.String Status);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getStatus();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_Status = new ModelColumn<>(I_C_OrderPaySchedule.class, "Status", null);
+	String COLUMNNAME_Status = "Status";
 
 	/**
 	 * Get Updated.

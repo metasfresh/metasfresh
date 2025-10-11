@@ -18,6 +18,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -88,15 +89,9 @@ public class DerKurierClient implements ShipperGatewayClient
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DerKurierConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
-	{
-		throw new UnsupportedOperationException("DerKurierClient.createDeliveryOrder is not implemented");
 	}
 
 	@VisibleForTesting
@@ -152,9 +147,7 @@ public class DerKurierClient implements ShipperGatewayClient
 			@NonNull final Routing routing,
 			@NonNull final DeliveryOrder originalDeliveryOrder)
 	{
-		final OrderId orderId = OrderId.of(
-				getShipperGatewayId(),
-				Integer.toString(originalDeliveryOrder.getId().getRepoId()));
+		final OrderId orderId = OrderId.of(getShipperGatewayId(), originalDeliveryOrder.getId());
 
 		final DeliveryOrderBuilder builder = originalDeliveryOrder.toBuilder()
 				.orderId(orderId)
