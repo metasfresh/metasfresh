@@ -20,7 +20,10 @@
  * #L%
  */
 
--- now create a UC to make sure it won't happen again 
-CREATE UNIQUE INDEX AD_Window_Trl_Name ON AD_Window_Trl (Name, AD_Language);
 
-COMMENT ON INDEX AD_Window_Trl_Name IS 'Needed because It''s no enough to have a UC on AD_Windows.Name. We also need to make sure that we don''t run into unique constraint errors when switching the base-language';
+-- now create a constraint to make sure it won't happen again 
+ALTER TABLE AD_Window_Trl
+    ADD CONSTRAINT AD_Window_Trl_Name_UC UNIQUE (Name, AD_Language)
+        DEFERRABLE INITIALLY DEFERRED;
+
+COMMENT ON CONSTRAINT AD_Window_Trl_Name_UC ON AD_Window_Trl IS 'Needed because It''s no enough to have a UC on AD_Windows.Name. We also need to make sure that we don''t run into unique constraint errors when switching the base-language';

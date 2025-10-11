@@ -42,6 +42,7 @@ FROM ad_window_trl t
     OR f.window2_ad_window_id = t.ad_window_id AND f.window2_trl_ad_language = t.ad_language)
          JOIN ad_window w ON w.ad_window_id = t.ad_window_id;
 
+select backup_table('ad_window_trl');
 UPDATE ad_window_trl t
 SET name=d.name_fix, updatedby=100, updated='2025-10-11 11:14:00'
 FROM fix.ad_window_trl_duplicated_names_fix d
