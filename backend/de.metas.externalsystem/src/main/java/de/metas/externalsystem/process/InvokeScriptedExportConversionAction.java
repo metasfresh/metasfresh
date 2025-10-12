@@ -25,7 +25,6 @@ package de.metas.externalsystem.process;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.process.IProcessPreconditionsContext;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -41,7 +40,8 @@ public class InvokeScriptedExportConversionAction extends InvokeExternalSystemPr
 			throw new AdempiereException("Child Config ID is mandatory for this process!");
 		}
 
-		return ExternalSystemScriptedExportConversionConfigId.ofRepoId(this.childConfigId);
+		// return ExternalSystemScriptedExportConversionConfigId.ofRepoId(this.childConfigId);
+		return null;
 	}
 
 	@Override
@@ -53,13 +53,14 @@ public class InvokeScriptedExportConversionAction extends InvokeExternalSystemPr
 	@Override
 	protected String getTabName()
 	{
-		return ExternalSystemType.ScriptedExportConversion.getValue();
+		// return ExternalSystemType.ScriptedExportConversion.getValue();
+		return null;
 	}
 
 	@Override
 	protected ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.ScriptedExportConversion;
+		return ExternalSystemType.Other;
 	}
 
 	@Override
