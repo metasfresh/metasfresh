@@ -54,6 +54,7 @@
 
         <spring-boot.version>3.5.4</spring-boot.version>
         <lucene.version>8.6.2</lucene.version>
+        <httpclient.version>4.5.14</httpclient.version>
 
 <!--        &lt;!&ndash; Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason. &ndash;&gt;-->
 <!--        <spring.version>6.2.3</spring.version>-->
@@ -375,6 +376,11 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
