@@ -298,6 +298,7 @@ public class ExternallyReferencedCandidateRepository
 		candidate.lineDescription(icRecord.getDescription());
 
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
+		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 
 		return candidate.build();
 	}
