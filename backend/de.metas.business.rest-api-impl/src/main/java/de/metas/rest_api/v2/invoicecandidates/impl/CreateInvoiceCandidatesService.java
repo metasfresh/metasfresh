@@ -1,8 +1,11 @@
-package de.metas.rest_api.invoicecandidates.impl;
+package de.metas.rest_api.v2.invoicecandidates.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -15,6 +18,7 @@ import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -31,17 +35,14 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
 import de.metas.organization.OrgQuery;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.IProductDAO.ProductQuery;
-import de.metas.product.IProductDAO.ProductQuery.ProductQueryBuilder;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse.JsonCreateInvoiceCandidatesResponseBuilder;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
@@ -53,9 +54,13 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v1.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
+import de.metas.rest_api.v2.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
+import de.metas.rest_api.v2.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
+import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -63,6 +68,7 @@ import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.Env;
@@ -102,51 +108,35 @@ import static java.math.BigDecimal.ZERO;
  */
 
 @Service
+@RequiredArgsConstructor
 public class CreateInvoiceCandidatesService
 {
-	private final BPartnerQueryService bPartnerQueryService;
-	private final BPartnerCompositeRepository bpartnerCompositeRepository;
-	private final DocTypeService docTypeService;
-	private final CurrencyService currencyService;
+	private final @NonNull BPartnerQueryService bPartnerQueryService;
+	private final @NonNull BPartnerCompositeRepository bpartnerCompositeRepository;
+	private final @NonNull DocTypeService docTypeService;
+	private final @NonNull CurrencyService currencyService;
+	private final @NonNull ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
+	private final @NonNull ManualCandidateService manualCandidateService;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
-	private final ManualCandidateService manualCandidateService;
-
-	public CreateInvoiceCandidatesService(
-			@NonNull final BPartnerQueryService bPartnerQueryService,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			@NonNull final DocTypeService docTypeService,
-			@NonNull final CurrencyService currencyService,
-			@NonNull final ManualCandidateService manualCandidateService,
-			@NonNull final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository)
-	{
-		this.bPartnerQueryService = bPartnerQueryService;
-		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
-		this.currencyService = currencyService;
-		this.docTypeService = docTypeService;
-		this.manualCandidateService = manualCandidateService;
-		this.externallyReferencedCandidateRepository = externallyReferencedCandidateRepository;
-	}
-
-	public JsonCreateInvoiceCandidatesResponse createInvoiceCandidates(@NonNull final JsonCreateInvoiceCandidatesRequest request)
+	public JsonCreateInvoiceCandidatesResponse createInvoiceCandidates(@NonNull final JsonCreateInvoiceCandidatesRequest request, @NonNull final MasterdataProvider masterdataProvider)
 	{
 		final ImmutableMap<InvoiceCandidateLookupKey, JsonCreateInvoiceCandidatesRequestItem> lookupKey2Item = Maps.uniqueIndex(request.getItems(), this::createInvoiceCandidateLookupKey);
 
 		// candidates
 		final ImmutableList<ExternallyReferencedCandidate> //
-		exitingCandidates = externallyReferencedCandidateRepository.getAllBy(lookupKey2Item.keySet());
+				exitingCandidates = externallyReferencedCandidateRepository.getAllBy(lookupKey2Item.keySet());
 		failIfNotEmpty(exitingCandidates);
 
 		final ImmutableList.Builder<NewManualInvoiceCandidate> candidatesToSave = ImmutableList.builder();
 		for (final Entry<InvoiceCandidateLookupKey, JsonCreateInvoiceCandidatesRequestItem> keyWithItem : lookupKey2Item.entrySet())
 		{
 			final JsonCreateInvoiceCandidatesRequestItem item = keyWithItem.getValue();
-			final NewManualInvoiceCandidate candidate = createCandidate(item);
+			final NewManualInvoiceCandidate candidate = createCandidate(item, masterdataProvider);
 
 			candidatesToSave.add(candidate);
 		}
@@ -179,20 +169,22 @@ public class CreateInvoiceCandidatesService
 		}
 	}
 
-	private NewManualInvoiceCandidate createCandidate(@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
+	private NewManualInvoiceCandidate createCandidate(@NonNull final JsonCreateInvoiceCandidatesRequestItem item, final @NonNull MasterdataProvider masterdataProvider)
 	{
 		final NewManualInvoiceCandidateBuilder candidate = NewManualInvoiceCandidate.builder();
 
 		final OrgId orgId = syncOrgIdToCandidate(candidate, item);
-		final ProductId productId = syncProductToCandidate(candidate, orgId, item);
+		final ProductId productId = syncProductToCandidate(candidate, orgId, item, masterdataProvider);
 
-		syncBPartnerToCandidate(candidate, orgId, item);
+		syncBPartnerToCandidate(candidate, orgId, item, masterdataProvider);
 
 		syncTargetDocTypeToCandidate(candidate, orgId, item.getInvoiceDocType());
 
 		syncDiscountOverrideToCandidate(candidate, item.getDiscountOverride());
 
 		syncPriceEnteredOverrideToCandidate(candidate, productId, item);
+
+		syncPaymentTermIdToCandidate(candidate, item, masterdataProvider, orgId);
 
 		// poReference
 		if (!isEmpty(item.getPoReference(), true))
@@ -290,40 +282,30 @@ public class CreateInvoiceCandidatesService
 				.build();
 	}
 
+	private static void syncPaymentTermIdToCandidate(final @NonNull NewManualInvoiceCandidateBuilder candidate,
+													 final @NonNull JsonCreateInvoiceCandidatesRequestItem item,
+													 final @NonNull MasterdataProvider masterdataProvider,
+													 final OrgId orgId)
+	{
+		final IdentifierString paymentTerm = IdentifierString.of(item.getPaymentTerm());
+		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(paymentTerm, item, orgId);
+		candidate.paymentTermId(paymentTermId);
+	}
+
 	private ProductId syncProductToCandidate(
 			@NonNull final NewManualInvoiceCandidateBuilder candidate,
 			@NonNull final OrgId orgId,
-			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
+			@NonNull final JsonCreateInvoiceCandidatesRequestItem item,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final IdentifierString productIdentifier = IdentifierString.ofOrNull(item.getProductIdentifier());
+		final ExternalIdentifier productIdentifier = ExternalIdentifier.ofOrNull(item.getProductIdentifier());
 		if (productIdentifier == null)
 		{
 			throw new MissingPropertyException("productIdentifier", item);
 		}
 
-		final ProductQueryBuilder productQuery = ProductQuery.builder()
-				.orgId(orgId)
-				.includeAnyOrg(true)
-				.outOfTrx(true);
-		final ProductId productId;
-		switch (productIdentifier.getType())
-		{
-			case EXTERNAL_ID:
-				productId = productDAO.retrieveProductIdBy(productQuery.externalId(productIdentifier.asExternalId()).build());
-				break;
-			case METASFRESH_ID:
-				productId = ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue());
-				break;
-			case VALUE:
-				productId = productDAO.retrieveProductIdBy(productQuery.value(productIdentifier.asValue()).build());
-				break;
-			default:
-				throw new AdempiereException("Unexpected type=" + productIdentifier.getType());
-		}
-		if (productId == null)
-		{
-			throw MissingResourceException.builder().resourceName("product").resourceIdentifier(productIdentifier.toJson()).parentResource(item).build();
-		}
+		final ProductId productId = masterdataProvider.getProductInfo(productIdentifier, orgId)
+				.getProductId();
 
 		candidate.productId(productId);
 		return productId;
@@ -384,7 +366,8 @@ public class CreateInvoiceCandidatesService
 	private void syncBPartnerToCandidate(
 			@NonNull final NewManualInvoiceCandidateBuilder candidate,
 			@NonNull final OrgId orgId,
-			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
+			@NonNull final JsonCreateInvoiceCandidatesRequestItem item,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final boolean noBPartnerIdentifier = isEmpty(item.getBillPartnerIdentifier(), true);
 
@@ -396,7 +379,15 @@ public class CreateInvoiceCandidatesService
 		}
 
 		final IdentifierString bpartnerIdentifier = IdentifierString.of(item.getBillPartnerIdentifier());
-		final BPartnerCompositeLookupKey bpartnerIdLookupKey = BPartnerCompositeLookupKey.ofIdentifierString(bpartnerIdentifier);
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(item.getBillPartnerIdentifier());
+		final BPartnerId bPartnerId = masterdataProvider.resolveBPartnerExternalIdentifier(orgId, externalIdentifier)
+				.orElseThrow(() -> MissingResourceException.builder()
+			.resourceName("billPartner")
+			.resourceIdentifier(bpartnerIdentifier.toJson())
+			.parentResource(item)
+			.build());
+
+		final BPartnerCompositeLookupKey bpartnerIdLookupKey = BPartnerCompositeLookupKey.ofMetasfreshId(bPartnerId);
 		final BPartnerQuery query = bPartnerQueryService.createQueryFailIfNotExists(bpartnerIdLookupKey, orgId);
 		final BPartnerComposite bpartnerComposite;
 		try
@@ -415,7 +406,7 @@ public class CreateInvoiceCandidatesService
 
 		bpartnerInfo.bpartnerId(bpartnerComposite.getBpartner().getId());
 
-		final IdentifierString billLocationIdentifier = IdentifierString.ofOrNull(item.getBillLocationIdentifier());
+		final ExternalIdentifier billLocationIdentifier = ExternalIdentifier.ofOrNull(item.getBillLocationIdentifier());
 		if (billLocationIdentifier == null)
 		{
 			final BPartnerLocation location = bpartnerComposite
@@ -425,23 +416,29 @@ public class CreateInvoiceCandidatesService
 		}
 		else
 		{
+			final BPartnerLocationId bPartnerLocationId = masterdataProvider.resolveBPartnerLocationExternalIdentifier(bPartnerId, orgId, billLocationIdentifier)
+					.orElseThrow(() -> MissingResourceException.builder().resourceName("billLocation").resourceIdentifier(billLocationIdentifier.toString()).parentResource(item).build());
+
 			final BPartnerLocation location = bpartnerComposite
-					.extractLocation(BPartnerCompositeRestUtils.createLocationFilterFor(billLocationIdentifier))
-					.orElseThrow(() -> MissingResourceException.builder().resourceName("billLocation").resourceIdentifier(billLocationIdentifier.toJson()).parentResource(item).build());
+					.extractLocation( loc -> bPartnerLocationId.equals(loc.getId()))
+					.orElseThrow(() -> MissingResourceException.builder().resourceName("billLocation").resourceIdentifier(billLocationIdentifier.toString()).parentResource(item).build());
 			bpartnerInfo.bpartnerLocationId(location.getId());
 		}
 
-		final IdentifierString billContactIdentifier = IdentifierString.ofOrNull(item.getBillContactIdentifier());
+		final ExternalIdentifier billContactIdentifier = ExternalIdentifier.ofOrNull(item.getBillContactIdentifier());
 		if (billContactIdentifier == null)
 		{
 			bpartnerInfo.contactId(null); // that's OK, because the contact is not mandatory in C_Invoice_Candidate
 		}
 		else
 		{
+			final UserId billContact = masterdataProvider.resolveUserExternalIdentifier(orgId, billContactIdentifier)
+					.orElseThrow(() -> MissingResourceException.builder().resourceName("billContact").resourceIdentifier(billContactIdentifier.toString()).parentResource(item).build());
+
 			// extract the composite's location that has the given billContactIdentifier
 			final BPartnerContact contact = bpartnerComposite
-					.extractContact(BPartnerCompositeRestUtils.createContactFilterFor(billContactIdentifier))
-					.orElseThrow(() -> MissingResourceException.builder().resourceName("billContact").resourceIdentifier(billContactIdentifier.toJson()).parentResource(item).build());
+					.extractContact(user -> billContact.equals(BPartnerContactId.toUserIdOrNull(user.getId())))
+					.orElseThrow(() -> MissingResourceException.builder().resourceName("billContact").resourceIdentifier(billContactIdentifier.toString()).parentResource(item).build());
 
 			bpartnerInfo.contactId(contact.getId());
 		}
@@ -472,7 +469,6 @@ public class CreateInvoiceCandidatesService
 
 		final ProductPrice price = createProductPriceOrNull(priceEnteredOverride, productId, item);
 		candidate.priceEnteredOverride(price);
-		return;
 
 	}
 
@@ -526,7 +522,7 @@ public class CreateInvoiceCandidatesService
 		{
 			priceUomId = uomDAO.getUomIdByX12DE355(uomCode);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
 			throw MissingResourceException.builder().resourceName("uom").resourceIdentifier("priceUomCode").parentResource(item).cause(e).build();
 		}

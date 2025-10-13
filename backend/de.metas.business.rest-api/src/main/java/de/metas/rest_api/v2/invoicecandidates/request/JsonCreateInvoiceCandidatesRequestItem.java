@@ -1,13 +1,14 @@
-package de.metas.rest_api.invoicecandidates.request;
+package de.metas.rest_api.v2.invoicecandidates.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.common.rest_api.v1.JsonSOTrx;
+import de.metas.rest_api.invoicecandidates.request.JSONInvoiceDetailItem;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -19,10 +20,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 /*
  * #%L
@@ -132,6 +133,11 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			value = "optional invoice line description")
 	String lineDescription;
 
+	@ApiModelProperty(value = "Identifier of the bPartner in question. Can be\n"
+			+ "* a plain `val-<C_PaymentTerm.Value>`\n"
+			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n", required = true)
+	String paymentTerm;
+
 	@ApiModelProperty(position = 190, required = false, //
 			value = "Optional invoice detail items. Will be persisted as `C_Invoice_Detail` records together with the new invoice candidate.")
 	List<JSONInvoiceDetailItem> invoiceDetailItems;
@@ -158,6 +164,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			@JsonProperty("priceEnteredOverride") @Nullable final JsonPrice priceEnteredOverride,
 			@JsonProperty("discountOverride") @Nullable final BigDecimal discountOverride,
 			@JsonProperty("lineDescription") @Nullable final String lineDescription,
+			@JsonProperty("paymentTerm") @NonNull final String paymentTerm,
 			@JsonProperty("invoiceDetailItems") @Nullable @Singular final List<JSONInvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgCode = orgCode;
@@ -179,6 +186,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 		this.priceEnteredOverride = priceEnteredOverride;
 		this.discountOverride = discountOverride;
 		this.lineDescription = lineDescription;
+		this.paymentTerm = paymentTerm;
 		this.invoiceDetailItems = invoiceDetailItems;
 	}
 }

@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.GLNQuery;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
@@ -17,7 +18,9 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -42,6 +45,7 @@ import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -109,7 +113,7 @@ public final class MasterdataProvider
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.externalReferenceService = externalReferenceRestControllerService;
-		
+
 		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
 		this.productMasterDataProvider = new ProductMasterDataProvider(productLookupService);
 	}
@@ -354,6 +358,87 @@ public final class MasterdataProvider
 		}
 	}
 
+	@NonNull
+	public Optional<BPartnerId> resolveBPartnerExternalIdentifier(@NonNull final OrgId orgId, @NonNull final ExternalIdentifier externalIdentifier)
+	{
+		if (ExternalIdentifier.Type.METASFRESH_ID.equals(externalIdentifier.getType()))
+		{
+			return Optional.of(BPartnerId.ofRepoId(externalIdentifier.asMetasfreshId().getValue()));
+		}
+		else if (ExternalIdentifier.Type.GLN.equals(externalIdentifier.getType()))
+		{
+			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
+					.gln(externalIdentifier.asGLN())
+					.onlyOrgId(orgId)
+					.build());
+		}
+		else if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
+		{
+			return externalReferenceService
+					.resolveExternalReference(orgId, externalIdentifier, BPartnerExternalReferenceType.BPARTNER)
+					.map(jsonMetasfreshId -> BPartnerId.ofRepoId(jsonMetasfreshId.getValue()));
+		}
+		else
+		{
+			throw new InvalidIdentifierException("Given ExternalIdentifier is not supported!")
+					.appendParametersToMessage()
+					.setParameter("ExternalIdentifier", externalIdentifier.getType())
+					.setParameter("RawValue", externalIdentifier.getRawValue());
+		}
+	}
+
+	@NonNull
+	public Optional<BPartnerLocationId> resolveBPartnerLocationExternalIdentifier(@NonNull final BPartnerId bPartnerId, @NonNull final OrgId orgId, @NonNull final ExternalIdentifier externalIdentifier)
+	{
+		if (ExternalIdentifier.Type.METASFRESH_ID.equals(externalIdentifier.getType()))
+		{
+			return Optional.of(BPartnerLocationId.ofRepoId(bPartnerId, externalIdentifier.asMetasfreshId().getValue()));
+		}
+		else if (ExternalIdentifier.Type.GLN.equals(externalIdentifier.getType()))
+		{
+			final GLNQuery glnQuery = GLNQuery.builder()
+					.onlyOrgId(orgId)
+					.gln(externalIdentifier.asGLN())
+					.build();
+			return bPartnerDAO.retrieveSingleBPartnerLocationIdBy(glnQuery);
+		}
+		else if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
+		{
+			return externalReferenceService
+					.resolveExternalReference(orgId, externalIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION)
+					.map(jsonMetasfreshId -> BPartnerLocationId.ofRepoId(bPartnerId, jsonMetasfreshId.getValue()));
+		}
+		else
+		{
+			throw new InvalidIdentifierException("Given ExternalIdentifier is not supported!")
+					.appendParametersToMessage()
+					.setParameter("ExternalIdentifier", externalIdentifier.getType())
+					.setParameter("RawValue", externalIdentifier.getRawValue());
+		}
+	}
+
+	@NonNull
+	public Optional<UserId> resolveUserExternalIdentifier(@NonNull final OrgId orgId, @NonNull final ExternalIdentifier externalIdentifier)
+	{
+		if (ExternalIdentifier.Type.METASFRESH_ID.equals(externalIdentifier.getType()))
+		{
+			return Optional.of(UserId.ofRepoId(externalIdentifier.asMetasfreshId().getValue()));
+		}
+		else if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
+		{
+			return externalReferenceService
+					.resolveExternalReference(orgId, externalIdentifier, ExternalUserReferenceType.USER_ID)
+					.map(jsonMetasfreshId -> UserId.ofRepoId(jsonMetasfreshId.getValue()));
+		}
+		else
+		{
+			throw new InvalidIdentifierException("Given ExternalIdentifier is not supported!")
+					.appendParametersToMessage()
+					.setParameter("ExternalIdentifier", externalIdentifier.getType())
+					.setParameter("RawValue", externalIdentifier.getRawValue());
+		}
+	}
+
 	public PaymentRule getPaymentRule(final JsonOLCandCreateRequest request)
 	{
 		final JSONPaymentRule jsonPaymentRule = request.getPaymentRule();
@@ -385,25 +470,14 @@ public final class MasterdataProvider
 				.build();
 	}
 
-	public PaymentTermId getPaymentTermId(@NonNull final JsonOLCandCreateRequest request, @NonNull final OrgId orgId)
+	public PaymentTermId getPaymentTermId(@NonNull final IdentifierString paymentTerm, @NonNull final Object parent, @NonNull final OrgId orgId)
 	{
-
-		final String paymentTermCode = request.getPaymentTerm();
-
-		if (Check.isEmpty(paymentTermCode))
-		{
-			return null;
-		}
-
-		final IdentifierString paymentTerm = IdentifierString.of(paymentTermCode);
-
 		final PaymentTermQueryBuilder queryBuilder = PaymentTermQuery.builder();
 
 		queryBuilder.orgId(orgId);
 
 		switch (paymentTerm.getType())
 		{
-
 			case EXTERNAL_ID:
 				queryBuilder.externalId(paymentTerm.asExternalId());
 				break;
@@ -420,8 +494,8 @@ public final class MasterdataProvider
 
 		return paymentTermId.orElseThrow(() -> MissingResourceException.builder()
 				.resourceName("PaymentTerm")
-				.resourceIdentifier(paymentTermCode)
-				.parentResource(request).build());
+				.resourceIdentifier(paymentTerm.toJson())
+				.parentResource(parent).build());
 
 	}
 
