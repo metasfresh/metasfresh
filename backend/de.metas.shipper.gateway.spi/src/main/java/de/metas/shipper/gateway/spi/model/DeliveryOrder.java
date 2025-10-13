@@ -130,6 +130,7 @@ public class DeliveryOrder
 			return this;
 		}
 		return this.toBuilder()
+				.clearDeliveryOrderParcels()
 				.deliveryOrderParcels(deliveryOrderParcels)
 				.build();
 	}
