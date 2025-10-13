@@ -1,11 +1,7 @@
 -- Run mode: WEBUI
 
--- 2025-10-08T10:33:10.259Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (1000000,0,556546,TO_TIMESTAMP('2025-10-08 10:33:10.132000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000000,50000,1,'Y','N','Y','N','DocumentNo_ExternalSystem',1000000,TO_TIMESTAMP('2025-10-08 10:33:10.132000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
 -- 2025-10-08T10:33:29.931Z
-INSERT INTO ExternalSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_ID,IsActive,Name,Updated,UpdatedBy,Value) VALUES (1000000,0,TO_TIMESTAMP('2025-10-08 10:33:29.906000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,540056,'Y','Scripted Export Conversion',TO_TIMESTAMP('2025-10-08 10:33:29.906000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'ScriptedExportConversion')
+INSERT INTO ExternalSystem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_ID,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,TO_TIMESTAMP('2025-10-08 10:33:29.906000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,540056,'Y','Scripted Export Conversion',TO_TIMESTAMP('2025-10-08 10:33:29.906000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'ScriptedExportConversion')
 ;
 
 -- Run mode: WEBUI
