@@ -43,9 +43,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.model.I_C_PaymentTerm_Break;
 
-import java.util.List;
-import java.util.Map;
-
 @RequiredArgsConstructor
 public class C_OrderPaySchedule_StepDef
 {
@@ -88,11 +85,11 @@ public class C_OrderPaySchedule_StepDef
 	@Then("The total from order matches the pay schedules amounts:")
 	public void matchOrderTotalWihtPaySchedulesAmts(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rawRowsList = dataTable.entries();
 
-		final OrderId orderId = DataTableRows.ofListOfMaps(rawRowsList)
+		final OrderId orderId = DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID)
-				.stream().findFirst()
+				.stream()
+				.findFirst()
 				.map(row -> row.getAsIdentifier(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID).lookupNotNullIdIn(orderTable))
 				.orElseThrow(() -> new AdempiereException("No order found in data table"));
 
@@ -105,6 +102,9 @@ public class C_OrderPaySchedule_StepDef
 				.stream()
 				.map(OrderPayScheduleLine::getDueAmount)
 				.reduce(Money.zero(grandTotal.getCurrencyId()), Money::add);
+
+		System.out.println("Grand Total: " + grandTotal.toBigDecimal());
+		System.out.println("Total: " + total.toBigDecimal());
 
 		Assertions.assertThat(total).as("Sum of pay schedule amounts").isEqualTo(grandTotal);
 

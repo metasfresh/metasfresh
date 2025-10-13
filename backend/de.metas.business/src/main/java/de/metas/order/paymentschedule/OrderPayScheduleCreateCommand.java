@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import static de.metas.payment.paymentterm.PaymentTermConstants.PENDING_DATE;
 
@@ -52,11 +53,43 @@ class OrderPayScheduleCreateCommand
 			return; // Nothing to schedule
 		}
 
+		final List<PaymentTermBreak> termBreaks = context.getPaymentTerm().getSortedBreaks().collect(ImmutableList.toImmutableList());
+		final ImmutableList.Builder<OrderPayScheduleCreateRequest.Line> linesBuilder = ImmutableList.builder();
+
+		Money totalScheduledAmount = Money.zero(context.getGrandTotal().getCurrencyId());
+
+		for (int i = 0; i < termBreaks.size() - 1; i++)
+		{
+			final PaymentTermBreak termBreak = termBreaks.get(i);
+
+			// Calculate amount by percent
+			final Money lineDueAmount = context.getGrandTotal().multiply(termBreak.getPercent(), context.getPrecision());
+
+			final OrderPayScheduleCreateRequest.Line line = toOrderPayScheduleCreateRequestLine(
+					context,
+					termBreak,
+					lineDueAmount
+			);
+
+			linesBuilder.add(line);
+			totalScheduledAmount = totalScheduledAmount.add(lineDueAmount);
+		}
+
+		final PaymentTermBreak lastTermBreak = termBreaks.get(termBreaks.size() - 1);
+
+		// Calculate the exact amount needed for the last line: Grand Total - accumulated total
+		final Money lastLineDueAmount = context.getGrandTotal().subtract(totalScheduledAmount);
+
+		final OrderPayScheduleCreateRequest.Line lastLine = toOrderPayScheduleCreateRequestLine(
+				context,
+				lastTermBreak,
+				lastLineDueAmount
+		);
+		linesBuilder.add(lastLine);
+
 		final OrderPayScheduleCreateRequest request = OrderPayScheduleCreateRequest.builder()
 				.orderId(context.getOrderId())
-				.lines(context.getPaymentTerm().getSortedBreaks()
-						.map(termBreak -> toOrderPayScheduleCreateRequestLine(context, termBreak))
-						.collect(ImmutableList.toImmutableList()))
+				.lines(linesBuilder.build())
 				.build();
 
 		orderPayScheduleRepository.create(request);
@@ -95,13 +128,14 @@ class OrderPayScheduleCreateCommand
 
 	private static OrderPayScheduleCreateRequest.Line toOrderPayScheduleCreateRequestLine(
 			@NonNull final OrderSchedulingContext context,
-			@NonNull final PaymentTermBreak termBreak)
+			@NonNull final PaymentTermBreak termBreak,
+			@NonNull final Money dueAmount)
 	{
 		final ReferenceDateResult result = computeReferenceDate(context.getOrderDate(), context.getLetterOfCreditDate(), termBreak);
 
 		return OrderPayScheduleCreateRequest.Line.builder()
 				.dueDate(result.getCalculatedDueDate())
-				.dueAmount(context.getGrandTotal().multiply(termBreak.getPercent(), context.getPrecision()))
+				.dueAmount(dueAmount)
 				.paymentTermBreakId(termBreak.getId())
 				.referenceDateType(termBreak.getReferenceDateType())
 				.percent(termBreak.getPercent())
