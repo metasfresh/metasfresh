@@ -25,7 +25,7 @@ Feature: Purchase order with complex payment term
       | plv_purchase | pl_purchase    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | plv_purchase           | product      | 8.75      | PCE      |
+      | plv_purchase           | product      | 8.75     | PCE      |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | vendor     | Y        | N          | ps_1               |
@@ -56,5 +56,20 @@ Feature: Purchase order with complex payment term
     And the order identified by po1 is completed
     Then The order pay schedules were created:
       | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status | C_Order_ID |
-      | poPT1      | PTB1                   | 2025-10-10 | 22.42     | WP     | po1        |
-      | poPT1      | PTB2                   | 9999-01-01 | 67.27     | PR     | po1        |
+      | poPT1      | PTB1                   | 2025-10-10 | 22.42  | WP     | po1        |
+      | poPT1      | PTB2                   | 9999-01-01 | 67.27  | PR     | po1        |
+
+
+  @from:cucumber
+  Scenario: Purchase Order with complex Payment Term - the amounts in steps are summing amount the total from order
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po1        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po1_l1     | po1        | product      | 10         |
+    And the order identified by po1 is completed
+    Then The total from order matches the pay schedules amounts:
+      | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status | C_Order_ID |
+      | poPT1      | PTB1                   | 2025-10-10 | 22.42  | WP     | po1        |
+      | poPT1      | PTB2                   | 9999-01-01 | 67.27  | PR     | po1        |
