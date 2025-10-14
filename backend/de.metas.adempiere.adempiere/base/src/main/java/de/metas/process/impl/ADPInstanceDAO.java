@@ -536,8 +536,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	@Override
 	public PInstanceId createSelectionId()
 	{
-		final String trxName = ITrx.TRXNAME_None;
-		final int adPInstanceId = DB.getNextID(Env.getCtx(), I_AD_PInstance.Table_Name, trxName);
+		final int adPInstanceId = DB.getNextID(Env.getCtx(), I_AD_PInstance.Table_Name);
 		return PInstanceId.ofRepoId(adPInstanceId);
 	}
 

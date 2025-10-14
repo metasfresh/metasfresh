@@ -1,5 +1,8 @@
 package org.adempiere.warehouse.qrcode;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -7,6 +10,8 @@ import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Locator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class LocatorQRCodeTest
 {
@@ -53,4 +58,26 @@ class LocatorQRCodeTest
 						.build());
 	}
 
+	@Test
+	void testSerializeDeserialize() throws JsonProcessingException
+	{
+		final LocatorId locatorId = LocatorId.ofRepoId(1000001, 1000002);
+		final I_M_Locator locator = createLocator(locatorId, "locator1");
+		final LocatorQRCode qrCode = LocatorQRCode.ofLocator(locator);
+		testSerializeDeserialize(qrCode);
+	}
+
+	void testSerializeDeserialize(final LocatorQRCode obj) throws JsonProcessingException
+	{
+		System.out.println("Object: " + obj);
+
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+
+		final String jsonString = jsonObjectMapper.writeValueAsString(obj);
+		System.out.println("JSON: " + obj);
+
+		final LocatorQRCode objDeserialized = jsonObjectMapper.readValue(jsonString, LocatorQRCode.class);
+		assertThat(objDeserialized).isEqualTo(obj);
+		assertThat(objDeserialized).usingRecursiveComparison().isEqualTo(obj);
+	}
 }

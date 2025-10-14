@@ -17,6 +17,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
 import de.metas.frontend_testing.masterdata.huQRCodes.GenerateHUQRCodeCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
+import de.metas.frontend_testing.masterdata.inventory.InventoryCreateCommand;
+import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
+import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
@@ -82,6 +85,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
+		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
 
 		return JsonCreateMasterdataResponse.builder()
@@ -100,7 +104,7 @@ public class CreateMasterdataCommand
 				.salesOrders(salesOrders)
 				.distributionOrders(distributionOrders)
 				.manufacturingOrders(manufacturingOrders)
-				.resources(resources)
+				.inventories(inventories)
 				.build();
 	}
 
@@ -340,6 +344,22 @@ public class CreateMasterdataCommand
 	private JsonPPOrderResponse createManufacturingOrder(String identifier, JsonPPOrderRequest request)
 	{
 		return PPOrderCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonInventoryResponse> createInventories()
+	{
+		return process(request.getInventories(), this::createInventory);
+	}
+
+	private JsonInventoryResponse createInventory(String identifier, JsonInventoryRequest request)
+	{
+		return InventoryCreateCommand.builder()
+				.inventoryService(services.inventoryService)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

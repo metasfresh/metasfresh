@@ -1,4 +1,4 @@
-de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator=[
+de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommandTest.execute_MultipleHUInventoryLineAggregator=[
   {
     "docBaseAndSubType": {
       "docBaseType": "MMI",
@@ -138,12 +138,13 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       }
     ],
     "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
-    "orgId": 1000000
+    "orgId": 1000000,
+    "warehouseId": 1000000
   }
 ]
 
 
-de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator_preAddedHUs=[
+de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommandTest.execute_MultipleHUInventoryLineAggregator_preAddedHUs=[
   {
     "docBaseAndSubType": {
       "docBaseType": "MMI",
@@ -258,12 +259,13 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       }
     ],
     "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
-    "orgId": 1000000
+    "orgId": 1000000,
+    "warehouseId": 1000000
   }
 ]
 
 
-de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_SingleHUInventoryLineAggregator=[
+de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommandTest.execute_SingleHUInventoryLineAggregator=[
   {
     "docBaseAndSubType": {
       "docBaseType": "MMI",
@@ -424,6 +426,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       }
     ],
     "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
-    "orgId": 1000000
+    "orgId": 1000000,
+    "warehouseId": 1000000
   }
 ]

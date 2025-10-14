@@ -93,6 +93,15 @@ public class QueryLimitTest
 		assertThat(QueryLimit.ofInt(11).isLimitHitOrExceeded(listOfSize(10))).isFalse();
 	}
 
+	@Test
+	public void isBelowLimit()
+	{
+		assertThat(QueryLimit.NO_LIMIT.isBelowLimit(listOfSize(10))).isTrue();
+		assertThat(QueryLimit.ofInt(9).isBelowLimit(listOfSize(10))).isFalse();
+		assertThat(QueryLimit.ofInt(10).isBelowLimit(listOfSize(10))).isFalse();
+		assertThat(QueryLimit.ofInt(11).isBelowLimit(listOfSize(10))).isTrue();
+	}
+
 	@Nested
 	public class minusSizeOf
 	{

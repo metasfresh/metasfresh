@@ -23,18 +23,8 @@
 
 package de.metas.vertical.pharma.securpharm.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDate;
-
-import org.adempiere.test.AdempiereTestHelper;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.inventory.InventoryId;
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.actions.DecommissionResponse;
@@ -50,10 +40,20 @@ import de.metas.vertical.pharma.securpharm.product.ProductDetails.ProductDetails
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductRepository;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SecurPharmServiceTest
 {
-	/** The service under test */
+	/**
+	 * The service under test
+	 */
 	private SecurPharmService securPharmService;
 
 	//
@@ -77,10 +77,6 @@ public class SecurPharmServiceTest
 		// Other services
 		userNotifications = new MockedSecurPharmUserNotifications();
 		productsRepo = new SecurPharmProductRepository();
-		// final SecurPharmaActionRepository actionsRepo = Mockito.mock(SecurPharmaActionRepository.class);
-		final SecurPharmaActionRepository actionsRepo = new SecurPharmaActionRepository();
-		final SecurPharmLogRepository logsRepo = Mockito.mock(SecurPharmLogRepository.class);
-		final InventoryRepository inventoryRepo = Mockito.mock(InventoryRepository.class);
 
 		//
 		// The service we are testing
@@ -88,11 +84,11 @@ public class SecurPharmServiceTest
 				.clientFactory(clientHelper.getClientFactory())
 				.configRespository(clientHelper.getConfigRespository())
 				.productsRepo(productsRepo)
-				.actionsRepo(actionsRepo)
-				.logsRepo(logsRepo)
-				.actionRequestDispatcher(new DirectSecurPharmActionsDispatcher())
+				.actionsRepo(new SecurPharmaActionRepository())
+				.logsRepo(Mockito.mock(SecurPharmLogRepository.class))
+				.actionRequestDispatcher(NOPSecurPharmActionsDispatcher.instance)
 				.userNotifications(userNotifications)
-				.inventoryRepo(inventoryRepo)
+				.inventoryService(InventoryService.newInstanceForUnitTesting())
 				.build();
 
 	}

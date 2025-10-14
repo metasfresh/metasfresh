@@ -22,6 +22,7 @@ package org.adempiere.util.api;
  * #L%
  */
 
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.RepoIdAware;
@@ -73,6 +74,17 @@ public interface IParams
 	{
 		final T id = getParameterAsId(parameterName, type);
 		return id != null ? id : defaultValueIfNull;
+	}
+
+	@NonNull
+	default <T extends RepoIdAware> T getParameterAsIdNotNull(@NonNull String parameterName, @NonNull Class<T> type)
+	{
+		final T id = getParameterAsId(parameterName, type);
+		if (id == null)
+		{
+			throw Check.mkEx("Parameter " + parameterName + " is not set");
+		}
+		return id;
 	}
 
 	/**

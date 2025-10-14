@@ -8,7 +8,7 @@ import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.impexp.ImportRecordsAsyncExecutor;
 import de.metas.impexp.MockedImportRecordsAsyncExecutor;
@@ -95,7 +95,7 @@ public class InventoryImportProcessTest
 
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
-		SpringContextHolder.registerJUnitBean(new InventoryRepository());
+		SpringContextHolder.registerJUnitBean(InventoryService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(new HuForInventoryLineFactory());
 		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
 
