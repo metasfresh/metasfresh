@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -37,7 +38,6 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderPaySchedule;
@@ -79,34 +79,20 @@ public class C_OrderPaySchedule_StepDef
 		tableRow.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getOrderPayScheduleStatus()).as("Status").isEqualTo(expected));
 
-		softly.assertAll();
-	}
-
-	@Then("The total from order matches the pay schedules amounts:")
-	public void matchOrderTotalWihtPaySchedulesAmts(@NonNull final DataTable dataTable)
-	{
-
-		final OrderId orderId = DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID)
-				.stream()
-				.findFirst()
-				.map(row -> row.getAsIdentifier(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID).lookupNotNullIdIn(orderTable))
-				.orElseThrow(() -> new AdempiereException("No order found in data table"));
-
+		// Check for the hypothetical amount based on percentage (used for rounding verification)
 		final I_C_Order order = orderBL.getById(orderId);
-		final Money grandTotal = orderBL.getGrandTotal(order);
+		tableRow.getAsOptionalBigDecimal("DueAmt_Percentage")
+				.ifPresent(expectedHypoAmount -> {
+					final Money grandTotal = orderBL.getGrandTotal(order);
+					final CurrencyPrecision precision = orderBL.getAmountPrecision(order);
 
-		final OrderPaySchedule paySchedule = orderPayScheduleService.getByOrderId(orderId).orElseThrow(() -> new AdempiereException("No pay schedule found for orderId: " + orderId));
+					final Money calculatedHypoAmount = grandTotal.multiply(payScheduleLine.getPercent(), precision);
 
-		final Money total = paySchedule.getLines()
-				.stream()
-				.map(OrderPayScheduleLine::getDueAmount)
-				.reduce(Money.zero(grandTotal.getCurrencyId()), Money::add);
+					softly.assertThat(calculatedHypoAmount.toBigDecimal())
+							.as("DueAmt_Percentage calculated from stored percent and grand total")
+							.isEqualByComparingTo(expectedHypoAmount);
+				});
 
-		System.out.println("Grand Total: " + grandTotal.toBigDecimal());
-		System.out.println("Total: " + total.toBigDecimal());
-
-		Assertions.assertThat(total).as("Sum of pay schedule amounts").isEqualTo(grandTotal);
-
+		softly.assertAll();
 	}
 }

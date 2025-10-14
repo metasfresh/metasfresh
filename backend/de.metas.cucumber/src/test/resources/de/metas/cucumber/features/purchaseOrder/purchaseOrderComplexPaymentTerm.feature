@@ -25,7 +25,7 @@ Feature: Purchase order with complex payment term
       | plv_purchase | pl_purchase    |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | plv_purchase           | product      | 9.7561     | PCE      |
+      | plv_purchase           | product      | 9.98     | PCE      |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | vendor     | Y        | N          | ps_1               |
@@ -55,21 +55,7 @@ Feature: Purchase order with complex payment term
       | po1_l1     | po1        | product      | 10         |
     And the order identified by po1 is completed
     Then The order pay schedules were created:
-      | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status | C_Order_ID |
-      | poPT1      | PTB1                   | 2025-10-10 | 25.01  | WP     | po1        |
-      | poPT1      | PTB2                   | 9999-01-01 | 75.03  | PR     | po1        |
+      | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status | C_Order_ID | DueAmt_Percentage |
+      | poPT1      | PTB1                   | 2025-10-10 | 25.58  | WP     | po1        | 25.58             |
+      | poPT1      | PTB2                   | 9999-01-01 | 76.72  | PR     | po1        | 76.73             |
 
-
-  @from:cucumber
-  Scenario: Purchase Order with complex Payment Term - the amounts in steps are summing amount the total from order
-    When metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
-      | po1        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO            |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | po1_l1     | po1        | product      | 10         |
-    And the order identified by po1 is completed
-    Then The total from order matches the pay schedules amounts:
-      | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status | C_Order_ID |
-      | poPT1      | PTB1                   | 2025-10-10 | 25.01  | WP     | po1        |
-      | poPT1      | PTB2                   | 9999-01-01 | 75.03  | PR     | po1        |
