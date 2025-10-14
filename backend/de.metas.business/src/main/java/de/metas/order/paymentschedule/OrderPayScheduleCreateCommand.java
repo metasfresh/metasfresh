@@ -53,7 +53,12 @@ class OrderPayScheduleCreateCommand
 			return; // Nothing to schedule
 		}
 
-		final List<PaymentTermBreak> termBreaks = context.getPaymentTerm().getSortedBreaks().collect(ImmutableList.toImmutableList());
+		final List<PaymentTermBreak> termBreaks = context.getPaymentTerm().getSortedBreaks();
+		if (termBreaks == null)
+		{
+			return; // Nothing to schedule
+		}
+
 		final ImmutableList.Builder<OrderPayScheduleCreateRequest.Line> linesBuilder = ImmutableList.builder();
 
 		Money totalScheduledAmount = Money.zero(context.getGrandTotal().getCurrencyId());
@@ -181,8 +186,6 @@ class OrderPayScheduleCreateCommand
 		}
 	}
 
-	//
-	//
 	//
 	//
 	//

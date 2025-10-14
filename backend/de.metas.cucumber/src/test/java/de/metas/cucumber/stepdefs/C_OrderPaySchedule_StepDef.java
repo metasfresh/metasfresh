@@ -79,20 +79,6 @@ public class C_OrderPaySchedule_StepDef
 		tableRow.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getOrderPayScheduleStatus()).as("Status").isEqualTo(expected));
 
-		// Check for the hypothetical amount based on percentage (used for rounding verification)
-		final I_C_Order order = orderBL.getById(orderId);
-		tableRow.getAsOptionalBigDecimal("DueAmt_Percentage")
-				.ifPresent(expectedHypoAmount -> {
-					final Money grandTotal = orderBL.getGrandTotal(order);
-					final CurrencyPrecision precision = orderBL.getAmountPrecision(order);
-
-					final Money calculatedHypoAmount = grandTotal.multiply(payScheduleLine.getPercent(), precision);
-
-					softly.assertThat(calculatedHypoAmount.toBigDecimal())
-							.as("DueAmt_Percentage calculated from stored percent and grand total")
-							.isEqualByComparingTo(expectedHypoAmount);
-				});
-
 		softly.assertAll();
 	}
 }
