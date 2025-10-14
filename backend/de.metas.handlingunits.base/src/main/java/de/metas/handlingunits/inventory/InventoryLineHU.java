@@ -63,12 +63,11 @@ public class InventoryLineHU
 
 	//
 	// Quantities
-	InventoryType inventoryType;
-	//
-	Quantity qtyInternalUse;
-	//
-	Quantity qtyBook;
-	Quantity qtyCount;
+	@NonNull InventoryType inventoryType;
+	@Nullable Quantity qtyInternalUse;
+	@Nullable Quantity qtyBook;
+	@Nullable Quantity qtyCount;
+	boolean isCounted;
 
 	public static InventoryLineHU zeroPhysicalInventory(@NonNull final I_C_UOM uom)
 	{
@@ -88,11 +87,13 @@ public class InventoryLineHU
 			@Nullable final HUQRCode huQRCode,
 			@Nullable final Quantity qtyInternalUse,
 			@Nullable final Quantity qtyBook,
-			@Nullable final Quantity qtyCount)
+			@Nullable final Quantity qtyCount,
+			final boolean isCounted)
 	{
 		this.id = id;
 		this.huId = huId;
 		this.huQRCode = huQRCode;
+		this.isCounted = isCounted;
 
 		if (qtyInternalUse != null)
 		{
@@ -230,6 +231,7 @@ public class InventoryLineHU
 					.qtyInternalUse(null)
 					.qtyBook(request.getQtyBook())
 					.qtyCount(request.getQtyCount())
+					.isCounted(true)
 					// TODO attributes
 					;
 		}

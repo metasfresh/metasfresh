@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_InventoryLine_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 459794261L;
+	private static final long serialVersionUID = -772168721L;
 
     /** Standard Constructor */
     public X_M_InventoryLine_HU (final Properties ctx, final int M_InventoryLine_HU_ID, @Nullable final String trxName)
@@ -48,6 +48,18 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setIsCounted (final boolean IsCounted)
+	{
+		set_Value (COLUMNNAME_IsCounted, IsCounted);
+	}
+
+	@Override
+	public boolean isCounted() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCounted);
 	}
 
 	@Override

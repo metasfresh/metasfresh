@@ -122,6 +122,27 @@ public interface I_M_InventoryLine_HU
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Counted.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCounted (boolean IsCounted);
+
+	/**
+	 * Get Counted.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCounted();
+
+	ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_IsCounted = new ModelColumn<>(I_M_InventoryLine_HU.class, "IsCounted", null);
+	String COLUMNNAME_IsCounted = "IsCounted";
+
+	/**
 	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
@@ -174,7 +195,7 @@ public interface I_M_InventoryLine_HU
 	String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
 
 	/**
-	 * Set M_InventoryLine_HU.
+	 * Set Inventory Line Handling Units.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -183,7 +204,7 @@ public interface I_M_InventoryLine_HU
 	void setM_InventoryLine_HU_ID (int M_InventoryLine_HU_ID);
 
 	/**
-	 * Get M_InventoryLine_HU.
+	 * Get Inventory Line Handling Units.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

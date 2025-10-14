@@ -32,7 +32,6 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
@@ -228,12 +227,9 @@ class InventoryLoaderAndSaver
 			}
 			else
 			{
-				final UOMConversionContext uomConversionCtx = UOMConversionContext.of(inventoryLineRecord.getM_Product_ID());
-				final UomId targetUomId = UomId.ofRepoId(inventoryLineRecord.getC_UOM_ID());
-
 				for (final I_M_InventoryLine_HU inventoryLineHURecord : inventoryLineHURecords)
 				{
-					final InventoryLineHU inventoryLineHU = toInventoryLineHU(inventoryLineHURecord, uomConversionCtx, targetUomId);
+					final InventoryLineHU inventoryLineHU = toInventoryLineHU(inventoryLineHURecord, inventoryLineRecord);
 					lineBuilder.inventoryLineHU(inventoryLineHU);
 				}
 			}
@@ -312,14 +308,17 @@ class InventoryLoaderAndSaver
 				.qtyInternalUse(qtyInternalUse)
 				.qtyBook(qtyBook)
 				.qtyCount(qtyCount)
+				.isCounted(inventoryLineRecord.isCounted())
 				.build();
 	}
 
 	private InventoryLineHU toInventoryLineHU(
 			@NonNull final I_M_InventoryLine_HU inventoryLineHURecord,
-			@NonNull final UOMConversionContext uomConversionCtx,
-			@NonNull final UomId targetUomId)
+			@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
+		final ProductId productId = ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID());
+		final UomId targetUomId = UomId.ofRepoId(inventoryLineRecord.getC_UOM_ID());
+
 		final I_C_UOM uom = uomDAO.getById(inventoryLineHURecord.getC_UOM_ID());
 		final Quantity qtyInternalUseConv;
 		final Quantity qtyBookConv;
@@ -330,7 +329,7 @@ class InventoryLoaderAndSaver
 		{
 			final Quantity qtyInternalUse = Quantity.of(qtyInternalUseBD, uom);
 
-			qtyInternalUseConv = uomConversionBL.convertQuantityTo(qtyInternalUse, uomConversionCtx, targetUomId);
+			qtyInternalUseConv = uomConversionBL.convertQuantityTo(qtyInternalUse, productId, targetUomId);
 			qtyBookConv = null;
 			qtyCountConv = null;
 		}
@@ -340,9 +339,8 @@ class InventoryLoaderAndSaver
 			if (inventoryLineHURecord.getM_HU_ID() > 0)
 			{
 				// refresh bookedQty from HU
-				final ProductId productId = uomConversionCtx.getProductId();
+				// FIXME: we shall NOT refresh while loading !!!!
 				final HuId huId = HuId.ofRepoId(inventoryLineHURecord.getM_HU_ID());
-
 				qtyBook = getFreshBookedQtyFromStorage(productId, targetUomId, huId).orElse(Quantity.zero(uom));
 			}
 			else
@@ -353,8 +351,8 @@ class InventoryLoaderAndSaver
 			final Quantity qtyCount = Quantity.of(inventoryLineHURecord.getQtyCount(), uom);
 
 			qtyInternalUseConv = null;
-			qtyBookConv = uomConversionBL.convertQuantityTo(qtyBook, uomConversionCtx, targetUomId);
-			qtyCountConv = uomConversionBL.convertQuantityTo(qtyCount, uomConversionCtx, targetUomId);
+			qtyBookConv = uomConversionBL.convertQuantityTo(qtyBook, productId, targetUomId);
+			qtyCountConv = uomConversionBL.convertQuantityTo(qtyCount, productId, targetUomId);
 		}
 
 		return InventoryLineHU.builder()
@@ -362,6 +360,7 @@ class InventoryLoaderAndSaver
 				.qtyInternalUse(qtyInternalUseConv)
 				.qtyBook(qtyBookConv)
 				.qtyCount(qtyCountConv)
+				.isCounted(inventoryLineHURecord.isCounted())
 				.huId(HuId.ofRepoIdOrNull(inventoryLineHURecord.getM_HU_ID()))
 				.huQRCode(HUQRCode.fromNullableGlobalQRCodeJsonString(inventoryLineHURecord.getRenderedQRCode()))
 				.build();
@@ -580,23 +579,14 @@ class InventoryLoaderAndSaver
 		return Optional.of(huProductStorage.getQty(inventoryLineUOMId));
 	}
 
-	private static void updateInventoryLineHURecord(
-			@NonNull I_M_InventoryLine_HU record,
-			@NonNull final InventoryLineHU fromLineHU)
+	private static void updateInventoryLineHURecord(@NonNull I_M_InventoryLine_HU record, @NonNull final InventoryLineHU from)
 	{
 		// record.setAD_Org_ID(orgId.getRepoId());
 		// record.setM_InventoryLine_ID(lineId.getRepoId());
 
-		record.setM_HU_ID(HuId.toRepoId(fromLineHU.getHuId()));
-		record.setRenderedQRCode(fromLineHU.getHuQRCode() != null ? fromLineHU.getHuQRCode().toGlobalQRCodeString() : null);
+		record.setM_HU_ID(HuId.toRepoId(from.getHuId()));
+		record.setRenderedQRCode(from.getHuQRCode() != null ? from.getHuQRCode().toGlobalQRCodeString() : null);
 
-		updateInventoryLineHURecordQuantities(record, fromLineHU);
-	}
-
-	private static void updateInventoryLineHURecordQuantities(
-			@NonNull final I_M_InventoryLine_HU lineRecord,
-			@NonNull final InventoryLineHU from)
-	{
 		final UomId uomId;
 		final BigDecimal qtyInternalUseBD;
 		final BigDecimal qtyBookBD;
@@ -622,10 +612,11 @@ class InventoryLoaderAndSaver
 			qtyCountBD = qtyCount.toBigDecimal();
 		}
 
-		lineRecord.setQtyInternalUse(qtyInternalUseBD);
-		lineRecord.setQtyBook(qtyBookBD);
-		lineRecord.setQtyCount(qtyCountBD);
-		lineRecord.setC_UOM_ID(uomId.getRepoId());
+		record.setQtyInternalUse(qtyInternalUseBD);
+		record.setQtyBook(qtyBookBD);
+		record.setQtyCount(qtyCountBD);
+		record.setC_UOM_ID(uomId.getRepoId());
+		record.setIsCounted(from.isCounted());
 	}
 
 	private List<I_M_InventoryLine> getLineRecords(@NonNull final InventoryId inventoryId)
