@@ -43,6 +43,7 @@ import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
@@ -741,7 +742,7 @@ public class ESRImportBLTest extends ESRTestBase
 		}
 
 		@Override
-		public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(org.compiere.model.I_C_Invoice invoice, Set<Integer> ignored)
+		public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull org.compiere.model.I_C_Invoice invoice, Set<PaymentId> ignored)
 		{
 			if (returnValues.size() < invocationCount + 1)
 			{

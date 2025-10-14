@@ -29,6 +29,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
 import lombok.NonNull;
@@ -39,6 +40,7 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -49,8 +51,8 @@ public class PlainAllocationDAO extends AllocationDAO
 {
 	@Override
 	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(
-			final org.compiere.model.I_C_Invoice invoice,
-			final Set<Integer> paymentIDsToIgnore)
+			final org.compiere.model.@NotNull I_C_Invoice invoice,
+			final Set<PaymentId> paymentIDsToIgnore)
 	{
 		return retrieveAllocatedAmt(invoice, paymentIDsToIgnore, o -> {
 			final I_C_AllocationLine line = (I_C_AllocationLine)o;
@@ -62,13 +64,13 @@ public class PlainAllocationDAO extends AllocationDAO
 
 	private BigDecimal retrieveAllocatedAmt(
 			final org.compiere.model.I_C_Invoice invoice,
-			final Set<Integer> paymentIDsToIgnore,
+			final Set<PaymentId> paymentIDsToIgnore,
 			final TypedAccessor<BigDecimal> amountAccessor)
 	{
 		BigDecimal sum = BigDecimal.ZERO;
 		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
 		{
-			if (paymentIDsToIgnore != null && paymentIDsToIgnore.contains(line.getC_Payment_ID()))
+			if (paymentIDsToIgnore != null && paymentIDsToIgnore.contains(PaymentId.ofRepoIdOrNull(line.getC_Payment_ID())))
 			{
 				continue;
 			}

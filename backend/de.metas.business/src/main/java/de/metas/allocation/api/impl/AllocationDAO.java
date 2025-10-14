@@ -255,7 +255,7 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final I_C_Invoice invoice, final Set<Integer> paymentIDsToIgnore)
+	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final @NonNull I_C_Invoice invoice, final @Nullable Set<PaymentId> paymentIDsToIgnore)
 	{
 		BigDecimal retValue = null;
 
@@ -270,13 +270,13 @@ public class AllocationDAO implements IAllocationDAO
 		{
 			sql.append(" AND (al.C_Payment_ID NOT IN (-1");
 
-			for (final Integer paymentIdToExclude : paymentIDsToIgnore)
+			for (final PaymentId paymentIdToExclude : paymentIDsToIgnore)
 			{
 				if (paymentIdToExclude == null)
 				{
 					continue; // guard agains NPE
 				}
-				sql.append(", ").append(paymentIdToExclude);
+				sql.append(", ").append(paymentIdToExclude.getRepoId());
 			}
 			sql.append(") OR al.C_Payment_ID IS NULL )");
 		}
