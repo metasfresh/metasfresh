@@ -3,34 +3,26 @@ package de.metas.handlingunits.inventory.draftlinescreator;
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocTypeId;
-import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.Inventory;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryHeaderCreateRequest;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.InventoryTestHelper;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.MultipleHUInventoryLineAggregator;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.SingleHUInventoryLineAggregator;
 import de.metas.inventory.AggregationType;
-import de.metas.inventory.InventoryId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,8 +61,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-@ExtendWith({ SnapshotExtension.class, AdempiereTestWatcher.class})
-class DraftInventoryLinesCreatorTest
+@ExtendWith({ SnapshotExtension.class, AdempiereTestWatcher.class })
+class DraftInventoryLinesCreateCommandTest
 {
 	private final ProductId PRODUCT_ID_40 = ProductId.ofRepoId(40);
 	private final ProductId PRODUCT_ID_2 = ProductId.ofRepoId(2);
@@ -82,9 +74,10 @@ class DraftInventoryLinesCreatorTest
 	private Quantity qtyTwo;
 	private Quantity qtyTen;
 
+	private WarehouseId warehouseId;
 	private LocatorId locatorId;
 
-	private InventoryRepository inventoryRepo;
+	private InventoryService inventoryService;
 
 	private Expect expect;
 
@@ -96,16 +89,17 @@ class DraftInventoryLinesCreatorTest
 
 		orgId = AdempiereTestHelper.createOrgWithTimeZone(orgTimeZone);
 
-		inventoryRepo = new InventoryRepository();
+		inventoryService = InventoryService.newInstanceForUnitTesting();
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
 		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
 		saveRecord(warehouseRecord);
+		warehouseId = WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID());
 
 		final I_M_Locator locatorRecord = newInstance(I_M_Locator.class);
-		locatorRecord.setM_Warehouse(warehouseRecord);
+		locatorRecord.setM_Warehouse_ID(warehouseId.getRepoId());
 		saveRecord(locatorRecord);
 		locatorId = LocatorId.ofRecord(locatorRecord);
 
@@ -116,34 +110,31 @@ class DraftInventoryLinesCreatorTest
 		qtyTen = Quantity.of("10", uomRecord);
 	}
 
-	private InventoryId createInventoryRecord(final DocBaseAndSubType docBaseAndSubType)
+	private Inventory createInventory(final AggregationType aggregationType)
 	{
-		final DocTypeId docTypeId = InventoryTestHelper.createDocType(docBaseAndSubType);
-
-		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
-		inventoryRecord.setAD_Org_ID(orgId.getRepoId());
-		inventoryRecord.setC_DocType_ID(docTypeId.getRepoId());
-		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
-		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-15"), orgTimeZone));
-		inventoryRecord.setDocumentNo("documentNo");
-		saveRecord(inventoryRecord);
-		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
+		return inventoryService.createInventoryHeader(
+				InventoryHeaderCreateRequest.builder()
+						.orgId(orgId)
+						.docTypeId(InventoryTestHelper.createDocType(aggregationType.getDocBaseAndSubType()))
+						.movementDate(LocalDate.parse("2020-06-15").atStartOfDay(orgTimeZone))
+						.warehouseId(warehouseId)
+						.documentNo("documentNo")
+						.build()
+		);
 	}
 
 	@Test
 	void execute_SingleHUInventoryLineAggregator()
 	{
-		final InventoryId inventoryId = createInventoryRecord(AggregationType.SINGLE_HU.getDocBaseAndSubType());
-		final InventoryLinesCreationCtx ctx = createContext(
-				inventoryId,
-				this::createAndStreamTestHUs,
-				SingleHUInventoryLineAggregator.INSTANCE);
+		final DraftInventoryLinesCreateResponse result = inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+						.inventory(createInventory(AggregationType.SINGLE_HU))
+						.strategy(this::createAndStreamTestHUs)
+						.build()
+		);
 
-		// execute the method under test
-		new DraftInventoryLinesCreator(ctx).execute();
-
-		final Inventory result = inventoryRepo.getById(inventoryId);
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		final Inventory inventory = inventoryService.getById(result.getInventoryId());
+		expect.serializer("orderedJson").toMatchSnapshot(inventory);
 	}
 
 	@Test
@@ -154,7 +145,9 @@ class DraftInventoryLinesCreatorTest
 		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
-	/** Verifies that the creator also works if an inventory already has some lines/HUs*/
+	/**
+	 * Verifies that the creator also works if an inventory already has some lines/HUs
+	 */
 	@Test
 	void execute_MultipleHUInventoryLineAggregator_preAddedHUs()
 	{
@@ -163,37 +156,35 @@ class DraftInventoryLinesCreatorTest
 		final Inventory initialInventoryWithHus = execute_MultipleHUInventoryLineAggregator_performTest();
 		assertThat(initialInventoryWithHus.getHuIds()).containsExactlyInAnyOrder(HuId.ofRepoId(100), HuId.ofRepoId(200), HuId.ofRepoId(300)); // guard
 
-		final InventoryId inventoryId = createInventoryRecord(AggregationType.MULTIPLE_HUS.getDocBaseAndSubType());
-		final InventoryLinesCreationCtx ctx = createContext(
-				inventoryId,
-				this::createAndStreamAdditionalTestHU,
-				MultipleHUInventoryLineAggregator.INSTANCE);
-
 		// when
-		new DraftInventoryLinesCreator(ctx).execute();
+		final DraftInventoryLinesCreateResponse result = inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+						.inventory(createInventory(AggregationType.MULTIPLE_HUS))
+						.strategy(this::createAndStreamAdditionalTestHU)
+						.build()
+		);
 
 		// then
-		final Inventory result = inventoryRepo.getById(inventoryId);
-		assertThat(result.getHuIds()).containsExactlyInAnyOrder(
+		final Inventory inventory = inventoryService.getById(result.getInventoryId());
+		assertThat(inventory.getHuIds()).containsExactlyInAnyOrder(
 				HuId.ofRepoId(100),
 				HuId.ofRepoId(200),
 				HuId.ofRepoId(300),
 				HuId.ofRepoId(305)/*newly added*/);
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(inventory);
 	}
 
 	private Inventory execute_MultipleHUInventoryLineAggregator_performTest()
 	{
-		final InventoryId inventoryId = createInventoryRecord(AggregationType.MULTIPLE_HUS.getDocBaseAndSubType());
-		final InventoryLinesCreationCtx ctx = createContext(
-				inventoryId,
-				this::createAndStreamTestHUs,
-				MultipleHUInventoryLineAggregator.INSTANCE);
-
 		// execute the method under test
-		new DraftInventoryLinesCreator(ctx).execute();
+		final DraftInventoryLinesCreateResponse result = inventoryService.createDraftLines(
+				DraftInventoryLinesCreateRequest.builder()
+						.inventory(createInventory(AggregationType.MULTIPLE_HUS))
+						.strategy(this::createAndStreamTestHUs)
+						.build()
+		);
 
-		return inventoryRepo.getById(inventoryId);
+		return inventoryService.getById(result.getInventoryId());
 
 	}
 
@@ -236,18 +227,4 @@ class DraftInventoryLinesCreatorTest
 
 		return ImmutableList.of(hu1, hu2, hu3, hu4).stream();
 	}
-
-	private InventoryLinesCreationCtx createContext(
-			@NonNull final InventoryId inventoryId,
-			@NonNull final HUsForInventoryStrategy strategy,
-			@NonNull final InventoryLineAggregator aggregator)
-	{
-		return InventoryLinesCreationCtx.builder()
-				.inventory(inventoryRepo.getById(inventoryId))
-				.inventoryRepo(inventoryRepo)
-				.inventoryLineAggregator(aggregator)
-				.strategy(strategy)
-				.build();
-	}
-
 }

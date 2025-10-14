@@ -74,6 +74,26 @@ public interface I_M_Inventory
 	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
+	 * Set Verantwortlicher Benutzer.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_Responsible_ID (int AD_User_Responsible_ID);
+
+	/**
+	 * Get Verantwortlicher Benutzer.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_Responsible_ID();
+
+	String COLUMNNAME_AD_User_Responsible_ID = "AD_User_Responsible_ID";
+
+	/**
 	 * Set Approval Amount.
 	 * Document Approval Amount
 	 *
@@ -117,6 +137,46 @@ public interface I_M_Inventory
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
+
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
 	 * Set Campaign.
@@ -166,6 +226,31 @@ public interface I_M_Inventory
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Purchase Order.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PO_Order_ID (int C_PO_Order_ID);
+
+	/**
+	 * Get Purchase Order.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PO_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_PO_Order();
+
+	void setC_PO_Order(@Nullable org.compiere.model.I_C_Order C_PO_Order);
+
+	ModelColumn<I_M_Inventory, org.compiere.model.I_C_Order> COLUMN_C_PO_Order_ID = new ModelColumn<>(I_M_Inventory.class, "C_PO_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_PO_Order_ID = "C_PO_Order_ID";
 
 	/**
 	 * Set Project.
@@ -278,6 +363,33 @@ public interface I_M_Inventory
 
 	ModelColumn<I_M_Inventory, Object> COLUMN_DocStatus = new ModelColumn<>(I_M_Inventory.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
+	 * Set Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDocSubType (@Nullable java.lang.String DocSubType);
+
+	/**
+	 * Get Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDocSubType();
+
+	ModelColumn<I_M_Inventory, Object> COLUMN_DocSubType = new ModelColumn<>(I_M_Inventory.class, "DocSubType", null);
+	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
 	 * Set Document No.

@@ -50,10 +50,14 @@ import java.util.stream.Stream;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class InventoryLineHU
 {
-	/** Null if not yet persisted or if this is an inventory line's single InventoryLineHU. */
+	/**
+	 * Null if not yet persisted or if this is an inventory line's single InventoryLineHU.
+	 */
 	@Nullable @NonFinal InventoryLineHUId id;
 
-	/** Null if this instance does not yet have a persisted HU */
+	/**
+	 * Null if this instance does not yet have a persisted HU
+	 */
 	@Nullable HuId huId;
 	@Nullable HUQRCode huQRCode;
 
@@ -80,7 +84,7 @@ public class InventoryLineHU
 	@Builder(toBuilder = true)
 	private InventoryLineHU(
 			@Nullable final InventoryLineHUId id,
-			@Nullable final HuId huId, 
+			@Nullable final HuId huId,
 			@Nullable final HUQRCode huQRCode,
 			@Nullable final Quantity qtyInternalUse,
 			@Nullable final Quantity qtyBook,
@@ -195,5 +199,40 @@ public class InventoryLineHU
 				.qtyCount(qtyConverter.apply(getQtyCount()))
 				.qtyBook(qtyConverter.apply(getQtyBook()))
 				.build();
+	}
+
+	public InventoryLineHU updatingFrom(@NonNull final InventoryLineCountRequest request)
+	{
+		return toBuilder().updatingFrom(request).build();
+	}
+
+	public static InventoryLineHU of(@NonNull final InventoryLineCountRequest request)
+	{
+		return builder().updatingFrom(request).build();
+
+	}
+
+	//
+	//
+	//
+	// -------------------------------------------------------------------------
+	//
+	//
+	//
+
+	@SuppressWarnings("unused")
+	public static class InventoryLineHUBuilder
+	{
+		InventoryLineHUBuilder updatingFrom(@NonNull final InventoryLineCountRequest request)
+		{
+			return huId(request.getHuId())
+					.huQRCode(HuId.equals(this.huId, request.getHuId()) ? this.huQRCode : null)
+					.qtyInternalUse(null)
+					.qtyBook(request.getQtyBook())
+					.qtyCount(request.getQtyCount())
+					// TODO attributes
+					;
+		}
+
 	}
 }

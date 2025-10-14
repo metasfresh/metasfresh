@@ -3171,7 +3171,7 @@ public abstract class PO
 		}
 		else if (idNew <= 0)
 		{
-			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName(), m_trxName);
+			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName());
 			if (idNew <= 0)
 			{
 				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ") for " + p_info.getTableName());

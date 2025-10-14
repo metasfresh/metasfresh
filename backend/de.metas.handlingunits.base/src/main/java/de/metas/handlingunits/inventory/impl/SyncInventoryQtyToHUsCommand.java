@@ -39,6 +39,9 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryAndLineId;
+import de.metas.inventory.InventoryAndLineIdSet;
+import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -48,9 +51,11 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.service.ISysConfigBL;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /*
@@ -89,6 +94,8 @@ public class SyncInventoryQtyToHUsCommand
 
 	private static final String SYSCONFIG_IgnoreOnInventoryMinusAndNoHU = "inventory.IgnoreOnInventoryMinusAndNoHU";
 
+	private Map<InventoryAndLineId, I_M_InventoryLine> inventoryLineRecords; // lazy
+
 	@Builder
 	private SyncInventoryQtyToHUsCommand(
 			@NonNull final InventoryRepository inventoryRepository,
@@ -105,6 +112,8 @@ public class SyncInventoryQtyToHUsCommand
 
 	public void execute()
 	{
+		this.inventoryLineRecords = inventoryRepository.getInventoryLineRecordsByIds(extractInventoryAndLineIds(inventory));
+
 		for (final InventoryLine inventoryLine : inventory.getLines())
 		{
 			final Quantity qtyDiff = inventoryLine.getMovementQty();
@@ -116,6 +125,15 @@ public class SyncInventoryQtyToHUsCommand
 
 			executeForInventoryLine(inventoryLine);
 		}
+	}
+
+	private InventoryAndLineIdSet extractInventoryAndLineIds(final Inventory inventory)
+	{
+		final InventoryId inventoryId = inventory.getId();
+		return inventory.getLines()
+				.stream()
+				.map(inventoryLine -> InventoryAndLineId.of(inventoryId, inventoryLine.getIdNonNull()))
+				.collect(InventoryAndLineIdSet.collect());
 	}
 
 	private void executeForInventoryLine(final InventoryLine inventoryLine)
@@ -276,7 +294,7 @@ public class SyncInventoryQtyToHUsCommand
 		}
 
 		final ProductId productId = inventoryLine.getProductId();
-		final I_M_InventoryLine inventoryLineRecord = inventoryRepository.getInventoryLineRecordFor(inventoryLine);
+		final I_M_InventoryLine inventoryLineRecord = getInventoryLineRecordFor(inventoryLine);
 
 		final IAllocationSource source;
 		final IAllocationDestination destination;
@@ -373,6 +391,17 @@ public class SyncInventoryQtyToHUsCommand
 		{
 			return ImmutableList.of(inventoryLineHU);
 		}
+	}
+
+	private I_M_InventoryLine getInventoryLineRecordFor(final @NotNull InventoryLine inventoryLine)
+	{
+		final InventoryAndLineId inventoryAndLineId = InventoryAndLineId.of(inventory.getId(), inventoryLine.getIdNonNull());
+		final I_M_InventoryLine inventoryLineRecord = inventoryLineRecords.get(inventoryAndLineId);
+		if (inventoryLineRecord == null)
+		{
+			throw new AdempiereException("No inventory line found for " + inventoryAndLineId);
+		}
+		return inventoryLineRecord;
 	}
 
 	private IAllocationDestination createAllocationDestination(final @NonNull InventoryLine inventoryLine, final @NonNull InventoryLineHU inventoryLineHU)

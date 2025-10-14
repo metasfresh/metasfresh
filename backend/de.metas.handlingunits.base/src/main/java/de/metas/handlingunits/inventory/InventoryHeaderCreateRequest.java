@@ -38,26 +38,13 @@ import java.time.ZonedDateTime;
 @Builder
 public class InventoryHeaderCreateRequest
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	ZonedDateTime movementDate;
-
-	@NonNull
-	WarehouseId warehouseId;
-
-	@Nullable
-	DocTypeId docTypeId;
-
-	@Nullable
-	ActivityId activityId;
-
-	@Nullable
-	String description;
-
-	@Nullable
-	String poReference;
-
+	@NonNull OrgId orgId;
+	@NonNull ZonedDateTime movementDate;
+	@NonNull WarehouseId warehouseId;
+	@Nullable DocTypeId docTypeId;
+	@Nullable ActivityId activityId;
+	@Nullable String documentNo;
+	@Nullable String description;
+	@Nullable String poReference;
 	@Nullable PickingJobId pickingJobId;
 }

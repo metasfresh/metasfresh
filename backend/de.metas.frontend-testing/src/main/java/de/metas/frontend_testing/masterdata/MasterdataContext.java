@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
@@ -76,6 +78,13 @@ public class MasterdataContext
 		}
 
 		identifiers.put(typeAndIdentifier, id);
+	}
+
+	public <T extends RepoIdAware> ImmutableSet<T> getIds(@NonNull final Set<Identifier> identifiers, final Class<T> idClass)
+	{
+		return identifiers.stream()
+				.map(identifier -> this.getId(identifier, idClass))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public <T extends RepoIdAware> T getId(@NonNull final Identifier identifier, final Class<T> idClass)

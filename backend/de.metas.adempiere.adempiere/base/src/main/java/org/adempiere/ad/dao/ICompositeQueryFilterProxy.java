@@ -334,7 +334,10 @@ public interface ICompositeQueryFilterProxy<T, RT>
 
 	default <V> RT addInArrayFilter(@NonNull final String columnName, @NonNull final InSetPredicate<V> values)
 	{
-		addFilter(InArrayQueryFilter.ofInSetPredicate(columnName, values));
+		if (!values.isAny())
+		{
+			addFilter(InArrayQueryFilter.ofInSetPredicate(columnName, values));
+		}
 		return self();
 	}
 
