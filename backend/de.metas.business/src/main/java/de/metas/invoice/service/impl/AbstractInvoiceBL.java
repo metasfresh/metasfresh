@@ -154,6 +154,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -907,8 +908,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 
-		@Nullable
-		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+		@Nullable final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
 		if (copyDescriptionAndDocumentNote == null)
 		{
@@ -2036,5 +2036,20 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public I_C_InvoiceLine getLineById(@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
 		return invoiceDAO.retrieveLineById(invoiceAndLineId);
+	}
+
+	@Override
+	public Instant extractInvoiceDate(final @NonNull OrderId orderId)
+	{
+		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(orderId));
+		if (invoices.isEmpty())
+		{
+			return null;
+		}
+		else if (invoices.size() > 1)
+		{
+			throw new AdempiereException("More than one invoice was generated for " + orderId);
+		}
+		return invoices.get(0).getDateInvoiced().toInstant();
 	}
 }

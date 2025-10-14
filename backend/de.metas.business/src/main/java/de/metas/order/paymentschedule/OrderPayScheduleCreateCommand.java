@@ -2,6 +2,7 @@ package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -11,6 +12,8 @@ import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.payment.paymentterm.ReferenceDateType;
+import de.metas.shipping.api.IShipperTransportationDAO;
+import de.metas.shipping.api.ShipperTransportation;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,6 +38,8 @@ class OrderPayScheduleCreateCommand
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final OrderPayScheduleRepository orderPayScheduleRepository;
+	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final I_C_Order orderRecord;
 
@@ -121,10 +126,16 @@ class OrderPayScheduleCreateCommand
 			return null;
 		}
 
+		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
+		final ShipperTransportation shipperTransportation = shipperTransportationDAO.getEarliestShipperTransportationByOrderId(orderId);
+
 		return OrderSchedulingContext.builder()
 				.orderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.orderDate(TimeUtil.asInstant(orderRecord.getDateOrdered()))
 				.letterOfCreditDate(TimeUtil.asInstant(orderRecord.getLC_Date()))
+				.billOfLadingDate(shipperTransportation != null ? shipperTransportation.getBillOfLadingDate() : null)
+				.ETADate(shipperTransportation != null ? shipperTransportation.getETADate() : null)
+				.invoiceDate(invoiceBL.extractInvoiceDate(orderId))
 				.grandTotal(grandTotal)
 				.precision(orderBL.getAmountPrecision(orderRecord))
 				.paymentTerm(paymentTerm)
@@ -136,7 +147,11 @@ class OrderPayScheduleCreateCommand
 			@NonNull final PaymentTermBreak termBreak,
 			@NonNull final Money dueAmount)
 	{
-		final ReferenceDateResult result = computeReferenceDate(context.getOrderDate(), context.getLetterOfCreditDate(), termBreak);
+		final ReferenceDateResult result = computeReferenceDate(context, PaymentTermBreakContext.builder()
+				.offsetDays(termBreak.getOffsetDays())
+				.referenceDateType(termBreak.getReferenceDateType())
+				.build()
+		);
 
 		return OrderPayScheduleCreateRequest.Line.builder()
 				.dueDate(result.getCalculatedDueDate())
@@ -149,14 +164,13 @@ class OrderPayScheduleCreateCommand
 	}
 
 	private static ReferenceDateResult computeReferenceDate(
-			final @Nullable Instant orderDate,
-			final @Nullable Instant letterOfCreditDate,
-			final @NonNull PaymentTermBreak termBreak)
+			@NonNull final OrderSchedulingContext context,
+			final @NonNull PaymentTermBreakContext termBreakContext)
 	{
-		final Instant referenceDate = getAvailableReferenceDate(orderDate, letterOfCreditDate, termBreak.getReferenceDateType());
+		final Instant referenceDate = getAvailableReferenceDate(context, termBreakContext.getReferenceDateType());
 		if (referenceDate != null)
 		{
-			final Instant finalDueDate = referenceDate.plus(termBreak.getOffsetDays(), ChronoUnit.DAYS);
+			final Instant finalDueDate = referenceDate.plus(termBreakContext.getOffsetDays(), ChronoUnit.DAYS);
 			final OrderPayScheduleStatus status = OrderPayScheduleStatus.Awaiting_Pay;
 			return new ReferenceDateResult(finalDueDate, status);
 		}
@@ -168,19 +182,21 @@ class OrderPayScheduleCreateCommand
 	}
 
 	private static @Nullable Instant getAvailableReferenceDate(
-			final @Nullable Instant orderDate,
-			final @Nullable Instant letterOfCreditDate,
+			@NonNull final OrderSchedulingContext context,
 			final @NonNull ReferenceDateType referenceDateType)
 	{
 		switch (referenceDateType)
 		{
 			case OrderDate:
-				return orderDate;
+				return context.getOrderDate();
 			case LetterOfCreditDate:
-				return letterOfCreditDate;
+				return context.getLetterOfCreditDate();
 			case BillOfLadingDate:
+				return context.getBillOfLadingDate();
 			case ETADate:
+				return context.getETADate();
 			case InvoiceDate:
+				return context.getInvoiceDate();
 			default:
 				return null;
 		}
@@ -204,9 +220,47 @@ class OrderPayScheduleCreateCommand
 		@NonNull OrderId orderId;
 		@Nullable Instant orderDate;
 		@Nullable Instant letterOfCreditDate;
+		@Nullable Instant billOfLadingDate;
+		@Nullable Instant ETADate;
+		@Nullable Instant invoiceDate;
 		@NonNull Money grandTotal;
 		@NonNull CurrencyPrecision precision;
 		@NonNull PaymentTerm paymentTerm;
+	}
+
+	@Builder
+	@Getter
+	private static class PaymentTermBreakContext
+	{
+		@NonNull ReferenceDateType referenceDateType;
+		int offsetDays;
+	}
+
+	// TODO: Movind it later on
+	public void updateOrderPaySchedStatusAndReferenceDate(@NonNull final OrderId orderId)
+	{
+		final OrderSchedulingContext context = extractContext(orderBL.getById(orderId));
+		if (context == null)
+		{
+			return;
+		}
+
+		orderPayScheduleRepository.getByOrderId(orderId)
+				.ifPresent(orderPaySchedule -> {
+					for (final OrderPayScheduleLine line : orderPaySchedule.getLines())
+					{
+						orderPayScheduleRepository.updateById(line.getId(),
+								existingLine -> {
+									final ReferenceDateResult result = computeReferenceDate(context, PaymentTermBreakContext.builder()
+											.offsetDays(line.getOffsetDays())
+											.referenceDateType(line.getReferenceDateType())
+											.build());
+
+									line.changeStatusTo(result.getStatus());
+									line.setDueDate(result.getCalculatedDueDate());
+								});
+					}
+				});
 	}
 
 }

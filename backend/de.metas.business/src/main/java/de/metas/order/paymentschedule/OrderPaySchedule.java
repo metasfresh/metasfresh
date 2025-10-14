@@ -42,11 +42,6 @@ public class OrderPaySchedule
 		return GuavaCollectors.collectUsingListAccumulator(OrderPaySchedule::optionalOfList);
 	}
 
-	public void updateById(final OrderPayScheduleId id, UnaryOperator<OrderPayScheduleLine> updater)
-	{
-		throw new UnsupportedOperationException(); // TODO
-	}
-
 	public OrderPayScheduleLine getLineByPaymentTermBreakId(@NonNull PaymentTermBreakId paymentTermBreakId)
 	{
 		return lines.stream()

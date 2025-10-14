@@ -42,7 +42,7 @@ public class OrderPayScheduleService
 	public static OrderPayScheduleService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		
+
 		return new OrderPayScheduleService(
 				new OrderPayScheduleRepository(),
 				new PaymentTermService()
@@ -59,8 +59,19 @@ public class OrderPayScheduleService
 				.execute();
 	}
 
+	public void updateOrderPaySchedStatusAndReferenceDate(final I_C_Order order)
+	{
+		OrderPayScheduleCreateCommand.builder()
+				.orderPayScheduleRepository(orderPayScheduleRepository)
+				.paymentTermService(paymentTermService)
+				.orderRecord(order)
+				.build()
+				.updateOrderPaySchedStatusAndReferenceDate(OrderId.ofRepoId(order.getC_Order_ID()));
+	}
+
 	@NonNull
 	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId) {return orderPayScheduleRepository.getByOrderId(orderId);}
 
 	public void deleteByOrderId(@NonNull final OrderId orderId) {orderPayScheduleRepository.deleteByOrderId(orderId);}
+
 }

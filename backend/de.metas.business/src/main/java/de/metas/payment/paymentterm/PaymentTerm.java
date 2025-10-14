@@ -104,8 +104,6 @@ public class PaymentTerm
 			checkPercentBreaks(breaks);
 		}
 
-
-
 		this.sortedBreaks = isComplex ? breaks.stream()
 				.sorted(Comparator.comparing(PaymentTermBreak::getSeqNo))
 				.collect(ImmutableList.toImmutableList()) : null;

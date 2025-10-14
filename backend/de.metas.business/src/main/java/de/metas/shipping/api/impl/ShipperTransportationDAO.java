@@ -3,8 +3,10 @@ package de.metas.shipping.api.impl;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.lang.SOTrx;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
+import de.metas.shipping.api.ShipperTransportation;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -139,5 +141,33 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.orgId(request.getOrgId())
 				.build())
 				.orElseGet(() -> create(request));
+	}
+
+
+	@Nullable
+	@Override
+	public ShipperTransportation getEarliestShipperTransportationByOrderId(final OrderId orderId)
+	{
+		final I_M_ShipperTransportation record = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+				.orderBy(I_M_ShipperTransportation.COLUMNNAME_DateDoc)
+				.create()
+				.first(I_M_ShipperTransportation.class);
+
+		if (record == null)
+		{
+			return null;
+		}
+
+		final ShipperTransportationId id = ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
+		return ShipperTransportation.builder()
+				.id(id)
+				.billOfLadingDate(TimeUtil.asInstant(record.getBLDate()))
+				.ETADate(TimeUtil.asInstant(record.getETA()))
+				.build();
+
+
 	}
 }

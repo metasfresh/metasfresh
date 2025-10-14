@@ -42,7 +42,7 @@ Feature: Purchase order with complex payment term
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | PTB1       | pt_PO            | 25      | 1          | OD                | 10    |
-      | PTB2       | pt_PO            | 75      | 0          | BL                | 20    |
+      | PTB2       | pt_PO            | 75      | 0          | LC                | 20    |
 
 
   @from:cucumber
@@ -59,4 +59,11 @@ Feature: Purchase order with complex payment term
       | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status | C_Order_ID |
       | poPT1      | PTB1                   | 2025-10-10 | 25.58  | WP     | po1        |
       | poPT1      | PTB2                   | 9999-01-01 | 76.72  | PR     | po1        |
+    When update C_Order:
+      | Identifier | LC_Date    |
+      | po1        | 2025-10-15 |
+    Then The order pay schedules table contains only the following records:
+      | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status | C_Order_ID |
+      | poPT1      | PTB1                   | 2025-10-10 | 25.58  | WP     | po1        |
+      | poPT1      | PTB2                   | 2025-10-15 | 76.72  | WP     | po1        |
 

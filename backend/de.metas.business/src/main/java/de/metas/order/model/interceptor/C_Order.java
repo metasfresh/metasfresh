@@ -636,4 +636,11 @@ public class C_Order
 	{
 		orderPayScheduleService.deleteByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_LC_Date })
+	public void updateOrderPaySchedules(final I_C_Order order)
+	{
+		orderPayScheduleService.updateOrderPaySchedStatusAndReferenceDate(order);
+	}
+
 }

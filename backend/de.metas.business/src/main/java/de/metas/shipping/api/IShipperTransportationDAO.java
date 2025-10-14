@@ -23,6 +23,7 @@ package de.metas.shipping.api;
  */
 
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -57,4 +58,7 @@ public interface IShipperTransportationDAO extends ISingletonService
 
 	@NonNull
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
+
+	@Nullable
+	ShipperTransportation getEarliestShipperTransportationByOrderId(final OrderId orderId);
 }

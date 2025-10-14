@@ -22,31 +22,151 @@
 
 package de.metas.order.paymentschedule;
 
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.time.Instant;
 
-@Value
-@Builder(toBuilder = true)
+@EqualsAndHashCode
+@ToString
 public class OrderPayScheduleLine
 {
-	@NonNull OrderPayScheduleId id;
-	@NonNull OrderId orderId;
-	@NonNull SeqNo seqNo;
+	@Getter final @NonNull OrderPayScheduleId id;
+	@Getter final @NonNull OrderId orderId;
+	@Getter final @NonNull SeqNo seqNo;
 
-	@NonNull PaymentTermBreakId paymentTermBreakId;
-	@NonNull ReferenceDateType referenceDateType;
-	@NonNull Percent percent;
+	@Getter final @NonNull PaymentTermBreakId paymentTermBreakId;
+	@Getter final @NonNull ReferenceDateType referenceDateType;
+	@Getter final @NonNull Percent percent;
+	@Getter final int offsetDays;
 
-	@NonNull OrderPayScheduleStatus orderPayScheduleStatus;
-	@NonNull Instant dueDate;
-	@NonNull Money dueAmount;
+	@Getter @Setter @NonNull OrderPayScheduleStatus orderPayScheduleStatus;
+	@Getter @Setter @NonNull Instant dueDate;
+	@Getter final @NonNull Money dueAmount;
+
+	@Builder
+	private OrderPayScheduleLine(@NonNull final OrderPayScheduleId id,
+								 @NonNull final OrderId orderId,
+								 @NonNull final SeqNo seqNo,
+								 @NonNull final PaymentTermBreakId paymentTermBreakId,
+								 @NonNull final ReferenceDateType referenceDateType,
+								 @NonNull final Percent percent,
+								 final int offsetDays,
+								 @NonNull final OrderPayScheduleStatus orderPayScheduleStatus,
+								 @NonNull final Instant dueDate,
+								 @NonNull final Money dueAmount
+	)
+	{
+		this.id = id;
+		this.orderId = orderId;
+		this.seqNo = seqNo;
+
+		this.paymentTermBreakId = paymentTermBreakId;
+		this.referenceDateType = referenceDateType;
+		this.percent = percent;
+		this.offsetDays = offsetDays;
+
+		this.orderPayScheduleStatus = orderPayScheduleStatus;
+		this.dueDate = dueDate;
+		this.dueAmount = dueAmount;
+	}
+
+	public void changeStatusTo(@NonNull final OrderPayScheduleStatus targetStatus)
+	{
+		if (OrderPayScheduleStatus.equals(this.orderPayScheduleStatus, targetStatus))
+		{
+			return;
+		}
+
+		OrderPayScheduleStatus newStatus;
+		switch (targetStatus)
+		{
+			case Pending:
+			{
+				changeStatusTo_Pending();
+				newStatus = OrderPayScheduleStatus.Pending;
+				break;
+			}
+			case Awaiting_Pay:
+			{
+				changeStatusTo_AwaitingPay();
+				newStatus = OrderPayScheduleStatus.Awaiting_Pay;
+				break;
+			}
+			case Paid:
+			{
+				changeStatusTo_Paid();
+				newStatus = OrderPayScheduleStatus.Paid;
+				break;
+			}
+
+			default:
+			{
+				throw new AdempiereException("Unknown next status " + targetStatus);
+			}
+		}
+
+		this.orderPayScheduleStatus = newStatus;
+	}
+
+	public BooleanWithReason checkCanTransitionToPending()
+	{
+		return orderPayScheduleStatus.checkCanTransitionTo(OrderPayScheduleStatus.Pending);
+	}
+
+	private void changeStatusTo_Pending()
+	{
+		checkCanTransitionToPending().assertTrue();
+	}
+
+	public BooleanWithReason checkCanTransitionToAwaitingPay()
+	{
+		final BooleanWithReason canTransition = orderPayScheduleStatus.checkCanTransitionTo(OrderPayScheduleStatus.Awaiting_Pay);
+		if (canTransition.isFalse())
+		{
+			return canTransition;
+		}
+
+		if (!dueDate.isBefore(PaymentTermConstants.PENDING_DATE))
+		{
+			return BooleanWithReason.falseBecause("The due date is NOT set");
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	private void changeStatusTo_AwaitingPay()
+	{
+		checkCanTransitionToAwaitingPay().assertTrue();
+	}
+
+	private void changeStatusTo_Paid()
+	{
+		checkCanTransitionToPaid().assertTrue();
+	}
+
+	public BooleanWithReason checkCanTransitionToPaid()
+	{
+		final BooleanWithReason canPay = orderPayScheduleStatus.checkCanTransitionTo(OrderPayScheduleStatus.Paid);
+		if (canPay.isFalse())
+		{
+			return canPay;
+		}
+
+		return BooleanWithReason.TRUE;
+	}
 }

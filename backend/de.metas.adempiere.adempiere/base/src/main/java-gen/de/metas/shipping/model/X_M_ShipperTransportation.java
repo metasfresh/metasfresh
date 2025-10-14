@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.shipping.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipperTransportation
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1717419151L;
+	private static final long serialVersionUID = 1934635377L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -48,6 +48,42 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setATA (final @Nullable java.sql.Timestamp ATA)
+	{
+		set_Value (COLUMNNAME_ATA, ATA);
+	}
+
+	@Override
+	public java.sql.Timestamp getATA() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ATA);
+	}
+
+	@Override
+	public void setATD (final @Nullable java.sql.Timestamp ATD)
+	{
+		set_Value (COLUMNNAME_ATD, ATD);
+	}
+
+	@Override
+	public java.sql.Timestamp getATD() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ATD);
+	}
+
+	@Override
+	public void setBLDate (final @Nullable java.sql.Timestamp BLDate)
+	{
+		set_Value (COLUMNNAME_BLDate, BLDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getBLDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_BLDate);
+	}
+
+	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
@@ -60,6 +96,30 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public void setContainerNo (final @Nullable java.lang.String ContainerNo)
+	{
+		set_Value (COLUMNNAME_ContainerNo, ContainerNo);
+	}
+
+	@Override
+	public java.lang.String getContainerNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_ContainerNo);
+	}
+
+	@Override
+	public void setCRD (final @Nullable java.sql.Timestamp CRD)
+	{
+		set_Value (COLUMNNAME_CRD, CRD);
+	}
+
+	@Override
+	public java.sql.Timestamp getCRD() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CRD);
 	}
 
 	@Override
@@ -211,6 +271,30 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setETA (final @Nullable java.sql.Timestamp ETA)
+	{
+		set_Value (COLUMNNAME_ETA, ETA);
+	}
+
+	@Override
+	public java.sql.Timestamp getETA() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ETA);
+	}
+
+	@Override
+	public void setETD (final @Nullable java.sql.Timestamp ETD)
+	{
+		set_Value (COLUMNNAME_ETD, ETD);
+	}
+
+	@Override
+	public java.sql.Timestamp getETD() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ETD);
+	}
+
+	@Override
 	public void setIsApproved (final boolean IsApproved)
 	{
 		set_Value (COLUMNNAME_IsApproved, IsApproved);
@@ -223,6 +307,30 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setIsBLReceived (final boolean IsBLReceived)
+	{
+		set_Value (COLUMNNAME_IsBLReceived, IsBLReceived);
+	}
+
+	@Override
+	public boolean isBLReceived() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBLReceived);
+	}
+
+	@Override
+	public void setIsBookingConfirmed (final boolean IsBookingConfirmed)
+	{
+		set_Value (COLUMNNAME_IsBookingConfirmed, IsBookingConfirmed);
+	}
+
+	@Override
+	public boolean isBookingConfirmed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBookingConfirmed);
+	}
+
+	@Override
 	public void setIsSOTrx (final boolean IsSOTrx)
 	{
 		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
@@ -232,6 +340,18 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public boolean isSOTrx() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
+
+	@Override
+	public void setIsWENotice (final boolean IsWENotice)
+	{
+		set_Value (COLUMNNAME_IsWENotice, IsWENotice);
+	}
+
+	@Override
+	public boolean isWENotice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWENotice);
 	}
 
 	@Override
@@ -342,6 +462,60 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public org.compiere.model.I_C_Postal getPOD()
+	{
+		return get_ValueAsPO(COLUMNNAME_POD_ID, org.compiere.model.I_C_Postal.class);
+	}
+
+	@Override
+	public void setPOD(final org.compiere.model.I_C_Postal POD)
+	{
+		set_ValueFromPO(COLUMNNAME_POD_ID, org.compiere.model.I_C_Postal.class, POD);
+	}
+
+	@Override
+	public void setPOD_ID (final int POD_ID)
+	{
+		if (POD_ID < 1) 
+			set_Value (COLUMNNAME_POD_ID, null);
+		else 
+			set_Value (COLUMNNAME_POD_ID, POD_ID);
+	}
+
+	@Override
+	public int getPOD_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_POD_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Postal getPOL()
+	{
+		return get_ValueAsPO(COLUMNNAME_POL_ID, org.compiere.model.I_C_Postal.class);
+	}
+
+	@Override
+	public void setPOL(final org.compiere.model.I_C_Postal POL)
+	{
+		set_ValueFromPO(COLUMNNAME_POL_ID, org.compiere.model.I_C_Postal.class, POL);
+	}
+
+	@Override
+	public void setPOL_ID (final int POL_ID)
+	{
+		if (POL_ID < 1) 
+			set_Value (COLUMNNAME_POL_ID, null);
+		else 
+			set_Value (COLUMNNAME_POL_ID, POL_ID);
+	}
+
+	@Override
+	public int getPOL_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_POL_ID);
+	}
+
+	@Override
 	public void setProcessed (final boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Processed);
@@ -408,5 +582,29 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public int getShipper_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Shipper_Location_ID);
+	}
+
+	@Override
+	public void setTrackingID (final @Nullable java.lang.String TrackingID)
+	{
+		set_Value (COLUMNNAME_TrackingID, TrackingID);
+	}
+
+	@Override
+	public java.lang.String getTrackingID() 
+	{
+		return get_ValueAsString(COLUMNNAME_TrackingID);
+	}
+
+	@Override
+	public void setVesselName (final @Nullable java.lang.String VesselName)
+	{
+		set_Value (COLUMNNAME_VesselName, VesselName);
+	}
+
+	@Override
+	public java.lang.String getVesselName() 
+	{
+		return get_ValueAsString(COLUMNNAME_VesselName);
 	}
 }

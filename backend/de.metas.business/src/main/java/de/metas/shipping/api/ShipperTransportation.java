@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,47 +20,33 @@
  * #L%
  */
 
-package de.metas.shipping.model;
+package de.metas.shipping.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPayScheduleId;
+import de.metas.order.paymentschedule.OrderPayScheduleStatus;
+import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.ReferenceDateType;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.SeqNo;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Objects;
 
 @Value
-public class ShipperTransportationId implements RepoIdAware
+@Builder(toBuilder = true)
+public class ShipperTransportation
 {
-	int repoId;
-
-	@JsonCreator
-	public static ShipperTransportationId ofRepoId(final int repoId)
-	{
-		return new ShipperTransportationId(repoId);
-	}
-
-	@Nullable
-	public static ShipperTransportationId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
-	}
-
-	public static int toRepoId(@Nullable final ShipperTransportationId shipperTransportationId)
-	{
-		return shipperTransportationId != null ? shipperTransportationId.getRepoId() : -1;
-	}
-
-	private ShipperTransportationId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_ShipperTransportation_ID");
-	}
-
-	@Override
-	@JsonValue
-	public int getRepoId()
-	{
-		return repoId;
-	}
+	@NonNull ShipperTransportationId id;
+	@Nullable Instant billOfLadingDate;
+	@Nullable Instant ETADate;
 }
