@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -52,6 +53,12 @@ public class InventoryLineId implements RepoIdAware
 	public static InventoryLineId ofNullableObject(@Nullable final Object obj)
 	{
 		return RepoIdAwares.ofObjectOrNull(obj, InventoryLineId.class, InventoryLineId::ofRepoIdOrNull);
+	}
+
+	@NonNull
+	public static InventoryLineId ofObject(@NonNull final Object obj)
+	{
+		return RepoIdAwares.ofObject(obj, InventoryLineId.class, InventoryLineId::ofRepoId);
 	}
 
 	private InventoryLineId(final int repoId)

@@ -2,15 +2,19 @@ package de.metas.inventory.mobileui.rest_api;
 
 import de.metas.Profiles;
 import de.metas.handlingunits.inventory.Inventory;
+import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.inventory.InventoryLineId;
 import de.metas.inventory.mobileui.InventoryMobileApplication;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHURequest;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHUResponse;
 import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.inventory.mobileui.rest_api.json.JsonCountRequest;
+import de.metas.inventory.mobileui.rest_api.json.JsonGetLineHUsResponse;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHURequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHUResponse;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorRequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorResponse;
+import de.metas.inventory.mobileui.rest_api.mappers.JsonInventoryJobMapperService;
 import de.metas.inventory.mobileui.rest_api.mappers.JsonResolveHUResponseMapperService;
 import de.metas.inventory.mobileui.rest_api.mappers.WFProcessMapper;
 import de.metas.mobile.application.service.MobileApplicationService;
@@ -19,14 +23,17 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/mobile/inventory")
@@ -39,6 +46,7 @@ public class InventoryRestController
 	@NonNull private InventoryJobService jobService;
 	@NonNull private final WorkflowRestController workflowRestController;
 	@NonNull private final JsonResolveHUResponseMapperService jsonResolveHUResponseMapperService;
+	@NonNull private final JsonInventoryJobMapperService jsonInventoryJobMapperService;
 
 	private void assertApplicationAccess()
 	{
@@ -92,5 +100,22 @@ public class InventoryRestController
 	private JsonWFProcess toJsonWFProcess(final Inventory inventory)
 	{
 		return workflowRestController.toJson(WFProcessMapper.toWFProcess(inventory));
+	}
+
+	@GetMapping("/lineHUs")
+	public JsonGetLineHUsResponse getLineHUs(
+			@RequestParam("wfProcessId") @NonNull String wfProcessIdStr,
+			@RequestParam("lineId") @NonNull String lineIdStr)
+	{
+		assertApplicationAccess();
+
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final InventoryLineId lineId = InventoryLineId.ofObject(lineIdStr);
+
+		final InventoryLine line = jobService.getById(wfProcessId, Env.getLoggedUserId()).getLineById(lineId);
+
+		return JsonGetLineHUsResponse.builder()
+				.lineHUs(jsonInventoryJobMapperService.newMapper(newJsonOpts()).toJsonInventoryLineHUs(line))
+				.build();
 	}
 }

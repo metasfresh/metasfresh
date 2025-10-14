@@ -58,7 +58,7 @@ public class HULoadingCache
 		return huLocatorsByHUId.computeIfAbsent(HuId.ofRepoId(hu.getM_HU_ID()), huId -> IHandlingUnitsBL.extractLocatorId(hu));
 	}
 
-	public String getDisplayName(final HuId huId)
+	public String getDisplayName(@NonNull final HuId huId)
 	{
 		return displayNamesByHUId.computeIfAbsent(huId, this::retrieveDisplayName);
 	}

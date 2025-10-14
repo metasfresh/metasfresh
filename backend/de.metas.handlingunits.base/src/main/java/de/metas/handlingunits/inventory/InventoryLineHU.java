@@ -118,6 +118,8 @@ public class InventoryLineHU
 		}
 	}
 
+	public @NonNull InventoryLineHUId getIdNotNull() {return Check.assumeNotNull(id, "line is saved: {}", this);}
+
 	void setId(@NonNull final InventoryLineHUId id)
 	{
 		this.id = id;
@@ -136,6 +138,30 @@ public class InventoryLineHU
 		if (!getInventoryType().isPhysical())
 		{
 			throw new AdempiereException("Expected Physical Inventory: " + this);
+		}
+	}
+
+	public String getUOMSymbol()
+	{
+		return getUOM().getUOMSymbol();
+	}
+
+	public I_C_UOM getUOM()
+	{
+		if (inventoryType.isPhysical())
+		{
+			final Quantity qtyBook = getQtyBook();
+			final Quantity qtyCount = getQtyCount();
+			Quantity.assertSameUOM(qtyBook, qtyCount);
+			return qtyBook.getUOM();
+		}
+		else if (inventoryType.isInternalUse())
+		{
+			return getQtyInternalUse().getUOM();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown inventory type: " + inventoryType);
 		}
 	}
 
