@@ -52,31 +52,31 @@ const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit 
         <table className="table">
           <tbody>
             <tr>
-              <th>{trl('huManager.locator')}</th>
+              <th>{trl('inventory.locator')}</th>
               <td>
                 <span data-testid="locator">{locatorName}</span>
               </td>
             </tr>
             <tr>
-              <th>{trl('huManager.HU')}</th>
+              <th>{trl('inventory.HU')}</th>
               <td>
                 <span data-testid="hu">{huDisplayName}</span>
               </td>
             </tr>
             <tr>
-              <th>{/* TODO trl */ 'Product'}</th>
+              <th>{trl('inventory.product')}</th>
               <td>
                 <span data-testid="product">{productName}</span>
               </td>
             </tr>
             <tr>
-              <th>{/* TODO trl */ 'Booked'}</th>
+              <th>{trl('inventory.qtyBooked')}</th>
               <td>
                 <span data-testid="qty-booked">{formatQtyToHumanReadableStr({ qty: qtyBooked, uom })}</span>
               </td>
             </tr>
             <tr>
-              <th>{/* TODO trl */ 'Count'}</th>
+              <th>{trl('inventory.qtyCount')}</th>
               <td>
                 <QtyInputField
                   testId="qty-count"

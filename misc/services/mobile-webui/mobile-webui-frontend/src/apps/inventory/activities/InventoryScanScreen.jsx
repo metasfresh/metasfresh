@@ -7,6 +7,7 @@ import { toastError, toastErrorFromObj } from '../../../utils/toast';
 import InventoryCountComponent from './InventoryCountComponent';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useDispatch } from 'react-redux';
+import { trl } from '../../../utils/translations';
 
 const STATUS_ScanLocator = 'ScanLocator';
 const STATUS_ScanHU = 'ScanHU';
@@ -24,7 +25,7 @@ const InventoryScanScreen = () => {
   const [processing, setProcessing] = useState(false);
   const [status, setStatus] = useState(STATUS_ScanLocator);
   const [locatorQRCode, setLocatorQRCode] = useState();
-  const [resolvedHU, setResolvedHU] = useState();
+  const [resolvedHU, setResolvedHU] = useState(null);
 
   const isReadonly = processing;
 
@@ -58,7 +59,7 @@ const InventoryScanScreen = () => {
   };
 
   const onHUScanned = ({ scannedBarcode }) => {
-    resolveHU({ scannedBarcode, wfProcessId, lineId, locatorQRCode }).then((response) => {
+    resolveHU({ scannedCode: scannedBarcode, wfProcessId, lineId, locatorQRCode }).then((response) => {
       setResolvedHU(response);
       setStatus(STATUS_FillData);
     });
@@ -69,7 +70,7 @@ const InventoryScanScreen = () => {
     reportInventoryCounting({
       wfProcessId,
       lineId: resolvedHU?.lineId,
-      scannedBarcode: 'TODO', // TODO
+      scannedCode: resolvedHU?.scannedCode,
       huId: resolvedHU?.huId,
       qtyCount,
       lineCountingDone,
@@ -83,33 +84,33 @@ const InventoryScanScreen = () => {
       .finally(() => setProcessing(false));
   };
 
-  const panels = {
-    [STATUS_ScanLocator]: (
-      <BarcodeScannerComponent
-        key="scanLocator"
-        inputPlaceholderText="Scan Locator"
-        onResolvedResult={onLocatorScanned}
-        continuousRunning={true}
-      />
-    ),
-    [STATUS_ScanHU]: (
-      <BarcodeScannerComponent
-        key="scanHU"
-        inputPlaceholderText="Scan HU"
-        onResolvedResult={onHUScanned}
-        continuousRunning={true}
-      />
-    ),
-    [STATUS_FillData]: (
-      <InventoryCountComponent
-        disabled={isReadonly}
-        resolvedHU={resolvedHU}
-        onInventoryCountSubmit={onInventoryCountSubmit}
-      />
-    ),
-  };
-
-  return <div className={`panel-${status}`}>{panels[status] || null}</div>;
+  return (
+    <div className={`panel-${status}`}>
+      {status === STATUS_ScanLocator && (
+        <BarcodeScannerComponent
+          key="scanLocator"
+          inputPlaceholderText={trl('inventory.scanLocatorPlaceholder')}
+          onResolvedResult={onLocatorScanned}
+          continuousRunning={true}
+        />
+      )}
+      {status === STATUS_ScanHU && (
+        <BarcodeScannerComponent
+          key="scanHU"
+          inputPlaceholderText={trl('inventory.scanHUPlaceholder')}
+          onResolvedResult={onHUScanned}
+          continuousRunning={true}
+        />
+      )}
+      {status === STATUS_FillData && (
+        <InventoryCountComponent
+          disabled={isReadonly}
+          resolvedHU={resolvedHU}
+          onInventoryCountSubmit={onInventoryCountSubmit}
+        />
+      )}
+    </div>
+  );
 };
 
 export default InventoryScanScreen;

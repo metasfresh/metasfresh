@@ -28,6 +28,7 @@ public class JsonResolveHUResponseMapper
 		final ProductInfo productInfo = products.getById(response.getProductId());
 
 		return JsonResolveHUResponse.builder()
+				.scannedCode(response.getScannedCode())
 				.lineId(response.getLineId())
 				.huId(response.getHuId())
 				.huDisplayName(response.getHuId() != null ? handlingUnits.getDisplayName(response.getHuId()) : null)

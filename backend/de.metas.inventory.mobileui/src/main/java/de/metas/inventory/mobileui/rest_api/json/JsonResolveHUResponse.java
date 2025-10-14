@@ -1,10 +1,9 @@
 package de.metas.inventory.mobileui.rest_api.json;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.InventoryLineId;
-import de.metas.inventory.mobileui.job.qrcode.ResolveHUResponse;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -20,6 +19,7 @@ import java.util.List;
 @Jacksonized
 public class JsonResolveHUResponse
 {
+	@NonNull ScannedCode scannedCode;
 	@Nullable InventoryLineId lineId;
 	@Nullable HuId huId;
 	@Nullable String huDisplayName;

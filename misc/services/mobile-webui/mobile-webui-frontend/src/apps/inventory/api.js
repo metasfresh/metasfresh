@@ -10,16 +10,16 @@ export const resolveLocator = ({ scannedBarcode, wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const resolveHU = ({ scannedBarcode, wfProcessId, lineId, locatorQRCode }) => {
+export const resolveHU = ({ scannedCode, wfProcessId, lineId, locatorQRCode }) => {
   return axios
-    .post(toUrl(`${inventoryBasePath}/resolveHU`), { scannedCode: scannedBarcode, wfProcessId, lineId, locatorQRCode })
+    .post(toUrl(`${inventoryBasePath}/resolveHU`), { scannedCode, wfProcessId, lineId, locatorQRCode })
     .then((response) => unboxAxiosResponse(response));
 };
 
 export const reportInventoryCounting = ({
   wfProcessId,
   lineId,
-  scannedBarcode,
+  scannedCode,
   huId,
   qtyCount,
   lineCountingDone,
@@ -29,7 +29,7 @@ export const reportInventoryCounting = ({
     .post(toUrl(`${inventoryBasePath}/count`), {
       wfProcessId,
       lineId,
-      scannedCode: scannedBarcode,
+      scannedCode,
       huId,
       qtyCount,
       lineCountingDone,

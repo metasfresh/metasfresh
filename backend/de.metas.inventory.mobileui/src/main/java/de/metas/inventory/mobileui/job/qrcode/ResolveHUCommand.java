@@ -109,7 +109,7 @@ public class ResolveHUCommand
 		final I_M_HU hu = huCache.getHUById(huId);
 		final InventoryLine matchingLine = findFirstMatchingLine(line -> isLineMatchingHU(line, hu));
 
-		return ResolveHUResponse.builder()
+		return newResponse()
 				.lineId(matchingLine.getIdNonNull())
 				.locatorId(huCache.getLocatorId(hu))
 				.huId(huId)
@@ -117,6 +117,12 @@ public class ResolveHUCommand
 				.qtyBooked(huCache.getQty(hu, matchingLine.getProductId()))
 				.attributes(getAttributes(hu))
 				.build();
+	}
+
+	private ResolveHUResponse.ResolveHUResponseBuilder newResponse()
+	{
+		return ResolveHUResponse.builder()
+				.scannedCode(scannedCode);
 	}
 
 	private List<ResolveHUResponse.Attribute> getAttributes(final I_M_HU hu)
@@ -155,7 +161,7 @@ public class ResolveHUCommand
 				continue;
 			}
 
-			return ResolveHUResponse.builder()
+			return newResponse()
 					.lineId(line.getIdNonNull())
 					.locatorId(line.getLocatorId())
 					.huId(null)

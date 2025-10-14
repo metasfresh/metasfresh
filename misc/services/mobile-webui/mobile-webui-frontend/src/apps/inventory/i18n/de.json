@@ -1,2 +1,9 @@
 {
+  "locator": "Lagerort",
+  "HU": "HU",
+  "product": "Produkt",
+  "qtyBooked": "Qty Booked",
+  "qtyCount": "Qty Count",
+  "scanHUPlaceholder": "Scannen HU",
+  "scanLocatorPlaceholder": "Lagerort scannen"
 }

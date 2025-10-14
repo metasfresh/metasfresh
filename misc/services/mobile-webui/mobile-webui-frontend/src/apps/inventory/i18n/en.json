@@ -1,2 +1,9 @@
 {
+  "locator": "Locator",
+  "HU": "HU",
+  "product": "Product",
+  "qtyBooked": "Qty Booked",
+  "qtyCount": "Qty Count",
+  "scanHUPlaceholder": "Scan HU",
+  "scanLocatorPlaceholder": "Scan Locator"
 }

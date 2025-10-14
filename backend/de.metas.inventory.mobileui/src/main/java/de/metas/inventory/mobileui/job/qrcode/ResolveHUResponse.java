@@ -5,6 +5,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.InventoryLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -23,6 +24,7 @@ import java.util.List;
 @Builder
 public class ResolveHUResponse
 {
+	@NonNull ScannedCode scannedCode;
 	@NonNull InventoryLineId lineId;
 	@NonNull LocatorId locatorId;
 	@Nullable HuId huId;
