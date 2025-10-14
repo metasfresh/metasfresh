@@ -20,39 +20,4 @@ public class JsonResolveHUResponseAttribute
 	@NonNull String caption;
 	@NonNull JsonAttributeValueType valueType;
 	@Nullable Object value;
-
-	public static JsonResolveHUResponseAttribute of(@NonNull ResolveHUResponse.Attribute attribute, @NonNull final String adLanguage)
-	{
-		return builder()
-				.code(attribute.getAttributeCode())
-				.caption(attribute.getDisplayName().translate(adLanguage))
-				.valueType(JsonAttributeValueType.of(attribute.getValueType()))
-				.value(extractJsonValue(attribute))
-				.build();
-	}
-
-	private static Object extractJsonValue(final ResolveHUResponse.Attribute attribute)
-	{
-		final AttributeValueType valueType = attribute.getValueType();
-		if (AttributeValueType.STRING.equals(valueType))
-		{
-			return attribute.getValueAsString();
-		}
-		else if (AttributeValueType.NUMBER.equals(valueType))
-		{
-			return attribute.getValueAsBigDecimal();
-		}
-		else if (AttributeValueType.DATE.equals(valueType))
-		{
-			return attribute.getValueAsLocalDate();
-		}
-		else if (AttributeValueType.LIST.equals(valueType))
-		{
-			return attribute.getValueAsString();
-		}
-		else
-		{
-			throw new AdempiereException("Unknown attribute type: " + valueType);
-		}
-	}
 }

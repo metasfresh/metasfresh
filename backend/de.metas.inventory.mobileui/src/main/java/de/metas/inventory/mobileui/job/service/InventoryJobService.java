@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Set;
 
-import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toInventoryId;
+import static de.metas.inventory.mobileui.rest_api.mappers.WFProcessMapper.toInventoryId;
 
 @Service
 @RequiredArgsConstructor

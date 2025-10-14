@@ -22,8 +22,8 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
-import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toInventoryId;
-import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toWFProcess;
+import static de.metas.inventory.mobileui.rest_api.mappers.WFProcessMapper.toInventoryId;
+import static de.metas.inventory.mobileui.rest_api.mappers.WFProcessMapper.toWFProcess;
 
 @Component
 @RequiredArgsConstructor

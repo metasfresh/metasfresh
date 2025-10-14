@@ -66,4 +66,10 @@ public class HandlingUnitsService
 	{
 		return attributeDAO.getAttributeByCode(attributeCode);
 	}
+
+	public String getDisplayName(final I_M_HU hu)
+	{
+		return handlingUnitsBL.getDisplayName(hu);
+	}
+
 }

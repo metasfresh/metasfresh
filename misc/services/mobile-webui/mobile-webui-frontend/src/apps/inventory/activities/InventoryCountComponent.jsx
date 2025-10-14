@@ -7,7 +7,7 @@ import { qtyInfos } from '../../../utils/qtyInfos';
 import DialogButton from '../../../components/dialogs/DialogButton';
 
 const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit }) => {
-  const { huId, productId, qtyBooked, uom, attributes } = resolvedHU;
+  const { huId, huDisplayName, productName, locatorName, qtyBooked, uom, attributes } = resolvedHU;
 
   const [qtyCount, setQtyCount] = useState(() => qtyInfos.invalidOfNumber());
   const [attributeValuesByCode, setAttributeValuesByCode] = useState(() => {
@@ -53,19 +53,19 @@ const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit 
             <tr>
               <th>{/* TODO trl */ 'Locator'}</th>
               <td>
-                <span data-testid="locator">{/* TODO */}</span>
+                <span data-testid="locator">{locatorName}</span>
               </td>
             </tr>
             <tr>
               <th>{/* TODO trl */ 'HU'}</th>
               <td>
-                <span data-testid="hu">{/* TODO */ huId}</span>
+                <span data-testid="hu">{huDisplayName}</span>
               </td>
             </tr>
             <tr>
               <th>{/* TODO trl */ 'Product'}</th>
               <td>
-                <span data-testid="product">{/* TODO */ productId}</span>
+                <span data-testid="product">{productName}</span>
               </td>
             </tr>
             <tr>
@@ -126,7 +126,13 @@ export default InventoryCountComponent;
 
 //
 //
+//
+//
+//
 // ------------------------------------
+//
+//
+//
 //
 //
 

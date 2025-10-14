@@ -31,30 +31,17 @@ const InventoryScanScreen = () => {
   // FIXME: DEBUGGING
   if (DEBUGGING) {
     useEffect(() => {
-      setLocatorQRCode('LOC#1#{"warehouseId":1000229,"locatorId":1000119,"caption":"wh_20251002T093155523_Locator"}');
-      setResolvedHU({
-        lineId: 1000169,
-        huId: 1003822,
-        productId: 2007215,
-        uom: 'Stk',
-        qtyBooked: 68,
-        attributes: [
-          {
-            code: 'HU_BestBeforeDate',
-            caption: 'Mindesthaltbarkeit',
-            valueType: 'DATE',
-            value: null,
-          },
-          {
-            code: 'Lot-Nummer',
-            caption: 'Lot-Nummer',
-            valueType: 'STRING',
-            value: null,
-          },
-        ],
-      });
-      setStatus(STATUS_FillData);
-    }, []);
+      if (status === STATUS_ScanLocator) {
+        onLocatorScanned({
+          scannedBarcode: 'LOC#1#{"warehouseId":1000229,"locatorId":1000119,"caption":"wh_20251002T093155523_Locator"}',
+        });
+      } else if (status === STATUS_ScanHU) {
+        onHUScanned({
+          scannedBarcode:
+            'HU#1#{"id":"1eecb838b459a2c93f3c14eee6e2-13733","packingInfo":{"huUnitType":"LU","packingInstructionsId":3002715,"caption":"LU_20251002T093155607"},"product":{"id":2007215,"code":"P1_20251002T093155444","name":"P1_20251002T093155444"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}',
+        });
+      }
+    }, [status]);
   }
   // console.log('InventoryScanScreen - locatorQRCode: ' + JSON.stringify(locatorQRCode, null, 2));
   // console.log('InventoryScanScreen - resolvedHU: ' + JSON.stringify(resolvedHU, null, 2));

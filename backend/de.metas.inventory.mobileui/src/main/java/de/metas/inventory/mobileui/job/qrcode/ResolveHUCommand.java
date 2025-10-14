@@ -111,6 +111,7 @@ public class ResolveHUCommand
 
 		return ResolveHUResponse.builder()
 				.lineId(matchingLine.getIdNonNull())
+				.locatorId(huCache.getLocatorId(hu))
 				.huId(huId)
 				.productId(matchingLine.getProductId())
 				.qtyBooked(huCache.getQty(hu, matchingLine.getProductId()))
@@ -156,6 +157,7 @@ public class ResolveHUCommand
 
 			return ResolveHUResponse.builder()
 					.lineId(line.getIdNonNull())
+					.locatorId(line.getLocatorId())
 					.huId(null)
 					.productId(lineProductId)
 					.qtyBooked(Quantitys.zero(lineProductId))

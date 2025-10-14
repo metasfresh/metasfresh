@@ -1,8 +1,8 @@
 package de.metas.inventory.mobileui.rest_api;
 
 import de.metas.handlingunits.inventory.Inventory;
-import de.metas.inventory.mobileui.mappers.InventoryJsonMapper;
-import de.metas.inventory.mobileui.mappers.InventoryJsonMapperService;
+import de.metas.inventory.mobileui.rest_api.mappers.JsonInventoryJobMapper;
+import de.metas.inventory.mobileui.rest_api.mappers.JsonInventoryJobMapperService;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -25,7 +25,7 @@ public class InventoryJobWFActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("inventory.inventory");
 	public static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("inventory/inventory");
 
-	@NonNull private final InventoryJsonMapperService jsonMapperService;
+	@NonNull private final JsonInventoryJobMapperService jsonMapperService;
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -34,7 +34,7 @@ public class InventoryJobWFActivityHandler implements WFActivityHandler
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
 		final Inventory inventory = getInventory(wfProcess);
-		final InventoryJsonMapper jsonMapper = jsonMapperService.newMapper(jsonOpts);
+		final JsonInventoryJobMapper jsonMapper = jsonMapperService.newMapper(jsonOpts);
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()

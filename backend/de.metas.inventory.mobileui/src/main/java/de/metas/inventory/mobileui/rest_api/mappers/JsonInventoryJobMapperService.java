@@ -1,4 +1,4 @@
-package de.metas.inventory.mobileui.mappers;
+package de.metas.inventory.mobileui.rest_api.mappers;
 
 import de.metas.inventory.mobileui.deps.products.ProductService;
 import de.metas.inventory.mobileui.deps.warehouse.WarehouseService;
@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class InventoryJsonMapperService
+public class JsonInventoryJobMapperService
 {
 	@NonNull private final WarehouseService warehouseService;
 	@NonNull private final ProductService productService;
 
-	public InventoryJsonMapper newMapper(@NonNull final JsonOpts jsonOpts)
+	public JsonInventoryJobMapper newMapper(@NonNull final JsonOpts jsonOpts)
 	{
-		return InventoryJsonMapper.builder()
+		return JsonInventoryJobMapper.builder()
 				.warehouses(warehouseService.newLoadingCache())
 				.products(productService.newLoadingCache())
 				.adLanguage(jsonOpts.getAdLanguage())

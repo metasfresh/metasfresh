@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -21,23 +22,14 @@ public class JsonResolveHUResponse
 {
 	@Nullable InventoryLineId lineId;
 	@Nullable HuId huId;
+	@Nullable String huDisplayName;
+	@NonNull LocatorId locatorId;
+	@NonNull String locatorName;
 	@NonNull ProductId productId;
+	@NonNull String productNo;
+	@NonNull String productName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyBooked;
 	@NonNull List<JsonResolveHUResponseAttribute> attributes;
 
-	public static JsonResolveHUResponse of(@NonNull final ResolveHUResponse response, @NonNull final String adLanguage)
-	{
-		return builder()
-				.lineId(response.getLineId())
-				.huId(response.getHuId())
-				.productId(response.getProductId())
-				.uom(response.getQtyBooked().getUOMSymbol())
-				.qtyBooked(response.getQtyBooked().toBigDecimal())
-				.attributes(response.getAttributes()
-						.stream()
-						.map(attribute -> JsonResolveHUResponseAttribute.of(attribute, adLanguage))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
-	}
 }

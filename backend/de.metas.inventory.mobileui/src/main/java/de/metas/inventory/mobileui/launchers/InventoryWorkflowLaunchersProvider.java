@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.stream.Stream;
 
 import static de.metas.inventory.mobileui.InventoryMobileApplication.APPLICATION_ID;
-import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toWFProcessId;
+import static de.metas.inventory.mobileui.rest_api.mappers.WFProcessMapper.toWFProcessId;
 
 @Service
 @RequiredArgsConstructor

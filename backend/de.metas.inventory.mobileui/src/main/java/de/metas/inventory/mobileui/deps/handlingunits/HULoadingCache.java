@@ -24,6 +24,7 @@ public class HULoadingCache
 	private final HashMap<HuId, I_M_HU> husById = new HashMap<>();
 	private final HashMap<HuId, HUProductStorages> productStoragesByHUId = new HashMap<>();
 	private final HashMap<HuId, ImmutableAttributeSet> attributesByHUId = new HashMap<>();
+	private final HashMap<HuId, String> displayNamesByHUId = new HashMap<>();
 
 	public I_M_HU getHUById(final @NotNull HuId huId)
 	{
@@ -55,5 +56,15 @@ public class HULoadingCache
 	public LocatorId getLocatorId(@NonNull final I_M_HU hu)
 	{
 		return huLocatorsByHUId.computeIfAbsent(HuId.ofRepoId(hu.getM_HU_ID()), huId -> IHandlingUnitsBL.extractLocatorId(hu));
+	}
+
+	public String getDisplayName(final HuId huId)
+	{
+		return displayNamesByHUId.computeIfAbsent(huId, this::retrieveDisplayName);
+	}
+
+	private String retrieveDisplayName(final HuId huId)
+	{
+		return huService.getDisplayName(getHUById(huId));
 	}
 }

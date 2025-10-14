@@ -11,6 +11,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -23,6 +24,7 @@ import java.util.List;
 public class ResolveHUResponse
 {
 	@NonNull InventoryLineId lineId;
+	@NonNull LocatorId locatorId;
 	@Nullable HuId huId;
 	@NonNull ProductId productId;
 	@NonNull Quantity qtyBooked;

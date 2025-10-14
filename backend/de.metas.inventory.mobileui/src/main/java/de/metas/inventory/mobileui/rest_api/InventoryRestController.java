@@ -6,16 +6,18 @@ import de.metas.inventory.mobileui.InventoryMobileApplication;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHURequest;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHUResponse;
 import de.metas.inventory.mobileui.job.service.InventoryJobService;
-import de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper;
 import de.metas.inventory.mobileui.rest_api.json.JsonCountRequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHURequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHUResponse;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorRequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorResponse;
+import de.metas.inventory.mobileui.rest_api.mappers.JsonResolveHUResponseMapperService;
+import de.metas.inventory.mobileui.rest_api.mappers.WFProcessMapper;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
+import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -36,12 +38,15 @@ public class InventoryRestController
 	@NonNull private final MobileApplicationService mobileApplicationService;
 	@NonNull private InventoryJobService jobService;
 	@NonNull private final WorkflowRestController workflowRestController;
+	@NonNull private final JsonResolveHUResponseMapperService jsonResolveHUResponseMapperService;
 
 	private void assertApplicationAccess()
 	{
 		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
 		mobileApplicationService.assertAccess(InventoryMobileApplication.APPLICATION_ID, permissions);
 	}
+
+	private static JsonOpts newJsonOpts() {return JsonOpts.ofAdLanguage(Env.getADLanguageOrBaseLanguage());}
 
 	@PostMapping("/resolveLocator")
 	public JsonResolveLocatorResponse resolveLocator(@RequestBody @NonNull final JsonResolveLocatorRequest request)
@@ -72,7 +77,7 @@ public class InventoryRestController
 						.build()
 		);
 
-		return JsonResolveHUResponse.of(response, Env.getADLanguageOrBaseLanguage());
+		return jsonResolveHUResponseMapperService.newMapper(newJsonOpts()).toJson(response);
 	}
 
 	@PostMapping("/count")
@@ -86,6 +91,6 @@ public class InventoryRestController
 
 	private JsonWFProcess toJsonWFProcess(final Inventory inventory)
 	{
-		return workflowRestController.toJson(InventoryWFProcessMapper.toWFProcess(inventory));
+		return workflowRestController.toJson(WFProcessMapper.toWFProcess(inventory));
 	}
 }

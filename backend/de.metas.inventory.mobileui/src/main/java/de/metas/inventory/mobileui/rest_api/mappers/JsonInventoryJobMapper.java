@@ -1,4 +1,4 @@
-package de.metas.inventory.mobileui.mappers;
+package de.metas.inventory.mobileui.rest_api.mappers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.inventory.Inventory;
@@ -15,7 +15,7 @@ import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 
 @Builder(access = AccessLevel.PACKAGE)
-public class InventoryJsonMapper
+public class JsonInventoryJobMapper
 {
 	@NonNull private final WarehousesLoadingCache warehouses;
 	@NonNull private final ProductsLoadingCache products;
