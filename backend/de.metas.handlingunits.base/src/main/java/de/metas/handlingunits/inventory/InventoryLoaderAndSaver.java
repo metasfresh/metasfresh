@@ -24,7 +24,6 @@ import de.metas.inventory.InventoryAndLineIdSet;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.inventory.InventoryQuery;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -41,7 +40,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -66,8 +64,6 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
 
 @Builder
 class InventoryLoaderAndSaver
@@ -191,7 +187,6 @@ class InventoryLoaderAndSaver
 				: ImmutableList.of();
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inventoryLineRecord.getM_AttributeSetInstance_ID());
-		final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
 
 		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoId(inventoryLineRecord.getM_Locator_ID());
 		final I_C_UOM uom = uomDAO.getById(inventoryLineRecord.getC_UOM_ID());
@@ -204,8 +199,7 @@ class InventoryLoaderAndSaver
 				.asiId(asiId)
 				.packingInstructions(extractPackingInstructions(inventoryLineRecord))
 				.qtyCountFixed(Quantity.of(inventoryLineRecord.getQtyCount(), uom))
-				.qtyBookFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom))
-				.storageAttributesKey(storageAttributesKey);
+				.qtyBookFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom));
 
 		final HUAggregationType huAggregationType = extractHUAggregationType(inventoryLineRecord);
 		lineBuilder.huAggregationType(huAggregationType);
@@ -443,11 +437,9 @@ class InventoryLoaderAndSaver
 		lineRecord.setAD_Org_ID(inventoryLine.getOrgId().getRepoId());
 		lineRecord.setM_Inventory_ID(inventoryId.getRepoId());
 
-		final AttributeSetInstanceId asiId = getOrCreateEffectiveASI(inventoryLine);
-		lineRecord.setM_AttributeSetInstance_ID(asiId.getRepoId());
-
 		lineRecord.setM_Locator_ID(inventoryLine.getLocatorId().getRepoId());
 		lineRecord.setM_Product_ID(inventoryLine.getProductId().getRepoId());
+		lineRecord.setM_AttributeSetInstance_ID(inventoryLine.getAsiId().getRepoId());
 
 		final HUAggregationType huAggregationType = inventoryLine.getHuAggregationType();
 		lineRecord.setHUAggregationType(HUAggregationType.toCodeOrNull(huAggregationType));
@@ -466,13 +458,6 @@ class InventoryLoaderAndSaver
 		inventoryLine.setId(extractInventoryLineId(lineRecord));
 
 		saveInventoryLineHURecords(inventoryLine, inventoryId);
-	}
-
-	private static @NotNull AttributeSetInstanceId getOrCreateEffectiveASI(final @NotNull InventoryLine inventoryLine)
-	{
-		return coalesceSuppliersNotNull(
-				inventoryLine::getAsiId,
-				() -> AttributesKeys.createAttributeSetInstanceFromAttributesKey(inventoryLine.getStorageAttributesKey()));
 	}
 
 	private static void updateInventoryLineRecordQuantities(

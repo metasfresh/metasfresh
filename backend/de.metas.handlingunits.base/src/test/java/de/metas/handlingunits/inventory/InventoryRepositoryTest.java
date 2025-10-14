@@ -13,17 +13,16 @@ import de.metas.inventory.AggregationType;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
@@ -172,15 +171,12 @@ class InventoryRepositoryTest
 			inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
 		}
 
-		final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
-
 		final InventoryLine inventoryLine = InventoryLine.builder()
 				.orgId(orgId)
 				.id(inventoryLineId)
 				.locatorId(LocatorId.ofRecord(locatorRecord))
 				.productId(ProductId.ofRepoId(40))
 				.asiId(asiId)
-				.storageAttributesKey(storageAttributesKey)
 				.huAggregationType(HUAggregationType.MULTI_HU)
 				.counted(true)
 				.qtyBookFixed(Quantity.of("30", uomRecord))
@@ -202,7 +198,11 @@ class InventoryRepositoryTest
 				.build();
 
 		inventoryLine.getInventoryLineHUs()
-				.forEach(lineHU -> InventoryTestHelper.createStorageFor(inventoryLine.getProductId(), lineHU.getQtyBook(), lineHU.getHuId()));
+				.forEach(lineHU -> InventoryTestHelper.createStorageFor(
+						inventoryLine.getProductId(),
+						lineHU.getQtyBook(),
+						Check.assumeNotNull(lineHU.getHuId(), "huId shall not be null: {}", lineHU)
+				));
 
 		// invoke the method under test
 		inventoryRepository.saveInventoryLine(inventoryLine, inventoryId);

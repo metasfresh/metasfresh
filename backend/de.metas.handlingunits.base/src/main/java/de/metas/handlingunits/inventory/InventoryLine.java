@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -63,11 +62,7 @@ public class InventoryLine
 	@Nullable @NonFinal InventoryLineId id;
 	@NonNull OrgId orgId;
 
-	/**
-	 * If not null then saving will assume that there is an existing persisted ASI which is in sync with {@link #storageAttributesKey}.
-	 */
-	@Nullable AttributeSetInstanceId asiId;
-	@NonNull AttributesKey storageAttributesKey;
+	@NonNull AttributeSetInstanceId asiId;
 	@NonNull ProductId productId;
 	@NonNull LocatorId locatorId;
 	@NonNull InventoryLinePackingInstructions packingInstructions;
@@ -87,7 +82,6 @@ public class InventoryLine
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId asiId,
-			@NonNull final AttributesKey storageAttributesKey,
 			@NonNull final LocatorId locatorId,
 			@Nullable final InventoryLinePackingInstructions packingInstructions,
 			@Nullable final HUAggregationType huAggregationType,
@@ -100,9 +94,8 @@ public class InventoryLine
 
 		this.id = id;
 		this.orgId = orgId;
-		this.asiId = asiId;
+		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
 		this.productId = productId;
-		this.storageAttributesKey = storageAttributesKey;
 		this.locatorId = locatorId;
 		this.packingInstructions = coalesceNotNull(packingInstructions, InventoryLinePackingInstructions.VHU);
 		this.huAggregationType = huAggregationType;

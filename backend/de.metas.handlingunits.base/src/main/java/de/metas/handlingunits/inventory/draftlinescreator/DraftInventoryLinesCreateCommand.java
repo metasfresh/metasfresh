@@ -23,6 +23,7 @@ import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.LocatorId;
 import org.slf4j.Logger;
 
@@ -195,14 +196,12 @@ public class DraftInventoryLinesCreateCommand
 			}
 		}
 
-		final InventoryLineHU inventoryLineHU = toInventoryLineHU(huForInventoryLine);
-
 		inventoryLineBuilder
 				.huAggregationType(getHuAggregationType())
-				.storageAttributesKey(huForInventoryLine.getStorageAttributesKey())
-				.inventoryLineHU(inventoryLineHU)
 				.locatorId(huForInventoryLine.getLocatorId())
-				.productId(huForInventoryLine.getProductId());
+				.productId(huForInventoryLine.getProductId())
+				.asiId(AttributesKeys.createAttributeSetInstanceFromAttributesKey(huForInventoryLine.getStorageAttributesKey()))
+				.inventoryLineHU(toInventoryLineHU(huForInventoryLine));
 
 		createdOrUpdatedLines.put(aggregationKey, inventoryLineBuilder.build());
 	}

@@ -9,8 +9,10 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
@@ -28,27 +30,28 @@ public class MultipleHUInventoryLineAggregator implements InventoryLineAggregato
 	public InventoryLineAggregationKey createAggregationKey(@NonNull final HuForInventoryLine huForInventoryLine)
 	{
 		final Quantity qty = CoalesceUtil.coalesce(huForInventoryLine.getQuantityCount(), huForInventoryLine.getQuantityBooked());
-
 		final UomId uomId = qty == null ? null : qty.getUomId();
-		return new MultipleHUInventoryLineInventoryLineAggregationKey(
-				huForInventoryLine.getProductId(),
-				uomId,
-				huForInventoryLine.getStorageAttributesKey(),
-				huForInventoryLine.getLocatorId());
+
+		return MultipleHUInventoryLineInventoryLineAggregationKey.builder()
+				.productId(huForInventoryLine.getProductId())
+				.uomId(uomId)
+				.storageAttributesKey(huForInventoryLine.getStorageAttributesKey())
+				.locatorId(huForInventoryLine.getLocatorId())
+				.build();
 	}
 
 	@Override
 	public InventoryLineAggregationKey createAggregationKey(@NonNull final InventoryLine inventoryLine)
 	{
 		final Quantity qty = CoalesceUtil.coalesce(inventoryLine.getQtyCount(), inventoryLine.getQtyBook());
-
 		final UomId uomId = qty == null ? null : qty.getUomId();
 
-		return new MultipleHUInventoryLineInventoryLineAggregationKey(
-				inventoryLine.getProductId(),
-				uomId,
-				inventoryLine.getStorageAttributesKey(),
-				inventoryLine.getLocatorId());
+		return MultipleHUInventoryLineInventoryLineAggregationKey.builder()
+				.productId(inventoryLine.getProductId())
+				.uomId(uomId)
+				.storageAttributesKey(AttributesKeys.createAttributesKeyFromASIStorageAttributes(inventoryLine.getAsiId()).orElse(AttributesKey.NONE))
+				.locatorId(inventoryLine.getLocatorId())
+				.build();
 	}
 
 	@Override
@@ -58,6 +61,7 @@ public class MultipleHUInventoryLineAggregator implements InventoryLineAggregato
 	}
 
 	@Value
+	@Builder
 	private static class MultipleHUInventoryLineInventoryLineAggregationKey implements InventoryLineAggregationKey
 	{
 		@NonNull ProductId productId;

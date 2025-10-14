@@ -167,12 +167,12 @@ public class InventoryLineHU
 	 */
 	public InventoryLineHU withAddingQtyCount(@NonNull final Quantity qtyCountToAdd)
 	{
-		return withQtyCount(qtyCount.add(qtyCountToAdd));
+		return withQtyCount(getQtyCount().add(qtyCountToAdd));
 	}
 
 	public InventoryLineHU withZeroQtyCount()
 	{
-		return withQtyCount(qtyCount.toZero());
+		return withQtyCount(getQtyCount().toZero());
 	}
 
 	public InventoryLineHU withQtyCount(@NonNull final Quantity newQtyCount)

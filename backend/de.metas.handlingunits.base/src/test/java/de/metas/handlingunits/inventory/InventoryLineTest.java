@@ -1,12 +1,12 @@
 package de.metas.handlingunits.inventory;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.math.BigDecimal;
-
+import de.metas.handlingunits.HuId;
+import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryLineId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -14,13 +14,12 @@ import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.handlingunits.HuId;
-import de.metas.inventory.HUAggregationType;
-import de.metas.inventory.InventoryLineId;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -130,7 +129,7 @@ class InventoryLineTest
 				.id(InventoryLineId.ofRepoId(20))
 				.locatorId(LocatorId.ofRepoId(WarehouseId.ofRepoId(30), 35))
 				.productId(ProductId.ofRepoId(40))
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(10000, 10001, 10002))
+				.asiId(AttributeSetInstanceId.ofRepoId(1234))
 				.huAggregationType(HUAggregationType.MULTI_HU)
 				.inventoryLineHU(InventoryLineHU.builder()
 						.huId(HuId.ofRepoId(100))
