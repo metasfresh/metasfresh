@@ -64,6 +64,7 @@ class JsonCreateInvoiceCandidatesRequestTest
 				.qtyDelivered(TEN)
 				.qtyOrdered(TEN)
 				.uomCode("uomCode")
+				.paymentTerm("paymentTerm")
 				.soTrx(JsonSOTrx.SALES)
 				.build();
 		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest

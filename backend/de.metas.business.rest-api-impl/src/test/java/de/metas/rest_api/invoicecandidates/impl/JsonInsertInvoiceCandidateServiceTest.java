@@ -38,6 +38,7 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -162,6 +163,10 @@ class JsonInsertInvoiceCandidateServiceTest
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		saveRecord(taxRecord);
 
+		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setValue("term");
+		saveRecord(paymentTermRecord);
+
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		jsonInsertInvoiceCandidateService = new CreateInvoiceCandidatesService(
 				new BPartnerQueryService(),
@@ -210,6 +215,7 @@ class JsonInsertInvoiceCandidateServiceTest
 				.productIdentifier("val-" + PRODUCT_VALUE)
 				.qtyOrdered(TEN)
 				.soTrx(JsonSOTrx.SALES)
+				.paymentTerm("term")
 				.build();
 		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest.builder()
 				.item(minimalItem)
