@@ -251,13 +251,16 @@ class OrderPayScheduleCreateCommand
 					{
 						orderPayScheduleRepository.updateById(line.getId(),
 								existingLine -> {
-									final ReferenceDateResult result = computeReferenceDate(context, PaymentTermBreakContext.builder()
-											.offsetDays(line.getOffsetDays())
-											.referenceDateType(line.getReferenceDateType())
-											.build());
+							if (existingLine.getOrderPayScheduleStatus().isPending())
+							{
+								final ReferenceDateResult result = computeReferenceDate(context, PaymentTermBreakContext.builder()
+										.offsetDays(existingLine.getOffsetDays())
+										.referenceDateType(existingLine.getReferenceDateType())
+										.build());
 
-									line.changeStatusTo(result.getStatus());
-									line.setDueDate(result.getCalculatedDueDate());
+								existingLine.changeStatusTo(result.getStatus());
+								existingLine.setDueDate(result.getCalculatedDueDate());
+							}
 								});
 					}
 				});
