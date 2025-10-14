@@ -5,9 +5,10 @@ import DateInput from '../../../components/DateInput';
 import QtyInputField from '../../../components/QtyInputField';
 import { qtyInfos } from '../../../utils/qtyInfos';
 import DialogButton from '../../../components/dialogs/DialogButton';
+import { trl } from '../../../utils/translations';
 
 const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit }) => {
-  const { huId, huDisplayName, productName, locatorName, qtyBooked, uom, attributes } = resolvedHU;
+  const { huDisplayName, productName, locatorName, qtyBooked, uom, attributes } = resolvedHU;
 
   const [qtyCount, setQtyCount] = useState(() => qtyInfos.invalidOfNumber());
   const [attributeValuesByCode, setAttributeValuesByCode] = useState(() => {
@@ -51,13 +52,13 @@ const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit 
         <table className="table">
           <tbody>
             <tr>
-              <th>{/* TODO trl */ 'Locator'}</th>
+              <th>{trl('huManager.locator')}</th>
               <td>
                 <span data-testid="locator">{locatorName}</span>
               </td>
             </tr>
             <tr>
-              <th>{/* TODO trl */ 'HU'}</th>
+              <th>{trl('huManager.HU')}</th>
               <td>
                 <span data-testid="hu">{huDisplayName}</span>
               </td>
