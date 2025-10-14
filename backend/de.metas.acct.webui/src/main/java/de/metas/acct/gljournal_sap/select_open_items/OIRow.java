@@ -5,9 +5,7 @@ import de.metas.acct.api.FactAcctId;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.document.dimension.Dimension;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.IViewRow;
@@ -18,9 +16,11 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.I_C_AcctSchema_Element;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -30,17 +30,17 @@ class OIRow implements IViewRow
 {
 	public static OIRow cast(IViewRow row) {return (OIRow)row;}
 
-	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsOpenItem")
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "OI/PrintName", widgetSize = WidgetSize.Small)
 	@Getter private final boolean isOpenItem;
 
-	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, captionKey = "PostingSign", fieldName = "postingSign")
+	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, captionKey = "PostingSign", fieldName = "postingSign", widgetSize = WidgetSize.Small)
 	@Getter @NonNull private final PostingSign postingSign;
 
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Text, captionKey = "Account_ID")
 	@NonNull private final ITranslatableString accountCaption;
 
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, captionKey = "Amount")
-	@NonNull private final Amount amount;
+	@Getter @NonNull private final Amount amount;
 
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, captionKey = "OpenAmt", fieldName = "openAmount")
 	@NonNull private final Amount openAmount;
@@ -57,13 +57,12 @@ class OIRow implements IViewRow
 	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Text, captionKey = "Description")
 	@Nullable private final String description;
 
-	static final String FIELD_Selected = "selected";
-	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsSelected", fieldName = FIELD_Selected, editor = ViewEditorRenderMode.ALWAYS)
-	@Getter private final boolean selected;
+	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.Text, captionKey = I_C_AcctSchema_Element.COLUMNNAME_UserElementString1)
+	@Nullable private final String userElementString1;
 
-	static final String FIELD_OpenAmountOverrde = "openAmountOverride";
-	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.Amount, captionKey = "OpenAmtOverride", fieldName = FIELD_OpenAmountOverrde, editor = ViewEditorRenderMode.ALWAYS)
-	@Nullable private final Amount openAmountOverride;
+	static final String FIELD_Selected = "selected";
+	@ViewColumn(seqNo = 120, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "IsSelected", fieldName = FIELD_Selected, editor = ViewEditorRenderMode.ALWAYS, widgetSize = WidgetSize.Small)
+	@Getter private final boolean selected;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<OIRow> values;
 
@@ -88,8 +87,7 @@ class OIRow implements IViewRow
 			@Nullable final ITranslatableString bpartnerCaption,
 			@Nullable final String documentNo,
 			@Nullable final String description,
-			final boolean selected,
-			@Nullable final Amount openAmountOverride,
+			@Nullable final String userElementString1, final boolean selected,
 			@NonNull final FAOpenItemKey openItemKey,
 			@NonNull final Dimension dimension)
 	{
@@ -103,8 +101,8 @@ class OIRow implements IViewRow
 		this.bpartnerCaption = bpartnerCaption;
 		this.documentNo = documentNo;
 		this.description = description;
+		this.userElementString1 = userElementString1;
 		this.selected = selected;
-		this.openAmountOverride = openAmountOverride;
 
 		this.values = ViewRowFieldNameAndJsonValuesHolder.newInstance(OIRow.class);
 		this.rowId = DocumentId.of(factAcctId);
@@ -139,8 +137,8 @@ class OIRow implements IViewRow
 
 	public OIRow withUserInputCleared()
 	{
-		return this.selected || this.openAmountOverride != null
-				? toBuilder().selected(false).openAmountOverride(null).build()
+		return this.selected
+				? toBuilder().selected(false).build()
 				: this;
 	}
 
@@ -149,12 +147,10 @@ class OIRow implements IViewRow
 	{
 		if (selected)
 		{
-			final boolean isAmountOverrideNonZero = openAmountOverride != null && !openAmountOverride.isZero();
 			return OIRowUserInputPart.builder()
 					.rowId(rowId)
 					.factAcctId(factAcctId)
 					.selected(selected)
-					.amountOverride(isAmountOverrideNonZero ? openAmountOverride.toBigDecimal() : null)
 					.build();
 		}
 		else
@@ -166,14 +162,11 @@ class OIRow implements IViewRow
 	public OIRow withUserInput(@Nullable final OIRowUserInputPart userInput)
 	{
 		final boolean selectedNew = userInput != null && userInput.isSelected();
-		final Amount amountOverride = userInput != null && userInput.getAmountOverride() != null ? Amount.of(userInput.getAmountOverride(), getAcctCurrencyCode()) : null;
 
-		return this.selected != selectedNew || !Amount.equals(this.openAmountOverride, amountOverride)
-				? toBuilder().selected(selectedNew).openAmountOverride(amountOverride).build()
+		return this.selected != selectedNew
+				? toBuilder().selected(selectedNew).build()
 				: this;
 	}
 
-	public CurrencyCode getAcctCurrencyCode() {return amount.getCurrencyCode();}
-
-	public Amount getOpenAmountEffective() {return CoalesceUtil.coalesceNotNull(openAmountOverride, openAmount);}
+	public Amount getOpenAmountEffective() {return openAmount;}
 }

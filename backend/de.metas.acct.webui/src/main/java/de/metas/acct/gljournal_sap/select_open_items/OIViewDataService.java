@@ -1,5 +1,7 @@
 package de.metas.acct.gljournal_sap.select_open_items;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -16,21 +18,19 @@ import de.metas.acct.open_items.FAOpenItemTrxType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.document.dimension.Dimension;
+import de.metas.document.engine.DocStatus;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
+import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.project.ProjectId;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
@@ -41,6 +41,7 @@ import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 class OIViewDataService
@@ -52,6 +53,8 @@ class OIViewDataService
 	private final LookupDataSource bpartnerLookup;
 	private final SAPGLJournalService glJournalService;
 	private final ElementValueService elementValueService;
+
+	private static final ImmutableSet<DocStatus> ELIGIBLE_DOCSTATUSES = ImmutableSet.of(DocStatus.Completed, DocStatus.Closed);
 
 	@Builder
 	private OIViewDataService(
@@ -101,57 +104,148 @@ class OIViewDataService
 
 	Stream<OIRow> streamRows(@NonNull final OIViewDataQuery query)
 	{
-		final AcctSchema acctSchema = query.getAcctSchema();
-		final CurrencyCode acctCurrencyCode = moneyService.getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
 		final FutureClearingAmountMap futureClearingAmounts = query.getFutureClearingAmounts();
 
-		return factAcctBL.stream(toFactAcctQuery(query))
-				.map(record -> toRow(record, acctCurrencyCode, futureClearingAmounts))
+		final FactAcctQuery factAcctQuery = toFactAcctQuery(query);
+		if (factAcctQuery == null)
+		{
+			return Stream.of();
+		}
+
+		return factAcctBL.stream(factAcctQuery)
+				.map(record -> toRow(record, futureClearingAmounts))
 				.filter(Objects::nonNull);
 	}
 
+	@Nullable
 	private FactAcctQuery toFactAcctQuery(@NonNull final OIViewDataQuery query)
 	{
+		final DocumentFilter filter = query.getFilter();
+
 		final FactAcctQuery.FactAcctQueryBuilder factAcctQueryBuilder = FactAcctQuery.builder()
 				.includeFactAcctIds(query.getIncludeFactAcctIds())
 				.acctSchemaId(query.getAcctSchemaId())
 				.postingType(query.getPostingType())
+				.currencyId(query.getCurrencyId())
 				.isOpenItem(true)
 				.isOpenItemReconciled(false)
 				.openItemTrxType(FAOpenItemTrxType.OPEN_ITEM);
 
-		if (query.getFilter() != null)
+		//
+		// Open Item Account(s)
 		{
-			OIViewFilterHelper.appendToFactAcctQuery(factAcctQueryBuilder, query.getFilter());
+			final Set<ElementValueId> openItemAccountIds = getOpenItemElementValueIds(filter);
+			if (openItemAccountIds.isEmpty())
+			{
+				return null;
+			}
+			factAcctQueryBuilder.accountIds(openItemAccountIds);
+		}
+
+		//
+		// DocStatus
+		{
+			final Set<DocStatus> docStatuses = getEligibleDocStatuses(filter);
+			if (docStatuses.isEmpty())
+			{
+				return null;
+			}
+			factAcctQueryBuilder.docStatuses(docStatuses);
+		}
+
+		//
+		// Other user filters
+		if (filter != null)
+		{
+			final BPartnerId bpartnerId = filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_C_BPartner_ID, BPartnerId::ofRepoIdOrNull);
+			final InSetPredicate<BPartnerId> bpartnerIds = bpartnerId != null ? InSetPredicate.only(bpartnerId) : InSetPredicate.any();
+
+			factAcctQueryBuilder.bpartnerIds(bpartnerIds)
+					.salesOrderId(filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_C_OrderSO_ID, OrderId::ofRepoIdOrNull))
+					.dateAcctGreaterOrEqualsTo(filter.getParameterValueAsInstantOrNull(OIViewFilterHelper.PARAM_DateAcct))
+					.dateAcctLessOrEqualsTo(filter.getParameterValueToAsInstantOrNull(OIViewFilterHelper.PARAM_DateAcct))
+					.documentNoLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_DocumentNo, null))
+					.descriptionLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_Description, null))
+					.poReferenceLike(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_POReference, null))
+					.userElementString1Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString1, null))
+					.userElementString2Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString2, null))
+					.userElementString3Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString3, null))
+					.userElementString4Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString4, null))
+					.userElementString5Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString5, null))
+					.userElementString6Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString6, null))
+					.userElementString7Like(filter.getParameterValueAsString(OIViewFilterHelper.PARAM_UserElementString7, null))
+			;
 		}
 
 		return factAcctQueryBuilder.build();
 	}
 
-	@Nullable
-	private OIRow toRow(
-			@NonNull final I_Fact_Acct record,
-			@NonNull final CurrencyCode acctCurrencyCode,
-			@NonNull final FutureClearingAmountMap futureClearingAmounts)
+	private static Set<DocStatus> getEligibleDocStatuses(@Nullable final DocumentFilter filter)
 	{
-		final FAOpenItemKey openItemKey = FAOpenItemKey.optionalOfString(record.getOpenItemKey())
-				.orElseThrow(() -> new AdempiereException("Line has no open item key: " + record)); // shall not happen
+		final DocStatus docStatus = filter != null
+				? filter.getParameterValueAsRefListOrNull(OIViewFilterHelper.PARAM_DocStatus, DocStatus::ofNullableCode)
+				: null;
 
-		final Amount amtAcctDr = Amount.of(record.getAmtAcctDr(), acctCurrencyCode);
-		final Amount amtAcctCr = Amount.of(record.getAmtAcctCr(), acctCurrencyCode);
-		final PostingSign postingSign = PostingSign.ofAmtDrAndCr(amtAcctDr.toBigDecimal(), amtAcctCr.toBigDecimal());
-		final Amount acctBalance = amtAcctDr.subtract(amtAcctCr);
-
-		Amount allocatedAmt = acctBalance.subtract(Amount.of(record.getOI_OpenAmount(), acctCurrencyCode));
-		final Amount futureClearingAmount = futureClearingAmounts.getAmount(openItemKey).orElse(null);
-		if (futureClearingAmount != null && !futureClearingAmount.isZero())
+		if (docStatus == null)
 		{
-			allocatedAmt = allocatedAmt.add(futureClearingAmount);
+			return ELIGIBLE_DOCSTATUSES;
+		}
+		else if (ELIGIBLE_DOCSTATUSES.contains(docStatus))
+		{
+			return ImmutableSet.of(docStatus);
+		}
+		else
+		{
+			return ImmutableSet.of();
+		}
+	}
+
+	private Set<ElementValueId> getOpenItemElementValueIds(@Nullable final DocumentFilter filter)
+	{
+		final ImmutableSet<ElementValueId> openItemAccountIds = elementValueService.getOpenItemIds();
+		if (filter != null)
+		{
+			final ElementValueId accountId = filter.getParameterValueAsRepoIdOrNull(OIViewFilterHelper.PARAM_Account_ID, ElementValueId::ofRepoIdOrNull);
+			if (accountId != null)
+			{
+				return openItemAccountIds.contains(accountId)
+						? ImmutableSet.of(accountId)
+						: ImmutableSet.of();
+			}
+			else
+			{
+				return openItemAccountIds;
+			}
+		}
+		else
+		{
+			return openItemAccountIds;
 		}
 
-		final Amount openAmount = acctBalance.add(allocatedAmt);
+	}
 
-		if (openAmount.isZero())
+	@Nullable
+	@VisibleForTesting
+	OIRow toRow(
+			@NonNull final I_Fact_Acct record,
+			@NonNull final FutureClearingAmountMap futureClearingAmounts)
+	{
+		final FAOpenItemKey openItemKey = FAOpenItemKey.parseNullable(record.getOpenItemKey())
+				.orElseThrow(() -> new AdempiereException("Line has no open item key: " + record)); // shall not happen
+
+		final CurrencyCode sourceCurrency = moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()));
+		final Amount amtSourceDr = Amount.of(record.getAmtSourceDr(), sourceCurrency);
+		final Amount amtSourceCr = Amount.of(record.getAmtSourceCr(), sourceCurrency);
+		final PostingSign postingSign = PostingSign.ofAmtDrAndCr(amtSourceDr.toBigDecimal(), amtSourceCr.toBigDecimal());
+		final Amount balanceSrc = amtSourceDr.subtract(amtSourceCr);
+
+		Amount openAmtSrc = Amount.of(record.getOI_OpenAmountSource(), sourceCurrency);
+		final Amount futureClearingAmount = futureClearingAmounts.getAmountSrc(openItemKey).orElse(null);
+		if (futureClearingAmount != null && !futureClearingAmount.isZero())
+		{
+			openAmtSrc = openAmtSrc.add(futureClearingAmount);
+		}
+		if (openAmtSrc.isZero())
 		{
 			return null;
 		}
@@ -167,15 +261,16 @@ class OIViewDataService
 				.postingSign(postingSign)
 				.account(account)
 				.accountCaption(getAccountCaption(account.getAccountId()))
-				.amount(acctBalance.negateIf(postingSign.isCredit()))
-				.openAmount(openAmount.negateIf(postingSign.isCredit()))
+				.amount(balanceSrc.negateIf(postingSign.isCredit()))
+				.openAmount(openAmtSrc.negateIf(postingSign.isCredit()))
 				.dateAcct(record.getDateAcct().toInstant())
 				.bpartnerId(bpartnerId)
 				.bpartnerCaption(getBPartnerCaption(bpartnerId))
 				.documentNo(record.getDocumentNo())
 				.description(record.getDescription())
+				.userElementString1(record.getUserElementString1())
 				.openItemKey(openItemKey)
-				.dimension(extractDimension(record))
+				.dimension(IFactAcctBL.extractDimension(record))
 				.build();
 	}
 
@@ -190,29 +285,4 @@ class OIViewDataService
 		final LookupValue value = bpartnerId != null ? bpartnerLookup.findById(bpartnerId) : null;
 		return value != null ? value.getDisplayNameTrl() : null;
 	}
-
-	private static Dimension extractDimension(final I_Fact_Acct record)
-	{
-		return Dimension.builder()
-				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
-				.campaignId(record.getC_Campaign_ID())
-				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
-				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
-				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
-				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
-				.user1_ID(record.getUser1_ID())
-				.user2_ID(record.getUser2_ID())
-				.userElement1Id(record.getUserElement1_ID())
-				.userElement2Id(record.getUserElement2_ID())
-				.userElementString1(record.getUserElementString1())
-				.userElementString2(record.getUserElementString2())
-				.userElementString3(record.getUserElementString3())
-				.userElementString4(record.getUserElementString4())
-				.userElementString5(record.getUserElementString5())
-				.userElementString6(record.getUserElementString6())
-				.userElementString7(record.getUserElementString7())
-				.build();
-	}
-
 }

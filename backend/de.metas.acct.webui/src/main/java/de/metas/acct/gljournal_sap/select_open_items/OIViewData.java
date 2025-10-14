@@ -47,7 +47,7 @@ public class OIViewData implements IEditableRowsData<OIRow>
 	@NonNull private final SAPGLJournalId glJournalId;
 	@NonNull private final SynchronizedMutable<SAPGLJournal> glJournalHolder;
 	@NonNull private final AcctSchema acctSchema;
-	@Getter @Nullable private final DocumentFilter filter;
+	@Getter @Nullable private DocumentFilter filter;
 
 	//
 	// state
@@ -85,13 +85,20 @@ public class OIViewData implements IEditableRowsData<OIRow>
 		loadRows(getUserInput());
 	}
 
+	public void clearFilter()
+	{
+		this.filter = null;
+		invalidateAll();
+	}
+
 	private void loadRows(@NonNull final OIRowUserInputParts userInput)
 	{
 		final SAPGLJournal glJournal = getGLJournal();
 		final OIViewDataQuery query = OIViewDataQuery.builder()
 				.acctSchema(acctSchema)
 				.postingType(glJournal.getPostingType())
-				.futureClearingAmounts(FutureClearingAmountMap.of(glJournal, viewDataService.currencyCodeConverter()))
+				.currencyId(glJournal.getCurrencyId())
+				.futureClearingAmounts(FutureClearingAmountMap.ofGLJournal(glJournal, viewDataService.currencyCodeConverter()))
 				.filter(filter)
 				.includeFactAcctIds(userInput.getFactAcctIds())
 				.build();
@@ -119,9 +126,9 @@ public class OIViewData implements IEditableRowsData<OIRow>
 
 	private ViewHeaderProperties computeHeaderProperties()
 	{
-		final CurrencyCode acctCurrencyCode = viewDataService.currencyCodeConverter().getCurrencyCodeByCurrencyId(acctSchema.getCurrencyId());
-		final MutableAmount totalDebit = MutableAmount.zero(acctCurrencyCode);
-		final MutableAmount totalCredit = MutableAmount.zero(acctCurrencyCode);
+		final CurrencyCode currencyCode = viewDataService.currencyCodeConverter().getCurrencyCodeByCurrencyId(getGLJournal().getCurrencyId());
+		final MutableAmount totalDebit = MutableAmount.zero(currencyCode);
+		final MutableAmount totalCredit = MutableAmount.zero(currencyCode);
 
 		rowsHolder.stream(OIRow::isSelected)
 				.forEach(row -> {
@@ -177,22 +184,9 @@ public class OIViewData implements IEditableRowsData<OIRow>
 		{
 			event.assertReplaceOperation();
 
-			switch (event.getPath())
+			if (OIRow.FIELD_Selected.equals(event.getPath()))
 			{
-				case OIRow.FIELD_Selected:
-				{
-					changedRowBuilder.selected(event.getValueAsBoolean(false));
-					break;
-				}
-				case OIRow.FIELD_OpenAmountOverrde:
-				{
-					final Amount openAmountOverride = event.getValueAsBigDecimalOptional()
-							.filter(value -> value.signum() != 0)
-							.map(value -> Amount.of(value, row.getAcctCurrencyCode()))
-							.orElse(null);
-					changedRowBuilder.openAmountOverride(openAmountOverride);
-					break;
-				}
+				changedRowBuilder.selected(event.getValueAsBoolean(false));
 			}
 		}
 

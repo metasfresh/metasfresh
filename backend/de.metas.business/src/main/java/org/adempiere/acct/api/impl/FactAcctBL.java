@@ -43,6 +43,7 @@ import org.compiere.model.I_Fact_Acct;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class FactAcctBL implements IFactAcctBL
 {
@@ -51,7 +52,7 @@ public class FactAcctBL implements IFactAcctBL
 
 	@Override
 	public Account getAccount(@NonNull final I_Fact_Acct factAcct)
-		{
+	{
 		final AccountDimension accountDimension = IFactAcctBL.extractAccountDimension(factAcct);
 		@NonNull final AccountId accountId = accountDAO.getOrCreateOutOfTrx(accountDimension);
 		return Account.ofId(accountId).withAccountConceptualName(FactAcctDAO.extractAccountConceptualName(factAcct));
@@ -78,5 +79,11 @@ public class FactAcctBL implements IFactAcctBL
 				.orElse(BigDecimal.ZERO);
 
 		return Optional.of(Money.of(acctBalanceBD, acctCurrencyId));
+	}
+
+	@Override
+	public Stream<I_Fact_Acct> stream(@NonNull final FactAcctQuery query)
+	{
+		return factAcctDAO.stream(query);
 	}
 }

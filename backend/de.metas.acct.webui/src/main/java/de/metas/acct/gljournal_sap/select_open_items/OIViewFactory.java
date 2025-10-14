@@ -31,7 +31,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
@@ -49,6 +48,7 @@ public class OIViewFactory implements IViewFactory
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 	private final OIViewDataService viewDataService;
+	private final ElementValueService elementValueService;
 
 	private DocumentFilterDescriptor _filterDescriptor; // lazy
 
@@ -59,6 +59,7 @@ public class OIViewFactory implements IViewFactory
 			@NonNull final ElementValueService elementValueService)
 	{
 		this.lookupDataSourceFactory = lookupDataSourceFactory;
+		this.elementValueService = elementValueService;
 		this.viewDataService = OIViewDataService.builder()
 				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.factAcctBL(Services.get(IFactAcctBL.class))
@@ -119,10 +120,6 @@ public class OIViewFactory implements IViewFactory
 	private RelatedProcessDescriptor createProcessDescriptor(final int sortNo, @NonNull final Class<?> processClass)
 	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
-		if (processId == null)
-		{
-			throw new AdempiereException("No processId found for " + processClass);
-		}
 
 		return RelatedProcessDescriptor.builder()
 				.processId(processId)
@@ -168,7 +165,7 @@ public class OIViewFactory implements IViewFactory
 		{
 			final AcctSchema primaryAcctSchema = acctSchemaBL.getPrimaryAcctSchema(ClientId.METASFRESH);
 			final LookupDescriptorProviders lookupDescriptorProviders = lookupDataSourceFactory.getLookupDescriptorProviders();
-			filterDescriptor = this._filterDescriptor = OIViewFilterHelper.createFilterDescriptor(lookupDescriptorProviders, primaryAcctSchema);
+			filterDescriptor = this._filterDescriptor = OIViewFilterHelper.createFilterDescriptor(lookupDescriptorProviders, elementValueService, primaryAcctSchema);
 		}
 
 		return filterDescriptor;

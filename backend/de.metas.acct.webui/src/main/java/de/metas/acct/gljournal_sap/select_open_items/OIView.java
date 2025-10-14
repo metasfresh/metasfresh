@@ -14,8 +14,6 @@ import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -60,12 +58,6 @@ public class OIView extends AbstractCustomView<OIRow> implements IEditableView
 	@Override
 	public ViewHeaderProperties getHeaderProperties() {return getRowsData().getHeaderProperties();}
 
-	@Override
-	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query) {throw new UnsupportedOperationException();}
-
-	@Override
-	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName) {throw new UnsupportedOperationException();}
-
 	public void markRowsAsSelected(final DocumentIdsSelection rowIds)
 	{
 		getRowsData().markRowsAsSelected(rowIds);
@@ -77,9 +69,11 @@ public class OIView extends AbstractCustomView<OIRow> implements IEditableView
 		return getRowsData().hasSelectedRows();
 	}
 
-	public void clearUserInputAndInvalidateAll()
+	public void clearUserInputAndResetFilter()
 	{
-		getRowsData().clearUserInput();
+		final OIViewData rowsData = getRowsData();
+		rowsData.clearUserInput();
+		rowsData.clearFilter();
 		invalidateAll();
 	}
 
