@@ -22,23 +22,19 @@
 
 package de.metas.order.paymentschedule;
 
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.payment.paymentterm.PaymentTermBreakId;
-import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -47,6 +43,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class OrderPayScheduleRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private OrderPayScheduleLoaderAndSaver newLoaderAndSaver()
+	{
+		return OrderPayScheduleLoaderAndSaver.builder()
+				.queryBL(queryBL)
+				.build();
+	}
 
 	public void create(@NonNull final OrderPayScheduleCreateRequest request)
 	{
@@ -79,8 +83,9 @@ public class OrderPayScheduleRepository
 				.orderBy(I_C_OrderPaySchedule.COLUMNNAME_SeqNo)
 				.create()
 				.stream()
-				.map(OrderPayScheduleRepository::fromRecord)
+				.map(OrderPayScheduleLoaderAndSaver::fromRecord)
 				.collect(OrderPaySchedule.collect());
+
 	}
 
 	public void deleteByOrderId(@NonNull final OrderId orderId)
@@ -91,33 +96,8 @@ public class OrderPayScheduleRepository
 				.delete();
 	}
 
-	private static void updateRecord(final I_C_OrderPaySchedule record, final @NotNull OrderPayScheduleLine from)
+	public void updateById(final OrderPayScheduleId id, Consumer<OrderPayScheduleLine> updater)
 	{
-		record.setC_Order_ID(from.getOrderId().getRepoId());
-		record.setC_PaymentTerm_ID(from.getPaymentTermBreakId().getPaymentTermId().getRepoId());
-		record.setC_PaymentTerm_Break_ID(from.getPaymentTermBreakId().getRepoId());
-		record.setDueAmt(from.getDueAmount().toBigDecimal());
-		record.setC_Currency_ID(from.getDueAmount().getCurrencyId().getRepoId());
-		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate()));
-		record.setPercent(from.getPercent().toInt());
-		record.setReferenceDateType(from.getReferenceDateType().getCode());
-		record.setSeqNo(from.getSeqNo().toInt());
-		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(from.getOrderPayScheduleStatus()));
-	}
-
-	@NonNull
-	private static OrderPayScheduleLine fromRecord(@NonNull final I_C_OrderPaySchedule record)
-	{
-		return OrderPayScheduleLine.builder()
-				.id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
-				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
-				.paymentTermBreakId(PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID()))
-				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
-				.dueDate(record.getDueDate().toInstant())
-				.percent(Percent.of(record.getPercent()))
-				.seqNo(SeqNo.ofInt(record.getSeqNo()))
-				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
-				.orderPayScheduleStatus(OrderPayScheduleStatus.ofCode(record.getStatus()))
-				.build();
+		trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(id, updater));
 	}
 }
