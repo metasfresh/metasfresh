@@ -11,17 +11,18 @@ import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v1.invoicecandidates.impl.CreateInvoiceCandidatesService;
+import de.metas.rest_api.v1.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
+import de.metas.rest_api.v1.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
@@ -37,6 +38,7 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -161,6 +163,10 @@ class JsonInsertInvoiceCandidateServiceTest
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		saveRecord(taxRecord);
 
+		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setValue("term");
+		saveRecord(paymentTermRecord);
+
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		jsonInsertInvoiceCandidateService = new CreateInvoiceCandidatesService(
 				new BPartnerQueryService(),
@@ -209,6 +215,7 @@ class JsonInsertInvoiceCandidateServiceTest
 				.productIdentifier("val-" + PRODUCT_VALUE)
 				.qtyOrdered(TEN)
 				.soTrx(JsonSOTrx.SALES)
+				.paymentTerm("term")
 				.build();
 		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest.builder()
 				.item(minimalItem)

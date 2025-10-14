@@ -41,6 +41,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -151,7 +152,18 @@ public class JsonConverters
 
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 
-		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
+		final String paymentTermCode = request.getPaymentTerm();
+
+		final PaymentTermId paymentTermId;
+		if (Check.isEmpty(paymentTermCode))
+		{
+			paymentTermId = null;
+		}
+		else
+		{
+			final IdentifierString paymentTerm = IdentifierString.of(paymentTermCode);
+			paymentTermId = masterdataProvider.getPaymentTermId(paymentTerm, request, orgId);
+		}
 
 		final UomId uomId;
 		if (!Check.isBlank(request.getUomCode()))
@@ -186,7 +198,6 @@ public class JsonConverters
 				.map(JsonDocTypeInfo::getDocSubType)
 				.map(DocSubType::ofNullableCode)
 				.orElse(DocSubType.ANY);
-
 
 		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
 
