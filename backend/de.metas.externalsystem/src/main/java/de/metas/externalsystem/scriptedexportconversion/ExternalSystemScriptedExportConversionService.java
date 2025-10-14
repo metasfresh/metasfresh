@@ -52,6 +52,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_OUTBOUND_RECORD_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_OUTBOUND_RECORD_TABLE_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
@@ -97,17 +99,19 @@ public class ExternalSystemScriptedExportConversionService
 
 	@NonNull
 	public Map<String, String> getParameters(
-			@NonNull final ExternalSystemScriptedExportConversionConfig externalSystemScriptedExportConversionConfig,
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			@NonNull final Properties context,
 			@NonNull final String outboundDataProcessRecordId)
 	{
 		final Map<String, String> parameters = new HashMap<>();
 
-		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, getOutboundProcessResponse(externalSystemScriptedExportConversionConfig, context, outboundDataProcessRecordId));
-		parameters.put(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, externalSystemScriptedExportConversionConfig.getScriptIdentifier());
-		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP, externalSystemScriptedExportConversionConfig.getOutboundHttpEndpoint());
-		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN, externalSystemScriptedExportConversionConfig.getOutboundHttpToken());
-		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD, externalSystemScriptedExportConversionConfig.getOutboundHttpMethod());
+		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, getOutboundProcessResponse(config, context, outboundDataProcessRecordId));
+		parameters.put(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, config.getScriptIdentifier());
+		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP, config.getOutboundHttpEndpoint());
+		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN, config.getOutboundHttpToken());
+		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD, config.getOutboundHttpMethod());
+		parameters.put(PARAM_OUTBOUND_RECORD_TABLE_NAME, tableDAO.retrieveTableName(config.getAdTableId()));
+		parameters.put(PARAM_OUTBOUND_RECORD_ID, outboundDataProcessRecordId);
 
 		return parameters;
 	}
