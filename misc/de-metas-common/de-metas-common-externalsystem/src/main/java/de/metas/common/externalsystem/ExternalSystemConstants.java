@@ -200,5 +200,6 @@ public class ExternalSystemConstants
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP = "outboundHttpEP";
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN = "outboundHttpToken";
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD = "outboundHttpMethod";
+	public static final String COMMAND_CONVERT_MESSAGE_FROM_METASFRESH = "ConvertMsgFromMF";
 }
 
