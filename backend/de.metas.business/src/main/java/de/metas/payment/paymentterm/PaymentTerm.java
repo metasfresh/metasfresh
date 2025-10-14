@@ -100,9 +100,11 @@ public class PaymentTerm
 		if (isComplex)
 		{
 			Check.assume(!breaks.isEmpty(), "If isComplex=true, then breaks shall not be empty");
+
+			checkPercentBreaks(breaks);
 		}
 
-		checkPercentBreaks(breaks);
+
 
 		this.sortedBreaks = isComplex ? breaks.stream()
 				.sorted(Comparator.comparing(PaymentTermBreak::getSeqNo))
