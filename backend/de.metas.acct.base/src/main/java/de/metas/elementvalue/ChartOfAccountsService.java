@@ -29,6 +29,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Tree;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.X_AD_Tree;
@@ -48,6 +49,12 @@ public class ChartOfAccountsService
 			@NonNull final ChartOfAccountsRepository chartOfAccountsRepository)
 	{
 		this.chartOfAccountsRepository = chartOfAccountsRepository;
+	}
+
+	public static ChartOfAccountsService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ChartOfAccountsService(new ChartOfAccountsRepository());
 	}
 
 	public ChartOfAccounts getById(@NonNull final ChartOfAccountsId chartOfAccountsId)
@@ -86,6 +93,5 @@ public class ChartOfAccountsService
 		InterfaceWrapperHelper.save(tree);
 		return AdTreeId.ofRepoId(tree.getAD_Tree_ID());
 	}
-
 
 }

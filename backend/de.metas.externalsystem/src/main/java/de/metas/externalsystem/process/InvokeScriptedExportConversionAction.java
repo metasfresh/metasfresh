@@ -25,13 +25,25 @@ package de.metas.externalsystem.process;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.Param;
+import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 
 import java.util.Map;
 
 public class InvokeScriptedExportConversionAction extends InvokeExternalSystemProcess
 {
+	private final ExternalSystemScriptedExportConversionService externalSystemScriptedExportConversionService = SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
+
+	public static final String PARAM_Record_ID = "Record_ID";
+	@Param(parameterName = PARAM_Record_ID)
+	private String outboundDataProcessRecordId;
+
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -40,27 +52,33 @@ public class InvokeScriptedExportConversionAction extends InvokeExternalSystemPr
 			throw new AdempiereException("Child Config ID is mandatory for this process!");
 		}
 
-		// return ExternalSystemScriptedExportConversionConfigId.ofRepoId(this.childConfigId);
-		return null;
+		return ExternalSystemScriptedExportConversionConfigId.ofRepoId(this.childConfigId);
 	}
 
 	@Override
 	protected Map<String, String> extractExternalSystemParameters(final ExternalSystemParentConfig externalSystemParentConfig)
 	{
-		return null;
+		if (Check.isBlank(outboundDataProcessRecordId))
+		{
+			throw new AdempiereException("Outbound data process record id is missing.");
+		}
+
+		final ExternalSystemScriptedExportConversionConfig externalSystemScriptedExportConversionConfig = ExternalSystemScriptedExportConversionConfig
+				.cast(externalSystemParentConfig.getChildConfig());
+
+		return externalSystemScriptedExportConversionService.getParameters(externalSystemScriptedExportConversionConfig, getProcessInfo().getCtx(), outboundDataProcessRecordId);
 	}
 
 	@Override
 	protected String getTabName()
 	{
-		// return ExternalSystemType.ScriptedExportConversion.getValue();
-		return null;
+		return ExternalSystemType.ScriptedExportConversion.getValue();
 	}
 
 	@Override
 	protected ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.Other;
+		return ExternalSystemType.ScriptedExportConversion;
 	}
 
 	@Override

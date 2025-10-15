@@ -22,10 +22,12 @@
 
 package de.metas.banking.service.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -184,6 +186,25 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
+	public void markAsReconciledWithGLJournalLine(
+			@NonNull final BankStatementLineId lineId,
+			@NonNull final SAPGLJournalLineId glJournalLineId)
+	{
+		final I_C_BankStatementLine line = bankStatementDAO.getLineById(lineId);
+		if (line.isReconciled())
+		{
+			throw new AdempiereException("Linking GL Journal to an already reconciled bank statement line is not allowed");
+		}
+
+		line.setIsReconciled(true);
+		line.setIsMultiplePayment(false);
+		line.setIsMultiplePaymentOrInvoice(false);
+		line.setReconciledBy_SAP_GLJournal_ID(glJournalLineId.getGlJournalId().getRepoId());
+		line.setReconciledBy_SAP_GLJournalLine_ID(glJournalLineId.getRepoId());
+		bankStatementDAO.save(line);
+	}
+
+	@Override
 	public void reconcileAsBankTransfer(@NonNull final ReconcileAsBankTransferRequest request)
 	{
 		if (BankStatementId.equals(request.getBankStatementId(), request.getCounterpartBankStatementId()))
@@ -238,6 +259,13 @@ public class BankStatementBL implements IBankStatementBL
 		{
 			throw new AdempiereException(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
 		}
+	}
+
+	@Override
+	public void unreconcile(@NonNull final BankStatementLineId bankStatementLineId)
+	{
+		final I_C_BankStatementLine line = bankStatementDAO.getLineById(bankStatementLineId);
+		unreconcile(ImmutableList.of(line));
 	}
 
 	@Override

@@ -49,6 +49,7 @@ import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
@@ -72,6 +73,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author cg
  */
+@SuppressWarnings("DataFlowIssue")
 public class ESRImportTest extends ESRTestBase
 {
 	/**
@@ -89,7 +91,6 @@ public class ESRImportTest extends ESRTestBase
 	{
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
-		final String refNo = "300000001060012345600654321";
 		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 
 		final String partnerValue = "123456";
@@ -127,7 +128,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// check allocations
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
-		assertThat(allocLines.size()).isEqualTo(1);
+		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 
 	}
@@ -223,7 +224,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.process(esrImport);
 
 		final List<I_ESR_ImportLine> lines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
-		assertThat(lines.size()).isEqualTo(2);
+		assertThat(lines).hasSize(2);
 
 		// check first import line
 		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
@@ -238,7 +239,7 @@ public class ESRImportTest extends ESRTestBase
 		// check second import line
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		assertThat(esrImportLine2.isValid()).isTrue();
-		assertThat(esrImportLine2.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine2.isProcessed()).isFalse();
 		assertThat(esrImportLine2.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
 		assertThat(esrImportLine2.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 		assertThat(esrImportLine2.getESR_Invoice_Openamt()).isEqualByComparingTo(new BigDecimal(-25));
@@ -262,17 +263,17 @@ public class ESRImportTest extends ESRTestBase
 
 		refresh(esrLine1Payment2, true);
 		assertThat(esrLine1Payment2.getPayAmt()).isEqualByComparingTo(new BigDecimal(25));
-		assertThat(esrLine1Payment2.getC_Invoice_ID()).isEqualTo(0);
-		assertThat(esrLine1Payment2.isAllocated()).isEqualTo(false);
+		assertThat(esrLine1Payment2.getC_Invoice_ID()).isZero();
+		assertThat(esrLine1Payment2.isAllocated()).isFalse();
 
 		// check allocations - first payment
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine1.getC_Invoice());
-		assertThat(allocLines.size()).isEqualTo(1);
+		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(25));
 
 		// check allocations - second payment
 		allocLines = Services.get(IPaymentDAO.class).retrieveAllocationLines(esrLine1Payment2);
-		assertThat(allocLines.size()).isEqualTo(0);
+		assertThat(allocLines).isEmpty();
 
 	}
 
@@ -294,7 +295,6 @@ public class ESRImportTest extends ESRTestBase
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
 		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
-		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
@@ -307,8 +307,8 @@ public class ESRImportTest extends ESRTestBase
 
 		// check import line
 		refresh(esrImportLine, true);
-		assertThat(esrImportLine.isValid()).isEqualTo(false);
-		assertThat(esrImportLine.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine.isValid()).isFalse();
+		assertThat(esrImportLine.isProcessed()).isFalse();
 		assertThat(esrImportLine.getESR_Payment_Action()).isNull();
 		assertThat(esrImportLine.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 		assertThat(esrImportLine.getESR_Invoice_Openamt()).isEqualByComparingTo(new BigDecimal(-50));
@@ -322,12 +322,12 @@ public class ESRImportTest extends ESRTestBase
 		final I_C_Payment esrLine1Payment = paymentDAO.getById(esrImportLine1PaymentId);
 
 		assertThat(esrLine1Payment.getPayAmt()).isEqualByComparingTo(new BigDecimal(50));
-		assertThat(esrLine1Payment.getC_Invoice_ID()).isEqualTo(0);
-		assertThat(esrLine1Payment.isAllocated()).isEqualTo(false);
+		assertThat(esrLine1Payment.getC_Invoice_ID()).isZero();
+		assertThat(esrLine1Payment.isAllocated()).isFalse();
 
 		// shall be a previous allocation
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
-		assertThat(allocLines.size()).isEqualTo(1);
+		assertThat(allocLines).hasSize(1);
 
 		// create new invoice
 		final I_C_Invoice inv1 = newInstance(I_C_Invoice.class, contextProvider);
@@ -355,7 +355,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// check import line
 		refresh(esrImportLine, true);
-		assertThat(esrImportLine.isValid()).isEqualTo(false);
+		assertThat(esrImportLine.isValid()).isFalse();
 		assertThat(esrImportLine.isProcessed()).isTrue();
 		assertThat(esrImportLine.getESR_Payment_Action()).isEqualTo(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
 		assertThat(esrImportLine.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
@@ -374,7 +374,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrLine1CreatedPayment.isAllocated()).isTrue();
 		// shall be one allocation
 		allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
-		assertThat(allocLines.size()).isEqualTo(1);
+		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 
 		// esr processed
@@ -403,7 +403,6 @@ public class ESRImportTest extends ESRTestBase
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
 		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
-		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
@@ -417,7 +416,7 @@ public class ESRImportTest extends ESRTestBase
 		// check import line
 		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid()).isTrue();
-		assertThat(esrImportLine.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine.isProcessed()).isFalse();
 		assertThat(esrImportLine.getESR_Payment_Action()).isNull();
 		assertThat(esrImportLine.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched);
 
@@ -427,8 +426,8 @@ public class ESRImportTest extends ESRTestBase
 		final I_C_Payment esrLine1Payment = paymentDAO.getById(esrImportLinePaymentId);
 
 		assertThat(esrLine1Payment.getPayAmt()).isEqualByComparingTo(new BigDecimal(25));
-		assertThat(esrLine1Payment.getC_Invoice_ID()).isEqualTo(0);
-		assertThat(esrLine1Payment.isAllocated()).isEqualTo(false);
+		assertThat(esrLine1Payment.getC_Invoice_ID()).isZero();
+		assertThat(esrLine1Payment.isAllocated()).isFalse();
 
 		// Registrate payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount, new WriteoffESRActionHandler());
@@ -459,7 +458,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrLine1CreatedPayment.getOverUnderAmt()).isEqualByComparingTo(new BigDecimal(-25));
 
 		final List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
-		assertThat(allocLines.size()).isEqualTo(2);
+		assertThat(allocLines).hasSize(2);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(25));
 		assertThat(allocLines.get(0).getC_Invoice_ID()).isEqualTo(getC_Invoice().getC_Invoice_ID());
 		assertThat(allocLines.get(1).getWriteOffAmt()).isEqualByComparingTo(new BigDecimal(25));
@@ -490,7 +489,6 @@ public class ESRImportTest extends ESRTestBase
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000070009072  030014040914041014041100001006800000000000090                          ";
 		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
-		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
@@ -504,7 +502,7 @@ public class ESRImportTest extends ESRTestBase
 		// check import line
 		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid()).isTrue();
-		assertThat(esrImportLine.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine.isProcessed()).isFalse();
 		assertThat(esrImportLine.getESR_Payment_Action()).isNull();
 		assertThat(esrImportLine.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched);
 
@@ -514,8 +512,8 @@ public class ESRImportTest extends ESRTestBase
 		final I_C_Payment esrLine1Payment = paymentDAO.getById(esrImportLineCreatedPaymentId);
 
 		assertThat(esrLine1Payment.getPayAmt()).isEqualByComparingTo(new BigDecimal(70));
-		assertThat(esrLine1Payment.getC_Invoice_ID()).isEqualTo(0);
-		assertThat(esrLine1Payment.isAllocated()).isEqualTo(false);
+		assertThat(esrLine1Payment.getC_Invoice_ID()).isZero();
+		assertThat(esrLine1Payment.isAllocated()).isFalse();
 
 		// Registrate payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, new WithNextInvoiceESRActionHandler());
@@ -540,11 +538,11 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrLine1Payment.getPayAmt()).isEqualByComparingTo(new BigDecimal(70));
 		assertThat(esrLine1Payment.getOverUnderAmt()).isEqualByComparingTo(new BigDecimal(20));
 		assertThat(esrLine1Payment.isAutoAllocateAvailableAmt()).isTrue();
-		assertThat(esrLine1Payment.isAllocated()).isEqualTo(false);
+		assertThat(esrLine1Payment.isAllocated()).isFalse();
 
 		// alocations
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
-		assertThat(allocLines.size()).isEqualTo(1);
+		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 
 		// esr processed
@@ -571,7 +569,6 @@ public class ESRImportTest extends ESRTestBase
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000070009072  030014040914041014041100001006800000000000090                          ";
 		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
-		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
@@ -585,7 +582,7 @@ public class ESRImportTest extends ESRTestBase
 		// check import line
 		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid()).isTrue();
-		assertThat(esrImportLine.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine.isProcessed()).isFalse();
 		assertThat(esrImportLine.getESR_Payment_Action()).isNull();
 		assertThat(esrImportLine.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched);
 
@@ -597,12 +594,12 @@ public class ESRImportTest extends ESRTestBase
 
 		// check the created payments
 		assertThat(esrLine1Payment.getPayAmt()).isEqualByComparingTo(new BigDecimal(70));
-		assertThat(esrLine1Payment.getC_Invoice_ID()).isEqualTo(0);
-		assertThat(esrLine1Payment.isAllocated()).isEqualTo(false);
+		assertThat(esrLine1Payment.getC_Invoice_ID()).isZero();
+		assertThat(esrLine1Payment.isAllocated()).isFalse();
 
 		// allocations
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
-		assertThat(allocLines.size()).isEqualTo(0);
+		assertThat(allocLines).isEmpty();
 
 		// Register payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, new MoneyTransferedBackESRActionHandler());
@@ -634,11 +631,11 @@ public class ESRImportTest extends ESRTestBase
 
 		// allocations
 		allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
-		assertThat(allocLines.size()).isEqualTo(1);
+		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 
 		allocLines = Services.get(IPaymentDAO.class).retrieveAllocationLines(esrLine1Payment);
-		assertThat(allocLines.size()).isEqualTo(2);
+		assertThat(allocLines).hasSize(2);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 		assertThat(allocLines.get(1).getAmount()).isEqualByComparingTo(new BigDecimal(20));
 
@@ -679,7 +676,6 @@ public class ESRImportTest extends ESRTestBase
 				currencyEUR);
 
 		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		final String esrLineText = "01201067789300000001060000000000000000400000050009072  030014040914041014041100001006800000000000090                          ";
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
@@ -700,8 +696,8 @@ public class ESRImportTest extends ESRTestBase
 		save(esrImportLine);
 
 		// check import line
-		assertThat(esrImportLine.isValid()).isEqualTo(false);
-		assertThat(esrImportLine.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine.isValid()).isFalse();
+		assertThat(esrImportLine.isProcessed()).isFalse();
 		assertThat(esrImportLine.getESR_Payment_Action()).isNull();
 		assertThat(esrImportLine.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 		assertThat(esrImportLine.getImportErrorMsg()).isNull();
@@ -744,7 +740,6 @@ public class ESRImportTest extends ESRTestBase
 
 		esrImportBL.setInvoice(esrImportLine, inv);
 		save(esrImportLine);
-		lines.add(esrImportLine);
 
 		esrImportBL.complete(esrImport, "Complete");
 
@@ -770,7 +765,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// allocations
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
-		assertThat(allocLines.size()).isEqualTo(1);
+		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 
 		// esr processed
@@ -844,10 +839,8 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.process(esrImport);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		esrImportLine.setC_BPartner_ID(partner.getC_BPartner_ID());
 		save(esrImportLine);
-		lines.add(esrImportLine);
 
 		// this needs to be here because happens when saving, while importing the line
 		// process emulates the importing of the file and at the end the line is saved when the default values are set
@@ -871,7 +864,7 @@ public class ESRImportTest extends ESRTestBase
 				: paymentDAO.getById(esrImportLinePaymentId);
 
 		assertThat(esrLine1Payment.getPayAmt()).isEqualTo(esrImportLine.getAmount());
-		assertThat(esrLine1Payment.isAllocated()).isEqualTo(false);
+		assertThat(esrLine1Payment.isAllocated()).isFalse();
 
 		// doc type
 		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
@@ -920,7 +913,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrLine1CreatedPayment.isAllocated()).isTrue();
 
 		final List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(inv);
-		assertThat(allocLines.size()).isEqualTo(1);
+		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 
 		// esr processed
@@ -958,7 +951,6 @@ public class ESRImportTest extends ESRTestBase
 		save(refNoType);
 
 		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		final String esrLineText = "01201067789300000001060012345600000000400000050009072  030014040914041014041100001006800000000000090                          ";
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
@@ -997,7 +989,6 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		esrImportLine.setC_BPartner_ID(partner.getC_BPartner_ID());
 		save(esrImportLine);
-		lines.add(esrImportLine);
 
 		// this needs to be here because happens when saving, while importing the line
 		// process emulates the importing of the file and at the end the line is saved when the default values are set
@@ -1006,8 +997,8 @@ public class ESRImportTest extends ESRTestBase
 		save(esrImportLine);
 
 		// check import line
-		assertThat(esrImportLine.isValid()).isEqualTo(false);
-		assertThat(esrImportLine.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine.isValid()).isFalse();
+		assertThat(esrImportLine.isProcessed()).isFalse();
 		assertThat(esrImportLine.getESR_Payment_Action()).isNull();
 		assertThat(esrImportLine.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 		assertThat(esrImportLine.getImportErrorMsg()).isNull();
@@ -1040,8 +1031,8 @@ public class ESRImportTest extends ESRTestBase
 
 		assertThat(esrLine1CreatedPayment.getPayAmt()).isEqualByComparingTo(new BigDecimal(50));
 		assertThat(esrLine1CreatedPayment.getOverUnderAmt()).isEqualByComparingTo(new BigDecimal(0));
-		assertThat(esrLine1CreatedPayment.isAutoAllocateAvailableAmt()).isEqualTo(false);
-		assertThat(esrLine1CreatedPayment.isAllocated()).isEqualTo(false);
+		assertThat(esrLine1CreatedPayment.isAutoAllocateAvailableAmt()).isFalse();
+		assertThat(esrLine1CreatedPayment.isAllocated()).isFalse();
 
 		// esr processed
 		refresh(esrImport, true);
@@ -1073,7 +1064,6 @@ public class ESRImportTest extends ESRTestBase
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
 		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
-		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
@@ -1464,8 +1454,8 @@ public class ESRImportTest extends ESRTestBase
 		// check import line
 		refresh(esrImportLine, true);
 		final String msg = "Invalid (errmsg=" + esrImportLine.getMatchErrorMsg() + ")";
-		assertThat(esrImportLine.isValid()).as(msg).isEqualTo(false);
-		assertThat(esrImportLine.isProcessed()).as(msg).isEqualTo(false);
+		assertThat(esrImportLine.isValid()).as(msg).isFalse();
+		assertThat(esrImportLine.isProcessed()).as(msg).isFalse();
 		assertThat(esrImportLine.getC_Invoice()).as(msg).isNull();
 		assertThat(esrImportLine.getC_BPartner_ID()).as(msg).isEqualTo(partner.getC_BPartner_ID());
 
@@ -1550,7 +1540,11 @@ public class ESRImportTest extends ESRTestBase
 		save(inv);
 
 		// allocation for invoice
+		final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class, contextProvider);
+		allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
+		save(allocHdr);
 		final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class, contextProvider);
+		allocAmt.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
 		allocAmt.setAmount(new BigDecimal(25));
 		allocAmt.setC_Invoice_ID(inv.getC_Invoice_ID());
 		save(allocAmt);
@@ -1593,17 +1587,17 @@ public class ESRImportTest extends ESRTestBase
 
 		// check first import line
 		refresh(esrImportLine1, true);
-		assertThat(esrImportLine1.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine1.isProcessed()).isFalse();
 		assertThat(esrImportLine1.getESR_Payment_Action()).isNull();
 
 		// check second import line
 		refresh(esrImportLine2, true);
-		assertThat(esrImportLine2.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine2.isProcessed()).isFalse();
 		assertThat(esrImportLine2.getESR_Payment_Action()).isNull();
 
 		// check third import line
 		refresh(esrImportLine3, true);
-		assertThat(esrImportLine3.isProcessed()).isEqualTo(false);
+		assertThat(esrImportLine3.isProcessed()).isFalse();
 		assertThat(esrImportLine3.getESR_Payment_Action()).isNull();
 
 		// Registrate payment action handlers.
