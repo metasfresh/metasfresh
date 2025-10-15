@@ -20,27 +20,10 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
+package de.metas.camel.externalsystems.scriptedadapter;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-
-@Data
-@Builder
-public class MsgFromMfContext
+public interface ScriptedAdapterConstants
 {
-	@NonNull private final String orgCode;
-	@NonNull private final String scriptingRequestBody;
-	@NonNull private final String scriptIdentifier;
-
-	private String script;
-	private String scriptReturnValue;
-
-	// These three shall soon be replaced with a config- or request-object for de-metas-camel-outbound-endpoints  
-	@NonNull private final String outboundHttpEP;
-	@NonNull private final String outboundHttpToken;
-	@NonNull private final String outboundHttpMethod;
-	@NonNull private final String outboundRecordTableName;
-	@NonNull private final String outboundRecordId;
+	String ROUTE_MSG_FROM_MF_CONTEXT = "ScriptedAdapterConvertMsgFromMFContext";
+	String ATTACHMENT_FILE_NAME = "scripted-adapter-log.txt";
 }
