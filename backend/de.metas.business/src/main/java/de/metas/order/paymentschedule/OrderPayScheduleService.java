@@ -28,7 +28,6 @@ import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
-import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
@@ -38,7 +37,6 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
@@ -47,10 +45,7 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
-
-import static de.metas.payment.paymentterm.PaymentTermConstants.INFINITE_FUTURE_DATE;
 
 @Service
 @RequiredArgsConstructor
@@ -82,7 +77,7 @@ public class OrderPayScheduleService
 				.execute();
 	}
 
-	public void resolvePendingPaymentScheduleDatesAndStatus(@NonNull final OrderId orderId)
+	public void updatePayScheduleStatus(@NonNull final OrderId orderId)
 	{
 		final OrderSchedulingContext context = extractContext(orderBL.getById(orderId));
 		if (context == null)
@@ -90,34 +85,7 @@ public class OrderPayScheduleService
 			return;
 		}
 
-		orderPayScheduleRepository.getByOrderId(orderId)
-				.ifPresent(orderPaySchedule -> {
-					boolean scheduleChanged = false;
-
-					for (final OrderPayScheduleLine existingLine : orderPaySchedule.getLines())
-					{
-						if (existingLine.getOrderPayScheduleStatus().isPending())
-						{
-							final PaymentTermBreak ptb = paymentTermService.getPaymentTermBreakById(existingLine.getPaymentTermBreakId());
-
-							final ReferenceDateResult result = computeReferenceDate(context, ptb);
-
-							// Check if a transition has occurred (from Pending to Awaiting_Pay)
-							if (!result.getStatus().isPending())
-							{
-								existingLine.changeStatusTo(result.getStatus());
-								existingLine.setDueDate(result.getCalculatedDueDate());
-								scheduleChanged = true;
-							}
-						}
-					}
-
-					// Save the entire aggregate at once if any line was changed
-					if (scheduleChanged)
-					{
-						orderPayScheduleRepository.save(orderPaySchedule);
-					}
-				});
+		orderPayScheduleRepository.updateById(orderId, orderPaySchedule -> orderPaySchedule.updateStatusFromContext(context));
 	}
 
 	@NonNull
@@ -125,7 +93,7 @@ public class OrderPayScheduleService
 
 	public void deleteByOrderId(@NonNull final OrderId orderId) {orderPayScheduleRepository.deleteByOrderId(orderId);}
 
-	public @Nullable OrderSchedulingContext extractContext(final @NotNull org.compiere.model.I_C_Order orderRecord)
+	@Nullable OrderSchedulingContext extractContext(final @NotNull org.compiere.model.I_C_Order orderRecord)
 	{
 		final PaymentTermId paymentTermId = orderBL.getPaymentTermId(orderRecord);
 		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
@@ -187,34 +155,4 @@ public class OrderPayScheduleService
 				ref.getETADate()
 		)).orElseGet(() -> new DatesFromShipper(null, null));
 	}
-
-	static ReferenceDateResult computeReferenceDate(
-			@NonNull final OrderSchedulingContext context,
-			final @NonNull PaymentTermBreak termBreak)
-	{
-		final Instant referenceDate = context.getAvailableReferenceDate(termBreak.getReferenceDateType());
-		if (referenceDate != null)
-		{
-			final Instant finalDueDate = referenceDate.plus(termBreak.getOffsetDays(), ChronoUnit.DAYS);
-			final OrderPayScheduleStatus status = OrderPayScheduleStatus.Awaiting_Pay;
-			return new ReferenceDateResult(finalDueDate, status);
-		}
-		else
-		{
-			final OrderPayScheduleStatus status = OrderPayScheduleStatus.Pending;
-			return new ReferenceDateResult(INFINITE_FUTURE_DATE, status);
-		}
-	}
-
-	//
-	//
-	//
-
-	@Value
-	static class ReferenceDateResult
-	{
-		@NonNull Instant calculatedDueDate;
-		@NonNull OrderPayScheduleStatus status;
-	}
-
 }

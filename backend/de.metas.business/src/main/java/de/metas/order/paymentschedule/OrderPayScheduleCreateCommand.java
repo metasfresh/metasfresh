@@ -13,8 +13,6 @@ import org.compiere.model.I_C_Order;
 
 import java.util.List;
 
-import static de.metas.order.paymentschedule.OrderPayScheduleService.computeReferenceDate;
-
 @Builder
 class OrderPayScheduleCreateCommand
 {
@@ -90,10 +88,10 @@ class OrderPayScheduleCreateCommand
 			@NonNull final PaymentTermBreak termBreak,
 			@NonNull final Money dueAmount)
 	{
-		final OrderPayScheduleService.ReferenceDateResult result = computeReferenceDate(context, termBreak);
+		final DueDateAndStatus result = context.computeDueDate(termBreak);
 
 		return OrderPayScheduleCreateRequest.Line.builder()
-				.dueDate(result.getCalculatedDueDate())
+				.dueDate(result.getDueDate())
 				.dueAmount(dueAmount)
 				.paymentTermBreakId(termBreak.getId())
 				.referenceDateType(termBreak.getReferenceDateType())

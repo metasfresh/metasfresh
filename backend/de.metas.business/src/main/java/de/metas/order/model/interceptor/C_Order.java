@@ -640,7 +640,7 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_LC_Date })
 	public void updateOrderPaySchedules(final I_C_Order order)
 	{
-		orderPayScheduleService.resolvePendingPaymentScheduleDatesAndStatus(OrderId.ofRepoId(order.getC_Order_ID()));
+		orderPayScheduleService.updatePayScheduleStatus(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 
 }

@@ -74,7 +74,7 @@ public class C_OrderPaySchedule_StepDef
 		tableRow.getAsOptionalInstant(I_C_OrderPaySchedule.COLUMNNAME_DueDate)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
 		tableRow.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
-				.ifPresent(expected -> softly.assertThat(payScheduleLine.getOrderPayScheduleStatus()).as("Status").isEqualTo(expected));
+				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
 
 		softly.assertAll();
 	}

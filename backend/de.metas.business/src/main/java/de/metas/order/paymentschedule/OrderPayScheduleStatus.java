@@ -23,7 +23,6 @@
 package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableSetMultimap;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -40,7 +39,6 @@ public enum OrderPayScheduleStatus implements ReferenceListAwareEnum
 	Pending(X_C_OrderPaySchedule.STATUS_Pending_Ref),
 	Awaiting_Pay(X_C_OrderPaySchedule.STATUS_Awaiting_Pay),
 	Paid(X_C_OrderPaySchedule.STATUS_Paid);
-
 
 	private static final ImmutableSetMultimap<OrderPayScheduleStatus, OrderPayScheduleStatus> allowedTransitions = ImmutableSetMultimap.<OrderPayScheduleStatus, OrderPayScheduleStatus>builder()
 			.put(Pending, Awaiting_Pay)
@@ -69,10 +67,8 @@ public enum OrderPayScheduleStatus implements ReferenceListAwareEnum
 
 	public static boolean equals(@Nullable final OrderPayScheduleStatus status1, @Nullable final OrderPayScheduleStatus status2) {return Objects.equals(status1, status2);}
 
-	public BooleanWithReason checkCanTransitionTo(final @NonNull OrderPayScheduleStatus nextStatus)
+	public boolean isAllowTransitionTo(final @NonNull OrderPayScheduleStatus nextStatus)
 	{
-		return allowedTransitions.containsEntry(this, nextStatus)
-				? BooleanWithReason.TRUE
-				: BooleanWithReason.FALSE;
+		return allowedTransitions.containsEntry(this, nextStatus);
 	}
 }

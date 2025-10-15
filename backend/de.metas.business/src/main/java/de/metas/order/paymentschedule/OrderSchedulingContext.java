@@ -26,6 +26,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,6 +34,7 @@ import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Builder
 @Getter
@@ -48,7 +50,22 @@ public class OrderSchedulingContext
 	@NonNull CurrencyPrecision precision;
 	@NonNull PaymentTerm paymentTerm;
 
-	@Nullable Instant getAvailableReferenceDate(@NonNull final ReferenceDateType referenceDateType)
+	public DueDateAndStatus computeDueDate(@NonNull final PaymentTermBreak termBreak)
+	{
+		final Instant referenceDate = getAvailableReferenceDate(termBreak.getReferenceDateType());
+		if (referenceDate != null)
+		{
+			final Instant dueDate = referenceDate.plus(termBreak.getOffsetDays(), ChronoUnit.DAYS);
+			return DueDateAndStatus.awaitingPayment(dueDate);
+		}
+		else
+		{
+			return DueDateAndStatus.pending();
+		}
+	}
+
+	@Nullable
+	private Instant getAvailableReferenceDate(@NonNull final ReferenceDateType referenceDateType)
 	{
 		switch (referenceDateType)
 		{

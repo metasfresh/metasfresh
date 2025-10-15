@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.Optional;
 
 import static de.metas.util.Check.isNotBlank;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -61,7 +60,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class PaymentTermRepository implements IPaymentTermRepository
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<Integer, PaymentTermMap> cache = CCache.<Integer, PaymentTermMap>builder()
 			.tableName(I_C_PaymentTerm.Table_Name)
@@ -306,9 +305,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 	private static PaymentTermBreak toPaymentTermBreak(@NonNull final I_C_PaymentTerm_Break record)
 	{
-		final PaymentTermBreakId id = PaymentTermBreakId.ofRepoId(
-				record.getC_PaymentTerm_ID(),
-				record.getC_PaymentTerm_Break_ID());
+		final PaymentTermBreakId id = PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID());
 
 		return PaymentTermBreak.builder()
 				.id(id)
@@ -321,16 +318,10 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.build();
 	}
 
-	private I_C_PaymentTerm_Break getPaymentTermBreakRecordById(@NonNull final PaymentTermBreakId id)
-	{
-		return loadOutOfTrx(id, I_C_PaymentTerm_Break.class);
-	}
-
 	@Override
 	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
 	{
-		final I_C_PaymentTerm_Break paymentTermBreakRecord = getPaymentTermBreakRecordById(id);
-		return toPaymentTermBreak(paymentTermBreakRecord);
+		return getById(id.getPaymentTermId()).getBreakById(id);
 	}
 
 

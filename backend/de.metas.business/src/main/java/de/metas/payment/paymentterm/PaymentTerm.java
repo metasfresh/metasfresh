@@ -23,6 +23,8 @@
 package de.metas.payment.paymentterm;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
@@ -59,6 +61,7 @@ public class PaymentTerm
 	boolean isComplex;
 
 	@Nullable ImmutableList<PaymentTermBreak> sortedBreaks;
+	@Nullable ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
 
 	@Builder
 	private PaymentTerm(
@@ -104,10 +107,12 @@ public class PaymentTerm
 			checkPercentBreaks(breaks);
 		}
 
-		this.sortedBreaks = isComplex ? breaks.stream()
-				.sorted(Comparator.comparing(PaymentTermBreak::getSeqNo))
-				.collect(ImmutableList.toImmutableList()) : null;
-
+		this.sortedBreaks = isComplex
+				? breaks.stream().sorted(Comparator.comparing(PaymentTermBreak::getSeqNo).thenComparing(PaymentTermBreak::getId)).collect(ImmutableList.toImmutableList())
+				: null;
+		this.breaksById = isComplex
+				? Maps.uniqueIndex(breaks, PaymentTermBreak::getId)
+				: null;
 	}
 
 	private void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)
@@ -125,5 +130,19 @@ public class PaymentTerm
 
 	}
 
+	public PaymentTermBreak getBreakById(final @NonNull PaymentTermBreakId id)
+	{
+		if (breaksById == null)
+		{
+			throw new AdempiereException("Payment term does not support breaks: " + this);
+		}
+		
+		final PaymentTermBreak paymentTermBreak = breaksById.get(id);
+		if (paymentTermBreak == null)
+		{
+			throw new AdempiereException("No break found for id: " + id);
+		}
+		return paymentTermBreak;
+	}
 }
 

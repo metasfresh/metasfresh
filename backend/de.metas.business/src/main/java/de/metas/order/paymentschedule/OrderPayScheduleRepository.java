@@ -42,13 +42,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class OrderPayScheduleRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private OrderPayScheduleLoaderAndSaver newLoaderAndSaver()
 	{
 		return OrderPayScheduleLoaderAndSaver.builder()
 				.queryBL(queryBL)
+				.trxManager(trxManager)
 				.build();
 	}
 
@@ -78,15 +79,7 @@ public class OrderPayScheduleRepository
 	@NonNull
 	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId)
 	{
-		final OrderPaySchedule schedule = newLoaderAndSaver().loadByOrderId(orderId);
-
-		if (schedule.getLines().isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(schedule);
-
+		return newLoaderAndSaver().loadByOrderId(orderId);
 	}
 
 	public void deleteByOrderId(@NonNull final OrderId orderId)
@@ -97,10 +90,10 @@ public class OrderPayScheduleRepository
 				.delete();
 	}
 
-	public void updateById(final OrderPayScheduleId id, final Consumer<OrderPayScheduleLine> updater)
-	{
-		trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(id, updater));
-	}
-
 	public void save(final OrderPaySchedule orderPaySchedule) {newLoaderAndSaver().save(orderPaySchedule);}
+
+	public void updateById(@NonNull final OrderId orderId, @NonNull final Consumer<OrderPaySchedule> updater)
+	{
+		newLoaderAndSaver().updateById(orderId, updater);
+	}
 }
