@@ -4,7 +4,6 @@ import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.money.Money;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -19,7 +18,6 @@ import java.math.BigDecimal;
  * <p>
  */
 @EqualsAndHashCode
-@ToString
 public class InvoiceTotal
 {
 	@NonNull Money relativeValue;

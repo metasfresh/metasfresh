@@ -31,10 +31,8 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 
 @EqualsAndHashCode
-@ToString
 public final class InvoiceAmtMultiplier
 {
 	private final SOTrx soTrx;

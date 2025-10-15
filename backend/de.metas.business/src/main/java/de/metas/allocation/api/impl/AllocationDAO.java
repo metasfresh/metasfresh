@@ -255,11 +255,11 @@ public class AllocationDAO implements IAllocationDAO
 					))
 					.allocatedAmt(InvoiceTotal.ofRelativeValue(
 							Money.of(allocatedAmtBD, currencyId),
-							InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(true).withCMAdjusted(false)
+							InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(false).withCMAdjusted(false)
 					))
 					.openAmt(InvoiceTotal.ofRelativeValue(
 							Money.of(openAmtBD, currencyId),
-							InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(true).withCMAdjusted(true)
+							InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(false).withCMAdjusted(true)
 					))
 					.hasAllocations(hasAllocations)
 					.build();
