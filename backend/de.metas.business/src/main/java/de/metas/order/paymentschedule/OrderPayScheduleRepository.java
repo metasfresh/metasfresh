@@ -59,7 +59,7 @@ public class OrderPayScheduleRepository
 				.forEach(line -> createLine(line, request.getOrderId(), seqNoProvider.getAndIncrement()));
 	}
 
-	private void createLine(@NonNull final OrderPayScheduleCreateRequest.Line request, @NonNull OrderId orderId, @NonNull SeqNo seqNo)
+	private void createLine(@NonNull final OrderPayScheduleCreateRequest.Line request, @NonNull final OrderId orderId, @NonNull final SeqNo seqNo)
 	{
 		final I_C_OrderPaySchedule record = newInstance(I_C_OrderPaySchedule.class);
 		record.setC_Order_ID(orderId.getRepoId());
@@ -78,20 +78,15 @@ public class OrderPayScheduleRepository
 	@NonNull
 	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId)
 	{
-		return queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
-				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId)
-				.orderBy(I_C_OrderPaySchedule.COLUMNNAME_SeqNo)
-				.create()
-				.stream()
-				.map(record -> newLoaderAndSaver().loadFromRecord(record))
-				.collect(OrderPaySchedule.collect());
+		final OrderPaySchedule schedule = newLoaderAndSaver().loadByOrderId(orderId);
 
-	}
+		if (schedule.getLines().isEmpty())
+		{
+			return Optional.empty();
+		}
 
+		return Optional.of(schedule);
 
-	public OrderPayScheduleLine getById(@NonNull final OrderPayScheduleId orderPayScheduleId)
-	{
-		return newLoaderAndSaver().getById(orderPayScheduleId);
 	}
 
 	public void deleteByOrderId(@NonNull final OrderId orderId)
@@ -106,4 +101,6 @@ public class OrderPayScheduleRepository
 	{
 		trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(id, updater));
 	}
+
+	public void save(final OrderPaySchedule orderPaySchedule) {newLoaderAndSaver().save(orderPaySchedule);}
 }

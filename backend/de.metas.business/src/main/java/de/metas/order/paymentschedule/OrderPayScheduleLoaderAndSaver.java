@@ -23,6 +23,8 @@
 package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -42,7 +44,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Builder
 public class OrderPayScheduleLoaderAndSaver
@@ -52,82 +56,74 @@ public class OrderPayScheduleLoaderAndSaver
 
 	private final HashMap<OrderPayScheduleId, I_C_OrderPaySchedule> schedRecordsById = new HashMap<>();
 
-	private final HashMap<OrderId, ImmutableList<I_C_OrderPaySchedule>> orderCache = new HashMap<>();
+	private final HashMap<OrderId, OrderPaySchedule> schedsByOrderId = new HashMap<>();
 
-
-	OrderPayScheduleLine loadFromRecord(@NonNull final I_C_OrderPaySchedule orderPayScheduleRecord)
+	OrderPaySchedule loadByOrderId(@NonNull final OrderId orderId)
 	{
-		addToCacheAndWarmUp(ImmutableList.of(orderPayScheduleRecord));
-		return fromRecord(orderPayScheduleRecord);
-	}
-
-	private void addToCacheAndWarmUp(@NonNull Collection<I_C_OrderPaySchedule> orderPayScheduleRecords)
-	{
-		if (orderPayScheduleRecords.isEmpty())
+		final OrderPaySchedule cachedSchedule = schedsByOrderId.get(orderId);
+		if (cachedSchedule != null)
 		{
-			return;
+			return cachedSchedule;
 		}
 
-		orderPayScheduleRecords.forEach(this::addToCache);
+		final ImmutableList<I_C_OrderPaySchedule> records = retrieveOrderPaySchedRecordsByOrderId(ImmutableSet.of(orderId)).get(orderId);
+		if (records == null || records.isEmpty())
+		{
+			// Return an empty schedule if none found, ensuring the consumer gets a non-null object
+			final OrderPaySchedule emptySchedule = OrderPaySchedule.ofList(orderId, ImmutableList.of());
+			schedsByOrderId.put(orderId, emptySchedule);
+			return emptySchedule;
+		}
 
+		// Cache records individually and build the aggregate schedule
+		records.forEach(this::addToLineCache);
+
+		final OrderPaySchedule schedule = createOrderPaySchedule(orderId, records);
+		schedsByOrderId.put(orderId, schedule);
+		return schedule;
 	}
 
-	private void addToCache(@NonNull final I_C_OrderPaySchedule orderPayScheduleRecord)
+	private Map<OrderId, ImmutableList<I_C_OrderPaySchedule>> retrieveOrderPaySchedRecordsByOrderId(@NonNull final Set<OrderId> orderIds)
+	{
+		if (orderIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final Map<OrderId, ImmutableList<I_C_OrderPaySchedule>> recordsByOrderId = queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
+				.addInArrayFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderIds)
+				.orderBy(I_C_OrderPaySchedule.COLUMNNAME_SeqNo)
+				.create()
+				.stream()
+				.collect(Collectors.groupingBy(
+						OrderPayScheduleLoaderAndSaver::extractOrderId,
+						ImmutableList.toImmutableList()
+				));
+
+		final HashMap<OrderId, ImmutableList<I_C_OrderPaySchedule>> result = new HashMap<>();
+		for (final OrderId orderId : orderIds)
+		{
+			final ImmutableList<I_C_OrderPaySchedule> records = recordsByOrderId.get(orderId);
+			result.put(orderId, records != null ? records : ImmutableList.of());
+		}
+
+		return result;
+	}
+
+	private OrderPaySchedule createOrderPaySchedule(
+			@NonNull final OrderId orderId,
+			@NonNull final Collection<I_C_OrderPaySchedule> records)
+	{
+		final ImmutableList<OrderPayScheduleLine> lines = records.stream()
+				.map(OrderPayScheduleLoaderAndSaver::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		return OrderPaySchedule.ofList(orderId, lines);
+	}
+
+	private void addToLineCache(@NonNull final I_C_OrderPaySchedule orderPayScheduleRecord)
 	{
 		schedRecordsById.put(extractOrderPayScheduleId(orderPayScheduleRecord), orderPayScheduleRecord);
-	}
-
-	static OrderPayScheduleId extractOrderPayScheduleId(@NonNull final I_C_OrderPaySchedule orderPayScheduleRecord)
-	{
-		return OrderPayScheduleId.ofRepoId(orderPayScheduleRecord.getC_OrderPaySchedule_ID());
-	}
-
-	@NonNull
-	static OrderPayScheduleLine fromRecord(@NonNull final I_C_OrderPaySchedule record)
-	{
-		return OrderPayScheduleLine.builder()
-				.id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
-				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
-				.paymentTermBreakId(PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID()))
-				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
-				.dueDate(record.getDueDate().toInstant())
-				.percent(Percent.of(record.getPercent()))
-				.seqNo(SeqNo.ofInt(record.getSeqNo()))
-				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
-				.orderPayScheduleStatus(OrderPayScheduleStatus.ofCode(record.getStatus()))
-				.build();
-	}
-
-	void save(@NonNull final OrderPayScheduleLine orderPaySchedLine)
-	{
-		final I_C_OrderPaySchedule orderPayScheduleRecord = getOrderPaysSchedRecordById(orderPaySchedLine.getId());
-		updateRecord(orderPayScheduleRecord, orderPaySchedLine);
-		InterfaceWrapperHelper.save(orderPayScheduleRecord);
-		addToCache(orderPayScheduleRecord);
-		orderCache.remove(orderPaySchedLine.getOrderId());
-	}
-
-	private static void updateRecord(final I_C_OrderPaySchedule record, final @NotNull OrderPayScheduleLine from)
-	{
-		record.setC_Order_ID(from.getOrderId().getRepoId());
-		record.setC_PaymentTerm_ID(from.getPaymentTermBreakId().getPaymentTermId().getRepoId());
-		record.setC_PaymentTerm_Break_ID(from.getPaymentTermBreakId().getRepoId());
-		record.setDueAmt(from.getDueAmount().toBigDecimal());
-		record.setC_Currency_ID(from.getDueAmount().getCurrencyId().getRepoId());
-		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate()));
-		record.setPercent(from.getPercent().toInt());
-		record.setReferenceDateType(from.getReferenceDateType().getCode());
-		record.setSeqNo(from.getSeqNo().toInt());
-		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(from.getOrderPayScheduleStatus()));
-	}
-
-	OrderPayScheduleLine updateById(@NonNull final OrderPayScheduleId id, @NonNull final Consumer<OrderPayScheduleLine> updater)
-	{
-		final I_C_OrderPaySchedule orderPaySchedRecord = getOrderPaysSchedRecordById(id);
-		final OrderPayScheduleLine orderPaySchedLine = fromRecord(orderPaySchedRecord);
-		updater.accept(orderPaySchedLine);
-		save(orderPaySchedLine);
-		return orderPaySchedLine;
 	}
 
 	private I_C_OrderPaySchedule getOrderPaysSchedRecordById(@NonNull final OrderPayScheduleId schedId)
@@ -136,7 +132,7 @@ public class OrderPayScheduleLoaderAndSaver
 		if (orderPaySchedRecord == null)
 		{
 			orderPaySchedRecord = retrieveOrderPaySchedRecordById(schedId);
-			addToCache(orderPaySchedRecord);
+			addToLineCache(orderPaySchedRecord);
 		}
 		return orderPaySchedRecord;
 	}
@@ -151,32 +147,76 @@ public class OrderPayScheduleLoaderAndSaver
 		return orderPaySchedRecord;
 	}
 
-	OrderPayScheduleLine getById(final @NonNull OrderPayScheduleId id)
+	static OrderPayScheduleId extractOrderPayScheduleId(@NonNull final I_C_OrderPaySchedule record)
 	{
-		return fromRecord(getOrderPaysSchedRecordById(id));
+		return OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID());
 	}
 
-	public ImmutableList<I_C_OrderPaySchedule> getRecordsByOrderId(@NonNull final OrderId orderId)
+	static OrderId extractOrderId(@NonNull final I_C_OrderPaySchedule record)
 	{
-		if (orderCache.containsKey(orderId))
-		{
-			return orderCache.get(orderId);
-		}
+		return OrderId.ofRepoId(record.getC_Order_ID());
+	}
 
-		final ImmutableList<I_C_OrderPaySchedule> records = queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
-				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId)
-				.orderBy(I_C_OrderPaySchedule.COLUMNNAME_SeqNo)
-				.create()
-				.stream()
-				.collect(ImmutableList.toImmutableList());
+	@NonNull
+	static OrderPayScheduleLine fromRecord(@NonNull final I_C_OrderPaySchedule record)
+	{
+		return OrderPayScheduleLine.builder()
+				.id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
+				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
+				.paymentTermBreakId(PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID()))
+				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.dueDate(record.getDueDate().toInstant())
+				.percent(Percent.of(record.getPercent()))
+				// .offsetDays(record.getOffsetDays()) // TODO
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
+				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
+				.orderPayScheduleStatus(OrderPayScheduleStatus.ofCode(record.getStatus()))
+				.build();
+	}
 
-		for (final I_C_OrderPaySchedule record : records)
-		{
-			schedRecordsById.put(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()), record);
-		}
+	/* --- Saving and Updating --- */
 
-		orderCache.put(orderId, records);
-		return records;
+	void saveLine(@NonNull final OrderPayScheduleLine orderPaySchedLine)
+	{
+		final I_C_OrderPaySchedule orderPayScheduleRecord = getOrderPaysSchedRecordById(orderPaySchedLine.getId());
+		updateRecord(orderPayScheduleRecord, orderPaySchedLine);
+		InterfaceWrapperHelper.save(orderPayScheduleRecord);
+
+		// Invalidate the schedule cache for this order since a line changed
+		schedsByOrderId.remove(orderPaySchedLine.getOrderId());
+		addToLineCache(orderPayScheduleRecord);
+	}
+
+	private static void updateRecord(final I_C_OrderPaySchedule record, final @NotNull OrderPayScheduleLine from)
+	{
+		record.setC_Order_ID(from.getOrderId().getRepoId());
+		record.setC_PaymentTerm_ID(from.getPaymentTermBreakId().getPaymentTermId().getRepoId());
+		record.setC_PaymentTerm_Break_ID(from.getPaymentTermBreakId().getRepoId());
+		record.setDueAmt(from.getDueAmount().toBigDecimal());
+		record.setC_Currency_ID(from.getDueAmount().getCurrencyId().getRepoId());
+		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate()));
+		record.setPercent(from.getPercent().toInt());
+		// record.setOffsetDays(from.getOffsetDays()); // Corrected field inclusion
+		record.setReferenceDateType(from.getReferenceDateType().getCode());
+		record.setSeqNo(from.getSeqNo().toInt());
+		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(from.getOrderPayScheduleStatus()));
+	}
+
+	OrderPayScheduleLine updateById(@NonNull final OrderPayScheduleId id, @NonNull final Consumer<OrderPayScheduleLine> updater)
+	{
+		final I_C_OrderPaySchedule orderPaySchedRecord = getOrderPaysSchedRecordById(id);
+		final OrderPayScheduleLine orderPaySchedLine = fromRecord(orderPaySchedRecord);
+
+		updater.accept(orderPaySchedLine);
+
+		saveLine(orderPaySchedLine);
+
+		return orderPaySchedLine;
+	}
+
+	void save(@NonNull final OrderPaySchedule orderPaySchedule)
+	{
+		orderPaySchedule.getLines().forEach(this::saveLine);
 	}
 
 }

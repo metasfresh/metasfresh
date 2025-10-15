@@ -49,7 +49,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import static de.metas.payment.paymentterm.PaymentTermConstants.INFINITE_FUTURE_DATE;
 
@@ -83,7 +82,7 @@ public class OrderPayScheduleService
 				.execute();
 	}
 
-	public void resolvePendingPaymentScheduleDatesAndStatus(@NonNull final OrderId orderId )
+	public void resolvePendingPaymentScheduleDatesAndStatus(@NonNull final OrderId orderId)
 	{
 		final OrderSchedulingContext context = extractContext(orderBL.getById(orderId));
 		if (context == null)
@@ -91,31 +90,34 @@ public class OrderPayScheduleService
 			return;
 		}
 
-		final Consumer<OrderPayScheduleLine> lineUpdater = createLineUpdater(context);
-
 		orderPayScheduleRepository.getByOrderId(orderId)
 				.ifPresent(orderPaySchedule -> {
-					for (final OrderPayScheduleLine line : orderPaySchedule.getLines())
+					boolean scheduleChanged = false;
+
+					for (final OrderPayScheduleLine existingLine : orderPaySchedule.getLines())
 					{
-						orderPayScheduleRepository.updateById(line.getId(), lineUpdater);
+						if (existingLine.getOrderPayScheduleStatus().isPending())
+						{
+							final PaymentTermBreak ptb = paymentTermService.getPaymentTermBreakById(existingLine.getPaymentTermBreakId());
+
+							final ReferenceDateResult result = computeReferenceDate(context, ptb);
+
+							// Check if a transition has occurred (from Pending to Awaiting_Pay)
+							if (!result.getStatus().isPending())
+							{
+								existingLine.changeStatusTo(result.getStatus());
+								existingLine.setDueDate(result.getCalculatedDueDate());
+								scheduleChanged = true;
+							}
+						}
+					}
+
+					// Save the entire aggregate at once if any line was changed
+					if (scheduleChanged)
+					{
+						orderPayScheduleRepository.save(orderPaySchedule);
 					}
 				});
-	}
-
-	private Consumer<OrderPayScheduleLine> createLineUpdater(@NonNull final OrderSchedulingContext context)
-	{
-		return existingLine -> {
-			// Only process lines that are still waiting for a date
-			if (existingLine.getOrderPayScheduleStatus().isPending())
-			{
-				final PaymentTermBreak ptb = paymentTermService.getPaymentTermBreakById(existingLine.getPaymentTermBreakId());
-
-				final ReferenceDateResult result = computeReferenceDate(context, ptb);
-
-				existingLine.changeStatusTo(result.getStatus());
-				existingLine.setDueDate(result.getCalculatedDueDate());
-			}
-		};
 	}
 
 	@NonNull
@@ -171,7 +173,7 @@ public class OrderPayScheduleService
 		@Getter @Nullable private final Instant billOfLadingDate;
 		@Getter @Nullable private final Instant etaDate;
 
-		private DatesFromShipper(@Nullable Instant billOfLadingDate, @Nullable Instant etaDate)
+		private DatesFromShipper(@Nullable final Instant billOfLadingDate, @Nullable final Instant etaDate)
 		{
 			this.billOfLadingDate = billOfLadingDate;
 			this.etaDate = etaDate;
