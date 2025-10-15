@@ -25,6 +25,8 @@ package de.metas.payment.api.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -786,20 +788,22 @@ public class PaymentBL implements IPaymentBL
 					.appendParametersToMessage();
 		}
 
-		payment.setIsReconciled(true);
-
 		final PaymentReconcileReference.Type type = reconcileRef.getType();
+		final BankStatementId bankStatementId = reconcileRef.getBankStatementId();
+		final BankStatementLineId bankStatementLineId = reconcileRef.getBankStatementLineId();
+		final BankStatementLineRefId bankStatementLineRefId = reconcileRef.getBankStatementLineRefId();
+		final SAPGLJournalLineId glJournalLineId = reconcileRef.getGlJournalLineId();
+		final SAPGLJournalId glJournalId = glJournalLineId != null ? glJournalLineId.getGlJournalId() : null;
 		if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE.equals(type))
 		{
-			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
-			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
-			payment.setC_BankStatementLine_Ref_ID(-1);
+			Check.assumeNotNull(bankStatementId, "bankStatementId is set in {}", reconcileRef);
+			Check.assumeNotNull(bankStatementLineId, "bankStatementLineId is set in {}", reconcileRef);
 		}
 		else if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE_REF.equals(type))
 		{
-			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
-			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
-			payment.setC_BankStatementLine_Ref_ID(reconcileRef.getBankStatementLineRefId().getRepoId());
+			Check.assumeNotNull(bankStatementId, "bankStatementId is set in {}", reconcileRef);
+			Check.assumeNotNull(bankStatementLineId, "bankStatementLineId is set in {}", reconcileRef);
+			Check.assumeNotNull(bankStatementLineRefId, "bankStatementLineRefId is set in {}", reconcileRef);
 		}
 		else if (PaymentReconcileReference.Type.REVERSAL.equals(type))
 		{
@@ -814,15 +818,23 @@ public class PaymentBL implements IPaymentBL
 			{
 				throw new AdempiereException("Payment shall be reversed by `" + reconcileRef.getReversalId() + "` but it was reversed by `" + reversalId + "`: " + payment);
 			}
-
-			payment.setC_BankStatement_ID(-1);
-			payment.setC_BankStatementLine_ID(-1);
-			payment.setC_BankStatementLine_Ref_ID(-1);
+		}
+		else if (PaymentReconcileReference.Type.GL_Journal.equals(type))
+		{
+			Check.assumeNotNull(glJournalId, "glJournalId is set in {}", reconcileRef);
+			Check.assumeNotNull(glJournalLineId, "glJournalLineId is set in {}", reconcileRef);
 		}
 		else
 		{
 			throw new AdempiereException("Unknown reconciliation type: " + type);
 		}
+
+		payment.setIsReconciled(true);
+		payment.setC_BankStatement_ID(BankStatementId.toRepoId(bankStatementId));
+		payment.setC_BankStatementLine_ID(BankStatementLineId.toRepoId(bankStatementLineId));
+		payment.setC_BankStatementLine_Ref_ID(BankStatementLineRefId.toRepoId(bankStatementLineRefId));
+		payment.setReconciledBy_SAP_GLJournal_ID(SAPGLJournalId.toRepoId(glJournalId));
+		payment.setReconciledBy_SAP_GLJournalLine_ID(SAPGLJournalLineId.toRepoId(glJournalLineId));
 
 		paymentDAO.save(payment);
 	}
@@ -830,6 +842,11 @@ public class PaymentBL implements IPaymentBL
 	@VisibleForTesting
 	static PaymentReconcileReference extractPaymentReconcileReference(final I_C_Payment payment)
 	{
+		if (!payment.isReconciled())
+		{
+			throw new AdempiereException("Payment is not reconciled");
+		}
+
 		try
 		{
 			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
@@ -839,17 +856,29 @@ public class PaymentBL implements IPaymentBL
 				return PaymentReconcileReference.reversal(reversalId);
 			}
 
-			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
-			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
-			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
-			if (bankStatementLineRefId == null)
+			final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(payment.getC_BankStatement_ID());
+			if (bankStatementId != null)
 			{
-				return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
+				final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
+				final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
+				if (bankStatementLineRefId == null)
+				{
+					return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
+				}
+				else
+				{
+					return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+				}
 			}
-			else
+
+			final SAPGLJournalId glJournalId = SAPGLJournalId.ofRepoIdOrNull(payment.getReconciledBy_SAP_GLJournal_ID());
+			if (glJournalId != null)
 			{
-				return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+				final SAPGLJournalLineId glJournalLineId = SAPGLJournalLineId.ofRepoId(glJournalId, payment.getReconciledBy_SAP_GLJournalLine_ID());
+				return PaymentReconcileReference.glJournalLine(glJournalLineId);
 			}
+
+			throw new AdempiereException("Cannot determine de reconciling document");
 		}
 		catch (final Exception ex)
 		{

@@ -71,6 +71,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -164,14 +165,14 @@ public class PaymentsViewAllocateCommandTest
 
 	private void assertInvoiceNotAllocated(@NonNull final InvoiceId invoiceId)
 	{
-		assertThat(allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId))
+		assertThat(allocationDAO.retrieveAllocatedAmt(invoiceBL.getById(invoiceId)))
 				.as("Allocated amount for invoice " + invoiceId)
-				.isEmpty();
+				.isEqualTo(Money.zero(CurrencyId.EUR));
 	}
 
 	private void assertInvoiceAllocatedAmt(@NonNull final InvoiceId invoiceId, @NonNull final String expectedAllocatedAmt)
 	{
-		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceBL.getById(invoiceId));
 		assertThat(actualAllocatedAmt).isNotNull();
 		assertThat(actualAllocatedAmt.toBigDecimal()).isEqualByComparingTo(expectedAllocatedAmt);
 	}
@@ -181,9 +182,11 @@ public class PaymentsViewAllocateCommandTest
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		invoiceBL.testAllocation(invoice, true);
 
-		assertThat(invoice.isPaid()).isEqualTo(expectedPaymentStatus.isFullyPaid());
-		assertThat(invoice.isPartiallyPaid()).isEqualTo(expectedPaymentStatus.isPartiallyPaid());
-		assertThat(invoice.getOpenAmt()).isEqualTo(expectedOpenAmt);
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(invoice.isPaid()).as("IsPaid").isEqualTo(expectedPaymentStatus.isFullyPaid());
+		softly.assertThat(invoice.isPartiallyPaid()).as("IsPartiallyPaid").isEqualTo(expectedPaymentStatus.isPartiallyPaid());
+		softly.assertThat(invoice.getOpenAmt()).as("OpenAmt").isEqualTo(expectedOpenAmt);
+		softly.assertAll();
 	}
 
 	@Builder(builderMethodName = "paymentRow", builderClassName = "$PaymentRowBuilder")
@@ -223,7 +226,7 @@ public class PaymentsViewAllocateCommandTest
 		final InvoiceAmtMultiplier invoiceAmtMultiplier = InvoiceAmtMultiplier.builder()
 				.soTrx(docBaseType.getSoTrx())
 				.isCreditMemo(docBaseType.isCreditMemo())
-				.isSOTrxAdjusted(INVOICE_AMT_IsSOTrxAdjusted)
+				.isAPAdjusted(INVOICE_AMT_IsSOTrxAdjusted)
 				.isCreditMemoAdjusted(INVOICE_AMT_IsCreditMemoAdjusted)
 				.build()
 				.intern();
@@ -272,7 +275,7 @@ public class PaymentsViewAllocateCommandTest
 		final InvoiceAmtMultiplier multiplierInRealLife = PaymentAllocationRepository.toInvoiceAmtMultiplier(InvoiceDocBaseType.CustomerInvoice);
 
 		//noinspection AssertThatBooleanCondition
-		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
+		assertThat(multiplierInRealLife.isAPAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
 
 		//noinspection AssertThatBooleanCondition
 		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);

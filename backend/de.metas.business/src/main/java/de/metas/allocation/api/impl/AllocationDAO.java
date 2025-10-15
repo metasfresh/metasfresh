@@ -1,16 +1,21 @@
 package de.metas.allocation.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.InvoiceOpenRequest;
+import de.metas.allocation.api.InvoiceOpenResult;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.allocation.api.PaymentAllocationLineId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceAmtMultiplier;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.impl.InvoiceTotal;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -18,12 +23,14 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
@@ -41,10 +48,10 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -69,48 +76,32 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public final Money retrieveOpenAmtInInvoiceCurrency(
 			@NonNull final I_C_Invoice invoice,
-			final boolean creditMemoAdjusted)
+			final boolean isCreditMemoAdjust)
 	{
 		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-
 		if (invoice.isPaid())
 		{
-			return Money.of(BigDecimal.ZERO, invoiceCurrencyId);
+			return Money.zero(invoiceCurrencyId);
 		}
 
-		final BigDecimal openAmt;
-		final BigDecimal allocated = retrieveAllocatedAmt(invoice);
-		if (allocated != null)
-		{
-			// subtracting the absolute allocated amount
-			openAmt = invoice.getGrandTotal().subtract(allocated.abs());
-		}
-		else
-		{
-			openAmt = invoice.getGrandTotal();
-		}
+		final InvoiceOpenResult invoiceOpenResult = retrieveInvoiceOpen(InvoiceOpenRequest.builder()
+				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.dateColumn(InvoiceOpenRequest.DateColumn.DateTrx)
+				.returnInCurrencyId(invoiceCurrencyId)
+				.build());
 
-		if (creditMemoAdjusted && Services.get(IInvoiceBL.class).isCreditMemo(invoice))
-		{
-			return Money.of(openAmt.negate(), invoiceCurrencyId);
-		}
-
-		return Money.of(openAmt, invoiceCurrencyId);
+		return invoiceOpenResult.getOpenAmt().withoutAPAdjusted().withCMAdjusted(isCreditMemoAdjust).toMoney();
 	}
 
 	@Override
 	public final List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Invoice invoice)
 	{
-		return queryBL
-				.createQueryBuilder(I_C_AllocationLine.class, invoice)
+		return queryBL.createQueryBuilder(I_C_AllocationLine.class, invoice)
 				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_Invoice_ID, invoice.getC_Invoice_ID())
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_AD_Client_ID, invoice.getAD_Client_ID())
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.orderBy()
-				.addColumn(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
-				.endOrderBy()
-				.create()
-				.list(I_C_AllocationLine.class);
+				.orderBy(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
+				.list();
 	}
 
 	@Override
@@ -184,55 +175,106 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	@Nullable
-	public BigDecimal retrieveAllocatedAmt(@NonNull final I_C_Invoice invoiceRecord)
+	public Money retrieveAllocatedAmt(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceRecord);
-
-		return retrieveAllocatedAmt(invoiceId, trxName)
-				.map(Money::toBigDecimal)
-				.orElse(null);
+		return retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoiceRecord, ImmutableSet.of());
 	}
 
 	@Override
-	public Optional<Money> retrieveAllocatedAmtAsMoney(final InvoiceId invoiceId)
+	public Money retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull final I_C_Invoice invoice, @Nullable final Set<PaymentId> paymentIDsToIgnore)
 	{
-		return retrieveAllocatedAmt(invoiceId, ITrx.TRXNAME_ThreadInherited);
+		final InvoiceOpenResult result = retrieveInvoiceOpen(InvoiceOpenRequest.builder()
+				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.dateColumn(InvoiceOpenRequest.DateColumn.DateTrx)
+				.returnInCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID())) // just to make it verbose
+				.excludePaymentIds(paymentIDsToIgnore)
+				.build());
+
+		return result.getAllocatedAmt().withAPAdjusted().withCMAdjusted().toMoney();
 	}
 
-	protected Optional<Money> retrieveAllocatedAmt(@NonNull final InvoiceId invoiceId, final String trxName)
+	@Override
+	public InvoiceOpenResult retrieveInvoiceOpen(@NonNull final InvoiceOpenRequest request)
 	{
-		final String sql = "SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
-				+ ", i.C_Currency_ID"
-				+ " FROM C_AllocationLine al"
-				+ " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
-				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
-				+ " WHERE al.C_Invoice_ID=? AND ah.IsActive='Y' AND al.IsActive='Y'"
-				+ " GROUP BY i.C_Invoice_ID";
+		final String sqlExcludePaymentIds = request.getExcludePaymentIds() != null && !request.getExcludePaymentIds().isEmpty()
+				? DB.TO_ARRAY(request.getExcludePaymentIds())
+				: "NULL";
+
+		final String dateType;
+		switch (request.getDateColumn())
+		{
+			case DateAcct:
+				dateType = "A";
+				break;
+			case DateTrx:
+			default:
+				dateType = "T";
+				break;
+		}
+
+		final String sql = "SELECT * FROM invoiceOpenToDate("
+				+ "  p_c_invoice_id :=?"
+				+ ", p_C_InvoicePaySchedule_ID := NULL"
+				+ ", p_DateType := ?"
+				+ ", p_Date := NULL"
+				+ ", p_Result_Currency_ID := ?"
+				+ ", p_Exclude_Payment_IDs := " + sqlExcludePaymentIds
+				+ ", p_ReturnNullOnError := 'N'"
+				+ ")";
+		final List<Object> sqlParams = Arrays.asList(
+				request.getInvoiceId(),
+				dateType,
+				request.getReturnInCurrencyId()
+		);
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
+		Object[] resultParts = null;
 		try
 		{
 
-			pstmt = DB.prepareStatement(sql, trxName);
-			pstmt.setInt(1, invoiceId.getRepoId());
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
-			if (rs.next())
+			if (!rs.next()) // assume we always have a result
 			{
-				final BigDecimal allocatedAmt = rs.getBigDecimal(1);
-				final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt(2));
-				return Optional.of(Money.of(allocatedAmt, currencyId));
+				throw new AdempiereException("No result");
 			}
-			else
-			{
-				// IMPORTANT: return empty if there are NO allocations found
-				return Optional.empty();
-			}
+
+			final BigDecimal grandTotalBD = rs.getBigDecimal("GrandTotal");
+			final BigDecimal openAmtBD = rs.getBigDecimal("OpenAmt");
+			final BigDecimal allocatedAmtBD = rs.getBigDecimal("PaidAmt");
+			final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt("C_Currency_ID"));
+			final boolean hasAllocations = StringUtils.toBoolean(rs.getString("HasAllocations"));
+			final InvoiceDocBaseType docBaseType = InvoiceDocBaseType.ofCode(rs.getString("InvoiceDocBaseType"));
+			return InvoiceOpenResult.builder()
+					.invoiceDocBaseType(docBaseType)
+					.invoiceGrandTotal(InvoiceTotal.ofRelativeValue(
+							Money.of(grandTotalBD, currencyId),
+							InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(false).withCMAdjusted(true)
+					))
+					.allocatedAmt(InvoiceTotal.ofRelativeValue(
+							Money.of(allocatedAmtBD, currencyId),
+							InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(false).withCMAdjusted(false)
+					))
+					.openAmt(InvoiceTotal.ofRelativeValue(
+							Money.of(openAmtBD, currencyId),
+							InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(false).withCMAdjusted(true)
+					))
+					.hasAllocations(hasAllocations)
+					.build();
 		}
-		catch (final SQLException e)
+		catch (SQLException ex)
 		{
-			throw new DBException(e, sql);
+			throw new DBException(ex, sql, sqlParams)
+					.setParameter("resultParts", resultParts);
+		}
+		catch (Exception otherEx)
+		{
+			throw new AdempiereException("Cannot determine open amount for " + request, otherEx)
+					.setParameter("sql", sql)
+					.setParameter("sqlParams", sqlParams)
+					.setParameter("resultParts", resultParts);
 		}
 		finally
 		{
@@ -252,62 +294,6 @@ public class AllocationDAO implements IAllocationDAO
 		}
 
 		return amt;
-	}
-
-	@Override
-	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final I_C_Invoice invoice, final Set<Integer> paymentIDsToIgnore)
-	{
-		BigDecimal retValue = null;
-
-		final StringBuilder sql = new StringBuilder("SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
-				+ "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
-				+ "FROM C_AllocationLine al"
-				+ " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
-				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
-				+ "WHERE al.C_Invoice_ID=?"
-				+ " AND ah.IsActive='Y' AND al.IsActive='Y'");
-		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                             // make sure that the set is not empty
-		{
-			sql.append(" AND (al.C_Payment_ID NOT IN (-1");
-
-			for (final Integer paymentIdToExclude : paymentIDsToIgnore)
-			{
-				if (paymentIdToExclude == null)
-				{
-					continue; // guard agains NPE
-				}
-				sql.append(", ").append(paymentIdToExclude);
-			}
-			sql.append(") OR al.C_Payment_ID IS NULL )");
-		}
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-
-		try
-		{
-			final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-
-			pstmt = DB.prepareStatement(sql.toString(), trxName);
-			pstmt.setInt(1, invoice.getC_Invoice_ID());
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				retValue = rs.getBigDecimal(1);
-			}
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-		// log.debug("getAllocatedAmt - " + retValue);
-		// ? ROUND(NVL(v_AllocatedAmt,0), 2);
-		// metas: tsa: 01955: please let the retValue to be NULL if there were no allocation found!
-		return retValue == null ? BigDecimal.ZERO : retValue;
 	}
 
 	@Override
@@ -340,7 +326,7 @@ public class AllocationDAO implements IAllocationDAO
 
 		// Check if there are fact accounts created for each document
 		final IQuery<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
 				.create();
 
 		// Query builder for the allocation header
