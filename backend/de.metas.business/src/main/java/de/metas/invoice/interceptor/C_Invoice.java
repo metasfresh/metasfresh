@@ -72,7 +72,7 @@ public class C_Invoice // 03771
 	public C_Invoice(
 			@NonNull final PaymentReservationService paymentReservationService,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull OrderPayScheduleService orderPayScheduleService)
+			@NonNull final OrderPayScheduleService orderPayScheduleService)
 	{
 		this.paymentReservationService = paymentReservationService;
 		this.documentLocationBL = documentLocationBL;
