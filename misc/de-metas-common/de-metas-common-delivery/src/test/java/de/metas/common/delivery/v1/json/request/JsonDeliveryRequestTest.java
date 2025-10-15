@@ -102,7 +102,7 @@ class JsonDeliveryRequestTest {
                 .deliveryNote("leave at door")
                 .customerReference("SO-123")
                 .deliveryOrderParcel(aParcel())
-                .shipperProduct("EXPRESS")
+                .shipperProduct(JsonShipperProduct.builder().code("EXPRESS").name("EXPRESS").build())
                 .shipperEORI("DE123")
                 .receiverEORI("DE999")
                 .shipperConfig(JsonShipperConfig.builder().url("https://shipper.local").trackingUrlTemplate("http://trk/{awb}").build())

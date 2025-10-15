@@ -1,10 +1,8 @@
-package de.metas.shipper.gateway.spi.model;
-
 /*
  * #%L
- * de.metas.shipper.gateway.api
+ * de.metas.shipper.gateway.spi
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,17 +20,18 @@ package de.metas.shipper.gateway.spi.model;
  * #L%
  */
 
-import javax.annotation.Nullable;
+package de.metas.shipper.gateway.spi.model;
 
-/**
- * The Shipper Product (eg. EXPRESS, CLASSIC, overnight, next-day-until-12, etc.)
- */
-public interface ShipperProduct
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+@Value
+@Builder(toBuilder = true)
+@Jacksonized
+public class CarrierService
 {
-	String getCode();
-
-	default @Nullable String getName()
-	{
-		return null;
-	}
+	@NonNull Long id;
+	@NonNull String name;
 }

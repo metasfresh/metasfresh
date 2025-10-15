@@ -20,17 +20,11 @@
  * #L%
  */
 
-package de.metas.common.delivery.v1.json.response;
+package de.metas.common.delivery.v1.json.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.common.collect.ImmutableList;
-import de.metas.common.delivery.v1.json.request.JsonCarrierService;
-import de.metas.common.delivery.v1.json.request.JsonGoodsType;
-import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -40,17 +34,8 @@ import javax.annotation.Nullable;
 @Value
 @Builder(toBuilder = true)
 @Jacksonized
-public class JsonDeliveryAdvisorResponse
+public class JsonShipperProduct
 {
-	@NonNull String requestId;
-	@Nullable String errorMessage;
-	@Nullable JsonShipperProduct shipperProduct;
-	@NonNull @Singular ImmutableList<JsonCarrierService> shipperProductServices;
-	@NonNull JsonGoodsType goodsType;
-
-	@JsonIgnore
-	public boolean isError()
-	{
-		return (getErrorMessage() != null && !getErrorMessage().isEmpty());
-	}
+	@NonNull String code;
+	@Nullable String name;
 }

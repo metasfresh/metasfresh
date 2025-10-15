@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-delivery
+ * de.metas.shipper.gateway.spi
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,37 +20,21 @@
  * #L%
  */
 
-package de.metas.common.delivery.v1.json.response;
+package de.metas.shipper.gateway.spi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.delivery.v1.json.request.JsonCarrierService;
-import de.metas.common.delivery.v1.json.request.JsonGoodsType;
-import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder(toBuilder = true)
 @Jacksonized
-public class JsonDeliveryAdvisorResponse
+public class CarrierAdvice
 {
-	@NonNull String requestId;
-	@Nullable String errorMessage;
-	@Nullable JsonShipperProduct shipperProduct;
-	@NonNull @Singular ImmutableList<JsonCarrierService> shipperProductServices;
-	@NonNull JsonGoodsType goodsType;
+	@NonNull ShipperProduct shipperProduct;
+	@NonNull CarrierGoodsType goodsType;
+	@NonNull ImmutableList<CarrierService> services;
 
-	@JsonIgnore
-	public boolean isError()
-	{
-		return (getErrorMessage() != null && !getErrorMessage().isEmpty());
-	}
 }

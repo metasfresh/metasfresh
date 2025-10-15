@@ -23,8 +23,11 @@
 package de.metas.shipper.client.nshift;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
+import de.metas.common.delivery.v1.json.request.JsonGoodsType;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
@@ -127,22 +130,34 @@ public class NShiftShipAdvisorService
 		final JsonShipAdvisorResponseProduct product = response.getProducts().get(0);
 		final JsonDeliveryAdvisorResponse.JsonDeliveryAdvisorResponseBuilder responseBuilder = JsonDeliveryAdvisorResponse.builder()
 				.requestId(requestId)
-				.shipperProduct(product.getProdName())
-				.responseItem(NShiftConstants.PROD_CONCEPT_ID, String.valueOf(product.getProdConceptID()));
+				.shipperProduct(JsonShipperProduct.builder()
+						.name(product.getProdName())
+						.code(String.valueOf(product.getProdConceptID()))
+						.build());
 
 		final JsonShipAdvisorResponseGoodsType productGoodsType = product.getProductGoodsType();
 		if (productGoodsType != null)
 		{
-			responseBuilder.responseItem(NShiftConstants.GOODS_TYPE_ID, String.valueOf(productGoodsType.getGoodsTypeId()));
-			responseBuilder.responseItem(NShiftConstants.GOODS_TYPE_NAME, productGoodsType.getGoodsTypeName());
+			responseBuilder.goodsType(JsonGoodsType.builder()
+					.id(String.valueOf(productGoodsType.getGoodsTypeId()))
+					.name(productGoodsType.getGoodsTypeName())
+					.build());
 		}
 
-		responseBuilder.shipperProductServices(product.getServices().stream()
-				.map(JsonShipAdvisorResponseService::getServiceId)
-				.map(String::valueOf)
+		responseBuilder.shipperProductServices(product.getServices()
+				.stream()
+				.map(NShiftShipAdvisorService::toJsonCarrierService)
 				.collect(ImmutableList.toImmutableList())
 		);
 
 		return responseBuilder.build();
+	}
+
+	private static JsonCarrierService toJsonCarrierService(@NonNull final JsonShipAdvisorResponseService jsonShipAdvisorResponseService)
+	{
+		return JsonCarrierService.builder()
+				.name(jsonShipAdvisorResponseService.getName())
+				.id(jsonShipAdvisorResponseService.getServiceId())
+				.build();
 	}
 }

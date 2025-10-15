@@ -27,16 +27,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
-import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.Set;
+import javax.annotation.Nullable;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -57,24 +54,16 @@ public class JsonDeliveryRequest
 	@Nullable String deliveryNote;
 	@Nullable String customerReference;
 	@NonNull @Singular ImmutableList<JsonDeliveryOrderParcel> deliveryOrderParcels;
-	@Nullable String shipperProduct;
-	@NonNull @Singular Set<String> shipperProductServices;
+	@Nullable JsonShipperProduct shipperProduct;
 	@Nullable String shipperEORI;
 	@Nullable String receiverEORI;
 	@NonNull JsonShipperConfig shipperConfig;
-	@NonNull @Singular Map<String, String> shipAdvises;
-
-	@JsonIgnore
-	@NonNull
-	public String getShipAdviceNotNull(@NonNull final String key)
-	{
-		return Check.assumeNotNull( getShipAdvice(key), "No ShipAdvice found for key '%s'. Available keys: %s", key, shipAdvises.keySet());
-	}
+	@Nullable JsonCarrierAdvice carrierAdvice;
 
 	@JsonIgnore
 	@Nullable
-	public String getShipAdvice(@NonNull final String key)
+	public JsonGoodsType getGoodsType()
 	{
-		return shipAdvises.get(key);
+		return carrierAdvice == null ? null : carrierAdvice.getGoodsType();
 	}
 }

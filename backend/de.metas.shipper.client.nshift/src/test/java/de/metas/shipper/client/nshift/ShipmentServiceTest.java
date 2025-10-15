@@ -28,10 +28,13 @@ import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.JsonQuantity;
+import de.metas.common.delivery.v1.json.request.JsonCarrierAdvice;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -64,7 +67,7 @@ public class ShipmentServiceTest
 	{
 		final JsonDeliveryResponse response = nShiftShipmentService.createShipment(JsonDeliveryRequest.builder()
 				.deliveryOrderId(1)
-				.shipperProduct("shipperProductName")
+				.shipperProduct(JsonShipperProduct.builder().code("shipperProductCode").build())
 				.pickupAddress(JsonAddress.builder()
 						.bpartnerId(123)
 						.companyName1("metas GmbH")
@@ -164,9 +167,10 @@ public class ShipmentServiceTest
 						.username(USERNAME)
 						.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 						.build())
-				.shipAdvise(NShiftConstants.PROD_CONCEPT_ID, "2757")
-				.shipAdvise(NShiftConstants.GOODS_TYPE_ID, "5")
-				.shipAdvise(NShiftConstants.GOODS_TYPE_NAME, "Packet")
+						.carrierAdvice(JsonCarrierAdvice.builder()
+								.goodsType(JsonGoodsType.builder().id("5").name("Packet").build())
+								.build())
+						.shipperProduct(JsonShipperProduct.builder().code("2757").build())
 				.build());
 		assertThat(response).isNotNull();
 		assertFalse(response.isError());

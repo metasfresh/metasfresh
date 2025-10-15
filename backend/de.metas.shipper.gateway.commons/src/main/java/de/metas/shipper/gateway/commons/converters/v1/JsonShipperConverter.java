@@ -26,16 +26,24 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
+import de.metas.common.delivery.v1.json.request.JsonCarrierAdvice;
+import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.CarrierAdvice;
+import de.metas.shipper.gateway.spi.model.CarrierGoodsType;
+import de.metas.shipper.gateway.spi.model.CarrierService;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -58,10 +66,53 @@ public class JsonShipperConverter
 				.deliveryNote(order.getDeliveryNote())
 				.customerReference(order.getCustomerReference())
 				.deliveryOrderParcels(order.getDeliveryOrderParcels().stream().map(this::toJsonDeliveryOrderLine).collect(ImmutableList.toImmutableList()))
-				.shipperProduct(order.getShipperProduct() != null ? order.getShipperProduct().getCode() : null)
+				.shipperProduct(toJsonShipperProductOrNull(order.getShipperProduct()))
 				.shipperEORI(order.getShipperEORI())
 				.receiverEORI(order.getReceiverEORI())
 				.shipperConfig(toJsonShipperConfig(config))
+				.carrierAdvice(toJsonCarrierAdvice(order))
+				.build();
+	}
+
+	@Nullable
+	private JsonShipperProduct toJsonShipperProductOrNull(@Nullable final ShipperProduct shipperProduct)
+	{
+		if (shipperProduct == null)
+		{
+			return null;
+		}
+		return JsonShipperProduct.builder()
+				.code(shipperProduct.getCode())
+				.name(shipperProduct.getName())
+				.build();
+	}
+
+	private @Nullable JsonCarrierAdvice toJsonCarrierAdvice(final @NonNull DeliveryOrder order)
+	{
+		final CarrierAdvice carrierAdvice = order.getCarrierAdvice();
+		if (carrierAdvice == null)
+		{
+			return null;
+		}
+
+		final CarrierGoodsType goodsType = carrierAdvice.getGoodsType();
+		return JsonCarrierAdvice.builder()
+				.goodsType(JsonGoodsType.builder()
+						.id(goodsType.getId().toString())
+						.name(goodsType.getName())
+						.build())
+				.services(carrierAdvice.getServices()
+						.stream()
+						.map(this::toJsonCarrierService)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private JsonCarrierService toJsonCarrierService(final @NonNull CarrierService carrierService)
+	{
+		return JsonCarrierService.builder()
+				.id(carrierService.getId())
+				.name(carrierService.getName())
 				.build();
 	}
 

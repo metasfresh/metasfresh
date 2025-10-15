@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.spi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipping.ShipperId;
@@ -110,6 +111,15 @@ public class DeliveryOrder
 
 	String shipperEORI;
 	String receiverEORI;
+
+	@Nullable
+	CarrierAdvice carrierAdvice;
+
+	@JsonIgnore
+	public ShipperProduct getShipperProduct()
+	{
+		return carrierAdvice != null ? carrierAdvice.getShipperProduct() : shipperProduct;
+	}
 
 	public DeliveryOrder withCustomDeliveryData(@NonNull final CustomDeliveryData customDeliveryData)
 	{
