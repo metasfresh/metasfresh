@@ -23,15 +23,24 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class M_ShipperTransportation_StepDefData extends StepDefData<I_M_ShipperTransportation>
+		implements StepDefDataGetIdAware<ShipperTransportationId, I_M_ShipperTransportation>
 {
 	public M_ShipperTransportation_StepDefData()
 	{
 		super(I_M_ShipperTransportation.class);
+	}
+
+	@Override
+	public ShipperTransportationId extractIdFromRecord(final I_M_ShipperTransportation record)
+	{
+		return ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
 	}
 }
