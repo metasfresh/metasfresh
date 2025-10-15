@@ -98,6 +98,46 @@ public final class InvoiceAmtMultiplier
 		return interner.intern(this);
 	}
 
+	@Override
+	public String toString()
+	{
+		final StringBuilder sb = new StringBuilder();
+		if (soTrx.isAP())
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(",");
+			}
+			sb.append("AP");
+		}
+		if (isAPAdjusted)
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(",");
+			}
+			sb.append("APAdjusted");
+		}
+		if (isCreditMemo)
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(",");
+			}
+			sb.append("CM");
+		}
+		if (isCreditMemoAdjusted)
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(",");
+			}
+			sb.append("CMAdjusted");
+		}
+
+		return sb.toString();
+	}
+
 	public boolean isAP() {return soTrx.isAP();}
 
 	public Amount convertToRealValue(@NonNull final Amount amount)

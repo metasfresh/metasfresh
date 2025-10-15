@@ -190,8 +190,7 @@ public class AllocationDAO implements IAllocationDAO
 				.excludePaymentIds(paymentIDsToIgnore)
 				.build());
 
-		// backward compatibility: method is expected to return amounts which are not AP adjusted
-		return result.getAllocatedAmt().withoutAPAdjusted().withoutCMAdjusted().toMoney();
+		return result.getAllocatedAmt().withAPAdjusted().withCMAdjusted().toMoney();
 	}
 
 	@Override
@@ -259,7 +258,7 @@ public class AllocationDAO implements IAllocationDAO
 							InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(true).withCMAdjusted(false)
 					))
 					.openAmt(InvoiceTotal.ofRelativeValue(
-							Money.of(allocatedAmtBD, currencyId),
+							Money.of(openAmtBD, currencyId),
 							InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(true).withCMAdjusted(true)
 					))
 					.hasAllocations(hasAllocations)

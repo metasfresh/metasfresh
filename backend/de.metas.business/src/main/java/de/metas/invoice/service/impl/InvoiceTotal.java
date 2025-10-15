@@ -36,7 +36,28 @@ public class InvoiceTotal
 		return new InvoiceTotal(relativeValue, multiplier);
 	}
 
+	@Override
+	public String toString()
+	{
+		final StringBuilder sb = new StringBuilder();
+		sb.append(relativeValue);
+		final String multiplierStr = multiplier.toString();
+		if (!multiplierStr.isEmpty())
+		{
+			sb.append(", ").append(multiplierStr);
+		}
+		return sb.toString();
+	}
+
 	public boolean isZero() {return relativeValue.signum() == 0;}
+
+	public InvoiceTotal subtract(@NonNull final InvoiceTotal other)
+	{
+		if (other.isZero()) {return this;}
+
+		final Money otherValue = other.withAPAdjusted(isAPAdjusted()).withCMAdjusted(isCMAdjusted()).toMoney();
+		return ofRelativeValue(this.relativeValue.subtract(otherValue), multiplier);
+	}
 
 	public InvoiceTotal subtractRealValue(@Nullable final Money realValueToSubtract)
 	{
@@ -65,6 +86,11 @@ public class InvoiceTotal
 	public boolean isCreditMemo() {return multiplier.isCreditMemo();}
 
 	public boolean isCMAdjusted() {return multiplier.isCreditMemoAdjusted();}
+
+	public InvoiceTotal withAPAdjusted(final boolean isAPAdjusted)
+	{
+		return isAPAdjusted ? withAPAdjusted() : withoutAPAdjusted();
+	}
 
 	public InvoiceTotal withAPAdjusted()
 	{

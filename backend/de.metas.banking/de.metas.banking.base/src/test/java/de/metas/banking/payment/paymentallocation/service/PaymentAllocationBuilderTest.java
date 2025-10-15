@@ -61,7 +61,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Conversion_Rate;
@@ -73,6 +75,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -99,6 +102,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SuppressWarnings({ "NestedAssignment", "SameParameterValue" })
+@ExtendWith(AdempiereTestWatcher.class)
 public class PaymentAllocationBuilderTest
 {
 	// services
@@ -232,7 +236,7 @@ public class PaymentAllocationBuilderTest
 		{
 			final Money invoiceGrandTotal = openAmt
 					.negateIf(type.isCreditMemo())
-					.negateIf(!type.isSales());
+					.negateIf(type.isPurchase());
 
 			final int invoiceId = nextInvoiceId++;
 			final I_C_DocType docType = getInvoiceDocType(type);
@@ -375,7 +379,7 @@ public class PaymentAllocationBuilderTest
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 		final Money expectedAllocatedAmt = expectedAllocatedAmtBD != null ? Money.of(expectedAllocatedAmtBD, CurrencyId.ofRepoId(invoice.getC_Currency_ID())) : null;
 
-		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceBL.getById(invoiceId));
+		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
 
 		assertThat(actualAllocatedAmt)
 				.as("Allocated amount for invoice " + invoiceId)
@@ -398,9 +402,11 @@ public class PaymentAllocationBuilderTest
 		final boolean ignoreProcessed = false;
 		invoiceBL.testAllocation(invoice, ignoreProcessed);
 
-		assertThat(invoice.isPaid()).isEqualTo(expectedPaymentStatus.isFullyPaid());
-		assertThat(invoice.isPartiallyPaid()).isEqualTo(expectedPaymentStatus.isPartiallyPaid());
-		assertThat(invoice.getOpenAmt()).isEqualTo(expectedOpenAmt);
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(invoice.isPaid()).as("IsPaid").isEqualTo(expectedPaymentStatus.isFullyPaid());
+		softly.assertThat(invoice.isPartiallyPaid()).as("IsPartiallyPaid").isEqualTo(expectedPaymentStatus.isPartiallyPaid());
+		softly.assertThat(invoice.getOpenAmt()).as("OpenAmt").isEqualTo(expectedOpenAmt);
+		softly.assertAll();
 	}
 
 	private void assertPaymentAllocatedAmt(final PaymentId paymentId, final BigDecimal expectedAllocatedAmt)

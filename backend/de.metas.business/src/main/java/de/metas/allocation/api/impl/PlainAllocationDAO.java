@@ -39,7 +39,6 @@ import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -70,68 +69,76 @@ public class PlainAllocationDAO extends AllocationDAO
 				? request.getReturnInCurrencyId()
 				: CurrencyId.ofRepoId(invoice.getC_Invoice_ID());
 
+		//
+		// Allocated Amt
 		boolean hasAllocations = false;
-		Money allocatedAmt = Money.zero(returnInCurrencyId);
-		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
+		final InvoiceTotal allocatedAmt;
 		{
-			hasAllocations = true; // set it to true even if we exclude because of paymentIDsToIgnore
-			
-			if (paymentIDsToIgnore != null && paymentIDsToIgnore.contains(PaymentId.ofRepoIdOrNull(line.getC_Payment_ID())))
+			Money allocatedAmtValue = Money.zero(returnInCurrencyId);
+			for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
 			{
-				continue;
+				hasAllocations = true; // set it to true even if we exclude because of paymentIDsToIgnore
+
+				if (paymentIDsToIgnore != null && paymentIDsToIgnore.contains(PaymentId.ofRepoIdOrNull(line.getC_Payment_ID())))
+				{
+					continue;
+				}
+
+				final I_C_AllocationHdr ah = line.getC_AllocationHdr();
+				if (ah == null)
+				{
+					throw new AdempiereException("No C_AllocationHdr_ID is set for " + line);
+				}
+				final CurrencyId allocationCurrencyId = CurrencyId.ofRepoId(ah.getC_Currency_ID());
+				Money lineAmt = Money.of(line.getAmount().add(line.getDiscountAmt()).add(line.getWriteOffAmt()), allocationCurrencyId);
+				if (!CurrencyId.equals(lineAmt.getCurrencyId(), returnInCurrencyId))
+				{
+					final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+							extractAllocationDate(ah, request.getDateColumn()),
+							conversionTypeId,
+							ClientId.ofRepoId(line.getAD_Client_ID()),
+							OrgId.ofRepoId(line.getAD_Org_ID()));
+					lineAmt = currencyBL.convert(conversionCtx, lineAmt, returnInCurrencyId).getAmountAsMoney();
+				}
+
+				allocatedAmtValue = allocatedAmtValue.add(lineAmt);
 			}
 
-			final I_C_AllocationHdr ah = line.getC_AllocationHdr();
-			if (ah == null)
-			{
-				throw new AdempiereException("No C_AllocationHdr_ID is set for " + line);
-			}
-			final CurrencyId allocationCurrencyId = CurrencyId.ofRepoId(ah.getC_Currency_ID());
-			Money lineAmt = Money.of(line.getAmount().add(line.getDiscountAmt()).add(line.getWriteOffAmt()), allocationCurrencyId)
-					.negateIf(docBaseType.isAP());
-			if (!CurrencyId.equals(lineAmt.getCurrencyId(), returnInCurrencyId))
-			{
-				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-						extractAllocationDate(ah, request.getDateColumn()),
-						conversionTypeId,
-						ClientId.ofRepoId(line.getAD_Client_ID()),
-						OrgId.ofRepoId(line.getAD_Org_ID()));
-				lineAmt = currencyBL.convert(conversionCtx, lineAmt, returnInCurrencyId).getAmountAsMoney();
-			}
-
-			allocatedAmt = allocatedAmt.add(lineAmt);
+			allocatedAmt = InvoiceTotal.ofRelativeValue(
+					allocatedAmtValue,
+					InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(true).withCMAdjusted(true)
+			);
 		}
 
 		//
-		Money invoiceGrandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
-				.negateIf(docBaseType.isCreditMemo());
-
-		if (!CurrencyId.equals(invoiceGrandTotal.getCurrencyId(), returnInCurrencyId))
+		// Grand total
+		final InvoiceTotal invoiceGrandTotal;
 		{
-			final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-					extractInvoiceDate(invoice, request.getDateColumn()),
-					conversionTypeId,
-					ClientId.ofRepoId(invoice.getAD_Client_ID()),
-					OrgId.ofRepoId(invoice.getAD_Org_ID()));
-			invoiceGrandTotal = currencyBL.convert(conversionCtx, invoiceGrandTotal, returnInCurrencyId).getAmountAsMoney();
+			Money invoiceGrandTotalValue = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
+					.negateIf(docBaseType.isCreditMemo());
+			if (!CurrencyId.equals(invoiceGrandTotalValue.getCurrencyId(), returnInCurrencyId))
+			{
+				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+						extractInvoiceDate(invoice, request.getDateColumn()),
+						conversionTypeId,
+						ClientId.ofRepoId(invoice.getAD_Client_ID()),
+						OrgId.ofRepoId(invoice.getAD_Org_ID()));
+				invoiceGrandTotalValue = currencyBL.convert(conversionCtx, invoiceGrandTotalValue, returnInCurrencyId).getAmountAsMoney();
+			}
+
+			invoiceGrandTotal = InvoiceTotal.ofRelativeValue(
+					invoiceGrandTotalValue,
+					InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(false).withCMAdjusted(true)
+			);
 		}
 
-		final Money openAmt = invoiceGrandTotal.subtract(allocatedAmt);
+		final InvoiceTotal openAmt = invoiceGrandTotal.subtract(allocatedAmt);
 
 		return InvoiceOpenResult.builder()
 				.invoiceDocBaseType(docBaseType)
-				.invoiceGrandTotal(InvoiceTotal.ofRelativeValue(
-						invoiceGrandTotal,
-						InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(true).withCMAdjusted(false)
-				))
-				.allocatedAmt(InvoiceTotal.ofRelativeValue(
-						allocatedAmt,
-						InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(true).withCMAdjusted(false)
-				))
-				.openAmt(InvoiceTotal.ofRelativeValue(
-						openAmt,
-						InvoiceAmtMultiplier.nonAdjustedFor(docBaseType).withAPAdjusted(true).withCMAdjusted(true)
-				))
+				.invoiceGrandTotal(invoiceGrandTotal)
+				.allocatedAmt(allocatedAmt)
+				.openAmt(openAmt)
 				.hasAllocations(hasAllocations)
 				.build();
 	}

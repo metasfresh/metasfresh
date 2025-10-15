@@ -542,7 +542,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		return setPaymentStatus(
 				invoice, 
-				invoiceOpenResult.getOpenAmt().withAPAdjusted().withoutCMAdjusted().toBigDecimal(),
+				invoiceOpenResult.getOpenAmt().withoutAPAdjusted().withoutCMAdjusted().toBigDecimal(),
 				computePaymentStatus(invoiceOpenResult)
 		);
 	}    // testAllocation
