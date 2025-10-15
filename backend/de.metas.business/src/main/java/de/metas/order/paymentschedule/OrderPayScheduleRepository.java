@@ -71,6 +71,7 @@ public class OrderPayScheduleRepository
 		record.setDueDate(TimeUtil.asTimestamp(request.getDueDate()));
 		record.setPercent(request.getPercent().toInt());
 		record.setReferenceDateType(request.getReferenceDateType().getCode());
+		record.setOffsetDays(request.getOffsetDays());
 		record.setSeqNo(seqNo.toInt());
 		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(request.getOrderPayScheduleStatus()));
 		saveRecord(record);

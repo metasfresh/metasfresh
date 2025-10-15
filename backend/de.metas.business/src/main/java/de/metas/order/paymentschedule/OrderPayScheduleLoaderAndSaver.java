@@ -126,7 +126,7 @@ public class OrderPayScheduleLoaderAndSaver
 				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
 				.dueDate(record.getDueDate().toInstant())
 				.percent(Percent.of(record.getPercent()))
-				// .offsetDays(record.getOffsetDays()) // TODO
+				.offsetDays(record.getOffsetDays())
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
 				.status(OrderPayScheduleStatus.ofCode(record.getStatus()))

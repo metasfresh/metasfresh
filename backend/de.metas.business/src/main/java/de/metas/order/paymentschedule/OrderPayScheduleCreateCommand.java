@@ -97,6 +97,7 @@ class OrderPayScheduleCreateCommand
 				.referenceDateType(termBreak.getReferenceDateType())
 				.percent(termBreak.getPercent())
 				.orderPayScheduleStatus(result.getStatus())
+				.offsetDays(termBreak.getOffsetDays())
 				.build();
 	}
 
