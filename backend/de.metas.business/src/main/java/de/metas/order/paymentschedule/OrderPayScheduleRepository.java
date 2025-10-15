@@ -83,7 +83,7 @@ public class OrderPayScheduleRepository
 				.orderBy(I_C_OrderPaySchedule.COLUMNNAME_SeqNo)
 				.create()
 				.stream()
-				.map(OrderPayScheduleLoaderAndSaver::fromRecord)
+				.map(record -> newLoaderAndSaver().loadFromRecord(record))
 				.collect(OrderPaySchedule.collect());
 
 	}
@@ -96,7 +96,7 @@ public class OrderPayScheduleRepository
 				.delete();
 	}
 
-	public void updateById(final OrderPayScheduleId id, Consumer<OrderPayScheduleLine> updater)
+	public void updateById(final OrderPayScheduleId id, final Consumer<OrderPayScheduleLine> updater)
 	{
 		trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(id, updater));
 	}

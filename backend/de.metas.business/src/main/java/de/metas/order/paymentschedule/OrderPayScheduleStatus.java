@@ -73,6 +73,6 @@ public enum OrderPayScheduleStatus implements ReferenceListAwareEnum
 	{
 		return allowedTransitions.containsEntry(this, nextStatus)
 				? BooleanWithReason.TRUE
-				: BooleanWithReason.falseBecause("Changing status from " + this + " to " + nextStatus + " is not allowed");
+				: BooleanWithReason.FALSE;
 	}
 }

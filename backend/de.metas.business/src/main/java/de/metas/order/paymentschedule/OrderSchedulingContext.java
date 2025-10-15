@@ -20,33 +20,50 @@
  * #L%
  */
 
-package de.metas.shipping.api;
+package de.metas.order.paymentschedule;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
-import de.metas.order.paymentschedule.OrderPayScheduleStatus;
-import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.ReferenceDateType;
-import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.Check;
-import de.metas.util.lang.Percent;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.SeqNo;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.Objects;
 
-@Value
-@Builder(toBuilder = true)
-public class ShipperTransportation
+@Builder
+@Getter
+public class OrderSchedulingContext
 {
-	@NonNull ShipperTransportationId id;
+	@NonNull OrderId orderId;
+	@Nullable Instant orderDate;
+	@Nullable Instant letterOfCreditDate;
 	@Nullable Instant billOfLadingDate;
 	@Nullable Instant ETADate;
+	@Nullable Instant invoiceDate;
+	@NonNull Money grandTotal;
+	@NonNull CurrencyPrecision precision;
+	@NonNull PaymentTerm paymentTerm;
+
+	@Nullable Instant getAvailableReferenceDate(@NonNull final ReferenceDateType referenceDateType)
+	{
+		switch (referenceDateType)
+		{
+			case OrderDate:
+				return getOrderDate();
+			case LetterOfCreditDate:
+				return getLetterOfCreditDate();
+			case BillOfLadingDate:
+				return getBillOfLadingDate();
+			case ETADate:
+				return getETADate();
+			case InvoiceDate:
+				return getInvoiceDate();
+			default:
+				return null;
+		}
+	}
 }

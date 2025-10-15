@@ -23,14 +23,11 @@
 package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
-import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
@@ -44,10 +41,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @Builder
 public class OrderPayScheduleLoaderAndSaver
@@ -56,7 +50,6 @@ public class OrderPayScheduleLoaderAndSaver
 	@NonNull private final IQueryBL queryBL;
 
 	private final HashMap<OrderPayScheduleId, I_C_OrderPaySchedule> schedRecordsById = new HashMap<>();
-	private final HashMap<OrderId, ImmutableList<I_C_OrderPaySchedule>> scheds = new HashMap<>();
 
 	OrderPayScheduleLine loadFromRecord(@NonNull final I_C_OrderPaySchedule orderPayScheduleRecord)
 	{
@@ -73,52 +66,16 @@ public class OrderPayScheduleLoaderAndSaver
 
 		orderPayScheduleRecords.forEach(this::addToCache);
 
-		final ImmutableSet<OrderId> orderIds = orderPayScheduleRecords.stream().map(OrderPayScheduleLoaderAndSaver::extractOrderId).collect(ImmutableSet.toImmutableSet());
-		CollectionUtils.getAllOrLoad(scheds, orderIds, this::retrieveOrderPaySchedRecordsByOrderId);
-
 	}
 
 	private void addToCache(@NonNull final I_C_OrderPaySchedule orderPayScheduleRecord)
 	{
 		schedRecordsById.put(extractOrderPayScheduleId(orderPayScheduleRecord), orderPayScheduleRecord);
-		scheds.put(extractOrderId(orderPayScheduleRecord), ImmutableList.of(orderPayScheduleRecord));
 	}
 
 	static OrderPayScheduleId extractOrderPayScheduleId(@NonNull final I_C_OrderPaySchedule orderPayScheduleRecord)
 	{
 		return OrderPayScheduleId.ofRepoId(orderPayScheduleRecord.getC_OrderPaySchedule_ID());
-	}
-
-	static OrderId extractOrderId(@NonNull final I_C_OrderPaySchedule orderPayScheduleRecord)
-	{
-		return OrderId.ofRepoId(orderPayScheduleRecord.getC_Order_ID());
-	}
-
-	private Map<OrderId, ImmutableList<I_C_OrderPaySchedule>> retrieveOrderPaySchedRecordsByOrderId(@NonNull final Set<OrderId> orderIds)
-	{
-		if (orderIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final Map<OrderId, ImmutableList<I_C_OrderPaySchedule>> recordsByOrderId = queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
-				.addInArrayFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderIds)
-				.orderBy(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID)
-				.create()
-				.stream()
-				.collect(Collectors.groupingBy(
-						lineRecord -> OrderId.ofRepoId(lineRecord.getC_Order_ID()),
-						ImmutableList.toImmutableList()
-				));
-
-		final HashMap<OrderId, ImmutableList<I_C_OrderPaySchedule>> result = new HashMap<>();
-		for (final OrderId orderId : orderIds)
-		{
-			final ImmutableList<I_C_OrderPaySchedule> records = recordsByOrderId.get(orderId);
-			result.put(orderId, records != null ? records : ImmutableList.of());
-		}
-
-		return result;
 	}
 
 	@NonNull

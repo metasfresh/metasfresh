@@ -7,6 +7,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
@@ -119,4 +120,10 @@ public class PaymentTermService
 	{
 		return paymentTermRepository.hasPaySchedule(paymentTermId);
 	}
+
+	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	{
+		return paymentTermRepository.getPaymentTermBreakById(id);
+	}
+
 }

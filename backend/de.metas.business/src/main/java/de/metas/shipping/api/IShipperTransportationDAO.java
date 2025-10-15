@@ -35,6 +35,7 @@ import org.compiere.model.I_M_Package;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 public interface IShipperTransportationDAO extends ISingletonService
 {
@@ -59,6 +60,6 @@ public interface IShipperTransportationDAO extends ISingletonService
 	@NonNull
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
 
-	@Nullable
-	ShipperTransportation getEarliestShipperTransportationByOrderId(final OrderId orderId);
+	@NonNull
+	Optional<ShipperTransportationReference> getEarliestShipperTransportationByOrderId(final OrderId orderId);
 }

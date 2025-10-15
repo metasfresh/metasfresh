@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import static de.metas.util.Check.isNotBlank;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -319,6 +320,19 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.offsetDays(record.getOffsetDays())
 				.build();
 	}
+
+	private I_C_PaymentTerm_Break getPaymentTermBreakRecordById(@NonNull final PaymentTermBreakId id)
+	{
+		return loadOutOfTrx(id, I_C_PaymentTerm_Break.class);
+	}
+
+	@Override
+	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	{
+		final I_C_PaymentTerm_Break paymentTermBreakRecord = getPaymentTermBreakRecordById(id);
+		return toPaymentTermBreak(paymentTermBreakRecord);
+	}
+
 
 	@Override
 	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)

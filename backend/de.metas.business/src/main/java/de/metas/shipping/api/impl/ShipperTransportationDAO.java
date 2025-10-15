@@ -6,7 +6,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.api.ShipperTransportation;
+import de.metas.shipping.api.ShipperTransportationReference;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -22,8 +22,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import javax.swing.text.html.Option;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -143,10 +145,9 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.orElseGet(() -> create(request));
 	}
 
-
-	@Nullable
+	@NonNull
 	@Override
-	public ShipperTransportation getEarliestShipperTransportationByOrderId(final OrderId orderId)
+	public Optional<ShipperTransportationReference> getEarliestShipperTransportationByOrderId(final OrderId orderId)
 	{
 		final I_M_ShipperTransportation record = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
@@ -154,20 +155,24 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
 				.orderBy(I_M_ShipperTransportation.COLUMNNAME_DateDoc)
 				.create()
-				.first(I_M_ShipperTransportation.class);
+				.first();
 
 		if (record == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
+		return Optional.of(toShipperTransportationReference(record));
+
+	}
+
+	private ShipperTransportationReference toShipperTransportationReference(@NotNull final I_M_ShipperTransportation record)
+	{
 		final ShipperTransportationId id = ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
-		return ShipperTransportation.builder()
+		return ShipperTransportationReference.builder()
 				.id(id)
 				.billOfLadingDate(TimeUtil.asInstant(record.getBLDate()))
 				.ETADate(TimeUtil.asInstant(record.getETA()))
 				.build();
-
-
 	}
 }

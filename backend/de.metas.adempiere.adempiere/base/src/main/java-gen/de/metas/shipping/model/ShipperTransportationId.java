@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -35,6 +36,7 @@ public class ShipperTransportationId implements RepoIdAware
 {
 	int repoId;
 
+	@NonNull
 	@JsonCreator
 	public static ShipperTransportationId ofRepoId(final int repoId)
 	{

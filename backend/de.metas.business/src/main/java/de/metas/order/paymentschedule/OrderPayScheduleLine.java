@@ -36,27 +36,27 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.time.Instant;
 
 @EqualsAndHashCode
 @ToString
+@Getter
 public class OrderPayScheduleLine
 {
-	@Getter final @NonNull OrderPayScheduleId id;
-	@Getter final @NonNull OrderId orderId;
-	@Getter final @NonNull SeqNo seqNo;
+	final @NonNull OrderPayScheduleId id;
+	final @NonNull OrderId orderId;
+	final @NonNull SeqNo seqNo;
 
-	@Getter final @NonNull PaymentTermBreakId paymentTermBreakId;
-	@Getter final @NonNull ReferenceDateType referenceDateType;
-	@Getter final @NonNull Percent percent;
-	@Getter final int offsetDays;
+	final @NonNull PaymentTermBreakId paymentTermBreakId;
+	final @NonNull ReferenceDateType referenceDateType;
+	final @NonNull Percent percent;
+	final int offsetDays;
 
-	@Getter @Setter @NonNull OrderPayScheduleStatus orderPayScheduleStatus;
-	@Getter @Setter @NonNull Instant dueDate;
-	@Getter final @NonNull Money dueAmount;
+	@Setter @NonNull OrderPayScheduleStatus orderPayScheduleStatus;
+	@Setter @NonNull Instant dueDate;
+	final @NonNull Money dueAmount;
 
 	@Builder
 	private OrderPayScheduleLine(@NonNull final OrderPayScheduleId id,
@@ -141,7 +141,7 @@ public class OrderPayScheduleLine
 			return canTransition;
 		}
 
-		if (!dueDate.isBefore(PaymentTermConstants.PENDING_DATE))
+		if (!dueDate.isBefore(PaymentTermConstants.INFINITE_FUTURE_DATE))
 		{
 			return BooleanWithReason.falseBecause("The due date is NOT set");
 		}
