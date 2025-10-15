@@ -54,12 +54,12 @@ Feature: Purchase order with complex payment term
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | po1_l1     | po1        | product      | 10         |
     And the order identified by po1 is completed
-    Then The order pay schedules were created:
+    Then The order pay schedules table contains only the following records:
     # In the last line, dueamt is computed as total - previous due amounts, to avoid rounding issues
       | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status | C_Order_ID |
       | poPT1      | PTB1                   | 2025-10-10 | 25.58  | WP     | po1        |
       | poPT1      | PTB2                   | 9999-01-01 | 76.72  | PR     | po1        |
-    When update C_Order:
+    And update order
       | Identifier | LC_Date    |
       | po1        | 2025-10-15 |
     Then The order pay schedules table contains only the following records:
