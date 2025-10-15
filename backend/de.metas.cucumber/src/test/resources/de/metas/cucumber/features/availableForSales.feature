@@ -343,7 +343,7 @@ Feature: available for sales
     {
     "ProductExternalReference": "availableForSales_09102025_1",
     "Product_ID": @productId_1@,
-    "ProductValue": @productValue_1@,
+    "ProductValue": "@productValue_1@",
     "QtyOnHandStock": 10,
     "QtyToBeShipped": 8,
     "StorageAttributesKey": "-1002",
@@ -361,7 +361,7 @@ Feature: available for sales
     {
     "ProductExternalReference": "availableForSales_09102025_1",
     "Product_ID": @productId_1@,
-    "ProductValue": @productValue_1@,
+    "ProductValue": "@productValue_1@",
     "QtyOnHandStock": 10,
     "QtyToBeShipped": 8,
     "StorageAttributesKey": "-1002",
@@ -370,7 +370,7 @@ Feature: available for sales
     {
     "ProductExternalReference": "",
     "Product_ID": @productId_2@,
-    "ProductValue": @productValue_2@,
+    "ProductValue": "@productValue_2@",
     "QtyOnHandStock": 0,
     "QtyToBeShipped": 10,
     "StorageAttributesKey": "-1002",
@@ -525,7 +525,7 @@ Feature: available for sales
     {
     "ProductExternalReference": "availableForSales_09292025_1",
     "Product_ID": @productId_1@,
-    "ProductValue": @productValue_1@,
+    "ProductValue": "@productValue_1@",
     "QtyOnHandStock": 10,
     "QtyToBeShipped": 8,
     "StorageAttributesKey": "-1002",
@@ -535,7 +535,7 @@ Feature: available for sales
   {
     "ProductExternalReference": "availableForSales_09292025_2",
     "Product_ID": @productId_2@,
-    "ProductValue": @productValue_2@,
+    "ProductValue": "@productValue_2@",
     "QtyOnHandStock": 0,
     "QtyToBeShipped": 10,
     "StorageAttributesKey": "-1002",
@@ -545,7 +545,7 @@ Feature: available for sales
   {
     "ProductExternalReference": "availableForSales_09292025_3",
     "Product_ID": @productId_3@,
-    "ProductValue": @productValue_3@,
+    "ProductValue": "@productValue_3@",
     "QtyOnHandStock": 14,
     "QtyToBeShipped": 12,
     "StorageAttributesKey": "-1002",
@@ -572,7 +572,7 @@ Feature: available for sales
   {
     "ProductExternalReference": "availableForSales_09292025_3",
     "Product_ID": @productId_3@,
-    "ProductValue": @productValue_3@,
+    "ProductValue": "@productValue_3@",
     "QtyOnHandStock": 14,
     "QtyToBeShipped": 12,
     "StorageAttributesKey": "-1002",
