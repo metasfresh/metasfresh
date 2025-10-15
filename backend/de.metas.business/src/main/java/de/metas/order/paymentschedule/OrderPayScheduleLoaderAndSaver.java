@@ -41,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 @Builder
@@ -50,6 +51,9 @@ public class OrderPayScheduleLoaderAndSaver
 	@NonNull private final IQueryBL queryBL;
 
 	private final HashMap<OrderPayScheduleId, I_C_OrderPaySchedule> schedRecordsById = new HashMap<>();
+
+	private final HashMap<OrderId, ImmutableList<I_C_OrderPaySchedule>> orderCache = new HashMap<>();
+
 
 	OrderPayScheduleLine loadFromRecord(@NonNull final I_C_OrderPaySchedule orderPayScheduleRecord)
 	{
@@ -100,6 +104,7 @@ public class OrderPayScheduleLoaderAndSaver
 		updateRecord(orderPayScheduleRecord, orderPaySchedLine);
 		InterfaceWrapperHelper.save(orderPayScheduleRecord);
 		addToCache(orderPayScheduleRecord);
+		orderCache.remove(orderPaySchedLine.getOrderId());
 	}
 
 	private static void updateRecord(final I_C_OrderPaySchedule record, final @NotNull OrderPayScheduleLine from)
@@ -144,6 +149,34 @@ public class OrderPayScheduleLoaderAndSaver
 			throw new AdempiereException("No order pay sched found for " + schedId);
 		}
 		return orderPaySchedRecord;
+	}
+
+	OrderPayScheduleLine getById(final @NonNull OrderPayScheduleId id)
+	{
+		return fromRecord(getOrderPaysSchedRecordById(id));
+	}
+
+	public ImmutableList<I_C_OrderPaySchedule> getRecordsByOrderId(@NonNull final OrderId orderId)
+	{
+		if (orderCache.containsKey(orderId))
+		{
+			return orderCache.get(orderId);
+		}
+
+		final ImmutableList<I_C_OrderPaySchedule> records = queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
+				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_C_OrderPaySchedule.COLUMNNAME_SeqNo)
+				.create()
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+
+		for (final I_C_OrderPaySchedule record : records)
+		{
+			schedRecordsById.put(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()), record);
+		}
+
+		orderCache.put(orderId, records);
+		return records;
 	}
 
 }

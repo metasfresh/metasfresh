@@ -88,6 +88,12 @@ public class OrderPayScheduleRepository
 
 	}
 
+
+	public OrderPayScheduleLine getById(@NonNull final OrderPayScheduleId orderPayScheduleId)
+	{
+		return newLoaderAndSaver().getById(orderPayScheduleId);
+	}
+
 	public void deleteByOrderId(@NonNull final OrderId orderId)
 	{
 		queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
