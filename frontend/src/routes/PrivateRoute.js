@@ -9,6 +9,7 @@ import { clearNotifications, enableTutorial } from '../actions/AppActions';
 import { setBreadcrumb } from '../actions/MenuActions';
 import { useAuth } from '../hooks/useAuth';
 import ChildRoutes from './ChildRoutes';
+import { SupportChat } from '../features/support_chat/components/SupportChat';
 
 let hasTutorial = false;
 
@@ -67,7 +68,12 @@ const PrivateRoute = (props) => {
     return null;
   }
 
-  return <Route {...props} component={ChildRoutes} />;
+  return (
+    <>
+      <SupportChat />
+      <Route {...props} component={ChildRoutes} />
+    </>
+  );
 };
 
 function propsAreEqual(prevProps, nextProps) {
