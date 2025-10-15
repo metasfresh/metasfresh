@@ -60,6 +60,12 @@ public class OrderPayScheduleLine
 	public void applyAndProcess(@NonNull final DueDateAndStatus dueDateAndStatus)
 	{
 		final OrderPayScheduleStatus nextStatus = dueDateAndStatus.getStatus();
+
+		if (nextStatus.equals(this.status))
+		{
+			return;
+		}
+
 		if (!this.status.isAllowTransitionTo(nextStatus))
 		{
 			throw new AdempiereException("Cannot change status from " + this.status + " to " + nextStatus);

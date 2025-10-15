@@ -1,5 +1,6 @@
 package de.metas.shipping.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.lang.SOTrx;
@@ -20,12 +21,12 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import javax.swing.text.html.Option;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -174,5 +175,19 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.billOfLadingDate(TimeUtil.asInstant(record.getBLDate()))
 				.ETADate(TimeUtil.asInstant(record.getETA()))
 				.build();
+	}
+
+	@Override
+	public ImmutableList<OrderId> retrieveOrderIds(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.filter(new EqualsQueryFilter<>(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId))
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_ShippingPackage.COLUMN_C_Order_ID)
+				.orderBy(I_C_Order.COLUMNNAME_DateOrdered)
+				.create()
+				.listIds(OrderId::ofRepoId);
+
 	}
 }

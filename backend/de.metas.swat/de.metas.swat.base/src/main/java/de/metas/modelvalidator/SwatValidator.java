@@ -33,6 +33,9 @@ import de.metas.invoicecandidate.spi.impl.AttachmentInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
+import de.metas.order.paymentschedule.OrderPayScheduleRepository;
+import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.report.client.ReportsClient;
 import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
@@ -157,7 +160,10 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.activity.model.validator.C_OrderLine(), client); // 06788
 		engine.addModelValidator(new de.metas.activity.model.validator.C_InvoiceLine(), client); // 06788
 
-		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
+		engine.addModelValidator(new M_ShipperTransportation(new OrderPayScheduleService(
+				new OrderPayScheduleRepository(),
+				new PaymentTermService()
+		)), client); // 06899
 
 		// task 09700
 		final IModelInterceptor counterDocHandlerInterceptor = Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);

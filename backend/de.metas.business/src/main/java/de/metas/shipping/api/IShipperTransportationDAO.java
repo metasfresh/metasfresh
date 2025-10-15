@@ -22,6 +22,7 @@ package de.metas.shipping.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
@@ -62,4 +63,6 @@ public interface IShipperTransportationDAO extends ISingletonService
 
 	@NonNull
 	Optional<ShipperTransportationReference> getEarliestShipperTransportationByOrderId(final OrderId orderId);
+
+	ImmutableList<OrderId> retrieveOrderIds(@NonNull ShipperTransportationId shipperTransportationId);
 }
