@@ -27,6 +27,7 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.process.AdProcessId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -80,12 +81,6 @@ public class ExternalSystemScriptedExportConversionRepository
 	}
 
 	@NonNull
-	public static ExternalSystemScriptedExportConversionConfig fromRecord(@NonNull final I_ExternalSystem_Config_ScriptedExportConversion config)
-	{
-		return fromRecord(config, ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
-	}
-
-	@NonNull
 	public static ExternalSystemScriptedExportConversionConfig fromRecord(@NonNull final I_ExternalSystem_Config_ScriptedExportConversion config,
 																		  @NonNull final ExternalSystemParentConfigId parentConfigId)
 	{
@@ -102,10 +97,16 @@ public class ExternalSystemScriptedExportConversionRepository
 				.adTableId(AdTableId.ofRepoId(config.getAD_Table_ID()))
 				.docBaseType(DocBaseType.ofNullableCode(config.getDocBaseType()))
 				.whereClause(config.getWhereClause())
-				.seqNo(config.getSeqNo())
-				.isActive(config.isActive())
+				.seqNo(SeqNo.ofInt(config.getSeqNo()))
+				.active(config.isActive())
 				.clientId(ClientId.ofRepoId(config.getAD_Client_ID()))
 				.build();
+	}
+
+	@NonNull
+	private static ExternalSystemScriptedExportConversionConfig fromRecord(@NonNull final I_ExternalSystem_Config_ScriptedExportConversion config)
+	{
+		return fromRecord(config, ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
 	}
 
 	@NonNull

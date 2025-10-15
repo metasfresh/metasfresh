@@ -69,6 +69,7 @@ public class ExternalSystemScriptedExportConversionService
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 
+	@NonNull
 	private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 
 	@NonNull

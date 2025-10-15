@@ -50,7 +50,7 @@ public class ExternalSystem_Config_ScriptedExportConversion
 	@NonNull
 	private final ExternalSystemScriptedExportConversionService externalSystemScriptedExportConversionService;
 	@NonNull
-	private final ExternalSystemScriptedExportConversionInterceptorProducer externalSystemScriptedExportConversionInterceptorProducer;
+	private final ExternalSystemScriptedExportConversionInterceptorRegistry externalSystemScriptedExportConversionInterceptorRegistry;
 
 	private ModelValidationEngine engine;
 
@@ -87,7 +87,7 @@ public class ExternalSystem_Config_ScriptedExportConversion
 			if (oldTableAndClientId != null && !oldTableAndClientId.equals(tableAndClientId) &&
 					!externalSystemScriptedExportConversionService.existsActive(oldTableAndClientId))
 			{
-				externalSystemScriptedExportConversionInterceptorProducer.unregisterInterceptorByTableAndClientId(oldTableAndClientId);
+				externalSystemScriptedExportConversionInterceptorRegistry.unregisterInterceptorByTableAndClientId(oldTableAndClientId);
 			}
 
 			if (externalSystemScriptedExportConversionService.existsActiveOutOfTrx(tableAndClientId))
@@ -101,7 +101,7 @@ public class ExternalSystem_Config_ScriptedExportConversion
 		{
 			if (!externalSystemScriptedExportConversionService.existsActive(tableAndClientId) && oldRecord.isActive())
 			{
-				externalSystemScriptedExportConversionInterceptorProducer.unregisterInterceptorByTableAndClientId(tableAndClientId);
+				externalSystemScriptedExportConversionInterceptorRegistry.unregisterInterceptorByTableAndClientId(tableAndClientId);
 			}
 		}
 	}
@@ -113,7 +113,7 @@ public class ExternalSystem_Config_ScriptedExportConversion
 				externalSystemScriptedExportConversionService,
 				AdTableAndClientId.of(config.getAdTableId(), config.getClientId()));
 
-		externalSystemScriptedExportConversionInterceptorProducer.registerInterceptor(interceptor);
+		externalSystemScriptedExportConversionInterceptorRegistry.registerInterceptor(interceptor);
 	}
 
 	private void registerInterceptor(@NonNull final I_ExternalSystem_Config_ScriptedExportConversion config)
@@ -125,6 +125,6 @@ public class ExternalSystem_Config_ScriptedExportConversion
 						AdTableId.ofRepoId(config.getAD_Table_ID()),
 						ClientId.ofRepoId(config.getAD_Client_ID())));
 
-		externalSystemScriptedExportConversionInterceptorProducer.registerInterceptor(interceptor);
+		externalSystemScriptedExportConversionInterceptorRegistry.registerInterceptor(interceptor);
 	}
 }

@@ -26,6 +26,7 @@ import de.metas.document.DocBaseType;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.process.AdProcessId;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,34 +39,21 @@ import javax.annotation.Nullable;
 @Builder
 public class ExternalSystemScriptedExportConversionConfig implements IExternalSystemChildConfig
 {
-	@NonNull
-	ExternalSystemScriptedExportConversionConfigId id;
-	@NonNull
-	ExternalSystemParentConfigId parentId;
-	@NonNull
-	String value;
-	@Nullable
-	String description;
-	@Nullable
-	AdProcessId outboundDataProcessId;
-	@NonNull
-	String scriptIdentifier;
-	@Nullable
-	String outboundHttpEndpoint;
-	@Nullable
-	String outboundHttpToken;
-	@Nullable
-	String outboundHttpMethod;
-	@NonNull
-	AdTableId adTableId;
-	@Nullable
-	DocBaseType docBaseType;
-	@NonNull
-	String whereClause;
-	@NonNull
-	Integer seqNo;
-	@NonNull Boolean isActive;
+	@NonNull ExternalSystemScriptedExportConversionConfigId id;
+	@NonNull ExternalSystemParentConfigId parentId;
+	@NonNull String value;
+	@Nullable String description;
+	@Nullable AdProcessId outboundDataProcessId;
+	@NonNull String scriptIdentifier;
+	@Nullable String outboundHttpEndpoint;
+	@Nullable String outboundHttpToken;
+	@Nullable String outboundHttpMethod;
+	@NonNull AdTableId adTableId;
+	@Nullable DocBaseType docBaseType;
+	@NonNull String whereClause;
+	@NonNull SeqNo seqNo;
 	@NonNull ClientId clientId;
+	boolean active;
 
 	public static ExternalSystemScriptedExportConversionConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{

@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
-public class ExternalSystemScriptedExportConversionInterceptorProducer
+public class ExternalSystemScriptedExportConversionInterceptorRegistry
 {
 	private final Map<AdTableAndClientId, ExternalSystemScriptedExportConversionInterceptor> tableId2ModelInterceptor = new HashMap<>();
 	private final ReentrantLock externalSystemScriptedExportConversionLock = new ReentrantLock();

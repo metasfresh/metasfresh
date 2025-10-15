@@ -48,7 +48,6 @@ public final class ExternalSystemType
 			.put(LeichUndMehl, "LM")
 			.put(PrintClient, "PC")
 			.put(ProCareManagement, "PCM")
-			.put(ScriptedExportConversion, "SEC")
 			.build();
 
 	@Getter
