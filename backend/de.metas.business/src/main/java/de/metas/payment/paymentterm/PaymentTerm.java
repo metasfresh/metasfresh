@@ -102,7 +102,7 @@ public class PaymentTerm
 
 		if (isComplex)
 		{
-			Check.assume(!breaks.isEmpty(), "If isComplex=true, then breaks shall not be empty");
+			Check.assumeNotEmpty(breaks, "If isComplex=true, then breaks shall not be empty");
 
 			checkPercentBreaks(breaks);
 		}
@@ -115,7 +115,7 @@ public class PaymentTerm
 				: null;
 	}
 
-	private void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)
+	private static void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)
 	{
 		final Percent totalPercent = breaks.stream()
 				.map(PaymentTermBreak::getPercent)
@@ -136,7 +136,7 @@ public class PaymentTerm
 		{
 			throw new AdempiereException("Payment term does not support breaks: " + this);
 		}
-		
+
 		final PaymentTermBreak paymentTermBreak = breaksById.get(id);
 		if (paymentTermBreak == null)
 		{

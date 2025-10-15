@@ -584,14 +584,12 @@ public class C_Order_StepDef
 
 		if (docBaseType.isPresent() && docSubType.isPresent())
 		{
-			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 					.docBaseType(docBaseType.get())
 					.docSubType(DocSubType.ofNullableCode(docSubType.get()))
 					.adClientId(order.getAD_Client_ID())
 					.adOrgId(order.getAD_Org_ID())
-					.build();
-
-			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
+					.build());
 
 			order.setC_DocType_ID(docTypeId.getRepoId());
 			order.setC_DocTypeTarget_ID(docTypeId.getRepoId());

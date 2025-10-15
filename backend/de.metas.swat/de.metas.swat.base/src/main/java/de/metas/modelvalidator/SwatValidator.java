@@ -57,6 +57,7 @@ import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
+import org.compiere.SpringContextHolder;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Org;
@@ -105,6 +106,7 @@ public class SwatValidator implements ModelValidator
 	 * See http://dewiki908/mediawiki/index.php/US315:_Im_Mahntext_die_neuen_Textbausteine_verwenden_k%C3%B6nnen_%282010070510000495%29#SalesRep_issue_.28Teo_09:24.2C_26._Okt._2011_.28CEST.29.29
 	 */
 	private static final String SYSCONFIG_DEFAULT_SalesRep_ID = "DEFAULT_SalesRep_ID";
+	private static final OrderPayScheduleService orderPayScheduleService = SpringContextHolder.instance.getBean(OrderPayScheduleService.class);
 
 	private final Logger log = LogManager.getLogger(getClass());
 
@@ -160,10 +162,7 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.activity.model.validator.C_OrderLine(), client); // 06788
 		engine.addModelValidator(new de.metas.activity.model.validator.C_InvoiceLine(), client); // 06788
 
-		engine.addModelValidator(new M_ShipperTransportation(new OrderPayScheduleService(
-				new OrderPayScheduleRepository(),
-				new PaymentTermService()
-		)), client); // 06899
+		engine.addModelValidator(new M_ShipperTransportation(orderPayScheduleService), client); // 06899
 
 		// task 09700
 		final IModelInterceptor counterDocHandlerInterceptor = Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);

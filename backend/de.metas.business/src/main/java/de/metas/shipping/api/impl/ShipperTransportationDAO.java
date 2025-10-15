@@ -167,7 +167,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 	}
 
-	private ShipperTransportationReference toShipperTransportationReference(@NotNull final I_M_ShipperTransportation record)
+	private static ShipperTransportationReference toShipperTransportationReference(@NotNull final I_M_ShipperTransportation record)
 	{
 		final ShipperTransportationId id = ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
 		return ShipperTransportationReference.builder()
@@ -182,12 +182,12 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	{
 		return queryBL
 				.createQueryBuilder(I_M_ShippingPackage.class)
-				.filter(new EqualsQueryFilter<>(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId))
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_M_ShippingPackage.COLUMN_C_Order_ID)
 				.orderBy(I_C_Order.COLUMNNAME_DateOrdered)
 				.create()
-				.listIds(OrderId::ofRepoId);
+				.listDistinct(I_C_Order.COLUMNNAME_C_Order_ID, OrderId.class);
 
 	}
 }
