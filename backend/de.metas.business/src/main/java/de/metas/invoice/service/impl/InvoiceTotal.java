@@ -57,4 +57,81 @@ public class InvoiceTotal
 	public Money toRealValueAsMoney() {return multiplier.convertToRealValue(relativeValue);}
 
 	public BigDecimal toRealValueAsBigDecimal() {return toRealValueAsMoney().toBigDecimal();}
+
+	public boolean isAP() {return multiplier.isAP();}
+
+	public boolean isAPAdjusted() {return multiplier.isAPAdjusted();}
+
+	public boolean isCreditMemo() {return multiplier.isCreditMemo();}
+
+	public boolean isCMAdjusted() {return multiplier.isCreditMemoAdjusted();}
+
+	public InvoiceTotal withAPAdjusted()
+	{
+		if (multiplier.isAPAdjusted())
+		{
+			return this;
+		}
+		else if (multiplier.isAP())
+		{
+			return new InvoiceTotal(relativeValue.negate(), multiplier.withAPAdjusted(true));
+		}
+		else
+		{
+			return new InvoiceTotal(relativeValue, multiplier.withAPAdjusted(true));
+		}
+	}
+
+	public InvoiceTotal withoutAPAdjusted()
+	{
+		if (!multiplier.isAPAdjusted())
+		{
+			return this;
+		}
+		else if (multiplier.isAP())
+		{
+			return new InvoiceTotal(relativeValue.negate(), multiplier.withAPAdjusted(false));
+		}
+		else
+		{
+			return new InvoiceTotal(relativeValue, multiplier.withAPAdjusted(false));
+		}
+	}
+
+	public InvoiceTotal withCMAdjusted(final boolean isCMAdjusted)
+	{
+		return isCMAdjusted ? withCMAdjusted() : withoutCMAdjusted();
+	}
+
+	public InvoiceTotal withCMAdjusted()
+	{
+		if (multiplier.isCreditMemoAdjusted())
+		{
+			return this;
+		}
+		else if (multiplier.isCreditMemo())
+		{
+			return new InvoiceTotal(relativeValue.negate(), multiplier.withCMAdjusted(true));
+		}
+		else
+		{
+			return new InvoiceTotal(relativeValue, multiplier.withCMAdjusted(true));
+		}
+	}
+
+	public InvoiceTotal withoutCMAdjusted()
+	{
+		if (!multiplier.isCreditMemoAdjusted())
+		{
+			return this;
+		}
+		else if (multiplier.isCreditMemo())
+		{
+			return new InvoiceTotal(relativeValue.negate(), multiplier.withCMAdjusted(false));
+		}
+		else
+		{
+			return new InvoiceTotal(relativeValue, multiplier.withCMAdjusted(false));
+		}
+	}
 }

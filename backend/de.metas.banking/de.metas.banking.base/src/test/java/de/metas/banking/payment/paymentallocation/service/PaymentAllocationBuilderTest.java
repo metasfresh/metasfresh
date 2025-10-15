@@ -375,7 +375,7 @@ public class PaymentAllocationBuilderTest
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 		final Money expectedAllocatedAmt = expectedAllocatedAmtBD != null ? Money.of(expectedAllocatedAmtBD, CurrencyId.ofRepoId(invoice.getC_Currency_ID())) : null;
 
-		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceBL.getById(invoiceId));
 
 		assertThat(actualAllocatedAmt)
 				.as("Allocated amount for invoice " + invoiceId)

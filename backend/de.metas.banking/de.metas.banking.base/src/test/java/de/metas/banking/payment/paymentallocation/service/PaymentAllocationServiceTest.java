@@ -567,7 +567,7 @@ public class PaymentAllocationServiceTest
 		final InvoiceAmtMultiplier multiplierInRealLife = InvoiceAmtMultiplier.create(SOTrx.SALES, false, false);
 
 		//noinspection AssertThatBooleanCondition
-		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
+		assertThat(multiplierInRealLife.isAPAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
 
 		//noinspection AssertThatBooleanCondition
 		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);

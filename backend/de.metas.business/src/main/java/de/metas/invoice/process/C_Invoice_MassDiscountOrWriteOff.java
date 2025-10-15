@@ -125,7 +125,7 @@ public class C_Invoice_MassDiscountOrWriteOff extends JavaProcess
 		}
 
 		// skip the invoice if there is nothing allocated yet! We only want to complete *partial* allocations
-		final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
+		final Money allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
 		if (allocatedAmt == null || allocatedAmt.signum() == 0)
 		{
 			addLog("Skip C_Invoice_ID=" + invoice.getC_Invoice_ID() + ": " + "Has allocatedAmt=0.");

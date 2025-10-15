@@ -41,7 +41,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -79,9 +78,9 @@ public interface IAllocationDAO extends ISingletonService
 	/**
 	 * Retrieve that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has already been allocated.
 	 */
-	BigDecimal retrieveAllocatedAmt(I_C_Invoice invoice);
+	Money retrieveAllocatedAmt(I_C_Invoice invoice);
 
-	Optional<Money> retrieveAllocatedAmtAsMoney(InvoiceId invoiceId);
+	InvoiceOpenResult retrieveInvoiceOpen(@NonNull InvoiceOpenRequest request);
 
 	/**
 	 * Retrieve the written off amount of an <code>invoice</code>.
@@ -93,7 +92,7 @@ public interface IAllocationDAO extends ISingletonService
 	 *
 	 * @param paymentIDsToIgnore may be <code>null</code> or empty.
 	 */
-	BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull I_C_Invoice invoice, @Nullable Set<PaymentId> paymentIDsToIgnore);
+	Money retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull I_C_Invoice invoice, @Nullable Set<PaymentId> paymentIDsToIgnore);
 
 	/**
 	 * Retrieve allocation lines for specified invoice

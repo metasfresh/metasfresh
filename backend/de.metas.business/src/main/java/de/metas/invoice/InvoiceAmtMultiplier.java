@@ -38,12 +38,12 @@ import lombok.ToString;
 public final class InvoiceAmtMultiplier
 {
 	private final SOTrx soTrx;
-	
+
 	@Getter
 	private final boolean isCreditMemo;
 
 	@Getter
-	private final boolean isSOTrxAdjusted;
+	private final boolean isAPAdjusted;
 	@Getter
 	private final boolean isCreditMemoAdjusted;
 
@@ -72,23 +72,23 @@ public final class InvoiceAmtMultiplier
 	{
 		return InvoiceAmtMultiplier.builder()
 				.soTrx(soTrx)
-				.isSOTrxAdjusted(adjusted)
+				.isAPAdjusted(adjusted)
 				.isCreditMemo(isCreditMemo)
 				.isCreditMemoAdjusted(adjusted)
 				.build()
 				.intern();
 	}
 
-	@Builder
+	@Builder(toBuilder = true)
 	private InvoiceAmtMultiplier(
 			@NonNull final SOTrx soTrx,
 			final boolean isCreditMemo,
-			final boolean isSOTrxAdjusted,
+			final boolean isAPAdjusted,
 			final boolean isCreditMemoAdjusted)
 	{
 		this.soTrx = soTrx;
 		this.isCreditMemo = isCreditMemo;
-		this.isSOTrxAdjusted = isSOTrxAdjusted;
+		this.isAPAdjusted = isAPAdjusted;
 		this.isCreditMemoAdjusted = isCreditMemoAdjusted;
 	}
 
@@ -97,6 +97,8 @@ public final class InvoiceAmtMultiplier
 		//noinspection UnstableApiUsage
 		return interner.intern(this);
 	}
+
+	public boolean isAP() {return soTrx.isAP();}
 
 	public Amount convertToRealValue(@NonNull final Amount amount)
 	{
@@ -142,7 +144,7 @@ public final class InvoiceAmtMultiplier
 		int multiplier = 1;
 
 		// Adjust by SOTrx if needed
-		if (!isSOTrxAdjusted)
+		if (!isAPAdjusted)
 		{
 			final int multiplierAP = soTrx.isPurchase() ? -1 : +1;
 			multiplier *= multiplierAP;
@@ -175,7 +177,7 @@ public final class InvoiceAmtMultiplier
 		int multiplier = 1;
 
 		// Do we have to SO adjust?
-		if (isSOTrxAdjusted)
+		if (isAPAdjusted)
 		{
 			final int multiplierAP = soTrx.isPurchase() ? -1 : +1;
 			multiplier *= multiplierAP;
@@ -196,5 +198,15 @@ public final class InvoiceAmtMultiplier
 	public boolean isOutgoingMoney()
 	{
 		return isCreditMemo ^ soTrx.isPurchase();
+	}
+
+	public InvoiceAmtMultiplier withAPAdjusted(final boolean isAPAdjustedNew)
+	{
+		return isAPAdjusted == isAPAdjustedNew ? this : toBuilder().isAPAdjusted(isAPAdjustedNew).build().intern();
+	}
+
+	public InvoiceAmtMultiplier withCMAdjusted(final boolean isCreditMemoAdjustedNew)
+	{
+		return isCreditMemoAdjusted == isCreditMemoAdjustedNew ? this : toBuilder().isCreditMemoAdjusted(isCreditMemoAdjustedNew).build().intern();
 	}
 }

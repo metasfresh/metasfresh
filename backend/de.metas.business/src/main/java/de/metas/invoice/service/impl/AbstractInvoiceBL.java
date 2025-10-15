@@ -30,6 +30,8 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.InvoiceOpenRequest;
+import de.metas.allocation.api.InvoiceOpenResult;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -521,34 +523,38 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return false; // not changed
 		}
 
-		final InvoiceTotal invoiceGrandTotal = extractGrandTotal(invoice);
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
-		final Money allocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
-		final boolean hasAllocations = allocatedAmt != null;
+		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		final InvoiceOpenResult invoiceOpenResult = allocationDAO.retrieveInvoiceOpen(
+				InvoiceOpenRequest.builder()
+						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+						.returnInCurrencyId(invoiceCurrencyId)
+						.build());
 
 		// If is a zero invoice, it has no allocations and the AutoPayZeroAmt is not set
 		// then don't touch the invoice
-		if (invoiceGrandTotal.isZero()
-				&& !hasAllocations
+		if (invoiceOpenResult.getInvoiceGrandTotal().isZero()
+				&& !invoiceOpenResult.isHasAllocations()
 				&& !sysConfigBL.getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
 		{
 			// don't touch the IsPaid flag, return not changed
 			return false;
 		}
 
-		final InvoiceTotal openAmt = invoiceGrandTotal.subtractRealValue(allocatedAmt);
-		final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt.toMoney(), hasAllocations);
-		return setPaymentStatus(invoice, openAmt.toBigDecimal(), paymentStatus);
+		return setPaymentStatus(
+				invoice, 
+				invoiceOpenResult.getOpenAmt().withAPAdjusted().withoutCMAdjusted().toBigDecimal(),
+				computePaymentStatus(invoiceOpenResult)
+		);
 	}    // testAllocation
 
 	@NonNull
-	private static InvoicePaymentStatus computePaymentStatus(@NonNull final Money openAmt, final boolean hasAllocations)
+	private static InvoicePaymentStatus computePaymentStatus(final InvoiceOpenResult invoiceOpenResult)
 	{
-		if (!hasAllocations)
+		if (!invoiceOpenResult.isHasAllocations())
 		{
 			return InvoicePaymentStatus.NOT_PAID;
 		}
-		else if (openAmt.signum() == 0)
+		else if (invoiceOpenResult.isFullyAllocated())
 		{
 			return InvoicePaymentStatus.FULLY_PAID;
 		}
@@ -598,7 +604,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return InvoiceAmtMultiplier.builder()
 				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
 				.isCreditMemo(isCreditMemo(invoice))
-				.isSOTrxAdjusted(false)
+				.isAPAdjusted(false)
 				.isCreditMemoAdjusted(false)
 				.build();
 	}
@@ -907,8 +913,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 
-		@Nullable
-		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+		@Nullable final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
 		if (copyDescriptionAndDocumentNote == null)
 		{
@@ -1571,11 +1576,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public InvoiceDocBaseType getInvoiceDocBaseType(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
+		return InvoiceDocBaseType.ofCode(docType.getDocBaseType());
+	}
+
+	@Override
 	public final boolean isCreditMemo(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());
-		final String docBaseType = docType.getDocBaseType();
-		return isCreditMemo(docBaseType);
+		return getInvoiceDocBaseType(invoice).isCreditMemo();
 	}
 
 	@Override
@@ -1588,13 +1598,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isAdjustmentCharge(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = getC_DocType(invoice);
-
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
 		return isAdjustmentCharge(docType);
 	}
 
 	@Override
-	public final boolean isAdjustmentCharge(final I_C_DocType docType)
+	public final boolean isAdjustmentCharge(@NonNull final I_C_DocType docType)
 	{
 		final String docBaseType = docType.getDocBaseType();
 

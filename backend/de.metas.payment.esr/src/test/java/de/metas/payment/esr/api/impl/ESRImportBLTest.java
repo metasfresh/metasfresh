@@ -33,6 +33,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.payment.PaymentId;
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.ESRTestUtil;
@@ -47,6 +48,7 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
@@ -68,9 +70,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ESRImportBLTest extends ESRTestBase
 {
 	private static final BigDecimal FOURTY = new BigDecimal("40");
-	private static final BigDecimal TWENTY = new BigDecimal("20");
 	private static final BigDecimal SIXTY = new BigDecimal("60");
-	private static final BigDecimal HUNDRET = new BigDecimal("100");
 	private static final BigDecimal ESR_LINE_1_AMOUNT = new BigDecimal("31");
 	private static final BigDecimal INVOICE_GRANDTOTAL = new BigDecimal("62.50");
 	private I_C_Invoice invoice;
@@ -172,7 +172,7 @@ public class ESRImportBLTest extends ESRTestBase
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setDocumentNo("000120686");
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
-		invoice.setGrandTotal(HUNDRET);
+		invoice.setGrandTotal(new BigDecimal("100"));
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		save(invoice);
@@ -199,8 +199,8 @@ public class ESRImportBLTest extends ESRTestBase
 		assertThat(esrImportLine.getAmount()).isEqualByComparingTo(FOURTY); // guard
 		// guards
 		assertThat(esrImportLine.getC_Invoice_ID()).as("Invoice not set correctly").isEqualTo(invoice.getC_Invoice_ID());
-		assertThat(esrImportLine.getESR_Invoice_Grandtotal()).as("Incorrect grandtotal").isEqualByComparingTo(HUNDRET);
-		assertThat(invoice.getGrandTotal()).as("Incorrect grandtotal").isEqualByComparingTo(HUNDRET);
+		assertThat(esrImportLine.getESR_Invoice_Grandtotal()).as("Incorrect grandtotal").isEqualByComparingTo(new BigDecimal("100"));
+		assertThat(invoice.getGrandTotal()).as("Incorrect grandtotal").isEqualByComparingTo(new BigDecimal("100"));
 
 		// guard: invoice has grandtotal=100; 10 already written off => 90 open; payment of 40 already allocated as of task 06677 => 50 open
 		// TODO: write unit tests to further dig into the "matching" and "updateOpenAmount" topics
@@ -209,6 +209,7 @@ public class ESRImportBLTest extends ESRTestBase
 		final BigDecimal invoice2GrandTotal = new BigDecimal("123.56");
 
 		final I_C_Invoice invoice2 = newInstance(I_C_Invoice.class);
+		invoice2.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice2.setGrandTotal(invoice2GrandTotal);
 		invoice2.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice2.setDocumentNo("000120688");
@@ -218,9 +219,13 @@ public class ESRImportBLTest extends ESRTestBase
 
 		// create allocation over 100 (plus 20 writeoff)
 		// note that PlainInvoiceDAO.retrieveAllocatedAmt() currently only checks for allocation lines, ignoring any hdr info.
+		final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class);
+		allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
+		save(allocHdr);
 		final I_C_AllocationLine allocAmt2 = newInstance(I_C_AllocationLine.class);
-		allocAmt2.setWriteOffAmt(TWENTY);
-		allocAmt2.setAmount(HUNDRET);
+		allocAmt2.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
+		allocAmt2.setWriteOffAmt(new BigDecimal("20"));
+		allocAmt2.setAmount(new BigDecimal("100"));
 		allocAmt2.setC_Invoice_ID(invoice2.getC_Invoice_ID());
 		save(allocAmt2);
 
@@ -307,6 +312,7 @@ public class ESRImportBLTest extends ESRTestBase
 		save(org2);
 
 		final I_C_Invoice invoice2 = newInstance(I_C_Invoice.class);
+		invoice2.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice2.setGrandTotal(grandTotal);
 		invoice2.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice2.setDocumentNo("000120688");
@@ -314,9 +320,13 @@ public class ESRImportBLTest extends ESRTestBase
 		invoice2.setC_DocType_ID(type.getC_DocType_ID());
 		save(invoice2);
 
+		final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class);
+		allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
+		save(allocHdr);
 		final I_C_AllocationLine allocAmt2 = newInstance(I_C_AllocationLine.class);
-		allocAmt2.setWriteOffAmt(TWENTY);
-		allocAmt2.setAmount(HUNDRET);
+		allocAmt2.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
+		allocAmt2.setWriteOffAmt(new BigDecimal("20"));
+		allocAmt2.setAmount(new BigDecimal("100"));
 		allocAmt2.setC_Invoice_ID(invoice2.getC_Invoice_ID());
 		save(allocAmt2);
 
@@ -346,15 +356,15 @@ public class ESRImportBLTest extends ESRTestBase
 	{
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, 20, 30);
 
-		allocationDAOMock.addResult(BigDecimal.ZERO); // 1st invocation: ZERO, as nothing was allocated agains the invoice
-		allocationDAOMock.addResult(BigDecimal.ZERO); // 2nd invocation: still ZERO, as only the 3 lines' OWN payment was allocated
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR); // 1st invocation: ZERO, as nothing was allocated agains the invoice
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR); // 2nd invocation: still ZERO, as only the 3 lines' OWN payment was allocated
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
 
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
@@ -386,15 +396,15 @@ public class ESRImportBLTest extends ESRTestBase
 	{
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, 20, 30);
 
-		allocationDAOMock.addResult(BigDecimal.ZERO); // 1st invocation: ZERO, as nothing was allocated agains the invoice
-		allocationDAOMock.addResult(BigDecimal.ZERO); // further invocations: still ZERO, as only the 3 lines' OWN payment was allocated
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR); // 1st invocation: ZERO, as nothing was allocated agains the invoice
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR); // further invocations: still ZERO, as only the 3 lines' OWN payment was allocated
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
 
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
@@ -458,15 +468,15 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		final I_ESR_ImportLine esrImportLine3 = lines.get(2);
 
-		allocationDAOMock.addResult(BigDecimal.ZERO); // 1st invocation: ZERO, as nothing was allocated agains the invoice
-		allocationDAOMock.addResult(BigDecimal.ZERO); // further invocations: still ZERO, as only the 3 lines' OWN payment was allocated
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR); // 1st invocation: ZERO, as nothing was allocated agains the invoice
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR); // further invocations: still ZERO, as only the 3 lines' OWN payment was allocated
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
 
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
@@ -524,15 +534,15 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine2 = lines.get(2);
 		final I_ESR_ImportLine esrImportLine3 = lines.get(1);
 
-		allocationDAOMock.addResult(BigDecimal.ZERO); // 1st invocation: ZERO, as nothing was allocated agains the invoice
-		allocationDAOMock.addResult(BigDecimal.ZERO); // further invocations: still ZERO, as only the 3 lines' OWN payment was allocated
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
-		allocationDAOMock.addResult(BigDecimal.ZERO);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR); // 1st invocation: ZERO, as nothing was allocated agains the invoice
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR); // further invocations: still ZERO, as only the 3 lines' OWN payment was allocated
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
 		for (final I_ESR_ImportLine line : lines)
@@ -734,22 +744,27 @@ public class ESRImportBLTest extends ESRTestBase
 	private static class AllocationDAOMock extends PlainAllocationDAO
 	{
 		private int invocationCount = 0;
-		private final List<BigDecimal> returnValues = new ArrayList<>();
+		private final List<Money> returnValues = new ArrayList<>();
 
-		void addResult(final BigDecimal returnValue)
+		void addResult(final BigDecimal returnValue, final CurrencyId currencyId)
+		{
+			addResult(Money.of(returnValue, currencyId));
+		}
+
+		void addResult(final Money returnValue)
 		{
 			returnValues.add(returnValue);
 		}
 
 		@Override
-		public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull org.compiere.model.I_C_Invoice invoice, Set<PaymentId> ignored)
+		public Money retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull org.compiere.model.I_C_Invoice invoice, Set<PaymentId> ignored)
 		{
 			if (returnValues.size() < invocationCount + 1)
 			{
 				throw new AdempiereException("unexpected invocation");
 			}
 
-			final BigDecimal returnValue = returnValues.get(invocationCount);
+			final Money returnValue = returnValues.get(invocationCount);
 			invocationCount++;
 			return returnValue;
 		}
@@ -760,7 +775,7 @@ public class ESRImportBLTest extends ESRTestBase
 	{
 		final BigDecimal externallyAllocatedAmt = new BigDecimal("70");
 		assertThat(externallyAllocatedAmt).isGreaterThan(INVOICE_GRANDTOTAL); // guard
-		allocationDAOMock.addResult(externallyAllocatedAmt);
+		allocationDAOMock.addResult(externallyAllocatedAmt, CurrencyId.EUR);
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
@@ -788,8 +803,7 @@ public class ESRImportBLTest extends ESRTestBase
 	@Test
 	public void testUpdateOpenAmtAndStatusDontSave2a()
 	{
-		final BigDecimal alreadyAllocatedAmt = BigDecimal.ZERO;
-		allocationDAOMock.addResult(alreadyAllocatedAmt);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
@@ -808,8 +822,7 @@ public class ESRImportBLTest extends ESRTestBase
 	@Test
 	public void testUpdateOpenAmtAndStatusDontSave2b()
 	{
-		final BigDecimal externallAllocatedAmt = BigDecimal.ZERO;
-		allocationDAOMock.addResult(externallAllocatedAmt);
+		allocationDAOMock.addResult(BigDecimal.ZERO, CurrencyId.EUR);
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
@@ -830,14 +843,14 @@ public class ESRImportBLTest extends ESRTestBase
 
 		assertThat(line1.getESR_Invoice_Openamt())
 				.as("the invoice's allocated sum is ZERO, but this line's amount is ALREADY a part of that sum, so it shall not count to reduce the overall open amount")
-				.isEqualByComparingTo(INVOICE_GRANDTOTAL.subtract(externallAllocatedAmt).subtract(ESR_LINE_1_AMOUNT));
+				.isEqualByComparingTo(INVOICE_GRANDTOTAL.subtract(ESR_LINE_1_AMOUNT));
 	}
 
 	@Test
 	public void testUpdateOpenAmtAndStatusDontSave3a()
 	{
 		final BigDecimal alreadyAllocatedAmt = new BigDecimal("20");
-		allocationDAOMock.addResult(alreadyAllocatedAmt);
+		allocationDAOMock.addResult(alreadyAllocatedAmt, CurrencyId.EUR);
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
@@ -857,7 +870,7 @@ public class ESRImportBLTest extends ESRTestBase
 	public void testUpdateOpenAmtAndStatusDontSave3b()
 	{
 		final BigDecimal alreadyAllocatedAmt = new BigDecimal("20");
-		allocationDAOMock.addResult(alreadyAllocatedAmt);
+		allocationDAOMock.addResult(alreadyAllocatedAmt, CurrencyId.EUR);
 		Services.registerService(IAllocationDAO.class, allocationDAOMock);
 
 		final List<I_ESR_ImportLine> lines = testProcessLinesWithInvoice_common_setup(10, -1, -1);
