@@ -24,26 +24,40 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.attachment.JsonAttachment;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
+import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Map;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ATTACHMENT_FILE_NAME;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 /**
@@ -87,6 +101,9 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 				.process(this::prepareHttpRequest)
 				//dev-note: the actual path is set in this.prepareHttpRequest()
 				.to("https://placeholder").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
+				.process(this::prepareJsonAttachmentRequest)
+				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to save attachment: ${body}")
+				.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID));
 			;
 		//@formatter:on
 	}
@@ -97,18 +114,24 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		final Map<String, String> parameters = request.getParameters();
 
 		final MsgFromMfContext msgFromMfContext = MsgFromMfContext.builder()
+				.orgCode(request.getOrgCode())
 				.scriptingRequestBody(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT))
 				.scriptIdentifier(parameters.get(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER))
 				.outboundHttpEP(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP))
 				.outboundHttpToken(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN))
 				.outboundHttpMethod(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD))
+				.outboundRecordTableName(parameters.get(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME))
+				.outboundRecordId(parameters.get(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID))
 				.build();
-		exchange.getIn().setBody(msgFromMfContext);
+
+		exchange.setProperty(ROUTE_MSG_FROM_MF_CONTEXT, msgFromMfContext);
 	}
 
 	private void executeJavaScript(@NonNull final Exchange exchange)
 	{
-		final MsgFromMfContext msgFromMfContext = exchange.getIn().getBody(MsgFromMfContext.class);
+		final MsgFromMfContext msgFromMfContext = ProcessorHelper.getPropertyOrThrowError(exchange,
+				ROUTE_MSG_FROM_MF_CONTEXT,
+				MsgFromMfContext.class);
 
 		final String script = javaScriptRepo.get(msgFromMfContext.getScriptIdentifier());
 		msgFromMfContext.setScript(script);
@@ -123,12 +146,59 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 	private void prepareHttpRequest(@NonNull final Exchange exchange)
 	{
-		final MsgFromMfContext msgFromMfContext = exchange.getIn().getBody(MsgFromMfContext.class);
+		final MsgFromMfContext msgFromMfContext = ProcessorHelper.getPropertyOrThrowError(exchange,
+				ROUTE_MSG_FROM_MF_CONTEXT,
+				MsgFromMfContext.class);
 
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, msgFromMfContext.getOutboundHttpToken());
 		exchange.getIn().setHeader(Exchange.HTTP_URI, msgFromMfContext.getOutboundHttpEP());
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(msgFromMfContext.getOutboundHttpMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void prepareJsonAttachmentRequest(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = ProcessorHelper.getPropertyOrThrowError(exchange,
+				ROUTE_MSG_FROM_MF_CONTEXT,
+				MsgFromMfContext.class);
+
+		final JsonAttachment attachment = JsonAttachment.builder()
+				.fileName(ATTACHMENT_FILE_NAME)
+				.data(buildBase64FileData(exchange))
+				.type(JsonAttachmentSourceType.Data)
+				.build();
+
+		final JsonTableRecordReference jsonTableRecordReference = JsonTableRecordReference.builder()
+				.tableName(msgFromMfContext.getOutboundRecordTableName())
+				.recordId(JsonMetasfreshId.of(msgFromMfContext.getOutboundRecordId()))
+				.build();
+
+		final JsonAttachmentRequest jsonAttachmentRequest = JsonAttachmentRequest.builder()
+				.attachment(attachment)
+				.orgCode(msgFromMfContext.getOrgCode())
+				.reference(jsonTableRecordReference)
+				.build();
+
+		exchange.getIn().setBody(jsonAttachmentRequest);
+	}
+
+	@NonNull
+	private String buildBase64FileData(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = ProcessorHelper.getPropertyOrThrowError(exchange,
+				ROUTE_MSG_FROM_MF_CONTEXT,
+				MsgFromMfContext.class);
+
+		final String endpointResponse = exchange.getIn().getBody(String.class);
+
+		final String fileContent = "=== Scripted Adapter Log ===\n"
+				+ "Timestamp: " + LocalDateTime.now() + "\n"
+				+ "Script Name: " + msgFromMfContext.getScriptIdentifier() + "\n"
+				+ "Script Returned Value: " + msgFromMfContext.getScriptReturnValue() + "\n"
+				+ "HTTP Endpoint: " + msgFromMfContext.getOutboundHttpEP() + "\n"
+				+ "HTTP Response: " + endpointResponse + "\n";
+
+		return Base64.getEncoder().encodeToString(fileContent.getBytes());
 	}
 }
