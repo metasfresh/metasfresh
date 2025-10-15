@@ -606,7 +606,6 @@ public class C_Order_StepDef
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
-
 	}
 
 	@And("^after not more than (.*)s the order is found$")
