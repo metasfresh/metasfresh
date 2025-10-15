@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor4
 Feature: available for sales
 
   Background:
