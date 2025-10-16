@@ -3,6 +3,7 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
+  - temporary_test202510_release
   - keen_hawk_hotfix
   - keen_hawk_release
   - game_time_hotfix
