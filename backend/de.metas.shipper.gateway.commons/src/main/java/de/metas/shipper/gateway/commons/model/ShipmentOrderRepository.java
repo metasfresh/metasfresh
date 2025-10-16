@@ -123,7 +123,7 @@ public class ShipmentOrderRepository
 	{
 		return DeliveryOrder.builder()
 				.id(DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID()))
-				.shipperProduct(CarrierShipperProduct.ofCode(po.getCarrier_Product()))
+				.shipperProduct(CarrierShipperProduct.ofCode(po.getCarrier_Product()))//TODO load from Carrier_Product
 				.customerReference(po.getCustomerReference())
 				.shipperId(ShipperId.ofRepoId(po.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(po.getM_ShipperTransportation_ID()))

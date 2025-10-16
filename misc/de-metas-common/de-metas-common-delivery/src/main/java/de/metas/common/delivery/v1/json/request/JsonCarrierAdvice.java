@@ -23,11 +23,12 @@
 package de.metas.common.delivery.v1.json.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.common.collect.ImmutableList;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
@@ -35,6 +36,6 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonCarrierAdvice
 {
-	@NonNull JsonGoodsType goodsType;
-	@NonNull ImmutableList<JsonCarrierService> services;
+	@Nullable JsonGoodsType goodsType;
+	@Nullable Set<JsonCarrierService> services;
 }

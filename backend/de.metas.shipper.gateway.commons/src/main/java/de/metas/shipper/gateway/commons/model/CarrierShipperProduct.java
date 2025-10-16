@@ -30,8 +30,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
 @Jacksonized
@@ -39,16 +37,16 @@ import javax.annotation.Nullable;
 public class CarrierShipperProduct implements ShipperProduct
 {
 	@Getter
-	String code;
+	@NonNull String code;
 
-	String name;
+	@NonNull String name;
 
 	public static CarrierShipperProduct ofCode(@NonNull final String code)
 	{
-		return ofCode(code, null);
+		return ofCode(code, code);
 	}
 
-	public static CarrierShipperProduct ofCode(@NonNull final String code, @Nullable final String name)
+	public static CarrierShipperProduct ofCode(@NonNull final String code, @NonNull final String name)
 	{
 		return new CarrierShipperProduct(code, name);
 	}

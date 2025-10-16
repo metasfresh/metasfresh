@@ -28,7 +28,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 @Jacksonized
 public class CarrierGoodsType
 {

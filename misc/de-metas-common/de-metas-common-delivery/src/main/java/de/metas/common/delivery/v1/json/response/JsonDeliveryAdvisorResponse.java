@@ -24,7 +24,6 @@ package de.metas.common.delivery.v1.json.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
@@ -35,6 +34,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
@@ -45,7 +45,7 @@ public class JsonDeliveryAdvisorResponse
 	@NonNull String requestId;
 	@Nullable String errorMessage;
 	@Nullable JsonShipperProduct shipperProduct;
-	@NonNull @Singular ImmutableList<JsonCarrierService> shipperProductServices;
+	@NonNull @Singular Set<JsonCarrierService> shipperProductServices;
 	@NonNull JsonGoodsType goodsType;
 
 	@JsonIgnore

@@ -36,7 +36,6 @@ import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
-import de.metas.shipper.gateway.spi.model.CarrierAdvice;
 import de.metas.shipper.gateway.spi.model.CarrierGoodsType;
 import de.metas.shipper.gateway.spi.model.CarrierService;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -48,6 +47,8 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class JsonShipperConverter
@@ -89,22 +90,40 @@ public class JsonShipperConverter
 
 	private @Nullable JsonCarrierAdvice toJsonCarrierAdvice(final @NonNull DeliveryOrder order)
 	{
-		final CarrierAdvice carrierAdvice = order.getCarrierAdvice();
-		if (carrierAdvice == null)
+		final CarrierGoodsType goodsType = order.getGoodsType();
+		final ImmutableList<CarrierService> services = order.getServices();
+		final JsonGoodsType jsonGoodsType;
+		if (goodsType != null)
+		{
+			jsonGoodsType = JsonGoodsType.builder()
+					.id(goodsType.getId().toString())
+					.name(goodsType.getName())
+					.build();
+		}
+		else
+		{jsonGoodsType = null;}
+
+		final Set<JsonCarrierService> jsonCarrierServices;
+		if (services != null)
+		{
+			jsonCarrierServices = services
+					.stream()
+					.map(this::toJsonCarrierService)
+					.collect(Collectors.toSet());
+		}
+		else {
+			jsonCarrierServices = null;
+		}
+
+		if (jsonGoodsType == null && jsonCarrierServices == null)
 		{
 			return null;
 		}
 
-		final CarrierGoodsType goodsType = carrierAdvice.getGoodsType();
+
 		return JsonCarrierAdvice.builder()
-				.goodsType(JsonGoodsType.builder()
-						.id(goodsType.getId().toString())
-						.name(goodsType.getName())
-						.build())
-				.services(carrierAdvice.getServices()
-						.stream()
-						.map(this::toJsonCarrierService)
-						.collect(ImmutableList.toImmutableList()))
+				.goodsType(jsonGoodsType)
+				.services(jsonCarrierServices)
 				.build();
 	}
 
