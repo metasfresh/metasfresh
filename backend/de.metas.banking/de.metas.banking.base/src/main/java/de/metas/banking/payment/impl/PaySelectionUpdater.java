@@ -216,7 +216,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		String sql = "SELECT "
 				+ " C_Invoice_ID,"
-				+ " -1 as C_Payment_ID,"
+				+ " -1 as C_Order_ID,"
 				// OpenAmt
 				+ " currencyConvert(invoiceOpen(i.C_Invoice_ID, 0)"
 				+ ",i.C_Currency_ID, ?,?, i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID) as OpenAmt," // ##1/2 Currency_To,PayDate
