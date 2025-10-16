@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
@@ -15,13 +16,20 @@ import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
+import de.metas.banking.payment.PaySelectionLineType;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerBankAccount;
+import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -32,13 +40,12 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -46,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -57,6 +63,48 @@ public class PaySelectionBL implements IPaySelectionBL
 	private static final AdMessageKey MSG_CannotCreatePayment = AdMessageKey.of("PaySelectionLine.CannotCreatePayment");
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull
+	private static BPBankAcctUse getAcceptedBankAccountUsage(final boolean isSalesInvoice, final boolean isCreditMemo)
+	{
+		if ((isSalesInvoice && !isCreditMemo) ||
+				(!isSalesInvoice && isCreditMemo))
+		{
+			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo
+			// OR it is a Credit memo with isSoTrx = 'N'
+			return BPBankAcctUse.DEBIT;
+		}
+		else
+		{
+			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
+			// OR it is a Credit memo with isSoTrx = 'Y'
+			return BPBankAcctUse.DEPOSIT;
+		}
+	}
+
+	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
+	{
+		return paySelectionLines.stream()
+				.map(paySelectionLine -> PaySelectionId.ofRepoId(paySelectionLine.getC_PaySelection_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@VisibleForTesting
+	static boolean isReconciled(@NonNull final I_C_PaySelectionLine psl)
+	{
+		return BankStatementId.ofRepoIdOrNull(psl.getC_BankStatement_ID()) != null;
+	}
+
+	@Override
+	public I_C_PaySelection getByIdNotNull(@NonNull final PaySelectionId paySelectionId)
+	{
+		return getById(paySelectionId).orElseThrow(() -> new AdempiereException("Pay Selection should be present"));
+	}
 
 	@Override
 	public Optional<I_C_PaySelection> getById(@NonNull final PaySelectionId paySelectionId)
@@ -67,99 +115,88 @@ public class PaySelectionBL implements IPaySelectionBL
 	@Override
 	public void updateFromInvoice(final I_C_PaySelectionLine psl)
 	{
-		final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
-
 		if (paymentRequestBL.isUpdatedFromPaymentRequest(psl))
 		{
 			return;
 		}
 
-		final I_C_Invoice invoice = psl.getC_Invoice();
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(psl.getC_Invoice_ID());
+		if (invoiceId == null) {return;}
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 
-		if (invoice == null)
-		{
-			return; // nothing to do yet, but as C_PaySelectionLine.C_Invoice_ID is mandatory, we only need to make sure this method is eventually called from a model interceptor
-		}
-
-		final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(psl);
-
-		final int partnerID = invoice.getC_BPartner_ID();
-		psl.setC_BPartner_ID(partnerID);
+		final BPartnerId partnerID = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		psl.setC_BPartner_ID(partnerID.getRepoId());
 
 		// task 09500 get the currency from the account of the selection header
 		// this is safe because the columns are mandatory
-		final int currencyID = psl.getC_PaySelection().getC_BP_BankAccount().getC_Currency_ID();
+		final I_C_PaySelection paySelection = getByIdNotNull(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID()));
+		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID()));
+		final CurrencyId currencyID = bankAccount.getCurrencyId();
 
+		psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(invoiceId, currencyID)));
+
+		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
+		{
+			psl.setReference(invoice.getPOReference());
+		}
+	}
+
+	@Nullable
+	public BPartnerBankAccountId getBPartnerBankAccountId(@NonNull final InvoiceId invoiceId,
+														  @NonNull final CurrencyId currencyId)
+	{
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 		final boolean isSalesInvoice = invoice.isSOTrx();
-
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
 
-		final String accteptedBankAccountUsage;
+		final BPBankAcctUse accteptedBankAccountUsage = getAcceptedBankAccountUsage(isSalesInvoice, isCreditMemo);
 
-		if ((isSalesInvoice && !isCreditMemo) ||
-				(!isSalesInvoice && isCreditMemo))
-		{
-			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo
-			// OR it is a Credit memo with isSoTrx = 'N'
-			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDebit;
-		}
-		else
-		{
-			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
-			// OR it is a Credit memo with isSoTrx = 'Y'
-			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDeposit;
-		}
-
-		final List<I_C_BP_BankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(ctx, partnerID, currencyID);
+		final List<BPartnerBankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(
+				BPartnerId.ofRepoId(invoice.getC_BPartner_ID()),
+				currencyId);
 
 		if (!bankAccts.isEmpty())
 		{
-			int primaryAcct = 0;
-			int secondaryAcct = 0;
+			BPartnerBankAccountId primaryAcct = null;
+			BPartnerBankAccountId secondaryAcct = null;
 
-			for (final I_C_BP_BankAccount account : bankAccts)
+			for (final BPartnerBankAccount account : bankAccts)
 			{
 				// FRESH-606: Only continue if the bank account has a use set
-				if (account.getBPBankAcctUse() == null)
+				if (account.getBpBankAcctUse() == null)
 				{
 					continue;
 				}
 
-				final int accountID = account.getC_BP_BankAccount_ID();
-				if (accountID > 0)
+				final BPartnerBankAccountId accountID = account.getId();
+				if (accountID != null)
 				{
-					if (account.getBPBankAcctUse().equals(X_C_BP_BankAccount.BPBANKACCTUSE_Both))
+					if (account.getBpBankAcctUse() == BPBankAcctUse.DEBIT_OR_DEPOSIT)
 					{
 						// in case a secondary act was already found, it should be not changed.
 						// this is important because the default accounts come first from the query and they have higher priority than the non-defult ones.
-						if (secondaryAcct == 0)
+						if (secondaryAcct == null)
 						{
 							secondaryAcct = accountID;
 						}
 					}
-					else if (account.getBPBankAcctUse().equals(accteptedBankAccountUsage))
+					else if (account.getBpBankAcctUse() == accteptedBankAccountUsage)
 					{
 						primaryAcct = accountID;
 						break;
 					}
 				}
 			}
-			if (primaryAcct != 0)
+			if (primaryAcct != null)
 			{
-				psl.setC_BP_BankAccount_ID(primaryAcct);
+				return primaryAcct;
 			}
-			else if (secondaryAcct != 0)
+			else if (secondaryAcct != null)
 			{
-				psl.setC_BP_BankAccount_ID(secondaryAcct);
+				return secondaryAcct;
 			}
 		}
-		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
-		{
-			psl.setReference(invoice.getPOReference());
-		}
+		return null;
 	}
 
 	@Override
@@ -204,10 +241,23 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		try
 		{
-			final I_C_Payment payment = createPayment(line);
+			final PaySelectionLineType lineType = extractType(line);
+			final I_C_Payment payment;
+			switch (lineType)
+			{
+				case Invoice:
+					payment = createPaymentForInvoice(line);
+					break;
+
+				case Order:
+					payment = createPaymentForOrder(line);
+					break;
+				default:
+					throw new AdempiereException("Not supported type for line " + line);
+			}
+
 			line.setC_Payment_ID(payment.getC_Payment_ID());
 			paySelectionDAO.save(line);
-
 		}
 		catch (final Exception ex)
 		{
@@ -223,21 +273,43 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	/**
-	 * Generates a payment for given pay selection line. The payment will be also processed.
+	 * Generates a payment for a given pay selection line. The payment will be also processed.
 	 * <p>
-	 * NOTE: this method is NOT checking if the payment was already created or it's not needed.
+	 * NOTE: this method is NOT checking if the payment was already created, or it's not needed.
 	 *
 	 * @return generated payment.
 	 */
-	private I_C_Payment createPayment(final I_C_PaySelectionLine line)
+	private I_C_Payment createPaymentForInvoice(final I_C_PaySelectionLine line)
 	{
-		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+		final I_C_PaySelection paySelection = line.getC_PaySelection();
+		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
+		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
+
+		Check.assumeNotNull(line.getC_Invoice(), "Invoice is not null for {}", line);
+
+		return paymentBL.newBuilderOfInvoice(line.getC_Invoice())
+				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
+				.orgBankAccountId(orgBankAccountId)
+				.dateAcct(payDate)
+				.dateTrx(payDate)
+				.bpartnerId(BPartnerId.ofRepoId(line.getC_BPartner_ID()))
+				.tenderType(TenderType.DirectDeposit)
+				.payAmt(line.getPayAmt())
+				.discountAmt(line.getDiscountAmt())
+				//
+				.createAndProcess();
+	}
+
+	private I_C_Payment createPaymentForOrder(@NonNull final I_C_PaySelectionLine line)
+	{
 
 		final I_C_PaySelection paySelection = line.getC_PaySelection();
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
 		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
 
-		return paymentBL.newBuilderOfInvoice(line.getC_Invoice())
+		Check.assumeNotNull(line.getC_Order(), "Order is not null for {}", line);
+
+		return paymentBL.newBuilderOfOrder(line.getC_Order())
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
 				.orgBankAccountId(orgBankAccountId)
 				.dateAcct(payDate)
@@ -298,13 +370,6 @@ public class PaySelectionBL implements IPaySelectionBL
 		updatePaySelectionReconciledStatus(paySelectionIds);
 	}
 
-	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
-	{
-		return paySelectionLines.stream()
-				.map(paySelectionLine -> PaySelectionId.ofRepoId(paySelectionLine.getC_PaySelection_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	@VisibleForTesting
 	void updatePaySelectionReconciledStatus(@NonNull final Set<PaySelectionId> paySelectionIds)
 	{
@@ -314,7 +379,7 @@ public class PaySelectionBL implements IPaySelectionBL
 			return;
 		}
 
-		final ImmutableSet<PaySelectionId> notReconciledPaySelectionIds = Services.get(IQueryBL.class)
+		final ImmutableSet<PaySelectionId> notReconciledPaySelectionIds = queryBL
 				.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionIds)
@@ -333,12 +398,6 @@ public class PaySelectionBL implements IPaySelectionBL
 			paySelection.setIsReconciled(isReconciled);
 			paySelectionDAO.save(paySelection);
 		}
-	}
-
-	@VisibleForTesting
-	static boolean isReconciled(@NonNull final I_C_PaySelectionLine psl)
-	{
-		return BankStatementId.ofRepoIdOrNull(psl.getC_BankStatement_ID()) != null;
 	}
 
 	private void linkBankStatementLine(
@@ -449,5 +508,27 @@ public class PaySelectionBL implements IPaySelectionBL
 				.map(paySelectionLine -> BPartnerId.ofRepoIdOrNull(paySelectionLine.getC_BPartner_ID()))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static PaySelectionLineType extractType(final I_C_PaySelectionLine line)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(line.getC_Order_ID());
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
+		if (orderId != null)
+		{
+			return PaySelectionLineType.Order;
+		}
+		else if (invoiceId != null)
+		{
+			return PaySelectionLineType.Invoice;
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported pay selection type, for line: ")
+					.appendParametersToMessage()
+					.setParameter("line", line.getLine())
+					.setParameter("InvoiceId", invoiceId)
+					.setParameter("originalPaymentId", orderId);
+		}
 	}
 }

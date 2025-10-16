@@ -137,7 +137,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final PaySelectionLinesToUpdate paySelectionLinesToUpdate = getPaySelectionLinesToUpdate();
 		for (final I_C_PaySelectionLine paySelectionLine : paySelectionLinesToUpdate.dequeueAll())
 		{
-			dequePaySelectionLine(paySelectionLine);
+			deletePaySelectionLine(paySelectionLine);
 		}
 
 		//
@@ -534,12 +534,12 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			return;
 		}
 
-		final I_C_PaySelectionLine existingPaySelectionLine = getPaySelectionLine(candidate);
+		final I_C_PaySelectionLine existingPaySelectionLine = dequePaySelectionLine(candidate);
 
 		// If the candidate is no longer eligible for a pay selection line, delete the existing pay selection line (if any)
 		if (candidate.getPayAmt().signum() <= 0)
 		{
-			dequePaySelectionLine(existingPaySelectionLine);
+			deletePaySelectionLine(existingPaySelectionLine);
 			return;
 		}
 
@@ -575,7 +575,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
-	private @Nullable I_C_PaySelectionLine getPaySelectionLine(final @NonNull PaySelectionLineCandidate candidate)
+	private @Nullable I_C_PaySelectionLine dequePaySelectionLine(final @NonNull PaySelectionLineCandidate candidate)
 	{
 		final I_C_PaySelection paySelection = getC_PaySelection();
 
@@ -593,7 +593,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return existingPaySelectionLine;
 	}
 
-	private void dequePaySelectionLine(@Nullable final I_C_PaySelectionLine paySelectionLine)
+	private void deletePaySelectionLine(@Nullable final I_C_PaySelectionLine paySelectionLine)
 	{
 		if (paySelectionLine == null)
 		{
@@ -644,7 +644,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 			final CurrencyId candidateCurrencyID = candidateAccount.getCurrencyId();
 
-			if (candidateCurrencyID.compareTo(paySelectionCurrencyID) == 0)
+			if (candidateCurrencyID.equals(paySelectionCurrencyID))
 			{
 				paySelectionLine.setC_BP_BankAccount_ID(BankAccountId.toRepoId(bpBankAccountId));
 			}
