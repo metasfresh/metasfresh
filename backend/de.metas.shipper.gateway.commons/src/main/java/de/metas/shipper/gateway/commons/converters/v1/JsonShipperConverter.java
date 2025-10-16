@@ -28,7 +28,11 @@ import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonMappingConfig;
+import de.metas.common.delivery.v1.json.request.JsonMappingConfigList;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfig;
+import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -36,21 +40,26 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.stream.StreamSupport;
 
 @Component
 public class JsonShipperConverter
 {
 
-	public JsonDeliveryRequest toJson(@NonNull final ShipperConfig config, @NonNull final DeliveryOrder order)
+	public JsonDeliveryRequest toJson(@NonNull final ShipperConfig config, @NonNull final DeliveryOrder order, @NonNull final ShipperMappingConfigList mappingConfigs)
 	{
+		final PickupDate pickupDate = order.getPickupDate();
 		return JsonDeliveryRequest.builder()
 				.deliveryOrderId(DeliveryOrderId.toRepoId(order.getId()))
 				.pickupAddress(toJsonAddress(order.getPickupAddress()))
-				.pickupDate(order.getPickupDate() != null ? order.getPickupDate().getDate().toString() : null)
+				.pickupDate(pickupDate.getDate().toString())
+				.pickupTimeStart(pickupDate.getTimeFrom() != null ? pickupDate.getTimeFrom().toString() : null)
+				.pickupTimeEnd(pickupDate.getTimeTo() != null ? pickupDate.getTimeTo().toString() : null)
 				.pickupNote(order.getPickupNote())
 				.deliveryAddress(toJsonAddress(order.getDeliveryAddress()))
 				.deliveryContact(toJsonContactOrNull(order.getDeliveryContact()))
@@ -62,6 +71,7 @@ public class JsonShipperConverter
 				.shipperEORI(order.getShipperEORI())
 				.receiverEORI(order.getReceiverEORI())
 				.shipperConfig(toJsonShipperConfig(config))
+				.mappingConfigs(toJsonMappingConfigList(mappingConfigs))
 				.build();
 	}
 
@@ -127,6 +137,33 @@ public class JsonShipperConverter
 				.lengthInCM(dims.getLengthInCM())
 				.widthInCM(dims.getWidthInCM())
 				.heightInCM(dims.getHeightInCM())
+				.build();
+	}
+
+	private JsonMappingConfigList toJsonMappingConfigList(final ShipperMappingConfigList configs)
+	{
+		if (configs == null || configs == ShipperMappingConfigList.EMPTY)
+		{
+			return JsonMappingConfigList.EMPTY;
+		}
+
+		return JsonMappingConfigList.ofCollection(
+				StreamSupport.stream(configs.spliterator(), false)
+						.map(this::toJsonMappingConfig)
+						.collect(ImmutableList.toImmutableList()));
+	}
+
+	private JsonMappingConfig toJsonMappingConfig(final ShipperMappingConfig config)
+	{
+		return JsonMappingConfig.builder()
+				.seqNo(config.getSeqNo().toInt())
+				.shipperProduct(config.getShipperProduct() != null ? config.getShipperProduct().getCode() : null)
+				.attributeType(config.getAttributeType().name())
+				.attributeGroupKey(config.getAttributeGroupKey())
+				.attributeKey(config.getAttributeKey())
+				.attributeValue(config.getAttributeValue().toString())
+				.mappingRule(config.getMappingRule() != null ? config.getMappingRule().name() : null)
+				.mappingRuleValue(config.getMappingRuleValue())
 				.build();
 	}
 }

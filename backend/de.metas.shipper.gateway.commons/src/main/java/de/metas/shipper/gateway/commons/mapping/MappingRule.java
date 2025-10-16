@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.client.nshift
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,31 +20,28 @@
  * #L%
  */
 
-package de.metas.shipper.client.nshift.json;
+package de.metas.shipper.gateway.commons.mapping;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Singular;
-import lombok.ToString;
-import lombok.experimental.SuperBuilder;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
-@JsonTypeName("2")
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@SuperBuilder
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class JsonCustomsInfo extends JsonDetailGroup
+@RequiredArgsConstructor
+public enum MappingRule implements ReferenceListAwareEnum
 {
+	//TODO replace with constants from model
+	ReceiverCountryCode("ReceiverCountryCode"),
+	;
 
-	@JsonProperty("Rows")
-	@Singular
-	private List<JsonDetailRow<JsonCustomsInfoDetail>> rows;
+	private static final ReferenceListAwareEnums.ValuesIndex<MappingRule> index = ReferenceListAwareEnums.index(values());
+
+	@NonNull @Getter private final String code;
+
+	@NonNull
+	public static MappingRule ofCode(@NonNull final String code)
+	{
+		return index.ofCode(code);
+	}
 }

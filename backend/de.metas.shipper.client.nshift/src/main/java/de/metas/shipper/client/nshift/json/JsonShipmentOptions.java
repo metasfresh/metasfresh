@@ -38,6 +38,10 @@ public class JsonShipmentOptions
 	@JsonProperty("ServiceLevel")
 	String serviceLevel;
 
+	@JsonProperty("TrackingURL")
+	@JsonSerialize(converter = BooleanToIntConverter.class)
+	Boolean trackingURL;
+
 	@JsonProperty("RequiredDeliveryDate")
 	String requiredDeliveryDate; // Expects DATETIME format, e.g., "YYYY-MM-DDTHH:mm:ss"
 

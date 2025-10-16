@@ -31,7 +31,7 @@ public class JsonShipmentReference
 {
 
 	@JsonProperty("Kind")
-	JsonShipmentReferenceKind kind;
+	int kind; // see https://helpcenter.nshift.com/hc/en-us/articles/16926110939292-Objects-and-Fields ReferenceKind
 
 	@JsonProperty("Value")
 	String value;

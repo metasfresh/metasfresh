@@ -23,28 +23,18 @@
 package de.metas.shipper.client.nshift.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Singular;
-import lombok.ToString;
-import lombok.experimental.SuperBuilder;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.util.List;
-
-@JsonTypeName("35")
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@SuperBuilder
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class JsonDHLFiling extends JsonDetailGroup
+@Value
+@Builder
+@Jacksonized
+public class JsonDetail
 {
+	@JsonProperty("KindId")
+	int kindId;
 
-	@JsonProperty("Rows")
-	@Singular
-	private List<JsonDetailRow<JsonDHLFilingDetail>> rows;
+	@JsonProperty("Value")
+	String value;
 }

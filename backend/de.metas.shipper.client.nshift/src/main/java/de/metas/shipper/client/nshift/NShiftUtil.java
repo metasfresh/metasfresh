@@ -22,14 +22,26 @@
 
 package de.metas.shipper.client.nshift;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.request.JsonMappingConfig;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.common.util.Check;
+import de.metas.shipper.client.nshift.json.JsonShipmentReference;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.util.AbstractMap;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @UtilityClass
 public class NShiftUtil
@@ -77,5 +89,35 @@ public class NShiftUtil
 
 		return receiverAddressBuilder;
 	}
+
+	public static List<JsonShipmentReference> getShipmentReferences(
+			@NonNull final Iterable<JsonMappingConfig> mappingConfigs,
+			@NonNull final Function<String, String> valueProvider,
+			@NonNull final String attributeType)
+	{
+		return StreamSupport.stream(mappingConfigs.spliterator(), false)
+				.filter(config -> attributeType.equals(config.getAttributeType()))
+				.sorted(Comparator.comparingInt(JsonMappingConfig::getSeqNo))
+				.map(config -> {
+					final String value = valueProvider.apply(config.getAttributeValue());
+					if (Check.isNotBlank(value))
+					{
+						return new AbstractMap.SimpleImmutableEntry<>(config.getAttributeKey(), value);
+					}
+					return null;
+				})
+				.filter(Objects::nonNull)
+				.collect(Collectors.groupingBy(
+						Map.Entry::getKey,
+						LinkedHashMap::new,
+						Collectors.mapping(Map.Entry::getValue, Collectors.joining())))
+				.entrySet().stream()
+				.map(entry -> JsonShipmentReference.builder()
+						.kind(Integer.parseInt(entry.getKey()))
+						.value(entry.getValue())
+						.build())
+				.collect(ImmutableList.toImmutableList());
+	}
+
 
 }

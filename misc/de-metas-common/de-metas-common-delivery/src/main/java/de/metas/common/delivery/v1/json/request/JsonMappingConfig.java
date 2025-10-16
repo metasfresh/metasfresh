@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.client.nshift
+ * de-metas-common-delivery
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,20 +20,28 @@
  * #L%
  */
 
-package de.metas.shipper.client.nshift.json;
+package de.metas.common.delivery.v1.json.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
-@Builder
-public class JsonCustomsInfoDetail
+@Builder(toBuilder = true)
+@Jacksonized
+public class JsonMappingConfig
 {
-
-	@JsonProperty("KindID")
-	JsonCustomsInfoDetailKind kindId;
-
-	@JsonProperty("Value")
-	String value;
+	int seqNo;
+	@Nullable String shipperProduct;
+	@NonNull String attributeType;
+	@Nullable String attributeGroupKey;
+	@NonNull String attributeKey;
+	@NonNull String attributeValue;
+	@Nullable String mappingRule;
+	@Nullable String mappingRuleValue;
 }

@@ -22,6 +22,8 @@
 
 package de.metas.shipper.client.nshift;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
@@ -30,9 +32,8 @@ import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
-import de.metas.shipper.client.nshift.json.JsonCustomsArticleDetail;
 import de.metas.shipper.client.nshift.json.JsonCustomsArticleDetailKind;
-import de.metas.shipper.client.nshift.json.JsonCustomsArticleInfo;
+import de.metas.shipper.client.nshift.json.JsonDetail;
 import de.metas.shipper.client.nshift.json.JsonDetailGroup;
 import de.metas.shipper.client.nshift.json.JsonDetailRow;
 import de.metas.shipper.client.nshift.json.JsonLabelType;
@@ -42,8 +43,6 @@ import de.metas.shipper.client.nshift.json.JsonLineReferenceKind;
 import de.metas.shipper.client.nshift.json.JsonPackage;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
-import de.metas.shipper.client.nshift.json.JsonShipmentReference;
-import de.metas.shipper.client.nshift.json.JsonShipmentReferenceKind;
 import de.metas.shipper.client.nshift.json.request.JsonShipmentRequest;
 import de.metas.shipper.client.nshift.json.response.JsonShipmentResponse;
 import de.metas.shipper.client.nshift.json.response.JsonShipmentResponseLabel;
@@ -91,10 +90,10 @@ public class NShiftShipmentService
 		}
 	}
 
-	private static JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
+	@VisibleForTesting
+	public static JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
-				.submit(false)
 				.labelType(JsonLabelType.PDF)
 				//.requiredDeliveryDate()
 				.validatePostCode(true)
@@ -123,21 +122,12 @@ public class NShiftShipmentService
 				deliveryRequest.getDeliveryContact());
 		dataBuilder.address(receiverAddressBuilder.build());
 
-		// Add References
-		if (deliveryRequest.getDeliveryDate() != null)
-		{
-			dataBuilder.reference(JsonShipmentReference.builder()
-					.kind(JsonShipmentReferenceKind.WANTED_DELIVERY_TIME)
-					.value(deliveryRequest.getDeliveryDate())
-					.build());
-		}
-		if (Check.isNotBlank(deliveryRequest.getCustomerReference()))
-		{
-			dataBuilder.reference(JsonShipmentReference.builder()
-					.kind(JsonShipmentReferenceKind.SENDER_REFERENCE)
-					.value(deliveryRequest.getCustomerReference())
-					.build());
-		}
+		dataBuilder.references(NShiftUtil.getShipmentReferences(
+				deliveryRequest.getMappingConfigs().getConfigs(),
+				deliveryRequest::getValue,
+				DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+		);
+
 
 		int lineNoCounter = 1;
 		for (final JsonDeliveryOrderParcel deliveryLine : deliveryRequest.getDeliveryOrderParcels())
@@ -179,27 +169,27 @@ public class NShiftShipmentService
 
 	private static JsonDetailGroup buildCustomsArticleGroup(@NonNull final JsonDeliveryOrderParcel deliveryLine, final int lineNo, @NonNull final String countryOfOrigin)
 	{
-		final JsonCustomsArticleInfo.JsonCustomsArticleInfoBuilder<?, ?> customsArticleInfoBuilder = JsonCustomsArticleInfo.builder();
+		final JsonDetailGroup.JsonDetailGroupBuilder jsonDetailGroupBuilder = JsonDetailGroup.builder().groupID("1");
 
 		for (final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents content : deliveryLine.getContents())
 		{
-			final JsonDetailRow.JsonDetailRowBuilder<JsonCustomsArticleDetail> detailRowBuilder = JsonDetailRow.<JsonCustomsArticleDetail>builder()
+			final JsonDetailRow.JsonDetailRowBuilder detailRowBuilder = JsonDetailRow.builder()
 					.lineNo(lineNo);
 
 			detailRowBuilder
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.QUANTITY).value(content.getShippedQuantity().getValue().toPlainString()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.UNIT_OF_MEASURE).value(content.getShippedQuantity().getUomCode()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.DESCRIPTION_OF_GOODS).value(content.getProductName()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.ARTICLE_NO).value(content.getShipmentOrderItemId()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.UNIT_VALUE).value(content.getUnitPrice().getAmount().toPlainString()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.TOTAL_VALUE).value(content.getTotalValue().getAmount().toPlainString()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.CUSTOMS_ARTICLE_CURRENCY).value(content.getTotalValue().getCurrencyCode()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.COUNTRY_OF_ORIGIN).value(countryOfOrigin).build());
+					.detail(JsonDetail.builder().kindId(JsonCustomsArticleDetailKind.QUANTITY.getJsonValue()).value(content.getShippedQuantity().getValue().toPlainString()).build())
+					.detail(JsonDetail.builder().kindId(JsonCustomsArticleDetailKind.UNIT_OF_MEASURE.getJsonValue()).value(content.getShippedQuantity().getUomCode()).build())
+					.detail(JsonDetail.builder().kindId(JsonCustomsArticleDetailKind.DESCRIPTION_OF_GOODS.getJsonValue()).value(content.getProductName()).build())
+					.detail(JsonDetail.builder().kindId(JsonCustomsArticleDetailKind.ARTICLE_NO.getJsonValue()).value(content.getShipmentOrderItemId()).build())
+					.detail(JsonDetail.builder().kindId(JsonCustomsArticleDetailKind.UNIT_VALUE.getJsonValue()).value(content.getUnitPrice().getAmount().toPlainString()).build())
+					.detail(JsonDetail.builder().kindId(JsonCustomsArticleDetailKind.TOTAL_VALUE.getJsonValue()).value(content.getTotalValue().getAmount().toPlainString()).build())
+					.detail(JsonDetail.builder().kindId(JsonCustomsArticleDetailKind.CUSTOMS_ARTICLE_CURRENCY.getJsonValue()).value(content.getTotalValue().getCurrencyCode()).build())
+					.detail(JsonDetail.builder().kindId(JsonCustomsArticleDetailKind.COUNTRY_OF_ORIGIN.getJsonValue()).value(countryOfOrigin).build());
 
-			customsArticleInfoBuilder.row(detailRowBuilder.build());
+			jsonDetailGroupBuilder.row(detailRowBuilder.build());
 		}
 
-		return customsArticleInfoBuilder.build();
+		return jsonDetailGroupBuilder.build();
 	}
 
 	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final String requestId)
