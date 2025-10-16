@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { reportInventoryCounting, resolveHU, resolveLocator } from '../api';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { inventoryJobLocation } from '../routes';
+import { inventoryJobOrLineLocation } from '../routes';
 import { toastError, toastErrorFromObj } from '../../../utils/toast';
 import InventoryCountComponent from './InventoryCountComponent';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
@@ -16,9 +16,9 @@ const STATUS_FillData = 'FillData';
 const DEBUGGING = false;
 
 const InventoryScanScreen = () => {
-  const { applicationId, wfProcessId, lineId, history } = useScreenDefinition({
+  const { applicationId, wfProcessId, activityId, lineId, history } = useScreenDefinition({
     screenId: 'InventoryScanScreen',
-    back: inventoryJobLocation,
+    back: inventoryJobOrLineLocation,
   });
   const dispatch = useDispatch();
 
@@ -78,7 +78,7 @@ const InventoryScanScreen = () => {
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
-        history.goTo(inventoryJobLocation({ applicationId, wfProcessId }));
+        history.goTo(inventoryJobOrLineLocation({ applicationId, wfProcessId, activityId, lineId }));
       })
       .catch((error) => toastErrorFromObj(error))
       .finally(() => setProcessing(false));

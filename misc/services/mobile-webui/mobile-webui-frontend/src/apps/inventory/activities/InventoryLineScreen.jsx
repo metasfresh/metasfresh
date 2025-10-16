@@ -1,25 +1,31 @@
 import React from 'react';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { inventoryJobLocation } from '../routes';
+import { inventoryJobLocation, inventoryScanScreenLocation } from '../routes';
 import { useQuery } from '../../../hooks/useQuery';
 import { getLineHUs } from '../api';
 import Spinner from '../../../components/Spinner';
 import InventoryLineHUButton from './InventoryLineHUButton';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
 const InventoryLineScreen = () => {
-  const { wfProcessId, lineId } = useScreenDefinition({
+  const { applicationId, wfProcessId, activityId, lineId, history } = useScreenDefinition({
     screenId: 'InventoryLineScreen',
     back: inventoryJobLocation,
   });
 
   const { isLineHUsLoading, lineHUs } = useLineHUs({ wfProcessId, lineId });
 
+  const onScanButtonClick = () => {
+    history.push(inventoryScanScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
+  };
   const onLineHUButtonClicked = ({ lineHU }) => {
     console.log('onLineHUButtonClicked', { lineHU });
   };
 
   return (
     <div className="section pt-2">
+      <ButtonWithIndicator testId="scanQRCode-button" captionKey="inventory.scanQRCode" onClick={onScanButtonClick} />
+
       <div className="buttons">
         {isLineHUsLoading && <Spinner />}
         {!isLineHUsLoading &&

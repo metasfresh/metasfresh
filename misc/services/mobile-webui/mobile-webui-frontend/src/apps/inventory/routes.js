@@ -1,17 +1,23 @@
 import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 import InventoryLineScreen from './activities/InventoryLineScreen';
 import InventoryScanScreen from './activities/InventoryScanScreen';
+import { toUrl } from '../../utils';
 
-export const inventoryJobLocation = ({ applicationId, wfProcessId }) =>
-  getWFProcessScreenLocation({ applicationId, wfProcessId });
-
+export const inventoryJobLocation = ({ applicationId, wfProcessId }) => {
+  return getWFProcessScreenLocation({ applicationId, wfProcessId });
+};
 export const inventoryLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) => {
   const baseUrl = inventoryJobLocation({ applicationId, wfProcessId });
   return `${baseUrl}/line/${activityId}/${lineId}`;
 };
-export const inventoryScanScreenLocation = ({ applicationId, wfProcessId, activityId }) => {
+export const inventoryJobOrLineLocation = ({ applicationId, wfProcessId, activityId, lineId }) => {
+  return lineId
+    ? inventoryLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
+    : inventoryJobLocation({ applicationId, wfProcessId });
+};
+export const inventoryScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) => {
   const baseUrl = inventoryJobLocation({ applicationId, wfProcessId });
-  return `${baseUrl}/scan/${activityId}`;
+  return toUrl(`${baseUrl}/scan/${activityId}`, { lineId });
 };
 
 export const inventoryRoutes = [
