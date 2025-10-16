@@ -130,15 +130,15 @@ public class M_ShipperTransportation_StepDef
 		}
 	}
 
-	@And("metasfresh contains M_ShipperTransportation")
-	public void add_M_ShipperTransportation(@NonNull final DataTable dataTable)
+	@And("metasfresh contains Transport Order")
+	public void add_TransportOrder(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
-				.forEach(this::createM_ShipperTransportation);
+				.forEach(this::createTransportOrder);
 	}
 
-	public void createM_ShipperTransportation(@NonNull final DataTableRow row)
+	public void createTransportOrder(@NonNull final DataTableRow row)
 	{
 		final I_M_ShipperTransportation shipperTransportationRecord = newInstance(I_M_ShipperTransportation.class);
 
@@ -200,10 +200,10 @@ public class M_ShipperTransportation_StepDef
 	public void add_M_Package(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.forEach(this::creat_M_Package);
+				.forEach(this::create_M_Package);
 	}
 
-	private void creat_M_Package(@NonNull final DataTableRow row)
+	private void create_M_Package(@NonNull final DataTableRow row)
 	{
 		final I_M_Package packageRecord = newInstance(I_M_Package.class);
 

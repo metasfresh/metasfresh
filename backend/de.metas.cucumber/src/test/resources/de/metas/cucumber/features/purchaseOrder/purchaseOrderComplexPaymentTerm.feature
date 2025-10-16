@@ -100,7 +100,7 @@ Feature: Purchase order with complex payment term
       | PTB22                  | 2025-10-15 | 25.58  | WP     |
       | PTB23                  | 9999-01-01 | 25.58  | PR     |
       | PTB24                  | 9999-01-01 | 25.56  | PR     |
-    And metasfresh contains M_ShipperTransportation
+    And metasfresh contains Transport Order
       | Identifier | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
       | shipperTransp_1            | shipper_DHL  | shipper             | shipperLocation     |
     And metasfresh contains M_Package
