@@ -10,7 +10,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
     "inventoryType": "PHYSICAL",
     "lines": [
       {
-        "asiId": 1000000,
+        "asiId": 1000001,
         "counted": false,
         "huAggregationType": "MULTI_HU",
         "id": 1000000,
@@ -19,6 +19,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
             "huId": 100,
             "id": 1000000,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "10",
               "uomId": 1000000
@@ -32,6 +33,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
             "huId": 200,
             "id": 1000001,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "1",
               "uomId": 1000000
@@ -57,11 +59,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
         "qtyCountFixed": {
           "qty": "11",
           "uomId": 1000000
-        },
-        "storageAttributesKey": "10§&§11"
+        }
       },
       {
-        "asiId": 1000001,
+        "asiId": 1000002,
         "counted": false,
         "huAggregationType": "MULTI_HU",
         "id": 1000001,
@@ -70,6 +71,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
             "huId": 200,
             "id": 1000002,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "1",
               "uomId": 1000000
@@ -95,11 +97,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
         "qtyCountFixed": {
           "qty": "1",
           "uomId": 1000000
-        },
-        "storageAttributesKey": "10§&§11"
+        }
       },
       {
-        "asiId": 1000002,
+        "asiId": 1000003,
         "counted": false,
         "huAggregationType": "MULTI_HU",
         "id": 1000002,
@@ -108,6 +109,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
             "huId": 300,
             "id": 1000003,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "2",
               "uomId": 1000000
@@ -133,8 +135,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
         "qtyCountFixed": {
           "qty": "2",
           "uomId": 1000000
-        },
-        "storageAttributesKey": "10§&§11§&§12"
+        }
       }
     ],
     "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
@@ -156,7 +157,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
     "inventoryType": "PHYSICAL",
     "lines": [
       {
-        "asiId": 1000003,
+        "asiId": 1000005,
         "counted": false,
         "huAggregationType": "MULTI_HU",
         "id": 1000003,
@@ -165,6 +166,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
             "huId": 100,
             "id": 1000004,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "10",
               "uomId": 1000000
@@ -178,6 +180,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
             "huId": 200,
             "id": 1000005,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "1",
               "uomId": 1000000
@@ -203,11 +206,10 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
         "qtyCountFixed": {
           "qty": "11",
           "uomId": 1000000
-        },
-        "storageAttributesKey": "10§&§11"
+        }
       },
       {
-        "asiId": 1000004,
+        "asiId": 1000007,
         "counted": false,
         "huAggregationType": "MULTI_HU",
         "id": 1000004,
@@ -216,6 +218,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
             "huId": 300,
             "id": 1000006,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "2",
               "uomId": 1000000
@@ -229,6 +232,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
             "huId": 305,
             "id": 1000007,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "2",
               "uomId": 1000000
@@ -254,8 +258,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
         "qtyCountFixed": {
           "qty": "4",
           "uomId": 1000000
-        },
-        "storageAttributesKey": "10§&§11§&§12"
+        }
       }
     ],
     "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
@@ -285,6 +288,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
           {
             "huId": 100,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "10",
               "uomId": 1000000
@@ -310,8 +314,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
         "qtyCountFixed": {
           "qty": "10",
           "uomId": 1000000
-        },
-        "storageAttributesKey": "10§&§11"
+        }
       },
       {
         "asiId": 1000001,
@@ -322,6 +325,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
           {
             "huId": 200,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "1",
               "uomId": 1000000
@@ -347,8 +351,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
         "qtyCountFixed": {
           "qty": "1",
           "uomId": 1000000
-        },
-        "storageAttributesKey": "10§&§11"
+        }
       },
       {
         "asiId": 1000002,
@@ -359,6 +362,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
           {
             "huId": 200,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "1",
               "uomId": 1000000
@@ -384,8 +388,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
         "qtyCountFixed": {
           "qty": "1",
           "uomId": 1000000
-        },
-        "storageAttributesKey": "10§&§11"
+        }
       },
       {
         "asiId": 1000003,
@@ -396,6 +399,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
           {
             "huId": 300,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": {
               "qty": "2",
               "uomId": 1000000
@@ -421,8 +425,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateComm
         "qtyCountFixed": {
           "qty": "2",
           "uomId": 1000000
-        },
-        "storageAttributesKey": "10§&§11§&§12"
+        }
       }
     ],
     "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",

@@ -181,15 +181,13 @@ class InventoryRepositoryTest
 				.counted(true)
 				.qtyBookFixed(Quantity.of("30", uomRecord))
 				.qtyCountFixed(Quantity.of("3", uomRecord))
-				.inventoryLineHU(InventoryLineHU
-						.builder()
+				.inventoryLineHU(InventoryLineHU.builder()
 						.huId(HuId.ofRepoId(100))
 						.qtyCount(Quantity.of(ONE, uomRecord))
 						.qtyBook(Quantity.of(TEN, uomRecord))
 						.isCounted(false)
 						.build())
-				.inventoryLineHU(InventoryLineHU
-						.builder()
+				.inventoryLineHU(InventoryLineHU.builder()
 						.huId(HuId.ofRepoId(200))
 						.qtyCount(Quantity.of("2", uomRecord))
 						.qtyBook(Quantity.of("20", uomRecord))

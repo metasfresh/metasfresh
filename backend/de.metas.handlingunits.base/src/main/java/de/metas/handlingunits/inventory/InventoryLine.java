@@ -288,16 +288,24 @@ public class InventoryLine
 	{
 		final ArrayList<InventoryLineHU> newLineHUs = new ArrayList<>(inventoryLineHUs.size() + 1);
 		boolean updated = false;
-		for (InventoryLineHU lineHU : inventoryLineHUs)
+
+		boolean isSingleLineHUPlaceholder = inventoryLineHUs.size() == 1
+				&& inventoryLineHUs.get(0).getId() == null
+				&& inventoryLineHUs.get(0).getHuId() == null;
+
+		if (!isSingleLineHUPlaceholder)
 		{
-			if (!updated && HuId.equals(lineHU.getHuId(), request.getHuId()))
+			for (InventoryLineHU lineHU : inventoryLineHUs)
 			{
-				newLineHUs.add(lineHU.updatingFrom(request));
-				updated = true;
-			}
-			else
-			{
-				newLineHUs.add(lineHU);
+				if (!updated && HuId.equals(lineHU.getHuId(), request.getHuId()))
+				{
+					newLineHUs.add(lineHU.updatingFrom(request));
+					updated = true;
+				}
+				else
+				{
+					newLineHUs.add(lineHU);
+				}
 			}
 		}
 

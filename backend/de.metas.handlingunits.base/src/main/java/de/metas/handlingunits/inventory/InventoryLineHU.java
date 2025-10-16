@@ -69,16 +69,6 @@ public class InventoryLineHU
 	@Nullable Quantity qtyCount;
 	boolean isCounted;
 
-	public static InventoryLineHU zeroPhysicalInventory(@NonNull final I_C_UOM uom)
-	{
-		final Quantity zero = Quantity.zero(uom);
-		return builder()
-				.huId(null)
-				.qtyInternalUse(null)
-				.qtyBook(zero)
-				.qtyCount(zero)
-				.build();
-	}
 
 	@Builder(toBuilder = true)
 	private InventoryLineHU(

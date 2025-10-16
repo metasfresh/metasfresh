@@ -278,18 +278,18 @@ class InventoryLoaderAndSaver
 		{
 			qtyInternalUse = null;
 
-			if (inventoryLineRecord.getM_HU_ID() > 0)
+			final HuId huId = HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID());
+			if (huId != null)
 			{
 				// refresh bookedQty from HU
+				// FIXME: IMHO this shall not be called here as part of the loading process (hidden side effect)
 				final ProductId productId = ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID());
-				final HuId huId = HuId.ofRepoId(inventoryLineRecord.getM_HU_ID());
 				final UomId uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 
 				qtyBook = getFreshBookedQtyFromStorage(productId, uomId, huId).orElse(Quantity.zero(uom));
 			}
 			else
 			{
-
 				qtyBook = Quantity.of(inventoryLineRecord.getQtyBook(), uom);
 			}
 
