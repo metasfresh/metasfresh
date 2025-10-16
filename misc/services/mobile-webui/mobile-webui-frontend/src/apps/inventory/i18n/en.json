@@ -4,6 +4,7 @@
   "product": "Product",
   "qtyBooked": "Qty Booked",
   "qtyCount": "Qty Count",
+  "scanQRCode": "Scan QR",
   "scanHUPlaceholder": "Scan HU",
   "scanLocatorPlaceholder": "Scan Locator"
 }

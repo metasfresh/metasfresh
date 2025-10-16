@@ -22,11 +22,7 @@ const InventoryActivity = ({ applicationId, wfProcessId, activityId }) => {
 
   return (
     <div className="mt-5">
-      <ButtonWithIndicator
-        testId="scanQRCode-button"
-        captionKey="activities.picking.scanQRCode"
-        onClick={onScanButtonClick}
-      />
+      <ButtonWithIndicator testId="scanQRCode-button" captionKey="inventory.scanQRCode" onClick={onScanButtonClick} />
 
       {lines.map((line) => (
         <InventoryLineButton
