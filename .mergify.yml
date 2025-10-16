@@ -59,7 +59,6 @@ pull_request_rules:
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=keen_hawk_hotfix
               - base=game_time_hotfix
-              - base=temporary_test20240815_hotfix
               - base=ghost_rider_hotfix
               - base=gray_knight_hotfix
               - base=hard_encoded_hotfix
@@ -80,7 +79,6 @@ pull_request_rules:
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=keen_hawk_release
               - base=game_time_release
-              - base=temporary_test20240815_release
               - base=ghost_rider_release
               - base=intensive_care_release
               - base=modus_operandi_release

@@ -7,8 +7,6 @@ release:
   - keen_hawk_release
   - game_time_hotfix
   - game_time_release
-  - temporary_test20240815_hotfix
-  - temporary_test20240815_release
   - ghost_rider_hotfix
   - ghost_rider_release
   - gray_knight_hotfix
