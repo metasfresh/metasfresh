@@ -6,5 +6,8 @@
   "qtyCount": "Qty Count",
   "scanQRCode": "Scan QR",
   "scanHUPlaceholder": "Scan HU",
-  "scanLocatorPlaceholder": "Scan Locator"
+  "scanLocatorPlaceholder": "Scan Locator",
+  "InventoryLineScreen": {
+    "caption": "Line"
+  }
 }

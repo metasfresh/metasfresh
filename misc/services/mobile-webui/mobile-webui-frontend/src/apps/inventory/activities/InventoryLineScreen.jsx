@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { inventoryJobLocation, inventoryScanScreenLocation } from '../routes';
 import { useQuery } from '../../../hooks/useQuery';
@@ -6,14 +6,33 @@ import { getLineHUs } from '../api';
 import Spinner from '../../../components/Spinner';
 import InventoryLineHUButton from './InventoryLineHUButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { useDispatch } from 'react-redux';
+import { updateHeaderEntry } from '../../../actions/HeaderActions';
+import { trl } from '../../../utils/translations';
+import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
+import { useWFActivity } from '../../../reducers/wfProcesses';
+import { getInventoryLineById, getInventoryLinesArray } from '../reducers/utils';
 
 const InventoryLineScreen = () => {
-  const { applicationId, wfProcessId, activityId, lineId, history } = useScreenDefinition({
+  const { url, applicationId, wfProcessId, activityId, lineId, history } = useScreenDefinition({
     screenId: 'InventoryLineScreen',
+    captionKey: 'inventory.InventoryLineScreen.caption',
     back: inventoryJobLocation,
   });
 
+  const activity = useWFActivity({ wfProcessId, activityId });
+  const line = getInventoryLineById({ activity, lineId });
   const { isLineHUsLoading, lineHUs } = useLineHUs({ wfProcessId, lineId });
+
+  console.log('InventoryLineScreen', { line, lines: getInventoryLinesArray({ activity }) });
+  useHeaderUpdate({
+    url,
+    productName: line?.productName,
+    locatorName: line?.locatorName,
+    uom: line?.uom,
+    qtyBooked: line?.qtyBooked,
+    qtyCount: line?.qtyCount,
+  });
 
   const onScanButtonClick = () => {
     history.push(inventoryScanScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
@@ -46,6 +65,41 @@ const InventoryLineScreen = () => {
 };
 
 export default InventoryLineScreen;
+
+//
+//
+//
+//
+//
+
+const useHeaderUpdate = ({ url, productName, locatorName, uom, qtyBooked, qtyCount }) => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(
+      updateHeaderEntry({
+        location: url,
+        values: [
+          {
+            caption: trl('inventory.locator'),
+            value: locatorName,
+          },
+          {
+            caption: trl('inventory.product'),
+            value: productName,
+          },
+          {
+            caption: trl('inventory.qtyBooked'),
+            value: formatQtyToHumanReadableStr({ qty: qtyBooked, uom }),
+          },
+          {
+            caption: trl('inventory.qtyCount'),
+            value: formatQtyToHumanReadableStr({ qty: qtyCount, uom }),
+          },
+        ],
+      })
+    );
+  }, [url, productName, locatorName, uom, qtyBooked, qtyCount, dispatch]);
+};
 
 //
 //

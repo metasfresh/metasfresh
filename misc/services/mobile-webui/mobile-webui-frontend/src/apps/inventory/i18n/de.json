@@ -6,5 +6,8 @@
   "qtyCount": "Qty Count",
   "scanQRCode": "QR scannen",
   "scanHUPlaceholder": "Scannen HU",
-  "scanLocatorPlaceholder": "Lagerort scannen"
+  "scanLocatorPlaceholder": "Lagerort scannen",
+  "InventoryLineScreen": {
+    "caption": "Line"
+  }
 }
