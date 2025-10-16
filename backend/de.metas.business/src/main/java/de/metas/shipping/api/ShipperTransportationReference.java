@@ -20,22 +20,21 @@
  * #L%
  */
 
-package de.metas.payment.paymentterm;
+package de.metas.shipping.api;
 
-import de.metas.i18n.AdMessageKey;
-import lombok.experimental.UtilityClass;
+import de.metas.shipping.model.ShipperTransportationId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.ZoneOffset;
 
-@UtilityClass
-public class PaymentTermConstants
+@Value
+@Builder
+public class ShipperTransportationReference
 {
-	public static final AdMessageKey MSG_ComplexTermConflict = AdMessageKey.of("C_PaymentTerm_ComplexTermConflict");
-	public static final AdMessageKey C_PAYMENTTERM_BREAK_TotalPercentTooHigh = AdMessageKey.of("C_PaymentTerm_Break_TotalPercentTooHigh");
-
-	public static final Instant INFINITE_FUTURE_DATE = LocalDateTime.of(9999, Month.JANUARY, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
+	@NonNull ShipperTransportationId id;
+	@Nullable Instant billOfLadingDate;
+	@Nullable Instant ETADate;
 }
-

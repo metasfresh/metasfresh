@@ -254,6 +254,27 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Offset days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOffsetDays (int OffsetDays);
+
+	/**
+	 * Get Offset days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getOffsetDays();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_OffsetDays = new ModelColumn<>(I_C_OrderPaySchedule.class, "OffsetDays", null);
+	String COLUMNNAME_OffsetDays = "OffsetDays";
+
+	/**
 	 * Set Percent.
 	 * Percentage
 	 *

@@ -175,4 +175,5 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		}
 		return sb.toString();
 	}
+
 }
