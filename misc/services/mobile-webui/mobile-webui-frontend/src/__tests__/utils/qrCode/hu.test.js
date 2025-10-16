@@ -137,6 +137,21 @@ describe('huQRCodes tests', () => {
           isUnique: false,
         });
       });
+      it('invalid best before date', () => {
+        // IMPORTANT: keep in sync with de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeTest
+        const code = 'LMQ#1#1.000#00.00.000##100904';
+        expect(parseQRCodeString(code)).toEqual({
+          code,
+          barcodeType: 'LMQ',
+          displayable: '1.000',
+          weightNet: 1,
+          weightNetUOM: 'kg',
+          isTUToBePickedAsWhole: true,
+          bestBeforeDate: null,
+          lotNo: '',
+          productNo: '100904',
+        });
+      });
     });
     describe('GS1-128', () => {
       it('standard test', () => {
