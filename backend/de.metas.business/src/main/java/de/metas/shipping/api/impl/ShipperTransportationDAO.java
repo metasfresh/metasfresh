@@ -21,7 +21,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -185,7 +184,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listDistinct(I_C_Order.COLUMNNAME_C_Order_ID, OrderId.class);
+				.listDistinct(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, OrderId.class);
 
 	}
 }
