@@ -2,7 +2,10 @@ package de.metas.inventory.mobileui;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.inventory.Inventory;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.mobileui.deps.warehouse.WarehouseService;
+import de.metas.inventory.mobileui.deps.warehouse.WarehousesLoadingCache;
 import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.inventory.mobileui.launchers.InventoryWFProcessStartParams;
 import de.metas.inventory.mobileui.launchers.InventoryWorkflowLaunchersProvider;
@@ -10,6 +13,7 @@ import de.metas.mobile.application.MobileApplicationId;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
+import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
@@ -34,6 +38,7 @@ public class InventoryMobileApplication implements WorkflowBasedMobileApplicatio
 
 	@NonNull private final InventoryWorkflowLaunchersProvider launchersProvider;
 	@NonNull private final InventoryJobService jobService;
+	@NonNull private final WarehouseService warehouseService;
 
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
@@ -82,7 +87,26 @@ public class InventoryMobileApplication implements WorkflowBasedMobileApplicatio
 	@Override
 	public WFProcessHeaderProperties getHeaderProperties(final @NonNull WFProcess wfProcess)
 	{
-		return WFProcessHeaderProperties.EMPTY;
+		final WarehousesLoadingCache warehouses = warehouseService.newLoadingCache();
+
+		final Inventory inventory = getInventory(wfProcess);
+
+		return WFProcessHeaderProperties.builder()
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
+						.value(inventory.getDocumentNo())
+						.build())
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("MovementDate"))
+						.value(TranslatableStrings.date(inventory.getMovementDate().toLocalDate()))
+						.build())
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("M_Warehouse_ID"))
+						.value(inventory.getWarehouseId() != null
+								? warehouses.getById(inventory.getWarehouseId()).getWarehouseName()
+								: "")
+						.build())
+				.build();
 	}
 
 	@NonNull

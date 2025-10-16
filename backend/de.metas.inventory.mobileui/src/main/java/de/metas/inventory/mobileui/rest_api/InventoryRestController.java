@@ -14,8 +14,7 @@ import de.metas.inventory.mobileui.rest_api.json.JsonResolveHURequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHUResponse;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorRequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorResponse;
-import de.metas.inventory.mobileui.rest_api.mappers.JsonInventoryJobMapperService;
-import de.metas.inventory.mobileui.rest_api.mappers.JsonResolveHUResponseMapperService;
+import de.metas.inventory.mobileui.rest_api.mappers.Mappers;
 import de.metas.inventory.mobileui.rest_api.mappers.WFProcessMapper;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.security.mobile_application.MobileApplicationPermissions;
@@ -45,8 +44,7 @@ public class InventoryRestController
 	@NonNull private final MobileApplicationService mobileApplicationService;
 	@NonNull private InventoryJobService jobService;
 	@NonNull private final WorkflowRestController workflowRestController;
-	@NonNull private final JsonResolveHUResponseMapperService jsonResolveHUResponseMapperService;
-	@NonNull private final JsonInventoryJobMapperService jsonInventoryJobMapperService;
+	@NonNull private final Mappers mappers;
 
 	private void assertApplicationAccess()
 	{
@@ -85,7 +83,7 @@ public class InventoryRestController
 						.build()
 		);
 
-		return jsonResolveHUResponseMapperService.newMapper(newJsonOpts()).toJson(response);
+		return mappers.newJsonResolveHUResponse(newJsonOpts()).toJson(response);
 	}
 
 	@PostMapping("/count")
@@ -117,7 +115,7 @@ public class InventoryRestController
 		return JsonGetLineHUsResponse.builder()
 				.wfProcessId(wfProcessId)
 				.lineId(lineId)
-				.lineHUs(jsonInventoryJobMapperService.newMapper(newJsonOpts()).toJsonInventoryLineHUs(line))
+				.lineHUs(mappers.newJsonInventoryJobMapper(newJsonOpts()).toJsonInventoryLineHUs(line))
 				.build();
 	}
 }

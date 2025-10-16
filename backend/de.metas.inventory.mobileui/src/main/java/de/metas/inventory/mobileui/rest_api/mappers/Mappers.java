@@ -10,19 +10,31 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class JsonInventoryJobMapperService
+public class Mappers
 {
 	@NonNull private final WarehouseService warehouseService;
 	@NonNull private final ProductService productService;
 	@NonNull private final HandlingUnitsService handlingUnitsService;
 
-	public JsonInventoryJobMapper newMapper(@NonNull final JsonOpts jsonOpts)
+	public JsonInventoryJobMapper newJsonInventoryJobMapper(@NonNull final JsonOpts jsonOpts)
 	{
 		return JsonInventoryJobMapper.builder()
 				.warehouses(warehouseService.newLoadingCache())
 				.products(productService.newLoadingCache())
 				.handlingUnits(handlingUnitsService.newLoadingCache())
 				.adLanguage(jsonOpts.getAdLanguage())
+				.build();
+	}
+
+	public JsonResolveHUResponseMapper newJsonResolveHUResponse(@NonNull final JsonOpts jsonOpts)
+	{
+		return JsonResolveHUResponseMapper.builder()
+				.warehouses(warehouseService.newLoadingCache())
+				.products(productService.newLoadingCache())
+				.handlingUnits(handlingUnitsService.newLoadingCache())
+				//
+				.adLanguage(jsonOpts.getAdLanguage())
+				//
 				.build();
 	}
 }
