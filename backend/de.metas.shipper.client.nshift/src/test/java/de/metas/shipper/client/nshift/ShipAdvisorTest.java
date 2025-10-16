@@ -29,6 +29,7 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 		"logging.level.de.metas.shipper.client.nshift.NShiftShipAdvisorService=TRACE",
 		"logging.level.de.metas.shipper.client.nshift.NShiftRestClient=TRACE"
 })
-// @Disabled("This test is only for local testing of changes, we don't want to call an api on each build")
+@Disabled("This test is only for local testing of changes, we don't want to call an api on each build")
 public class ShipAdvisorTest
 {
 	private static final String ACTOR_ID = "nShift portal actorId";
