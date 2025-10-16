@@ -209,6 +209,8 @@ public interface I_C_PaySelectionLine
 	ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_C_PaySelectionLine.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
+	int getC_Order_ID();  // TODO -- add real column
+
 	/**
 	 * Set Payment.
 	 * Payment identifier

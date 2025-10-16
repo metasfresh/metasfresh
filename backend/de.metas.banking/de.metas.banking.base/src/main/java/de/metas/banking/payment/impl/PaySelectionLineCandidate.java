@@ -10,52 +10,50 @@ package de.metas.banking.payment.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import javax.annotation.concurrent.Immutable;
-
+import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
+import de.metas.util.Check;
+import lombok.Getter;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_PaySelectionLine;
+import org.jetbrains.annotations.Nullable;
 
-import de.metas.util.Check;
-import de.metas.common.util.CoalesceUtil;
+import javax.annotation.concurrent.Immutable;
+import java.math.BigDecimal;
 
 /**
  * {@link I_C_PaySelectionLine} candidate used to create or update pay selection lines.
- * 
- * @author tsa
  *
+ * @author tsa
  */
 @Immutable
 class PaySelectionLineCandidate
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
-	private final String paymentRule;
-	private final BigDecimal payAmt;
-	private final BigDecimal discountAmt;
-	private final BigDecimal openAmt;
-	private final BigDecimal differenceAmt;
-	private final int C_Invoice_ID;
-	private final boolean isSOTrx;
-	private final int C_BPartner_ID;
-	private final int C_BP_BankAccount_ID;
+	@Getter private final String paymentRule;
+	@Getter private final BigDecimal payAmt;
+	@Getter private final BigDecimal discountAmt;
+	@Getter private final BigDecimal openAmt;
+	@Getter private final BigDecimal differenceAmt;
+	@Getter private final InvoiceId invoiceId;
+	@Getter private final OrderId orderId;
+	@Getter private final boolean isSOTrx;
+	private final BPartnerId bpartnerId;
+	private final BankAccountId bpBankAccountId;
 
 	private PaySelectionLineCandidate(final Builder builder)
 	{
@@ -66,10 +64,16 @@ class PaySelectionLineCandidate
 		this.discountAmt = builder.getDiscountAmt();
 		this.openAmt = builder.getOpenAmt();
 		this.differenceAmt = builder.getDifferenceAmt();
-		this.C_Invoice_ID = builder.getC_Invoice_ID();
+		this.invoiceId = builder.getInvoiceId();
+		this.orderId = builder.getOrderId();
 		this.isSOTrx = builder.isSOTrx();
-		this.C_BPartner_ID = builder.getC_BPartner_ID();
-		this.C_BP_BankAccount_ID = builder.getC_BP_BankAccount_ID();
+		this.bpartnerId = builder.getBPartnerId();
+		this.bpBankAccountId = builder.getBPartnerBankAccountId();
+	}
+
+	public static Builder builder()
+	{
+		return new Builder();
 	}
 
 	@Override
@@ -78,72 +82,31 @@ class PaySelectionLineCandidate
 		return ObjectUtils.toString(this);
 	}
 
-	public String getPaymentRule()
+	public BPartnerId getBPartnerId()
 	{
-		return paymentRule;
+		return bpartnerId;
 	}
 
-	public BigDecimal getPayAmt()
+	public BankAccountId getBPartnerBankAccountId()
 	{
-		return payAmt;
-	}
-
-	public BigDecimal getDiscountAmt()
-	{
-		return discountAmt;
-	}
-
-	public BigDecimal getOpenAmt()
-	{
-		return openAmt;
-	}
-
-	public BigDecimal getDifferenceAmt()
-	{
-		return differenceAmt;
-	}
-
-	public int getC_Invoice_ID()
-	{
-		return C_Invoice_ID;
-	}
-
-	public boolean isSOTrx()
-	{
-		return isSOTrx;
-	}
-
-	public int getC_BPartner_ID()
-	{
-		return C_BPartner_ID;
-	}
-
-	public int getC_BP_BankAccount_ID()
-	{
-		return C_BP_BankAccount_ID;
+		return bpBankAccountId;
 	}
 
 	public static final class Builder
 	{
 		private String paymentRule;
-		private Integer invoiceId;
+		@Getter private @Nullable InvoiceId invoiceId;
+		@Getter private @Nullable OrderId orderId;
 		private Boolean isSOTrx;
-		private Integer bpartnerId;
-		private Integer bpBankAccountId;
+		private BPartnerId bpartnerId;
+		private @Nullable BankAccountId bpBankAccountId;
 		// Amounts
 		private BigDecimal _openAmt;
 		private BigDecimal _discountAmt;
 
-
 		PaySelectionLineCandidate build()
 		{
 			return new PaySelectionLineCandidate(this);
-		}
-
-		public Builder setPaymentRule(final String paymentRule)
-		{
-			this.paymentRule = paymentRule;
-			return this;
 		}
 
 		public String getPaymentRule()
@@ -152,15 +115,22 @@ class PaySelectionLineCandidate
 			return paymentRule;
 		}
 
-		public Builder setC_Invoice_ID(final int invoiceId)
+		public Builder setPaymentRule(final String paymentRule)
+		{
+			this.paymentRule = paymentRule;
+			return this;
+		}
+
+		public Builder setInvoiceId(final @Nullable InvoiceId invoiceId)
 		{
 			this.invoiceId = invoiceId;
 			return this;
 		}
 
-		public int getC_Invoice_ID()
+		public Builder setOrderId(final @Nullable OrderId orderId)
 		{
-			return invoiceId;
+			this.orderId = orderId;
+			return this;
 		}
 
 		public Builder setIsSOTrx(final boolean isSOTrx)
@@ -174,26 +144,31 @@ class PaySelectionLineCandidate
 			return isSOTrx;
 		}
 
-		public Builder setC_BPartner_ID(final int bpartnerId)
+		public BPartnerId getBPartnerId()
+		{
+			return bpartnerId;
+		}
+
+		public Builder setBPartnerId(final BPartnerId bpartnerId)
 		{
 			this.bpartnerId = bpartnerId;
 			return this;
 		}
 
-		public int getC_BPartner_ID()
+		public BankAccountId getBPartnerBankAccountId()
 		{
-			return bpartnerId;
+			return bpBankAccountId;
 		}
 
-		public Builder setC_BP_BankAccount_ID(final int bpBankAccountId)
+		public Builder setBPartnerBankAccountId(final @Nullable BankAccountId bpBankAccountId)
 		{
 			this.bpBankAccountId = bpBankAccountId;
 			return this;
 		}
 
-		public int getC_BP_BankAccount_ID()
+		public BigDecimal getOpenAmt()
 		{
-			return bpBankAccountId;
+			return CoalesceUtil.coalesceNotNull(_openAmt, BigDecimal.ZERO);
 		}
 
 		public Builder setOpenAmt(final BigDecimal openAmt)
@@ -202,17 +177,16 @@ class PaySelectionLineCandidate
 			return this;
 		}
 
-		public BigDecimal getOpenAmt()
-		{
-			return CoalesceUtil.coalesce(_openAmt, BigDecimal.ZERO);
-		}
-
 		public BigDecimal getPayAmt()
 		{
 			final BigDecimal openAmt = getOpenAmt();
 			final BigDecimal discountAmt = getDiscountAmt();
-			final BigDecimal payAmt = openAmt.subtract(discountAmt);
-			return payAmt;
+			return openAmt.subtract(discountAmt);
+		}
+
+		public BigDecimal getDiscountAmt()
+		{
+			return CoalesceUtil.coalesceNotNull(_discountAmt, BigDecimal.ZERO);
 		}
 
 		public Builder setDiscountAmt(final BigDecimal discountAmt)
@@ -221,18 +195,12 @@ class PaySelectionLineCandidate
 			return this;
 		}
 
-		public BigDecimal getDiscountAmt()
-		{
-			return CoalesceUtil.coalesce(_discountAmt, BigDecimal.ZERO);
-		}
-
 		public BigDecimal getDifferenceAmt()
 		{
 			final BigDecimal openAmt = getOpenAmt();
 			final BigDecimal payAmt = getPayAmt();
 			final BigDecimal discountAmt = getDiscountAmt();
-			final BigDecimal differenceAmt = openAmt.subtract(payAmt).subtract(discountAmt);
-			return differenceAmt;
+			return openAmt.subtract(payAmt).subtract(discountAmt);
 		}
 
 	}
