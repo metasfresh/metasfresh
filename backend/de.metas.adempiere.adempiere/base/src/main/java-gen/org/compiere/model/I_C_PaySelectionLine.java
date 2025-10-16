@@ -115,6 +115,26 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_C_BankStatementLine_Ref_ID = "C_BankStatementLine_Ref_ID";
 
 	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Set Partner Bank Account.
 	 * Bank Account of the Business Partner
 	 *
@@ -135,26 +155,6 @@ public interface I_C_PaySelectionLine
 	int getC_BP_BankAccount_ID();
 
 	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
-
-	/**
-	 * Set Business Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Business Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_ID();
-
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Currency.
@@ -187,7 +187,7 @@ public interface I_C_PaySelectionLine
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_Invoice_ID (int C_Invoice_ID);
@@ -197,20 +197,44 @@ public interface I_C_PaySelectionLine
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_Invoice_ID();
 
-	org.compiere.model.I_C_Invoice getC_Invoice();
+	@Nullable org.compiere.model.I_C_Invoice getC_Invoice();
 
-	void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
+	void setC_Invoice(@Nullable org.compiere.model.I_C_Invoice C_Invoice);
 
 	ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_C_PaySelectionLine.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
-	int getC_Order_ID();  // TODO -- add real column
-	void setC_Order_ID(int C_Order_ID); // TODO -- add real column
+	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_C_PaySelectionLine.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Payment.
@@ -235,8 +259,8 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
-	 * Set Zahlung Anweisen.
-	 * Zahlung Anweisen
+	 * Set Payment Selection.
+	 * Payment Selection
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -245,8 +269,8 @@ public interface I_C_PaySelectionLine
 	void setC_PaySelection_ID (int C_PaySelection_ID);
 
 	/**
-	 * Get Zahlung Anweisen.
-	 * Zahlung Anweisen
+	 * Get Payment Selection.
+	 * Payment Selection
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -262,7 +286,7 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_C_PaySelection_ID = "C_PaySelection_ID";
 
 	/**
-	 * Set Zahlungsauswahl- Position.
+	 * Set Payment Selection Line.
 	 * Payment Selection Line
 	 *
 	 * <br>Type: ID
@@ -272,7 +296,7 @@ public interface I_C_PaySelectionLine
 	void setC_PaySelectionLine_ID (int C_PaySelectionLine_ID);
 
 	/**
-	 * Get Zahlungsauswahl- Position.
+	 * Get Payment Selection Line.
 	 * Payment Selection Line
 	 *
 	 * <br>Type: ID
@@ -331,7 +355,7 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Differenz.
+	 * Set Difference.
 	 * Difference Amount
 	 *
 	 * <br>Type: Amount
@@ -341,7 +365,7 @@ public interface I_C_PaySelectionLine
 	void setDifferenceAmt (BigDecimal DifferenceAmt);
 
 	/**
-	 * Get Differenz.
+	 * Get Difference.
 	 * Difference Amount
 	 *
 	 * <br>Type: Amount
@@ -354,7 +378,7 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_DifferenceAmt = "DifferenceAmt";
 
 	/**
-	 * Set Discount Amount.
+	 * Set Discount.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -364,7 +388,7 @@ public interface I_C_PaySelectionLine
 	void setDiscountAmt (BigDecimal DiscountAmt);
 
 	/**
-	 * Get Discount Amount.
+	 * Get Discount.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -377,7 +401,7 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_DiscountAmt = "DiscountAmt";
 
 	/**
-	 * Set Has Open Credit Memo.
+	 * Set Credit memos.
 	 * Has Open Credit Memo Invoices
 	 *
 	 * <br>Type: YesNo
@@ -389,7 +413,7 @@ public interface I_C_PaySelectionLine
 	void setHasOpenCreditMemos (boolean HasOpenCreditMemos);
 
 	/**
-	 * Get Has Open Credit Memo.
+	 * Get Credit memos.
 	 * Has Open Credit Memo Invoices
 	 *
 	 * <br>Type: YesNo
@@ -404,7 +428,7 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_HasOpenCreditMemos = "HasOpenCreditMemos";
 
 	/**
-	 * Set Has Open Credit Memo.
+	 * Set Credit memos.
 	 * Has Open Credit Memo Invoices
 	 *
 	 * <br>Type: Color
@@ -416,7 +440,7 @@ public interface I_C_PaySelectionLine
 	void setHasOpenCreditMemos_Color_ID (int HasOpenCreditMemos_Color_ID);
 
 	/**
-	 * Get Has Open Credit Memo.
+	 * Get Credit memos.
 	 * Has Open Credit Memo Invoices
 	 *
 	 * <br>Type: Color
@@ -479,8 +503,8 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Manuell.
-	 * This is a manual process
+	 * Set Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -489,8 +513,8 @@ public interface I_C_PaySelectionLine
 	void setIsManual (boolean IsManual);
 
 	/**
-	 * Get Manuell.
-	 * This is a manual process
+	 * Get Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -569,7 +593,7 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_OpenAmt = "OpenAmt";
 
 	/**
-	 * Set Zahlungsbetrag.
+	 * Set Payment amount.
 	 * Amount being paid
 	 *
 	 * <br>Type: Amount
@@ -579,7 +603,7 @@ public interface I_C_PaySelectionLine
 	void setPayAmt (BigDecimal PayAmt);
 
 	/**
-	 * Get Zahlungsbetrag.
+	 * Get Payment amount.
 	 * Amount being paid
 	 *
 	 * <br>Type: Amount

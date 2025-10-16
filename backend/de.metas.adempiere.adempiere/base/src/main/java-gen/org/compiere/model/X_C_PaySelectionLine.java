@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_PaySelectionLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -207168288L;
+	private static final long serialVersionUID = -1423010740L;
 
     /** Standard Constructor */
     public X_C_PaySelectionLine (final Properties ctx, final int C_PaySelectionLine_ID, @Nullable final String trxName)
@@ -81,21 +81,6 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	}
 
 	@Override
-	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
-	}
-
-	@Override
-	public int getC_BP_BankAccount_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
-	}
-
-	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -108,6 +93,21 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	public int getC_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
+	}
+
+	@Override
+	public int getC_BP_BankAccount_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
 
 	@Override
@@ -134,18 +134,6 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	}
 
 	@Override
-	public int getC_Order_ID()
-	{
-		return 0;
-	}
-
-	@Override
-	public void setC_Order_ID(final int C_Order_ID)
-	{
-
-	}
-
-	@Override
 	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
@@ -158,6 +146,33 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	public int getC_Invoice_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	@Override
+	public void setC_Order_ID (final int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
+	}
+
+	@Override
+	public int getC_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
 
 	@Override
