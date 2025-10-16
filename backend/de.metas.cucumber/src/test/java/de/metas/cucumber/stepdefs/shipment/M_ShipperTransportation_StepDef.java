@@ -200,7 +200,6 @@ public class M_ShipperTransportation_StepDef
 	public void add_M_Package(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_M_Package.COLUMNNAME_M_Package_ID)
 				.forEach(this::creat_M_Package);
 	}
 
@@ -217,7 +216,7 @@ public class M_ShipperTransportation_StepDef
 	}
 
 	@And("update transport order")
-	public void update_order(@NonNull final DataTable dataTable)
+	public void update_TransportOrder(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)

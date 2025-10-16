@@ -233,6 +233,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 	}
 
+	@NonNull
 	private ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaksForMultipleTerms(
 			@NonNull final Collection<PaymentTermId> paymentTermIds)
 	{
@@ -260,7 +261,8 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		return retrievePaymentTermBreaksForMultipleTerms(ImmutableList.of(paymentTermId));
 	}
 
-	static PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
+	@NonNull
+	static private PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
 	{
 		return PaymentTerm.builder()
 				.id(extractId(record))
@@ -297,7 +299,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			paymentTermsById = Maps.uniqueIndex(paymentTerms, PaymentTerm::getId);
 		}
 
-		public Optional<PaymentTerm> getById(final PaymentTermId id)
+		private Optional<PaymentTerm> getById(final PaymentTermId id)
 		{
 			return Optional.ofNullable(paymentTermsById.get(id));
 		}

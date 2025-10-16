@@ -179,7 +179,7 @@ public class OrderPayScheduleLoaderAndSaver
 		record.setC_Currency_ID(from.getDueAmount().getCurrencyId().getRepoId());
 		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate()));
 		record.setPercent(from.getPercent().toInt());
-		// record.setOffsetDays(from.getOffsetDays()); // TODO Corrected field inclusion
+		record.setOffsetDays(from.getOffsetDays());
 		record.setReferenceDateType(from.getReferenceDateType().getCode());
 		record.setSeqNo(from.getSeqNo().toInt());
 		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(from.getStatus()));

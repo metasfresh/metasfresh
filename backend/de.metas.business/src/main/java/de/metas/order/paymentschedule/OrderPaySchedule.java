@@ -34,11 +34,6 @@ public class OrderPaySchedule
 		return new OrderPaySchedule(orderId, lines);
 	}
 
-	public static OrderPaySchedule empty(@NonNull final OrderId orderId)
-	{
-		return new OrderPaySchedule(orderId, ImmutableList.of());
-	}
-
 	public static Collector<OrderPayScheduleLine, ?, Optional<OrderPaySchedule>> collect()
 	{
 		return GuavaCollectors.collectUsingListAccumulator((lines) -> {

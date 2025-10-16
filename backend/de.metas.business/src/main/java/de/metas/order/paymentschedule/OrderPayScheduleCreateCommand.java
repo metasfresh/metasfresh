@@ -36,11 +36,13 @@ class OrderPayScheduleCreateCommand
 			return; // Nothing to schedule
 		}
 
-		final List<PaymentTermBreak> termBreaks = context.getPaymentTerm().getSortedBreaks();
-		if (termBreaks == null)
+
+		if (!context.getPaymentTerm().isComplex() )
 		{
 			return; // Nothing to schedule
 		}
+
+		final List<PaymentTermBreak> termBreaks = context.getPaymentTerm().getSortedBreaks();
 
 		final ImmutableList.Builder<OrderPayScheduleCreateRequest.Line> linesBuilder = ImmutableList.builder();
 

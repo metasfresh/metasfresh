@@ -60,8 +60,8 @@ public class PaymentTerm
 	boolean _default;
 	boolean isComplex;
 
-	@Nullable ImmutableList<PaymentTermBreak> sortedBreaks;
-	@Nullable ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
+	@NonNull ImmutableList<PaymentTermBreak> sortedBreaks;
+	@NonNull ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
 
 	@Builder
 	private PaymentTerm(
@@ -109,10 +109,10 @@ public class PaymentTerm
 
 		this.sortedBreaks = isComplex
 				? breaks.stream().sorted(Comparator.comparing(PaymentTermBreak::getSeqNo).thenComparing(PaymentTermBreak::getId)).collect(ImmutableList.toImmutableList())
-				: null;
+				: ImmutableList.of();
 		this.breaksById = isComplex
 				? Maps.uniqueIndex(breaks, PaymentTermBreak::getId)
-				: null;
+				: ImmutableMap.of();
 	}
 
 	private static void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)
@@ -132,10 +132,7 @@ public class PaymentTerm
 
 	public PaymentTermBreak getBreakById(final @NonNull PaymentTermBreakId id)
 	{
-		if (breaksById == null)
-		{
-			throw new AdempiereException("Payment term does not support breaks: " + this);
-		}
+		Check.assumeNotEmpty(breaksById, "Payment term does not support breaks: {}", this);
 
 		final PaymentTermBreak paymentTermBreak = breaksById.get(id);
 		if (paymentTermBreak == null)

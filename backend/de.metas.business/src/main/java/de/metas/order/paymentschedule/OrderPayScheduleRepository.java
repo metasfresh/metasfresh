@@ -60,7 +60,7 @@ public class OrderPayScheduleRepository
 				.forEach(line -> createLine(line, request.getOrderId(), seqNoProvider.getAndIncrement()));
 	}
 
-	private void createLine(@NonNull final OrderPayScheduleCreateRequest.Line request, @NonNull final OrderId orderId, @NonNull final SeqNo seqNo)
+	private static void createLine(@NonNull final OrderPayScheduleCreateRequest.Line request, @NonNull final OrderId orderId, @NonNull final SeqNo seqNo)
 	{
 		final I_C_OrderPaySchedule record = newInstance(I_C_OrderPaySchedule.class);
 		record.setC_Order_ID(orderId.getRepoId());

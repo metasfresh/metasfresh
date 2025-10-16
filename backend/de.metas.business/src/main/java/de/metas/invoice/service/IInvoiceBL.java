@@ -435,5 +435,5 @@ public interface IInvoiceBL extends ISingletonService
 	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
 	@Nullable
-	Instant extractInvoiceDate(@NonNull OrderId orderId);
+	Instant getUniqueInvoiceDateForOrderId(@NonNull OrderId orderId);
 }

@@ -7,7 +7,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
@@ -70,7 +69,6 @@ public class PaymentTermService
 			@NonNull final PaymentTermId basePaymentTermId,
 			@NonNull final Percent discount)
 	{
-		final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getRecordById(basePaymentTermId);
 
 		// see if the designed payment term already exists

@@ -20,7 +20,7 @@ public class DueDateAndStatus
 		return PENDING;
 	}
 
-	public static DueDateAndStatus awaitingPayment(@NonNull Instant dueDate)
+	public static DueDateAndStatus awaitingPayment(@NonNull final Instant dueDate)
 	{
 		if (!dueDate.isBefore(PaymentTermConstants.INFINITE_FUTURE_DATE))
 		{

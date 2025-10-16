@@ -2039,7 +2039,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public Instant extractInvoiceDate(final @NonNull OrderId orderId)
+	public Instant getUniqueInvoiceDateForOrderId(final @NonNull OrderId orderId)
 	{
 		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(orderId));
 		if (invoices.isEmpty())

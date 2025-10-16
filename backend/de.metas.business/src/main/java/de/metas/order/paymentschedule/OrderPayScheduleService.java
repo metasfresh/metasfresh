@@ -37,6 +37,7 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
@@ -124,7 +125,7 @@ public class OrderPayScheduleService
 				.letterOfCreditDate(TimeUtil.asInstant(orderRecord.getLC_Date()))
 				.billOfLadingDate(shipperDates.getBillOfLadingDate())
 				.ETADate(shipperDates.getEtaDate())
-				.invoiceDate(invoiceBL.extractInvoiceDate(orderId))
+				.invoiceDate(invoiceBL.getUniqueInvoiceDateForOrderId(orderId))
 				.grandTotal(grandTotal)
 				.precision(orderBL.getAmountPrecision(orderRecord))
 				.paymentTerm(paymentTerm)
@@ -136,23 +137,18 @@ public class OrderPayScheduleService
 		orderPayScheduleRepository.create(request);
 	}
 
-	private static final class DatesFromShipper
+	@Value(staticConstructor = "of")
+	private static class DatesFromShipper
 	{
-		@Getter @Nullable private final Instant billOfLadingDate;
-		@Getter @Nullable private final Instant etaDate;
-
-		private DatesFromShipper(@Nullable final Instant billOfLadingDate, @Nullable final Instant etaDate)
-		{
-			this.billOfLadingDate = billOfLadingDate;
-			this.etaDate = etaDate;
-		}
+		@Getter @Nullable Instant billOfLadingDate;
+		@Getter @Nullable Instant etaDate;
 	}
 
-	private DatesFromShipper extractShipperDates(@NonNull final Optional<ShipperTransportationReference> shipperTransportationReference)
+	private static DatesFromShipper extractShipperDates(@NonNull final Optional<ShipperTransportationReference> shipperTransportationReference)
 	{
-		return shipperTransportationReference.map(ref -> new DatesFromShipper(
+		return shipperTransportationReference.map(ref -> DatesFromShipper.of(
 				ref.getBillOfLadingDate(),
 				ref.getETADate()
-		)).orElseGet(() -> new DatesFromShipper(null, null));
+		)).orElseGet(() -> DatesFromShipper.of(null, null));
 	}
 }
