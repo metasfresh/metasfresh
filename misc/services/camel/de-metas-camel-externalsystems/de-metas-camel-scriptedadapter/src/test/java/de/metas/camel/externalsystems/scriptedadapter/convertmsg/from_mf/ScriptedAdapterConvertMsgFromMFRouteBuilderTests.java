@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorException;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.common.externalsystem.JsonExternalSystemName;
@@ -32,19 +33,23 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.Properties;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID;
@@ -53,10 +58,14 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIP
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestSupport
 {
+	private static final String MOCK_ATTACHMENT_ENDPOINT = "mock:AttachmentEndpoint";
+
 	/**
 	 * Used to parse and verify the results.
 	 */
@@ -111,18 +120,21 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 					return JSON.stringify(result);
 				}
 				""";
-		
+
 		final Exchange exchange = prepareScriptAndExchange(jsScript, messageFromMetasfresh);
 
-		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint();
+		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
+		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint(mockJsonAttachmentRequestProcessor);
 		mockHttpEndpoint.expectedMessageCount(1);
 
 		context.start();
 
 		// When: Send message to the scripting route
 		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
-		
+
 		// Then: Verify the result
+		AssertionsForClassTypes.assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(1);
+
 		MockEndpoint.assertIsSatisfied(context);
 		final String result = exchange.getIn().getBody(String.class);
 		assertThat(result).isNotNull();
@@ -156,7 +168,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 
 		final Exchange exchange = prepareScriptAndExchange(jsScript, messageFromMetasfresh);
 
-		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint();
+		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
+		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint(mockJsonAttachmentRequestProcessor);
 		mockHttpEndpoint.expectedMessageCount(1);
 
 		context.start();
@@ -165,6 +178,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
 
 		// Then: Verify the result
+		AssertionsForClassTypes.assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(1);
+
 		MockEndpoint.assertIsSatisfied(context);
 		final String result = exchange.getIn().getBody(String.class);
 		final var resultObject = objectMapper.readTree(result);
@@ -195,15 +210,17 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 
 		// When: Send message to the scripting route
 		final Exchange exchange = prepareScriptAndExchange(jsScript, messageFromMetasfresh);
-		
-		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint();
+
+		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
+		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint(mockJsonAttachmentRequestProcessor);
 		mockHttpEndpoint.expectedMessageCount(1);
-		
+
 		context.start();
 		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
 
+		AssertionsForClassTypes.assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(1);
 		MockEndpoint.assertIsSatisfied(context);
-		
+
 		// Then: Verify the result
 		final String result = exchange.getIn().getBody(String.class);
 		final var resultObject = objectMapper.readTree(result);
@@ -212,14 +229,22 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		assertThat(resultObject.get("average").asDouble()).isEqualTo(3.0);
 	}
 
-	private MockEndpoint createAndInjectMockHttpEndpoint() throws Exception
+	private MockEndpoint createAndInjectMockHttpEndpoint(@NonNull final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor) throws Exception
 	{
 		final MockEndpoint mockHttpEndpoint = getMockEndpoint("mock:httpEndPoint");
 		AdviceWith.adviceWith(context,
 				ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID,
-				advice -> advice.weaveById(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
-						.replace()
-						.to(mockHttpEndpoint));
+				advice -> {
+					advice.weaveById(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
+							.replace()
+							.to(mockHttpEndpoint);
+
+					advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_ATTACHMENT_ENDPOINT)
+							.process(mockJsonAttachmentRequestProcessor);
+				});
+
 		return mockHttpEndpoint;
 	}
 
@@ -236,11 +261,12 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 				""";
 
 		final Exchange exchange = prepareScriptAndExchange(scriptWithFaultyMethodName, messageFromMetasfresh);
-		
+
 		final MockEndpoint mockErrorRoute = creatAndInjectMockErrorRoute();
 		mockErrorRoute.expectedMessageCount(1); // Expect one message to reach the error route
 
-		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint();
+		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
+		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint(mockJsonAttachmentRequestProcessor);
 		mockHttpEndpoint.expectedMessageCount(0);
 
 		context.start();
@@ -300,8 +326,25 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP, "http://localhost:8080/test")
 						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN, "API_TOKEN")
 						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD, "POST")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, "TableName")
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, "123")
 						.build());
 
 		return exchange;
+	}
+
+	private static class MockJsonAttachmentRequestProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(@NonNull final Exchange exchange)
+		{
+			called++;
+			final MsgFromMfContext msgFromMfContext = ProcessorHelper.getPropertyOrThrowError(exchange,
+					ROUTE_MSG_FROM_MF_CONTEXT,
+					MsgFromMfContext.class);
+			exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+		}
 	}
 }

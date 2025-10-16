@@ -44,6 +44,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_TaxCategory;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
@@ -58,6 +59,9 @@ import de.metas.externalsystem.pcm.TaxCategoryPCMMapping;
 import de.metas.externalsystem.pcm.source.PCMContentSourceLocalFile;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -149,6 +153,10 @@ public class ExternalSystemConfigRepo
 		else if (type.isProCareManagement())
 		{
 			return getByCastedId(ExternalSystemPCMConfigId.cast(id));
+		}
+		else if (type.isScriptedExportConversion())
+		{
+			return getByCastedId(ExternalSystemScriptedExportConversionConfigId.cast(id));
 		}
 		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 	}
@@ -974,7 +982,27 @@ public class ExternalSystemConfigRepo
 
 		return getExternalSystemParentConfig(config);
 	}
-	
+
+	@NonNull
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemScriptedExportConversionConfigId id)
+	{
+		final I_ExternalSystem_Config_ScriptedExportConversion config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_ScriptedExportConversion.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_ScriptedExportConversion config)
+	{
+		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
+
+		final ExternalSystemScriptedExportConversionConfig child = ExternalSystemScriptedExportConversionRepository.fromRecord(config, parentConfigId);
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+
 	@NonNull
 	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_ProCareManagement config)
 	{
