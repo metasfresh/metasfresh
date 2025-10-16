@@ -212,7 +212,8 @@ public class M_ShipperTransportation_StepDef
 				.ifPresent(id -> packageRecord.setM_Shipper_ID(id.getRepoId()));
 		saveRecord(packageRecord);
 
-		packageTable.putOrReplace(row.getAsIdentifier(), packageRecord);
+		row.getAsOptionalIdentifier()
+				.ifPresent(packageIdentifier -> packageTable.putOrReplace(packageIdentifier, packageRecord));
 	}
 
 	@And("update transport order")
