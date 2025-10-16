@@ -37,3 +37,9 @@ export const reportInventoryCounting = ({
     })
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const getLineHUs = ({ wfProcessId, lineId }) => {
+  return axios
+    .get(toUrl(`${inventoryBasePath}/lineHUs`, { wfProcessId, lineId }))
+    .then((response) => unboxAxiosResponse(response));
+};

@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 public class JsonInventoryLineHU
 {
 	@NonNull InventoryLineHUId id;
+	@Nullable String caption;
 
 	@NonNull ProductId productId;
 	@NonNull String productNo;
@@ -26,7 +27,6 @@ public class JsonInventoryLineHU
 	@NonNull String locatorName;
 
 	@Nullable HuId huId;
-	@Nullable String huDisplayName;
 
 	@NonNull String uom;
 	@NonNull BigDecimal qtyBooked;

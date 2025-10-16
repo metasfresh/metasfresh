@@ -5,14 +5,9 @@ import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import ButtonDetails from '../../../components/buttons/ButtonDetails';
 import { trl } from '../../../utils/translations';
 
-const InventoryLineButton = ({ lineId, caption, uom, qtyBooked, qtyCount, productId, locatorId, onClick }) => {
+const InventoryLineHUButton = ({ id, caption, uom, qtyBooked, qtyCount, onClick }) => {
   return (
-    <ButtonWithIndicator
-      key={lineId}
-      caption={caption}
-      onClick={onClick}
-      testId={`line-P${productId}-L${locatorId}-button`}
-    >
+    <ButtonWithIndicator key={id} caption={caption} onClick={onClick} testId={`line-${id}-button`}>
       <ButtonDetails
         caption1={trl('inventory.qtyBooked')}
         value1={formatQtyToHumanReadableStr({ qty: qtyBooked, uom })}
@@ -22,15 +17,13 @@ const InventoryLineButton = ({ lineId, caption, uom, qtyBooked, qtyCount, produc
     </ButtonWithIndicator>
   );
 };
-InventoryLineButton.propTypes = {
-  lineId: PropTypes.number.isRequired,
+InventoryLineHUButton.propTypes = {
+  id: PropTypes.number.isRequired,
   caption: PropTypes.string.isRequired,
   uom: PropTypes.string.isRequired,
   qtyBooked: PropTypes.number.isRequired,
   qtyCount: PropTypes.number.isRequired,
-  productId: PropTypes.number.isRequired,
-  locatorId: PropTypes.number.isRequired,
   onClick: PropTypes.func.isRequired,
 };
 
-export default InventoryLineButton;
+export default InventoryLineHUButton;

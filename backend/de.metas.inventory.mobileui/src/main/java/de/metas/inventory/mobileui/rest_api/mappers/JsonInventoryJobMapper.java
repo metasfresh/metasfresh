@@ -1,6 +1,7 @@
 package de.metas.inventory.mobileui.rest_api.mappers;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
@@ -79,15 +80,18 @@ public class JsonInventoryJobMapper
 		final ProductInfo product = products.getById(line.getProductId());
 		final HuId huId = lineHU.getHuId();
 
+		final String productName = product.getProductName().translate(adLanguage);
+		final String huDisplayName = huId != null ? handlingUnits.getDisplayName(huId) : null;
+
 		return JsonInventoryLineHU.builder()
 				.id(lineHU.getIdNotNull())
+				.caption(CoalesceUtil.firstNotBlank(huDisplayName, productName))
 				.productId(product.getProductId())
 				.productNo(product.getProductNo())
-				.productName(product.getProductName().translate(adLanguage))
+				.productName(productName)
 				.locatorId(line.getLocatorId().getRepoId())
 				.locatorName(warehouses.getLocatorName(line.getLocatorId()))
 				.huId(huId)
-				.huDisplayName(huId != null ? handlingUnits.getDisplayName(huId) : null)
 				.uom(lineHU.getUOMSymbol())
 				.qtyBooked(lineHU.getQtyBook().toBigDecimal())
 				.qtyCount(lineHU.getQtyCount().toBigDecimal())

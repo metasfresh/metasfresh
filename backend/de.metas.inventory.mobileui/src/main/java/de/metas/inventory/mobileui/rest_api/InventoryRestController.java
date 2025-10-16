@@ -115,6 +115,8 @@ public class InventoryRestController
 		final InventoryLine line = jobService.getById(wfProcessId, Env.getLoggedUserId()).getLineById(lineId);
 
 		return JsonGetLineHUsResponse.builder()
+				.wfProcessId(wfProcessId)
+				.lineId(lineId)
 				.lineHUs(jsonInventoryJobMapperService.newMapper(newJsonOpts()).toJsonInventoryLineHUs(line))
 				.build();
 	}
