@@ -134,6 +134,18 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	}
 
 	@Override
+	public int getC_Order_ID()
+	{
+		return 0;
+	}
+
+	@Override
+	public void setC_Order_ID(final int C_Order_ID)
+	{
+
+	}
+
+	@Override
 	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 

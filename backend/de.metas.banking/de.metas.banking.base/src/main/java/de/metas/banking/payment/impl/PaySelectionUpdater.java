@@ -25,7 +25,6 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPayScheduleStatus;
-import de.metas.payment.PaymentId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -398,9 +397,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " null as DiscountAmt," // 4
 				+ " null as PaymentRule, "  // 5
 				+ " o.IsSOTrx, " // 6
-				+ " o.Bill_BPartner_id," // 6
+				+ " o.Bill_BPartner_ID as C_BPartner_ID," // 6
 				// C_BP_BankAccount_ID
-				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID =  o.Bill_BPartner_id AND bpb.IsActive='Y' "
+				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID =  o.Bill_BPartner_ID AND bpb.IsActive='Y' "
 				+ " AND bpb.IBAN IS NOT NULL ) as C_BP_BankAccount_ID "  //8
 				//
 				+ " FROM C_Order o "
@@ -460,14 +459,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		// Business Partner
 		if (getC_BPartner_ID() > 0)
 		{
-			sql += " AND o.Bill_BPartner_id=?"; // ##
+			sql += " AND o.Bill_BPartner_ID=?"; // ##
 			sqlParams.add(getC_BPartner_ID());
 		}
 		// Business Partner Group
 		else if (getC_BP_Group_ID() > 0)
 		{
 			sql += " AND EXISTS (SELECT * FROM C_BPartner bp "
-					+ "WHERE bp.C_BPartner_ID=o.Bill_BPartner_id AND bp.C_BP_Group_ID=?)"; // ##
+					+ "WHERE bp.C_BPartner_ID=o.Bill_BPartner_ID AND bp.C_BP_Group_ID=?)"; // ##
 			sqlParams.add(getC_BP_Group_ID());
 		}
 
@@ -510,8 +509,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final int orderId = rs.getInt("C_Order_ID");
 		candidateBuilder.setOrderId(OrderId.ofRepoIdOrNull(orderId));
 
-		final BigDecimal invoiceOpenAmt = rs.getBigDecimal("OpenAmt");
-		candidateBuilder.setOpenAmt(invoiceOpenAmt);
+		final BigDecimal openAmt = rs.getBigDecimal("OpenAmt");
+		candidateBuilder.setOpenAmt(openAmt);
 
 		final BigDecimal payDiscountAmt = rs.getBigDecimal("DiscountAmt");
 		candidateBuilder.setDiscountAmt(payDiscountAmt);
@@ -911,7 +910,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				else if (orderId != null)
 				{
 					final I_C_PaySelectionLine old = byOrderId.put(orderId, line);
-					Check.assumeNull(old, "Duplicate pay selection line for payment: {}, {}", line, old);
+					Check.assumeNull(old, "Duplicate pay selection line for order: {}, {}", line, old);
 				}
 			}
 		}
