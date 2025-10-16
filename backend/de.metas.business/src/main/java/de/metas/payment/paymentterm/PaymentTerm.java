@@ -23,16 +23,19 @@
 package de.metas.payment.paymentterm;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
-import java.util.stream.Stream;
 
 @Value
 public class PaymentTerm
@@ -57,7 +60,8 @@ public class PaymentTerm
 	boolean _default;
 	boolean isComplex;
 
-	@Nullable ImmutableList<PaymentTermBreak> breaks;
+	@NonNull ImmutableList<PaymentTermBreak> sortedBreaks;
+	@NonNull ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
 
 	@Builder
 	private PaymentTerm(
@@ -96,20 +100,46 @@ public class PaymentTerm
 		this._default = _default;
 		this.isComplex = isComplex;
 
-		this.breaks = isComplex ? breaks : null;
-
-	}
-
-	public Stream<PaymentTermBreak> getSortedBreaks()
-	{
-		if (breaks == null || breaks.isEmpty())
+		if (isComplex)
 		{
-			return Stream.empty();
+			Check.assumeNotEmpty(breaks, "If isComplex=true, then breaks shall not be empty");
+
+			checkPercentBreaks(breaks);
 		}
 
-		return breaks.stream()
-				.sorted(Comparator.comparing(PaymentTermBreak::getSeqNo));
+		this.sortedBreaks = isComplex
+				? breaks.stream().sorted(Comparator.comparing(PaymentTermBreak::getSeqNo).thenComparing(PaymentTermBreak::getId)).collect(ImmutableList.toImmutableList())
+				: ImmutableList.of();
+		this.breaksById = isComplex
+				? Maps.uniqueIndex(breaks, PaymentTermBreak::getId)
+				: ImmutableMap.of();
 	}
 
+	private static void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)
+	{
+		final Percent totalPercent = breaks.stream()
+				.map(PaymentTermBreak::getPercent)
+				.reduce(Percent.ZERO, Percent::add);
+
+		if (totalPercent.compareTo(Percent.ONE_HUNDRED) != 0)
+		{
+			throw new AdempiereException("Total percent must be exactly 100%, but it was: ")
+					.appendParametersToMessage()
+					.setParameter("Total", totalPercent);
+		}
+
+	}
+
+	public PaymentTermBreak getBreakById(final @NonNull PaymentTermBreakId id)
+	{
+		Check.assumeNotEmpty(breaksById, "Payment term does not support breaks: {}", this);
+
+		final PaymentTermBreak paymentTermBreak = breaksById.get(id);
+		if (paymentTermBreak == null)
+		{
+			throw new AdempiereException("No break found for id: " + id);
+		}
+		return paymentTermBreak;
+	}
 }
 

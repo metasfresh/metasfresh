@@ -18,6 +18,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPayScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -55,6 +56,7 @@ import java.util.List;
 public class C_Invoice // 03771
 {
 	private final PaymentReservationService paymentReservationService;
+	private final OrderPayScheduleService orderPayScheduleService;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
@@ -69,10 +71,12 @@ public class C_Invoice // 03771
 
 	public C_Invoice(
 			@NonNull final PaymentReservationService paymentReservationService,
-			@NonNull final IDocumentLocationBL documentLocationBL)
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final OrderPayScheduleService orderPayScheduleService)
 	{
 		this.paymentReservationService = paymentReservationService;
 		this.documentLocationBL = documentLocationBL;
+		this.orderPayScheduleService = orderPayScheduleService;
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -153,8 +157,7 @@ public class C_Invoice // 03771
 
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
-		@SuppressWarnings("ConstantConditions")
-		final I_M_PriceList_Version priceListVersion = priceListDAO
+		@SuppressWarnings("ConstantConditions") final I_M_PriceList_Version priceListVersion = priceListDAO
 				.retrievePriceListVersionOrNull(PriceListId.ofRepoId(invoice.getM_PriceList_ID()), invoiceDate, processedPLVFiltering); // can be null
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
@@ -269,7 +272,7 @@ public class C_Invoice // 03771
 		{
 			final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
 			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(parentInvoice,
-																			false).toBigDecimal(); // creditMemoAdjusted = false
+					false).toBigDecimal(); // creditMemoAdjusted = false
 
 			final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
 
@@ -390,12 +393,12 @@ public class C_Invoice // 03771
 		final Money grandTotal = extractGrandTotal(salesInvoice);
 
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-														.salesOrderId(salesOrderId)
-														.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
-														.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
-														.dateTrx(dateTrx)
-														.amount(grandTotal)
-														.build());
+				.salesOrderId(salesOrderId)
+				.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
+				.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
+				.dateTrx(dateTrx)
+				.amount(grandTotal)
+				.build());
 	}
 
 	private static Money extractGrandTotal(@NonNull final I_C_Invoice salesInvoice)
@@ -407,5 +410,15 @@ public class C_Invoice // 03771
 	public void updateInvoiceLinesTax(@NonNull final I_C_Invoice invoice)
 	{
 		invoiceBL.setInvoiceLineTaxes(invoice);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_DateInvoiced })
+	public void updateOrderPaySchedules(@NonNull final I_C_Invoice invoice)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
+		if (orderId != null && invoice.getDateInvoiced() != null)
+		{
+			orderPayScheduleService.updatePayScheduleStatus(orderId);
+		}
 	}
 }

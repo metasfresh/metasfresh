@@ -60,7 +60,7 @@ import static de.metas.util.Check.isNotBlank;
 
 public class PaymentTermRepository implements IPaymentTermRepository
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<Integer, PaymentTermMap> cache = CCache.<Integer, PaymentTermMap>builder()
 			.tableName(I_C_PaymentTerm.Table_Name)
@@ -233,6 +233,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 	}
 
+	@NonNull
 	private ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaksForMultipleTerms(
 			@NonNull final Collection<PaymentTermId> paymentTermIds)
 	{
@@ -260,7 +261,8 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		return retrievePaymentTermBreaksForMultipleTerms(ImmutableList.of(paymentTermId));
 	}
 
-	static PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
+	@NonNull
+	static private PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
 	{
 		return PaymentTerm.builder()
 				.id(extractId(record))
@@ -297,7 +299,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			paymentTermsById = Maps.uniqueIndex(paymentTerms, PaymentTerm::getId);
 		}
 
-		public Optional<PaymentTerm> getById(final PaymentTermId id)
+		private Optional<PaymentTerm> getById(final PaymentTermId id)
 		{
 			return Optional.ofNullable(paymentTermsById.get(id));
 		}
@@ -305,9 +307,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 	private static PaymentTermBreak toPaymentTermBreak(@NonNull final I_C_PaymentTerm_Break record)
 	{
-		final PaymentTermBreakId id = PaymentTermBreakId.ofRepoId(
-				record.getC_PaymentTerm_ID(),
-				record.getC_PaymentTerm_Break_ID());
+		final PaymentTermBreakId id = PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID());
 
 		return PaymentTermBreak.builder()
 				.id(id)
@@ -319,6 +319,13 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.offsetDays(record.getOffsetDays())
 				.build();
 	}
+
+	@Override
+	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	{
+		return getById(id.getPaymentTermId()).getBreakById(id);
+	}
+
 
 	@Override
 	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)

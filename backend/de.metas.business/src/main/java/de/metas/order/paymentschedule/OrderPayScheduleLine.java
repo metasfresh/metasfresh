@@ -29,24 +29,49 @@ import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.Setter;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.time.Instant;
 
-@Value
-@Builder(toBuilder = true)
+@EqualsAndHashCode
+@ToString
+@Getter
+@Builder
 public class OrderPayScheduleLine
 {
-	@NonNull OrderPayScheduleId id;
-	@NonNull OrderId orderId;
-	@NonNull SeqNo seqNo;
+	final @NonNull OrderPayScheduleId id;
+	final @NonNull OrderId orderId;
+	final @NonNull SeqNo seqNo;
 
-	@NonNull PaymentTermBreakId paymentTermBreakId;
-	@NonNull ReferenceDateType referenceDateType;
-	@NonNull Percent percent;
+	final @NonNull PaymentTermBreakId paymentTermBreakId;
+	final @NonNull ReferenceDateType referenceDateType;
+	final @NonNull Percent percent;
+	final int offsetDays;
 
-	@NonNull OrderPayScheduleStatus orderPayScheduleStatus;
-	@NonNull Instant dueDate;
-	@NonNull Money dueAmount;
+	@Setter @NonNull OrderPayScheduleStatus status;
+	@Setter @NonNull Instant dueDate;
+	final @NonNull Money dueAmount;
+
+	public void applyAndProcess(@NonNull final DueDateAndStatus dueDateAndStatus)
+	{
+		final OrderPayScheduleStatus nextStatus = dueDateAndStatus.getStatus();
+
+		if (nextStatus.equals(this.status))
+		{
+			return;
+		}
+
+		if (!this.status.isAllowTransitionTo(nextStatus))
+		{
+			throw new AdempiereException("Cannot change status from " + this.status + " to " + nextStatus);
+		}
+
+		this.status = nextStatus;
+		this.dueDate = dueDateAndStatus.getDueDate();
+	}
 }
