@@ -185,7 +185,6 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_M_ShippingPackage.COLUMN_C_Order_ID)
-				.orderBy(I_C_Order.COLUMNNAME_DateOrdered)
 				.create()
 				.listDistinct(I_C_Order.COLUMNNAME_C_Order_ID, OrderId.class);
 
