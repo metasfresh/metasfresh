@@ -210,6 +210,7 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	int getC_Order_ID();  // TODO -- add real column
+	void setC_Order_ID(int C_Order_ID); // TODO -- add real column
 
 	/**
 	 * Set Payment.
