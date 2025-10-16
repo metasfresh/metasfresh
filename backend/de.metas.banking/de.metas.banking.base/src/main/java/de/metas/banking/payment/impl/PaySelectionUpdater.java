@@ -398,9 +398,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " null as DiscountAmt," // 4
 				+ " null as PaymentRule, "  // 5
 				+ " o.IsSOTrx, " // 6
-				+ " o.bill_bpartner_id," // 6
+				+ " o.Bill_BPartner_id," // 6
 				// C_BP_BankAccount_ID
-				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID =  o.bill_bpartner_id AND bpb.IsActive='Y' "
+				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID =  o.Bill_BPartner_id AND bpb.IsActive='Y' "
 				+ " AND bpb.IBAN IS NOT NULL ) as C_BP_BankAccount_ID "  //8
 				//
 				+ " FROM C_Order o "
@@ -445,14 +445,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		{
 			sql += " AND NOT EXISTS (" //
 					+ "         SELECT 1 FROM C_PaySelectionLine psl " //
-					+ "         WHERE psl.C_Order_ID=p.C_Order_ID AND psl.IsActive='Y' " //
+					+ "         WHERE psl.C_Order_ID=o.C_Order_ID AND psl.IsActive='Y' " //
 					+ " )";
 		}
 		else
 		{
 			sql += " AND EXISTS (" //
 					+ " SELECT 1 FROM C_PaySelectionLine psl "
-					+ " WHERE psl.C_Order_ID=p.C_Order_ID AND psl.IsActive='Y' "
+					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.IsActive='Y' "
 					+ " AND " + DB.buildSqlList("psl.C_PaySelectionLine_ID", paySelectionLineIdsToUpdate, sqlParams)
 					+ " )";
 		}
@@ -460,14 +460,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		// Business Partner
 		if (getC_BPartner_ID() > 0)
 		{
-			sql += " AND o.C_BPartner_ID=?"; // ##
+			sql += " AND o.Bill_BPartner_id=?"; // ##
 			sqlParams.add(getC_BPartner_ID());
 		}
 		// Business Partner Group
 		else if (getC_BP_Group_ID() > 0)
 		{
 			sql += " AND EXISTS (SELECT * FROM C_BPartner bp "
-					+ "WHERE bp.C_BPartner_ID=o.C_BPartner_ID AND bp.C_BP_Group_ID=?)"; // ##
+					+ "WHERE bp.C_BPartner_ID=o.Bill_BPartner_id AND bp.C_BP_Group_ID=?)"; // ##
 			sqlParams.add(getC_BP_Group_ID());
 		}
 
