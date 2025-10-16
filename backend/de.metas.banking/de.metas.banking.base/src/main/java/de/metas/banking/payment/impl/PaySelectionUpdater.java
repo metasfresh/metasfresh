@@ -40,7 +40,6 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -138,7 +137,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final PaySelectionLinesToUpdate paySelectionLinesToUpdate = getPaySelectionLinesToUpdate();
 		for (final I_C_PaySelectionLine paySelectionLine : paySelectionLinesToUpdate.dequeueAll())
 		{
-			deletePaySelectionLine(paySelectionLine);
+			dequePaySelectionLine(paySelectionLine);
 		}
 
 		//
@@ -211,17 +210,15 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
 	}
 
-	private @NotNull String buildInvoiceSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
+	private @NonNull String buildInvoiceSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
 	{
 		String sql = "SELECT "
 				+ " C_Invoice_ID,"
 				+ " -1 as C_Order_ID,"
 				// OpenAmt
-				+ " currencyConvert(invoiceOpen(i.C_Invoice_ID, 0)"
-				+ ",i.C_Currency_ID, ?,?, i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID) as OpenAmt," // ##1/2 Currency_To,PayDate
+				+ " invoiceOpen(i.C_Invoice_ID, 0) as OpenAmt,"
 				// DiscountAmt
-				+ " currencyConvert(paymentTermDiscount(i.GrandTotal,i.C_Currency_ID,i.C_PaymentTerm_ID,i.DateInvoiced, ?)" // ##3 PayDate
-				+ ",i.C_Currency_ID, ?,?,i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID) as DiscountAmt," // ##4/5 Currency_To,PayDate
+				+ " paymentTermDiscount(i.GrandTotal,i.C_Currency_ID,i.C_PaymentTerm_ID,i.DateInvoiced, ?) as DiscountAmt," // #1 PayDate
 				+ " i.PaymentRule, " // 4
 				+ " i.IsSOTrx, " // 5
 				+ " i.C_Bpartner_ID," // 6
@@ -229,17 +226,13 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				// C_BP_BankAccount_ID
 				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID = i.C_BPartner_ID AND bpb.IsActive='Y' "
 				+ " AND bpb.BPBankAcctUse = (CASE WHEN EXISTS(SELECT 1 FROM C_BP_BankAccount sub WHERE sub.BPBankAcctUse = i.PaymentRule)"
-				+ " THEN i.PaymentRule ELSE 'B' END)) as C_BP_BankAccount_ID "
+				+ " THEN i.PaymentRule ELSE 'B' END) AND bpb.C_Currency_ID = o.C_Currency_ID) as C_BP_BankAccount_ID "
 				//
 				+ " FROM C_Invoice i "
 				+ " LEFT JOIN C_Doctype dt on i.C_Doctype_ID = dt.C_Doctype_ID "
 				+ " WHERE true " //
 				;
-		sqlParams.add(C_CurrencyTo_ID); // #1
-		sqlParams.add(payDate); // #2
-		sqlParams.add(payDate); // #3
-		sqlParams.add(C_CurrencyTo_ID); // #4
-		sqlParams.add(payDate); // #5
+		sqlParams.add(payDate); // #1
 
 		// Not already paid invoices
 		{
@@ -274,8 +267,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		//
-		// Exclude invoices from existing pay selections if we were not explicitelly asked to just update a couple of pay selection lines
-		// or, Include only the pay selection lines that we were adviced to include.
+		// Exclude invoices from existing pay selections if we were not explicitly asked to just update a couple of pay selection lines
+		// or, Include only the pay selection lines that we were advised to include.
 		if (paySelectionLineIdsToUpdate.isEmpty())
 		{
 			sql += " AND NOT EXISTS (" //
@@ -388,28 +381,26 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
-	private @NotNull String buildOrderSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
+	private @NonNull String buildOrderSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
 	{
 		String sql = "SELECT "
 				+ " -1 as C_Invoice_ID," // 1
 				+ " o.C_Order_ID," // 2
-				+ " currencyConvert(ops.dueamt,o.C_Currency_ID, ?,?, o.C_ConversionType_ID,o.AD_Client_ID,o.AD_Org_ID) as OpenAmt," // 3
+				+ " ops.dueamt as OpenAmt," // 3
 				+ " null as DiscountAmt," // 4
 				+ " null as PaymentRule, "  // 5
 				+ " o.IsSOTrx, " // 6
 				+ " o.Bill_BPartner_ID as C_BPartner_ID," // 6
 				// C_BP_BankAccount_ID
-				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID =  o.Bill_BPartner_ID AND bpb.IsActive='Y' "
-				+ " AND bpb.IBAN IS NOT NULL ) as C_BP_BankAccount_ID "  //8
+				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID = o.Bill_BPartner_ID AND bpb.IsActive='Y' "
+				+ " AND bpb.IBAN IS NOT NULL AND bpb.C_Currency_ID = o.C_Currency_ID) as C_BP_BankAccount_ID "  //8
 				//
 				+ " FROM C_Order o "
-				+ " LEFT JOIN C_Doctype dt on o.C_Doctype_ID = dt.C_Doctype_ID "
-				+ " LEFT JOIN C_OrderPaySchedule ops on o.C_Order_ID = ops.C_Order_ID "
+				+ " INNER JOIN C_Doctype dt on o.C_Doctype_ID = dt.C_Doctype_ID "
+				+ " INNER JOIN C_OrderPaySchedule ops on o.C_Order_ID = ops.C_Order_ID "
 				+ " WHERE true AND ops.Status = ? "  //
 				;
-		sqlParams.add(C_CurrencyTo_ID); // #1
-		sqlParams.add(payDate); // #2
-		sqlParams.add(OrderPayScheduleStatus.Awaiting_Pay.getCode()); // #3
+		sqlParams.add(OrderPayScheduleStatus.Awaiting_Pay.getCode()); // #1
 
 		// Only COmpleted/CLosed payment
 		{
@@ -548,7 +539,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		// If the candidate is no longer eligible for a pay selection line, delete the existing pay selection line (if any)
 		if (candidate.getPayAmt().signum() <= 0)
 		{
-			deletePaySelectionLine(existingPaySelectionLine);
+			dequePaySelectionLine(existingPaySelectionLine);
 			return;
 		}
 
@@ -584,7 +575,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
-	private @Nullable I_C_PaySelectionLine getPaySelectionLine(final @NotNull PaySelectionLineCandidate candidate)
+	private @Nullable I_C_PaySelectionLine getPaySelectionLine(final @NonNull PaySelectionLineCandidate candidate)
 	{
 		final I_C_PaySelection paySelection = getC_PaySelection();
 
@@ -602,7 +593,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return existingPaySelectionLine;
 	}
 
-	private void deletePaySelectionLine(@Nullable final I_C_PaySelectionLine paySelectionLine)
+	private void dequePaySelectionLine(@Nullable final I_C_PaySelectionLine paySelectionLine)
 	{
 		if (paySelectionLine == null)
 		{
