@@ -38,6 +38,8 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_END = "PickupDateAndTimeEnd";
 	public static final String ATTRIBUTE_VALUE_DELIVERY_DATE = "DeliveryDate";
 	public static final String ATTRIBUTE_VALUE_CUSTOMER_REFERENCE = "CustomerReference";
+	public static final String ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE = "ReceiverCountryCode";
+	public static final String ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME = "ShipperProductName";
 
 	// mappingRules
 	public static final String MAPPING_RULE_RECEIVER_COUNTRY_CODE = "ReceiverCountryCode";

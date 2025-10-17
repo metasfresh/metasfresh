@@ -172,7 +172,7 @@ public class ShipmentServiceTest
 			.shipAdvise(NShiftConstants.PROD_CONCEPT_ID, "2757")
 			.shipAdvise(NShiftConstants.GOODS_TYPE_ID, "5")
 			.shipAdvise(NShiftConstants.GOODS_TYPE_NAME, "Packet")
-			.mappingConfigs(JsonMappingConfigList.ofCollection(ImmutableList.of(
+			.mappingConfigs(JsonMappingConfigList.ofList(ImmutableList.of(
 					JsonMappingConfig.builder()
 							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
 							.attributeKey("108") // see https://helpcenter.nshift.com/hc/en-us/articles/16926110939292-Objects-and-Fields ReferenceKind

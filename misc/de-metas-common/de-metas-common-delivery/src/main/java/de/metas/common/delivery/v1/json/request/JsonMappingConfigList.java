@@ -25,29 +25,30 @@ package de.metas.common.delivery.v1.json.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
-import java.util.Collection;
+import java.util.List;
 
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Value
-public class JsonMappingConfigList {
-
+public class JsonMappingConfigList
+{
 	public static final JsonMappingConfigList EMPTY = new JsonMappingConfigList(ImmutableList.of());
 
 	@JsonValue
 	@NonNull
-	ImmutableList<JsonMappingConfig> configs;
+	List<JsonMappingConfig> configs;
 
 	@JsonCreator
-	public static JsonMappingConfigList ofCollection(@NonNull final Collection<JsonMappingConfig> items) {
-		if (items.isEmpty()) {
+	public static JsonMappingConfigList ofList(@NonNull final List<JsonMappingConfig> items)
+	{
+		if (items.isEmpty())
+		{
 			return EMPTY;
 		}
 		return new JsonMappingConfigList(ImmutableList.copyOf(items));
-	}
-
-	private JsonMappingConfigList(@NonNull final ImmutableList<JsonMappingConfig> configs) {
-		this.configs = configs;
 	}
 }

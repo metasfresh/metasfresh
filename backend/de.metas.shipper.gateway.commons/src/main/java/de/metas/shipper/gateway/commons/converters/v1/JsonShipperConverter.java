@@ -147,7 +147,7 @@ public class JsonShipperConverter
 			return JsonMappingConfigList.EMPTY;
 		}
 
-		return JsonMappingConfigList.ofCollection(
+		return JsonMappingConfigList.ofList(
 				StreamSupport.stream(configs.spliterator(), false)
 						.map(this::toJsonMappingConfig)
 						.collect(ImmutableList.toImmutableList()));

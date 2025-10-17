@@ -22,13 +22,16 @@
 
 package de.metas.common.delivery.v1.json.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
@@ -44,4 +47,24 @@ public class JsonMappingConfig
 	@NonNull String attributeValue;
 	@Nullable String mappingRule;
 	@Nullable String mappingRuleValue;
+
+	@JsonIgnore
+	public boolean isConfigFor(@NonNull final Function<String, String> valueProvider)
+	{
+		if (!isConfigForShipperProduct(valueProvider.apply(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME))) {return false;}
+		if (mappingRule == null){return true;}
+		switch (mappingRule)
+		{
+			case DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE:
+				return valueProvider.apply(attributeValue).equals(mappingRuleValue);
+			default:
+				throw new IllegalArgumentException("Unknown mappingRule: " + mappingRule);
+		}
+	}
+
+	@JsonIgnore
+	private boolean isConfigForShipperProduct(@NonNull final String shipperProduct)
+	{
+		return this.shipperProduct == null || this.shipperProduct.equals(shipperProduct);
+	}
 }

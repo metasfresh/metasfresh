@@ -32,7 +32,7 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonDetail
 {
-	@JsonProperty("KindId")
+	@JsonProperty("KindID")
 	int kindId;
 
 	@JsonProperty("Value")

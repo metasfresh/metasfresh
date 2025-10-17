@@ -34,7 +34,8 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	//TODO replace with constants from model
 	ReceiverContactFirstnameAndLastname("ReceiverContactFirstnameAndLastname"),
 	PickupDateAndTimeStart("PickupDateAndTimeStart"),
-	PickupDateAndTimeEnd("PickupDateAndTimeEnd")
+	PickupDateAndTimeEnd("PickupDateAndTimeEnd"),
+	ReceiverCountryCode("ReceiverCountryCode"),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<AttributeValue> index = ReferenceListAwareEnums.index(values());

@@ -1,6 +1,5 @@
 package de.metas.shipper.client.nshift;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.delivery.v1.json.request.JsonMappingConfig;
 import de.metas.common.delivery.v1.json.request.JsonMappingConfigList;
@@ -11,15 +10,12 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,58 +38,42 @@ public class NShiftMappingConfigs
 		return new NShiftMappingConfigs(json);
 	}
 
-	public ImmutableList<String> getValuesAsList(@NonNull final String attributeType, @NonNull final UnaryOperator<String> valueMapper)
+	public ImmutableListMultimap<String, String> getValuesByKeyAttributeKey(@NonNull final String attributeType,  @NonNull final Function<String, String> valueProvider)
 	{
-		return streamValuesAsList(attributeType)
-				.map(valueMapper)
-				.filter(Check::isNotBlank)
-				.collect(ImmutableList.toImmutableList());
+		return streamEligibleConfigs(attributeType, valueProvider)
+				.map(config -> new AbstractMap.SimpleImmutableEntry<>(
+						config.getAttributeKey(),
+						valueProvider.apply(config.getAttributeValue())))
+				.filter(entry -> Check.isNotBlank(entry.getValue()))
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						Map.Entry::getKey,
+						Map.Entry::getValue));
 	}
 
-	private Stream<String> streamValuesAsList(final @NotNull String attributeType)
+	private Stream<JsonMappingConfig> streamEligibleConfigs(final @NotNull String attributeType, @NonNull final Function<String, String> valueProvider )
 	{
 		return orderedConfigsByAttributeType.get(attributeType)
 				.stream()
-				.map(JsonMappingConfig::getMappingRuleValue)
-				//.filter(Check::isNotBlank) // don't filter out blank values
-				;
+				.filter(config -> config.isConfigFor(valueProvider));
 	}
 
 	public List<JsonShipmentReference> getShipmentReferences(
-			@NonNull final String attributeKey,
+			@NonNull final String attributeType,
 			@NonNull final Function<String, String> valueProvider)
 	{
-		getValuesAsList()
-		
-		
-		return mappingConfigs.stream()
-				.filter(config -> attributeType.equals(config.getAttributeType()))
-				.sorted(Comparator.comparingInt(JsonMappingConfig::getSeqNo))
-				.map(config -> {
-					final String value = valueProvider.apply(config.getAttributeValue());
-					return Check.isNotBlank(value)
-							? new AbstractMap.SimpleImmutableEntry<>(config.getAttributeKey(), value)
-							: null;
-				})
-				.filter(Objects::nonNull)
-				.collect(Collectors.groupingBy(
-						Map.Entry::getKey,
-						LinkedHashMap::new,
-						Collectors.mapping(Map.Entry::getValue, Collectors.joining())))
-				.entrySet().stream()
+		return getValuesByKeyAttributeKey(attributeType, valueProvider)
+				.asMap().entrySet().stream()
 				.map(entry -> JsonShipmentReference.builder()
 						.kind(Integer.parseInt(entry.getKey()))
-						.value(entry.getValue())
+						.value(concatValues(entry.getValue()))
 						.build())
-				.collect(ImmutableList.toImmutableList());
+				.collect(Collectors.toList());
 	}
+
+	private static String concatValues(@NonNull final Collection<String> values)
+	{
+		return String.join(" ", values);
+	}
+
+	//TODO lineReference and detailGroups
 }
-
-
-
-// @NonNull String attributeType;
-// @Nullable String attributeGroupKey;
-// @NonNull String attributeKey;
-
-
-// 

@@ -123,7 +123,7 @@ public class NShiftShipmentService
 		dataBuilder.address(receiverAddressBuilder.build());
 
 		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryRequest.getMappingConfigs());
-		dataBuilder.references(mappingConfigs.getShipmentReferences(deliveryRequest::getValue, DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE));
+		dataBuilder.references(mappingConfigs.getShipmentReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
 
 		int lineNoCounter = 1;
 		for (final JsonDeliveryOrderParcel deliveryLine : deliveryRequest.getDeliveryOrderParcels())

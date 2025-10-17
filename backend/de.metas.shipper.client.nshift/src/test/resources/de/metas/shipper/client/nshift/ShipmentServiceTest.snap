@@ -166,7 +166,7 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
           "Value": "2025-10-02"
         },
         {
-          "Kind": 9,
+          "Kind": 7,
           "Value": "Customer reference"
         }
       ],

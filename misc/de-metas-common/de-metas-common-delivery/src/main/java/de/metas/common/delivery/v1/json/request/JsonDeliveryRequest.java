@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
-import de.metas.common.delivery.v1.json.request.JsonMappingConfigList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.util.Check;
@@ -113,10 +112,14 @@ public class JsonDeliveryRequest
 				return getDeliveryDate();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMER_REFERENCE:
 				return getCustomerReference();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE:
+				return getDeliveryAddress().getCountry();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME:
+				return getDeliveryContact() != null ? getDeliveryContact().getName() : null;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME:
+				return getShipperProduct();
 			default:
 				throw new IllegalArgumentException("Unknown attributeValue: " + attributeValue);
 		}
 	}
-
-
 }
