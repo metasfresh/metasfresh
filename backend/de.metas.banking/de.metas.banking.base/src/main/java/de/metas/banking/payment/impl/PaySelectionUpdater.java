@@ -631,6 +631,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		paySelectionLine.setPaymentRule(candidate.getPaymentRule());
 		paySelectionLine.setC_Invoice_ID(InvoiceId.toRepoId(candidate.getInvoiceId()));
 		paySelectionLine.setC_Order_ID(OrderId.toRepoId(candidate.getOrderId()));
+		paySelectionLine.setC_OrderPaySchedule_ID(OrderPayScheduleId.toRepoId(candidate.getOrderPayScheduleId()));
 		paySelectionLine.setIsSOTrx(candidate.isSOTrx());
 		paySelectionLine.setOpenAmt(candidate.getOpenAmt());
 		paySelectionLine.setPayAmt(candidate.getPayAmt());

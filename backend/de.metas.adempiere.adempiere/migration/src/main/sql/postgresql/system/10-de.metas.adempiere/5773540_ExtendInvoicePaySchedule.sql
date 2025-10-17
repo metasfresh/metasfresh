@@ -90,3 +90,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE C_Payment ADD CONSTRAINT COrderPaySchedule_CPayment FOREIGN KEY (C_OrderPaySchedule_ID) REFERENCES public.C_OrderPaySchedule DEFERRABLE INITIALLY DEFERRED
 ;
 
+
+-- Name: C_PaySelectionLine.C_BP_BankAccount_ID
+-- 2025-10-17T20:24:29.258Z
+UPDATE AD_Val_Rule SET Code='C_BP_BankAccount.C_BPartner_ID=@C_BPartner_ID@ /* the invoice''s currency needs to match the account''s currency */ AND C_BP_BankAccount.C_Currency_ID=(select i.C_Currency_ID from C_invoice i where i.C_Invoice_ID=@C_Invoice_ID@ UNION select o.C_Currency_ID from C_Order o where o.C_Order_ID=@C_Order_ID@) AND (C_BP_BankAccount.BPBankAcctUse = ''B'' OR C_BP_BankAccount.BPBankAcctUse = ''@PaymentRule@'' /*Allow selection of NON-Standard types of usage like "Provision", because we can''t know if they make sense or not*/ OR C_BP_BankAccount.BPBankAcctUse NOT IN (''B'',''D'',''N'',''T'') )',Updated=TO_TIMESTAMP('2025-10-17 20:24:29.254000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540104
+;
+
