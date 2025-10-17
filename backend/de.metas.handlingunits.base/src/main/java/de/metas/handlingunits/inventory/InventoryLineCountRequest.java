@@ -6,6 +6,7 @@ import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 
@@ -17,5 +18,5 @@ public class InventoryLineCountRequest
 	@Nullable ScannedCode scannedCode;
 	@NonNull Quantity qtyBook;
 	@NonNull Quantity qtyCount;
-	// TODO attributes
+	@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 }

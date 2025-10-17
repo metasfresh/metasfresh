@@ -1,5 +1,7 @@
 package de.metas.inventory.mobileui.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.scannable_code.ScannedCode;
@@ -12,7 +14,9 @@ import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Value
 @Builder
@@ -29,6 +33,24 @@ public class JsonCountRequest
 	boolean lineCountingDone;
 
 	@Nullable List<Attribute> attributes;
+
+	@JsonIgnore
+	@NonNull
+	public Map<AttributeCode, String> getAttributesAsMap()
+	{
+		if (attributes == null || attributes.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final HashMap<AttributeCode, String> result = new HashMap<>();
+		for (final Attribute attribute : attributes)
+		{
+			result.put(attribute.getCode(), attribute.getValue());
+		}
+
+		return result;
+	}
 
 	//
 	//

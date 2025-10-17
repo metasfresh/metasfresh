@@ -16,6 +16,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         "id": 1000000,
         "inventoryLineHUs": [
           {
+            "asiId": 1000001,
             "huId": 100,
             "id": 1000000,
             "inventoryType": "PHYSICAL",
@@ -24,6 +25,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
             "qtyCount": "1 Ea"
           },
           {
+            "asiId": 1000002,
             "huId": 200,
             "id": 1000001,
             "inventoryType": "PHYSICAL",

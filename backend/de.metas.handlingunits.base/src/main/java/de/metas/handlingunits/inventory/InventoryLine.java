@@ -284,7 +284,7 @@ public class InventoryLine
 				.build();
 	}
 
-	public InventoryLine addingOrUpdating(@NonNull final InventoryLineCountRequest request)
+	public InventoryLine withCounting(@NonNull final InventoryLineCountRequest request)
 	{
 		final ArrayList<InventoryLineHU> newLineHUs = new ArrayList<>(inventoryLineHUs.size() + 1);
 		boolean updated = false;

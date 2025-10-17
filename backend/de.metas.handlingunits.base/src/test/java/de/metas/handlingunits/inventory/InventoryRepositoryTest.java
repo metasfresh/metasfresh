@@ -81,8 +81,6 @@ class InventoryRepositoryTest
 	private I_C_UOM uomRecord;
 	private I_M_Locator locatorRecord;
 
-	private AttributeSetInstanceId asiId;
-
 	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
@@ -102,10 +100,13 @@ class InventoryRepositoryTest
 		locatorRecord.setM_Warehouse(warehouseRecord);
 		saveRecord(locatorRecord);
 
-		final I_M_AttributeSetInstance asi = InventoryTestHelper.createAsi();
-		asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-
 		inventoryRepository = new InventoryRepository();
+	}
+
+	private AttributeSetInstanceId newAsiId()
+	{
+		final I_M_AttributeSetInstance asi = InventoryTestHelper.createAsi();
+		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
 	@SuppressWarnings("SameParameterValue")
@@ -176,18 +177,20 @@ class InventoryRepositoryTest
 				.id(inventoryLineId)
 				.locatorId(LocatorId.ofRecord(locatorRecord))
 				.productId(ProductId.ofRepoId(40))
-				.asiId(asiId)
+				.asiId(newAsiId())
 				.huAggregationType(HUAggregationType.MULTI_HU)
 				.counted(true)
 				.qtyBookFixed(Quantity.of("30", uomRecord))
 				.qtyCountFixed(Quantity.of("3", uomRecord))
 				.inventoryLineHU(InventoryLineHU.builder()
+						.asiId(newAsiId())
 						.huId(HuId.ofRepoId(100))
 						.qtyCount(Quantity.of(ONE, uomRecord))
 						.qtyBook(Quantity.of(TEN, uomRecord))
 						.isCounted(false)
 						.build())
 				.inventoryLineHU(InventoryLineHU.builder()
+						.asiId(newAsiId())
 						.huId(HuId.ofRepoId(200))
 						.qtyCount(Quantity.of("2", uomRecord))
 						.qtyBook(Quantity.of("20", uomRecord))
@@ -208,6 +211,7 @@ class InventoryRepositoryTest
 		final Inventory reloadedResult = inventoryRepository.getById(inventoryId);
 		expect.toMatchSnapshot(reloadedResult);
 
+		assertThat(reloadedResult.getLineById(inventoryLineId)).usingRecursiveComparison().isEqualTo(inventoryLine);
 		assertThat(reloadedResult.getLineById(inventoryLineId)).isEqualTo(inventoryLine);
 	}
 

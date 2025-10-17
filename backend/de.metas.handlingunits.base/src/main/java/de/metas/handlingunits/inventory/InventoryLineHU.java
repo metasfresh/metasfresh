@@ -14,6 +14,7 @@ import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -54,6 +55,7 @@ public class InventoryLineHU
 	 * Null if not yet persisted or if this is an inventory line's single InventoryLineHU.
 	 */
 	@Nullable @NonFinal InventoryLineHUId id;
+	@NonNull AttributeSetInstanceId asiId;
 
 	/**
 	 * Null if this instance does not yet have a persisted HU
@@ -69,10 +71,10 @@ public class InventoryLineHU
 	@Nullable Quantity qtyCount;
 	boolean isCounted;
 
-
 	@Builder(toBuilder = true)
 	private InventoryLineHU(
 			@Nullable final InventoryLineHUId id,
+			@Nullable final AttributeSetInstanceId asiId,
 			@Nullable final HuId huId,
 			@Nullable final HUQRCode huQRCode,
 			@Nullable final Quantity qtyInternalUse,
@@ -81,6 +83,7 @@ public class InventoryLineHU
 			final boolean isCounted)
 	{
 		this.id = id;
+		this.asiId = AttributeSetInstanceId.nullToNone(asiId);
 		this.huId = huId;
 		this.huQRCode = huQRCode;
 		this.isCounted = isCounted;
@@ -248,7 +251,7 @@ public class InventoryLineHU
 					.qtyBook(request.getQtyBook())
 					.qtyCount(request.getQtyCount())
 					.isCounted(true)
-					// TODO attributes
+					.asiId(request.getAsiId())
 					;
 		}
 

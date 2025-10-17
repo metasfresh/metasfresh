@@ -91,7 +91,7 @@ class InventoryLoaderAndSaver
 	private void warmUp(@NonNull final InventoryId inventoryId)
 	{
 		if (inventoryRecordsByInventoryId.containsKey(inventoryId)) {return;}
-		
+
 		final I_M_Inventory inventory = getRecordById(inventoryId);
 		warmUp(ImmutableList.of(inventory));
 	}
@@ -309,6 +309,7 @@ class InventoryLoaderAndSaver
 		}
 
 		return InventoryLineHU.builder()
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(inventoryLineRecord.getM_AttributeSetInstance_ID()))
 				.huId(HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID()))
 				.huQRCode(HUQRCode.fromNullableGlobalQRCodeJsonString(inventoryLineRecord.getRenderedQRCode()))
 				.qtyInternalUse(qtyInternalUse)
@@ -363,6 +364,7 @@ class InventoryLoaderAndSaver
 
 		return InventoryLineHU.builder()
 				.id(extractInventoryLineHUId(inventoryLineHURecord))
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(inventoryLineHURecord.getM_AttributeSetInstance_ID()))
 				.qtyInternalUse(qtyInternalUseConv)
 				.qtyBook(qtyBookConv)
 				.qtyCount(qtyCountConv)
@@ -580,7 +582,7 @@ class InventoryLoaderAndSaver
 	{
 		// record.setAD_Org_ID(orgId.getRepoId());
 		// record.setM_InventoryLine_ID(lineId.getRepoId());
-
+		record.setM_AttributeSetInstance_ID(from.getAsiId().getRepoId());
 		record.setM_HU_ID(HuId.toRepoId(from.getHuId()));
 		record.setRenderedQRCode(from.getHuQRCode() != null ? from.getHuQRCode().toGlobalQRCodeString() : null);
 

@@ -68,6 +68,7 @@ class InventoryLineTest
 	{
 		final Quantity zero = Quantity.zero(uomRecord);
 		return InventoryLineHU.builder()
+				.asiId(AttributeSetInstanceId.NONE)
 				.huId(null)
 				.qtyInternalUse(null)
 				.qtyBook(zero)
@@ -85,11 +86,13 @@ class InventoryLineTest
 				.asiId(AttributeSetInstanceId.ofRepoId(1234))
 				.huAggregationType(HUAggregationType.MULTI_HU)
 				.inventoryLineHU(InventoryLineHU.builder()
+						.asiId(AttributeSetInstanceId.ofRepoId(1235))
 						.huId(HuId.ofRepoId(100))
 						.qtyBook(qty(10))
 						.qtyCount(qty(1))
 						.build())
 				.inventoryLineHU(InventoryLineHU.builder()
+						.asiId(AttributeSetInstanceId.ofRepoId(1236))
 						.huId(HuId.ofRepoId(200))
 						.qtyBook(qty(20))
 						.qtyCount(qty(2))

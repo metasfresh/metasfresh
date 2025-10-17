@@ -140,11 +140,12 @@ public class InventoryJobService
 				// TODO handle the case when huId is null
 				final Quantity qtyBook = huService.getQty(request.getHuId(), line.getProductId());
 				final Quantity qtyCount = Quantity.of(request.getQtyCount(), qtyBook.getUOM());
-				return line.addingOrUpdating(InventoryLineCountRequest.builder()
+				return line.withCounting(InventoryLineCountRequest.builder()
 						.huId(request.getHuId())
 						.scannedCode(request.getScannedCode())
 						.qtyBook(qtyBook)
 						.qtyCount(qtyCount)
+						.asiId(productService.createASI(line.getProductId(), request.getAttributesAsMap()))
 						.build());
 			});
 		});
