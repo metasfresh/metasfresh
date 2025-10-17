@@ -30,14 +30,14 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum InvoiceMatchingMode implements ReferenceListAwareEnum
+public enum PaySelectionMatchingMode implements ReferenceListAwareEnum
 {
 	DIRECT_DEBIT_FROM_CUSTOMER("CDD", PaySelectionTrxType.DIRECT_DEBIT), //
 	CREDIT_TRANSFER_TO_CUSTOMER("CRE", PaySelectionTrxType.CREDIT_TRANSFER), //
 	CREDIT_TRANSFER_TO_VENDOR("OUT", PaySelectionTrxType.CREDIT_TRANSFER), //
 	;
 
-	private static final ValuesIndex<InvoiceMatchingMode> index = ReferenceListAwareEnums.index(values());
+	private static final ValuesIndex<PaySelectionMatchingMode> index = ReferenceListAwareEnums.index(values());
 
 	@Getter
 	private final String code;
@@ -45,7 +45,7 @@ public enum InvoiceMatchingMode implements ReferenceListAwareEnum
 	@Getter
 	private final PaySelectionTrxType paySelectionTrxType;
 
-	InvoiceMatchingMode(
+	PaySelectionMatchingMode(
 			@NonNull final String code,
 			@NonNull final PaySelectionTrxType paySelectionTrxType)
 	{
@@ -53,13 +53,13 @@ public enum InvoiceMatchingMode implements ReferenceListAwareEnum
 		this.paySelectionTrxType = paySelectionTrxType;
 	}
 
-	public static InvoiceMatchingMode ofCode(@NonNull final String code)
+	public static PaySelectionMatchingMode ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
 
 	@Nullable
-	public static InvoiceMatchingMode ofNullableCode(@Nullable final String code)
+	public static PaySelectionMatchingMode ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
 	}

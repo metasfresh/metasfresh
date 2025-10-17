@@ -69,7 +69,6 @@ public class PaymentTermService
 			@NonNull final PaymentTermId basePaymentTermId,
 			@NonNull final Percent discount)
 	{
-		final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getRecordById(basePaymentTermId);
 
 		// see if the designed payment term already exists
@@ -119,4 +118,10 @@ public class PaymentTermService
 	{
 		return paymentTermRepository.hasPaySchedule(paymentTermId);
 	}
+
+	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	{
+		return paymentTermRepository.getPaymentTermBreakById(id);
+	}
+
 }

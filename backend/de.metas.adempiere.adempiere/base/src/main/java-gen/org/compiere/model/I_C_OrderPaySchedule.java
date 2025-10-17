@@ -120,7 +120,7 @@ public interface I_C_OrderPaySchedule
 	 * Set Payment Term Break.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_PaymentTerm_Break_ID (int C_PaymentTerm_Break_ID);
@@ -129,7 +129,7 @@ public interface I_C_OrderPaySchedule
 	 * Get Payment Term Break.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_PaymentTerm_Break_ID();
@@ -252,6 +252,27 @@ public interface I_C_OrderPaySchedule
 
 	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_IsActive = new ModelColumn<>(I_C_OrderPaySchedule.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Offset days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOffsetDays (int OffsetDays);
+
+	/**
+	 * Get Offset days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getOffsetDays();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_OffsetDays = new ModelColumn<>(I_C_OrderPaySchedule.class, "OffsetDays", null);
+	String COLUMNNAME_OffsetDays = "OffsetDays";
 
 	/**
 	 * Set Percent.

@@ -244,6 +244,8 @@ BEGIN
                                                            ELSE TRUE
                                  END))
         LOOP
+            v_result.HasAllocations := 'Y'; -- GL journal entries are also allocations
+            
             IF (glJournalLine.c_currency_id = v_Currency_ID) THEN
                 v_LineAllocAmtConv := glJournalLine.amount;
             ELSIF (glJournalLine.acct_currency_id = v_Currency_ID) THEN
