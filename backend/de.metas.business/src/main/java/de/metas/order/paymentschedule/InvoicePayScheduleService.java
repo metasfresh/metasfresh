@@ -27,7 +27,6 @@ import de.metas.invoice.InvoiceId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,22 +34,14 @@ import org.springframework.stereotype.Service;
 public class InvoicePayScheduleService
 {
 	@NonNull private final InvoicePayScheduleRepository invoicePayScheduleRepository;
+	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final PaymentTermService paymentTermService;
-
-	public static InvoicePayScheduleService newInstanceForUnitTesting()
-	{
-		Adempiere.assertUnitTestMode();
-
-		return new InvoicePayScheduleService(
-				new InvoicePayScheduleRepository(),
-				new PaymentTermService()
-		);
-	}
 
 	public void createInvoicePaySchedules(final I_C_Invoice invoice)
 	{
 		InvoicePayScheduleCreateCommand.builder()
 				.invoicePayScheduleService(this)
+				.orderPayScheduleService(orderPayScheduleService)
 				.paymentTermService(paymentTermService)
 				.invoiceRecord(invoice)
 				.build()
