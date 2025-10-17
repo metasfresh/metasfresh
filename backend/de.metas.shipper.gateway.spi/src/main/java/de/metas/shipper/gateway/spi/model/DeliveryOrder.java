@@ -8,10 +8,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.With;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -37,13 +39,13 @@ import java.util.Objects;
 
 @Value
 @Builder(toBuilder = true)
-@Jacksonized //TODO Adrian figure out if we (still) need this
+@Jacksonized
 public class DeliveryOrder
 {
 	/**
 	 * ID in external repository
 	 */
-	@Nullable DeliveryOrderId id;
+	@Nullable @With DeliveryOrderId id;
 	/**
 	 * No idea what this field does, as there's a {@link de.metas.shipper.gateway.spi.DeliveryOrderId} field as well}.
 	 *
@@ -112,7 +114,7 @@ public class DeliveryOrder
 	String receiverEORI;
 
 	@Nullable CarrierGoodsType goodsType;
-	@Nullable ImmutableList<CarrierService> services;
+	@Nullable Set<CarrierService> services;
 
 	public DeliveryOrder withCustomDeliveryData(@NonNull final CustomDeliveryData customDeliveryData)
 	{

@@ -26,12 +26,19 @@ import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
 import de.metas.location.CountryCode;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantitys;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.CarrierGoodsType;
+import de.metas.shipper.gateway.spi.model.CarrierGoodsTypeId;
+import de.metas.shipper.gateway.spi.model.CarrierProductId;
+import de.metas.shipper.gateway.spi.model.CarrierService;
+import de.metas.shipper.gateway.spi.model.CarrierServiceId;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
@@ -40,6 +47,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcelId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
@@ -49,14 +57,21 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_Carrier_Goods_Type;
+import org.compiere.model.I_Carrier_Product;
+import org.compiere.model.I_Carrier_Service;
 import org.compiere.model.I_Carrier_ShipmentOrder;
 import org.compiere.model.I_Carrier_ShipmentOrder_Item;
 import org.compiere.model.I_Carrier_ShipmentOrder_Parcel;
+import org.compiere.model.I_Carrier_ShipmentOrder_Service;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -66,6 +81,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveAll;
 public class ShipmentOrderRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	final CCache<String, CarrierGoodsType> carrierGoodsTypesByExternalId = CCache.newLRUCache(I_Carrier_Goods_Type.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
+	final CCache<String, CarrierGoodsType> carrierGoodsTypesById = CCache.newLRUCache(I_Carrier_Goods_Type.Table_Name + "#byId", 100, 0);
+	final CCache<String, CarrierShipperProduct> carrierProductsByExternalId = CCache.newLRUCache(I_Carrier_Product.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
+	final CCache<String, CarrierShipperProduct> carrierProductsById = CCache.newLRUCache(I_Carrier_Product.Table_Name + "#byId", 100, 0);
+	final CCache<String, CarrierService> carrierServicesByExternalId = CCache.newLRUCache(I_Carrier_Service.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
 
 	public DeliveryOrder getById(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
@@ -119,13 +140,15 @@ public class ShipmentOrderRepository
 				.build();
 	}
 
-	private static DeliveryOrder fromRecord(@NonNull final I_Carrier_ShipmentOrder po, @NonNull final ImmutableList<DeliveryOrderParcel> parcels)
+	private DeliveryOrder fromRecord(@NonNull final I_Carrier_ShipmentOrder po, @NonNull final ImmutableList<DeliveryOrderParcel> parcels)
 	{
+		final ShipperId shipperId = ShipperId.ofRepoId(po.getM_Shipper_ID());
+		final DeliveryOrderId id = DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID());
 		return DeliveryOrder.builder()
-				.id(DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID()))
-				.shipperProduct(CarrierShipperProduct.ofCode(po.getCarrier_Product()))//TODO load from Carrier_Product
+				.id(id)
+				.shipperProduct(getCachedShipperProductById(CarrierProductId.ofRepoIdOrNull(po.getCarrier_Product_ID())))
 				.customerReference(po.getCustomerReference())
-				.shipperId(ShipperId.ofRepoId(po.getM_Shipper_ID()))
+				.shipperId(shipperId)
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(po.getM_ShipperTransportation_ID()))
 				.pickupDate(PickupDate.builder()
 						.date(TimeUtil.asLocalDate(po.getShipmentDate()))
@@ -158,7 +181,18 @@ public class ShipmentOrderRepository
 						.build())
 				.shipperEORI(po.getShipper_EORI())
 				.receiverEORI(po.getReceiver_EORI())
+				.goodsType(getCachedGoodsTypeById(CarrierGoodsTypeId.ofRepoIdOrNull(po.getCarrier_Goods_Type_ID())))
+				.services(getCachedServicesByIds(id))
 				.deliveryOrderParcels(parcels)
+				.build();
+	}
+
+	private static CarrierGoodsType fromRecord(@NotNull final I_Carrier_Goods_Type goodsType)
+	{
+		return CarrierGoodsType.builder()
+				.id(CarrierGoodsTypeId.ofRepoId(goodsType.getCarrier_Goods_Type_ID()))
+				.externalId(goodsType.getExternalId())
+				.name(goodsType.getName())
 				.build();
 	}
 
@@ -190,11 +224,7 @@ public class ShipmentOrderRepository
 		}
 		else
 		{
-			final DeliveryOrderId orderId = createShipmentOrder(order);
-			return order
-					.toBuilder()
-					.id(orderId)
-					.build();
+			return order.withId(createShipmentOrder(order));
 		}
 	}
 
@@ -244,11 +274,11 @@ public class ShipmentOrderRepository
 	{
 		final I_Carrier_ShipmentOrder po = InterfaceWrapperHelper.newInstance(I_Carrier_ShipmentOrder.class);
 		final ContactPerson deliveryContact = request.getDeliveryContact();
-		po.setCarrier_Product(request.getShipperProduct().getCode());
 		po.setC_BPartner_ID(request.getDeliveryAddress().getBpartnerId());
 		po.setCustomerReference(request.getCustomerReference());
 		po.setInternationalDelivery(!Objects.equals(request.getDeliveryAddress().getCountry(), request.getPickupAddress().getCountry()));
-		po.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
+		final ShipperId shipperId = request.getShipperId();
+		po.setM_Shipper_ID(ShipperId.toRepoId(shipperId));
 		po.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));
 		po.setShipmentDate(TimeUtil.asTimestamp(request.getPickupDate().getDate()));
 		po.setShipper_EORI(request.getShipperEORI());
@@ -282,22 +312,62 @@ public class ShipmentOrderRepository
 		final CountryCode receiverCountry = receiverAddress.getCountry();
 		po.setReceiver_CountryISO2Code(receiverCountry.getAlpha2());
 
+		final CarrierGoodsType actualGoodsType = getOrCreateGoodsType(shipperId, request.getGoodsType());
+		if (actualGoodsType != null)
+		{
+			po.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(actualGoodsType.getId()));
+		}
+
+		final CarrierShipperProduct carrierProduct = getOrCreateCarrierProduct(request);
+		if (carrierProduct != null)
+		{
+			po.setCarrier_Product_ID(CarrierProductId.toRepoId(carrierProduct.getId()));
+		}
+
 		InterfaceWrapperHelper.saveRecord(po);
 
 		final DeliveryOrderId deliveryOrderId = DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID());
 
-		final ImmutableMap<DeliveryOrderParcel, I_Carrier_ShipmentOrder_Parcel> orderLineToParcel = request.getDeliveryOrderParcels()
+		final ImmutableMap<DeliveryOrderParcel, I_Carrier_ShipmentOrder_Parcel> parcelToDBParcel = request.getDeliveryOrderParcels()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(Functions.identity(), item -> createParcel(item, deliveryOrderId)));
 
-		saveAll(orderLineToParcel.values());
+		saveAll(parcelToDBParcel.values());
 
-		saveAll(orderLineToParcel.keySet()
+		saveAll(parcelToDBParcel.keySet()
 				.stream()
-				.flatMap(orderLine -> createItems(orderLine, DeliveryOrderParcelId.ofRepoId(orderLineToParcel.get(orderLine).getCarrier_ShipmentOrder_Parcel_ID())))
+				.flatMap(parcel -> createItems(parcel, DeliveryOrderParcelId.ofRepoId(parcelToDBParcel.get(parcel).getCarrier_ShipmentOrder_Parcel_ID())))
 				.collect(ImmutableList.toImmutableList()));
 
+		final Set<CarrierService> services = request.getServices();
+		if (services != null && !services.isEmpty())
+		{
+			services.forEach(service -> assignService(deliveryOrderId, shipperId, service));
+		}
+
 		return deliveryOrderId;
+	}
+
+	@Nullable
+	private CarrierShipperProduct getOrCreateCarrierProduct(final @NonNull DeliveryOrder request)
+	{
+		final ShipperProduct shipperProduct = request.getShipperProduct();
+		if (shipperProduct == null)
+		{
+			return null;
+		}
+		final CarrierShipperProduct requestedProduct;
+		if (shipperProduct instanceof CarrierShipperProduct)
+		{
+			requestedProduct = (CarrierShipperProduct)shipperProduct;
+		}
+		else
+		{
+			final String code = shipperProduct.getCode();
+			final String name = shipperProduct.getName() != null ? shipperProduct.getName() : code;
+			requestedProduct = CarrierShipperProduct.ofCode(code, name);
+		}
+		return getOrCreateShipperProduct(request.getShipperId(), requestedProduct);
 	}
 
 	private Stream<I_Carrier_ShipmentOrder_Item> createItems(@NonNull final DeliveryOrderParcel orderLine, @NonNull final DeliveryOrderParcelId deliveryOrderParcelId)
@@ -355,6 +425,205 @@ public class ShipmentOrderRepository
 		po.setM_Package_ID(PackageId.toRepoId(parcelRequest.getPackageId()));
 
 		return po;
+	}
+
+	@Nullable
+	private CarrierGoodsType getOrCreateGoodsType(@NonNull final ShipperId shipperId, @Nullable final CarrierGoodsType goodsType)
+	{
+		if (goodsType == null || goodsType.getId() != null)
+		{
+			return goodsType;
+		}
+		final CarrierGoodsType cachedGoodsTypeByExternalId = getCachedGoodsTypeByShipperExternalId(shipperId, goodsType.getExternalId());
+		if (cachedGoodsTypeByExternalId != null)
+		{
+			return cachedGoodsTypeByExternalId;
+		}
+		return createGoodsType(shipperId, goodsType);
+	}
+
+	private CarrierGoodsType createGoodsType(final @NonNull ShipperId shipperId, final CarrierGoodsType goodsType)
+	{
+		final I_Carrier_Goods_Type po = InterfaceWrapperHelper.newInstance(I_Carrier_Goods_Type.class);
+
+		po.setM_Shipper_ID(shipperId.getRepoId());
+		po.setExternalId(goodsType.getExternalId());
+		po.setName(goodsType.getName());
+
+		InterfaceWrapperHelper.saveRecord(po);
+
+		return fromRecord(po);
+	}
+
+	@Nullable
+	private CarrierGoodsType getCachedGoodsTypeByShipperExternalId(@NonNull final ShipperId shipperId, @Nullable final String externalId)
+	{
+		if (externalId == null)
+		{
+			return null;
+		}
+		return carrierGoodsTypesByExternalId.getOrLoad(shipperId + externalId, () ->
+				queryBL.createQueryBuilder(I_Carrier_Goods_Type.class)
+						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_M_Shipper_ID, shipperId)
+						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_ExternalId, externalId)
+						.firstOptional()
+						.map(ShipmentOrderRepository::fromRecord)
+						.orElse(null));
+	}
+
+	@Nullable
+	private CarrierGoodsType getCachedGoodsTypeById(@Nullable final CarrierGoodsTypeId goodsTypeId)
+	{
+		if (goodsTypeId == null)
+		{
+			return null;
+		}
+		return carrierGoodsTypesById.getOrLoad(goodsTypeId.toString(), () ->
+				queryBL.createQueryBuilder(I_Carrier_Goods_Type.class)
+						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID, goodsTypeId)
+						.firstOptional()
+						.map(ShipmentOrderRepository::fromRecord)
+						.orElse(null));
+	}
+
+	private static CarrierShipperProduct fromProductRecord(@NotNull final I_Carrier_Product product)
+	{
+		return CarrierShipperProduct.builder()
+				.id(CarrierProductId.ofRepoId(product.getCarrier_Product_ID()))
+				.code(product.getExternalId())
+				.name(product.getName())
+				.build();
+	}
+
+	@Nullable
+	private CarrierShipperProduct getCachedShipperProductByCode(@NonNull final ShipperId shipperId, @Nullable final String code)
+	{
+		if (code == null)
+		{
+			return null;
+		}
+		return carrierProductsByExternalId.getOrLoad(shipperId + code, () ->
+				queryBL.createQueryBuilder(I_Carrier_Product.class)
+						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_M_Shipper_ID, shipperId)
+						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_ExternalId, code)
+						.firstOptional()
+						.map(ShipmentOrderRepository::fromProductRecord)
+						.orElse(null));
+	}
+
+	@Nullable
+	private CarrierShipperProduct getCachedShipperProductById(@Nullable final CarrierProductId productId)
+	{
+		if (productId == null)
+		{
+			return null;
+		}
+		return carrierProductsById.getOrLoad(productId.toString(), () ->
+				queryBL.createQueryBuilder(I_Carrier_Product.class)
+						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID, productId)
+						.firstOptional()
+						.map(ShipmentOrderRepository::fromProductRecord)
+						.orElse(null));
+	}
+
+	@Nullable
+	private CarrierShipperProduct getOrCreateShipperProduct(@NonNull final ShipperId shipperId, @Nullable final CarrierShipperProduct shipperProduct)
+	{
+		if (shipperProduct == null || shipperProduct.getId() != null)
+		{
+			return shipperProduct;
+		}
+		final CarrierShipperProduct cached = getCachedShipperProductByCode(shipperId, shipperProduct.getCode());
+		if (cached != null)
+		{
+			return cached;
+		}
+		return createShipperProduct(shipperId, shipperProduct);
+	}
+
+	private CarrierShipperProduct createShipperProduct(@NonNull final ShipperId shipperId, @NonNull final CarrierShipperProduct shipperProduct)
+	{
+		final I_Carrier_Product po = InterfaceWrapperHelper.newInstance(I_Carrier_Product.class);
+		po.setM_Shipper_ID(shipperId.getRepoId());
+		po.setExternalId(shipperProduct.getCode());
+		po.setName(shipperProduct.getName());
+		InterfaceWrapperHelper.saveRecord(po);
+		return fromProductRecord(po);
+	}
+
+	private Set<CarrierService> getCachedServicesByIds(@NonNull final DeliveryOrderId carrierShipmentOrderId)
+	{
+		return queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Service.class)
+				.addEqualsFilter(I_Carrier_ShipmentOrder_Service.COLUMNNAME_Carrier_ShipmentOrder_ID, carrierShipmentOrderId)
+				.andCollect(I_Carrier_ShipmentOrder_Service.COLUMN_Carrier_Service_ID)
+				.create()
+				.stream()
+				.map(ShipmentOrderRepository::fromServiceRecord)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static CarrierService fromServiceRecord(@NonNull final I_Carrier_Service service)
+	{
+		return CarrierService.builder()
+				.id(CarrierServiceId.ofRepoId(service.getCarrier_Service_ID()))
+				.externalId(service.getExternalId())
+				.name(service.getName())
+				.build();
+
+	}
+
+	private void assignService(@NonNull final DeliveryOrderId deliveryOrderId, @NonNull final ShipperId shipperId, @NonNull final CarrierService service)
+	{
+		final CarrierService actualService = getOrCreateService(shipperId, service);
+		final I_Carrier_ShipmentOrder_Service po = InterfaceWrapperHelper.newInstance(I_Carrier_ShipmentOrder_Service.class);
+		po.setCarrier_ShipmentOrder_ID(deliveryOrderId.getRepoId());
+		po.setCarrier_Service_ID(CarrierServiceId.toRepoId(actualService.getId()));
+		InterfaceWrapperHelper.saveRecord(po);
+	}
+
+	private CarrierService getOrCreateService(@NonNull final ShipperId shipperId, @NonNull final CarrierService service)
+	{
+		final CarrierService cachedService = getCachedServiceByShipperExternalId(shipperId, service.getExternalId());
+		if (cachedService != null)
+		{
+			return cachedService;
+		}
+		return createShipperService(shipperId, service);
+	}
+
+	@Nullable
+	private CarrierService getCachedServiceByShipperExternalId(@NonNull final ShipperId shipperId, @Nullable final String externalId)
+	{
+		if (externalId == null)
+		{
+			return null;
+		}
+		return carrierServicesByExternalId.getOrLoad(shipperId + externalId, () ->
+				queryBL.createQueryBuilder(I_Carrier_Service.class)
+						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_M_Shipper_ID, shipperId)
+						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_ExternalId, externalId)
+						.firstOptional()
+						.map(ShipmentOrderRepository::fromRecord)
+						.orElse(null));
+	}
+
+	private static CarrierService fromRecord(@NotNull final I_Carrier_Service service)
+	{
+		return CarrierService.builder()
+				.id(CarrierServiceId.ofRepoId(service.getCarrier_Service_ID()))
+				.externalId(service.getExternalId())
+				.name(service.getName())
+				.build();
+	}
+
+	private CarrierService createShipperService(@NonNull final ShipperId shipperId, @NonNull final CarrierService shipperProduct)
+	{
+		final I_Carrier_Service po = InterfaceWrapperHelper.newInstance(I_Carrier_Service.class);
+		po.setM_Shipper_ID(shipperId.getRepoId());
+		po.setExternalId(shipperProduct.getExternalId());
+		po.setName(shipperProduct.getName());
+		InterfaceWrapperHelper.saveRecord(po);
+		return fromRecord(po);
 	}
 
 }

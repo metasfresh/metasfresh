@@ -112,7 +112,7 @@ public class NShiftShipmentService
 				.prodConceptID(prodConceptId)
 				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
 
-		deliveryRequest.getCarrierAdvice().getServices().forEach(service -> dataBuilder.service(Long.valueOf(service.getId()).intValue()));
+		deliveryRequest.getServices().forEach(service -> dataBuilder.service(Long.valueOf(service.getId()).intValue()));
 
 		// Add Addresses
 		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER)

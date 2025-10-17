@@ -2,8 +2,6 @@ package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-
 /** Generated Interface for Carrier_Product
  *  @author metasfresh (generated) 
  */
@@ -101,19 +99,19 @@ public interface I_Carrier_Product
 	 * Set External ID.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalId (@Nullable java.lang.String ExternalId);
+	void setExternalId (java.lang.String ExternalId);
 
 	/**
 	 * Get External ID.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalId();
+	java.lang.String getExternalId();
 
 	ModelColumn<I_Carrier_Product, Object> COLUMN_ExternalId = new ModelColumn<>(I_Carrier_Product.class, "ExternalId", null);
 	String COLUMNNAME_ExternalId = "ExternalId";
@@ -168,19 +166,19 @@ public interface I_Carrier_Product
 	 * Set Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (@Nullable java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_Carrier_Product, Object> COLUMN_Name = new ModelColumn<>(I_Carrier_Product.class, "Name", null);
 	String COLUMNNAME_Name = "Name";

@@ -34,6 +34,6 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonCarrierService
 {
-	long id;
+	@NonNull String id;
 	@NonNull String name;
 }

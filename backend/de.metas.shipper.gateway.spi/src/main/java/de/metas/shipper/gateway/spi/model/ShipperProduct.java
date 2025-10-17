@@ -29,6 +29,11 @@ import javax.annotation.Nullable;
  */
 public interface ShipperProduct
 {
+	default @Nullable CarrierProductId getId()
+	{
+		return null;
+	}
+
 	String getCode();
 
 	default @Nullable String getName()

@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons.model;
 
+import de.metas.shipper.gateway.spi.model.CarrierProductId;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,12 +31,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @Jacksonized
 @RequiredArgsConstructor
 public class CarrierShipperProduct implements ShipperProduct
 {
+	@Nullable CarrierProductId id;
+
 	@Getter
 	@NonNull String code;
 
@@ -48,7 +53,7 @@ public class CarrierShipperProduct implements ShipperProduct
 
 	public static CarrierShipperProduct ofCode(@NonNull final String code, @NonNull final String name)
 	{
-		return new CarrierShipperProduct(code, name);
+		return new CarrierShipperProduct(null, code, name);
 	}
 
 }

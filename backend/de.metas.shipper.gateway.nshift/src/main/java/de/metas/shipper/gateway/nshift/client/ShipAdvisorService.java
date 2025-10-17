@@ -23,7 +23,6 @@
 package de.metas.shipper.gateway.nshift.client;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.delivery.v1.json.request.JsonCarrierAdvice;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
@@ -78,14 +77,8 @@ public class ShipAdvisorService
 
 		return deliveryRequest.toBuilder()
 				.shipperProduct(response.getShipperProduct())
-				.carrierAdvice(JsonCarrierAdvice.builder()
-						.goodsType(response.getGoodsType())
-						.services(response.getShipperProductServices())
-						.build())
-				.carrierAdvice(JsonCarrierAdvice.builder()
-						.services(response.getShipperProductServices())
-						.goodsType(response.getGoodsType())
-						.build())
+				.services(response.getShipperProductServices())
+				.goodsType(response.getGoodsType())
 				.build();
 	}
 	

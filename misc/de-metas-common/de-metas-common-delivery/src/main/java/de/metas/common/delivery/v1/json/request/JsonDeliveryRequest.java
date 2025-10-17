@@ -22,7 +22,6 @@
 
 package de.metas.common.delivery.v1.json.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
@@ -34,6 +33,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -58,12 +58,7 @@ public class JsonDeliveryRequest
 	@Nullable String shipperEORI;
 	@Nullable String receiverEORI;
 	@NonNull JsonShipperConfig shipperConfig;
-	@Nullable JsonCarrierAdvice carrierAdvice;
+	@Nullable JsonGoodsType goodsType;
+	@NonNull @Singular Set<JsonCarrierService> services;
 
-	@JsonIgnore
-	@Nullable
-	public JsonGoodsType getGoodsType()
-	{
-		return carrierAdvice == null ? null : carrierAdvice.getGoodsType();
-	}
 }

@@ -157,7 +157,7 @@ public class NShiftShipAdvisorService
 	{
 		return JsonCarrierService.builder()
 				.name(jsonShipAdvisorResponseService.getName())
-				.id(jsonShipAdvisorResponseService.getServiceId())
+				.id(String.valueOf(jsonShipAdvisorResponseService.getServiceId()))
 				.build();
 	}
 }

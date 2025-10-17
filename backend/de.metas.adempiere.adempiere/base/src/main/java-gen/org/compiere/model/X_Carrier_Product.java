@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_Carrier_Product extends org.compiere.model.PO implements I_Carrier_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -3381365L;
+	private static final long serialVersionUID = 720899627L;
 
     /** Standard Constructor */
     public X_Carrier_Product (final Properties ctx, final int Carrier_Product_ID, @Nullable final String trxName)
@@ -50,7 +50,7 @@ public class X_Carrier_Product extends org.compiere.model.PO implements I_Carrie
 	}
 
 	@Override
-	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	public void setExternalId (final java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
@@ -77,7 +77,7 @@ public class X_Carrier_Product extends org.compiere.model.PO implements I_Carrie
 	}
 
 	@Override
-	public void setName (final @Nullable java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}

@@ -27,11 +27,14 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @Jacksonized
 public class CarrierService
 {
-	@NonNull Long id;
+	@Nullable CarrierServiceId id;
+	@NonNull String externalId;
 	@NonNull String name;
 }

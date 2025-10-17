@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
-import de.metas.common.delivery.v1.json.request.JsonCarrierAdvice;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
@@ -47,6 +46,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -71,7 +71,8 @@ public class JsonShipperConverter
 				.shipperEORI(order.getShipperEORI())
 				.receiverEORI(order.getReceiverEORI())
 				.shipperConfig(toJsonShipperConfig(config))
-				.carrierAdvice(toJsonCarrierAdvice(order))
+				.goodsType(toJsonGoodsType(order.getGoodsType()))
+				.services(toCarrierServices(order.getServices()))
 				.build();
 	}
 
@@ -88,49 +89,35 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private @Nullable JsonCarrierAdvice toJsonCarrierAdvice(final @NonNull DeliveryOrder order)
+	private @Nullable JsonGoodsType toJsonGoodsType(final @Nullable CarrierGoodsType goodsType)
 	{
-		final CarrierGoodsType goodsType = order.getGoodsType();
-		final ImmutableList<CarrierService> services = order.getServices();
-		final JsonGoodsType jsonGoodsType;
-		if (goodsType != null)
-		{
-			jsonGoodsType = JsonGoodsType.builder()
-					.id(goodsType.getId().toString())
-					.name(goodsType.getName())
-					.build();
-		}
-		else
-		{jsonGoodsType = null;}
-
-		final Set<JsonCarrierService> jsonCarrierServices;
-		if (services != null)
-		{
-			jsonCarrierServices = services
-					.stream()
-					.map(this::toJsonCarrierService)
-					.collect(Collectors.toSet());
-		}
-		else {
-			jsonCarrierServices = null;
-		}
-
-		if (jsonGoodsType == null && jsonCarrierServices == null)
+		if (goodsType == null)
 		{
 			return null;
 		}
-
-
-		return JsonCarrierAdvice.builder()
-				.goodsType(jsonGoodsType)
-				.services(jsonCarrierServices)
+		return JsonGoodsType.builder()
+				.id(goodsType.getId().toString())
+				.name(goodsType.getName())
 				.build();
+	}
+
+	private @NonNull Set<JsonCarrierService> toCarrierServices(final @Nullable Set<CarrierService> services)
+	{
+		if (services == null || services.isEmpty())
+
+		{
+			return Collections.emptySet();
+		}
+		return services
+				.stream()
+				.map(this::toJsonCarrierService)
+				.collect(Collectors.toSet());
 	}
 
 	private JsonCarrierService toJsonCarrierService(final @NonNull CarrierService carrierService)
 	{
 		return JsonCarrierService.builder()
-				.id(carrierService.getId())
+				.id(carrierService.getExternalId())
 				.name(carrierService.getName())
 				.build();
 	}

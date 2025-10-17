@@ -28,7 +28,6 @@ import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.JsonQuantity;
-import de.metas.common.delivery.v1.json.request.JsonCarrierAdvice;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
@@ -47,7 +46,7 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@SpringBootTest(classes = {NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class})
+@SpringBootTest(classes = { NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class })
 @TestPropertySource(properties = {
 		"logging.level.de.metas.shipper.client.nshift.NShiftShipmentService=TRACE",
 		"logging.level.de.metas.shipper.nshift.AbstractNShiftApiClient=TRACE"
@@ -167,10 +166,8 @@ public class ShipmentServiceTest
 						.username(USERNAME)
 						.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 						.build())
-						.carrierAdvice(JsonCarrierAdvice.builder()
-								.goodsType(JsonGoodsType.builder().id("5").name("Packet").build())
-								.build())
-						.shipperProduct(JsonShipperProduct.builder().code("2757").build())
+				.goodsType(JsonGoodsType.builder().id("5").name("Packet").build())
+				.shipperProduct(JsonShipperProduct.builder().code("2757").build())
 				.build());
 		assertThat(response).isNotNull();
 		assertFalse(response.isError());
