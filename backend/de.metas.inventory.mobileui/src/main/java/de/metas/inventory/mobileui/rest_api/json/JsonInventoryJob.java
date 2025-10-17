@@ -17,4 +17,5 @@ public class JsonInventoryJob
 	@NonNull String movementDate;
 	@NonNull String warehouseName;
 	@NonNull ImmutableList<JsonInventoryJobLine> lines;
+	@NonNull JsonCountStatus countStatus;
 }

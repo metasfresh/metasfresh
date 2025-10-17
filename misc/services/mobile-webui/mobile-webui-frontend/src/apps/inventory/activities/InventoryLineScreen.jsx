@@ -11,7 +11,7 @@ import { updateHeaderEntry } from '../../../actions/HeaderActions';
 import { trl } from '../../../utils/translations';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { useWFActivity } from '../../../reducers/wfProcesses';
-import { getInventoryLineById, getInventoryLinesArray } from '../reducers/utils';
+import { getInventoryLineById } from '../reducers/utils';
 
 const InventoryLineScreen = () => {
   const { url, applicationId, wfProcessId, activityId, lineId, history } = useScreenDefinition({
@@ -24,7 +24,6 @@ const InventoryLineScreen = () => {
   const line = getInventoryLineById({ activity, lineId });
   const { isLineHUsLoading, lineHUs } = useLineHUs({ wfProcessId, lineId });
 
-  console.log('InventoryLineScreen', { line, lines: getInventoryLinesArray({ activity }) });
   useHeaderUpdate({
     url,
     productName: line?.productName,
@@ -56,6 +55,7 @@ const InventoryLineScreen = () => {
               uom={lineHU.uom}
               qtyBooked={lineHU.qtyBooked}
               qtyCount={lineHU.qtyCount}
+              countStatus={lineHU.countStatus}
               onClick={() => onLineHUButtonClicked({ lineHU })}
             />
           ))}
@@ -112,8 +112,6 @@ const useLineHUs = ({ wfProcessId, lineId }) => {
     queryKey: [wfProcessId, lineId],
     queryFn: () => getLineHUs({ wfProcessId, lineId }),
   });
-
-  console.log('useLineHUs', { wfProcessId, lineId, isPending, data });
 
   return { isLineHUsLoading: isPending, lineHUs: data?.lineHUs ?? [] };
 };

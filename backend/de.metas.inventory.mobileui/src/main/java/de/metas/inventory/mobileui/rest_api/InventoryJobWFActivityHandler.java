@@ -46,15 +46,13 @@ public class InventoryJobWFActivityHandler implements WFActivityHandler
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		// TODO
-		return WFActivityStatus.NOT_STARTED;
+		return computeActivityState(getInventory(wfProcess));
 
 	}
 
-	public static WFActivityStatus computeActivityState(final Inventory job)
+	public static WFActivityStatus computeActivityState(final Inventory inventory)
 	{
-		// TODO
-		return WFActivityStatus.NOT_STARTED;
+		return inventory.getDocStatus().isCompleted() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
 	}
 
 }

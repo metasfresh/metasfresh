@@ -34,6 +34,7 @@ const InventoryActivity = ({ applicationId, wfProcessId, activityId }) => {
           qtyCount={line.qtyCount}
           productId={line.productId}
           locatorId={line.locatorId}
+          countStatus={line.countStatus}
           onClick={() => onButtonClicked({ line })}
         />
       ))}

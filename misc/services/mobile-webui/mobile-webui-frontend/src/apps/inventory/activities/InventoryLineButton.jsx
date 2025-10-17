@@ -4,14 +4,26 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import ButtonDetails from '../../../components/buttons/ButtonDetails';
 import { trl } from '../../../utils/translations';
+import { CountStatus } from '../utils/CountStatus';
 
-const InventoryLineButton = ({ lineId, caption, uom, qtyBooked, qtyCount, productId, locatorId, onClick }) => {
+const InventoryLineButton = ({
+  lineId,
+  caption,
+  uom,
+  qtyBooked,
+  qtyCount,
+  productId,
+  locatorId,
+  countStatus,
+  onClick,
+}) => {
   return (
     <ButtonWithIndicator
       key={lineId}
       caption={caption}
       onClick={onClick}
       testId={`line-P${productId}-L${locatorId}-button`}
+      completeStatus={CountStatus.computeCompleteStatus({ countStatus })}
     >
       <ButtonDetails
         caption1={trl('inventory.qtyBooked')}
@@ -30,6 +42,7 @@ InventoryLineButton.propTypes = {
   qtyCount: PropTypes.number.isRequired,
   productId: PropTypes.number.isRequired,
   locatorId: PropTypes.number.isRequired,
+  countStatus: PropTypes.string.isRequired,
   onClick: PropTypes.func.isRequired,
 };
 
