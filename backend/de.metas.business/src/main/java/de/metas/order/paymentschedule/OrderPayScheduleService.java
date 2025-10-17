@@ -89,10 +89,22 @@ public class OrderPayScheduleService
 		orderPayScheduleRepository.updateById(orderId, orderPaySchedule -> orderPaySchedule.updateStatusFromContext(context));
 	}
 
+	public void markAsPaid(@NonNull final OrderId orderId, @NonNull final OrderPayScheduleId orderPayScheduleId)
+	{
+		final OrderSchedulingContext context = extractContext(orderBL.getById(orderId));
+		if (context == null)
+		{
+			return;
+		}
+
+		orderPayScheduleRepository.updateById(orderId, orderPaySchedule -> orderPaySchedule.markAsPaid(context, orderPayScheduleId));
+	}
+
 	@NonNull
 	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId) {return orderPayScheduleRepository.getByOrderId(orderId);}
 
 	public void deleteByOrderId(@NonNull final OrderId orderId) {orderPayScheduleRepository.deleteByOrderId(orderId);}
+
 
 	@Nullable OrderSchedulingContext extractContext(final @NotNull org.compiere.model.I_C_Order orderRecord)
 	{
