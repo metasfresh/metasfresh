@@ -35,20 +35,5 @@ public class JsonInventoryLineHU
 	@NonNull BigDecimal qtyCount;
 	@NonNull JsonCountStatus countStatus;
 	
-	@Nullable List<Attribute> attributes;
-
-	//
-	//
-	//
-	//
-	//
-	
-	@Value
-	@Builder
-	@Jacksonized
-	public static class Attribute
-	{
-		@NonNull String caption;
-		@NonNull String value;
-	}
+	@Nullable List<JsonAttribute> attributes;
 }

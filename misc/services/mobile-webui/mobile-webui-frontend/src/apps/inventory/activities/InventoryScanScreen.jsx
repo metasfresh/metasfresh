@@ -18,7 +18,7 @@ const STATUS_FillData = 'FillData';
 const DEBUGGING = false;
 
 const InventoryScanScreen = () => {
-  const { applicationId, wfProcessId, activityId, lineId, history } = useScreenDefinition({
+  const { url, applicationId, wfProcessId, activityId, lineId, history } = useScreenDefinition({
     screenId: 'InventoryScanScreen',
     back: inventoryJobOrLineLocation,
   });
@@ -117,8 +117,16 @@ const InventoryScanScreen = () => {
       )}
       {status === STATUS_FillData && (
         <InventoryCountComponent
+          url={url}
           disabled={isReadonly}
-          resolvedHU={resolvedHU}
+          huDisplayName={resolvedHU?.huDisplayName}
+          productName={resolvedHU?.productName}
+          locatorName={resolvedHU?.locatorName}
+          uom={resolvedHU?.uom}
+          qtyBooked={resolvedHU?.qtyBooked}
+          counted={resolvedHU?.counted}
+          qtyCount={resolvedHU?.qtyCount}
+          attributes={resolvedHU?.attributes}
           onInventoryCountSubmit={onInventoryCountSubmit}
         />
       )}

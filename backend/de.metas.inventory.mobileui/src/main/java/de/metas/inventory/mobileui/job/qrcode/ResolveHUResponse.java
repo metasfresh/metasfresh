@@ -1,23 +1,18 @@
 package de.metas.inventory.mobileui.job.qrcode;
 
 import de.metas.handlingunits.HuId;
-import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.InventoryLineId;
+import de.metas.inventory.mobileui.deps.products.Attribute;
+import de.metas.inventory.mobileui.deps.products.Attributes;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
-import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 
 @Value
@@ -32,31 +27,5 @@ public class ResolveHUResponse
 	@NonNull Quantity qtyBooked;
 	boolean isCounted;
 	@Nullable Quantity qtyCount;
-
-	@NonNull List<Attribute> attributes;
-
-	@Value
-	@Builder
-	public static class Attribute
-	{
-		@NonNull AttributeCode attributeCode;
-		@NonNull ITranslatableString displayName;
-		@NonNull AttributeValueType valueType;
-		@Nullable Object value;
-
-		public String getValueAsString()
-		{
-			return value != null ? value.toString() : null;
-		}
-
-		public BigDecimal getValueAsBigDecimal()
-		{
-			return value != null ? NumberUtils.asBigDecimal(value) : null;
-		}
-
-		public LocalDate getValueAsLocalDate()
-		{
-			return value == null ? null : TimeUtil.asLocalDate(value);
-		}
-	}
+	@NonNull Attributes attributes;
 }

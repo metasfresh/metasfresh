@@ -26,7 +26,7 @@ public class JsonCountRequest
 	@NonNull WFProcessId wfProcessId;
 	@NonNull InventoryLineId lineId;
 
-	@NonNull ScannedCode scannedCode;
+	@Nullable ScannedCode scannedCode;
 	@Nullable HuId huId;
 
 	@NonNull BigDecimal qtyCount;

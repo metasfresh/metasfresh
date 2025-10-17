@@ -7,7 +7,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class ProductService
 {
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	public boolean isValidEAN13Product(final @NonNull EAN13 ean13, @NonNull final ProductId lineProductId)
 	{
@@ -59,6 +62,11 @@ public class ProductService
 								.collect(Collectors.toList()))
 						.build()
 		);
+	}
+
+	public @NonNull Attribute getAttribute(final AttributeCode attributeCode)
+	{
+		return attributeDAO.getAttributeByCode(attributeCode);
 	}
 
 }

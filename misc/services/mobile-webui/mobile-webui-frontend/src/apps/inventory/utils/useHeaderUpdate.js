@@ -13,6 +13,7 @@ export const useHeaderUpdate = ({
   qtyBooked,
   qtyCount,
   attributes,
+  hiddenFields = [],
 }) => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -35,12 +36,11 @@ export const useHeaderUpdate = ({
       {
         caption: trl('inventory.qtyBooked'),
         value: formatQtyToHumanReadableStr({ qty: qtyBooked, uom }),
-        hidden: qtyBooked === undefined,
       },
       {
         caption: trl('inventory.qtyCount'),
         value: formatQtyToHumanReadableStr({ qty: qtyCount, uom }),
-        hidden: qtyCount === undefined,
+        hideField: hiddenFields?.includes('qtyCount'),
       },
     ];
 
@@ -48,6 +48,7 @@ export const useHeaderUpdate = ({
       values.push({
         caption: attribute.caption,
         value: attribute.value,
+        hideField: hiddenFields?.includes(attribute.code),
       });
     });
 

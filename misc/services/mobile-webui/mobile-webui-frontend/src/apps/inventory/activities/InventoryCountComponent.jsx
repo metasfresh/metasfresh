@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import DateInput from '../../../components/DateInput';
 import QtyInputField from '../../../components/QtyInputField';
 import { qtyInfos } from '../../../utils/qtyInfos';
 import DialogButton from '../../../components/dialogs/DialogButton';
 import { trl } from '../../../utils/translations';
+import { useHeaderUpdate } from '../utils/useHeaderUpdate';
 
-const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit }) => {
-  const {
-    huDisplayName,
-    productName,
-    locatorName,
-    uom,
-    qtyBooked,
-    counted,
-    qtyCount: qtyCountParam,
-    attributes,
-  } = resolvedHU;
-
+const InventoryCountComponent = ({
+  url,
+  disabled,
+  huDisplayName,
+  productName,
+  locatorName,
+  uom,
+  qtyBooked,
+  counted,
+  qtyCount: qtyCountParam,
+  attributes,
+  onInventoryCountSubmit,
+}) => {
   const [qtyCount, setQtyCount] = useState(() =>
     counted && qtyCountParam != null ? qtyInfos.invalidOfNumber(qtyCountParam) : qtyInfos.invalidOfNumber()
   );
@@ -33,6 +34,17 @@ const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit 
   });
 
   const isAllValid = qtyCount?.isQtyValid && isAttributeValuesValid({ attributes, attributeValuesByCode });
+
+  useHeaderUpdate({
+    url,
+    locatorName,
+    huDisplayName,
+    productName,
+    uom,
+    qtyBooked,
+    attributes,
+    hiddenFields: ['qtyCount', ...(attributes ? attributes.map((attribute) => attribute.code) : [])],
+  });
 
   const onQtyCountChanged = (qtyInfo) => {
     // console.log('onQtyCountChanged', qtyInfo);
@@ -58,67 +70,41 @@ const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit 
 
   return (
     <>
-      <div className="table-container">
-        <table className="table">
-          <tbody>
-            <tr>
-              <th>{trl('inventory.locator')}</th>
-              <td>
-                <span data-testid="locator">{locatorName}</span>
-              </td>
-            </tr>
-            <tr>
-              <th>{trl('inventory.HU')}</th>
-              <td>
-                <span data-testid="hu">{huDisplayName}</span>
-              </td>
-            </tr>
-            <tr>
-              <th>{trl('inventory.product')}</th>
-              <td>
-                <span data-testid="product">{productName}</span>
-              </td>
-            </tr>
-            <tr>
-              <th>{trl('inventory.qtyBooked')}</th>
-              <td>
-                <span data-testid="qty-booked">{formatQtyToHumanReadableStr({ qty: qtyBooked, uom })}</span>
-              </td>
-            </tr>
-            <tr>
-              <th>{trl('inventory.qtyCount')}</th>
-              <td>
-                <QtyInputField
-                  testId="qty-count"
-                  qty={qtyInfos.toNumberOrString(qtyCount)}
-                  uom={uom}
-                  onQtyChange={onQtyCountChanged}
-                  readonly={disabled}
+      <table className="table view-header is-size-6">
+        <tbody>
+          <tr>
+            <th>{trl('inventory.qtyCount')}</th>
+            <td>
+              <QtyInputField
+                testId="qty-count"
+                qty={qtyInfos.toNumberOrString(qtyCount)}
+                uom={uom}
+                onQtyChange={onQtyCountChanged}
+                readonly={disabled}
+              />
+            </td>
+          </tr>
+          {attributes &&
+            attributes.map(({ caption, code, valueType }) => {
+              const { value } = attributeValuesByCode[code] || {};
+              return (
+                <AttributeRow
+                  key={code}
+                  caption={caption}
+                  code={code}
+                  value={value}
+                  valueType={valueType}
+                  disabled={disabled}
+                  onChange={onAttributeChanged}
                 />
-              </td>
-            </tr>
-            {attributes &&
-              attributes.map(({ caption, code, valueType }) => {
-                const { value } = attributeValuesByCode[code] || {};
-                return (
-                  <AttributeRow
-                    key={code}
-                    caption={caption}
-                    code={code}
-                    value={value}
-                    valueType={valueType}
-                    disabled={disabled}
-                    onChange={onAttributeChanged}
-                  />
-                );
-              })}
-          </tbody>
-        </table>
-      </div>
-      <div className="buttons is-centered">
+              );
+            })}
+        </tbody>
+      </table>
+      <div className="buttons is-flex">
         <DialogButton
           caption="OK"
-          className="is-success"
+          className="is-success is-flex-grow-1"
           disabled={disabled || !isAllValid}
           onClick={() => onOK()}
           testId="ok-button"
@@ -128,8 +114,16 @@ const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit 
   );
 };
 InventoryCountComponent.propTypes = {
+  url: PropTypes.string.isRequired,
   disabled: PropTypes.bool,
-  resolvedHU: PropTypes.object.isRequired,
+  huDisplayName: PropTypes.string,
+  productName: PropTypes.string,
+  locatorName: PropTypes.string,
+  uom: PropTypes.string,
+  qtyBooked: PropTypes.number,
+  counted: PropTypes.bool,
+  qtyCount: PropTypes.number,
+  attributes: PropTypes.array,
   onInventoryCountSubmit: PropTypes.func.isRequired,
 };
 

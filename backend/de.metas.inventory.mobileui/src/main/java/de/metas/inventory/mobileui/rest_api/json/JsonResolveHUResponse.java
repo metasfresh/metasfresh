@@ -32,6 +32,6 @@ public class JsonResolveHUResponse
 	@NonNull BigDecimal qtyBooked;
 	boolean counted;
 	@Nullable BigDecimal qtyCount;
-	@NonNull List<JsonResolveHUResponseAttribute> attributes;
+	@NonNull List<JsonAttribute> attributes;
 
 }
