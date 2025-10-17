@@ -304,6 +304,10 @@ public class ExternalSystemConfigRepo
 		{
 			result = getAllByTypePCM();
 		}
+		else if (externalSystemType.isScriptedImportConversion())
+		{
+			result = getAllByScriptedImportConversion();
+		}
 		else if (externalSystemType.isShopware6() || externalSystemType.isOther())
 		{
 			throw new AdempiereException("Method not supported")
@@ -1134,6 +1138,17 @@ public class ExternalSystemConfigRepo
 	private ImmutableList<ExternalSystemParentConfig> getAllByTypePCM()
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByScriptedImportConversion()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedImportConversion.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
