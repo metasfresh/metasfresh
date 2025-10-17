@@ -269,6 +269,48 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
 
 	/**
+	 * Set Pickup Time From.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickupTimeFrom (java.sql.Timestamp PickupTimeFrom);
+
+	/**
+	 * Get Pickup Time From.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getPickupTimeFrom();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_PickupTimeFrom = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "PickupTimeFrom", null);
+	String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
+
+	/**
+	 * Set Abholung Uhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickupTimeTo (java.sql.Timestamp PickupTimeTo);
+
+	/**
+	 * Get Abholung Uhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getPickupTimeTo();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_PickupTimeTo = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "PickupTimeTo", null);
+	String COLUMNNAME_PickupTimeTo = "PickupTimeTo";
+
+	/**
 	 * Set Empfängerort.
 	 *
 	 * <br>Type: String

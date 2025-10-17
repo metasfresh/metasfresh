@@ -111,6 +111,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation))
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
+						.timeFrom(deliveryOrderKey.getTimeFrom())
+						.timeTo(deliveryOrderKey.getTimeTo())
 						.build())
 				//
 				// Delivery aka Receiver

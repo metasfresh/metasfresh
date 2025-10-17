@@ -53,13 +53,14 @@ import java.util.stream.Collectors;
 @Component
 public class JsonShipperConverter
 {
-
 	public JsonDeliveryRequest toJson(@NonNull final ShipperConfig config, @NonNull final DeliveryOrder order)
 	{
 		return JsonDeliveryRequest.builder()
 				.deliveryOrderId(DeliveryOrderId.toRepoId(order.getId()))
 				.pickupAddress(toJsonAddress(order.getPickupAddress()))
-				.pickupDate(order.getPickupDate() != null ? order.getPickupDate().getDate().toString() : null)
+				.pickupDate(order.getPickupDate().getDate().toString())
+				.timeFrom(order.getPickupDate().getTimeFrom().toString())
+				.timeTo(order.getPickupDate().getTimeTo().toString())
 				.pickupNote(order.getPickupNote())
 				.deliveryAddress(toJsonAddress(order.getDeliveryAddress()))
 				.deliveryContact(toJsonContactOrNull(order.getDeliveryContact()))

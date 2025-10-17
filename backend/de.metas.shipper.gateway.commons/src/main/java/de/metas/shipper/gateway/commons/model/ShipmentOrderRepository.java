@@ -152,6 +152,8 @@ public class ShipmentOrderRepository
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(po.getM_ShipperTransportation_ID()))
 				.pickupDate(PickupDate.builder()
 						.date(TimeUtil.asLocalDate(po.getShipmentDate()))
+						.timeFrom(TimeUtil.asLocalTime(po.getPickupTimeFrom()))
+						.timeTo(TimeUtil.asLocalTime(po.getPickupTimeTo()))
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.name(po.getReceiver_Name1())
@@ -281,9 +283,10 @@ public class ShipmentOrderRepository
 		po.setM_Shipper_ID(ShipperId.toRepoId(shipperId));
 		po.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));
 		po.setShipmentDate(TimeUtil.asTimestamp(request.getPickupDate().getDate()));
+		po.setPickupTimeFrom(TimeUtil.asTimestamp(request.getPickupDate().getTimeFrom()));
+		po.setPickupTimeTo(TimeUtil.asTimestamp(request.getPickupDate().getTimeTo()));
 		po.setShipper_EORI(request.getShipperEORI());
 		po.setReceiver_EORI(request.getReceiverEORI());
-		// FIXME what about pickup time from/to
 
 		if (deliveryContact != null)
 		{
@@ -580,7 +583,7 @@ public class ShipmentOrderRepository
 		po.setCarrier_Service_ID(CarrierServiceId.toRepoId(actualService.getId()));
 		InterfaceWrapperHelper.saveRecord(po);
 	}
-
+	//TODO Adrian move all the getOrCreate to own repos, and invoke when receiving response from ShipperAdvisor
 	private CarrierService getOrCreateService(@NonNull final ShipperId shipperId, @NonNull final CarrierService service)
 	{
 		final CarrierService cachedService = getCachedServiceByShipperExternalId(shipperId, service.getExternalId());

@@ -27,14 +27,12 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder(toBuilder = true)
 @Jacksonized
 public class CarrierGoodsType
 {
-	@Nullable CarrierGoodsTypeId id;
+	@NonNull CarrierGoodsTypeId id;
 	@NonNull String externalId;
 	@NonNull String name;
 }

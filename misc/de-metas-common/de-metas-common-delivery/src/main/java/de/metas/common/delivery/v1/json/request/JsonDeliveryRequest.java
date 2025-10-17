@@ -47,6 +47,8 @@ public class JsonDeliveryRequest
 	int deliveryOrderId;
 	@NonNull JsonAddress pickupAddress;
 	@NonNull String pickupDate;
+	@NonNull String timeFrom;
+	@NonNull String timeTo;
 	@Nullable String pickupNote;
 	@NonNull JsonAddress deliveryAddress;
 	@Nullable JsonContact deliveryContact;
