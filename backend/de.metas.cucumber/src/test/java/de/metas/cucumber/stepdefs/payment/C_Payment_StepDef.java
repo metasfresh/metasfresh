@@ -24,7 +24,9 @@ package de.metas.cucumber.stepdefs.payment;
 
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
@@ -63,7 +65,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
@@ -331,10 +332,10 @@ public class C_Payment_StepDef
 
 		return bankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(orgBPartnerId, currencyId)
 				.stream()
-				.min(Comparator.comparing(I_C_BP_BankAccount::isDefault).reversed()
-						.thenComparing(I_C_BP_BankAccount::getC_BP_BankAccount_ID))
-				.map(bankAccount -> BankAccountId.ofRepoId(bankAccount.getC_BP_BankAccount_ID()))
-				.orElseThrow(() -> new AdempiereException("No C_BP_BankAccount found for " + orgBPartnerId + " and " + currencyId));
+				.min(Comparator.comparing(BPartnerBankAccount::getIdNotNull))
+				.map(bankAccount -> BankAccountId.ofRepoId(BPartnerBankAccountId.toRepoId(bankAccount.getId())))
+				.orElseThrow(() -> new AdempiereException("No BPartnerBankAccount found for " + orgBPartnerId + " and " + currencyId));
+
 	}
 
 }

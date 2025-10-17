@@ -55,13 +55,13 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull final BPartnerId bpartnerId, @NonNull final CurrencyId currencyId)
+	public List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull final BPartnerId bpartnerId, @NonNull final CurrencyId currencyId)
 	{
 		return retrieveBankAccountsForPartnerAndCurrency(Env.getCtx(), bpartnerId.getRepoId(), currencyId.getRepoId());
 	}
 
 	@Override
-	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(final Properties ctx, final int partnerID, final int currencyID)
+	public List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(final Properties ctx, final int partnerID, final int currencyID)
 	{
 		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL
 				.createQueryBuilder(I_C_BP_BankAccount.class, ctx, ITrx.TRXNAME_None)
@@ -78,7 +78,9 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.addColumn(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
 				.endOrderBy()
 				.create()
-				.list();
+				.stream()
+				.map(this::of)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -163,6 +165,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	private BPartnerBankAccount of(@NonNull final I_C_BP_BankAccount record)
 	{
 		return BPartnerBankAccount.builder()
