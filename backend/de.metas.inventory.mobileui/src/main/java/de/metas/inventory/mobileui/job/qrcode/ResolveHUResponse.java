@@ -2,7 +2,6 @@ package de.metas.inventory.mobileui.job.qrcode;
 
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.InventoryLineId;
-import de.metas.inventory.mobileui.deps.products.Attribute;
 import de.metas.inventory.mobileui.deps.products.Attributes;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -13,7 +12,6 @@ import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @Value
 @Builder
