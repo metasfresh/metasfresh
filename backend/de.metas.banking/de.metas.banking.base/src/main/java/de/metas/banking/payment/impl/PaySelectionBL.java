@@ -110,16 +110,16 @@ public class PaySelectionBL implements IPaySelectionBL
 		if (invoiceId == null) {return;}
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 
-		final BPartnerId partnerID = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-		psl.setC_BPartner_ID(partnerID.getRepoId());
+		final BPartnerId partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		psl.setC_BPartner_ID(partnerId.getRepoId());
 
 		// task 09500 get the currency from the account of the selection header
 		// this is safe because the columns are mandatory
 		final I_C_PaySelection paySelection = getByIdNotNull(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID()));
 		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID()));
-		final CurrencyId currencyID = bankAccount.getCurrencyId();
+		final CurrencyId currencyId = bankAccount.getCurrencyId();
 
-		psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(invoiceId, currencyID)));
+		psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(invoiceId, currencyId)));
 
 		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
 		{
@@ -128,7 +128,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Nullable
-	public BPartnerBankAccountId getBPartnerBankAccountId(@NonNull final InvoiceId invoiceId,
+	private BPartnerBankAccountId getBPartnerBankAccountId(@NonNull final InvoiceId invoiceId,
 														  @NonNull final CurrencyId currencyId)
 	{
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
@@ -152,8 +152,8 @@ public class PaySelectionBL implements IPaySelectionBL
 					continue;
 				}
 
-				final BPartnerBankAccountId accountID = account.getId();
-				if (accountID != null)
+				final BPartnerBankAccountId accountId = account.getId();
+				if (accountId != null)
 				{
 					if (account.getBpBankAcctUse() == BPBankAcctUse.DEBIT_OR_DEPOSIT)
 					{
@@ -161,12 +161,12 @@ public class PaySelectionBL implements IPaySelectionBL
 						// this is important because the default accounts come first from the query and they have higher priority than the non-defult ones.
 						if (secondaryAcct == null)
 						{
-							secondaryAcct = accountID;
+							secondaryAcct = accountId;
 						}
 					}
 					else if (account.getBpBankAcctUse() == acceptedBankAccountUsage)
 					{
-						primaryAcct = accountID;
+						primaryAcct = accountId;
 						break;
 					}
 				}
