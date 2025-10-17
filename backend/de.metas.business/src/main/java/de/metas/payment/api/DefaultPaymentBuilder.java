@@ -368,7 +368,7 @@ public class DefaultPaymentBuilder
 	private DefaultPaymentBuilder fromOrder(@NonNull final I_C_Order order)
 	{
 		adOrgId(OrgId.ofRepoId(order.getAD_Org_ID()));
-		invoiceId(InvoiceId.ofRepoId(order.getC_Order_ID()));
+		orderId(OrderId.ofRepoId(order.getC_Order_ID()));
 		bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()));
 

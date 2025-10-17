@@ -237,6 +237,31 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
+	 * Set Order Payment Schedule.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderPaySchedule_ID (int C_OrderPaySchedule_ID);
+
+	/**
+	 * Get Order Payment Schedule.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderPaySchedule_ID();
+
+	@Nullable org.compiere.model.I_C_OrderPaySchedule getC_OrderPaySchedule();
+
+	void setC_OrderPaySchedule(@Nullable org.compiere.model.I_C_OrderPaySchedule C_OrderPaySchedule);
+
+	ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_OrderPaySchedule> COLUMN_C_OrderPaySchedule_ID = new ModelColumn<>(I_C_PaySelectionLine.class, "C_OrderPaySchedule_ID", org.compiere.model.I_C_OrderPaySchedule.class);
+	String COLUMNNAME_C_OrderPaySchedule_ID = "C_OrderPaySchedule_ID";
+
+	/**
 	 * Set Payment.
 	 * Payment identifier
 	 *

@@ -99,7 +99,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void updateFromInvoice(final I_C_PaySelectionLine psl)
+	public void updateFromDocument(final I_C_PaySelectionLine psl)
 	{
 		if (paymentRequestBL.isUpdatedFromPaymentRequest(psl))
 		{
@@ -107,11 +107,9 @@ public class PaySelectionBL implements IPaySelectionBL
 		}
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(psl.getC_Invoice_ID());
-		if (invoiceId == null) {return;}
-		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+		final OrderId orderId = OrderId.ofRepoIdOrNull(psl.getC_Order_ID());
 
-		final BPartnerId partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-		psl.setC_BPartner_ID(partnerId.getRepoId());
+		Check.assumeSingleNonNull("One if order or invoice shall not be null", orderId, invoiceId);
 
 		// task 09500 get the currency from the account of the selection header
 		// this is safe because the columns are mandatory
@@ -119,25 +117,72 @@ public class PaySelectionBL implements IPaySelectionBL
 		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID()));
 		final CurrencyId currencyId = bankAccount.getCurrencyId();
 
-		psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(invoiceId, currencyId)));
-
-		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
+		final PaySelectionLineType lineType = extractType(psl);
+		switch (lineType)
 		{
-			psl.setReference(invoice.getPOReference());
+			case Invoice:
+
+				Check.assumeNotNull(invoiceId, "invoiceId is not null for {}", psl);
+
+				final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+
+				final BPartnerId invoiceBPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+				psl.setC_BPartner_ID(invoiceBPartnerId.getRepoId());
+
+				psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(null, invoiceId, currencyId)));
+
+				if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
+				{
+					psl.setReference(invoice.getPOReference());
+				}
+				break;
+
+			case Order:
+				Check.assumeNotNull(orderId, "orderId is not null for {}", psl);
+
+				final I_C_Order order = orderBL.getById(orderId);
+
+				final BPartnerId orderBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+				psl.setC_BPartner_ID(orderBPartnerId.getRepoId());
+
+				psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(orderId, null, currencyId)));
+
+				if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
+				{
+					psl.setReference(order.getPOReference());
+				}
+				break;
+			default:
+				throw new AdempiereException("Not supported type for line " + psl);
 		}
+
 	}
 
 	@Nullable
-	private BPartnerBankAccountId getBPartnerBankAccountId(@NonNull final InvoiceId invoiceId,
-														  @NonNull final CurrencyId currencyId)
+	private BPartnerBankAccountId getBPartnerBankAccountId(@Nullable final OrderId orderId,
+														   @Nullable final InvoiceId invoiceId,
+														   @NonNull final CurrencyId currencyId)
 	{
-		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-		final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
-		final BPBankAcctUse acceptedBankAccountUsage = invoiceDocBaseType.isIncomingCash() ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
+		Check.assumeSingleNonNull("One if order or invoice shall not be null", orderId, invoiceId);
 
-		final List<BPartnerBankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(
-				BPartnerId.ofRepoId(invoice.getC_BPartner_ID()),
-				currencyId);
+		final BPartnerId partnerId;
+		final BPBankAcctUse acceptedBankAccountUsage;
+
+		if (orderId != null)
+		{
+			final I_C_Order order = orderBL.getById(orderId);
+			partnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+			acceptedBankAccountUsage = orderBL.isSalesOrder(order) ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
+		}
+		else
+		{
+			final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+			partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+			final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
+			acceptedBankAccountUsage = invoiceDocBaseType.isIncomingCash() ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
+		}
+
+		final List<BPartnerBankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(partnerId, currencyId);
 
 		if (!bankAccts.isEmpty())
 		{

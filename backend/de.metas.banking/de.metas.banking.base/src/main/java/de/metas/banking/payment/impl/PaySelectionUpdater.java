@@ -24,6 +24,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
@@ -215,6 +216,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		String sql = "SELECT "
 				+ " C_Invoice_ID,"
 				+ " -1 as C_Order_ID,"
+				+ " -1 as C_OrderPaySchedule_ID,"
 				// OpenAmt
 				+ " invoiceOpen(i.C_Invoice_ID, 0) as OpenAmt,"
 				// DiscountAmt
@@ -386,14 +388,15 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		String sql = "SELECT "
 				+ " -1 as C_Invoice_ID," // 1
 				+ " o.C_Order_ID," // 2
-				+ " ops.dueamt as OpenAmt," // 3
-				+ " null as DiscountAmt," // 4
-				+ " null as PaymentRule, "  // 5
-				+ " o.IsSOTrx, " // 6
-				+ " o.Bill_BPartner_ID as C_BPartner_ID," // 6
+				+ " ops.C_OrderPaySchedule_ID," // 3
+				+ " ops.dueamt as OpenAmt," // 4
+				+ " null as DiscountAmt," // 5
+				+ " null as PaymentRule, "  // 6
+				+ " o.IsSOTrx, " // 7
+				+ " o.Bill_BPartner_ID as C_BPartner_ID," // 8
 				// C_BP_BankAccount_ID
 				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID = o.Bill_BPartner_ID AND bpb.IsActive='Y' "
-				+ " AND bpb.IBAN IS NOT NULL AND bpb.C_Currency_ID = o.C_Currency_ID) as C_BP_BankAccount_ID "  //8
+				+ " AND bpb.IBAN IS NOT NULL AND bpb.C_Currency_ID = o.C_Currency_ID) as C_BP_BankAccount_ID "  //9
 				//
 				+ " FROM C_Order o "
 				+ " INNER JOIN C_Doctype dt on o.C_Doctype_ID = dt.C_Doctype_ID "
@@ -499,6 +502,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		final int orderId = rs.getInt("C_Order_ID");
 		candidateBuilder.setOrderId(OrderId.ofRepoIdOrNull(orderId));
+		final int orderPayScheduleId = rs.getInt("C_OrderPaySchedule_ID");
+		candidateBuilder.setOrderPayScheduleId(OrderPayScheduleId.ofRepoIdOrNull(orderPayScheduleId));
 
 		final BigDecimal openAmt = rs.getBigDecimal("OpenAmt");
 		candidateBuilder.setOpenAmt(openAmt);
@@ -885,23 +890,24 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private static class PaySelectionLinesToUpdate
 	{
 		private final HashMap<InvoiceId, I_C_PaySelectionLine> byInvoiceId = new HashMap<>();
-		private final HashMap<OrderId, I_C_PaySelectionLine> byOrderId = new HashMap<>();
+		private final HashMap<OrderPayScheduleId, I_C_PaySelectionLine> byOrderPaySchedId = new HashMap<>();
 
 		PaySelectionLinesToUpdate(final List<I_C_PaySelectionLine> lines)
 		{
 			for (final I_C_PaySelectionLine line : lines)
 			{
 				final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
-				final OrderId orderId = OrderId.ofRepoIdOrNull(line.getC_Order_ID());
+				final OrderPayScheduleId orderPaySchedId = OrderPayScheduleId.ofRepoIdOrNull(line.getC_OrderPaySchedule_ID());
 				if (invoiceId != null)
 				{
 					final I_C_PaySelectionLine paySelectionLineOld = byInvoiceId.put(invoiceId, line);
 					Check.assumeNull(paySelectionLineOld, "Only one pay selection line shall exist for an invoice but we found: {}, {}", line, paySelectionLineOld); // shall not happen
 				}
-				else if (orderId != null)
+				else if (orderPaySchedId != null)
 				{
-					final I_C_PaySelectionLine old = byOrderId.put(orderId, line);
-					Check.assumeNull(old, "Duplicate pay selection line for order: {}, {}", line, old);
+
+					final I_C_PaySelectionLine old = byOrderPaySchedId.put(orderPaySchedId, line);
+					Check.assumeNull(old, "Duplicate pay selection line for orderpay scheduele: {}, {}", line, old);
 				}
 			}
 		}
@@ -912,9 +918,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			{
 				return Optional.ofNullable(byInvoiceId.remove(candidate.getInvoiceId()));
 			}
-			else if (candidate.getOrderId() != null)
+			else if (candidate.getOrderPayScheduleId() != null)
 			{
-				return Optional.ofNullable(byOrderId.remove(candidate.getOrderId()));
+				return Optional.ofNullable(byOrderPaySchedId.remove(candidate.getOrderPayScheduleId()));
 			}
 			else
 			{
@@ -925,10 +931,10 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		private List<I_C_PaySelectionLine> dequeueAll()
 		{
 			final List<I_C_PaySelectionLine> result = new ArrayList<>(byInvoiceId.values());
-			result.addAll(byOrderId.values());
+			result.addAll(byOrderPaySchedId.values());
 
 			byInvoiceId.clear();
-			byOrderId.clear();
+			byOrderPaySchedId.clear();
 
 			return result;
 		}

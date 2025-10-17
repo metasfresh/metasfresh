@@ -153,3 +153,73 @@ UPDATE AD_UI_Element SET SeqNo=22,Updated=TO_TIMESTAMP('2025-10-16 13:10:17.1690
 UPDATE AD_Val_Rule SET Classname='de.metas.banking.payment.PaySelectionModeByPaySelectionTrxTypeValRule', Name='PaySelectionModeByPaySelectionTrxTypeValRule',Updated=TO_TIMESTAMP('2025-10-16 13:12:30.360000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540484
 ;
 
+
+
+
+
+-- Name: C_PaymentTerm_CheckComplexPaymentTermBreaks
+-- 2025-10-17T07:02:47.365Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540752,'IsComplex=''N'' OR (IsComplex=''Y'' AND exists (select 1 from C_PaymentTerm_Break ptb where ptb.C_PaymentTerm_ID=C_PaymentTerm.C_PaymentTerm_ID ))',TO_TIMESTAMP('2025-10-17 07:02:47.149000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Complex payment terms must include at least one payment break. Non-complex payment terms are always allowed.','D','Y','C_PaymentTerm_CheckComplexPaymentTermBreaks','S',TO_TIMESTAMP('2025-10-17 07:02:47.149000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Column: C_Order.C_PaymentTerm_ID
+-- 2025-10-17T07:02:56.769Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540752,Updated=TO_TIMESTAMP('2025-10-17 07:02:56.769000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=2187
+;
+
+
+-- Run mode: SWING_CLIENT
+
+-- 2025-10-17T12:03:49.817Z
+INSERT INTO t_alter_column values('c_payselectionline','C_Invoice_ID','NUMERIC(10)',null,null)
+;
+
+-- 2025-10-17T12:03:49.828Z
+INSERT INTO t_alter_column values('c_payselectionline','C_Invoice_ID',null,'NULL',null)
+;
+
+
+-- Column: C_OrderPaySchedule.C_PaymentTerm_Break_ID
+-- 2025-10-17T12:29:49.580Z
+UPDATE AD_Column SET FilterOperator='E', IsMandatory='Y', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-10-17 12:29:49.579000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591214
+;
+
+-- 2025-10-17T12:29:53.209Z
+INSERT INTO t_alter_column values('c_orderpayschedule','C_PaymentTerm_Break_ID','NUMERIC(10)',null,null)
+;
+
+-- 2025-10-17T12:29:53.214Z
+INSERT INTO t_alter_column values('c_orderpayschedule','C_PaymentTerm_Break_ID',null,'NOT NULL',null)
+;
+
+-- Column: C_OrderPaySchedule.C_PaymentTerm_Break_ID
+-- 2025-10-17T12:31:20.987Z
+UPDATE AD_Column SET IsIdentifier='Y', SeqNo=1,Updated=TO_TIMESTAMP('2025-10-17 12:31:20.987000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591214
+;
+
+-- Column: C_PaySelectionLine.C_OrderPaySchedule_ID
+-- 2025-10-17T12:31:30.629Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,591370,584056,0,19,427,'XX','C_OrderPaySchedule_ID',TO_TIMESTAMP('2025-10-17 12:31:30.377000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Zahlungsplan',0,0,TO_TIMESTAMP('2025-10-17 12:31:30.377000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2025-10-17T12:31:30.636Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=591370 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2025-10-17T12:31:30.685Z
+/* DDL */  select update_Column_Translation_From_AD_Element(584056)
+;
+
+-- Column: C_PaySelectionLine.C_OrderPaySchedule_ID
+-- 2025-10-17T12:31:38.148Z
+UPDATE AD_Column SET MandatoryLogic='@C_Order_ID@ > 0',Updated=TO_TIMESTAMP('2025-10-17 12:31:38.148000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591370
+;
+
+-- 2025-10-17T12:31:39.741Z
+/* DDL */ SELECT public.db_alter_table('C_PaySelectionLine','ALTER TABLE public.C_PaySelectionLine ADD COLUMN C_OrderPaySchedule_ID NUMERIC(10)')
+;
+
+-- 2025-10-17T12:31:39.946Z
+ALTER TABLE C_PaySelectionLine ADD CONSTRAINT COrderPaySchedule_CPaySelectionLine FOREIGN KEY (C_OrderPaySchedule_ID) REFERENCES public.C_OrderPaySchedule DEFERRABLE INITIALLY DEFERRED
+;
+

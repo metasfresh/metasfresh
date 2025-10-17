@@ -120,7 +120,7 @@ public interface I_C_OrderPaySchedule
 	 * Set Payment Term Break.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_PaymentTerm_Break_ID (int C_PaymentTerm_Break_ID);
@@ -129,7 +129,7 @@ public interface I_C_OrderPaySchedule
 	 * Get Payment Term Break.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_PaymentTerm_Break_ID();

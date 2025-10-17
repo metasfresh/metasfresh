@@ -39,7 +39,7 @@ public class C_PaySelectionLine
 	}
 
 	/**
-	 * Invokes {@link IPaySelectionBL#updateFromInvoice(I_C_PaySelectionLine)}.
+	 * Invokes {@link IPaySelectionBL#updateFromDocument(I_C_PaySelectionLine)}.
 	 *
 	 * @param psl
 	 */
@@ -47,6 +47,12 @@ public class C_PaySelectionLine
 	@CalloutMethod(columnNames = I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID)
 	public void invoice(final I_C_PaySelectionLine psl)
 	{
-		Services.get(IPaySelectionBL.class).updateFromInvoice(psl);
+		Services.get(IPaySelectionBL.class).updateFromDocument(psl);
+	}
+
+	@CalloutMethod(columnNames = I_C_PaySelectionLine.COLUMNNAME_C_Order_ID)
+	public void order(final I_C_PaySelectionLine psl)
+	{
+		Services.get(IPaySelectionBL.class).updateFromDocument(psl);
 	}
 }

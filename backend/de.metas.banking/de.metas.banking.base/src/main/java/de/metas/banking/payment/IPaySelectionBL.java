@@ -47,7 +47,7 @@ public interface IPaySelectionBL extends ISingletonService
 	 * If the psl doesn't reference an invoice or if {@link IPaymentRequestBL#isUpdatedFromPaymentRequest(I_C_PaySelectionLine)} returns <code>true</code>,
 	 * then the method does nothing.
 	 */
-	void updateFromInvoice(I_C_PaySelectionLine psl);
+	void updateFromDocument(I_C_PaySelectionLine psl);
 
 	/**
 	 * Make sure its lines are not involved in Bank Statements and set the paySelection as not processed
