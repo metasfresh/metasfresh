@@ -39,6 +39,8 @@ public class JsonResolveHUResponseMapper
 				.productName(productInfo.getProductName().translate(adLanguage))
 				.uom(response.getQtyBooked().getUOMSymbol())
 				.qtyBooked(response.getQtyBooked().toBigDecimal())
+				.counted(response.isCounted())
+				.qtyCount(response.getQtyCount() != null ? response.getQtyCount().toBigDecimal() : null)
 				.attributes(response.getAttributes()
 						.stream()
 						.map(this::toJson)
@@ -69,7 +71,7 @@ public class JsonResolveHUResponseMapper
 		}
 		else if (AttributeValueType.DATE.equals(valueType))
 		{
-			return attribute.getValueAsLocalDate();
+			return attribute.getValueAsLocalDate().toString();
 		}
 		else if (AttributeValueType.LIST.equals(valueType))
 		{

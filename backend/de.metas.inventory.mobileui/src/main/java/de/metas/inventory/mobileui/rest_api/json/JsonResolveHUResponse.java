@@ -30,6 +30,8 @@ public class JsonResolveHUResponse
 	@NonNull String productName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyBooked;
+	boolean counted;
+	@Nullable BigDecimal qtyCount;
 	@NonNull List<JsonResolveHUResponseAttribute> attributes;
 
 }

@@ -6,6 +6,7 @@ import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -14,14 +15,17 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.inventory.InventoryLineId;
 import de.metas.inventory.mobileui.deps.handlingunits.HULoadingCache;
 import de.metas.inventory.mobileui.deps.handlingunits.HandlingUnitsService;
+import de.metas.inventory.mobileui.deps.products.ASILoadingCache;
 import de.metas.inventory.mobileui.deps.products.ProductService;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
@@ -41,6 +45,7 @@ public class ResolveHUCommand
 	@NonNull private final ProductService productService;
 	@NonNull private final HandlingUnitsService huService;
 	@NonNull private final HULoadingCache huCache;
+	@NonNull private final ASILoadingCache asiCache;
 
 	//
 	// Params
@@ -61,7 +66,9 @@ public class ResolveHUCommand
 	{
 		this.productService = productService;
 		this.huService = huService;
+
 		this.huCache = huService.newLoadingCache();
+		this.asiCache = productService.newASILoadingCache();
 
 		this.scannedCode = scannedCode;
 		this.lines = inventory.streamLines(lineId)
@@ -108,6 +115,12 @@ public class ResolveHUCommand
 		final HuId huId = huService.getHuIdByQRCode(huQRCode);
 		final I_M_HU hu = huCache.getHUById(huId);
 		final InventoryLine matchingLine = findFirstMatchingLine(line -> isLineMatchingHU(line, hu));
+		final InventoryLineHU matchingLineHU = matchingLine.getInventoryLineHUByHUId(huId).orElse(null);
+		final AttributeSetInstanceId lineAsiId = (matchingLineHU != null ? matchingLineHU.getAsiId() : AttributeSetInstanceId.NONE)
+				.orElseIfNone(matchingLine.getAsiId());
+
+		final boolean isCounted = matchingLineHU != null && matchingLineHU.isCounted();
+		final Quantity qtyCount = isCounted ? matchingLineHU.getQtyCount() : null;
 
 		return newResponse()
 				.lineId(matchingLine.getIdNonNull())
@@ -115,7 +128,9 @@ public class ResolveHUCommand
 				.huId(huId)
 				.productId(matchingLine.getProductId())
 				.qtyBooked(huCache.getQty(hu, matchingLine.getProductId()))
-				.attributes(getAttributes(hu))
+				.isCounted(isCounted)
+				.qtyCount(qtyCount)
+				.attributes(getAttributes(lineAsiId, hu))
 				.build();
 	}
 
@@ -125,30 +140,55 @@ public class ResolveHUCommand
 				.scannedCode(scannedCode);
 	}
 
-	private List<ResolveHUResponse.Attribute> getAttributes(final I_M_HU hu)
+	private List<ResolveHUResponse.Attribute> getAttributes(@NonNull final AttributeSetInstanceId lineAsiId, @NonNull final I_M_HU hu)
 	{
-		final ImmutableAttributeSet attributes = huCache.getAttributes(hu);
+		final ImmutableAttributeSet lineAttributes = asiCache.getById(lineAsiId);
+		final ImmutableAttributeSet huAttributes = huCache.getAttributes(hu);
 
 		return ATTRIBUTE_CODES.stream()
-				.map(attributeCode -> getAttribute(attributes, attributeCode))
+				.map(attributeCode -> getAttribute(lineAttributes, huAttributes, attributeCode))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Nullable
-	private ResolveHUResponse.Attribute getAttribute(final ImmutableAttributeSet attributes, final AttributeCode attributeCode)
+	private ResolveHUResponse.Attribute getAttribute(
+			@NonNull final ImmutableAttributeSet lineAttributes,
+			@NonNull final ImmutableAttributeSet huAttributes,
+			@NonNull final AttributeCode attributeCode)
 	{
-		if (!attributes.hasAttribute(attributeCode))
+		if (lineAttributes.hasAttribute(attributeCode))
+		{
+			return getAttribute(lineAttributes, attributeCode);
+		}
+		else if (huAttributes.hasAttribute(attributeCode))
+		{
+			return getAttribute(huAttributes, attributeCode);
+		}
+		else
 		{
 			return null;
 		}
+	}
 
-		return ResolveHUResponse.Attribute.builder()
-				.attributeCode(attributeCode)
-				.displayName(TranslatableStrings.anyLanguage(attributes.getAttributeNameByCode(attributeCode)))
-				.valueType(attributes.getAttributeValueType(attributeCode))
-				.value(attributes.getValue(attributeCode))
-				.build();
+	@Nullable
+	private ResolveHUResponse.Attribute getAttribute(
+			@NonNull final ImmutableAttributeSet attributes,
+			@NonNull final AttributeCode attributeCode)
+	{
+		if (attributes.hasAttribute(attributeCode))
+		{
+			return ResolveHUResponse.Attribute.builder()
+					.attributeCode(attributeCode)
+					.displayName(TranslatableStrings.anyLanguage(attributes.getAttributeNameByCode(attributeCode)))
+					.valueType(attributes.getAttributeValueType(attributeCode))
+					.value(attributes.getValue(attributeCode))
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private ResolveHUResponse resolveByEAN13(@NonNull final EAN13 ean13)
@@ -194,6 +234,7 @@ public class ResolveHUCommand
 				.build();
 	}
 
+	@NonNull
 	private InventoryLine findFirstMatchingLine(final Predicate<InventoryLine> predicate)
 	{
 		return lines.stream()

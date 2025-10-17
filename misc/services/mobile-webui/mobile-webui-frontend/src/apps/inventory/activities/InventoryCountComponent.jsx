@@ -8,9 +8,20 @@ import DialogButton from '../../../components/dialogs/DialogButton';
 import { trl } from '../../../utils/translations';
 
 const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit }) => {
-  const { huDisplayName, productName, locatorName, qtyBooked, uom, attributes } = resolvedHU;
+  const {
+    huDisplayName,
+    productName,
+    locatorName,
+    uom,
+    qtyBooked,
+    counted,
+    qtyCount: qtyCountParam,
+    attributes,
+  } = resolvedHU;
 
-  const [qtyCount, setQtyCount] = useState(() => qtyInfos.invalidOfNumber());
+  const [qtyCount, setQtyCount] = useState(() =>
+    counted && qtyCountParam != null ? qtyInfos.invalidOfNumber(qtyCountParam) : qtyInfos.invalidOfNumber()
+  );
   const [attributeValuesByCode, setAttributeValuesByCode] = useState(() => {
     if (!attributes) {
       return {};
@@ -42,7 +53,6 @@ const InventoryCountComponent = ({ disabled, resolvedHU, onInventoryCountSubmit 
           value: attributeValuesByCode[code]?.value,
         };
       }),
-      lineCountingDone: false, // TODO
     });
   };
 

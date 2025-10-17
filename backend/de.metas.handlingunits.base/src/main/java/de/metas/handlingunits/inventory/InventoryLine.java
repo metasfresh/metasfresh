@@ -343,4 +343,12 @@ public class InventoryLine
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No Line HU found for " + id + " in " + this));
 	}
+
+	public Optional<InventoryLineHU> getInventoryLineHUByHUId(@NonNull final HuId huId)
+	{
+		return inventoryLineHUs.stream()
+				.filter(lineHU -> HuId.equals(lineHU.getHuId(), huId))
+				.findFirst();
+	}
+
 }

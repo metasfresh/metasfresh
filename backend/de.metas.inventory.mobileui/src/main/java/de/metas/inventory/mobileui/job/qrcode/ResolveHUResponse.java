@@ -30,6 +30,8 @@ public class ResolveHUResponse
 	@Nullable HuId huId;
 	@NonNull ProductId productId;
 	@NonNull Quantity qtyBooked;
+	boolean isCounted;
+	@Nullable Quantity qtyCount;
 
 	@NonNull List<Attribute> attributes;
 
