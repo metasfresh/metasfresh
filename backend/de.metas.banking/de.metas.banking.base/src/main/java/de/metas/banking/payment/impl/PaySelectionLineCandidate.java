@@ -165,7 +165,7 @@ class PaySelectionLineCandidate
 			return this;
 		}
 
-		public BankAccountId getBPartnerBankAccountId()
+		public @Nullable BankAccountId getBPartnerBankAccountId()
 		{
 			return bpBankAccountId;
 		}

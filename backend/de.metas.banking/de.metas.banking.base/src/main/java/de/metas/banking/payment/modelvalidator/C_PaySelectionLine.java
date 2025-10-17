@@ -34,7 +34,7 @@ import org.compiere.model.ModelValidator;
 @Interceptor(I_C_PaySelectionLine.class)
 public class C_PaySelectionLine
 {
-	public static final transient C_PaySelectionLine instance = new C_PaySelectionLine();
+	public static final C_PaySelectionLine instance = new C_PaySelectionLine();
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
@@ -44,6 +44,7 @@ public class C_PaySelectionLine
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 
 	private static final AdMessageKey MSG_PaySelectionLine_Document_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Document.InvalidCurrency");
 
@@ -68,8 +69,6 @@ public class C_PaySelectionLine
 	 */
 	private void updateFromPaymentRequestOrInvoice(final I_C_PaySelectionLine paySelectionLine)
 	{
-		final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
-
 		if (paymentRequestBL.isUpdatedFromPaymentRequest(paySelectionLine))
 		{
 			return; // already updated, nothing to do
