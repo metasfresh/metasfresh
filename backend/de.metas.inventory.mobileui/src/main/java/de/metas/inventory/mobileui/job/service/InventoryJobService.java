@@ -25,7 +25,6 @@ import org.adempiere.warehouse.qrcode.resolver.LocatorGlobalQRCodeResolverKey;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolveContext;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverRequest;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -85,7 +84,9 @@ public class InventoryJobService
 
 	public Inventory complete(Inventory inventory)
 	{
-		throw new UnsupportedOperationException(); // TODO
+		final InventoryId inventoryId = inventory.getId();
+		inventoryService.completeDocument(inventoryId);
+		return inventoryService.getById(inventory.getId());
 	}
 
 	public LocatorScannedCodeResolverResult resolveLocator(

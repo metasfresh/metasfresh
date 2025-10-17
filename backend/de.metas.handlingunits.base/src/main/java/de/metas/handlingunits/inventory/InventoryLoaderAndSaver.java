@@ -90,6 +90,8 @@ class InventoryLoaderAndSaver
 
 	private void warmUp(@NonNull final InventoryId inventoryId)
 	{
+		if (inventoryRecordsByInventoryId.containsKey(inventoryId)) {return;}
+		
 		final I_M_Inventory inventory = getRecordById(inventoryId);
 		warmUp(ImmutableList.of(inventory));
 	}
@@ -115,7 +117,7 @@ class InventoryLoaderAndSaver
 		return inventoryRecordsByInventoryId.computeIfAbsent(inventoryId, inventoryDAO::getById);
 	}
 
-	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
+	Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
 	{
 		final InventoryId inventoryId = extractInventoryId(inventoryRecord);
 		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubTypeOrNull(inventoryRecord); // shall not be null at this point
