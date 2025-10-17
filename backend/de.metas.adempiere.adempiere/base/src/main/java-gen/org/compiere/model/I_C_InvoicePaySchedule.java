@@ -210,17 +210,17 @@ public interface I_C_InvoicePaySchedule
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDiscountAmt (BigDecimal DiscountAmt);
+	void setDiscountAmt (@Nullable BigDecimal DiscountAmt);
 
 	/**
 	 * Get Discount.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getDiscountAmt();
@@ -233,20 +233,20 @@ public interface I_C_InvoicePaySchedule
 	 * Last Date for payments with discount
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDiscountDate (java.sql.Timestamp DiscountDate);
+	void setDiscountDate (@Nullable java.sql.Timestamp DiscountDate);
 
 	/**
 	 * Get Discount Date.
 	 * Last Date for payments with discount
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDiscountDate();
+	@Nullable java.sql.Timestamp getDiscountDate();
 
 	ModelColumn<I_C_InvoicePaySchedule, Object> COLUMN_DiscountDate = new ModelColumn<>(I_C_InvoicePaySchedule.class, "DiscountDate", null);
 	String COLUMNNAME_DiscountDate = "DiscountDate";

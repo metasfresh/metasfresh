@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoicePaySchedule extends org.compiere.model.PO implements I_C_InvoicePaySchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -122915770L;
+	private static final long serialVersionUID = -151445274L;
 
     /** Standard Constructor */
     public X_C_InvoicePaySchedule (final Properties ctx, final int C_InvoicePaySchedule_ID, @Nullable final String trxName)
@@ -159,7 +159,7 @@ public class X_C_InvoicePaySchedule extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public void setDiscountAmt (final BigDecimal DiscountAmt)
+	public void setDiscountAmt (final @Nullable BigDecimal DiscountAmt)
 	{
 		set_Value (COLUMNNAME_DiscountAmt, DiscountAmt);
 	}
@@ -172,7 +172,7 @@ public class X_C_InvoicePaySchedule extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public void setDiscountDate (final java.sql.Timestamp DiscountDate)
+	public void setDiscountDate (final @Nullable java.sql.Timestamp DiscountDate)
 	{
 		set_Value (COLUMNNAME_DiscountDate, DiscountDate);
 	}
