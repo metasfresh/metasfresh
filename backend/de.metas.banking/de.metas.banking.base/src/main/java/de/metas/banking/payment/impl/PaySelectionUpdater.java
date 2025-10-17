@@ -226,7 +226,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				// C_BP_BankAccount_ID
 				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID = i.C_BPartner_ID AND bpb.IsActive='Y' "
 				+ " AND bpb.BPBankAcctUse = (CASE WHEN EXISTS(SELECT 1 FROM C_BP_BankAccount sub WHERE sub.BPBankAcctUse = i.PaymentRule)"
-				+ " THEN i.PaymentRule ELSE 'B' END) AND bpb.C_Currency_ID = o.C_Currency_ID) as C_BP_BankAccount_ID "
+				+ " THEN i.PaymentRule ELSE 'B' END) AND bpb.C_Currency_ID = i.C_Currency_ID) as C_BP_BankAccount_ID "
 				//
 				+ " FROM C_Invoice i "
 				+ " LEFT JOIN C_Doctype dt on i.C_Doctype_ID = dt.C_Doctype_ID "
