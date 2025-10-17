@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.nshift;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -21,7 +22,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.nshift.client.NShiftShipperProduct;
+import de.metas.shipper.gateway.commons.model.ShipmentOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -60,6 +61,7 @@ import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences
 @RequiredArgsConstructor
 public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
+	private final @NonNull ShipmentOrderRepository shipmentOrderRepository;
 	// @NonNull private final ExternalSystemMessageSender externalSystemMessageSender;
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -95,14 +97,11 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 
-		final boolean isInternationalShipment = pickupFromLocation.getC_Country_ID() != deliverToLocation.getC_Country_ID();
-
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 
-				.shipperProduct(isInternationalShipment ? NShiftShipperProduct.DHL_INTERNATIONAL : NShiftShipperProduct.DHL_NATIONAL) // TODO this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(getPOReferences(request.getPackageInfos()))
 				.shipperEORI(pickupFromBPartner.getEORI())
 				.receiverEORI(deliverToBPartner.getEORI())
@@ -111,6 +110,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation))
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
+						.timeFrom(deliveryOrderKey.getTimeFrom())
+						.timeTo(deliveryOrderKey.getTimeTo())
 						.build())
 				//
 				// Delivery aka Receiver
@@ -119,6 +120,9 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				//
 				// Delivery content
 				.deliveryOrderParcels(toDeliveryOrderLines(request.getPackageInfos()))
+				.goodsType(shipmentOrderRepository.getCachedGoodsTypeById(deliveryOrderKey.getCarrierGoodsTypeId()))
+				.shipperProduct(shipmentOrderRepository.getCachedShipperProductById(deliveryOrderKey.getCarrierProductId()))
+				.services(deliveryOrderKey.getCarrierServices() != null ? deliveryOrderKey.getCarrierServices().stream().map(shipmentOrderRepository::getCachedCarrierServiceById).collect(ImmutableSet.toImmutableSet()) : ImmutableSet.of())
 				//
 				.build();
 

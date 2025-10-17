@@ -31,7 +31,9 @@ import de.metas.common.delivery.v1.json.JsonQuantity;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -44,7 +46,7 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@SpringBootTest(classes = {NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class})
+@SpringBootTest(classes = { NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class })
 @TestPropertySource(properties = {
 		"logging.level.de.metas.shipper.client.nshift.NShiftShipmentService=TRACE",
 		"logging.level.de.metas.shipper.nshift.AbstractNShiftApiClient=TRACE"
@@ -64,7 +66,7 @@ public class ShipmentServiceTest
 	{
 		final JsonDeliveryResponse response = nShiftShipmentService.createShipment(JsonDeliveryRequest.builder()
 				.deliveryOrderId(1)
-				.shipperProduct("shipperProductName")
+				.shipperProduct(JsonShipperProduct.builder().code("shipperProductCode").build())
 				.pickupAddress(JsonAddress.builder()
 						.bpartnerId(123)
 						.companyName1("metas GmbH")
@@ -164,9 +166,8 @@ public class ShipmentServiceTest
 						.username(USERNAME)
 						.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 						.build())
-				.shipAdvise(NShiftConstants.PROD_CONCEPT_ID, "2757")
-				.shipAdvise(NShiftConstants.GOODS_TYPE_ID, "5")
-				.shipAdvise(NShiftConstants.GOODS_TYPE_NAME, "Packet")
+				.goodsType(JsonGoodsType.builder().id("5").name("Packet").build())
+				.shipperProduct(JsonShipperProduct.builder().code("2757").build())
 				.build());
 		assertThat(response).isNotNull();
 		assertFalse(response.isError());

@@ -77,8 +77,8 @@ public class ShipAdvisorService
 
 		return deliveryRequest.toBuilder()
 				.shipperProduct(response.getShipperProduct())
-				.shipperProductServices(response.getShipperProductServices())
-				.shipAdvises(response.getResponseItems())
+				.services(response.getShipperProductServices())
+				.goodsType(response.getGoodsType())
 				.build();
 	}
 	

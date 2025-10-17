@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 256175083L;
+	private static final long serialVersionUID = -1356899994L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -224,6 +224,89 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.sql.Timestamp getCanBeExportedFrom() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
+	}
+
+	/** 
+	 * Carrier_Advising_Status AD_Reference_ID=541996
+	 * Reference name: Carrier_Advising_Status
+	 */
+	public static final int CARRIER_ADVISING_STATUS_AD_Reference_ID=541996;
+	/** In Progress = IP */
+	public static final String CARRIER_ADVISING_STATUS_InProgress = "IP";
+	/** Not Requested = NR */
+	public static final String CARRIER_ADVISING_STATUS_NotRequested = "NR";
+	/** Requested = REQ */
+	public static final String CARRIER_ADVISING_STATUS_Requested = "REQ";
+	/** Completed = CO */
+	public static final String CARRIER_ADVISING_STATUS_Completed = "CO";
+	/** Failed = FA */
+	public static final String CARRIER_ADVISING_STATUS_Failed = "FA";
+	/** Manual = MAN */
+	public static final String CARRIER_ADVISING_STATUS_Manual = "MAN";
+	@Override
+	public void setCarrier_Advising_Status (final java.lang.String Carrier_Advising_Status)
+	{
+		set_Value (COLUMNNAME_Carrier_Advising_Status, Carrier_Advising_Status);
+	}
+
+	@Override
+	public java.lang.String getCarrier_Advising_Status() 
+	{
+		return get_ValueAsString(COLUMNNAME_Carrier_Advising_Status);
+	}
+
+	@Override
+	public org.compiere.model.I_Carrier_Goods_Type getCarrier_Goods_Type()
+	{
+		return get_ValueAsPO(COLUMNNAME_Carrier_Goods_Type_ID, org.compiere.model.I_Carrier_Goods_Type.class);
+	}
+
+	@Override
+	public void setCarrier_Goods_Type(final org.compiere.model.I_Carrier_Goods_Type Carrier_Goods_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_Carrier_Goods_Type_ID, org.compiere.model.I_Carrier_Goods_Type.class, Carrier_Goods_Type);
+	}
+
+	@Override
+	public void setCarrier_Goods_Type_ID (final int Carrier_Goods_Type_ID)
+	{
+		if (Carrier_Goods_Type_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public int getCarrier_Goods_Type_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_Carrier_Product getCarrier_Product()
+	{
+		return get_ValueAsPO(COLUMNNAME_Carrier_Product_ID, org.compiere.model.I_Carrier_Product.class);
+	}
+
+	@Override
+	public void setCarrier_Product(final org.compiere.model.I_Carrier_Product Carrier_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_Carrier_Product_ID, org.compiere.model.I_Carrier_Product.class, Carrier_Product);
+	}
+
+	@Override
+	public void setCarrier_Product_ID (final int Carrier_Product_ID)
+	{
+		if (Carrier_Product_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Product_ID, Carrier_Product_ID);
+	}
+
+	@Override
+	public int getCarrier_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Product_ID);
 	}
 
 	@Override

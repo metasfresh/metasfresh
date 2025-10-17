@@ -24,6 +24,7 @@ package de.metas.shipper.client.nshift;
 
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
@@ -103,7 +104,7 @@ public class NShiftShipmentService
 		final JsonShipperConfig config = deliveryRequest.getShipperConfig();
 		final String actorId = config.getAdditionalPropertyNotNull(NShiftConstants.ACTOR_ID);
 
-		final int prodConceptId = Integer.parseInt(deliveryRequest.getShipAdviceNotNull(NShiftConstants.PROD_CONCEPT_ID));
+		final int prodConceptId = Integer.parseInt(deliveryRequest.getShipperProduct().getCode());
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.actorCSID(Integer.valueOf(actorId))
@@ -111,7 +112,7 @@ public class NShiftShipmentService
 				.prodConceptID(prodConceptId)
 				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
 
-		deliveryRequest.getShipperProductServices().forEach(service -> dataBuilder.service(Integer.parseInt(service)));
+		deliveryRequest.getServices().forEach(service -> dataBuilder.service(Long.valueOf(service.getId()).intValue()));
 
 		// Add Addresses
 		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER)
@@ -161,6 +162,8 @@ public class NShiftShipmentService
 		final int widthMM = deliveryLine.getPackageDimensions().getWidthInCM() * 10;
 		final int heightMM = deliveryLine.getPackageDimensions().getHeightInCM() * 10;
 
+		final JsonGoodsType goodsType = Check.assumeNotNull(deliveryRequest.getGoodsType(), "No Goods Type found for %s", deliveryRequest);
+
 		return JsonLine.builder()
 				.number(1)
 				.pkgWeight(weightGrams)
@@ -168,8 +171,8 @@ public class NShiftShipmentService
 				.length(lengthMM)
 				.width(widthMM)
 				.height(heightMM)
-				.goodsTypeID(Integer.parseInt(deliveryRequest.getShipAdviceNotNull(NShiftConstants.GOODS_TYPE_ID)))
-				.goodsTypeName(deliveryRequest.getShipAdviceNotNull(NShiftConstants.GOODS_TYPE_NAME))
+				.goodsTypeID(Long.valueOf(goodsType.getId()).intValue())
+				.goodsTypeName(goodsType.getName())
 				.reference(JsonLineReference.builder()
 						.kind(JsonLineReferenceKind.ESRK_CUSTOM_LINE_FIELD_1)
 						.value(deliveryLine.getId())

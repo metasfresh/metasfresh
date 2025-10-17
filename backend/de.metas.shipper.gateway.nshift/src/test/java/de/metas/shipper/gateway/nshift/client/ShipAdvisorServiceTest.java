@@ -35,6 +35,7 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.shipper.client.nshift.NShiftConstants;
 import de.metas.shipper.client.nshift.NShiftRestClient;
@@ -84,7 +85,7 @@ public class ShipAdvisorServiceTest
 	{
 		final JsonDeliveryRequest request = JsonDeliveryRequest.builder()
 				.deliveryOrderId(1)
-				.shipperProduct("shipperProductName")
+				.shipperProduct(JsonShipperProduct.builder().code("shipperProductId").build())
 				.pickupAddress(JsonAddress.builder()
 						.bpartnerId(123)
 						.companyName1("metas GmbH")

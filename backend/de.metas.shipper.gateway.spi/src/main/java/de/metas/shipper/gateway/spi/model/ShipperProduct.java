@@ -22,10 +22,22 @@ package de.metas.shipper.gateway.spi.model;
  * #L%
  */
 
+import javax.annotation.Nullable;
+
 /**
  * The Shipper Product (eg. EXPRESS, CLASSIC, overnight, next-day-until-12, etc.)
  */
 public interface ShipperProduct
 {
+	default @Nullable CarrierProductId getId()
+	{
+		return null;
+	}
+
 	String getCode();
+
+	default @Nullable String getName()
+	{
+		return null;
+	}
 }
