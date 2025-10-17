@@ -114,7 +114,7 @@ public class DeliveryOrder
 	String receiverEORI;
 
 	@Nullable CarrierGoodsType goodsType;
-	@Nullable Set<CarrierService> services;
+	@NonNull @Singular Set<CarrierService> services;
 
 	public DeliveryOrder withCustomDeliveryData(@NonNull final CustomDeliveryData customDeliveryData)
 	{

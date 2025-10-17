@@ -87,6 +87,7 @@ public class ShipmentOrderRepository
 	final CCache<String, CarrierShipperProduct> carrierProductsByExternalId = CCache.newLRUCache(I_Carrier_Product.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
 	final CCache<String, CarrierShipperProduct> carrierProductsById = CCache.newLRUCache(I_Carrier_Product.Table_Name + "#byId", 100, 0);
 	final CCache<String, CarrierService> carrierServicesByExternalId = CCache.newLRUCache(I_Carrier_Service.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
+	final CCache<String, CarrierService> carrierServicesById = CCache.newLRUCache(I_Carrier_Service.Table_Name + "#byId", 100, 0);
 
 	public DeliveryOrder getById(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
@@ -184,7 +185,7 @@ public class ShipmentOrderRepository
 				.shipperEORI(po.getShipper_EORI())
 				.receiverEORI(po.getReceiver_EORI())
 				.goodsType(getCachedGoodsTypeById(CarrierGoodsTypeId.ofRepoIdOrNull(po.getCarrier_Goods_Type_ID())))
-				.services(getCachedServicesByIds(id))
+				.services(getServicesById(id))
 				.deliveryOrderParcels(parcels)
 				.build();
 	}
@@ -343,7 +344,7 @@ public class ShipmentOrderRepository
 				.collect(ImmutableList.toImmutableList()));
 
 		final Set<CarrierService> services = request.getServices();
-		if (services != null && !services.isEmpty())
+		if (!services.isEmpty())
 		{
 			services.forEach(service -> assignService(deliveryOrderId, shipperId, service));
 		}
@@ -433,9 +434,9 @@ public class ShipmentOrderRepository
 	@Nullable
 	private CarrierGoodsType getOrCreateGoodsType(@NonNull final ShipperId shipperId, @Nullable final CarrierGoodsType goodsType)
 	{
-		if (goodsType == null || goodsType.getId() != null)
+		if (goodsType == null)
 		{
-			return goodsType;
+			return null;
 		}
 		final CarrierGoodsType cachedGoodsTypeByExternalId = getCachedGoodsTypeByShipperExternalId(shipperId, goodsType.getExternalId());
 		if (cachedGoodsTypeByExternalId != null)
@@ -475,7 +476,7 @@ public class ShipmentOrderRepository
 	}
 
 	@Nullable
-	private CarrierGoodsType getCachedGoodsTypeById(@Nullable final CarrierGoodsTypeId goodsTypeId)
+	public CarrierGoodsType getCachedGoodsTypeById(@Nullable final CarrierGoodsTypeId goodsTypeId)
 	{
 		if (goodsTypeId == null)
 		{
@@ -515,7 +516,7 @@ public class ShipmentOrderRepository
 	}
 
 	@Nullable
-	private CarrierShipperProduct getCachedShipperProductById(@Nullable final CarrierProductId productId)
+	public CarrierShipperProduct getCachedShipperProductById(@Nullable final CarrierProductId productId)
 	{
 		if (productId == null)
 		{
@@ -554,7 +555,22 @@ public class ShipmentOrderRepository
 		return fromProductRecord(po);
 	}
 
-	private Set<CarrierService> getCachedServicesByIds(@NonNull final DeliveryOrderId carrierShipmentOrderId)
+	@Nullable
+	public CarrierService getCachedCarrierServiceById(@Nullable final CarrierServiceId serviceId)
+	{
+		if (serviceId == null)
+		{
+			return null;
+		}
+		return carrierServicesById.getOrLoad(serviceId.toString(), () ->
+				queryBL.createQueryBuilder(I_Carrier_Service.class)
+						.addEqualsFilter(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID, serviceId)
+						.firstOptional()
+						.map(ShipmentOrderRepository::fromServiceRecord)
+						.orElse(null));
+	}
+
+	private Set<CarrierService> getServicesById(@NonNull final DeliveryOrderId carrierShipmentOrderId)
 	{
 		return queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Service.class)
 				.addEqualsFilter(I_Carrier_ShipmentOrder_Service.COLUMNNAME_Carrier_ShipmentOrder_ID, carrierShipmentOrderId)
@@ -583,6 +599,7 @@ public class ShipmentOrderRepository
 		po.setCarrier_Service_ID(CarrierServiceId.toRepoId(actualService.getId()));
 		InterfaceWrapperHelper.saveRecord(po);
 	}
+
 	//TODO Adrian move all the getOrCreate to own repos, and invoke when receiving response from ShipperAdvisor
 	private CarrierService getOrCreateService(@NonNull final ShipperId shipperId, @NonNull final CarrierService service)
 	{

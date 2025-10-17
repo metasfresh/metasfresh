@@ -8,6 +8,9 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
+import de.metas.shipper.gateway.spi.model.CarrierGoodsTypeId;
+import de.metas.shipper.gateway.spi.model.CarrierProductId;
+import de.metas.shipper.gateway.spi.model.CarrierServiceId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
@@ -33,6 +36,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -108,6 +112,11 @@ public class ShipperGatewayFacade
 			@NonNull final LocalTime timeTo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
+		//TODO Adrian retrieve M_ShipmentSchedule from M_Package and populate from there
+		final CarrierProductId carrierProductId = null;
+		final CarrierGoodsTypeId carrierGoodsTypeId = null;
+		final Set<CarrierServiceId> carrierServices = Collections.emptySet();
+
 		return DeliveryOrderKey.builder()
 				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
 				.shipperTransportationId(shipperTransportationId)
@@ -117,6 +126,9 @@ public class ShipperGatewayFacade
 				.pickupDate(pickupDate)
 				.timeFrom(timeFrom)
 				.timeTo(timeTo)
+				.carrierProductId(carrierProductId)
+				.carrierGoodsTypeId(carrierGoodsTypeId)
+				.carrierServices(carrierServices)
 				.asyncBatchId(asyncBatchId)
 				.build();
 	}

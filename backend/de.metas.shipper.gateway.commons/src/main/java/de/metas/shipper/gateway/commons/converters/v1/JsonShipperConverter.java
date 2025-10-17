@@ -102,10 +102,9 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private @NonNull Set<JsonCarrierService> toCarrierServices(final @Nullable Set<CarrierService> services)
+	private @NonNull Set<JsonCarrierService> toCarrierServices(final @NonNull Set<CarrierService> services)
 	{
-		if (services == null || services.isEmpty())
-
+		if (services.isEmpty())
 		{
 			return Collections.emptySet();
 		}
