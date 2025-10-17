@@ -26,6 +26,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
@@ -71,24 +72,6 @@ public class PaySelectionBL implements IPaySelectionBL
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	@NonNull
-	private static BPBankAcctUse getAcceptedBankAccountUsage(final boolean isSalesInvoice, final boolean isCreditMemo)
-	{
-		if ((isSalesInvoice && !isCreditMemo) ||
-				(!isSalesInvoice && isCreditMemo))
-		{
-			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo
-			// OR it is a Credit memo with isSoTrx = 'N'
-			return BPBankAcctUse.DEBIT;
-		}
-		else
-		{
-			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
-			// OR it is a Credit memo with isSoTrx = 'Y'
-			return BPBankAcctUse.DEPOSIT;
-		}
-	}
 
 	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
 	{
@@ -149,10 +132,8 @@ public class PaySelectionBL implements IPaySelectionBL
 														  @NonNull final CurrencyId currencyId)
 	{
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-		final boolean isSalesInvoice = invoice.isSOTrx();
-		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
-
-		final BPBankAcctUse accteptedBankAccountUsage = getAcceptedBankAccountUsage(isSalesInvoice, isCreditMemo);
+		final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
+		final BPBankAcctUse acceptedBankAccountUsage = invoiceDocBaseType.isIncomingCash() ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
 
 		final List<BPartnerBankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(
 				BPartnerId.ofRepoId(invoice.getC_BPartner_ID()),
@@ -183,7 +164,7 @@ public class PaySelectionBL implements IPaySelectionBL
 							secondaryAcct = accountID;
 						}
 					}
-					else if (account.getBpBankAcctUse() == accteptedBankAccountUsage)
+					else if (account.getBpBankAcctUse() == acceptedBankAccountUsage)
 					{
 						primaryAcct = accountID;
 						break;
