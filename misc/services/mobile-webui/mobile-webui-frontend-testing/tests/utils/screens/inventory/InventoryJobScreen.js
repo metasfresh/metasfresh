@@ -1,7 +1,9 @@
-import { page, SLOW_ACTION_TIMEOUT, step } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { InventoryScanScreen } from './InventoryScanScreen';
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
+import { YesNoDialog } from '../../dialogs/YesNoDialog';
+import { InventoryJobsListScreen } from './InventoryJobsListScreen';
 
 const NAME = 'InventoryJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -20,11 +22,11 @@ export const InventoryJobScreen = {
         return match ? match[1] : null;
     },
 
-    countHU: async ({ locatorQRCode, huQRCode, expectQtyBooked, qtyCount }) => await step(`${NAME} - Scan HU and Report Counting`, async () => {
+    countHU: async ({ locatorQRCode, huQRCode, expectQtyBooked, qtyCount, attributes }) => await step(`${NAME} - Scan HU and Report Counting`, async () => {
         await page.getByTestId('scanQRCode-button').tap();
         await InventoryScanScreen.waitForScreen();
 
-        await InventoryScanScreen.countHU({ locatorQRCode, huQRCode, expectQtyBooked, qtyCount });
+        await InventoryScanScreen.countHU({ locatorQRCode, huQRCode, expectQtyBooked, qtyCount, attributes });
     }),
 
     expectLineButton: async ({ productId, locatorId, qtyBooked, qtyCount }) => await test.step(`${NAME} - Expect job button by productId=${productId}, locatorId=${locatorId}`, async () => {
@@ -47,4 +49,16 @@ export const InventoryJobScreen = {
         }
     }),
 
+    complete: async () => await step(`${NAME} - Complete`, async () => {
+        await page.locator('#last-confirm-button').tap();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await InventoryJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await InventoryJobScreen.waitForScreen();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await InventoryJobsListScreen.waitForScreen();
+    }),
 };

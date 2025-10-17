@@ -319,6 +319,7 @@ public class InventoryLine
 				.qtyCountFixed(computeQtyCountSum(newLineHUs))
 				.clearInventoryLineHUs()
 				.inventoryLineHUs(newLineHUs)
+				.counted(newLineHUs.stream().allMatch(InventoryLineHU::isCounted))
 				.build();
 	}
 

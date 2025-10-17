@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { reportInventoryCounting, resolveHU, resolveLocator } from '../api';
+import { getLineHUs, reportInventoryCounting, resolveHU, resolveLocator } from '../api';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { inventoryJobOrLineLocation } from '../routes';
 import { toastError, toastErrorFromObj } from '../../../utils/toast';
@@ -8,6 +8,8 @@ import InventoryCountComponent from './InventoryCountComponent';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useDispatch } from 'react-redux';
 import { trl } from '../../../utils/translations';
+import { getInventoryLineById, getInventoryLinesArray } from '../reducers/utils';
+import { useWFActivity } from '../../../reducers/wfProcesses';
 
 const STATUS_ScanLocator = 'ScanLocator';
 const STATUS_ScanHU = 'ScanHU';
@@ -31,15 +33,26 @@ const InventoryScanScreen = () => {
 
   // FIXME: DEBUGGING
   if (DEBUGGING) {
+    const activity = useWFActivity({ wfProcessId, activityId });
+    let line;
+    if (lineId) {
+      line = getInventoryLineById({ activity, lineId });
+    } else {
+      line = getInventoryLinesArray({ activity })[0];
+    }
+    console.log('InventoryScanScreen', { line, activity });
     useEffect(() => {
       if (status === STATUS_ScanLocator) {
         onLocatorScanned({
-          scannedBarcode: 'LOC#1#{"warehouseId":1000229,"locatorId":1000119,"caption":"wh_20251002T093155523_Locator"}',
+          scannedBarcode: line.locatorName,
+          // scannedBarcode: 'LOC#1#{"warehouseId":1000229,"locatorId":1000119,"caption":"wh_20251002T093155523_Locator"}',
         });
       } else if (status === STATUS_ScanHU) {
-        onHUScanned({
-          scannedBarcode:
-            'HU#1#{"id":"1eecb838b459a2c93f3c14eee6e2-13733","packingInfo":{"huUnitType":"LU","packingInstructionsId":3002715,"caption":"LU_20251002T093155607"},"product":{"id":2007215,"code":"P1_20251002T093155444","name":"P1_20251002T093155444"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}',
+        getLineHUs({ wfProcessId, lineId: line.id }).then(({ lineHUs }) => {
+          onHUScanned({
+            scannedBarcode: lineHUs[0].huId,
+            // scannedBarcode: 'HU#1#{"id":"1eecb838b459a2c93f3c14eee6e2-13733","packingInfo":{"huUnitType":"LU","packingInstructionsId":3002715,"caption":"LU_20251002T093155607"},"product":{"id":2007215,"code":"P1_20251002T093155444","name":"P1_20251002T093155444"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}',
+          });
         });
       }
     }, [status]);
