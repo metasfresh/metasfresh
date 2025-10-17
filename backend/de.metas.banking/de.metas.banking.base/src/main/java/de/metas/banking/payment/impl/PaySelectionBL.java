@@ -32,6 +32,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -351,6 +352,7 @@ public class PaySelectionBL implements IPaySelectionBL
 				.tenderType(TenderType.DirectDeposit)
 				.payAmt(line.getPayAmt())
 				.discountAmt(line.getDiscountAmt())
+				.orderPayScheduleId(OrderPayScheduleId.ofRepoId(line.getC_OrderPaySchedule_ID()))
 				//
 				.createAndProcess();
 	}

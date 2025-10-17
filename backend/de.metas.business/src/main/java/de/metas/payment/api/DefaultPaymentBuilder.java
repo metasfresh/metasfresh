@@ -38,6 +38,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
@@ -270,6 +271,14 @@ public class DefaultPaymentBuilder
 		payment.setC_Currency_ID(currencyId.getRepoId());
 		return this;
 	}
+
+	public final DefaultPaymentBuilder orderPayScheduleId(@NonNull final OrderPayScheduleId orderPayScheduleId)
+	{
+		assertNotBuilt();
+		payment.setC_OrderPaySchedule_ID(orderPayScheduleId.getRepoId());
+		return this;
+	}
+
 
 	public final DefaultPaymentBuilder paymentCurrencyContext(@NonNull final PaymentCurrencyContext paymentCurrencyContext)
 	{
