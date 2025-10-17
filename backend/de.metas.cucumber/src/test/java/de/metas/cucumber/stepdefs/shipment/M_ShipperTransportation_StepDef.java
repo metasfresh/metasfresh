@@ -193,7 +193,8 @@ public class M_ShipperTransportation_StepDef
 
 		saveRecord(shippingPackageRecord);
 
-		shippingPackageTable.putOrReplace(row.getAsIdentifier(), shippingPackageRecord);
+		row.getAsOptionalIdentifier()
+				.ifPresent(shippingPackageIdentifier -> shippingPackageTable.putOrReplace(shippingPackageIdentifier, shippingPackageRecord));
 	}
 
 	@And("metasfresh contains M_Package")
