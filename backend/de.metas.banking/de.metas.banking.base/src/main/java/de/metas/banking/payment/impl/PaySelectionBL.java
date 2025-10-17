@@ -29,6 +29,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -41,6 +42,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
@@ -64,6 +66,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -285,9 +288,11 @@ public class PaySelectionBL implements IPaySelectionBL
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
 		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
 
-		Check.assumeNotNull(line.getC_Invoice(), "Invoice is not null for {}", line);
+		Check.assume(line.getC_Invoice_ID() > 0, "Invoice is not null for {}", line);
 
-		return paymentBL.newBuilderOfInvoice(line.getC_Invoice())
+		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
+
+		return paymentBL.newBuilderOfInvoice(invoice)
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
 				.orgBankAccountId(orgBankAccountId)
 				.dateAcct(payDate)
@@ -307,9 +312,11 @@ public class PaySelectionBL implements IPaySelectionBL
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
 		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
 
-		Check.assumeNotNull(line.getC_Order(), "Order is not null for {}", line);
+		Check.assume(line.getC_Order_ID() > 0, "Order is not null for {}", line);
 
-		return paymentBL.newBuilderOfOrder(line.getC_Order())
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(line.getC_Order_ID()));
+
+		return paymentBL.newBuilderOfOrder(order)
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
 				.orgBankAccountId(orgBankAccountId)
 				.dateAcct(payDate)

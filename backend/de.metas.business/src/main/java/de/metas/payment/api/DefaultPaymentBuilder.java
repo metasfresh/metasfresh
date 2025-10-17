@@ -75,13 +75,13 @@ public class DefaultPaymentBuilder
 	public static DefaultPaymentBuilder newBuilderOfInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		return new DefaultPaymentBuilder()
-				.invoice(invoice);
+				.fromInvoice(invoice);
 	}
 
 	public static DefaultPaymentBuilder newBuilderOfOrder(@NonNull final I_C_Order order)
 	{
 		return new DefaultPaymentBuilder()
-				.order(order);
+				.fromOrder(order);
 	}
 
 	private final transient IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
@@ -232,7 +232,6 @@ public class DefaultPaymentBuilder
 	public final DefaultPaymentBuilder dateTrx(@Nullable final Instant dateTrx)
 	{
 		assertNotBuilt();
-		;
 		payment.setDateTrx(TimeUtil.asTimestamp(dateTrx));
 		return this;
 	}
@@ -301,7 +300,7 @@ public class DefaultPaymentBuilder
 	 * <li>IsReceipt: set from the invoice's <code>SOTrx</code> (negated if the invoice is a credit memo)
 	 * </ul>
 	 */
-	private DefaultPaymentBuilder invoice(@NonNull final I_C_Invoice invoice)
+	private DefaultPaymentBuilder fromInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		adOrgId(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
@@ -366,7 +365,7 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	private DefaultPaymentBuilder order(@NonNull final I_C_Order order)
+	private DefaultPaymentBuilder fromOrder(@NonNull final I_C_Order order)
 	{
 		adOrgId(OrgId.ofRepoId(order.getAD_Org_ID()));
 		invoiceId(InvoiceId.ofRepoId(order.getC_Order_ID()));
