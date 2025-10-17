@@ -26,10 +26,17 @@ public class ProductService
 		return productBL.isValidEAN13Product(ean13, lineProductId);
 	}
 
-	public ProductsLoadingCache newLoadingCache()
+	public ProductsLoadingCache newProductsLoadingCache()
 	{
 		return ProductsLoadingCache.builder()
 				.productBL(productBL)
+				.build();
+	}
+
+	public ASILoadingCache newASILoadingCache()
+	{
+		return ASILoadingCache.builder()
+				.attributeSetInstanceBL(attributeSetInstanceBL)
 				.build();
 	}
 

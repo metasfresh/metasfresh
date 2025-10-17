@@ -43,3 +43,9 @@ export const getLineHUs = ({ wfProcessId, lineId }) => {
     .get(toUrl(`${inventoryBasePath}/lineHUs`, { wfProcessId, lineId }))
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const getLineHU = ({ wfProcessId, lineId, lineHUId }) => {
+  return axios
+    .get(toUrl(`${inventoryBasePath}/lineHU`, { wfProcessId, lineId, lineHUId }))
+    .then((response) => unboxAxiosResponse(response));
+};

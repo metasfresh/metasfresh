@@ -38,6 +38,11 @@ public class InventoryLineId implements RepoIdAware
 {
 	int repoId;
 
+	private InventoryLineId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_InventoryLine_ID");
+	}
+
 	public static InventoryLineId ofRepoId(final int repoId)
 	{
 		return new InventoryLineId(repoId);
@@ -61,10 +66,6 @@ public class InventoryLineId implements RepoIdAware
 		return RepoIdAwares.ofObject(obj, InventoryLineId.class, InventoryLineId::ofRepoId);
 	}
 
-	private InventoryLineId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_InventoryLine_ID");
-	}
 
 	@Override
 	@JsonValue

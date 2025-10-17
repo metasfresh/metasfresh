@@ -3,6 +3,7 @@ package de.metas.inventory.mobileui.rest_api;
 import de.metas.Profiles;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryLineHUId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.inventory.mobileui.InventoryMobileApplication;
 import de.metas.inventory.mobileui.job.qrcode.ResolveHURequest;
@@ -10,6 +11,7 @@ import de.metas.inventory.mobileui.job.qrcode.ResolveHUResponse;
 import de.metas.inventory.mobileui.job.service.InventoryJobService;
 import de.metas.inventory.mobileui.rest_api.json.JsonCountRequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonGetLineHUsResponse;
+import de.metas.inventory.mobileui.rest_api.json.JsonInventoryLineHU;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHURequest;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveHUResponse;
 import de.metas.inventory.mobileui.rest_api.json.JsonResolveLocatorRequest;
@@ -98,6 +100,25 @@ public class InventoryRestController
 	private JsonWFProcess toJsonWFProcess(final Inventory inventory)
 	{
 		return workflowRestController.toJson(WFProcessMapper.toWFProcess(inventory));
+	}
+
+	@GetMapping("/lineHU")
+	public JsonInventoryLineHU getLineHU(
+			@RequestParam("wfProcessId") @NonNull String wfProcessIdStr,
+			@RequestParam("lineId") @NonNull String lineIdStr,
+			@RequestParam("lineHUId") @NonNull String lineHUIdStr)
+	{
+		assertApplicationAccess();
+
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final InventoryLineId lineId = InventoryLineId.ofObject(lineIdStr);
+		final InventoryLineHUId lineHUId = InventoryLineHUId.ofObject(lineHUIdStr);
+
+		final InventoryLine line = jobService.getById(wfProcessId, Env.getLoggedUserId()).getLineById(lineId);
+
+		return mappers.newJsonInventoryJobMapper(newJsonOpts())
+				.loadAllDetails(true)
+				.toJson(line, lineHUId);
 	}
 
 	@GetMapping("/lineHUs")

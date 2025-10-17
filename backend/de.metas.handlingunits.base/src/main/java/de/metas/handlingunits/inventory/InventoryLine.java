@@ -335,4 +335,12 @@ public class InventoryLine
 	{
 		return !isCounted();
 	}
+
+	public InventoryLineHU getInventoryLineHUById(@NonNull final InventoryLineHUId id)
+	{
+		return inventoryLineHUs.stream()
+				.filter(lineHU -> InventoryLineHUId.equals(lineHU.getId(), id))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No Line HU found for " + id + " in " + this));
+	}
 }

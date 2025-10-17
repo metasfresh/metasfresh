@@ -20,7 +20,8 @@ public class Mappers
 	{
 		return JsonInventoryJobMapper.builder()
 				.warehouses(warehouseService.newLoadingCache())
-				.products(productService.newLoadingCache())
+				.products(productService.newProductsLoadingCache())
+				.asis(productService.newASILoadingCache())
 				.handlingUnits(handlingUnitsService.newLoadingCache())
 				.adLanguage(jsonOpts.getAdLanguage())
 				.build();
@@ -30,7 +31,7 @@ public class Mappers
 	{
 		return JsonResolveHUResponseMapper.builder()
 				.warehouses(warehouseService.newLoadingCache())
-				.products(productService.newLoadingCache())
+				.products(productService.newProductsLoadingCache())
 				.handlingUnits(handlingUnitsService.newLoadingCache())
 				//
 				.adLanguage(jsonOpts.getAdLanguage())

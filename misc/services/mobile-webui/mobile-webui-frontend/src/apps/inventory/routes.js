@@ -1,10 +1,15 @@
+import { toUrl } from '../../utils';
 import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 import InventoryLineScreen from './activities/InventoryLineScreen';
 import InventoryScanScreen from './activities/InventoryScanScreen';
-import { toUrl } from '../../utils';
+import InventoryLineHUScreen from './activities/InventoryLineHUScreen';
 
 export const inventoryJobLocation = ({ applicationId, wfProcessId }) => {
   return getWFProcessScreenLocation({ applicationId, wfProcessId });
+};
+export const inventoryScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) => {
+  const baseUrl = inventoryJobLocation({ applicationId, wfProcessId });
+  return toUrl(`${baseUrl}/scan/${activityId}`, { lineId });
 };
 export const inventoryLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) => {
   const baseUrl = inventoryJobLocation({ applicationId, wfProcessId });
@@ -15,9 +20,9 @@ export const inventoryJobOrLineLocation = ({ applicationId, wfProcessId, activit
     ? inventoryLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
     : inventoryJobLocation({ applicationId, wfProcessId });
 };
-export const inventoryScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) => {
-  const baseUrl = inventoryJobLocation({ applicationId, wfProcessId });
-  return toUrl(`${baseUrl}/scan/${activityId}`, { lineId });
+export const inventoryLineHUScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, lineHUId }) => {
+  const baseUrl = inventoryJobOrLineLocation({ applicationId, wfProcessId, activityId, lineId });
+  return `${baseUrl}/lineHU/${lineHUId}`;
 };
 
 export const inventoryRoutes = [
@@ -37,5 +42,15 @@ export const inventoryRoutes = [
       lineId: ':lineId',
     }),
     Component: InventoryLineScreen,
+  },
+  {
+    path: inventoryLineHUScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+      lineHUId: ':lineHUId',
+    }),
+    Component: InventoryLineHUScreen,
   },
 ];

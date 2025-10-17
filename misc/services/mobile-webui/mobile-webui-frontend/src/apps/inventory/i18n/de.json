@@ -9,5 +9,8 @@
   "scanLocatorPlaceholder": "Lagerort scannen",
   "InventoryLineScreen": {
     "caption": "Line"
+  },
+  "InventoryLineHUScreen": {
+    "caption": "HU"
   }
 }
