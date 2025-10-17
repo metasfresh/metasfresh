@@ -34,7 +34,6 @@ public class InvoicePayScheduleCreateRequest
 	@Builder
 	public static class Line
 	{
-
 		@NonNull OrderId orderId;
 		@NonNull OrderPayScheduleId orderPayScheduleId;
 		@NonNull Instant dueDate;

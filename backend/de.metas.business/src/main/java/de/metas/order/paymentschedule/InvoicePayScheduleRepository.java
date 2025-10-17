@@ -31,7 +31,6 @@ import org.compiere.model.I_C_InvoicePaySchedule;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -67,12 +66,6 @@ public class InvoicePayScheduleRepository
 		// record.setC_Currency_ID(request.getDueAmount().getCurrencyId().getRepoId()); TODO
 		record.setDueDate(TimeUtil.asTimestamp(request.getDueDate()));
 		saveRecord(record);
-	}
-
-	@NonNull
-	public Optional<InvoicePaySchedule> getByOrderId(@NonNull final InvoiceId invoiceId)
-	{
-		return newLoaderAndSaver().loadByInvoiceId(invoiceId);
 	}
 
 	public void deleteByInvoiceId(@NonNull final InvoiceId invoiceId)

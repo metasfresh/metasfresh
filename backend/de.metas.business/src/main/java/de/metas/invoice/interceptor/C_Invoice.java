@@ -18,6 +18,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.InvoicePayScheduleService;
 import de.metas.order.paymentschedule.OrderPayScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -33,6 +34,7 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -53,14 +55,16 @@ import java.util.List;
 
 @Interceptor(I_C_Invoice.class)
 @Component
+@RequiredArgsConstructor
 public class C_Invoice // 03771
 {
 	private final PaymentReservationService paymentReservationService;
 	private final OrderPayScheduleService orderPayScheduleService;
+	private final InvoicePayScheduleService invoicePayScheduleService;
+	private final IDocumentLocationBL documentLocationBL;
+
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-
-	private final IDocumentLocationBL documentLocationBL;
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
@@ -68,16 +72,6 @@ public class C_Invoice // 03771
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
-
-	public C_Invoice(
-			@NonNull final PaymentReservationService paymentReservationService,
-			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final OrderPayScheduleService orderPayScheduleService)
-	{
-		this.paymentReservationService = paymentReservationService;
-		this.documentLocationBL = documentLocationBL;
-		this.orderPayScheduleService = orderPayScheduleService;
-	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)
@@ -420,5 +414,11 @@ public class C_Invoice // 03771
 		{
 			orderPayScheduleService.updatePayScheduleStatus(orderId);
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void createOrderPaySchedules(@NonNull final I_C_Invoice invoice)
+	{
+		invoicePayScheduleService.createInvoicePaySchedules(invoice);
 	}
 }
