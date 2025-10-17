@@ -45,7 +45,7 @@ public class InventoryJobService
 	public Inventory getById(final WFProcessId wfProcessId, @NonNull final UserId calledId)
 	{
 		final Inventory inventory = getById(toInventoryId(wfProcessId));
-		inventory.assertHasAccess(Env.getLoggedUserId());
+		inventory.assertHasAccess(calledId);
 		return inventory;
 	}
 
