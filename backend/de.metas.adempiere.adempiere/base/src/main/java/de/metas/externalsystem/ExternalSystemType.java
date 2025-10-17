@@ -29,12 +29,13 @@ public final class ExternalSystemType
 	public static final ExternalSystemType Github = new ExternalSystemType("Github");
 	public static final ExternalSystemType Everhour = new ExternalSystemType("Everhour");
 	public static final ExternalSystemType ScriptedExportConversion = new ExternalSystemType("ScriptedExportConversion");
+	public static final ExternalSystemType ScriptedImportConversion = new ExternalSystemType("ScriptedImportConversion");
 
 	private static final ConcurrentHashMap<String, ExternalSystemType> interner = new ConcurrentHashMap<>();
 
 	static
 	{
-		Stream.of(Alberta, RabbitMQ, WOO, GRSSignum, LeichUndMehl, ProCareManagement, Shopware6, Other, PrintClient, Github, Everhour, ScriptedExportConversion)
+		Stream.of(Alberta, RabbitMQ, WOO, GRSSignum, LeichUndMehl, ProCareManagement, Shopware6, Other, PrintClient, Github, Everhour, ScriptedExportConversion, ScriptedImportConversion)
 				.forEach(systemValue -> interner.put(systemValue.getValue(), systemValue));
 	}
 
@@ -103,4 +104,6 @@ public final class ExternalSystemType
 	public boolean isEverhour() {return Everhour.equals(this);}
 
 	public boolean isScriptedExportConversion() {return ScriptedExportConversion.equals(this);}
+	
+	public boolean isScriptedImportConversion() {return ScriptedImportConversion.equals(this);}
 }
