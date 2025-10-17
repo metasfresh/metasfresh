@@ -23,7 +23,6 @@
 package de.metas.shipper.client.nshift;
 
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import lombok.NonNull;
@@ -71,17 +70,7 @@ public class NShiftUtil
 			{
 				receiverAddressBuilder.email(deliveryContact.getEmailAddress());
 			}
-			receiverAddressBuilder.attention(deliveryContact.getName());
 		}
-		else
-		{
-			final String attention = CoalesceUtil.coalesceNotNull(
-					deliveryAddress.getAdditionalAddressInfo(),
-					deliveryAddress.getCompanyName2(),
-					deliveryAddress.getCompanyName1());
-			receiverAddressBuilder.attention(attention);
-		}
-
 		return receiverAddressBuilder;
 	}
 

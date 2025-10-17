@@ -43,7 +43,7 @@ public class JsonMappingConfig
 	@Nullable String shipperProduct;
 	@NonNull String attributeType;
 	@Nullable String attributeGroupKey;
-	@NonNull String attributeKey;
+	@Nullable String attributeKey;
 	@NonNull String attributeValue;
 	@Nullable String mappingRule;
 	@Nullable String mappingRuleValue;

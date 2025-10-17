@@ -116,6 +116,16 @@ public class JsonDeliveryRequest
 				return getDeliveryAddress().getCountry();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME:
 				return getDeliveryContact() != null ? getDeliveryContact().getName() : null;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT:
+				return getDeliveryAddress().getCompanyDepartment();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME:
+				return getDeliveryAddress().getCompanyName1();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME:
+				return getPickupAddress().getCompanyName1();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME_2:
+				return getPickupAddress().getCompanyName2();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_DEPARTMENT:
+				return getPickupAddress().getCompanyDepartment();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME:
 				return getShipperProduct();
 			default:

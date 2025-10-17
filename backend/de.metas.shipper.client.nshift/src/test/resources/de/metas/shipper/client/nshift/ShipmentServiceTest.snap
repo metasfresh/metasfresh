@@ -4,24 +4,24 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
       "ActorCSID": 123,
       "Addresses": [
         {
-          "Attention": "metas GmbH",
+          "Attention": "metas GmbH senderDepartmentName",
           "City": "Bonn",
           "CountryCode": "DE",
           "Kind": 2,
           "Name1": "metas GmbH",
-          "Name2": "",
+          "Name2": "senderCompanyName2",
           "PostCode": "53179",
           "Street1": "Am Noßbacher Weg 2",
           "Street2": ""
         },
         {
-          "Attention": "Test Contact Name",
+          "Attention": "metas.ro SRL receiverDepartmentName Test Contact Name",
           "City": "Timisoara",
           "CountryCode": "RO",
           "Email": "noreply@metasfresh.com",
           "Kind": 1,
           "Name1": "metas.ro SRL",
-          "Name2": "",
+          "Name2": "receiverCompanyName2",
           "Phone": "12341234",
           "PostCode": "300078",
           "Street1": "Alecsandri 3",
@@ -31,6 +31,7 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
       "DangerousGoods": [ ],
       "DetailGroups": [
         {
+          "GroupID": "1",
           "Rows": [
             {
               "Details": [
@@ -72,6 +73,7 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
           ]
         },
         {
+          "GroupID": "1",
           "Rows": [
             {
               "Details": [

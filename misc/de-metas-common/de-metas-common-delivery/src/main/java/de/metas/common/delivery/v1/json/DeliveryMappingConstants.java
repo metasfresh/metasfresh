@@ -28,18 +28,25 @@ import lombok.experimental.UtilityClass;
 public class DeliveryMappingConstants
 {
 	// attributeTypes
+	public static final String ATTRIBUTE_TYPE_SENDER_ATTENTION = "SenderAttention";
+	public static final String ATTRIBUTE_TYPE_RECEIVER_ATTENTION = "ReceiverAttention";
 	public static final String ATTRIBUTE_TYPE_REFERENCE = "Reference";
 	public static final String ATTRIBUTE_TYPE_LINE_REFERENCE = "LineReference";
 	public static final String ATTRIBUTE_TYPE_DETAIL_GROUP = "DetailGroup";
 
 	// attributeValues
-	public static final String ATTRIBUTE_VALUE_RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME = "ReceiverContactFirstnameAndLastname";
 	public static final String ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_START = "PickupDateAndTimeStart";
 	public static final String ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_END = "PickupDateAndTimeEnd";
 	public static final String ATTRIBUTE_VALUE_DELIVERY_DATE = "DeliveryDate";
 	public static final String ATTRIBUTE_VALUE_CUSTOMER_REFERENCE = "CustomerReference";
 	public static final String ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE = "ReceiverCountryCode";
 	public static final String ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME = "ShipperProductName";
+	public static final String ATTRIBUTE_VALUE_SENDER_COMPANY_NAME = "SenderCompanyName";
+	public static final String ATTRIBUTE_VALUE_SENDER_COMPANY_NAME_2 = "SenderCompanyName2";
+	public static final String ATTRIBUTE_VALUE_SENDER_DEPARTMENT = "SenderDepartment";
+	public static final String ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME = "ReceiverCompanyName";
+	public static final String ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT = "ReceiverDepartment";
+	public static final String ATTRIBUTE_VALUE_RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME = "ReceiverContactFirstnameAndLastname";
 
 	// mappingRules
 	public static final String MAPPING_RULE_RECEIVER_COUNTRY_CODE = "ReceiverCountryCode";

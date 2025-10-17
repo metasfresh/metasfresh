@@ -1,5 +1,6 @@
 package de.metas.shipper.client.nshift;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.delivery.v1.json.request.JsonMappingConfig;
 import de.metas.common.delivery.v1.json.request.JsonMappingConfigList;
@@ -41,6 +42,7 @@ public class NShiftMappingConfigs
 	public ImmutableListMultimap<String, String> getValuesByKeyAttributeKey(@NonNull final String attributeType,  @NonNull final Function<String, String> valueProvider)
 	{
 		return streamEligibleConfigs(attributeType, valueProvider)
+				.filter(config -> Check.isNotBlank(config.getAttributeKey()))
 				.map(config -> new AbstractMap.SimpleImmutableEntry<>(
 						config.getAttributeKey(),
 						valueProvider.apply(config.getAttributeValue())))
@@ -73,6 +75,20 @@ public class NShiftMappingConfigs
 	private static String concatValues(@NonNull final Collection<String> values)
 	{
 		return String.join(" ", values);
+	}
+
+	@NonNull
+	public String getSingleValue(@NonNull final String attributeType, @NonNull final Function<String, String> valueProvider)
+	{
+		return concatValues(getValueList(attributeType, valueProvider));
+	}
+
+	@NonNull
+	private ImmutableList<String> getValueList(@NonNull final String attributeType, @NonNull final Function<String, String> valueProvider)
+	{
+		return streamEligibleConfigs(attributeType, valueProvider)
+				.map(config -> valueProvider.apply(config.getAttributeValue()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	//TODO lineReference and detailGroups
