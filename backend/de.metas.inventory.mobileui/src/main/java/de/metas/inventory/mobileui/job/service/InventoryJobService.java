@@ -5,6 +5,7 @@ import de.metas.handlingunits.inventory.InventoryLineCountRequest;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.inventory.InventoryQuery;
 import de.metas.inventory.mobileui.deps.handlingunits.HandlingUnitsService;
 import de.metas.inventory.mobileui.deps.products.ProductService;
 import de.metas.inventory.mobileui.deps.warehouse.WarehouseService;
@@ -65,18 +66,26 @@ public class InventoryJobService
 
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO
+		inventoryService.updateById(
+				toInventoryId(wfProcessId),
+				inventory -> {
+					inventory.assertHasAccess(callerId);
+					return inventory.unassign();
+				}
+		);
 	}
 
-	public void abortAll(final UserId callerId)
+	public void abortAll(@NonNull final UserId callerId)
 	{
-		// TODO
+		inventoryService.updateByQuery(
+				InventoryQuery.builder().onlyDraftOrInProgress().onlyResponsibleId(callerId).build(),
+				Inventory::unassign
+		);
 	}
 
 	public Inventory complete(Inventory inventory)
 	{
-		// TODO
-		return inventory;
+		throw new UnsupportedOperationException(); // TODO
 	}
 
 	public LocatorScannedCodeResolverResult resolveLocator(

@@ -165,6 +165,11 @@ public class Inventory
 		return toBuilder().responsibleId(newResponsibleId).build();
 	}
 
+	public Inventory unassign()
+	{
+		return responsibleId == null ? this : toBuilder().responsibleId(null).build();
+	}
+
 	public void assertHasAccess(@NonNull final UserId calledId)
 	{
 		if (!UserId.equals(responsibleId, calledId))

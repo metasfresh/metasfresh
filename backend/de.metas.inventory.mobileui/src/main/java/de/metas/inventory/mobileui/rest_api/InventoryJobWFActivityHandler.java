@@ -47,7 +47,6 @@ public class InventoryJobWFActivityHandler implements WFActivityHandler
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
 		return computeActivityState(getInventory(wfProcess));
-
 	}
 
 	public static WFActivityStatus computeActivityState(final Inventory inventory)

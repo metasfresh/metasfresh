@@ -90,14 +90,24 @@ class InventoryLoaderAndSaver
 
 	private void warmUp(@NonNull final InventoryId inventoryId)
 	{
-		getRecordById(inventoryId);
+		final I_M_Inventory inventory = getRecordById(inventoryId);
+		warmUp(ImmutableList.of(inventory));
+	}
 
-		final ImmutableSet<InventoryLineId> inventoryLineIds = getLineRecords(inventoryId)
-				.stream()
+	private void warmUp(@NonNull final List<I_M_Inventory> inventoryRecords)
+	{
+		inventoryRecords.forEach(inventoryRecord -> inventoryRecordsByInventoryId.put(extractInventoryId(inventoryRecord), inventoryRecord));
+
+		final ImmutableSet<InventoryLineId> inventoryLineIds = streamLineRecords(inventoryRecordsByInventoryId.keySet())
 				.map(InventoryLoaderAndSaver::extractInventoryLineId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		CollectionUtils.getAllOrLoad(this.inventoryLineHURecordsByInventoryLineId, inventoryLineIds, this::retrieveInventoryLineHURecords);
+	}
+
+	private static @NotNull InventoryId extractInventoryId(final I_M_Inventory inventoryRecord)
+	{
+		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 	}
 
 	private I_M_Inventory getRecordById(@NonNull final InventoryId inventoryId)
@@ -107,7 +117,7 @@ class InventoryLoaderAndSaver
 
 	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
 	{
-		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
+		final InventoryId inventoryId = extractInventoryId(inventoryRecord);
 		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubTypeOrNull(inventoryRecord); // shall not be null at this point
 		if (docBaseAndSubType == null)
 		{
@@ -610,6 +620,13 @@ class InventoryLoaderAndSaver
 				.get(inventoryId);
 	}
 
+	private Stream<I_M_InventoryLine> streamLineRecords(@NonNull final Set<InventoryId> inventoryIds)
+	{
+		return CollectionUtils.getAllOrLoad(this.inventoryLineRecordsByInventoryId, inventoryIds, this::retrieveLineRecords)
+				.stream()
+				.flatMap(Collection::stream);
+	}
+
 	public Map<InventoryAndLineId, I_M_InventoryLine> getLineRecords(@NonNull final InventoryAndLineIdSet inventoryAndLineIds)
 	{
 		if (inventoryAndLineIds.isEmpty()) {return ImmutableMap.of();}
@@ -741,7 +758,7 @@ class InventoryLoaderAndSaver
 	private InventoryReference toInventoryJobReference(final I_M_Inventory inventory)
 	{
 		return InventoryReference.builder()
-				.inventoryId(InventoryId.ofRepoId(inventory.getM_Inventory_ID()))
+				.inventoryId(extractInventoryId(inventory))
 				.documentNo(inventory.getDocumentNo())
 				.movementDate(extractMovementDate(inventory))
 				.warehouseId(WarehouseId.ofRepoId(inventory.getM_Warehouse_ID()))
@@ -749,4 +766,21 @@ class InventoryLoaderAndSaver
 				.build();
 	}
 
+	public void updateByQuery(@NonNull final InventoryQuery query, @NonNull final UnaryOperator<Inventory> updater)
+	{
+		final ImmutableList<I_M_Inventory> inventoriesRecords = inventoryDAO.stream(query).collect(ImmutableList.toImmutableList());
+		if (inventoriesRecords.isEmpty()) {return;}
+
+		warmUp(inventoriesRecords);
+
+		for (final I_M_Inventory inventoryRecord : inventoriesRecords)
+		{
+			final Inventory inventory = toInventory(inventoryRecord);
+			final Inventory inventoryChanged = updater.apply(inventory);
+			if (!Objects.equals(inventory, inventoryChanged))
+			{
+				saveInventory(inventoryChanged);
+			}
+		}
+	}
 }

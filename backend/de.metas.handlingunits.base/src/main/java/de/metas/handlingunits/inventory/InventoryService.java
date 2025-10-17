@@ -348,9 +348,14 @@ public class InventoryService
 		return inventoryRepository.streamReferences(query);
 	}
 
-	public Inventory updateById(final InventoryId inventoryId, UnaryOperator<Inventory> updater)
+	public Inventory updateById(@NonNull final InventoryId inventoryId, @NonNull final UnaryOperator<Inventory> updater)
 	{
 		return inventoryRepository.updateById(inventoryId, updater);
+	}
+
+	public void updateByQuery(@NonNull final InventoryQuery query, @NonNull final UnaryOperator<Inventory> updater)
+	{
+		inventoryRepository.updateByQuery(query, updater);
 	}
 
 	public DraftInventoryLinesCreateResponse createDraftLines(@NonNull final DraftInventoryLinesCreateRequest request)

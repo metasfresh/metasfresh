@@ -78,6 +78,12 @@ public class InventoryMobileApplication implements WorkflowBasedMobileApplicatio
 	}
 
 	@Override
+	public void logout(final @NonNull UserId userId)
+	{
+		abortAll(userId);
+	}
+
+	@Override
 	public WFProcess getWFProcessById(final WFProcessId wfProcessId)
 	{
 		final Inventory inventory = jobService.getById(toInventoryId(wfProcessId));
