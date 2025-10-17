@@ -47,7 +47,7 @@ public class C_PaySelectionLine
 	@CalloutMethod(columnNames = I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID)
 	public void invoice(final I_C_PaySelectionLine psl)
 	{
-		Services.get(IPaySelectionBL.class).updateFromDocument(psl);
+		paySelectionBL.updateFromDocument(psl);
 	}
 
 	@CalloutMethod(columnNames = I_C_PaySelectionLine.COLUMNNAME_C_Order_ID)
