@@ -246,8 +246,8 @@ public class InventoryService
 
 	public void completeDocument(@NonNull final InventoryId inventoryId)
 	{
-		final I_M_Inventory inventory = inventoryRepository.getRecordById(inventoryId);
-		documentBL.processEx(inventory, IDocument.ACTION_Complete);
+		final I_M_Inventory inventoryRecord = inventoryRepository.getRecordById(inventoryId);
+		documentBL.processEx(inventoryRecord, IDocument.ACTION_Complete);
 	}
 
 	public Inventory createInventoryHeader(@NonNull final InventoryHeaderCreateRequest request)
@@ -348,9 +348,14 @@ public class InventoryService
 		return inventoryRepository.streamReferences(query);
 	}
 
-	public Inventory updateById(final InventoryId inventoryId, UnaryOperator<Inventory> updater)
+	public Inventory updateById(@NonNull final InventoryId inventoryId, @NonNull final UnaryOperator<Inventory> updater)
 	{
 		return inventoryRepository.updateById(inventoryId, updater);
+	}
+
+	public void updateByQuery(@NonNull final InventoryQuery query, @NonNull final UnaryOperator<Inventory> updater)
+	{
+		inventoryRepository.updateByQuery(query, updater);
 	}
 
 	public DraftInventoryLinesCreateResponse createDraftLines(@NonNull final DraftInventoryLinesCreateRequest request)

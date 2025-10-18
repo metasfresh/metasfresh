@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.api.impl;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
@@ -35,12 +36,7 @@ import java.util.List;
 @Builder
 public class AddAttributesRequest
 {
-	@NonNull
-	AttributeSetInstanceId existingAttributeSetIdOrNone;
-
-	@NonNull
-	List<CreateAttributeInstanceReq> attributeInstanceBasicInfos;
-
-	@NonNull
-	ProductId productId;
+	@NonNull ProductId productId;
+	@NonNull @Builder.Default AttributeSetInstanceId existingAttributeSetIdOrNone = AttributeSetInstanceId.NONE;
+	@NonNull @Singular List<CreateAttributeInstanceReq> attributeInstanceBasicInfos;
 }

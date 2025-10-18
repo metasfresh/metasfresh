@@ -5,6 +5,7 @@ import de.metas.handlingunits.inventory.InventoryLineCountRequest;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.inventory.InventoryQuery;
 import de.metas.inventory.mobileui.deps.handlingunits.HandlingUnitsService;
 import de.metas.inventory.mobileui.deps.products.ProductService;
 import de.metas.inventory.mobileui.deps.warehouse.WarehouseService;
@@ -24,13 +25,12 @@ import org.adempiere.warehouse.qrcode.resolver.LocatorGlobalQRCodeResolverKey;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolveContext;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverRequest;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Set;
 
-import static de.metas.inventory.mobileui.mappers.InventoryWFProcessMapper.toInventoryId;
+import static de.metas.inventory.mobileui.rest_api.mappers.WFProcessMapper.toInventoryId;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +44,7 @@ public class InventoryJobService
 	public Inventory getById(final WFProcessId wfProcessId, @NonNull final UserId calledId)
 	{
 		final Inventory inventory = getById(toInventoryId(wfProcessId));
-		inventory.assertHasAccess(Env.getLoggedUserId());
+		inventory.assertHasAccess(calledId);
 		return inventory;
 	}
 
@@ -65,18 +65,28 @@ public class InventoryJobService
 
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO
+		inventoryService.updateById(
+				toInventoryId(wfProcessId),
+				inventory -> {
+					inventory.assertHasAccess(callerId);
+					return inventory.unassign();
+				}
+		);
 	}
 
-	public void abortAll(final UserId callerId)
+	public void abortAll(@NonNull final UserId callerId)
 	{
-		// TODO
+		inventoryService.updateByQuery(
+				InventoryQuery.builder().onlyDraftOrInProgress().onlyResponsibleId(callerId).build(),
+				Inventory::unassign
+		);
 	}
 
 	public Inventory complete(Inventory inventory)
 	{
-		// TODO
-		return inventory;
+		final InventoryId inventoryId = inventory.getId();
+		inventoryService.completeDocument(inventoryId);
+		return inventoryService.getById(inventory.getId());
 	}
 
 	public LocatorScannedCodeResolverResult resolveLocator(
@@ -130,11 +140,12 @@ public class InventoryJobService
 				// TODO handle the case when huId is null
 				final Quantity qtyBook = huService.getQty(request.getHuId(), line.getProductId());
 				final Quantity qtyCount = Quantity.of(request.getQtyCount(), qtyBook.getUOM());
-				return line.addingOrUpdating(InventoryLineCountRequest.builder()
+				return line.withCounting(InventoryLineCountRequest.builder()
 						.huId(request.getHuId())
 						.scannedCode(request.getScannedCode())
 						.qtyBook(qtyBook)
 						.qtyCount(qtyCount)
+						.asiId(productService.createASI(line.getProductId(), request.getAttributesAsMap()))
 						.build());
 			});
 		});

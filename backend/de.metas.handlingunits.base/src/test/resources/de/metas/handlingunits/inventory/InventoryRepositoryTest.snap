@@ -16,16 +16,20 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         "id": 1000000,
         "inventoryLineHUs": [
           {
+            "asiId": 1000001,
             "huId": 100,
             "id": 1000000,
             "inventoryType": "PHYSICAL",
+            "isCounted": false,
             "qtyBook": "10 Ea",
             "qtyCount": "1 Ea"
           },
           {
+            "asiId": 1000002,
             "huId": 200,
             "id": 1000001,
             "inventoryType": "PHYSICAL",
+            "isCounted": true,
             "qtyBook": "20 Ea",
             "qtyCount": "2 Ea"
           }
@@ -39,8 +43,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         },
         "productId": 40,
         "qtyBookFixed": "30 Ea",
-        "qtyCountFixed": "3 Ea",
-        "storageAttributesKey": "10§&§11§&§12"
+        "qtyCountFixed": "3 Ea"
       }
     ],
     "movementDate": "2020-06-15T00:00:00-08:00",

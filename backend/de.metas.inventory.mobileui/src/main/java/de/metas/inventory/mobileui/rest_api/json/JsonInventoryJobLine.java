@@ -27,4 +27,5 @@ public class JsonInventoryJobLine
 	@NonNull String uom;
 	@NonNull BigDecimal qtyBooked;
 	@NonNull BigDecimal qtyCount;
+	@NonNull JsonCountStatus countStatus;
 }

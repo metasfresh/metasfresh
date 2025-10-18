@@ -9,24 +9,12 @@ const createMasterdata = async () => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
-            login: {
-                user: { language: 'en_US', workplace: "workplace1" }
-            },
-            bpartners: { "BP1": {} },
+            login: { user: { language: 'en_US', workplace: "workplace1" } },
             warehouses: { "wh": {} },
-            workplaces: {
-                workplace1: { warehouse: 'wh' },
-            },
-            products: {
-                "P1": { price: 1 },
-            },
-            packingInstructions: {
-                "PI":
-                    { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
-            },
-            handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' }
-            },
+            workplaces: { workplace1: { warehouse: 'wh' } },
+            products: { "P1": {} },
+            packingInstructions: { "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 }, },
+            handlingUnits: { "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' } },
             inventories: {
                 "inv1": {
                     warehouse: 'wh',
@@ -59,6 +47,10 @@ test('Simple inventory test', async ({ page }) => {
         huQRCode: masterdata.handlingUnits.HU1.qrCode,
         expectQtyBooked: '80 Stk',
         qtyCount: 90,
+        attributes: {
+            'HU_BestBeforeDate': '12.11.2029',
+            'Lot-Nummer': 'lot33',
+        }
     })
     await InventoryJobScreen.expectLineButton({
         productId: masterdata.products.P1.id,
@@ -66,4 +58,33 @@ test('Simple inventory test', async ({ page }) => {
         qtyBooked: '80 Stk',
         qtyCount: '90 Stk',
     })
+
+    await Backend.expect({
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: {
+                huStatus: 'A',
+                storages: { P1: '80 PCE' },
+                attributes: {
+                    'HU_BestBeforeDate': null,
+                    'Lot-Nummer': null,
+                },
+            },
+        },
+    });
+
+    await InventoryJobScreen.complete();
+
+    await Backend.expect({
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: {
+                huStatus: 'A',
+                storages: { P1: '90 PCE' },
+                attributes: {
+                    'HU_BestBeforeDate': '2029-11-12',
+                    'Lot-Nummer': 'lot33',
+                },
+            },
+        },
+    });
+
 });

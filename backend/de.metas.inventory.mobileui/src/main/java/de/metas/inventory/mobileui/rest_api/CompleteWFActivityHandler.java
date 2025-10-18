@@ -19,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import static de.metas.inventory.mobileui.InventoryMobileApplication.getInventory;
 import static de.metas.workflow.rest_api.service.Constants.ARE_YOU_SURE;
 
 @Component
@@ -45,14 +46,12 @@ public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirm
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		// TODO
-		return WFActivityStatus.NOT_STARTED;
+		return computeActivityState(getInventory(wfProcess));
 	}
 
 	public static WFActivityStatus computeActivityState(final Inventory inventory)
 	{
-		// TODO
-		return WFActivityStatus.NOT_STARTED;
+		return InventoryJobWFActivityHandler.computeActivityState(inventory);
 	}
 
 	@Override

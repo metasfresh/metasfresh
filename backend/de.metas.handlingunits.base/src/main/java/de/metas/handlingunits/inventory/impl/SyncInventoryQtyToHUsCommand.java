@@ -18,10 +18,8 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.strategy.AllocationStrategyType;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
-import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -36,7 +34,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorage;
-import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryAndLineId;
@@ -49,6 +46,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.service.ISysConfigBL;
 import org.jetbrains.annotations.NotNull;
@@ -162,57 +160,51 @@ public class SyncInventoryQtyToHUsCommand
 
 			if (!doNotTransferAttributes)
 			{
-				final HuId huId = Check.assumeNotNull(inventoryLineHU.getHuId(), "Every inventoryLineHU instance needs to have an HuId; inventoryLineHU={}", inventoryLineHU);
-
-				final I_M_HU hu = handlingUnitsBL.getById(huId);
-				transferAttributesToHU(inventoryLine, hu);
-				handlingUnitsBL.saveHU(hu);
+				transferAttributesToHU(inventoryLineHU, inventoryLine);
 			}
 		}
 	}
 
 	private void transferAttributesToHU(
-			@NonNull final InventoryLine inventoryLine,
-			@NonNull final I_M_HU hu)
+			@NonNull final InventoryLineHU inventoryLineHU,
+			@NonNull final InventoryLine inventoryLine)
 	{
+		final ProductId productId = inventoryLine.getProductId();
+		final AttributeSetInstanceId lineAsiId = inventoryLineHU.getAsiId().orElseIfNone(inventoryLine.getAsiId());
+		final PlainAttributeSetInstanceAware asiFrom = PlainAttributeSetInstanceAware.forProductIdAndAttributeSetInstanceId(productId, lineAsiId);
+
+		final HuId huId = Check.assumeNotNull(inventoryLineHU.getHuId(), "Every inventoryLineHU instance needs to have an HuId; inventoryLineHU={}", inventoryLineHU);
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor();
-
 		executor.run(huContext -> {
-
-			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
 			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 
 			//
-			// Transfer ASI attributes from inventory line to our HU
-			final IAttributeStorage asiAttributeStorageFrom = attributeStorageFactory.getAttributeStorageIfHandled(extractAttributeSetInstanceAware(inventoryLine));
+			// Transfer ASI attributes from the inventory line to our HU
+			final IAttributeStorage asiAttributeStorageFrom = attributeStorageFactory.getAttributeStorageIfHandled(asiFrom);
 			if (asiAttributeStorageFrom == null)
 			{
-				return IHUContextProcessor.NULL_RESULT; // can't transfer from nothing
+				return IHUContextProcessor.NULL_RESULT; // nothing to transfer from
 			}
+
 			final IAttributeStorage huAttributeStorageTo = attributeStorageFactory.getAttributeStorage(hu);
+			final IHUStorage huStorageFrom = huContext.getHUStorageFactory().getStorage(hu);
 
-			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
-			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
-
-			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
-					.setProductId(inventoryLine.getProductId())
-					.setQuantity(inventoryLine.getMovementQty())
-					.setAttributeStorageFrom(asiAttributeStorageFrom)
-					.setAttributeStorageTo(huAttributeStorageTo)
-					.setHUStorageFrom(huStorageFrom)
-					.create();
-
-			trxAttributesBuilder.transferAttributes(request);
+			executor.getTrxAttributesBuilder().transferAttributes(
+					new HUAttributeTransferRequestBuilder(huContext)
+							.setProductId(productId)
+							.setQuantity(inventoryLineHU.getQtyCountMinusBooked())
+							.setAttributeStorageFrom(asiAttributeStorageFrom)
+							.setAttributeStorageTo(huAttributeStorageTo)
+							.setHUStorageFrom(huStorageFrom)
+							.create()
+			);
 
 			return IHUContextProcessor.NULL_RESULT; // we don't care
 		});
-	}
 
-	private static PlainAttributeSetInstanceAware extractAttributeSetInstanceAware(final InventoryLine inventoryLine)
-	{
-		return PlainAttributeSetInstanceAware.forProductIdAndAttributeSetInstanceId(
-				inventoryLine.getProductId(),
-				inventoryLine.getAsiId());
+		handlingUnitsBL.saveHU(hu);
 	}
 
 	private InventoryLine syncQtyFromInventoryLineToHUs(@NonNull final InventoryLine inventoryLine)

@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -63,11 +62,7 @@ public class InventoryLine
 	@Nullable @NonFinal InventoryLineId id;
 	@NonNull OrgId orgId;
 
-	/**
-	 * If not null then saving will assume that there is an existing persisted ASI which is in sync with {@link #storageAttributesKey}.
-	 */
-	@Nullable AttributeSetInstanceId asiId;
-	@NonNull AttributesKey storageAttributesKey;
+	@NonNull AttributeSetInstanceId asiId;
 	@NonNull ProductId productId;
 	@NonNull LocatorId locatorId;
 	@NonNull InventoryLinePackingInstructions packingInstructions;
@@ -87,7 +82,6 @@ public class InventoryLine
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId asiId,
-			@NonNull final AttributesKey storageAttributesKey,
 			@NonNull final LocatorId locatorId,
 			@Nullable final InventoryLinePackingInstructions packingInstructions,
 			@Nullable final HUAggregationType huAggregationType,
@@ -100,9 +94,8 @@ public class InventoryLine
 
 		this.id = id;
 		this.orgId = orgId;
-		this.asiId = asiId;
+		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
 		this.productId = productId;
-		this.storageAttributesKey = storageAttributesKey;
 		this.locatorId = locatorId;
 		this.packingInstructions = coalesceNotNull(packingInstructions, InventoryLinePackingInstructions.VHU);
 		this.huAggregationType = huAggregationType;
@@ -291,20 +284,28 @@ public class InventoryLine
 				.build();
 	}
 
-	public InventoryLine addingOrUpdating(@NonNull final InventoryLineCountRequest request)
+	public InventoryLine withCounting(@NonNull final InventoryLineCountRequest request)
 	{
 		final ArrayList<InventoryLineHU> newLineHUs = new ArrayList<>(inventoryLineHUs.size() + 1);
 		boolean updated = false;
-		for (InventoryLineHU lineHU : inventoryLineHUs)
+
+		boolean isSingleLineHUPlaceholder = inventoryLineHUs.size() == 1
+				&& inventoryLineHUs.get(0).getId() == null
+				&& inventoryLineHUs.get(0).getHuId() == null;
+
+		if (!isSingleLineHUPlaceholder)
 		{
-			if (!updated && HuId.equals(lineHU.getHuId(), request.getHuId()))
+			for (InventoryLineHU lineHU : inventoryLineHUs)
 			{
-				newLineHUs.add(lineHU.updatingFrom(request));
-				updated = true;
-			}
-			else
-			{
-				newLineHUs.add(lineHU);
+				if (!updated && HuId.equals(lineHU.getHuId(), request.getHuId()))
+				{
+					newLineHUs.add(lineHU.updatingFrom(request));
+					updated = true;
+				}
+				else
+				{
+					newLineHUs.add(lineHU);
+				}
 			}
 		}
 
@@ -318,6 +319,7 @@ public class InventoryLine
 				.qtyCountFixed(computeQtyCountSum(newLineHUs))
 				.clearInventoryLineHUs()
 				.inventoryLineHUs(newLineHUs)
+				.counted(newLineHUs.stream().allMatch(InventoryLineHU::isCounted))
 				.build();
 	}
 
@@ -333,4 +335,20 @@ public class InventoryLine
 	{
 		return !isCounted();
 	}
+
+	public InventoryLineHU getInventoryLineHUById(@NonNull final InventoryLineHUId id)
+	{
+		return inventoryLineHUs.stream()
+				.filter(lineHU -> InventoryLineHUId.equals(lineHU.getId(), id))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No Line HU found for " + id + " in " + this));
+	}
+
+	public Optional<InventoryLineHU> getInventoryLineHUByHUId(@NonNull final HuId huId)
+	{
+		return inventoryLineHUs.stream()
+				.filter(lineHU -> HuId.equals(lineHU.getHuId(), huId))
+				.findFirst();
+	}
+
 }

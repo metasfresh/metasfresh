@@ -35,7 +35,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.function.Predicate;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -315,13 +315,13 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 				.sorted(Comparator.comparing(I_M_Attribute::getM_Attribute_ID))
 				.collect(ImmutableList.toImmutableList());
 
-		final Predicate<I_M_Attribute> effectiveFilter = coalesce(filter, Predicates.alwaysTrue());
+ 		final Predicate<I_M_Attribute> effectiveFilter = coalesceNotNull(filter, Predicates.alwaysTrue());
 
 		for (final I_M_Attribute atttribute : attributesOrderedById)
 		{
 			if (effectiveFilter.test(atttribute))
 			{
-				final I_M_AttributeInstance attributeInstance = //
+				 final I_M_AttributeInstance attributeInstance = //
 						createAttributeInstanceForAttributeAndAttributeSet(atttribute, attributeSet);
 
 				attributeInstance.setM_AttributeSetInstance(attributeSetInstance);
@@ -450,9 +450,8 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			asiId = AttributeSetInstanceId.ofRepoId(asiCopy.getM_AttributeSetInstance_ID());
 		}
 
-		request.getAttributeInstanceBasicInfos().forEach(attributeValue -> {
-			setAttributeInstanceValue(asiId, attributeValue.getAttributeCode(), attributeValue.getValue());
-		});
+		request.getAttributeInstanceBasicInfos()
+				.forEach(attribute -> setAttributeInstanceValue(asiId, attribute.getAttributeCode(), attribute.getValue()));
 
 		return asiId;
 	}

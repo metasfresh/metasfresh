@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import { reportInventoryCounting, resolveHU, resolveLocator } from '../api';
+import { getLineHUs, reportInventoryCounting, resolveHU, resolveLocator } from '../api';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { inventoryJobLocation } from '../routes';
+import { inventoryJobOrLineLocation } from '../routes';
 import { toastError, toastErrorFromObj } from '../../../utils/toast';
 import InventoryCountComponent from './InventoryCountComponent';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useDispatch } from 'react-redux';
+import { trl } from '../../../utils/translations';
+import { getInventoryLineById, getInventoryLinesArray } from '../reducers/utils';
+import { useWFActivity } from '../../../reducers/wfProcesses';
 
 const STATUS_ScanLocator = 'ScanLocator';
 const STATUS_ScanHU = 'ScanHU';
@@ -15,46 +18,44 @@ const STATUS_FillData = 'FillData';
 const DEBUGGING = false;
 
 const InventoryScanScreen = () => {
-  const { applicationId, wfProcessId, lineId, history } = useScreenDefinition({
+  const { url, applicationId, wfProcessId, activityId, lineId, history } = useScreenDefinition({
     screenId: 'InventoryScanScreen',
-    back: inventoryJobLocation,
+    back: inventoryJobOrLineLocation,
   });
   const dispatch = useDispatch();
 
   const [processing, setProcessing] = useState(false);
   const [status, setStatus] = useState(STATUS_ScanLocator);
   const [locatorQRCode, setLocatorQRCode] = useState();
-  const [resolvedHU, setResolvedHU] = useState();
+  const [resolvedHU, setResolvedHU] = useState(null);
 
   const isReadonly = processing;
 
   // FIXME: DEBUGGING
   if (DEBUGGING) {
+    const activity = useWFActivity({ wfProcessId, activityId });
+    let line;
+    if (lineId) {
+      line = getInventoryLineById({ activity, lineId });
+    } else {
+      line = getInventoryLinesArray({ activity })[0];
+    }
+    console.log('InventoryScanScreen', { line, activity });
     useEffect(() => {
-      setLocatorQRCode('LOC#1#{"warehouseId":1000229,"locatorId":1000119,"caption":"wh_20251002T093155523_Locator"}');
-      setResolvedHU({
-        lineId: 1000169,
-        huId: 1003822,
-        productId: 2007215,
-        uom: 'Stk',
-        qtyBooked: 68,
-        attributes: [
-          {
-            code: 'HU_BestBeforeDate',
-            caption: 'Mindesthaltbarkeit',
-            valueType: 'DATE',
-            value: null,
-          },
-          {
-            code: 'Lot-Nummer',
-            caption: 'Lot-Nummer',
-            valueType: 'STRING',
-            value: null,
-          },
-        ],
-      });
-      setStatus(STATUS_FillData);
-    }, []);
+      if (status === STATUS_ScanLocator) {
+        onLocatorScanned({
+          scannedBarcode: line.locatorName,
+          // scannedBarcode: 'LOC#1#{"warehouseId":1000229,"locatorId":1000119,"caption":"wh_20251002T093155523_Locator"}',
+        });
+      } else if (status === STATUS_ScanHU) {
+        getLineHUs({ wfProcessId, lineId: line.id }).then(({ lineHUs }) => {
+          onHUScanned({
+            scannedBarcode: lineHUs[0].huId,
+            // scannedBarcode: 'HU#1#{"id":"1eecb838b459a2c93f3c14eee6e2-13733","packingInfo":{"huUnitType":"LU","packingInstructionsId":3002715,"caption":"LU_20251002T093155607"},"product":{"id":2007215,"code":"P1_20251002T093155444","name":"P1_20251002T093155444"},"attributes":[{"code":"HU_BestBeforeDate","displayName":"Mindesthaltbarkeit"},{"code":"Lot-Nummer","displayName":"Lot-Nummer"},{"code":"WeightNet","displayName":"Gewicht Netto","value":"0.000"}]}',
+          });
+        });
+      }
+    }, [status]);
   }
   // console.log('InventoryScanScreen - locatorQRCode: ' + JSON.stringify(locatorQRCode, null, 2));
   // console.log('InventoryScanScreen - resolvedHU: ' + JSON.stringify(resolvedHU, null, 2));
@@ -71,7 +72,7 @@ const InventoryScanScreen = () => {
   };
 
   const onHUScanned = ({ scannedBarcode }) => {
-    resolveHU({ scannedBarcode, wfProcessId, lineId, locatorQRCode }).then((response) => {
+    resolveHU({ scannedCode: scannedBarcode, wfProcessId, lineId, locatorQRCode }).then((response) => {
       setResolvedHU(response);
       setStatus(STATUS_FillData);
     });
@@ -82,7 +83,7 @@ const InventoryScanScreen = () => {
     reportInventoryCounting({
       wfProcessId,
       lineId: resolvedHU?.lineId,
-      scannedBarcode: 'TODO', // TODO
+      scannedCode: resolvedHU?.scannedCode,
       huId: resolvedHU?.huId,
       qtyCount,
       lineCountingDone,
@@ -90,39 +91,47 @@ const InventoryScanScreen = () => {
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
-        history.goTo(inventoryJobLocation({ applicationId, wfProcessId }));
+        history.goTo(inventoryJobOrLineLocation({ applicationId, wfProcessId, activityId, lineId }));
       })
       .catch((error) => toastErrorFromObj(error))
       .finally(() => setProcessing(false));
   };
 
-  const panels = {
-    [STATUS_ScanLocator]: (
-      <BarcodeScannerComponent
-        key="scanLocator"
-        inputPlaceholderText="Scan Locator"
-        onResolvedResult={onLocatorScanned}
-        continuousRunning={true}
-      />
-    ),
-    [STATUS_ScanHU]: (
-      <BarcodeScannerComponent
-        key="scanHU"
-        inputPlaceholderText="Scan HU"
-        onResolvedResult={onHUScanned}
-        continuousRunning={true}
-      />
-    ),
-    [STATUS_FillData]: (
-      <InventoryCountComponent
-        disabled={isReadonly}
-        resolvedHU={resolvedHU}
-        onInventoryCountSubmit={onInventoryCountSubmit}
-      />
-    ),
-  };
-
-  return <div className={`panel-${status}`}>{panels[status] || null}</div>;
+  return (
+    <div className={`panel-${status}`}>
+      {status === STATUS_ScanLocator && (
+        <BarcodeScannerComponent
+          key="scanLocator"
+          inputPlaceholderText={trl('inventory.scanLocatorPlaceholder')}
+          onResolvedResult={onLocatorScanned}
+          continuousRunning={true}
+        />
+      )}
+      {status === STATUS_ScanHU && (
+        <BarcodeScannerComponent
+          key="scanHU"
+          inputPlaceholderText={trl('inventory.scanHUPlaceholder')}
+          onResolvedResult={onHUScanned}
+          continuousRunning={true}
+        />
+      )}
+      {status === STATUS_FillData && (
+        <InventoryCountComponent
+          url={url}
+          disabled={isReadonly}
+          huDisplayName={resolvedHU?.huDisplayName}
+          productName={resolvedHU?.productName}
+          locatorName={resolvedHU?.locatorName}
+          uom={resolvedHU?.uom}
+          qtyBooked={resolvedHU?.qtyBooked}
+          counted={resolvedHU?.counted}
+          qtyCount={resolvedHU?.qtyCount}
+          attributes={resolvedHU?.attributes}
+          onInventoryCountSubmit={onInventoryCountSubmit}
+        />
+      )}
+    </div>
+  );
 };
 
 export default InventoryScanScreen;
