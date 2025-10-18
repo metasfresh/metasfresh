@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes.api;
 
 import javax.annotation.Nullable;
 
+import lombok.Getter;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -39,17 +40,8 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAware
 {
-	private final ProductId productId;
-	private final AttributeSetInstanceId attributeSetInstanceId;
-
-	public static PlainAttributeSetInstanceAware forProductIdAndAttributeSetInstanceId(
-			final int productId,
-			final int attributeSetInstanceId)
-	{
-		return new PlainAttributeSetInstanceAware(
-				ProductId.ofRepoIdOrNull(productId),
-				AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceId));
-	}
+	@Getter @Nullable private final ProductId productId;
+	@NonNull private final AttributeSetInstanceId attributeSetInstanceId;
 
 	public static PlainAttributeSetInstanceAware forProductIdAndAttributeSetInstanceId(
 			final ProductId productId,
@@ -64,7 +56,7 @@ public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAwar
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return new PlainAttributeSetInstanceAware(productId, attributeSetInstanceId);
+		return new PlainAttributeSetInstanceAware(productId, AttributeSetInstanceId.nullToNone(attributeSetInstanceId));
 	}
 
 	private PlainAttributeSetInstanceAware(
@@ -85,11 +77,6 @@ public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAwar
 	public int getM_Product_ID()
 	{
 		return ProductId.toRepoId(productId);
-	}
-
-	public ProductId getProductId()
-	{
-		return productId;
 	}
 
 	@Override
