@@ -1,4 +1,4 @@
-package de.metas.inventory.mobileui.mappers;
+package de.metas.inventory.mobileui.rest_api.mappers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.IDocument;
@@ -13,7 +13,7 @@ import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 
-public class InventoryWFProcessMapper
+public class WFProcessMapper
 {
 	public static InventoryId toInventoryId(final WFProcessId wfProcessId)
 	{

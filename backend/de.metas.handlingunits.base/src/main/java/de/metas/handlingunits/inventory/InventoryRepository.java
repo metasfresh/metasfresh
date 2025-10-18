@@ -32,6 +32,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
@@ -79,6 +80,7 @@ public final class InventoryRepository
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	InventoryRepository()
 	{
@@ -294,12 +296,17 @@ public final class InventoryRepository
 
 	public void updateInventoryLineByRecord(final I_M_InventoryLine inventoryLineRecord, UnaryOperator<InventoryLine> updater)
 	{
-		newLoaderAndSaver().updateInventoryLineByRecord(inventoryLineRecord, updater);
+		trxManager.runInThreadInheritedTrx(() -> newLoaderAndSaver().updateInventoryLineByRecord(inventoryLineRecord, updater));
 	}
 
 	public Inventory updateById(final InventoryId inventoryId, UnaryOperator<Inventory> updater)
 	{
-		return newLoaderAndSaver().updateById(inventoryId, updater);
+		return trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(inventoryId, updater));
+	}
+
+	public void updateByQuery(@NonNull final InventoryQuery query, @NonNull final UnaryOperator<Inventory> updater)
+	{
+		trxManager.runInThreadInheritedTrx(() -> newLoaderAndSaver().updateByQuery(query, updater));
 	}
 
 	public Stream<InventoryReference> streamReferences(@NonNull final InventoryQuery query)
