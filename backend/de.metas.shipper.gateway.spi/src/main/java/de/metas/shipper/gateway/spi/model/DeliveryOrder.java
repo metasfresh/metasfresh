@@ -1,6 +1,8 @@
 package de.metas.shipper.gateway.spi.model;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.inoutcandidate.CarrierGoodsType;
+import de.metas.inoutcandidate.CarrierService;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;

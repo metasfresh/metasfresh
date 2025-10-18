@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.spi
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,19 +20,40 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.spi.model;
+package de.metas.shipper.gateway.commons.model;
 
+import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
 @Jacksonized
-public class CarrierService
+@RequiredArgsConstructor
+public class CarrierProduct implements ShipperProduct
 {
-	@NonNull CarrierServiceId id;
-	@NonNull String externalId;
+	@Nullable CarrierProductId id;
+
+	@Getter
+	@NonNull String code;
+
 	@NonNull String name;
+
+	public static CarrierProduct ofCode(@NonNull final String code)
+	{
+		return ofCode(code, code);
+	}
+
+	public static CarrierProduct ofCode(@NonNull final String code, @NonNull final String name)
+	{
+		return new CarrierProduct(null, code, name);
+	}
+
 }

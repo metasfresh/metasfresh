@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.spi
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.spi.model;
+package de.metas.inoutcandidate;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,11 +28,11 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 @Jacksonized
-public class CarrierGoodsType
+public class CarrierService
 {
-	@NonNull CarrierGoodsTypeId id;
+	@NonNull CarrierServiceId id;
 	@NonNull String externalId;
 	@NonNull String name;
 }

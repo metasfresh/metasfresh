@@ -22,6 +22,8 @@ package de.metas.shipper.gateway.spi.model;
  * #L%
  */
 
+import de.metas.inoutcandidate.CarrierProductId;
+
 import javax.annotation.Nullable;
 
 /**

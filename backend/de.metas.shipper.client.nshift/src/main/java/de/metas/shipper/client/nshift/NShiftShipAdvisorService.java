@@ -57,7 +57,7 @@ public class NShiftShipAdvisorService
 
 	@NonNull private final NShiftRestClient restClient;
 
-	public JsonDeliveryAdvisorResponse getShipAdvises(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
+	public JsonDeliveryAdvisorResponse advise(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
 	{
 		try
 		{

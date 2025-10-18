@@ -45,8 +45,8 @@ public class JsonDeliveryAdvisorResponse
 	@NonNull String requestId;
 	@Nullable String errorMessage;
 	@Nullable JsonShipperProduct shipperProduct;
-	@NonNull @Singular Set<JsonCarrierService> shipperProductServices;
-	@NonNull JsonGoodsType goodsType;
+	@Nullable @Singular Set<JsonCarrierService> shipperProductServices;
+	@Nullable JsonGoodsType goodsType;
 
 	@JsonIgnore
 	public boolean isError()

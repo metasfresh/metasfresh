@@ -36,12 +36,15 @@ import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Singular;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @Builder
@@ -77,6 +80,8 @@ public class ShipmentSchedule
 	@Nullable
 	private final LocalDateTime dateOrdered;
 
+	private final LocalDate deliveryDateEffective;
+
 	private int numberOfItemsForSameShipment;
 
 	@NonNull
@@ -98,9 +103,24 @@ public class ShipmentSchedule
 	private APIExportStatus exportStatus;
 
 	@Nullable
-	private ShipperId shipperId;
+	private final ShipperId shipperId;
 
 	private boolean isProcessed;
+
+	@NonNull private CarrierAdviseStatus carrierAdvisingStatus;
+
+	@Nullable private String carrierAdviseErrorMessage;
+
+	@Nullable private CarrierProductId carrierProductId;
+
+	@Nullable private CarrierGoodsTypeId carrierGoodsTypeId;
+
+	@NonNull @Singular private Set<CarrierServiceId> carrierServices;
+
+	public boolean isCarrierAdvisingRequired()
+	{
+		return carrierAdvisingStatus != CarrierAdviseStatus.Manual;
+	}
 
 	public boolean hasAttributes(
 			@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds,

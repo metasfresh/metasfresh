@@ -215,18 +215,14 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.customDeliveryData(customDeliveryData)
 				//
 				// Pickup aka Shipper
-				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
-						.companyName1(pickupFromBPartner.getName())
-						.companyName2(pickupFromBPartner.getName2())
+				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation,pickupFromBPartner)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
 						.build())
 				//
 				// Delivery aka Receiver
-				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
-						.companyName1(deliverToBPartner.getName())
-						.companyName2(deliverToBPartner.getName2())
+				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner)
 						.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
 						.build())
 				.deliveryContact(ContactPerson.builder()

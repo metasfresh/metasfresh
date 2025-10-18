@@ -1428,3 +1428,11 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=591055
 DELETE FROM AD_Column WHERE AD_Column_ID=591055
 ;
 
+CREATE UNIQUE INDEX ON carrier_product (m_shipper_id, externalid)
+;
+
+CREATE UNIQUE INDEX ON carrier_goods_type (m_shipper_id, externalid)
+;
+
+CREATE UNIQUE INDEX ON carrier_service (m_shipper_id, externalid)
+;

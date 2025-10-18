@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1356899994L;
+	private static final long serialVersionUID = 603690521L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -226,6 +226,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
 	}
 
+	@Override
+	public void setCarrierAdviceErrorMsg (final @Nullable java.lang.String CarrierAdviceErrorMsg)
+	{
+		set_Value (COLUMNNAME_CarrierAdviceErrorMsg, CarrierAdviceErrorMsg);
+	}
+
+	@Override
+	public java.lang.String getCarrierAdviceErrorMsg() 
+	{
+		return get_ValueAsString(COLUMNNAME_CarrierAdviceErrorMsg);
+	}
+
 	/** 
 	 * Carrier_Advising_Status AD_Reference_ID=541996
 	 * Reference name: Carrier_Advising_Status
@@ -235,8 +247,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String CARRIER_ADVISING_STATUS_InProgress = "IP";
 	/** Not Requested = NR */
 	public static final String CARRIER_ADVISING_STATUS_NotRequested = "NR";
-	/** Requested = REQ */
-	public static final String CARRIER_ADVISING_STATUS_Requested = "REQ";
 	/** Completed = CO */
 	public static final String CARRIER_ADVISING_STATUS_Completed = "CO";
 	/** Failed = FA */

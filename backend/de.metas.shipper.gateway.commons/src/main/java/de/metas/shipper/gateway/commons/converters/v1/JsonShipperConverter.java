@@ -32,11 +32,11 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.inoutcandidate.CarrierGoodsType;
+import de.metas.inoutcandidate.CarrierService;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
-import de.metas.shipper.gateway.spi.model.CarrierGoodsType;
-import de.metas.shipper.gateway.spi.model.CarrierService;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
@@ -122,7 +122,7 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private @NonNull JsonShipperConfig toJsonShipperConfig(final @NonNull ShipperConfig config)
+	public @NonNull JsonShipperConfig toJsonShipperConfig(final @NonNull ShipperConfig config)
 	{
 		return JsonShipperConfig.builder()
 				.url(config.getUrl())
@@ -135,7 +135,7 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private JsonAddress toJsonAddress(@NonNull final Address address)
+	public static JsonAddress toJsonAddress(@NonNull final Address address)
 	{
 		final Integer bpartnerId = address.getBpartnerId() > 0 ? address.getBpartnerId() : null;
 		return JsonAddress.builder()
@@ -165,7 +165,7 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private JsonDeliveryOrderParcel toJsonDeliveryOrderLine(final DeliveryOrderParcel line)
+	private JsonDeliveryOrderParcel toJsonDeliveryOrderLine(@NonNull final DeliveryOrderParcel line)
 	{
 		return JsonDeliveryOrderParcel.builder()
 				.id(line.getId() != null ? String.valueOf(line.getId().getRepoId()) : null)

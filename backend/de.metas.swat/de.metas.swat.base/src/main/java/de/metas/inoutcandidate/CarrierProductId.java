@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.spi
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.spi.model;
+package de.metas.inoutcandidate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

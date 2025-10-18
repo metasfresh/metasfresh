@@ -336,6 +336,27 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
 
 	/**
+	 * Set Carrier Advice Error Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrierAdviceErrorMsg (@Nullable java.lang.String CarrierAdviceErrorMsg);
+
+	/**
+	 * Get Carrier Advice Error Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCarrierAdviceErrorMsg();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_CarrierAdviceErrorMsg = new ModelColumn<>(I_M_ShipmentSchedule.class, "CarrierAdviceErrorMsg", null);
+	String COLUMNNAME_CarrierAdviceErrorMsg = "CarrierAdviceErrorMsg";
+
+	/**
 	 * Set Carrier Advising Status.
 	 *
 	 * <br>Type: List

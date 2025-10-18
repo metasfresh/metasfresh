@@ -2,9 +2,9 @@ package de.metas.shipper.gateway.spi;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
-import de.metas.shipper.gateway.spi.model.CarrierGoodsTypeId;
-import de.metas.shipper.gateway.spi.model.CarrierProductId;
-import de.metas.shipper.gateway.spi.model.CarrierServiceId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
