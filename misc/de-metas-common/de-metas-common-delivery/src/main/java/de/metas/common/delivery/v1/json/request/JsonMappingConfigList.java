@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.client.nshift
+ * de-metas-common-delivery
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,22 +20,35 @@
  * #L%
  */
 
-package de.metas.shipper.client.nshift.json;
+package de.metas.common.delivery.v1.json.request;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.Getter;
+import com.google.common.collect.ImmutableList;
+import lombok.AccessLevel;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
-@RequiredArgsConstructor
-@Getter
-public enum JsonDHLFilingDetailKind
+import java.util.List;
+
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@Value
+public class JsonMappingConfigList
 {
-	UNKNOWN(0),
-	FILING_TYPE(501),
-	FTSR(502),
-	INT(503),
-	AES4EIN(504);
+	public static final JsonMappingConfigList EMPTY = new JsonMappingConfigList(ImmutableList.of());
 
 	@JsonValue
-	private final int jsonValue;
+	@NonNull
+	List<JsonMappingConfig> configs;
+
+	@JsonCreator
+	public static JsonMappingConfigList ofList(@NonNull final List<JsonMappingConfig> items)
+	{
+		if (items.isEmpty())
+		{
+			return EMPTY;
+		}
+		return new JsonMappingConfigList(ImmutableList.copyOf(items));
+	}
 }

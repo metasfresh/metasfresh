@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.client.nshift
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,20 +20,29 @@
  * #L%
  */
 
-package de.metas.shipper.client.nshift.json;
+package de.metas.shipper.gateway.commons.mapping;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@Getter
-public enum JsonFedExCustomsInformationDetailKind
+public enum MappingRule implements ReferenceListAwareEnum
 {
-	UNKNOWN(0),
-	CUSTOMS_AMOUNT(174),
-	CUSTOMS_CURRENCY(175);
+	//TODO replace with constants from model
+	RECEIVER_COUNTRY_CODE(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
+	;
 
-	@JsonValue
-	private final int jsonValue;
+	private static final ReferenceListAwareEnums.ValuesIndex<MappingRule> index = ReferenceListAwareEnums.index(values());
+
+	@NonNull @Getter private final String code;
+
+	@NonNull
+	public static MappingRule ofCode(@NonNull final String code)
+	{
+		return index.ofCode(code);
+	}
 }

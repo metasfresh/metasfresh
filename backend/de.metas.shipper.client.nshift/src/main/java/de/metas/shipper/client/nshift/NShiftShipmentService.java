@@ -22,6 +22,9 @@
 
 package de.metas.shipper.client.nshift;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Streams;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
@@ -30,20 +33,15 @@ import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
-import de.metas.shipper.client.nshift.json.JsonCustomsArticleDetail;
-import de.metas.shipper.client.nshift.json.JsonCustomsArticleDetailKind;
-import de.metas.shipper.client.nshift.json.JsonCustomsArticleInfo;
+import de.metas.shipper.client.nshift.json.JsonDetail;
 import de.metas.shipper.client.nshift.json.JsonDetailGroup;
 import de.metas.shipper.client.nshift.json.JsonDetailRow;
 import de.metas.shipper.client.nshift.json.JsonLabelType;
 import de.metas.shipper.client.nshift.json.JsonLine;
-import de.metas.shipper.client.nshift.json.JsonLineReference;
-import de.metas.shipper.client.nshift.json.JsonLineReferenceKind;
+import de.metas.shipper.client.nshift.json.JsonReference;
 import de.metas.shipper.client.nshift.json.JsonPackage;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
-import de.metas.shipper.client.nshift.json.JsonShipmentReference;
-import de.metas.shipper.client.nshift.json.JsonShipmentReferenceKind;
 import de.metas.shipper.client.nshift.json.request.JsonShipmentRequest;
 import de.metas.shipper.client.nshift.json.response.JsonShipmentResponse;
 import de.metas.shipper.client.nshift.json.response.JsonShipmentResponseLabel;
@@ -55,9 +53,12 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -67,6 +68,7 @@ public class NShiftShipmentService
 {
 	private static final Logger logger = LogManager.getLogger(NShiftShipmentService.class);
 	private static final String CREATE_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/Shipments";
+	private static final int LINE_REFERENCE_KIND_TRACKING_URL = 147;
 
 	@NonNull private final NShiftRestClient restClient;
 
@@ -79,7 +81,7 @@ public class NShiftShipmentService
 			final JsonShipmentResponse response = restClient.post(CREATE_SHIPMENT_ENDPOINT, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
-			return buildJsonDeliveryResponse(response, deliveryRequest.getId());
+			return buildJsonDeliveryResponse(response, deliveryRequest);
 		}
 		catch (final Throwable throwable)
 		{
@@ -91,10 +93,10 @@ public class NShiftShipmentService
 		}
 	}
 
-	private static JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
+	@VisibleForTesting
+	public static JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
-				.submit(false)
 				.labelType(JsonLabelType.PDF)
 				//.requiredDeliveryDate()
 				.validatePostCode(true)
@@ -113,39 +115,34 @@ public class NShiftShipmentService
 
 		deliveryRequest.getShipperProductServices().forEach(service -> dataBuilder.service(Integer.parseInt(service)));
 
+		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryRequest.getMappingConfigs());
+
 		// Add Addresses
 		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER)
-				.attention(deliveryRequest.getPickupAddress().getCompanyName1())
+				.attention(mappingConfigs.getSingleValue(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION, deliveryRequest::getValue))
 				.build());
 
 		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = NShiftUtil.buildNShiftReceiverAddress(
 				deliveryRequest.getDeliveryAddress(),
 				deliveryRequest.getDeliveryContact());
+		receiverAddressBuilder.attention(mappingConfigs.getSingleValue(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION, deliveryRequest::getValue));
 		dataBuilder.address(receiverAddressBuilder.build());
 
-		// Add References
-		if (deliveryRequest.getDeliveryDate() != null)
-		{
-			dataBuilder.reference(JsonShipmentReference.builder()
-					.kind(JsonShipmentReferenceKind.WANTED_DELIVERY_TIME)
-					.value(deliveryRequest.getDeliveryDate())
-					.build());
-		}
-		if (Check.isNotBlank(deliveryRequest.getCustomerReference()))
-		{
-			dataBuilder.reference(JsonShipmentReference.builder()
-					.kind(JsonShipmentReferenceKind.SENDER_REFERENCE)
-					.value(deliveryRequest.getCustomerReference())
-					.build());
-		}
+		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
 
+		// 1. Add shipment-level detail groups (processed once)
+		final List<JsonDetailGroup> allDetailGroups = new ArrayList<>(buildShipmentDetailGroups(mappingConfigs, deliveryRequest::getValue));
+
+		// 2. Add line-level detail groups (processed for each parcel)
 		int lineNoCounter = 1;
 		for (final JsonDeliveryOrderParcel deliveryLine : deliveryRequest.getDeliveryOrderParcels())
 		{
-			dataBuilder.line(buildNShiftLine(deliveryLine, deliveryRequest));
-			dataBuilder.detailGroup(buildCustomsArticleGroup(deliveryLine, lineNoCounter, deliveryRequest.getPickupAddress().getCountry()));
+			dataBuilder.line(buildNShiftLine(deliveryLine, deliveryRequest, mappingConfigs));
+			allDetailGroups.addAll(buildLineLevelDetailGroups(deliveryLine, lineNoCounter, mappingConfigs, deliveryRequest));
 			lineNoCounter++;
 		}
+
+		dataBuilder.detailGroups(allDetailGroups);
 
 		return JsonShipmentRequest.builder()
 				.options(options)
@@ -153,13 +150,53 @@ public class NShiftShipmentService
 				.build();
 	}
 
-	private static JsonLine buildNShiftLine(@NonNull final JsonDeliveryOrderParcel deliveryLine, @NonNull final JsonDeliveryRequest deliveryRequest)
+	private static List<JsonDetailGroup> buildShipmentDetailGroups(
+			@NonNull final NShiftMappingConfigs mappingConfigs,
+			@NonNull final Function<String, String> valueProvider)
+	{
+		final List<String> shipmentLevelGroupKeys = mappingConfigs.getDetailGroupKeysForType(DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP, valueProvider);
+
+		if (shipmentLevelGroupKeys.isEmpty())
+		{
+			return Collections.emptyList();
+		}
+
+		final List<JsonDetailGroup> resultGroups = new ArrayList<>();
+		for (final String groupKey : shipmentLevelGroupKeys)
+		{
+			final List<JsonDetail> details = mappingConfigs.getDetailsForGroupAndType(groupKey, DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP, valueProvider);
+			if (details.isEmpty())
+			{
+				continue;
+			}
+
+			// For shipment-level groups, we create one row without a line number.
+			final JsonDetailRow detailRow = JsonDetailRow.builder()
+					.details(details)
+					.build();
+
+			resultGroups.add(JsonDetailGroup.builder()
+					.groupID(groupKey)
+					.row(detailRow)
+					.build());
+		}
+		return resultGroups;
+	}
+
+	private static JsonLine buildNShiftLine(@NonNull final JsonDeliveryOrderParcel deliveryLine,
+											@NonNull final JsonDeliveryRequest deliveryRequest,
+											@NonNull final NShiftMappingConfigs mappingConfigs
+	)
 	{
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = deliveryLine.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
 		final int lengthMM = deliveryLine.getPackageDimensions().getLengthInCM() * 10;
 		final int widthMM = deliveryLine.getPackageDimensions().getWidthInCM() * 10;
 		final int heightMM = deliveryLine.getPackageDimensions().getHeightInCM() * 10;
+
+		final Function<String, Optional<String>> valueProvider =
+				withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
+		final Function<String, String> finalValueProvider = attributeValue -> valueProvider.apply(attributeValue).orElse(null);
 
 		return JsonLine.builder()
 				.number(1)
@@ -170,39 +207,64 @@ public class NShiftShipmentService
 				.height(heightMM)
 				.goodsTypeID(Integer.parseInt(deliveryRequest.getShipAdviceNotNull(NShiftConstants.GOODS_TYPE_ID)))
 				.goodsTypeName(deliveryRequest.getShipAdviceNotNull(NShiftConstants.GOODS_TYPE_NAME))
-				.reference(JsonLineReference.builder()
-						.kind(JsonLineReferenceKind.ESRK_CUSTOM_LINE_FIELD_1)
-						.value(deliveryLine.getId())
-						.build())
+				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, finalValueProvider))
 				.build();
 	}
 
-	private static JsonDetailGroup buildCustomsArticleGroup(@NonNull final JsonDeliveryOrderParcel deliveryLine, final int lineNo, @NonNull final String countryOfOrigin)
+	private static List<JsonDetailGroup> buildLineLevelDetailGroups(
+			@NonNull final JsonDeliveryOrderParcel deliveryLine,
+			final int lineNo,
+			@NonNull final NShiftMappingConfigs mappingConfigs,
+			@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
-		final JsonCustomsArticleInfo.JsonCustomsArticleInfoBuilder<?, ?> customsArticleInfoBuilder = JsonCustomsArticleInfo.builder();
+		final Map<String, JsonDetailGroup.JsonDetailGroupBuilder> groupBuilders = new LinkedHashMap<>();
+
+		// This provider is for evaluating mapping rules, which might depend on parcel or request data.
+		final Function<String, Optional<String>> parcelAndRequestProvider =
+				withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
 
 		for (final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents content : deliveryLine.getContents())
 		{
-			final JsonDetailRow.JsonDetailRowBuilder<JsonCustomsArticleDetail> detailRowBuilder = JsonDetailRow.<JsonCustomsArticleDetail>builder()
-					.lineNo(lineNo);
+			// This full valueProviderChain is for resolving the detail values, which can come from content, parcel, or request.
+			final Function<String, Optional<String>> valueProviderChain =
+					withFallback(content::getValue, parcelAndRequestProvider);
 
-			detailRowBuilder
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.QUANTITY).value(content.getShippedQuantity().getValue().toPlainString()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.UNIT_OF_MEASURE).value(content.getShippedQuantity().getUomCode()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.DESCRIPTION_OF_GOODS).value(content.getProductName()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.ARTICLE_NO).value(content.getShipmentOrderItemId()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.UNIT_VALUE).value(content.getUnitPrice().getAmount().toPlainString()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.TOTAL_VALUE).value(content.getTotalValue().getAmount().toPlainString()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.CUSTOMS_ARTICLE_CURRENCY).value(content.getTotalValue().getCurrencyCode()).build())
-					.detail(JsonCustomsArticleDetail.builder().kindId(JsonCustomsArticleDetailKind.COUNTRY_OF_ORIGIN).value(countryOfOrigin).build());
+			final Function<String, String> finalValueProvider = attributeValue -> valueProviderChain.apply(attributeValue).orElse(null);
 
-			customsArticleInfoBuilder.row(detailRowBuilder.build());
+			final List<String> groupKeys = mappingConfigs.getDetailGroupKeysForType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP, finalValueProvider);
+			if (groupKeys.isEmpty())
+			{
+				continue;
+			}
+
+			for (final String groupKey : groupKeys)
+			{
+				final List<JsonDetail> details = mappingConfigs.getDetailsForGroupAndType(groupKey, DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP, finalValueProvider);
+
+				if (!details.isEmpty())
+				{
+					groupBuilders.computeIfAbsent(groupKey, k -> JsonDetailGroup.builder().groupID(k))
+							.row(JsonDetailRow.builder().lineNo(lineNo).details(details).build());
+				}
+			}
 		}
 
-		return customsArticleInfoBuilder.build();
+		return groupBuilders.values().stream()
+				.map(JsonDetailGroup.JsonDetailGroupBuilder::build)
+				.collect(Collectors.toList());
 	}
 
-	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final String requestId)
+	private static <T, R> Function<T, Optional<R>> withFallback(
+			@NonNull final Function<T, Optional<R>> primary,
+			@NonNull final Function<T, Optional<R>> fallback)
+	{
+		return t -> {
+			final Optional<R> value = primary.apply(t);
+			return value.isPresent() ? value : fallback.apply(t);
+		};
+	}
+
+	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		final Map<String, JsonShipmentResponseLabel> labelsByPkgNo = response.getLabels() != null
 				? response.getLabels().stream()
@@ -213,42 +275,37 @@ public class NShiftShipmentService
 						(first, second) -> first)) // In case of duplicate pkgNo, take the first.
 				: Collections.emptyMap();
 
-		final List<JsonDeliveryResponseItem> items = response.getLines() != null
-				? response.getLines().stream()
-				.map(parcel -> {
-					final JsonPackage pkg = parcel.getPkgs().get(0);
-					final JsonShipmentResponseLabel label = labelsByPkgNo.get(pkg.getPkgNo());
+		final List<JsonDeliveryOrderParcel> requestParcels = deliveryRequest.getDeliveryOrderParcels();
+		final List<JsonLine> responseLines = response.getLines() != null ? response.getLines() : Collections.emptyList();
+		Check.assume(requestParcels.size() == responseLines.size(), "Request and response line counts do not match. Request: %s, Response: %s", requestParcels.size(), responseLines.size());
 
-					final byte[] labelPdf = (label != null && label.getContent() != null)
-							? label.getContent().getBytes()
-							: null;
+		final List<JsonDeliveryResponseItem> items = Streams.zip(
+						requestParcels.stream(),
+						responseLines.stream(),
+						(requestParcel, responseLine) -> {
+							final JsonPackage pkg = responseLine.getPkgs().get(0);
+							final JsonShipmentResponseLabel label = labelsByPkgNo.get(pkg.getPkgNo());
 
-					final String lineId = parcel.getReferences().stream()
-							.filter(ref -> ref.getKind().isLineId())
-							.map(JsonLineReference::getValue)
-							.findFirst()
-							.orElse(null);
-					Check.assumeNotNull(lineId, "The lineId in the response shall not be null for parcel {}", parcel);
+							final byte[] labelPdf = (label != null && label.getContent() != null)
+									? label.getContent().getBytes()
+									: null;
 
-					return JsonDeliveryResponseItem.builder()
-							.lineId(lineId)
-							.awb(pkg.getPkgNo())
-							.trackingUrl(pkg.getReferences().stream()
-									.filter(ref -> ref.getKind().isTrackingUrl())
-									.map(JsonLineReference::getValue)
-									.findFirst()
-									.orElse(null))
-							.labelPdfBase64(labelPdf)
-							.build();
-				})
-				.collect(Collectors.toList())
-				: Collections.emptyList();
+							return JsonDeliveryResponseItem.builder()
+									.lineId(requestParcel.getId())
+									.awb(pkg.getPkgNo())
+									.trackingUrl(responseLine.getReferences().stream()
+											.filter(ref -> ref.getKind() == LINE_REFERENCE_KIND_TRACKING_URL)
+											.map(JsonReference::getValue)
+											.findFirst()
+											.orElse(null))
+									.labelPdfBase64(labelPdf)
+									.build();
+						})
+				.collect(Collectors.toList());
 
-		// 3. Construct the final response object with the correlated items.
 		return JsonDeliveryResponse.builder()
-				.requestId(requestId)
+				.requestId(deliveryRequest.getId())
 				.items(items)
 				.build();
-
 	}
 }

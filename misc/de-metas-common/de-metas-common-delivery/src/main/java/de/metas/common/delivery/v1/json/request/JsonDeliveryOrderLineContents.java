@@ -22,6 +22,8 @@
 
 package de.metas.common.delivery.v1.json.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonQuantity;
 import lombok.Builder;
@@ -30,6 +32,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -43,4 +46,28 @@ public class JsonDeliveryOrderLineContents
 	@NonNull String productValue;
 	@NonNull BigDecimal totalWeightInKg;
 	@NonNull JsonQuantity shippedQuantity;
+
+	@JsonIgnore
+	public Optional<String> getValue(@NonNull final String attributeValue)
+	{
+		switch (attributeValue)
+		{
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPED_QUANTITY:
+				return Optional.of(getShippedQuantity().getValue().toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UOM_CODE:
+				return Optional.of(getShippedQuantity().getUomCode());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME:
+				return Optional.of(getProductName());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPMENT_ORDER_ITEM_ID:
+				return Optional.of(getShipmentOrderItemId());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_PRICE:
+				return Optional.of(getUnitPrice().getAmount().toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE:
+				return Optional.of(getTotalValue().getAmount().toPlainString());
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE:
+				return Optional.of(getTotalValue().getCurrencyCode());
+			default:
+				return Optional.empty();
+		}
+	}
 }

@@ -27,6 +27,7 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonLine;
@@ -88,9 +89,24 @@ public class NShiftShipAdvisorService
 				.attention(deliveryAdvisorRequest.getPickupAddress().getCompanyName1())
 				.build());
 
+		final de.metas.common.delivery.v1.json.JsonAddress deliveryAddress = deliveryAdvisorRequest.getDeliveryAddress();
+		final de.metas.common.delivery.v1.json.JsonContact deliveryContact = deliveryAdvisorRequest.getDeliveryContact();
 		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = NShiftUtil.buildNShiftReceiverAddress(
-				deliveryAdvisorRequest.getDeliveryAddress(),
-				deliveryAdvisorRequest.getDeliveryContact());
+				deliveryAddress,
+				deliveryContact);
+
+		if (deliveryContact != null)
+		{
+			receiverAddressBuilder.attention(deliveryContact.getName());
+		}
+		else
+		{
+			final String attention = CoalesceUtil.coalesceNotNull(
+					deliveryAddress.getAdditionalAddressInfo(),
+					deliveryAddress.getCompanyName2(),
+					deliveryAddress.getCompanyName1());
+			receiverAddressBuilder.attention(attention);
+		}
 		dataBuilder.address(receiverAddressBuilder.build());
 
 		dataBuilder.line(buildNShiftLine(deliveryAdvisorRequest.getItem()));

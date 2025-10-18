@@ -24,8 +24,10 @@ package de.metas.shipper.client.nshift.json.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.shipper.client.nshift.json.JsonAddress;
+import de.metas.shipper.client.nshift.json.JsonAmount;
 import de.metas.shipper.client.nshift.json.JsonLine;
 import de.metas.shipper.client.nshift.json.JsonShipmentDocument;
+import de.metas.shipper.client.nshift.json.JsonReference;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -142,4 +144,10 @@ public class JsonShipmentResponse
 	@JsonProperty("CorrelationID")
 	String correlationID;
 
+	@JsonProperty("Amounts")
+	List<JsonAmount> amounts;
+
+	@JsonProperty("References")
+	@Singular
+	List<JsonReference> references;
 }

@@ -22,10 +22,9 @@
 
 package de.metas.shipper.client.nshift;
 
-import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
-import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -55,26 +54,22 @@ public class NShiftUtil
 
 	public static JsonAddress.JsonAddressBuilder buildNShiftReceiverAddress(
 			@NonNull final de.metas.common.delivery.v1.json.JsonAddress deliveryAddress,
-			@Nullable final de.metas.common.delivery.v1.json.JsonContact deliveryContact) {
+			@Nullable final de.metas.common.delivery.v1.json.JsonContact deliveryContact)
+	{
 
 		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = buildNShiftAddressBuilder(deliveryAddress, JsonAddressKind.RECEIVER);
 
-		if (deliveryContact != null) {
-			if (Check.isNotBlank(deliveryContact.getPhone())) {
+		if (deliveryContact != null)
+		{
+			if (Check.isNotBlank(deliveryContact.getPhone()))
+			{
 				receiverAddressBuilder.phone(deliveryContact.getPhone());
 			}
-			if (Check.isNotBlank(deliveryContact.getEmailAddress())) {
+			if (Check.isNotBlank(deliveryContact.getEmailAddress()))
+			{
 				receiverAddressBuilder.email(deliveryContact.getEmailAddress());
 			}
-			receiverAddressBuilder.attention(deliveryContact.getName());
-		} else {
-			final String attention = CoalesceUtil.coalesceNotNull(
-					deliveryAddress.getAdditionalAddressInfo(),
-					deliveryAddress.getCompanyName2(),
-					deliveryAddress.getCompanyName1());
-			receiverAddressBuilder.attention(attention);
 		}
-
 		return receiverAddressBuilder;
 	}
 
