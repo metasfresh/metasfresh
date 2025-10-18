@@ -24,7 +24,7 @@ public class Attribute
 	@NonNull ITranslatableString displayName;
 	@NonNull AttributeValueType valueType;
 	@Nullable Object value;
-	
+
 	public static Attribute of(@NonNull final org.adempiere.mm.attributes.api.Attribute attributeDescriptor)
 	{
 		return Attribute.builder()
@@ -62,7 +62,8 @@ public class Attribute
 		}
 		else if (AttributeValueType.DATE.equals(valueType))
 		{
-			return getValueAsLocalDate().toString();
+			final LocalDate value = getValueAsLocalDate();
+			return value != null ? value.toString() : null;
 		}
 		else if (AttributeValueType.LIST.equals(valueType))
 		{
