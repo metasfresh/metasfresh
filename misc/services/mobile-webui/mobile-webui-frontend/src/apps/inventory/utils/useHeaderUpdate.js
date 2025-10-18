@@ -36,6 +36,7 @@ export const useHeaderUpdate = ({
       {
         caption: trl('inventory.qtyBooked'),
         value: formatQtyToHumanReadableStr({ qty: qtyBooked, uom }),
+        valueTestId: 'qty-booked',
       },
       {
         caption: trl('inventory.qtyCount'),
