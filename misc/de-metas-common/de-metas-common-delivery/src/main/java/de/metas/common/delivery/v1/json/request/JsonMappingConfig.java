@@ -25,6 +25,7 @@ package de.metas.common.delivery.v1.json.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -52,11 +53,12 @@ public class JsonMappingConfig
 	public boolean isConfigFor(@NonNull final Function<String, String> valueProvider)
 	{
 		if (!isConfigForShipperProduct(valueProvider.apply(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME))) {return false;}
-		if (mappingRule == null){return true;}
+		if (Check.isBlank(mappingRule)){return true;}
 		switch (mappingRule)
 		{
 			case DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE:
-				return valueProvider.apply(attributeValue).equals(mappingRuleValue);
+				return valueProvider.apply(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE)
+						.equals(mappingRuleValue);
 			default:
 				throw new IllegalArgumentException("Unknown mappingRule: " + mappingRule);
 		}

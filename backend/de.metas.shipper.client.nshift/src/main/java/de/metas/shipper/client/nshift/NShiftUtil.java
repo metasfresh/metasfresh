@@ -45,7 +45,6 @@ public class NShiftUtil
 				.kind(kind)
 				.name1(commonAddress.getCompanyName1())
 				.name2(commonAddress.getCompanyName2())
-
 				.street1(street1)
 				.street2(commonAddress.getAdditionalAddressInfo())
 				.postCode(commonAddress.getZipCode())

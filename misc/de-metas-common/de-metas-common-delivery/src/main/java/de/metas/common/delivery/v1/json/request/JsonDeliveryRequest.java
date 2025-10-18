@@ -72,7 +72,7 @@ public class JsonDeliveryRequest
 	@NonNull
 	public String getShipAdviceNotNull(@NonNull final String key)
 	{
-		return Check.assumeNotNull( getShipAdvice(key), "No ShipAdvice found for key '%s'. Available keys: %s", key, shipAdvises.keySet());
+		return Check.assumeNotNull(getShipAdvice(key), "No ShipAdvice found for key '%s'. Available keys: %s", key, shipAdvises.keySet());
 	}
 
 	@JsonIgnore
@@ -86,7 +86,7 @@ public class JsonDeliveryRequest
 	@Nullable
 	public String getPickupDateAndTimeStart()
 	{
-		if (pickupTimeStart == null){return null;}
+		if (pickupTimeStart == null) {return null;}
 		return pickupDate + "T" + pickupTimeStart;
 	}
 
@@ -94,7 +94,7 @@ public class JsonDeliveryRequest
 	@Nullable
 	public String getPickupDateAndTimeEnd()
 	{
-		if (pickupTimeEnd == null){return null;}
+		if (pickupTimeEnd == null) {return null;}
 		return pickupDate + "T" + pickupTimeEnd;
 	}
 
@@ -126,8 +126,12 @@ public class JsonDeliveryRequest
 				return getPickupAddress().getCompanyName2();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_DEPARTMENT:
 				return getPickupAddress().getCompanyDepartment();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE:
+				return getPickupAddress().getCountry();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME:
 				return getShipperProduct();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_EORI:
+				return getShipperEORI();
 			default:
 				throw new IllegalArgumentException("Unknown attributeValue: " + attributeValue);
 		}

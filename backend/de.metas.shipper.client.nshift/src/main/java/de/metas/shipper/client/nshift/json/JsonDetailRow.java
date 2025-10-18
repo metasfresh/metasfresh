@@ -40,7 +40,7 @@ import java.util.List;
 public class JsonDetailRow
 {
 	@JsonProperty("LineNo")
-	int lineNo;
+	Integer lineNo;
 
 	@JsonProperty("Details")
 	@Singular

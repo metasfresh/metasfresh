@@ -4,7 +4,7 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
       "ActorCSID": 123,
       "Addresses": [
         {
-          "Attention": "metas GmbH senderDepartmentName",
+          "Attention": "metas GmbH senderDepartmentName senderCompanyName2",
           "City": "Bonn",
           "CountryCode": "DE",
           "Kind": 2,
@@ -31,21 +31,26 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
       "DangerousGoods": [ ],
       "DetailGroups": [
         {
+          "GroupID": "2",
+          "Rows": [
+            {
+              "Details": [
+                {
+                  "KindID": 182,
+                  "Value": "Shipper EORI RO"
+                }
+              ]
+            }
+          ]
+        },
+        {
           "GroupID": "1",
           "Rows": [
             {
               "Details": [
                 {
-                  "KindID": 5,
-                  "Value": "10"
-                },
-                {
-                  "KindID": 8,
-                  "Value": "PCE"
-                },
-                {
-                  "KindID": 7,
-                  "Value": "Test Product"
+                  "KindID": 17,
+                  "Value": "EUR"
                 },
                 {
                   "KindID": 1,
@@ -56,16 +61,24 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
                   "Value": "10"
                 },
                 {
-                  "KindID": 10,
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 5,
                   "Value": "10"
                 },
                 {
-                  "KindID": 17,
-                  "Value": "EUR"
+                  "KindID": 7,
+                  "Value": "Test Product"
                 },
                 {
-                  "KindID": 4,
-                  "Value": "DE"
+                  "KindID": 8,
+                  "Value": "PCE"
+                },
+                {
+                  "KindID": 10,
+                  "Value": "10"
                 }
               ],
               "LineNo": 1
@@ -78,16 +91,8 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
             {
               "Details": [
                 {
-                  "KindID": 5,
-                  "Value": "10"
-                },
-                {
-                  "KindID": 8,
-                  "Value": "PCE"
-                },
-                {
-                  "KindID": 7,
-                  "Value": "Test Product 2"
+                  "KindID": 17,
+                  "Value": "EUR"
                 },
                 {
                   "KindID": 1,
@@ -98,16 +103,24 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
                   "Value": "10"
                 },
                 {
-                  "KindID": 10,
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 5,
                   "Value": "10"
                 },
                 {
-                  "KindID": 17,
-                  "Value": "EUR"
+                  "KindID": 7,
+                  "Value": "Test Product 2"
                 },
                 {
-                  "KindID": 4,
-                  "Value": "DE"
+                  "KindID": 8,
+                  "Value": "PCE"
+                },
+                {
+                  "KindID": 10,
+                  "Value": "10"
                 }
               ],
               "LineNo": 2
@@ -128,7 +141,7 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
           "References": [
             {
               "Kind": 129,
-              "Value": "1"
+              "Value": "1 RO"
             }
           ],
           "Width": 200
@@ -145,7 +158,7 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
           "References": [
             {
               "Kind": 129,
-              "Value": "2"
+              "Value": "2 RO"
             }
           ],
           "Width": 200
@@ -153,7 +166,7 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
       ],
       "OrderNo": "1",
       "PickupDt": "2025-10-02",
-      "ProdConceptID": 2757,
+      "ProdConceptID": 2758,
       "References": [
         {
           "Kind": 108,
@@ -172,7 +185,9 @@ de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
           "Value": "Customer reference"
         }
       ],
-      "Services": [ ]
+      "Services": [
+        337011
+      ]
     },
     "options": {
       "Labels": "PDF",

@@ -33,6 +33,7 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_TYPE_REFERENCE = "Reference";
 	public static final String ATTRIBUTE_TYPE_LINE_REFERENCE = "LineReference";
 	public static final String ATTRIBUTE_TYPE_DETAIL_GROUP = "DetailGroup";
+	public static final String ATTRIBUTE_TYPE_LINE_DETAIL_GROUP = "LineDetailGroup";
 
 	// attributeValues
 	public static final String ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_START = "PickupDateAndTimeStart";
@@ -44,9 +45,23 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_SENDER_COMPANY_NAME = "SenderCompanyName";
 	public static final String ATTRIBUTE_VALUE_SENDER_COMPANY_NAME_2 = "SenderCompanyName2";
 	public static final String ATTRIBUTE_VALUE_SENDER_DEPARTMENT = "SenderDepartment";
+	public static final String ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE = "SenderCountryCode";
 	public static final String ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME = "ReceiverCompanyName";
 	public static final String ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT = "ReceiverDepartment";
 	public static final String ATTRIBUTE_VALUE_RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME = "ReceiverContactFirstnameAndLastname";
+	public static final String ATTRIBUTE_VALUE_SHIPPER_EORI = "ShipperEORI";
+
+	// attributeValuesLine
+	public static final String ATTRIBUTE_VALUE_PARCEL_ID = "ParcelId";
+
+	// attributeValuesLineContent
+	public static final String ATTRIBUTE_VALUE_SHIPPED_QUANTITY = "ShippedQuantity";
+	public static final String ATTRIBUTE_VALUE_UOM_CODE = "UomCode";
+	public static final String ATTRIBUTE_VALUE_PRODUCT_NAME = "ProductName";
+	public static final String ATTRIBUTE_VALUE_SHIPMENT_ORDER_ITEM_ID = "ShipmentOrderItemId";
+	public static final String ATTRIBUTE_VALUE_UNIT_PRICE = "UnitPrice";
+	public static final String ATTRIBUTE_VALUE_TOTAL_VALUE = "TotalValue";
+	public static final String ATTRIBUTE_VALUE_CURRENCY_CODE = "CurrencyCode";
 
 	// mappingRules
 	public static final String MAPPING_RULE_RECEIVER_COUNTRY_CODE = "ReceiverCountryCode";

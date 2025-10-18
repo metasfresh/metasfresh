@@ -97,5 +97,5 @@ public class JsonLine
 
 	@JsonProperty("References")
 	@Singular
-	List<JsonLineReference> references;
+	List<JsonReference> references;
 }

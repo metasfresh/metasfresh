@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -32,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 public enum MappingRule implements ReferenceListAwareEnum
 {
 	//TODO replace with constants from model
-	ReceiverCountryCode("ReceiverCountryCode"),
+	RECEIVER_COUNTRY_CODE(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<MappingRule> index = ReferenceListAwareEnums.index(values());

@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -32,9 +33,13 @@ import lombok.RequiredArgsConstructor;
 public enum AttributeType implements ReferenceListAwareEnum
 {
 	//TODO replace with constants from model
-	Reference("Reference"),
-	LineReference("LineReference"),
-	DetailGroup("DetailGroup");
+	SENDER_ATTENTION(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION),
+	RECEIVER_ATTENTION(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION),
+	REFERENCE(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE),
+	LINE_REFERENCE(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE),
+	LINE_DETAIL_GROUP(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP),
+	DETAIL_GROUP(DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP);
+
 
 	private static final ReferenceListAwareEnums.ValuesIndex<AttributeType> index = ReferenceListAwareEnums.index(values());
 
