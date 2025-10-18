@@ -97,7 +97,7 @@ public class JsonShipperConverter
 			return null;
 		}
 		return JsonGoodsType.builder()
-				.id(goodsType.getId().toString())
+				.id(goodsType.getExternalId())
 				.name(goodsType.getName())
 				.build();
 	}
