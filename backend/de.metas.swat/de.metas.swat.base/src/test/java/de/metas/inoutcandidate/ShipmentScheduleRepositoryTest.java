@@ -175,6 +175,7 @@ class ShipmentScheduleRepositoryTest
 		record.setC_BP_Location_Override_ID(bPartnerLocationOverride.getC_BPartner_Location_ID());
 		record.setM_Product_ID(product.getM_Product_ID());
 		record.setQtyToDeliver(BigDecimal.ONE);
+		record.setCarrier_Advising_Status(CarrierAdviseStatus.NotRequested.getCode());
 		saveRecord(record);
 
 		return record;

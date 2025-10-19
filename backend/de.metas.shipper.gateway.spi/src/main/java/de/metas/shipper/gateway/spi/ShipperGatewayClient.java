@@ -1,11 +1,15 @@
 package de.metas.shipper.gateway.spi;
 
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipping.ShipperGatewayId;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -43,4 +47,12 @@ public interface ShipperGatewayClient
 
 	@NonNull
 	List<PackageLabels> getPackageLabelsList(@NonNull DeliveryOrder deliveryOrder) throws ShipperGatewayException;
+
+	@NonNull JsonDeliveryAdvisorResponse adviseShipment(@NonNull final JsonDeliveryAdvisorRequest request);
+
+	@Nullable
+	default JsonShipperConfig getJsonShipperConfig()
+	{
+		return null;
+	}
 }

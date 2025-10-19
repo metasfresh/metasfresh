@@ -26,9 +26,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
+import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.inoutcandidate.CarrierGoodsType;
+import de.metas.inoutcandidate.CarrierService;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -36,21 +41,26 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class JsonShipperConverter
 {
-
 	public JsonDeliveryRequest toJson(@NonNull final ShipperConfig config, @NonNull final DeliveryOrder order)
 	{
 		return JsonDeliveryRequest.builder()
 				.deliveryOrderId(DeliveryOrderId.toRepoId(order.getId()))
 				.pickupAddress(toJsonAddress(order.getPickupAddress()))
-				.pickupDate(order.getPickupDate() != null ? order.getPickupDate().getDate().toString() : null)
+				.pickupDate(order.getPickupDate().getDate().toString())
+				.timeFrom(order.getPickupDate().getTimeFrom().toString())
+				.timeTo(order.getPickupDate().getTimeTo().toString())
 				.pickupNote(order.getPickupNote())
 				.deliveryAddress(toJsonAddress(order.getDeliveryAddress()))
 				.deliveryContact(toJsonContactOrNull(order.getDeliveryContact()))
@@ -58,14 +68,61 @@ public class JsonShipperConverter
 				.deliveryNote(order.getDeliveryNote())
 				.customerReference(order.getCustomerReference())
 				.deliveryOrderParcels(order.getDeliveryOrderParcels().stream().map(this::toJsonDeliveryOrderLine).collect(ImmutableList.toImmutableList()))
-				.shipperProduct(order.getShipperProduct() != null ? order.getShipperProduct().getCode() : null)
+				.shipperProduct(toJsonShipperProductOrNull(order.getShipperProduct()))
 				.shipperEORI(order.getShipperEORI())
 				.receiverEORI(order.getReceiverEORI())
 				.shipperConfig(toJsonShipperConfig(config))
+				.goodsType(toJsonGoodsType(order.getGoodsType()))
+				.services(toCarrierServices(order.getServices()))
 				.build();
 	}
 
-	private @NonNull JsonShipperConfig toJsonShipperConfig(final @NonNull ShipperConfig config)
+	@Nullable
+	private JsonShipperProduct toJsonShipperProductOrNull(@Nullable final ShipperProduct shipperProduct)
+	{
+		if (shipperProduct == null)
+		{
+			return null;
+		}
+		return JsonShipperProduct.builder()
+				.code(shipperProduct.getCode())
+				.name(shipperProduct.getName())
+				.build();
+	}
+
+	private @Nullable JsonGoodsType toJsonGoodsType(final @Nullable CarrierGoodsType goodsType)
+	{
+		if (goodsType == null)
+		{
+			return null;
+		}
+		return JsonGoodsType.builder()
+				.id(goodsType.getExternalId())
+				.name(goodsType.getName())
+				.build();
+	}
+
+	private @NonNull Set<JsonCarrierService> toCarrierServices(final @NonNull Set<CarrierService> services)
+	{
+		if (services.isEmpty())
+		{
+			return Collections.emptySet();
+		}
+		return services
+				.stream()
+				.map(this::toJsonCarrierService)
+				.collect(Collectors.toSet());
+	}
+
+	private JsonCarrierService toJsonCarrierService(final @NonNull CarrierService carrierService)
+	{
+		return JsonCarrierService.builder()
+				.id(carrierService.getExternalId())
+				.name(carrierService.getName())
+				.build();
+	}
+
+	public @NonNull JsonShipperConfig toJsonShipperConfig(final @NonNull ShipperConfig config)
 	{
 		return JsonShipperConfig.builder()
 				.url(config.getUrl())
@@ -78,7 +135,7 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private JsonAddress toJsonAddress(@NonNull final Address address)
+	public static JsonAddress toJsonAddress(@NonNull final Address address)
 	{
 		final Integer bpartnerId = address.getBpartnerId() > 0 ? address.getBpartnerId() : null;
 		return JsonAddress.builder()
@@ -108,7 +165,7 @@ public class JsonShipperConverter
 				.build();
 	}
 
-	private JsonDeliveryOrderParcel toJsonDeliveryOrderLine(final DeliveryOrderParcel line)
+	private JsonDeliveryOrderParcel toJsonDeliveryOrderLine(@NonNull final DeliveryOrderParcel line)
 	{
 		return JsonDeliveryOrderParcel.builder()
 				.id(line.getId() != null ? String.valueOf(line.getId().getRepoId()) : null)

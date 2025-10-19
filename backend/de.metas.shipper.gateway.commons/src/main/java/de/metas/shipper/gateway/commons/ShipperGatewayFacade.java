@@ -2,6 +2,11 @@ package de.metas.shipper.gateway.commons;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierServiceId;
+import de.metas.inoutcandidate.CarrierShipmentScheduleServiceRepository;
+import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
@@ -66,6 +71,9 @@ public class ShipperGatewayFacade
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry;
+	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
+	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
+
 
 	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
 
@@ -100,7 +108,7 @@ public class ShipperGatewayFacade
 	}
 
 	@NonNull
-	private static DeliveryOrderKey createDeliveryOrderKey(
+	private DeliveryOrderKey createDeliveryOrderKey(
 			@NonNull final I_M_Package mpackage,
 			final ShipperTransportationId shipperTransportationId,
 			@NonNull final LocalDate pickupDate,
@@ -108,6 +116,9 @@ public class ShipperGatewayFacade
 			@NonNull final LocalTime timeTo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
+		final ShipmentSchedule shipmentSchedule = retrieveShipmentScheduleByPackageId(PackageId.ofRepoId(mpackage.getM_Package_ID()));
+		final Set<CarrierServiceId> carrierServices = retrieveCarrierServiceIdsForShipmentSchedule(shipmentSchedule.getId());
+
 		return DeliveryOrderKey.builder()
 				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
 				.shipperTransportationId(shipperTransportationId)
@@ -117,8 +128,21 @@ public class ShipperGatewayFacade
 				.pickupDate(pickupDate)
 				.timeFrom(timeFrom)
 				.timeTo(timeTo)
+				.carrierProductId(shipmentSchedule.getCarrierProductId())
+				.carrierGoodsTypeId(shipmentSchedule.getCarrierGoodsTypeId())
+				.carrierServices(carrierServices)
 				.asyncBatchId(asyncBatchId)
 				.build();
+	}
+
+	private ShipmentSchedule retrieveShipmentScheduleByPackageId(@NonNull final PackageId packageId)
+	{
+		return shipmentScheduleRepository.loadByPackageId(packageId);
+	}
+
+	private Set<CarrierServiceId> retrieveCarrierServiceIdsForShipmentSchedule(@NonNull final ShipmentScheduleId id)
+	{
+		return carrierServiceRepository.getAssignedServiceIdsByShipmentScheduleId(id);
 	}
 
 	private Optional<BigDecimal> extractWeightInKg(@NonNull final I_M_Package mpackage)

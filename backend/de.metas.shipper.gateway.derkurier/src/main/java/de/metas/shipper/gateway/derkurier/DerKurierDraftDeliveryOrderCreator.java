@@ -105,18 +105,14 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 				// Pickup
-				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
-						.companyName1(pickupFromBPartner.getName())
-						.companyName2(pickupFromBPartner.getName2())
+				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
 						.build())
 				//
 				// Delivery
-				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
-						.companyName1(deliverToBPartner.getName())
-						.companyName2(deliverToBPartner.getName2())
+				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner)
 						//.companyDepartment("-") // N/A
 						.bpartnerId(deliverToBPartnerId)
 						.build())
