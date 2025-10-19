@@ -114,13 +114,14 @@ public class CarrierAdviseCommand
 		}
 		updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.InProgress);
 
-		@NonNull final ShipperGatewayId shipperGatewayId = getShipperGatewayId(shipmentSchedule.getShipperId());
-
-		final ShipperGatewayClient client = shipperRegistry
-				.getClientFactory(shipperGatewayId)
-				.newClientForShipperId(shipmentSchedule.getShipperId());
 		try
 		{
+			@NonNull final ShipperGatewayId shipperGatewayId = getShipperGatewayId(shipmentSchedule.getShipperId());
+
+			final ShipperGatewayClient client = shipperRegistry
+					.getClientFactory(shipperGatewayId)
+					.newClientForShipperId(shipmentSchedule.getShipperId());
+
 			final JsonDeliveryAdvisorRequest request = createAdvisorRequest(shipmentSchedule, client);
 			logger.debug("AdviseShipment request: {}", request);
 			final JsonDeliveryAdvisorResponse response = client.adviseShipment(request);

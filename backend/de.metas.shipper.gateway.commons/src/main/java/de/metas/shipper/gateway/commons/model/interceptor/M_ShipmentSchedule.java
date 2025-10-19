@@ -45,7 +45,11 @@ public class M_ShipmentSchedule
 			I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override })
 	public void requestCarrierAdvice(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (shipmentSchedule.isProcessed() || shipmentSchedule.isClosed() || !shipmentSchedule.isActive() || shipmentSchedule.getQtyToDeliver().signum() <= 0)
+		if (shipmentSchedule.getM_Shipper_ID() <= 0
+				|| shipmentSchedule.isProcessed()
+				|| shipmentSchedule.isClosed()
+				|| !shipmentSchedule.isActive()
+				|| shipmentSchedule.getQtyToDeliver().signum() <= 0)
 		{
 			return;
 		}
