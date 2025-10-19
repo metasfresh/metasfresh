@@ -260,7 +260,7 @@ public class ShipmentServiceTest
 					JsonMappingConfig.builder()
 							.seqNo(110)
 							.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
-							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME)
+							.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME)
 							.build(),
 					JsonMappingConfig.builder()
 							.seqNo(120)

@@ -97,7 +97,7 @@ public class JsonDeliveryRequest
 				return getCustomerReference();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE:
 				return getDeliveryAddress().getCountry();
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME:
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME:
 				return getDeliveryContact() != null ? getDeliveryContact().getName() : null;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT:
 				return getDeliveryAddress().getCompanyDepartment();
@@ -111,8 +111,8 @@ public class JsonDeliveryRequest
 				return getPickupAddress().getCompanyDepartment();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE:
 				return getPickupAddress().getCountry();
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME:
-				return getShipperProduct() != null ? getShipperProduct().getName() : null;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_EXTERNAL_ID:
+				return getShipperProduct() != null ? getShipperProduct().getCode() : null;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_EORI:
 				return getShipperEORI();
 			default:

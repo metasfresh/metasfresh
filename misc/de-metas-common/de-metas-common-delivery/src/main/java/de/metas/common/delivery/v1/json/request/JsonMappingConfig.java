@@ -41,7 +41,7 @@ import java.util.function.Function;
 public class JsonMappingConfig
 {
 	int seqNo;
-	@Nullable String shipperProduct;
+	@Nullable String shipperProductExternalId;
 	@NonNull String attributeType;
 	@Nullable String attributeGroupKey;
 	@Nullable String attributeKey;
@@ -52,7 +52,7 @@ public class JsonMappingConfig
 	@JsonIgnore
 	public boolean isConfigFor(@NonNull final Function<String, String> valueProvider)
 	{
-		if (!isConfigForShipperProduct(valueProvider.apply(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME))) {return false;}
+		if (!isConfigForShipperProduct(valueProvider.apply(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_EXTERNAL_ID))) {return false;}
 		if (Check.isBlank(mappingRule)){return true;}
 		switch (mappingRule)
 		{
@@ -67,6 +67,6 @@ public class JsonMappingConfig
 	@JsonIgnore
 	private boolean isConfigForShipperProduct(@NonNull final String shipperProduct)
 	{
-		return this.shipperProduct == null || this.shipperProduct.equals(shipperProduct);
+		return this.shipperProductExternalId == null || this.shipperProductExternalId.equals(shipperProduct);
 	}
 }

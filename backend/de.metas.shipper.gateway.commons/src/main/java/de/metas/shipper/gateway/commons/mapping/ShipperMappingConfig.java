@@ -22,7 +22,7 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
@@ -38,7 +38,7 @@ public class ShipperMappingConfig
 	@NonNull ShipperMappingConfigId id;
 	@NonNull SeqNo seqNo;
 	@NonNull ShipperId shipperId;
-	@Nullable ShipperProduct shipperProduct;
+	@Nullable CarrierProductId carrierProductId;
 	@NonNull AttributeType attributeType;
 	@Nullable String attributeGroupKey;
 	@NonNull String attributeKey;

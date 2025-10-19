@@ -41,14 +41,14 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_DELIVERY_DATE = "DeliveryDate";
 	public static final String ATTRIBUTE_VALUE_CUSTOMER_REFERENCE = "CustomerReference";
 	public static final String ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE = "ReceiverCountryCode";
-	public static final String ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME = "ShipperProductName";
+	public static final String ATTRIBUTE_VALUE_SHIPPER_PRODUCT_EXTERNAL_ID = "ShipperProductExternalId";
 	public static final String ATTRIBUTE_VALUE_SENDER_COMPANY_NAME = "SenderCompanyName";
 	public static final String ATTRIBUTE_VALUE_SENDER_COMPANY_NAME_2 = "SenderCompanyName2";
 	public static final String ATTRIBUTE_VALUE_SENDER_DEPARTMENT = "SenderDepartment";
 	public static final String ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE = "SenderCountryCode";
 	public static final String ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME = "ReceiverCompanyName";
 	public static final String ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT = "ReceiverDepartment";
-	public static final String ATTRIBUTE_VALUE_RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME = "ReceiverContactFirstnameAndLastname";
+	public static final String ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME = "ReceiverContactLastnameAndFirstname";
 	public static final String ATTRIBUTE_VALUE_SHIPPER_EORI = "ShipperEORI";
 
 	// attributeValuesLine
