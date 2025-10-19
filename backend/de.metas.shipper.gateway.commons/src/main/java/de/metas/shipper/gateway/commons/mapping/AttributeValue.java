@@ -49,7 +49,7 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	SHIPPER_EORI(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperEORI),
 
 	// From parcel
-	PARCEL_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperEORI),
+	PARCEL_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ParcelId),
 
 	// From content
 	SHIPPED_QUANTITY(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShippedQuantity),

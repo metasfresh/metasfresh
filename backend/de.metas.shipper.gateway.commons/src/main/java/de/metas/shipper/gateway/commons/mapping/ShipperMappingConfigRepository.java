@@ -27,6 +27,7 @@ import de.metas.cache.CCache;
 import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.Adempiere;
@@ -78,6 +79,7 @@ public class ShipperMappingConfigRepository
 		return ShipperMappingConfig.builder()
 				.id(ShipperMappingConfigId.ofRepoId(record.getM_Shipper_Mapping_Config_ID()))
 				.shipperId(ShipperId.ofRepoId(record.getM_Shipper_ID()))
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
 				.attributeType(AttributeType.ofCode(record.getMappingAttributeType()))
 				.attributeKey(record.getMappingAttributeKey())
