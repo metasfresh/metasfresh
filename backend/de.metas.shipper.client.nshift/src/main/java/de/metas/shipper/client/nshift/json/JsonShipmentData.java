@@ -89,7 +89,7 @@ public class JsonShipmentData
 
 	@JsonProperty("References")
 	@Singular
-	List<JsonShipmentReference> references;
+	List<JsonReference> references;
 
 	@JsonProperty("DetailGroups")
 	@Singular

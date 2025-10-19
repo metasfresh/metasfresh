@@ -49,5 +49,5 @@ public class JsonPackage
 	String barcode2;
 
 	@JsonProperty("References")
-	List<JsonLineReference> references;
+	List<JsonReference> references;
 }

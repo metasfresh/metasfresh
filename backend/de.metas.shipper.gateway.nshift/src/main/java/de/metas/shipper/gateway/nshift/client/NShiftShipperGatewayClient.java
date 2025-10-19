@@ -34,6 +34,7 @@ import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.logging.LogManager;
 import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
+import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogCreateRequest;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
@@ -72,6 +73,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	//TODO implement as provided by carrier
 	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};
 	@NonNull private final ShipperConfig shipperConfig;
+	@NonNull private final ShipperMappingConfigList mappingConfigs;
 
 	@Override
 	@NonNull
@@ -84,7 +86,8 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder);
+		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs
+		);
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		JsonDeliveryResponse response;
 		try

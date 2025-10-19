@@ -102,4 +102,7 @@ public class JsonAddress
 
 	@JsonProperty("VOECNumber")
 	String voecNumber;
+
+	@JsonProperty("Residential")
+	String residential;
 }

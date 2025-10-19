@@ -22,28 +22,24 @@
 
 package de.metas.shipper.client.nshift.json;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import lombok.experimental.SuperBuilder;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "GroupID")
-@JsonSubTypes({
-		@JsonSubTypes.Type(value = JsonCustomsArticleInfo.class, name = "1"),
-		@JsonSubTypes.Type(value = JsonCustomsInfo.class, name = "2"),
-		@JsonSubTypes.Type(value = JsonFedExCustomsInformation.class, name = "4"),
-		@JsonSubTypes.Type(value = JsonDHLFiling.class, name = "5"),
-		@JsonSubTypes.Type(value = JsonOrderData.class, name = "6"),
-})
-@Getter
-@NoArgsConstructor
-@SuperBuilder
-@EqualsAndHashCode
-@ToString
-public abstract class JsonDetailGroup
+import java.util.List;
+
+
+@Value
+@Builder
+@Jacksonized
+public class JsonDetailGroup
 {
+	@JsonProperty("GroupID")
+	String groupID;
 
+	@JsonProperty("Rows")
+	@Singular("row")
+	List<JsonDetailRow> rows;
 }

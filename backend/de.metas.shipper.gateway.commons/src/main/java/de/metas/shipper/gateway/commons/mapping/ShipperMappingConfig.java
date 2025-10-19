@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.client.nshift
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,20 +20,30 @@
  * #L%
  */
 
-package de.metas.shipper.client.nshift.json;
+package de.metas.shipper.gateway.commons.mapping;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.ShipperId;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
-@Value
+import javax.annotation.Nullable;
+
 @Builder
-public class JsonCustomsInfoDetail
+@Value
+public class ShipperMappingConfig
 {
-
-	@JsonProperty("KindID")
-	JsonCustomsInfoDetailKind kindId;
-
-	@JsonProperty("Value")
-	String value;
+	@NonNull ShipperMappingConfigId id;
+	@NonNull SeqNo seqNo;
+	@Nullable String description;
+	@NonNull ShipperId shipperId;
+	@Nullable CarrierProductId carrierProductId;
+	@NonNull AttributeType attributeType;
+	@Nullable String attributeKey;
+	@NonNull AttributeValue attributeValue;
+	@Nullable String groupKey;
+	@Nullable MappingRule mappingRule;
+	@Nullable String mappingRuleValue;
 }

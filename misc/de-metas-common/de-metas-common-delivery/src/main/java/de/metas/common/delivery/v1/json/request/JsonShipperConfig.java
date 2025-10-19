@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 @Value
-@Builder(toBuilder = true)
+@Builder(toBuilder = true) //FIXME
 @Jacksonized
 public class JsonShipperConfig
 {
@@ -50,9 +50,8 @@ public class JsonShipperConfig
 	@NonNull
 	public String getAdditionalPropertyNotNull(@NonNull final String key)
 	{
-		return Check.assumeNotNull( getAdditionalProperty(key), "No ShipperConfig.additionalProperty found for key '%s'. Available keys: %s", key, additionalProperties.keySet());
+		return Check.assumeNotNull(getAdditionalProperty(key), "No ShipperConfig.additionalProperty found for key '%s'. Available keys: %s", key, additionalProperties.keySet());
 	}
-
 
 	@JsonIgnore
 	@Nullable
