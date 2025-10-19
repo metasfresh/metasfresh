@@ -69,4 +69,25 @@ public class OrderPaySchedule
 
 		}
 	}
+
+	public void markAsPaid(final OrderSchedulingContext context, final OrderPayScheduleId orderPayScheduleId)
+	{
+		final PaymentTerm paymentTerm = context.getPaymentTerm();
+
+		for (final OrderPayScheduleLine line : lines)
+		{
+			if (line.getId().equals(orderPayScheduleId))
+			{
+				final DueDateAndStatus dueDateAndStatus = DueDateAndStatus.paid(line.getDueDate());
+				line.applyAndProcess(dueDateAndStatus);
+			}
+			else if (line.getStatus().isPending())
+			{
+				final PaymentTermBreak termBreak = paymentTerm.getBreakById(line.getPaymentTermBreakId());
+				final DueDateAndStatus dueDateAndStatus = context.computeDueDate(termBreak);
+				line.applyAndProcess(dueDateAndStatus);
+			}
+
+		}
+	}
 }

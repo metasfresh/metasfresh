@@ -20,6 +20,11 @@ public class DueDateAndStatus
 		return PENDING;
 	}
 
+	public static DueDateAndStatus paid(@NonNull final Instant dueDate)
+	{
+		return DueDateAndStatus.of(dueDate, OrderPayScheduleStatus.Paid);
+	}
+
 	public static DueDateAndStatus awaitingPayment(@NonNull final Instant dueDate)
 	{
 		if (!dueDate.isBefore(PaymentTermConstants.INFINITE_FUTURE_DATE))
