@@ -31,6 +31,7 @@ import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.JsonQuantity;
+import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
@@ -93,7 +94,7 @@ public class ShipmentServiceTest
 	private static final JsonDeliveryRequest DELIVERY_REQUEST = JsonDeliveryRequest.builder()
 			.deliveryOrderId(1)
 			.shipperProduct(JsonShipperProduct.builder().code("shipperProductCode").build())
-			.shipperProductService("337011")
+			.service(JsonCarrierService.builder().id("337011").name("serviceName").build())
 			.pickupAddress(JsonAddress.builder()
 					.bpartnerId(123)
 					.companyName1("metas GmbH")
@@ -196,7 +197,7 @@ public class ShipmentServiceTest
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 					.build())
 			.goodsType(JsonGoodsType.builder().id("5").name("Packet").build())
-			.shipperProduct(JsonShipperProduct.builder().code("2758").build())
+			.shipperProduct(JsonShipperProduct.builder().code("2758").name("DHL - Euroconnect").build())
 			.mappingConfigs(JsonMappingConfigList.ofList(ImmutableList.of(
 					JsonMappingConfig.builder()
 							.seqNo(10)

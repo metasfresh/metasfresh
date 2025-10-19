@@ -63,7 +63,6 @@ public class JsonDeliveryRequest
 	@Nullable String receiverEORI;
 	@NonNull JsonShipperConfig shipperConfig;
 	@NonNull @Builder.Default JsonMappingConfigList mappingConfigs = JsonMappingConfigList.EMPTY;
-	@NonNull @Singular Map<String, String> shipAdvises;
 	@Nullable JsonGoodsType goodsType;
 	@NonNull @Singular Set<JsonCarrierService> services;
 
@@ -113,7 +112,7 @@ public class JsonDeliveryRequest
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE:
 				return getPickupAddress().getCountry();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_NAME:
-				return getShipperProduct(); //FIXME
+				return getShipperProduct() != null ? getShipperProduct().getName() : null;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_EORI:
 				return getShipperEORI();
 			default:
