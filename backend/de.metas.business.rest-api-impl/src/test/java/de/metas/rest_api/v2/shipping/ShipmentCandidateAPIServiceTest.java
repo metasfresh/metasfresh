@@ -35,6 +35,7 @@ import de.metas.common.shipping.v2.JsonRequestCandidateResults.JsonRequestCandid
 import de.metas.common.shipping.v2.Outcome;
 import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates;
 import de.metas.common.util.time.SystemTime;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
@@ -828,6 +829,7 @@ class ShipmentCandidateAPIServiceTest
 		record.setQtyOrdered(new BigDecimal("10"));
 		record.setQtyDelivered(new BigDecimal("9"));
 		record.setQtyToDeliver(new BigDecimal("8"));
+		record.setCarrier_Advising_Status(CarrierAdviseStatus.NotRequested.getCode());
 		if (orderLineRecord != null)
 		{
 			record.setC_OrderLine_ID(orderLineRecord.getC_OrderLine_ID());
