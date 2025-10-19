@@ -569,46 +569,41 @@ public class C_Order_StepDef
 	@And("update order")
 	public void update_order(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_Order_ID)
+				.forEach(this::updateOrder);
+	}
+
+	private void updateOrder(@NonNull final DataTableRow tableRow)
+	{
+		final OrderId orderId = tableRow.getAsIdentifier().lookupNotNullIdIn(orderTable);
+		final I_C_Order order = orderBL.getById(orderId);
+
+		final Optional<String> docBaseType = tableRow.getAsOptionalString(COLUMNNAME_DocBaseType);
+		final Optional<String> docSubType = tableRow.getAsOptionalString(COLUMNNAME_DocSubType);
+
+		if (docBaseType.isPresent() && docSubType.isPresent())
 		{
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Order order = orderTable.get(orderIdentifier);
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(docBaseType.get())
+					.docSubType(DocSubType.ofNullableCode(docSubType.get()))
+					.adClientId(order.getAD_Client_ID())
+					.adOrgId(order.getAD_Org_ID())
+					.build());
 
-			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
-			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
-
-			if (Check.isNotBlank(docBaseType) && Check.isNotBlank(docSubType))
-			{
-				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-						.docBaseType(docBaseType)
-						.docSubType(DocSubType.ofNullableCode(docSubType))
-						.adClientId(order.getAD_Client_ID())
-						.adOrgId(order.getAD_Org_ID())
-						.build();
-
-				final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
-
-				order.setC_DocType_ID(docTypeId.getRepoId());
-				order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
-			}
-
-			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
-			if (Check.isNotBlank(paymentRule))
-			{
-				order.setPaymentRule(paymentRule);
-			}
-
-			final Timestamp preparationDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + COLUMNNAME_PreparationDate);
-			if (preparationDate != null)
-			{
-				order.setPreparationDate(preparationDate);
-			}
-
-			InterfaceWrapperHelper.saveRecord(order);
-
-			orderTable.putOrReplace(orderIdentifier, order);
+			order.setC_DocType_ID(docTypeId.getRepoId());
+			order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		}
+
+		tableRow.getAsOptionalString(COLUMNNAME_PaymentRule)
+				.ifPresent(order::setPaymentRule);
+		tableRow.getAsOptionalInstant(COLUMNNAME_PreparationDate)
+				.ifPresent(expected -> order.setPreparationDate(Timestamp.from(expected)));
+		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_LC_Date)
+				.ifPresent(expected -> order.setLC_Date(Timestamp.from(expected)));
+		saveRecord(order);
+
+		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
 	}
 
 	@And("^after not more than (.*)s the order is found$")

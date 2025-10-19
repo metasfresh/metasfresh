@@ -8,7 +8,7 @@ import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.banking.payment.InvoiceMatchingMode;
+import de.metas.banking.payment.PaySelectionMatchingMode;
 import de.metas.document.engine.DocStatus;
 import de.metas.payment.PaymentRule;
 import de.metas.process.IProcessPrecondition;
@@ -105,7 +105,7 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 			}
 			else if (name.equals("MatchRequirement"))
 			{
-				final InvoiceMatchingMode matchRequirement = InvoiceMatchingMode.ofCode(para.getParameterAsString());
+				final PaySelectionMatchingMode matchRequirement = PaySelectionMatchingMode.ofCode(para.getParameterAsString());
 				paySelectionUpdater.setMatchRequirement(matchRequirement);
 			}
 			else if (name.equals("PayDate"))

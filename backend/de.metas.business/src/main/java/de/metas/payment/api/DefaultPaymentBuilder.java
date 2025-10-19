@@ -24,6 +24,7 @@ package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -47,12 +48,12 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -74,7 +75,13 @@ public class DefaultPaymentBuilder
 	public static DefaultPaymentBuilder newBuilderOfInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		return new DefaultPaymentBuilder()
-				.invoice(invoice);
+				.fromInvoice(invoice);
+	}
+
+	public static DefaultPaymentBuilder newBuilderOfOrder(@NonNull final I_C_Order order)
+	{
+		return new DefaultPaymentBuilder()
+				.fromOrder(order);
 	}
 
 	private final transient IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
@@ -225,7 +232,7 @@ public class DefaultPaymentBuilder
 	public final DefaultPaymentBuilder dateTrx(@Nullable final Instant dateTrx)
 	{
 		assertNotBuilt();
-		payment.setDateTrx(dateTrx != null ? Timestamp.from(dateTrx) : null);
+		payment.setDateTrx(TimeUtil.asTimestamp(dateTrx));
 		return this;
 	}
 
@@ -239,7 +246,7 @@ public class DefaultPaymentBuilder
 	public final DefaultPaymentBuilder payAmt(@Nullable final BigDecimal payAmt)
 	{
 		assertNotBuilt();
-		payment.setPayAmt(payAmt);
+		payment.setPayAmt(CoalesceUtil.coalesceNotNull(payAmt, BigDecimal.ZERO));
 		return this;
 	}
 
@@ -270,9 +277,9 @@ public class DefaultPaymentBuilder
 		payment.setC_ConversionType_ID(CurrencyConversionTypeId.toRepoId(paymentCurrencyContext.getCurrencyConversionTypeId()));
 		if (paymentCurrencyContext.isFixedConversionRate())
 		{
-			Check.assumeEquals(payment.getC_Currency_ID(), paymentCurrencyContext.getPaymentCurrencyId().getRepoId(), "{} shall match payment currency", paymentCurrencyContext);
+			Check.assumeEquals(payment.getC_Currency_ID(), CurrencyId.toRepoId(paymentCurrencyContext.getPaymentCurrencyId()), "{} shall match payment currency", paymentCurrencyContext);
 			payment.setCurrencyRate(paymentCurrencyContext.getCurrencyRate());
-			payment.setSource_Currency_ID(paymentCurrencyContext.getSourceCurrencyId().getRepoId());
+			payment.setSource_Currency_ID(CurrencyId.toRepoId(paymentCurrencyContext.getSourceCurrencyId()));
 		}
 		return this;
 	}
@@ -293,7 +300,7 @@ public class DefaultPaymentBuilder
 	 * <li>IsReceipt: set from the invoice's <code>SOTrx</code> (negated if the invoice is a credit memo)
 	 * </ul>
 	 */
-	private DefaultPaymentBuilder invoice(@NonNull final I_C_Invoice invoice)
+	private DefaultPaymentBuilder fromInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		adOrgId(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
@@ -355,6 +362,19 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setIsAutoAllocateAvailableAmt(isAutoAllocateAvailableAmt);
+		return this;
+	}
+
+	private DefaultPaymentBuilder fromOrder(@NonNull final I_C_Order order)
+	{
+		adOrgId(OrgId.ofRepoId(order.getAD_Org_ID()));
+		orderId(OrderId.ofRepoId(order.getC_Order_ID()));
+		bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
+		currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()));
+
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		direction(PaymentDirection.ofSOTrxAndCreditMemo(soTrx, false));
+
 		return this;
 	}
 }

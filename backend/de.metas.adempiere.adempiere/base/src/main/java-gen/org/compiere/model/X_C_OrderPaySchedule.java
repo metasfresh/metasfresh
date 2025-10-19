@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_OrderPaySchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2027894248L;
+	private static final long serialVersionUID = 836619307L;
 
     /** Standard Constructor */
     public X_C_OrderPaySchedule (final Properties ctx, final int C_OrderPaySchedule_ID, @Nullable final String trxName)
@@ -133,6 +133,18 @@ public class X_C_OrderPaySchedule extends org.compiere.model.PO implements I_C_O
 	public java.sql.Timestamp getDueDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
+	}
+
+	@Override
+	public void setOffsetDays (final int OffsetDays)
+	{
+		set_Value (COLUMNNAME_OffsetDays, OffsetDays);
+	}
+
+	@Override
+	public int getOffsetDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OffsetDays);
 	}
 
 	@Override

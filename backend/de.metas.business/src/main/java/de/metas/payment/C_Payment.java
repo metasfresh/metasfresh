@@ -86,8 +86,13 @@ public class C_Payment
 		}
 
 		final I_C_Order order = orderDAO.getById(orderId);
-
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID());
+
+		if (paymentTermRepository.getById(paymentTermId).isComplex())
+		{
+			return; // do not update form order, since all amounts are calculated
+		}
+		
 		final Percent paymentTermDiscountPercent = paymentTermRepository.getPaymentTermDiscount(paymentTermId);
 		final Currency currency = currencyRepository.getById(record.getC_Currency_ID());
 

@@ -1,2 +1,16 @@
 {
+  "locator": "Lagerort",
+  "HU": "HU",
+  "product": "Produkt",
+  "qtyBooked": "Qty Booked",
+  "qtyCount": "Qty Count",
+  "scanQRCode": "QR scannen",
+  "scanHUPlaceholder": "Scannen HU",
+  "scanLocatorPlaceholder": "Lagerort scannen",
+  "InventoryLineScreen": {
+    "caption": "Line"
+  },
+  "InventoryLineHUScreen": {
+    "caption": "HU"
+  }
 }

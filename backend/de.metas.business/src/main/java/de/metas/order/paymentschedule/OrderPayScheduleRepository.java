@@ -22,23 +22,19 @@
 
 package de.metas.order.paymentschedule;
 
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.payment.paymentterm.PaymentTermBreakId;
-import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_OrderPaySchedule;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -46,7 +42,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class OrderPayScheduleRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private OrderPayScheduleLoaderAndSaver newLoaderAndSaver()
+	{
+		return OrderPayScheduleLoaderAndSaver.builder()
+				.queryBL(queryBL)
+				.trxManager(trxManager)
+				.build();
+	}
 
 	public void create(@NonNull final OrderPayScheduleCreateRequest request)
 	{
@@ -55,7 +60,7 @@ public class OrderPayScheduleRepository
 				.forEach(line -> createLine(line, request.getOrderId(), seqNoProvider.getAndIncrement()));
 	}
 
-	private void createLine(@NonNull final OrderPayScheduleCreateRequest.Line request, @NonNull OrderId orderId, @NonNull SeqNo seqNo)
+	private static void createLine(@NonNull final OrderPayScheduleCreateRequest.Line request, @NonNull final OrderId orderId, @NonNull final SeqNo seqNo)
 	{
 		final I_C_OrderPaySchedule record = newInstance(I_C_OrderPaySchedule.class);
 		record.setC_Order_ID(orderId.getRepoId());
@@ -66,6 +71,7 @@ public class OrderPayScheduleRepository
 		record.setDueDate(TimeUtil.asTimestamp(request.getDueDate()));
 		record.setPercent(request.getPercent().toInt());
 		record.setReferenceDateType(request.getReferenceDateType().getCode());
+		record.setOffsetDays(request.getOffsetDays());
 		record.setSeqNo(seqNo.toInt());
 		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(request.getOrderPayScheduleStatus()));
 		saveRecord(record);
@@ -74,13 +80,7 @@ public class OrderPayScheduleRepository
 	@NonNull
 	public Optional<OrderPaySchedule> getByOrderId(@NonNull final OrderId orderId)
 	{
-		return queryBL.createQueryBuilder(I_C_OrderPaySchedule.class)
-				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId)
-				.orderBy(I_C_OrderPaySchedule.COLUMNNAME_SeqNo)
-				.create()
-				.stream()
-				.map(OrderPayScheduleRepository::fromRecord)
-				.collect(OrderPaySchedule.collect());
+		return newLoaderAndSaver().loadByOrderId(orderId);
 	}
 
 	public void deleteByOrderId(@NonNull final OrderId orderId)
@@ -91,33 +91,10 @@ public class OrderPayScheduleRepository
 				.delete();
 	}
 
-	private static void updateRecord(final I_C_OrderPaySchedule record, final @NotNull OrderPayScheduleLine from)
-	{
-		record.setC_Order_ID(from.getOrderId().getRepoId());
-		record.setC_PaymentTerm_ID(from.getPaymentTermBreakId().getPaymentTermId().getRepoId());
-		record.setC_PaymentTerm_Break_ID(from.getPaymentTermBreakId().getRepoId());
-		record.setDueAmt(from.getDueAmount().toBigDecimal());
-		record.setC_Currency_ID(from.getDueAmount().getCurrencyId().getRepoId());
-		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate()));
-		record.setPercent(from.getPercent().toInt());
-		record.setReferenceDateType(from.getReferenceDateType().getCode());
-		record.setSeqNo(from.getSeqNo().toInt());
-		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(from.getOrderPayScheduleStatus()));
-	}
+	public void save(final OrderPaySchedule orderPaySchedule) {newLoaderAndSaver().save(orderPaySchedule);}
 
-	@NonNull
-	private static OrderPayScheduleLine fromRecord(@NonNull final I_C_OrderPaySchedule record)
+	public void updateById(@NonNull final OrderId orderId, @NonNull final Consumer<OrderPaySchedule> updater)
 	{
-		return OrderPayScheduleLine.builder()
-				.id(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
-				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
-				.paymentTermBreakId(PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID()))
-				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
-				.dueDate(record.getDueDate().toInstant())
-				.percent(Percent.of(record.getPercent()))
-				.seqNo(SeqNo.ofInt(record.getSeqNo()))
-				.referenceDateType(ReferenceDateType.ofCode(record.getReferenceDateType()))
-				.orderPayScheduleStatus(OrderPayScheduleStatus.ofCode(record.getStatus()))
-				.build();
+		newLoaderAndSaver().updateById(orderId, updater);
 	}
 }

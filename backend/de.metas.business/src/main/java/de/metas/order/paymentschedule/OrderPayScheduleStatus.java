@@ -22,6 +22,7 @@
 
 package de.metas.order.paymentschedule;
 
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,7 @@ import lombok.NonNull;
 import org.compiere.model.X_C_OrderPaySchedule;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @AllArgsConstructor
 public enum OrderPayScheduleStatus implements ReferenceListAwareEnum
@@ -37,6 +39,11 @@ public enum OrderPayScheduleStatus implements ReferenceListAwareEnum
 	Pending(X_C_OrderPaySchedule.STATUS_Pending_Ref),
 	Awaiting_Pay(X_C_OrderPaySchedule.STATUS_Awaiting_Pay),
 	Paid(X_C_OrderPaySchedule.STATUS_Paid);
+
+	private static final ImmutableSetMultimap<OrderPayScheduleStatus, OrderPayScheduleStatus> allowedTransitions = ImmutableSetMultimap.<OrderPayScheduleStatus, OrderPayScheduleStatus>builder()
+			.put(Pending, Awaiting_Pay)
+			.put(Awaiting_Pay, Paid)
+			.build();
 
 	@Getter @NonNull final String code;
 
@@ -54,5 +61,14 @@ public enum OrderPayScheduleStatus implements ReferenceListAwareEnum
 	public static String toCodeOrNull(final @Nullable OrderPayScheduleStatus status)
 	{
 		return status != null ? status.getCode() : null;
+	}
+
+	public boolean isPending() {return this == Pending;}
+
+	public static boolean equals(@Nullable final OrderPayScheduleStatus status1, @Nullable final OrderPayScheduleStatus status2) {return Objects.equals(status1, status2);}
+
+	public boolean isAllowTransitionTo(final @NonNull OrderPayScheduleStatus nextStatus)
+	{
+		return allowedTransitions.containsEntry(this, nextStatus);
 	}
 }

@@ -3,12 +3,12 @@ package de.metas.inventory.mobileui.deps.handlingunits;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.inventory.mobileui.deps.products.Attributes;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +23,8 @@ public class HULoadingCache
 	private final HashMap<HuId, LocatorId> huLocatorsByHUId = new HashMap<>();
 	private final HashMap<HuId, I_M_HU> husById = new HashMap<>();
 	private final HashMap<HuId, HUProductStorages> productStoragesByHUId = new HashMap<>();
-	private final HashMap<HuId, ImmutableAttributeSet> attributesByHUId = new HashMap<>();
+	private final HashMap<HuId, Attributes> attributesByHUId = new HashMap<>();
+	private final HashMap<HuId, String> displayNamesByHUId = new HashMap<>();
 
 	public I_M_HU getHUById(final @NotNull HuId huId)
 	{
@@ -47,7 +48,7 @@ public class HULoadingCache
 		return productStoragesByHUId.computeIfAbsent(HuId.ofRepoId(hu.getM_HU_ID()), huId -> huService.getProductStorages(hu));
 	}
 
-	public ImmutableAttributeSet getAttributes(final I_M_HU hu)
+	public Attributes getAttributes(final I_M_HU hu)
 	{
 		return attributesByHUId.computeIfAbsent(HuId.ofRepoId(hu.getM_HU_ID()), huId -> huService.getImmutableAttributeSet(hu));
 	}
@@ -55,5 +56,15 @@ public class HULoadingCache
 	public LocatorId getLocatorId(@NonNull final I_M_HU hu)
 	{
 		return huLocatorsByHUId.computeIfAbsent(HuId.ofRepoId(hu.getM_HU_ID()), huId -> IHandlingUnitsBL.extractLocatorId(hu));
+	}
+
+	public String getDisplayName(@NonNull final HuId huId)
+	{
+		return displayNamesByHUId.computeIfAbsent(huId, this::retrieveDisplayName);
+	}
+
+	private String retrieveDisplayName(final HuId huId)
+	{
+		return huService.getDisplayName(getHUById(huId));
 	}
 }

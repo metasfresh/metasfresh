@@ -45,6 +45,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_L
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_TaxCategory;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
@@ -62,6 +63,8 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
+import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionConfig;
+import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -76,6 +79,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.user.UserGroupId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -98,8 +102,12 @@ import java.util.Optional;
 public class ExternalSystemConfigRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull
 	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
+	@NonNull
 	private final TaxCategoryDAO taxCategoryDAO;
+	@NonNull
 	private final ExternalSystemRepository externalSystemRepository;
 
 	@VisibleForTesting
@@ -107,7 +115,7 @@ public class ExternalSystemConfigRepo
 	{
 		Adempiere.assertUnitTestMode();
 		return new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO(),
-			ExternalSystemRepository.newInstanceForUnitTesting());
+				ExternalSystemRepository.newInstanceForUnitTesting());
 	}
 
 	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
@@ -157,6 +165,10 @@ public class ExternalSystemConfigRepo
 		else if (type.isScriptedExportConversion())
 		{
 			return getByCastedId(ExternalSystemScriptedExportConversionConfigId.cast(id));
+		}
+		else if (type.isScriptedImportConversion())
+		{
+			return getByCastedId(ExternalSystemScriptedImportConversionConfigId.cast(id));
 		}
 		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 	}
@@ -246,6 +258,10 @@ public class ExternalSystemConfigRepo
 		{
 			return getPCMConfigByParentId(id);
 		}
+		else if (externalSystemType.isScriptedImportConversion())
+		{
+			return getScriptedImportConversionConfigByParentId(id);
+		}
 		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 	}
 
@@ -287,6 +303,10 @@ public class ExternalSystemConfigRepo
 		else if (externalSystemType.isProCareManagement())
 		{
 			result = getAllByTypePCM();
+		}
+		else if (externalSystemType.isScriptedImportConversion())
+		{
+			result = getAllByScriptedImportConversion();
 		}
 		else if (externalSystemType.isShopware6() || externalSystemType.isOther())
 		{
@@ -428,7 +448,7 @@ public class ExternalSystemConfigRepo
 
 	@NonNull
 	private ExternalSystemAlbertaConfig buildExternalSystemAlbertaConfig(final @NonNull I_ExternalSystem_Config_Alberta config,
-			@NonNull final ExternalSystemParentConfigId parentConfigId)
+																		 @NonNull final ExternalSystemParentConfigId parentConfigId)
 	{
 		return ExternalSystemAlbertaConfig.builder()
 				.id(ExternalSystemAlbertaConfigId.ofRepoId(config.getExternalSystem_Config_Alberta_ID()))
@@ -992,11 +1012,31 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
+	private ExternalSystemParentConfig getByCastedId(@NonNull final ExternalSystemScriptedImportConversionConfigId id)
+	{
+		final I_ExternalSystem_Config_ScriptedImportConversion config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_ScriptedImportConversion.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
 	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_ScriptedExportConversion config)
 	{
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 
 		final ExternalSystemScriptedExportConversionConfig child = ExternalSystemScriptedExportConversionRepository.fromRecord(config, parentConfigId);
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_ScriptedImportConversion config)
+	{
+		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
+
+		final ExternalSystemScriptedImportConversionConfig child = buildExternalSystemScriptedImportConversionConfig(config);
 
 		return getById(parentConfigId)
 				.childConfig(child)
@@ -1036,6 +1076,22 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
+	private ExternalSystemScriptedImportConversionConfig buildExternalSystemScriptedImportConversionConfig(@NonNull final I_ExternalSystem_Config_ScriptedImportConversion config)
+	{
+		final ExternalSystemScriptedImportConversionConfigId scriptedImportConfigId = ExternalSystemScriptedImportConversionConfigId.ofRepoId(config.getExternalSystem_Config_ScriptedImportConversion_ID());
+
+		return ExternalSystemScriptedImportConversionConfig.builder()
+				.id(scriptedImportConfigId)
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.value(config.getExternalSystemValue())
+				.endpointName(config.getEndpointName())
+				.scriptIdentifier(config.getScriptIdentifier())
+				.userImportId(UserId.ofRepoId(config.getAD_User_Import_ID()))
+				.description(config.getDescription())
+				.build();
+	}
+
+	@NonNull
 	private Optional<PCMContentSourceLocalFile> getContentSourceLocalFileByConfigId(@NonNull final ExternalSystemPCMConfigId configId)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement_LocalFile.class)
@@ -1058,6 +1114,17 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
+	private Optional<IExternalSystemChildConfig> getScriptedImportConversionConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedImportConversion.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ScriptedImportConversion.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ScriptedImportConversion.class)
+				.map(this::buildExternalSystemScriptedImportConversionConfig);
+	}
+
+	@NonNull
 	private Optional<I_ExternalSystem_Config_ProCareManagement> getPCMConfigByValue(@NonNull final String value)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement.class)
@@ -1071,6 +1138,17 @@ public class ExternalSystemConfigRepo
 	private ImmutableList<ExternalSystemParentConfig> getAllByTypePCM()
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByScriptedImportConversion()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedImportConversion.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()

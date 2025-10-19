@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.nshift.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
@@ -44,13 +45,14 @@ public class ShipAdvisorService
 {
 	private final NShiftShipAdvisorService shipAdvisorService;
 
-	public JsonDeliveryRequest advise(@NonNull final JsonDeliveryRequest deliveryRequest)
+	@VisibleForTesting
+	JsonDeliveryRequest advise(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		// For now, I ignore a set Shipper Product
 
 		final ImmutableList<JsonDeliveryOrderParcel> deliveryOrderParcels = deliveryRequest.getDeliveryOrderParcels();
 		Check.assumeNotEmpty(deliveryOrderParcels, "deliveryOrderParcels is not empty");
-		final JsonDeliveryAdvisorResponse response = shipAdvisorService.getShipAdvises(JsonDeliveryAdvisorRequest.builder()
+		final JsonDeliveryAdvisorResponse response = advise(JsonDeliveryAdvisorRequest.builder()
 						.pickupAddress(deliveryRequest.getPickupAddress())
 						.pickupDate(deliveryRequest.getPickupDate())
 						.pickupNote(deliveryRequest.getPickupNote())
@@ -77,9 +79,14 @@ public class ShipAdvisorService
 
 		return deliveryRequest.toBuilder()
 				.shipperProduct(response.getShipperProduct())
-				.shipperProductServices(response.getShipperProductServices())
-				.shipAdvises(response.getResponseItems())
+				.services(response.getShipperProductServices())
+				.goodsType(response.getGoodsType())
 				.build();
+	}
+
+	public JsonDeliveryAdvisorResponse advise(@NonNull final JsonDeliveryAdvisorRequest deliveryRequest)
+	{
+		return shipAdvisorService.advise(deliveryRequest);
 	}
 	
 	private static BigDecimal computeTotalGrossWeightKg(@NonNull final ImmutableList<JsonDeliveryOrderParcel> parcels)

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de.metas.banking.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,28 +20,10 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
+package de.metas.banking.payment;
 
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-
-@Value
-@Builder
-@Jacksonized
-@RequiredArgsConstructor
-public class CarrierShipperProduct implements ShipperProduct
+public enum PaySelectionLineType
 {
-	@Getter
-	String code;
-
-	public static CarrierShipperProduct ofCode(@NonNull final String code)
-	{
-		return new CarrierShipperProduct(code);
-	}
-
+	Order,
+	Invoice
 }

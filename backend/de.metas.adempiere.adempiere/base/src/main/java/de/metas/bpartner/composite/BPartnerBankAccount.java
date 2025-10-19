@@ -28,6 +28,7 @@ import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.common.util.Check;
 import de.metas.money.CurrencyId;
 import lombok.AccessLevel;
@@ -40,6 +41,7 @@ import org.adempiere.ad.table.RecordChangeLog;
 import javax.annotation.Nullable;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -86,9 +88,9 @@ public class BPartnerBankAccount
 	 */
 	@Setter(AccessLevel.NONE)
 	@JsonIgnore
-	private BPartnerId bpartnerId;
+	private @org.jetbrains.annotations.Nullable BPartnerId bpartnerId;
 
-	@NonNull
+	@Nullable
 	private String iban;
 
 	@Nullable
@@ -106,6 +108,9 @@ public class BPartnerBankAccount
 
 	@Nullable
 	private BankId bankId;
+
+	@Nullable
+	private BPBankAcctUse bpBankAcctUse;
 
 	@Nullable
 	private String accountName;
@@ -126,7 +131,7 @@ public class BPartnerBankAccount
 	@Builder(toBuilder = true)
 	private BPartnerBankAccount(
 			@Nullable final BPartnerBankAccountId id,
-			@NonNull final String iban,
+			@Nullable final String iban,
 			@Nullable final String qrIban,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final Boolean active,
@@ -143,7 +148,7 @@ public class BPartnerBankAccount
 		this.iban = iban;
 		this.qrIban = qrIban;
 		this.currencyId = currencyId;
-		this.active = coalesce(active, true);
+		this.active = coalesceNotNull(active, true);
 
 		this.changeLog = changeLog;
 

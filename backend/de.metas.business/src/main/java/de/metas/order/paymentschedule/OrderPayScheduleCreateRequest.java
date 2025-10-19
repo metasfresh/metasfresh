@@ -47,5 +47,7 @@ public class OrderPayScheduleCreateRequest
 		@NonNull OrderPayScheduleStatus orderPayScheduleStatus;
 		@NonNull Instant dueDate;
 		@NonNull Money dueAmount;
+
+		int offsetDays;
 	}
 }

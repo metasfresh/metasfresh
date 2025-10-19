@@ -34,9 +34,11 @@ import de.metas.common.delivery.v1.json.JsonQuantity;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonMappingConfig;
 import de.metas.common.delivery.v1.json.request.JsonMappingConfigList;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.shipper.client.nshift.json.request.JsonShipmentRequest;
 import org.junit.jupiter.api.Disabled;
@@ -51,7 +53,7 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@SpringBootTest(classes = {NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class})
+@SpringBootTest(classes = { NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class })
 @TestPropertySource(properties = {
 		"logging.level.de.metas.shipper.client.nshift.NShiftShipmentService=TRACE",
 		"logging.level.de.metas.shipper.client.nshift.NShiftRestClient=TRACE"
@@ -90,7 +92,7 @@ public class ShipmentServiceTest
 	private static final String PASSWORD = System.getProperty("nshift.test.password", "nShift portal password");
 	private static final JsonDeliveryRequest DELIVERY_REQUEST = JsonDeliveryRequest.builder()
 			.deliveryOrderId(1)
-			.shipperProduct("shipperProductName")
+			.shipperProduct(JsonShipperProduct.builder().code("shipperProductCode").build())
 			.shipperProductService("337011")
 			.pickupAddress(JsonAddress.builder()
 					.bpartnerId(123)
@@ -105,8 +107,8 @@ public class ShipmentServiceTest
 					.houseNo("2")
 					.build())
 			.pickupDate("2025-10-02")
-			.pickupTimeStart("10:00:00")
-			.pickupTimeEnd("13:00:00")
+			.timeFrom("10:00:00")
+			.timeTo("13:00:00")
 			.pickupNote("Pickup note")
 			.deliveryAddress(JsonAddress.builder()
 					.bpartnerId(123)
@@ -193,9 +195,8 @@ public class ShipmentServiceTest
 					.username(USERNAME)
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 					.build())
-			.shipAdvise(NShiftConstants.PROD_CONCEPT_ID, "2758")
-			.shipAdvise(NShiftConstants.GOODS_TYPE_ID, "5")
-			.shipAdvise(NShiftConstants.GOODS_TYPE_NAME, "Packet")
+			.goodsType(JsonGoodsType.builder().id("5").name("Packet").build())
+			.shipperProduct(JsonShipperProduct.builder().code("2758").build())
 			.mappingConfigs(JsonMappingConfigList.ofList(ImmutableList.of(
 					JsonMappingConfig.builder()
 							.seqNo(10)
