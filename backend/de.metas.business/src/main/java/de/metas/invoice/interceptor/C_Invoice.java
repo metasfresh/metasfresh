@@ -419,6 +419,10 @@ public class C_Invoice // 03771
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createOrderPaySchedules(@NonNull final I_C_Invoice invoice)
 	{
-		invoicePayScheduleService.createInvoicePaySchedules(invoice);
+		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
+		if (orderId != null)
+		{
+			invoicePayScheduleService.createInvoicePaySchedules(invoice);
+		}
 	}
 }
