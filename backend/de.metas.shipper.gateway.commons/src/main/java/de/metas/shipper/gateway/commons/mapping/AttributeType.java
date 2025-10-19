@@ -22,23 +22,23 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
-import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_M_Shipper_Mapping_Config;
 
 @RequiredArgsConstructor
 public enum AttributeType implements ReferenceListAwareEnum
 {
-	//TODO replace with constants from model
-	SENDER_ATTENTION(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION),
-	RECEIVER_ATTENTION(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION),
-	REFERENCE(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE),
-	LINE_REFERENCE(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE),
-	LINE_DETAIL_GROUP(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP),
-	DETAIL_GROUP(DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP);
+	// Keep in sync with de.metas.common.delivery.v1.json.DeliveryMappingConstants
+	SENDER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_SenderAttention),
+	RECEIVER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_ReceiverAttention),
+	REFERENCE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_Reference),
+	LINE_REFERENCE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_LineReference),
+	LINE_DETAIL_GROUP(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_LineDetailGroup),
+	DETAIL_GROUP(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTETYPE_DetailGroup);
 
 
 	private static final ReferenceListAwareEnums.ValuesIndex<AttributeType> index = ReferenceListAwareEnums.index(values());

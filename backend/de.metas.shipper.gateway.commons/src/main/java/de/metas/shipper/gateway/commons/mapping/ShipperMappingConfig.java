@@ -37,12 +37,13 @@ public class ShipperMappingConfig
 {
 	@NonNull ShipperMappingConfigId id;
 	@NonNull SeqNo seqNo;
+	@Nullable String description;
 	@NonNull ShipperId shipperId;
 	@Nullable CarrierProductId carrierProductId;
 	@NonNull AttributeType attributeType;
-	@Nullable String attributeGroupKey;
-	@NonNull String attributeKey;
+	@Nullable String attributeKey;
 	@NonNull AttributeValue attributeValue;
+	@Nullable String groupKey;
 	@Nullable MappingRule mappingRule;
 	@Nullable String mappingRuleValue;
 }

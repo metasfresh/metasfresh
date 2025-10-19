@@ -223,7 +223,7 @@ public class JsonShipperConverter
 				.seqNo(config.getSeqNo().toInt())
 				.shipperProductExternalId(carrierProduct != null ? carrierProduct.getCode() : null)
 				.attributeType(config.getAttributeType().name())
-				.attributeGroupKey(config.getAttributeGroupKey())
+				.groupKey(config.getGroupKey())
 				.attributeKey(config.getAttributeKey())
 				.attributeValue(config.getAttributeValue().toString())
 				.mappingRule(config.getMappingRule() != null ? config.getMappingRule().name() : null)

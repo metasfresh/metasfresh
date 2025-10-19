@@ -43,7 +43,7 @@ public class JsonMappingConfig
 	int seqNo;
 	@Nullable String shipperProductExternalId;
 	@NonNull String attributeType;
-	@Nullable String attributeGroupKey;
+	@Nullable String groupKey;
 	@Nullable String attributeKey;
 	@NonNull String attributeValue;
 	@Nullable String mappingRule;

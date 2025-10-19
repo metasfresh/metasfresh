@@ -22,43 +22,43 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
-import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_M_Shipper_Mapping_Config;
 
 @RequiredArgsConstructor
 public enum AttributeValue implements ReferenceListAwareEnum
 {
-	//TODO replace with constants from model
-	PICKUP_DATE_AND_TIME_START(DeliveryMappingConstants.ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_START),
-	PICKUP_DATE_AND_TIME_END(DeliveryMappingConstants.ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_END),
-	DELIVERY_DATE(DeliveryMappingConstants.ATTRIBUTE_VALUE_DELIVERY_DATE),
-	CUSTOMER_REFERENCE(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMER_REFERENCE),
-	RECEIVER_COUNTRY_CODE(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE),
-	SHIPPER_PRODUCT_EXTERNAL_ID(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_EXTERNAL_ID),
-	SENDER_COMPANY_NAME(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME),
-	SENDER_COMPANY_NAME_2(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME_2),
-	SENDER_DEPARTMENT(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_DEPARTMENT),
-	SENDER_COUNTRY_CODE(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE),
-	RECEIVER_COMPANY_NAME(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME),
-	RECEIVER_DEPARTMENT(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT),
-	RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME),
-	SHIPPER_EORI(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_EORI),
+	// Keep in sync with de.metas.common.delivery.v1.json.DeliveryMappingConstants
+	PICKUP_DATE_AND_TIME_START(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_PickupDateAndTimeStart),
+	PICKUP_DATE_AND_TIME_END(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_PickupDateAndTimeEnd),
+	DELIVERY_DATE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_DeliveryDate),
+	CUSTOMER_REFERENCE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CustomerReference),
+	RECEIVER_COUNTRY_CODE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverCountryCode),
+	SHIPPER_PRODUCT_EXTERNAL_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperProductExternalId),
+	SENDER_COMPANY_NAME(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_SenderCompanyName),
+	SENDER_COMPANY_NAME_2(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_SenderCompanyName2),
+	SENDER_DEPARTMENT(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_SenderDepartment),
+	SENDER_COUNTRY_CODE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_SenderCountryCode),
+	RECEIVER_COMPANY_NAME(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverCompanyName),
+	RECEIVER_DEPARTMENT(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverDepartment),
+	RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverContactLastnameAndFirstname),
+	SHIPPER_EORI(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperEORI),
 
 	// From parcel
-	PARCEL_ID(DeliveryMappingConstants.ATTRIBUTE_VALUE_PARCEL_ID),
+	PARCEL_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperEORI),
 
 	// From content
-	SHIPPED_QUANTITY(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPED_QUANTITY),
-	UOM_CODE(DeliveryMappingConstants.ATTRIBUTE_VALUE_UOM_CODE),
-	PRODUCT_NAME(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME),
-	SHIPMENT_ORDER_ITEM_ID(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPMENT_ORDER_ITEM_ID),
-	UNIT_PRICE(DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_PRICE),
-	TOTAL_VALUE(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE),
-	CURRENCY_CODE(DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE)
+	SHIPPED_QUANTITY(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShippedQuantity),
+	UOM_CODE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_UomCode),
+	PRODUCT_NAME(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ProductName),
+	SHIPMENT_ORDER_ITEM_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipmentOrderItemId),
+	UNIT_PRICE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_UnitPrice),
+	TOTAL_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_TotalValue),
+	CURRENCY_CODE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CurrencyCode)
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<AttributeValue> index = ReferenceListAwareEnums.index(values());

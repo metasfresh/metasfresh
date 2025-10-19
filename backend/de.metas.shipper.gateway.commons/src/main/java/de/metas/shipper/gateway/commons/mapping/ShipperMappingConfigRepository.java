@@ -24,12 +24,16 @@ package de.metas.shipper.gateway.commons.mapping;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CCache;
+import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.Adempiere;
+import org.compiere.model.I_M_Shipper_Mapping_Config;
 import org.springframework.stereotype.Repository;
+
+import java.util.stream.Collectors;
 
 @Repository
 public class ShipperMappingConfigRepository
@@ -44,7 +48,7 @@ public class ShipperMappingConfigRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<Integer, ShipperMappingConfigList> cache = CCache.<Integer, ShipperMappingConfigList>builder()
-			.tableName("I_M_Shipper_Mapping_Config.Table_Name")
+			.tableName(I_M_Shipper_Mapping_Config.Table_Name)
 			.build();
 
 	public ShipperMappingConfigList getByShipperId(@NonNull final ShipperId shipperId)
@@ -61,20 +65,26 @@ public class ShipperMappingConfigRepository
 
 	private ShipperMappingConfigList retrieveList()
 	{
-		return ShipperMappingConfigList.EMPTY;
-		// TODO
-		// return queryBL.createQueryBuilder(I_M_Shipper_Mapping_Config.class)
-		// 		.addOnlyActiveRecordsFilter()
-		// 		.create()
-		// 		.stream()
-		// 		.map(ShipperMappingConfigRepository::fromRecord)
-		// 		.collect(ShipperMappingConfigList.collect());
+		return ShipperMappingConfigList.ofCollection(queryBL.createQueryBuilder(I_M_Shipper_Mapping_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(ShipperMappingConfigRepository::fromRecord)
+				.collect(Collectors.toList()));
 	}
 
-	// private static ShipperMappingConfigList fromRecord(@NonNull final I_M_Shipper_Mapping_Config shipperMappingConfigRecord)
-	// {
-	// 	return ShipperMappingConfigList.builder()
-	// 			.id(ShipperMappingConfigId.ofRepoId(shipperMappingConfigRecord.getShipperMappingConfigList_ID()))
-	// 			.build();
-	// }
+	private static ShipperMappingConfig fromRecord(@NonNull final I_M_Shipper_Mapping_Config record)
+	{
+		return ShipperMappingConfig.builder()
+				.id(ShipperMappingConfigId.ofRepoId(record.getM_Shipper_Mapping_Config_ID()))
+				.shipperId(ShipperId.ofRepoId(record.getM_Shipper_ID()))
+				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
+				.attributeType(AttributeType.ofCode(record.getMappingAttributeType()))
+				.attributeKey(record.getMappingAttributeKey())
+				.attributeValue(AttributeValue.ofCode(record.getMappingAttributeValue()))
+				.groupKey(record.getMappingGroupKey())
+				.mappingRule(MappingRule.ofNullableCode(record.getMappingRule()))
+				.mappingRuleValue(record.getMappingRuleValue())
+				.build();
+	}
 }

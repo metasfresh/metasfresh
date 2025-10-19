@@ -22,18 +22,20 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
-import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_M_Shipper_Mapping_Config;
+
+import javax.annotation.Nullable;
 
 @RequiredArgsConstructor
 public enum MappingRule implements ReferenceListAwareEnum
 {
-	//TODO replace with constants from model
-	RECEIVER_COUNTRY_CODE(DeliveryMappingConstants.MAPPING_RULE_RECEIVER_COUNTRY_CODE)
+	// Keep in sync with de.metas.common.delivery.v1.json.DeliveryMappingConstants
+	RECEIVER_COUNTRY_CODE(X_M_Shipper_Mapping_Config.MAPPINGRULE_ReceiverCountryCode)
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<MappingRule> index = ReferenceListAwareEnums.index(values());
@@ -44,5 +46,11 @@ public enum MappingRule implements ReferenceListAwareEnum
 	public static MappingRule ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
+	}
+
+	@Nullable
+	public static MappingRule ofNullableCode(@Nullable final String code)
+	{
+		return code != null ? ofCode(code) : null;
 	}
 }

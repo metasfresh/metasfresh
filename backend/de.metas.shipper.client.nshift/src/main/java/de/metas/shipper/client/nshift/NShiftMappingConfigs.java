@@ -95,7 +95,7 @@ public class NShiftMappingConfigs
 	public ImmutableList<String> getDetailGroupKeysForType(@NonNull final String attributeType, @NonNull final Function<String, String> valueProvider)
 	{
 		return streamEligibleConfigs(attributeType, valueProvider)
-				.map(JsonMappingConfig::getAttributeGroupKey)
+				.map(JsonMappingConfig::getGroupKey)
 				.filter(Check::isNotBlank)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
@@ -107,7 +107,7 @@ public class NShiftMappingConfigs
 			@NonNull final Function<String, String> valueProvider)
 	{
 		final Map<Integer, String> detailsByKindId = streamEligibleConfigs(attributeType, valueProvider)
-				.filter(config -> attributeGroupKey.equals(config.getAttributeGroupKey()))
+				.filter(config -> attributeGroupKey.equals(config.getGroupKey()))
 				.filter(config -> Check.isNotBlank(config.getAttributeKey()))
 				.map(config -> new AbstractMap.SimpleImmutableEntry<>(
 						Integer.parseInt(config.getAttributeKey()),
