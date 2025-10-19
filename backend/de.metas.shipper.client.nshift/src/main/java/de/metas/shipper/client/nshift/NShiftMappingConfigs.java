@@ -89,6 +89,7 @@ public class NShiftMappingConfigs
 	{
 		return streamEligibleConfigs(attributeType, valueProvider)
 				.map(config -> valueProvider.apply(config.getAttributeValue()))
+				.filter(Check::isNotBlank)
 				.collect(ImmutableList.toImmutableList());
 	}
 

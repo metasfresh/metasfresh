@@ -222,11 +222,11 @@ public class JsonShipperConverter
 		return JsonMappingConfig.builder()
 				.seqNo(config.getSeqNo().toInt())
 				.shipperProductExternalId(carrierProduct != null ? carrierProduct.getCode() : null)
-				.attributeType(config.getAttributeType().name())
+				.attributeType(config.getAttributeType().getCode())
 				.groupKey(config.getGroupKey())
 				.attributeKey(config.getAttributeKey())
-				.attributeValue(config.getAttributeValue().toString())
-				.mappingRule(config.getMappingRule() != null ? config.getMappingRule().name() : null)
+				.attributeValue(config.getAttributeValue().getCode())
+				.mappingRule(config.getMappingRule() != null ? config.getMappingRule().getCode() : null)
 				.mappingRuleValue(config.getMappingRuleValue())
 				.build();
 	}
