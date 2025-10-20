@@ -11,6 +11,7 @@ import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
 import { useKeyboardBarcodeReader } from '../hooks/useKeyboardBarcodeReader';
 import { isMobileOrTablet } from '../utils/browser';
+import cx from 'classnames';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -51,11 +52,15 @@ const useConfigParams = () => {
 };
 
 const BarcodeScannerComponent = ({
+  isShowVideo: isShowVideoParam,
   resolveScannedBarcode,
   onResolvedResult,
   inputPlaceholderText,
-  continuousRunning,
+  continuousRunning: continuousRunningParam,
 }) => {
+  const isShowVideo = isShowVideoParam != null ? isShowVideoParam : true;
+  const continuousRunning = continuousRunningParam != null ? continuousRunningParam : true;
+
   const {
     isShowInputText,
     isInputTextReadonly,
@@ -73,29 +78,33 @@ const BarcodeScannerComponent = ({
   //   scanDuplicatesIntervalMillis,
   // });
 
-  const mountedRef = useRef(true);
-  const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
 
+  //
+  // Video
+  const mountedRef = useRef(true);
+  const videoRef = useRef();
   useEffect(() => {
     mountedRef.current = true;
 
-    const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-      if (mountedRef.current === false) {
-        controls.stop();
-      } else if (typeof result !== 'undefined') {
-        validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
-      }
-    });
+    if (isShowVideo) {
+      const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
+      codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
+        if (mountedRef.current === false) {
+          controls.stop();
+        } else if (typeof result !== 'undefined') {
+          validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
+        }
+      });
+    }
 
     return () => {
       mountedRef.current = false;
     };
-  }, []);
+  }, [isShowVideo]);
 
   useEffect(() => {
     return () => handleInputTextChangedDebounced.cancel();
@@ -244,10 +253,10 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
-      <video key="video" ref={videoRef} width="100%" height="100%" />
+      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
       {isShowInputText && !isProcessing && (
         <input
-          id="input-text"
+          id={cx('input-text', { 'input-text-over-video': isShowVideo })}
           key="input-text"
           ref={inputTextRef}
           className="input-text"
@@ -266,12 +275,11 @@ const BarcodeScannerComponent = ({
 };
 
 BarcodeScannerComponent.propTypes = {
-  //
-  // Props:
+  isShowVideo: PropTypes.bool,
   resolveScannedBarcode: PropTypes.func,
-  onResolvedResult: PropTypes.func.isRequired,
   inputPlaceholderText: PropTypes.string,
   continuousRunning: PropTypes.bool,
+  onResolvedResult: PropTypes.func.isRequired,
 };
 
 export default BarcodeScannerComponent;

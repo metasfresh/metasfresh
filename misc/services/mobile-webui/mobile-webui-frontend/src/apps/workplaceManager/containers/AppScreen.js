@@ -40,7 +40,7 @@ const AppScreen = () => {
 
   const queryParameters = new URLSearchParams(window.location.search);
   const qrCodeParam = queryParameters.get('qrCode');
-  const parentApplicationId = queryParameters.get('parent');
+  const callerApplicationId = queryParameters.get('callerApplicationId');
   useEffect(() => {
     if (qrCodeParam && !workplace) {
       setLoading(true);
@@ -52,7 +52,7 @@ const AppScreen = () => {
 
   const setWorkplaceAndUpdateUrl = (newWorkplace) => {
     setWorkplace(newWorkplace);
-    history.replace(appLocation({ qrCode: newWorkplace?.qrCode, parent: parentApplicationId }));
+    history.replace(appLocation({ qrCode: newWorkplace?.qrCode, callerApplicationId }));
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
@@ -67,7 +67,7 @@ const AppScreen = () => {
   };
 
   const onScanAgainClick = () => {
-    if (parentApplicationId === APPLICATION_ID_scanAnything) {
+    if (callerApplicationId === APPLICATION_ID_scanAnything) {
       history.push(scanAnythingRoutes.appLocation());
     } else {
       setWorkplaceAndUpdateUrl(null);

@@ -34,6 +34,7 @@ import {
   ATTR_weightNetUOM,
   BARCODE_TYPE_HU,
   BARCODE_TYPE_LMQ,
+  parseQRCodeType,
   QRCODE_SEPARATOR,
   toLocalDateString,
 } from './common';
@@ -47,6 +48,10 @@ import { errorToString } from '../toast';
 
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
+
+export const isHUQRCode = (string) => {
+  return parseQRCodeType(string) === QRCODE_TYPE_HU;
+};
 
 export const toQRCodeDisplayableNoFail = (qrCode) => {
   try {
