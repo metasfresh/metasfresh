@@ -353,6 +353,7 @@ public class PaySelectionBL implements IPaySelectionBL
 				.payAmt(line.getPayAmt())
 				.discountAmt(line.getDiscountAmt())
 				.orderPayScheduleId(OrderPayScheduleId.ofRepoId(line.getC_OrderPaySchedule_ID()))
+				.isAutoAllocateAvailableAmt(true)
 				//
 				.createAndProcess();
 	}
