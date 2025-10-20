@@ -56,7 +56,7 @@ public interface I_C_InvoicePaySchedule
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_Invoice_ID (int C_Invoice_ID);
@@ -66,14 +66,14 @@ public interface I_C_InvoicePaySchedule
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_Invoice_ID();
 
-	@Nullable org.compiere.model.I_C_Invoice getC_Invoice();
+	org.compiere.model.I_C_Invoice getC_Invoice();
 
-	void setC_Invoice(@Nullable org.compiere.model.I_C_Invoice C_Invoice);
+	void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
 
 	ModelColumn<I_C_InvoicePaySchedule, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_C_InvoicePaySchedule.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";

@@ -10,8 +10,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Invoice;
 
-import java.util.Optional;
-
 @Builder
 class InvoicePayScheduleCreateCommand
 {
@@ -31,24 +29,21 @@ class InvoicePayScheduleCreateCommand
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 		invoicePayScheduleService.deleteByInvoiceId(invoiceId);
 
-		final Optional<OrderPaySchedule> orderPaySchedule = orderPayScheduleService.getByOrderId(OrderId.ofRepoId(invoiceRecord.getC_Order_ID()));
+		final OrderId orderId = OrderId.ofRepoId(invoiceRecord.getC_Order_ID());
 
-		if (!orderPaySchedule.isPresent())
-		{
-			return; // nothing to schedule
-		}
+		orderPayScheduleService.getByOrderId(orderId)
+				.map(orderPaySchedule -> {
+					final ImmutableList<InvoicePayScheduleCreateRequest.Line> invoiceLines = orderPaySchedule.getLines()
+							.stream()
+							.map(InvoicePayScheduleCreateCommand::toInvoicePayScheduleCreateRequestLine)
+							.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList<InvoicePayScheduleCreateRequest.Line> invoiceLines = orderPaySchedule.get()
-				.getLines().stream()
-				.map(InvoicePayScheduleCreateCommand::toInvoicePayScheduleCreateRequestLine)
-				.collect(ImmutableList.toImmutableList());
-
-		final InvoicePayScheduleCreateRequest request = InvoicePayScheduleCreateRequest.builder()
-				.invoiceId(invoiceId)
-				.lines(invoiceLines)
-				.build();
-
-		invoicePayScheduleService.create(request);
+					return InvoicePayScheduleCreateRequest.builder()
+							.invoiceId(invoiceId)
+							.lines(invoiceLines)
+							.build();
+				})
+				.ifPresent(invoicePayScheduleService::create);
 	}
 
 	private static InvoicePayScheduleCreateRequest.Line toInvoicePayScheduleCreateRequestLine(@NonNull final OrderPayScheduleLine line)
