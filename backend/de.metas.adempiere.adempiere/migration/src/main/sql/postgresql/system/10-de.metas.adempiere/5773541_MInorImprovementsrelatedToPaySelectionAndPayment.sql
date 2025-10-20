@@ -1,8 +1,7 @@
 
-
--- Name: C_DocType AR/AP Invoices and Credit Memos IsSOTrx-Filter
--- 2025-10-20T09:09:18.711Z
-UPDATE AD_Val_Rule SET Code='C_DocType.DocBaseType IN (''ARI'', ''API'',''ARC'',''APC'') ',Updated=TO_TIMESTAMP('2025-10-20 09:09:18.707000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=124
+-- Column: C_BP_BankAccount_InvoiceAutoAllocateRule.C_DocTypeInvoice_ID
+-- 2025-10-20T12:57:48.441Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540294,Updated=TO_TIMESTAMP('2025-10-20 12:57:48.440000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=574197
 ;
 
 -- Column: C_Order.LC_Date
