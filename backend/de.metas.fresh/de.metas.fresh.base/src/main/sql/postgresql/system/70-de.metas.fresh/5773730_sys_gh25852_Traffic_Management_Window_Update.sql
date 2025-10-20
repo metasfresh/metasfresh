@@ -217,7 +217,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 -- Field: Traffic Management(541929,de.metas.handlingunits) -> Kommissionierplan(548377,de.metas.handlingunits) -> Versanddienstleister
 -- Column: M_Picking_Job_Schedule_view.Carrier_Product_ID
 -- 2025-10-20T14:59:44.551Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591391,755053,584027,0,548377,0,TO_TIMESTAMP('2025-10-20 14:59:43.789000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Versanddienstleister',0,0,10,0,1,1,TO_TIMESTAMP('2025-10-20 14:59:43.789000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591391,755053,584134,0,548377,0,TO_TIMESTAMP('2025-10-20 14:59:43.789000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Versanddienstleister',0,0,10,0,1,1,TO_TIMESTAMP('2025-10-20 14:59:43.789000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-10-20T14:59:44.624Z
@@ -225,7 +225,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- 2025-10-20T14:59:44.698Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(584027)
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(584134)
 ;
 
 -- 2025-10-20T14:59:44.772Z
