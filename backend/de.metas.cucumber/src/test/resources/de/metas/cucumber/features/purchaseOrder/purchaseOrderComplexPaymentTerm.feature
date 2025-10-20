@@ -37,6 +37,9 @@ Feature: Purchase order with complex payment term
       | Identifier      | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation  | vendor        | CH           | Y               | Y               |
       | shipperLocation | shipper       | CH           | Y               | Y               |
+    And metasfresh contains C_BP_BankAccount
+      | Identifier         | C_Currency_ID | C_BPartner_ID | IBAN                       |
+      | vendor_CHF_account | CHF           | vendor        | CH93 0076 2011 6238 5295 7 |
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | de_ch_tax  | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
@@ -101,11 +104,11 @@ Feature: Purchase order with complex payment term
       | PTB23                  | 9999-01-01 | 25.58  | PR     |
       | PTB24                  | 9999-01-01 | 25.56  | PR     |
     And metasfresh contains Transport Order
-      | Identifier | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
-      | shipperTransp_1            | shipper_DHL  | shipper             | shipperLocation     |
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
+      | shipperTransp_1 | shipper_DHL  | shipper             | shipperLocation     |
     And metasfresh contains M_Package
       | Identifier | M_Shipper_ID |
-      | Pckg         | shipper_DHL  |
+      | Pckg       | shipper_DHL  |
     And metasfresh contains M_ShippingPackage
       | Identifier | C_Order_ID | M_ShipperTransportation_ID | M_Package_ID | C_BPartner_Location_ID |
       | shPckg     | po2        | shipperTransp_1            | Pckg         | shipperLocation        |
@@ -118,3 +121,17 @@ Feature: Purchase order with complex payment term
       | PTB22                  | 2025-10-15 | 25.58  | WP     |
       | PTB23                  | 2025-10-25 | 25.58  | WP     |
       | PTB24                  | 2025-10-19 | 25.56  | WP     |
+    And metasfresh contains organization bank accounts
+      | Identifier      | C_Currency_ID |
+      | org_CHF_account | CHF           |
+    And metasfresh contains Pay Selection
+      | Identifier | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
+      | paySel_1   | org_CHF_account     | CT                  | 2025-10-20 |
+    And "Create from..." is invoked with parameters:
+      | C_BPartner_ID | MatchRequirement | C_PaySelection_ID |
+      | vendor        | OUT              | paySel_1          |
+    And the pay selection identified by paySel_1 is completed
+    Then "Create Payments" is invoked
+      | C_PaySelection_ID |
+      | paySel_1          |
+    And the Pay selection identified by paySel_1 has pay selection lines with payments
