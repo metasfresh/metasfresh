@@ -11,7 +11,6 @@ import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
 import { useKeyboardBarcodeReader } from '../hooks/useKeyboardBarcodeReader';
 import { isMobileOrTablet } from '../utils/browser';
-import cx from 'classnames';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -265,7 +264,7 @@ const BarcodeScannerComponent = ({
       {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
       {!isProcessing && (
         <input
-          id={cx('input-text', { 'input-text-over-video': isShowVideo })}
+          id="input-text"
           key="input-text"
           ref={inputTextRef}
           className="input-text"

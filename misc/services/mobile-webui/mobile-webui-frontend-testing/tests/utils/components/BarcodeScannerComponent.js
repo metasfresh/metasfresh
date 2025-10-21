@@ -1,5 +1,5 @@
 import { test } from '../../../playwright.config';
-import { page } from '../common';
+import { FAST_ACTION_TIMEOUT, page } from '../common';
 import { expect } from '@playwright/test';
 
 const NAME = 'BarcodeScannerComponent';
@@ -7,9 +7,10 @@ const NAME = 'BarcodeScannerComponent';
 export const BarcodeScannerComponent = {
     type: async (scannedCode) => await test.step(`${NAME} - Type scanned code`, async () => {
         console.log('Scanning scanned code:\n' + scannedCode);
-        
-        await page.locator('.barcode-scanner').waitFor();
-        
+
+        await page.locator('#input-text').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+        // await page.locator('.barcode-scanner').waitFor({timeout: FAST_ACTION_TIMEOUT});
+
         // Additional wait to ensure event listeners are attached
         await page.waitForTimeout(200);
 
