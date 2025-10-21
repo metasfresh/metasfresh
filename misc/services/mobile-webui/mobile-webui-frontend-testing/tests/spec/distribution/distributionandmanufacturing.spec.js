@@ -1,16 +1,16 @@
-import { Backend } from '../utils/screens/Backend';
-import { test } from '../../playwright.config';
-import { LoginScreen } from '../utils/screens/LoginScreen';
-import { ApplicationsListScreen } from '../utils/screens/ApplicationsListScreen';
-import { ManufacturingJobsListScreen } from '../utils/screens/manufacturing/ManufacturingJobsListScreen';
-import { ManufacturingJobScreen } from '../utils/screens/manufacturing/ManufacturingJobScreen';
-import { RawMaterialIssueLineScreen } from '../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
-import { MaterialReceiptLineScreen } from '../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
+import { Backend } from '../../utils/screens/Backend';
+import { test } from '../../../playwright.config';
+import { LoginScreen } from '../../utils/screens/LoginScreen';
+import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
+import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
+import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
+import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
+import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
-import { DistributionJobsListScreen } from "../utils/screens/distribution/DistributionJobsListScreen";
-import { DistributionJobScreen } from '../utils/screens/distribution/DistributionJobScreen';
-import { DistributionLineScreen } from '../utils/screens/distribution/DistributionLineScreen';
-import { DistributionStepScreen } from '../utils/screens/distribution/DistributionStepScreen';
+import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
+import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
+import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
+import { DistributionStepScreen } from '../../utils/screens/distribution/DistributionStepScreen';
 
 const createMasterdata = async ({ comp1_qty, comp2_qty }) => {
 

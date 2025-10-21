@@ -31,9 +31,13 @@ import { APPLICATION_ID as APPLICATION_ID_scanAnything } from '../../scanAnythin
 import * as scanAnythingRoutes from '../../scanAnything/routes';
 import Spinner from '../../../components/Spinner';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { parseWorkplaceQRCodeString } from '../../../utils/qrCode/workplace';
 
 const AppScreen = () => {
-  const { history } = useScreenDefinition({ back: '/' });
+  const { history } = useScreenDefinition({
+    screenId: 'WorkplaceManagerScreen',
+    back: '/',
+  });
 
   const [loading, setLoading] = useState(true);
   const [workplace, setWorkplace] = useState();
@@ -56,7 +60,11 @@ const AppScreen = () => {
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
-    return api.getWorkplaceByQRCode(scannedBarcode).then((workplaceInfo) => setWorkplaceAndUpdateUrl(workplaceInfo));
+    const { workplaceId } = parseWorkplaceQRCodeString(scannedBarcode);
+    return api
+      .assignWorkplace(workplaceId)
+      .then((workplaceInfo) => setWorkplaceAndUpdateUrl(workplaceInfo))
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   const onAssignClick = () => {
