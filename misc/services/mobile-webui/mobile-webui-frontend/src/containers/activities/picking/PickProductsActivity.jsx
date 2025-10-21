@@ -23,11 +23,14 @@ import {
   formatCatchWeightToHumanReadableStr,
 } from '../../../reducers/wfProcesses/picking/catch_weight';
 import { isCurrentTargetEligibleForActivityAndLine } from '../../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
+import { BarcodeScannerButton } from '../../../components/BarcodeScannerButton';
+import { usePickProductsScan } from './PickProductsScanScreen';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const history = useMobileNavigation();
+  const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
 
   const isUserEditable = isUserEditableFunc({ activity });
   const isAllowPickingAnyHU = isAllowPickingAnyHUOnHeaderLevel({ activity });
@@ -58,11 +61,12 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
       <br />
 
       {isAllowPickingAnyHU && (
-        <ButtonWithIndicator
-          id="scanQRCode-button"
+        <BarcodeScannerButton
           captionKey="activities.picking.scanQRCode"
           disabled={isAtLeastOneReadOnlyLine(groupedLines)}
           onClick={onScanButtonClick}
+          enableScanning={true}
+          onBarcodeScanned={onBarcodeScanned}
         />
       )}
       {groupedLines &&
