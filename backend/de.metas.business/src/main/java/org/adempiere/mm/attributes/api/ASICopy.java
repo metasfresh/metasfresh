@@ -1,19 +1,17 @@
 package org.adempiere.mm.attributes.api;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
-
+import com.google.common.base.Preconditions;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import com.google.common.base.Preconditions;
-
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -41,7 +39,6 @@ import lombok.NonNull;
  * Helper class used to copy a given ASI.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ASICopy
 {
@@ -53,8 +50,8 @@ public class ASICopy
 
 	public static ASICopy newInstance(@NonNull final AttributeSetInstanceId fromAttributeSetInstanceId)
 	{
-		final IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeSetInstance fromASI = attributesDAO.getAttributeSetInstanceById(fromAttributeSetInstanceId);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+		final I_M_AttributeSetInstance fromASI = asiBL.getById(fromAttributeSetInstanceId);
 		return new ASICopy(fromASI);
 	}
 
@@ -76,7 +73,7 @@ public class ASICopy
 
 	/**
 	 * Sets a M_AttributeSet_ID to override the one that is coming from "fromASI".
-	 *
+	 * <p>
 	 * If the parameter is zero or negative the it will be ignored, so the attribute set from "fromASI" will be used.
 	 *
 	 * @param overrideAttributeSetId

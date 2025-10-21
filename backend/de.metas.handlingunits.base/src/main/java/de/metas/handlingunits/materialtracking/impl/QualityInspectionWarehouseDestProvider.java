@@ -7,6 +7,7 @@ import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_AttributeInstance;
@@ -63,6 +64,7 @@ public final class QualityInspectionWarehouseDestProvider implements IReceiptSch
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 		final AttributeId qualityInspectionCycleAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
 		if(qualityInspectionCycleAttributeId == null)
 		{
@@ -70,7 +72,7 @@ public final class QualityInspectionWarehouseDestProvider implements IReceiptSch
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance qualityInspectionCycleAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, qualityInspectionCycleAttributeId);
+		final I_M_AttributeInstance qualityInspectionCycleAttributeInstance = asiBL.getAttributeInstance(asiId, qualityInspectionCycleAttributeId);
 		if (qualityInspectionCycleAttributeInstance == null)
 		{
 			return Optional.empty();

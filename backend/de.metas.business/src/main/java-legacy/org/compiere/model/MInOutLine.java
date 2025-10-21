@@ -26,6 +26,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.WarehouseLocatorConflictException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -150,7 +151,7 @@ public class MInOutLine extends X_M_InOutLine
 			// avoid direct copy of ASI ID!
 			if (oLine.getM_AttributeSetInstance_ID() > 0)
 			{
-				final I_M_AttributeSetInstance newASI = Services.get(IAttributeDAO.class).copy(oLine.getM_AttributeSetInstance());
+				final I_M_AttributeSetInstance newASI = Services.get(IAttributeSetInstanceBL.class).copy(oLine.getM_AttributeSetInstance());
 				setM_AttributeSetInstance_ID(newASI.getM_AttributeSetInstance_ID());
 			}
 			else

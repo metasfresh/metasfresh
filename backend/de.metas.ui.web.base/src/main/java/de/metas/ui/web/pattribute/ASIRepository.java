@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -59,6 +60,7 @@ public class ASIRepository
 	// services
 	private static final Logger logger = LogManager.getLogger(ASIRepository.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final ASIDescriptorFactory descriptorsFactory;
 
@@ -148,7 +150,7 @@ public class ASIRepository
 		}
 
 		final HashMap<String, Object> valuesMap = new HashMap<>();
-		for (final I_M_AttributeInstance fromAI : attributesRepo.retrieveAttributeInstances(asiId))
+		for (final I_M_AttributeInstance fromAI : asiBL.getAttributeInstances(asiId))
 		{
 			final I_M_Attribute attribute = attributesRepo.getAttributeById(fromAI.getM_Attribute_ID());
 			final String fieldName = attribute.getValue();

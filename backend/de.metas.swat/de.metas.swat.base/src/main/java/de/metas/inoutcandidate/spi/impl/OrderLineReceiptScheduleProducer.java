@@ -26,7 +26,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
@@ -308,13 +307,13 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		}
 		else
 		{
-			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+			final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 			final AttributeSetInstanceId rsASIId = AttributeSetInstanceId.ofRepoIdOrNone(rsASI.getM_AttributeSetInstance_ID());
-			I_M_AttributeInstance lotNumberDateAI = attributeDAO.retrieveAttributeInstance(rsASIId, lotNumberDateAttrId);
+			I_M_AttributeInstance lotNumberDateAI = asiBL.getAttributeInstance(rsASIId, lotNumberDateAttrId);
 			if (lotNumberDateAI == null)
 			{
-				lotNumberDateAI = attributeDAO.createNewAttributeInstance(ctx, rsASI, lotNumberDateAttrId, trxName);
+				lotNumberDateAI = asiBL.createNewAttributeInstance(ctx, rsASI, lotNumberDateAttrId, trxName);
 			}
 
 			final de.metas.order.model.I_C_Order orderModel = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
@@ -346,14 +345,14 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		else
 		{
 
-			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+			final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 			final AttributeSetInstanceId rsASIId = AttributeSetInstanceId.ofRepoIdOrNone(rsASI.getM_AttributeSetInstance_ID());
-			I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(rsASIId, lotNumberAttrId);
+			I_M_AttributeInstance lotNumberAI = asiBL.getAttributeInstance(rsASIId, lotNumberAttrId);
 
 			if (lotNumberAI == null)
 			{
-				lotNumberAI = attributeDAO.createNewAttributeInstance(ctx, rsASI, lotNumberAttrId, trxName);
+				lotNumberAI = asiBL.createNewAttributeInstance(ctx, rsASI, lotNumberAttrId, trxName);
 			}
 
 			// provide the lotNumber in the ASI

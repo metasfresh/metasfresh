@@ -44,7 +44,6 @@ public class AgeAttributeCreator
 	private final transient IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final transient AgeAttributesService ageAttributesService = Adempiere.getBean(AgeAttributesService.class);
 
 	private final Object sourceModel;
@@ -93,7 +92,7 @@ public class AgeAttributeCreator
 
 		attributeSetInstanceBL.getCreateASI(asiAware);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, ageAttributeId);
+		final I_M_AttributeInstance ai = attributeSetInstanceBL.getAttributeInstance(asiId, ageAttributeId);
 
 		if (ai != null)
 		{

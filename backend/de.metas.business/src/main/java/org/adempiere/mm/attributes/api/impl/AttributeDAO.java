@@ -13,7 +13,6 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
-import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -23,7 +22,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AdValRuleId;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -40,7 +38,6 @@ import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.AttributeValuesOrderByType;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.adempiere.util.proxy.Cached;
@@ -64,7 +61,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -538,18 +534,6 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public List<I_M_AttributeInstance> retrieveAttributeInstances(final AttributeSetInstanceId attributeSetInstanceId)
-	{
-		if (attributeSetInstanceId.isNone())
-		{
-			return ImmutableList.of();
-		}
-
-		final I_M_AttributeSetInstance asi = getAttributeSetInstanceById(attributeSetInstanceId);
-		return retrieveAttributeInstances(asi);
-	}
-
-	@Override
 	public List<I_M_AttributeInstance> retrieveAttributeInstances(final I_M_AttributeSetInstance attributeSetInstance)
 	{
 		if (attributeSetInstance == null)
@@ -873,113 +857,6 @@ public class AttributeDAO implements IAttributeDAO
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
-	}
-
-	@Override
-	public ImmutableAttributeSet getImmutableAttributeSetById(@NonNull final AttributeSetInstanceId asiId)
-	{
-		if (asiId.isNone())
-		{
-			return ImmutableAttributeSet.EMPTY;
-		}
-
-		final List<I_M_AttributeInstance> instances = retrieveAttributeInstances(asiId);
-		return createImmutableAttributeSet(instances);
-	}
-
-	private ImmutableAttributeSet createImmutableAttributeSet(final Collection<I_M_AttributeInstance> instances)
-	{
-		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
-		for (final I_M_AttributeInstance instance : instances)
-		{
-			final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
-			final Object value = extractAttributeInstanceValue(instance);
-			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(instance.getM_AttributeValue_ID());
-			builder.attributeValue(attributeId, value, attributeValueId);
-		}
-		return builder.build();
-	}
-
-	private Object extractAttributeInstanceValue(final I_M_AttributeInstance instance)
-	{
-		final I_M_Attribute attribute = getAttributeById(instance.getM_Attribute_ID());
-		final String attributeValueType = attribute.getAttributeValueType();
-		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
-		{
-			return instance.getValueDate();
-		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
-		{
-			return instance.getValue();
-		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
-		{
-			return instance.getValueNumber();
-		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
-		{
-			return instance.getValue();
-		}
-		else
-		{
-			throw new AdempiereException("Unsupported attributeValueType=" + attributeValueType)
-					.setParameter("instance", instance)
-					.setParameter("attribute", attribute)
-					.appendParametersToMessage();
-		}
-	}
-
-	@Override
-	public Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(
-			@NonNull final Set<AttributeSetInstanceId> asiIds)
-	{
-		Check.assumeNotEmpty(asiIds, "asiIds is not empty");
-
-		final Map<AttributeSetInstanceId, List<I_M_AttributeInstance>> //
-				instancesByAsiId = queryBL
-				.createQueryBuilder(I_M_AttributeInstance.class)
-				.addInArrayFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiIds)
-				.create()
-				.list()
-				.stream()
-				.collect(Collectors.groupingBy(ai -> AttributeSetInstanceId.ofRepoId(ai.getM_AttributeSetInstance_ID())));
-
-		final ImmutableMap.Builder<AttributeSetInstanceId, ImmutableAttributeSet> result = ImmutableMap.builder();
-		instancesByAsiId.forEach((asiId, instances) -> result.put(asiId, createImmutableAttributeSet(instances)));
-
-		return result.build();
-
-	}
-
-	@Override
-	public AttributeSetInstanceId copyASI(@NonNull final AttributeSetInstanceId asiSourceId)
-	{
-		final I_M_AttributeSetInstance asiSourceRecord = getAttributeSetInstanceById(asiSourceId);
-		final I_M_AttributeSetInstance asiTargetRecord = copy(asiSourceRecord);
-
-		return AttributeSetInstanceId.ofRepoId(asiTargetRecord.getM_AttributeSetInstance_ID());
-	}
-
-	@Override
-	public boolean nullSafeASIEquals(
-			@Nullable final AttributeSetInstanceId firstASIId,
-			@Nullable final AttributeSetInstanceId secondASIId)
-	{
-		if (firstASIId == null && secondASIId == null)
-		{
-			return true;
-		}
-
-		if ((firstASIId == null && secondASIId != null)
-				|| (secondASIId == null && firstASIId != null))
-		{
-			return false;
-		}
-
-		final ImmutableAttributeSet firstAttributeSet = getImmutableAttributeSetById(firstASIId);
-		final ImmutableAttributeSet secondAttributeSet = getImmutableAttributeSetById(secondASIId);
-
-		return firstAttributeSet.equals(secondAttributeSet);
 	}
 
 	private static final class AttributeListValueMap

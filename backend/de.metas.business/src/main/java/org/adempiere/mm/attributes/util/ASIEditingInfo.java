@@ -16,6 +16,7 @@ import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
@@ -57,7 +58,6 @@ import java.util.stream.Stream;
  * Helper class used to provide informations to the ASI editor.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class ASIEditingInfo
 {
@@ -78,6 +78,7 @@ public final class ASIEditingInfo
 	}
 
 	// services
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IAttributeExcludeBL attributeExcludeBL = Services.get(IAttributeExcludeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -129,7 +130,7 @@ public final class ASIEditingInfo
 		}
 		else
 		{
-			_attributeSetInstance = attributesRepo.getAttributeSetInstanceById(attributeSetInstanceId);
+			_attributeSetInstance = asiBL.getById(attributeSetInstanceId);
 		}
 
 		//
@@ -307,7 +308,6 @@ public final class ASIEditingInfo
 
 		return productBL.getAttributeSetOrNull(productId);
 	}
-
 
 	@Nullable
 	private I_M_AttributeSet retrieveProductMasterDataSchema()

@@ -20,10 +20,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -82,8 +80,6 @@ public interface IAttributeDAO extends ISingletonService
 	List<AttributeListValue> retrieveAttributeValuesByAttributeSetId(@NonNull AttributeSetId attributeSetId);
 
 	List<AttributeListValue> retrieveAttributeValuesByIds(Collection<AttributeValueId> attributeValueIds);
-
-	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId attributeSetInstanceId);
 
 	/**
 	 * Retrieves all attribute instances associated with an attribute instance set.
@@ -212,34 +208,13 @@ public interface IAttributeDAO extends ISingletonService
 	I_M_AttributeInstance createNewAttributeInstance(Properties ctx, final I_M_AttributeSetInstance asi, final AttributeId attributeId, final String trxName);
 
 	/**
-	 * Creates a new {@link I_M_AttributeSetInstance} (including it's {@link I_M_AttributeInstance}s) by copying given <code>asi</code>
-	 *
-	 * @return asi copy
-	 */
-	default I_M_AttributeSetInstance copy(@NonNull final I_M_AttributeSetInstance fromASI)
-	{
-		return ASICopy.newInstance(fromASI).copy();
-	}
-
-	default ASICopy prepareCopy(final I_M_AttributeSetInstance fromASI)
-	{
-		return ASICopy.newInstance(fromASI);
-	}
-
-	/**
 	 * @return true if given attribute is expected to have a huge amount of attribute values
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
 
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 
-	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds);
-
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
 
 	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
-
-	AttributeSetInstanceId copyASI(AttributeSetInstanceId asiSourceId);
-
-	boolean nullSafeASIEquals(@Nullable AttributeSetInstanceId firstASIId, @Nullable AttributeSetInstanceId secondASIId);
 }

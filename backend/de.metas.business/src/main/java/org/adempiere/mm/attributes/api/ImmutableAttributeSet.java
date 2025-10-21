@@ -58,7 +58,7 @@ import java.util.function.Supplier;
  * Immutable {@link IAttributeSet} implementation.
  * <p>
  * To get your instance for an {@link AttributeSetInstanceId},
- * you can use {@link IAttributeDAO#getImmutableAttributeSetById(AttributeSetInstanceId)}.
+ * you can use {@link IAttributeSetInstanceBL#getImmutableAttributeSetById(AttributeSetInstanceId)}.
  */
 public final class ImmutableAttributeSet implements IAttributeSet
 {

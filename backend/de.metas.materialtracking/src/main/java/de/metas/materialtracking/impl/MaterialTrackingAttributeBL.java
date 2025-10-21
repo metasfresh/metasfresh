@@ -1,9 +1,15 @@
 package de.metas.materialtracking.impl;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.IMaterialTrackingDAO;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -23,16 +29,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.materialtracking.IMaterialTrackingAttributeBL;
-import de.metas.materialtracking.IMaterialTrackingDAO;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 {
@@ -190,8 +188,8 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 		//
 		// Retrieve Material Tracking Attribute Instance (from ASI)
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, materialTrackingAttributeId.get());
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+		final I_M_AttributeInstance materialTrackingAttributeInstance = asiBL.getAttributeInstance(asiId, materialTrackingAttributeId.get());
 		if (materialTrackingAttributeInstance != null)
 		{
 			return materialTrackingAttributeInstance;
@@ -235,11 +233,10 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 	@Override
 	public void createOrUpdateMaterialTrackingASI(final Object documentLine,
-			final I_M_Material_Tracking materialTracking)
+												  final I_M_Material_Tracking materialTracking)
 	{
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		final I_M_AttributeSetInstance documentLineASI;
 		final IAttributeSetInstanceAware documentLineASIAware = attributeSetInstanceAwareFactoryService.createOrNull(documentLine);
@@ -247,7 +244,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 		if (documentLineASIAware.getM_AttributeSetInstance_ID() > 0)
 		{
-			documentLineASI = attributeDAO.copy(documentLineASIAware.getM_AttributeSetInstance());
+			documentLineASI = attributeSetInstanceBL.copy(documentLineASIAware.getM_AttributeSetInstance());
 		}
 		else
 		{
@@ -374,8 +371,8 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 			return false;
 		}
 
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, materialTrackingAttributeId.get());
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+		final I_M_AttributeInstance materialTrackingAttributeInstance = asiBL.getAttributeInstance(asiId, materialTrackingAttributeId.get());
 
 		return materialTrackingAttributeInstance != null;
 	}

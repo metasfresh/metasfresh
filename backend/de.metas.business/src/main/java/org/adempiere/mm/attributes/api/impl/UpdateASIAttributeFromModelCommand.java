@@ -1,5 +1,9 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -10,11 +14,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
-
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -98,7 +97,7 @@ final class UpdateASIAttributeFromModelCommand
 
 		attributeSetInstanceBL.getCreateASI(asiAware);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(asiAware.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
+		final I_M_AttributeInstance ai = attributeSetInstanceBL.getAttributeInstance(asiId, attributeId);
 
 		if (ai != null)
 		{

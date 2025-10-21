@@ -1,5 +1,9 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -9,10 +13,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -42,7 +42,6 @@ public class ExpiryAttributeUpdater
 	private Object sourceModel;
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	public void updateASI()
 	{
@@ -77,7 +76,7 @@ public class ExpiryAttributeUpdater
 		attributeSetInstanceBL.getCreateASI(asiAware);
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, expiredAttribute);
+		final I_M_AttributeInstance ai = attributeSetInstanceBL.getAttributeInstance(asiId, expiredAttribute);
 
 		if (ai != null)
 		{
@@ -94,7 +93,7 @@ public class ExpiryAttributeUpdater
 		return this;
 	}
 
-	private final Object getSourceModel()
+	private Object getSourceModel()
 	{
 		Check.assumeNotNull(sourceModel, "sourceModel not null");
 		return sourceModel;

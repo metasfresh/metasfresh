@@ -14,6 +14,10 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -23,6 +27,23 @@ import java.util.function.Predicate;
  */
 public interface IAttributeSetInstanceBL extends ISingletonService
 {
+	I_M_AttributeSetInstance getById(@NonNull AttributeSetInstanceId asiId);
+
+	/**
+	 * Creates a new {@link I_M_AttributeSetInstance} (including it's {@link I_M_AttributeInstance}s) by copying given <code>asi</code>
+	 *
+	 * @return asi copy
+	 */
+	I_M_AttributeSetInstance copy(@NonNull I_M_AttributeSetInstance fromASI);
+
+	ASICopy prepareCopy(I_M_AttributeSetInstance fromASI);
+
+	AttributeSetInstanceId copy(@NonNull AttributeSetInstanceId asiSourceId);
+
+	boolean nullSafeASIEquals(
+			@Nullable AttributeSetInstanceId firstASIId,
+			@Nullable AttributeSetInstanceId secondASIId);
+
 	/**
 	 * Call {@link #buildDescription(I_M_AttributeSetInstance, boolean)} with verbose = false.
 	 */
@@ -119,6 +140,37 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	boolean isStorageRelevant(I_M_AttributeInstance ai);
 
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
+
+	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(@NonNull Set<AttributeSetInstanceId> asiIds);
+
+	List<I_M_AttributeInstance> getAttributeInstances(AttributeSetInstanceId attributeSetInstanceId);
+
+	/**
+	 * Retrieves all attribute instances associated with an attribute instance set.
+	 *
+	 * @param attributeSetInstance may be {@code null}, in which case an empty list is returned.
+	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_AttributeUse.SeqNo
+	 */
+	List<I_M_AttributeInstance> getAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
+
+	/**
+	 * @param attributeSetInstanceId may be {@code null} or "none". In that case, always {@code null} is returned.
+	 * @return the attribute instance with the given {@code attributeSetInstanceId} and {@code attributeId}, or {@code null}.
+	 */
+	@Nullable
+	I_M_AttributeInstance getAttributeInstance(
+			@Nullable AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull AttributeId attributeId);
+
+	/**
+	 * Creates a new {@link I_M_AttributeInstance}.
+	 * NOTE: it is not saving it
+	 */
+	I_M_AttributeInstance createNewAttributeInstance(
+			Properties ctx,
+			I_M_AttributeSetInstance asi,
+			@NonNull AttributeId attributeId,
+			String trxName);
 
 	/**
 	 * Synchs the given {@code attributeSet}  to the given {@code asiAware}.

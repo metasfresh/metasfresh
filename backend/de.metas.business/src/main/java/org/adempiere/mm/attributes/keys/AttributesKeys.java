@@ -167,7 +167,7 @@ public final class AttributesKeys
 			return Optional.empty();
 		}
 
-		final ImmutableSet<AttributesKeyPart> parts = attributesRepo().retrieveAttributeInstances(attributeSetInstanceId)
+		final ImmutableSet<AttributesKeyPart> parts = asiService().getAttributeInstances(attributeSetInstanceId)
 				.stream()
 				.filter(additionalFilter)
 				.map(AttributesKeys::createAttributesKeyPart)

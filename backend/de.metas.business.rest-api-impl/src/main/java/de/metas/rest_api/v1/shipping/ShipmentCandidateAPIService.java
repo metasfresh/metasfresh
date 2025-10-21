@@ -100,6 +100,7 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -133,7 +134,7 @@ class ShipmentCandidateAPIService
 	private final ProductRepository productRepository;
 	private final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
 
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
@@ -635,7 +636,7 @@ class ShipmentCandidateAPIService
 			return ImmutableMap.of();
 		}
 
-		return attributeDAO.getAttributesForASIs(idsRegistry.getAsiIds());
+		return asiBL.getAttributesForASIs(idsRegistry.getAsiIds());
 	}
 
 	private IdsRegistry buildIdsRegistry(@NonNull final List<ShipmentSchedule> schedules)

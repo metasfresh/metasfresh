@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -112,16 +113,16 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		};
 	}
 
-	private final PricingConditionsBreakQuery createPricingConditionsBreakQuery(final I_C_OrderLine salesOrderLine)
+	private PricingConditionsBreakQuery createPricingConditionsBreakQuery(final I_C_OrderLine salesOrderLine)
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
 		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(salesOrderLine.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributes = attributesRepo.getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributes = asiBL.getImmutableAttributeSetById(asiId);
 		final BigDecimal qty = salesOrderLine.getQtyOrdered();
 		final BigDecimal price = salesOrderLine.getPriceActual();
 

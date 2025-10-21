@@ -30,6 +30,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -52,7 +53,7 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull IOrgDAO orgDAO;
 	@NonNull IWarehouseBL warehouseBL;
 	@NonNull IProductBL productBL;
-	@NonNull IAttributeDAO attributeDAO;
+	@NonNull IAttributeSetInstanceBL asiBL;
 	@NonNull IHUPPOrderBL ppOrderBL;
 	@NonNull IPPOrderBOMBL ppOrderBOMBL;
 	@NonNull final IHandlingUnitsBL handlingUnitsBL;
@@ -95,7 +96,7 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 
 	public ImmutableAttributeSet getImmutableAttributeSet(final AttributeSetInstanceId asiId)
 	{
-		return attributeDAO.getImmutableAttributeSetById(asiId);
+		return asiBL.getImmutableAttributeSetById(asiId);
 	}
 
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId)

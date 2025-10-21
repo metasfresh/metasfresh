@@ -30,6 +30,7 @@ import java.util.Optional;
 
 public class AttributePricingBL implements IAttributePricingBL
 {
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
 	@Override
@@ -71,7 +72,7 @@ public class AttributePricingBL implements IAttributePricingBL
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final AttributeSetId overrideAttributeSetId = Services.get(IProductBL.class).getAttributeSetId(productId);
 
-		final I_M_AttributeSetInstance resultASI = attributesRepo.prepareCopy(productPriceASI)
+		final I_M_AttributeSetInstance resultASI = asiBL.prepareCopy(productPriceASI)
 				.overrideAttributeSetId(overrideAttributeSetId)
 				// IMPORTANT: copy only those which are not empty (task #1272)
 				// NOTE: At the moment we use only the M_AttributeValue_ID so that's why we check only that field
@@ -90,7 +91,7 @@ public class AttributePricingBL implements IAttributePricingBL
 			return ImmutableList.of();
 		}
 
-		return attributesRepo.retrieveAttributeInstances(productPriceASI)
+		return asiBL.getAttributeInstances(productPriceASI)
 				.stream()
 				.map(this::createPricingAttribute)
 				.collect(GuavaCollectors.toImmutableList());

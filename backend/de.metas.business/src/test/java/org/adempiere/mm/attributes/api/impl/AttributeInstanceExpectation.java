@@ -4,6 +4,7 @@ import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
@@ -77,8 +78,8 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(getAttributeNotNull().getM_Attribute_ID());
 
-		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class)
-				.retrieveAttributeInstance(
+		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeSetInstanceBL.class)
+				.getAttributeInstance(
 						asi == null
 								? null
 								: AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID()),

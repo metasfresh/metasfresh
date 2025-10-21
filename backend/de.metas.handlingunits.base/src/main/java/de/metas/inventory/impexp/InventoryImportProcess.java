@@ -89,6 +89,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
@@ -207,11 +208,11 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		final int clientId = importRecord.getAD_Client_ID();
 
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-											   .docBaseType(docBaseAndSubType.getDocBaseType())
-											   .docSubType(docBaseAndSubType.getDocSubType())
-											   .adClientId(clientId)
-											   .adOrgId(orgId.getRepoId())
-											   .build());
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.adClientId(clientId)
+				.adOrgId(orgId.getRepoId())
+				.build());
 	}
 
 	private static DocBaseAndSubType getDocBaseAndSubType(@Nullable final HUAggregationType huAggregationType)
@@ -348,10 +349,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		else
 		{
 			inventoryLineHUs = ImmutableList.of(InventoryLineHU.builder()
-														.huId(null) // will be created later, on inventory complete. this is just a placeholder
-														.qtyCount(qtyCount)
-														.qtyBook(qtyBooked)
-														.build());
+					.huId(null) // will be created later, on inventory complete. this is just a placeholder
+					.qtyCount(qtyCount)
+					.qtyBook(qtyBooked)
+					.build());
 		}
 
 		//
@@ -515,10 +516,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		else
 		{
 			return attributeDAO.createAttributeValue(AttributeListValueCreateRequest.builder()
-															 .attributeId(AttributeId.ofRepoId(subProducerAttribute.getM_Attribute_ID()))
-															 .value(subproducerBPartnerIdString)
-															 .name(subproducerBPartnerValue)
-															 .build());
+					.attributeId(AttributeId.ofRepoId(subProducerAttribute.getM_Attribute_ID()))
+					.value(subproducerBPartnerIdString)
+					.name(subproducerBPartnerValue)
+					.build());
 		}
 	}
 
@@ -532,9 +533,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		//
 		// Get/Create/Update Attribute Instance
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
-		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
+		I_M_AttributeInstance attributeInstance = asiBL.getAttributeInstance(asiId, attributeId);
 		if (attributeInstance == null)
 		{
+			// FIXME use asiBL API
 			attributeInstance = newInstance(I_M_AttributeInstance.class, asi);
 		}
 		attributeInstance.setM_AttributeSetInstance(asi);

@@ -22,7 +22,7 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.service.ClientId;
@@ -82,7 +82,7 @@ public class InventoryImportProcessTest
 {
 	private InventoryImportProcess inventoryImportProcess;
 
-	private IAttributeDAO attributeDAO;
+	private IAttributeSetInstanceBL asiBL;
 	private AttributesTestHelper attributesTestHelper;
 
 	private I_C_UOM uomEach;
@@ -101,7 +101,7 @@ public class InventoryImportProcessTest
 
 		inventoryImportProcess = new InventoryImportProcess();
 
-		attributeDAO = Services.get(IAttributeDAO.class);
+		asiBL = Services.get(IAttributeSetInstanceBL.class);
 		attributesTestHelper = new AttributesTestHelper();
 		setupAttributes();
 
@@ -144,7 +144,7 @@ public class InventoryImportProcessTest
 			importRecord.setM_Product_ID(productId.getRepoId());
 
 			final AttributeSetInstanceId asiId = inventoryImportProcess.extractASI(importRecord);
-			final ImmutableAttributeSet asi = attributeDAO.getImmutableAttributeSetById(asiId);
+			final ImmutableAttributeSet asi = asiBL.getImmutableAttributeSetById(asiId);
 			assertThat(asi).isSameAs(ImmutableAttributeSet.EMPTY);
 		}
 
@@ -177,7 +177,7 @@ public class InventoryImportProcessTest
 			importRecord.setAttributeValueString4("listItem1");
 
 			final AttributeSetInstanceId asiId = inventoryImportProcess.extractASI(importRecord);
-			final ImmutableAttributeSet asi = attributeDAO.getImmutableAttributeSetById(asiId);
+			final ImmutableAttributeSet asi = asiBL.getImmutableAttributeSetById(asiId);
 			assertThat(asi)
 					.usingRecursiveComparison()
 					.isEqualTo(ImmutableAttributeSet.builder()
@@ -215,7 +215,7 @@ public class InventoryImportProcessTest
 			importRecord.setAttributeValueString4(dateReceived.plusYears(1).format(Env.DATE_FORMAT));
 
 			final AttributeSetInstanceId asiId = inventoryImportProcess.extractASI(importRecord);
-			final ImmutableAttributeSet asi = attributeDAO.getImmutableAttributeSetById(asiId);
+			final ImmutableAttributeSet asi = asiBL.getImmutableAttributeSetById(asiId);
 			assertThat(asi)
 					.usingRecursiveComparison()
 					.isEqualTo(ImmutableAttributeSet.builder()

@@ -38,7 +38,7 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import javax.annotation.Nullable;
@@ -124,7 +124,7 @@ public class ShipmentSchedule
 
 	public boolean hasAttributes(
 			@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds,
-			@NonNull final IAttributeDAO attributeDAO)
+			@NonNull final IAttributeSetInstanceBL asiBL)
 	{
 		final ImmutableSet<AttributeSetInstanceId> nonNullTargetAsiIds = targetAsiIds
 				.stream()
@@ -141,10 +141,10 @@ public class ShipmentSchedule
 			return false;
 		}
 
-		final ImmutableAttributeSet shipmentScheduleAsi = attributeDAO.getImmutableAttributeSetById(getAttributeSetInstanceId());
+		final ImmutableAttributeSet shipmentScheduleAsi = asiBL.getImmutableAttributeSetById(getAttributeSetInstanceId());
 
 		return nonNullTargetAsiIds.stream()
-				.map(attributeDAO::getImmutableAttributeSetById)
+				.map(asiBL::getImmutableAttributeSetById)
 				.anyMatch(shipmentScheduleAsi::containsAttributeValues);
 	}
 }

@@ -1,15 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Month;
-import java.time.ZoneId;
-
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
@@ -22,7 +13,15 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Month;
+import java.time.ZoneId;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -77,7 +76,7 @@ public class ImmutableAttributeSetTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeStringValue);
 		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeStringNullValue);
 
-		final ImmutableAttributeSet attributeSet = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributeSet = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 
 		assertThat(attributeSet.getAttributes()).contains(attrStringWithValue);
 		assertThat(attributeSet.getAttributes()).contains(attributeStringNull);
@@ -109,9 +108,9 @@ public class ImmutableAttributeSetTest
 		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
 		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue2);
 
-		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
+		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asi1Id);
 
-		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
+		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asi2Id);
 
 		assertThat(attributeSet1).isEqualTo(attributeSet2);
 	}
@@ -138,8 +137,8 @@ public class ImmutableAttributeSetTest
 		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
 		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue2);
 
-		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
-		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
+		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asi1Id);
+		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asi2Id);
 
 		assertThat(attributeSet1).isNotEqualTo(attributeSet2);
 	}
@@ -167,9 +166,9 @@ public class ImmutableAttributeSetTest
 
 		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue2);
 
-		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
+		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asi1Id);
 
-		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
+		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asi2Id);
 
 		assertThat(attributeSet1).isNotEqualTo(attributeSet2);
 	}
@@ -207,9 +206,9 @@ public class ImmutableAttributeSetTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue2);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue1);
 
-		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
+		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asi1Id);
 
-		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
+		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asi2Id);
 
 		assertThat(attributeSet1).isEqualTo(attributeSet2);
 	}
