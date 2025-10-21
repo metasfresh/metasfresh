@@ -42,7 +42,6 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,8 +54,9 @@ public class PaymentTermLoaderAndSaver
 	private final HashMap<PaymentTermId, ImmutableList<I_C_PaymentTerm_Break>> breaksByPaymentTermId = new HashMap<>();
 	private final HashMap<PaymentTermId, ImmutableList<I_C_PaySchedule>> paySchedsByPaymentTermId = new HashMap<>();
 
-	public Optional<PaymentTerm> loadByPaymentTermId(@NonNull final PaymentTermId paymentTermId)
+	public PaymentTerm loadFromRecord(@NonNull final I_C_PaymentTerm paymentTermRecord)
 	{
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID());
 		final List<I_C_PaymentTerm_Break> breakRecords = getBreaksByPaymentTermId(paymentTermId);
 		final List<I_C_PaySchedule> paysSchedRecords = getPaySchedsByPaymentTermId(paymentTermId);
 
@@ -68,7 +68,7 @@ public class PaymentTermLoaderAndSaver
 				.map(PaymentTermLoaderAndSaver::toPaySchedule)
 				.collect(ImmutableList.toImmutableList());
 
-		return fromRecord()
+		return fromRecord(paymentTermRecord, breaks, paySchedules);
 	}
 
 	@NonNull
@@ -217,7 +217,7 @@ public class PaymentTermLoaderAndSaver
 
 	public void save(@NonNull final PaymentTerm paymentTerm)
 	{
-		trxManager.runInThreadInheritedTrx(() -> save0(paymentTerme));
+		trxManager.runInThreadInheritedTrx(() -> save0(paymentTerm));
 	}
 
 	private void save0(@NonNull final PaymentTerm paymentTerm)
