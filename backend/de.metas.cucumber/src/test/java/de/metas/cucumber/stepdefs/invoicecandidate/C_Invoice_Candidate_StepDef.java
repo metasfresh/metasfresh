@@ -319,10 +319,10 @@ public class C_Invoice_Candidate_StepDef
 					InterfaceWrapperHelper.refresh(invoiceCandidate);
 
 					row.getAsOptionalIdentifier(COLUMNNAME_Bill_BPartner_ID)
-							.map(bPartnerTable::getId).ifPresent(billBPartnerId -> assertThat(invoiceCandidate.getBill_BPartner_ID()).isEqualTo(billBPartnerId));
+							.map(bPartnerTable::getId).ifPresent(billBPartnerId -> assertThat(invoiceCandidate.getBill_BPartner_ID()).isEqualTo(billBPartnerId.getRepoId()));
 
 					row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
-							.map(productTable::getId).ifPresent(productId -> assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(productId));
+							.map(productTable::getId).ifPresent(productId -> assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(productId.getRepoId()));
 
 					final BigDecimal netAmountInvoiced = row.getAsOptionalBigDecimal(COLUMNNAME_NetAmtInvoiced)
 							.orElse(invoiceCandidate.getNetAmtInvoiced());
@@ -922,7 +922,7 @@ public class C_Invoice_Candidate_StepDef
 		logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "
 				+ "Error message: {}", timeoutSec, throwable.getMessage());
 
-		I_C_Invoice_Candidate invoiceCandidate = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
+		final I_C_Invoice_Candidate invoiceCandidate = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
 				.flatMap(invoiceCandTable::getOptional)
 				.orElse(null);
 		if (invoiceCandidate == null)
