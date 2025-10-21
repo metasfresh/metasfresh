@@ -24,17 +24,23 @@ package de.metas.shipper.gateway.commons.model.interceptor;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipper.gateway.commons.async.AdviseDeliveryOrderWorkpackageProcessor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 @Interceptor(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
+	@NonNull private final ShipmentScheduleService shipmentScheduleService;
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
@@ -49,7 +55,8 @@ public class M_ShipmentSchedule
 				|| shipmentSchedule.isProcessed()
 				|| shipmentSchedule.isClosed()
 				|| !shipmentSchedule.isActive()
-				|| shipmentSchedule.getQtyToDeliver().signum() <= 0)
+				|| shipmentSchedule.getQtyToDeliver().signum() <= 0
+				|| shipmentScheduleService.isEligibleForCarrierAdvise(ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID())))
 		{
 			return;
 		}
@@ -57,5 +64,7 @@ public class M_ShipmentSchedule
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID());
 		AdviseDeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(shipmentScheduleId, asyncBatchId);
+
+		shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Requested.getCode());
 	}
 }

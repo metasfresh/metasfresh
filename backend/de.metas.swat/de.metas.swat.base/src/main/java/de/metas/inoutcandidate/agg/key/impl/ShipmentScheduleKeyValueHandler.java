@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
@@ -70,9 +71,11 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 		}
 		values.add(sched.getAD_Org_ID());
 
-		if (sched.getM_Shipper_ID() > 0)
+		if (ShipperId.ofRepoIdOrNull(sched.getM_Shipper_ID()) != null)
 		{
 			values.add(sched.getM_Shipper_ID());
+			values.add(sched.getCarrier_Product_ID());
+			values.add(sched.getCarrier_Goods_Type_ID());
 		}
 
 		if (sched.getC_Async_Batch_ID() > 0)

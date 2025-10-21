@@ -23,9 +23,13 @@
 package de.metas.inoutcandidate;
 
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +37,7 @@ public class ShipmentScheduleService
 {
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
+	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
 
 	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
 	{
@@ -45,5 +50,15 @@ public class ShipmentScheduleService
 	{
 		shipmentScheduleRepository.save(shipmentSchedule);
 		carrierServiceRepository.assignServicesToShipmentSchedule(shipmentSchedule.getId(), shipmentSchedule.getCarrierServices());
+	}
+
+	public boolean isEligibleForCarrierAdvise(@Nullable final ShipmentScheduleId id)
+	{
+		if (id == null) {return true;}
+
+		final boolean isScheduled = pickingJobScheduleRepository.getByShipmentScheduleId(id)
+				.map(PickingJobSchedule::isScheduled).orElse(false);
+		final boolean isPickingStarted = false; //TODO PickingJob is not accessible here (null or !DocStatus.isNotProcessed)
+		return !isScheduled && !isPickingStarted;
 	}
 }

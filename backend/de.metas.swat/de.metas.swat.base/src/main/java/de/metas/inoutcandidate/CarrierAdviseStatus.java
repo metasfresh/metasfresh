@@ -36,6 +36,7 @@ import javax.annotation.Nullable;
 public enum CarrierAdviseStatus implements ReferenceListAwareEnum
 {
 	NotRequested(X_M_ShipmentSchedule.CARRIER_ADVISING_STATUS_NotRequested),
+	Requested(X_M_ShipmentSchedule.CARRIER_ADVISING_STATUS_Requested),
 	InProgress(X_M_ShipmentSchedule.CARRIER_ADVISING_STATUS_InProgress),
 	Completed(X_M_ShipmentSchedule.CARRIER_ADVISING_STATUS_Completed),
 	Failed(X_M_ShipmentSchedule.CARRIER_ADVISING_STATUS_Failed),
