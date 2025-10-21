@@ -1,6 +1,8 @@
 package de.metas.handlingunits.picking.job_schedule.service.commands;
 
 import com.google.common.collect.Sets;
+import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleCreateRepoRequest;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -10,6 +12,7 @@ import de.metas.quantity.Quantity;
 import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
@@ -32,6 +35,8 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 		{
 			return;
 		}
+
+		shipmentScheduleBL.getByIds(shipmentScheduleIds).values().forEach(CreateOrUpdatePickingJobSchedulesCommand::assumeCarrierProductSet);
 
 		final ShipmentScheduleAndJobScheduleIdSet existingJobScheduleIds = pickingJobScheduleRepository.getIdsByShipmentScheduleIdsAndWorkplaceId(shipmentScheduleIds, workplaceId);
 		final Set<ShipmentScheduleId> shipmentScheduleIds_woJobSchedule = Sets.difference(shipmentScheduleIds, existingJobScheduleIds.getShipmentScheduleIds());
@@ -58,5 +63,13 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 				});
 		
 		shipmentScheduleBL.flagForRecompute(shipmentScheduleIds);
+	}
+
+	private static void assumeCarrierProductSet(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if(CarrierProductId.ofRepoIdOrNull(shipmentSchedule.getCarrier_Product_ID()) == null)
+		{
+			throw new AdempiereException("Shipment schedule with Id {} doesn't have a Carrier Product. Pls refresh your window"); //TODO adMsg
+		}
 	}
 }

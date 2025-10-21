@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.commons.model.interceptor;
 import de.metas.async.AsyncBatchId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipper.gateway.commons.async.AdviseDeliveryOrderWorkpackageProcessor;
@@ -61,5 +62,6 @@ public class M_ShipmentSchedule
 		AdviseDeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(shipmentScheduleId, asyncBatchId);
 
 		shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Requested.getCode());
+		shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
 	}
 }

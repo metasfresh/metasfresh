@@ -37,7 +37,6 @@ public class ShipmentScheduleService
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
-	@NonNull private final PickingJobInfoProvider pickingJobInfoProvider;
 
 
 	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
@@ -64,11 +63,8 @@ public class ShipmentScheduleService
 			return false;
 		}
 
-		final ShipmentScheduleId id = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-		final boolean isScheduled = pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
-						.onlyShipmentScheduleId(id)
-						.build());
-		final boolean isPickingInProgress = pickingJobInfoProvider.isPickingInProgress(id);
-		return !isScheduled && !isPickingInProgress;
+		return pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
+				.onlyShipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
+				.build());
 	}
 }

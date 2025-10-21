@@ -188,19 +188,6 @@ public class PickingJobRepository
 	}
 
 	@NonNull
-	public ImmutableList<PickingJob> getPickingJobsByScheduleId(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
-	{
-		return getPickingJobIdsByScheduleId(ImmutableSet.of(shipmentScheduleId)).values().stream()
-				.flatMap(List::stream)
-				.collect(ImmutableSet.toImmutableSet())
-				.stream()
-				.map(pickingJobId -> PickingJobLoaderAndSaver.forLoading(loadingSupportServices).loadById(pickingJobId))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
 	public Map<ShipmentScheduleId, List<PickingJobId>> getPickingJobIdsByScheduleId(
 			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
