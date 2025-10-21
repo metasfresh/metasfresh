@@ -33,9 +33,7 @@ import de.metas.invoicecandidate.spi.impl.AttachmentInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
-import de.metas.order.paymentschedule.OrderPayScheduleRepository;
 import de.metas.order.paymentschedule.OrderPayScheduleService;
-import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.report.client.ReportsClient;
 import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
@@ -153,8 +151,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(ReceiptScheduleValidator.instance, client);
 		engine.addModelValidator(new M_Warehouse(), client); // 03084
 		engine.addModelValidator(new C_BPartner_Location(), client); // 02618
-
-		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Payment(), client); // 04193
 
 		engine.addModelValidator(new M_AttributeInstance(), client); // 05839
 

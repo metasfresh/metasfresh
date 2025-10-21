@@ -353,6 +353,7 @@ public class PaySelectionBL implements IPaySelectionBL
 				.payAmt(line.getPayAmt())
 				.discountAmt(line.getDiscountAmt())
 				.orderPayScheduleId(OrderPayScheduleId.ofRepoId(line.getC_OrderPaySchedule_ID()))
+				.isAutoAllocateAvailableAmt(true)
 				//
 				.createAndProcess();
 	}
@@ -565,5 +566,11 @@ public class PaySelectionBL implements IPaySelectionBL
 					.setParameter("InvoiceId", invoiceId)
 					.setParameter("originalPaymentId", orderId);
 		}
+	}
+
+	@Override
+	public I_C_PaySelectionLine getPaySelectionLineById(@NonNull final PaySelectionLineId paySelectionLineId)
+	{
+		return paySelectionDAO.getPaySelectionLinesById(paySelectionLineId);
 	}
 }

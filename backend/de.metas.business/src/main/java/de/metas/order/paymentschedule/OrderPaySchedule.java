@@ -54,6 +54,14 @@ public class OrderPaySchedule
 				.orElseThrow(() -> new AdempiereException("No line found for " + paymentTermBreakId));
 	}
 
+	public OrderPayScheduleLine getLineById(@NonNull final OrderPayScheduleId payScheduleLineId)
+	{
+		return lines.stream()
+				.filter(line -> line.getId().equals(payScheduleLineId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("OrderPayScheduleLine not found for ID: " + payScheduleLineId));
+	}
+
 	public void updateStatusFromContext(final OrderSchedulingContext context)
 	{
 		final PaymentTerm paymentTerm = context.getPaymentTerm();
@@ -70,24 +78,11 @@ public class OrderPaySchedule
 		}
 	}
 
-	public void markAsPaid(final OrderSchedulingContext context, final OrderPayScheduleId orderPayScheduleId)
+	public void markAsPaid(final OrderPayScheduleId orderPayScheduleId)
 	{
-		final PaymentTerm paymentTerm = context.getPaymentTerm();
+		final OrderPayScheduleLine line = getLineById(orderPayScheduleId);
 
-		for (final OrderPayScheduleLine line : lines)
-		{
-			if (line.getId().equals(orderPayScheduleId))
-			{
-				final DueDateAndStatus dueDateAndStatus = DueDateAndStatus.paid(line.getDueDate());
-				line.applyAndProcess(dueDateAndStatus);
-			}
-			else if (line.getStatus().isPending())
-			{
-				final PaymentTermBreak termBreak = paymentTerm.getBreakById(line.getPaymentTermBreakId());
-				final DueDateAndStatus dueDateAndStatus = context.computeDueDate(termBreak);
-				line.applyAndProcess(dueDateAndStatus);
-			}
-
-		}
+		final DueDateAndStatus dueDateAndStatus = DueDateAndStatus.paid(line.getDueDate());
+		line.applyAndProcess(dueDateAndStatus);
 	}
 }

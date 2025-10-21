@@ -13,6 +13,7 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -68,4 +69,6 @@ public interface IPaySelectionBL extends ISingletonService
 	Set<PaymentId> getPaymentIds(PaySelectionId paySelectionId);
 
 	ImmutableSet<BPartnerId> getBPartnerIdsFromPaySelectionLineIds(@NonNull Collection<PaySelectionLineId> paySelectionLineIds);
+
+	I_C_PaySelectionLine getPaySelectionLineById(@NonNull PaySelectionLineId paySelectionLineId);
 }
