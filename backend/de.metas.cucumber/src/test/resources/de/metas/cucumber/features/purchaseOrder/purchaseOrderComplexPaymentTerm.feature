@@ -136,23 +136,34 @@ Feature: Purchase order with complex payment term
       | paySel_1          |
     And the Pay selection identified by paySel_1 has pay selection lines with payments
 
-    # Prepare invoice candidate for invoicing
-
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
+      | receiptSchedule_1    | po2        | po2_l1         | vendor        | vendorLocation         | product      | 10         | wh             |
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID | M_HU_ID        | M_ReceiptSchedule_ID | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
+      | huLuTuConfig               | processedTopHU | receiptSchedule_1    | N               | 10          | 101                     | 1000006       |
+    And create material receipt
+      | M_HU_ID        | M_ReceiptSchedule_ID | M_InOut_ID |
+      | processedTopHU | receiptSchedule_1    | inOut      |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID | C_OrderLine_ID |
       | invoice_candidate_1    | po2_l1         |
     And update invoice candidates
-      | C_Invoice_Candidate_ID | InvoiceRule_Override | QtyToInvoice_Overrid |
-      | invoice_candidate_1    | I                    | 10                   |
+      | C_Invoice_Candidate_ID |
+      | invoice_candidate_1    |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID |
       | invoice_candidate_1    |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID |
       | invoice_candidate_1    |
-    And process invoice candidates
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID |
       | invoice_candidate_1    |
     Then after not more than 60s, C_Invoice are found:
-      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID |
-      | invoice_1               | invoice_candidate_1    |
+      | C_Invoice_ID | C_Invoice_Candidate_ID |
+      | invoice_1    | invoice_candidate_1    |
+    And validate created invoices
+      | C_Invoice_ID | IsPaid |
+      | invoice_1    | Y      |
+

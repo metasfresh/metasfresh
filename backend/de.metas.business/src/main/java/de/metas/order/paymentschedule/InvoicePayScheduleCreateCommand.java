@@ -28,20 +28,21 @@ class InvoicePayScheduleCreateCommand
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 		invoicePayScheduleService.deleteByInvoiceId(invoiceId);
-		toInvoicePayScheduleCreateRequest(OrderId.ofRepoId(invoiceRecord.getC_Order_ID()), invoiceId);
+
+		orderPayScheduleService.getByOrderId(OrderId.ofRepoId(invoiceRecord.getC_Order_ID()))
+				.map(orderPaySchedule -> toInvoicePayScheduleCreateRequest(invoiceId, orderPaySchedule))
+				.ifPresent(invoicePayScheduleService::create);
 	}
 
-	private void toInvoicePayScheduleCreateRequest(@NonNull final OrderId orderId, @NonNull final InvoiceId invoiceId)
+	private static InvoicePayScheduleCreateRequest toInvoicePayScheduleCreateRequest(@NonNull final InvoiceId invoiceId, @NonNull final OrderPaySchedule orderPaySchedule)
 	{
-		orderPayScheduleService.getByOrderId(orderId)
-				.map(orderPaySchedule -> InvoicePayScheduleCreateRequest.builder()
-						.invoiceId(invoiceId)
-						.lines(orderPaySchedule.getLines()
-								.stream()
-								.map(InvoicePayScheduleCreateCommand::toInvoicePayScheduleCreateRequestLine)
-								.collect(ImmutableList.toImmutableList()))
-						.build())
-				.ifPresent(invoicePayScheduleService::create);
+		return InvoicePayScheduleCreateRequest.builder()
+				.invoiceId(invoiceId)
+				.lines(orderPaySchedule.getLines()
+						.stream()
+						.map(InvoicePayScheduleCreateCommand::toInvoicePayScheduleCreateRequestLine)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
 	}
 
 	private static InvoicePayScheduleCreateRequest.Line toInvoicePayScheduleCreateRequestLine(@NonNull final OrderPayScheduleLine line)

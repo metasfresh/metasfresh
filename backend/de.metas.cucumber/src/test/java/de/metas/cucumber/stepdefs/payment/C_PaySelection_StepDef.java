@@ -37,18 +37,20 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.payment.PaymentId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -59,24 +61,21 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class C_PaySelection_StepDef
 {
 	private final @NonNull C_PaySelection_StepDefData paySelectionTable;
-	private final @NonNull C_PaySelectionLine_StepDefData paySelectionLineTable;
 	private final @NonNull C_BP_BankAccount_StepDefData bankAccountTable;
-	private final @NonNull C_Payment_StepDefData paymentTable;
 	private final @NonNull C_BPartner_StepDefData bpartnerTable;
 	private final @NonNull IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final @NonNull IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
-
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final @NonNull IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@And("metasfresh contains Pay Selection")
-	public void add_PaySelection(@NonNull final DataTable dataTable)
+	public void addPaySelections(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID)
-				.forEach(this::createPaySelection);
+				.forEach(this::addPaySelection);
 	}
 
-	public void createPaySelection(@NonNull final DataTableRow row)
+	private void addPaySelection(@NonNull final DataTableRow row)
 	{
 		final I_C_PaySelection paySelectionRecord = newInstance(I_C_PaySelection.class);
 
@@ -101,66 +100,63 @@ public class C_PaySelection_StepDef
 	@And("\"Create from...\" is invoked with parameters:")
 	public void createFrom_invoked(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID)
-				.forEach(this::runCreateFrom);
-	}
-
-	public void runCreateFrom(@NonNull final DataTableRow row)
-	{
-		final I_C_PaySelection paySelectionRecord = paySelectionTable.get(row.getAsIdentifier());
-
-		final BPartnerId bpartnerId = row.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_BPartner_ID)
-				.map(bpartnerTable::getId)
-				.orElseThrow(() -> new AdempiereException("No Partner found"));
-
-		final String type = row.getAsString("MatchRequirement");
-
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_PaySelection_CreateFrom.class);
-
-		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
-		processInfoBuilder.setAD_Process_ID(processId.getRepoId());
-		processInfoBuilder.setRecord(I_C_PaySelection.Table_Name, paySelectionRecord.getC_PaySelection_ID());
-		processInfoBuilder.addParameter("MatchRequirement", type);
-		processInfoBuilder.addParameter(I_C_PaySelectionLine.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId());
-
-		processInfoBuilder
-				.buildAndPrepareExecution()
-				.executeSync();
+		runPaySelectionProcess(DataTableRows.of(dataTable)
+						.setAdditionalRowIdentifierColumnName(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID)
+						.singleRow(),
+				PaySelectionProcessMode.CREATE_FROM);
 	}
 
 	@Then("\"Create Payments\" is invoked")
 	public void createPayments_invoked(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID)
-				.forEach(this::runCreatePayments);
+		runPaySelectionProcess(DataTableRows.of(dataTable)
+						.setAdditionalRowIdentifierColumnName(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID)
+						.singleRow(),
+				PaySelectionProcessMode.CREATE_PAYMENTS);
 	}
 
-	public void runCreatePayments(@NonNull final DataTableRow row)
+	private void runPaySelectionProcess(@NonNull final DataTableRow row, @NonNull final PaySelectionProcessMode processMode)
 	{
 		final I_C_PaySelection paySelectionRecord = paySelectionTable.get(row.getAsIdentifier());
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processMode.getProcessClass());
 
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_PaySelection_CreatePayments.class);
+		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.setRecord(I_C_PaySelection.Table_Name, paySelectionRecord.getC_PaySelection_ID());
 
-		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
-		processInfoBuilder.setAD_Process_ID(processId.getRepoId());
-		processInfoBuilder.setRecord(I_C_PaySelection.Table_Name, paySelectionRecord.getC_PaySelection_ID());
+		if (processMode == PaySelectionProcessMode.CREATE_FROM)
+		{
+			final BPartnerId bpartnerId = row.getAsOptionalIdentifier(I_C_PaySelectionLine.COLUMNNAME_C_BPartner_ID)
+					.map(bpartnerTable::getId)
+					.orElseThrow(() -> new AdempiereException("No Partner found"));
+
+			final String type = row.getAsString("MatchRequirement");
+
+			processInfoBuilder
+					.addParameter("MatchRequirement", type)
+					.addParameter(I_C_PaySelectionLine.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId());
+		}
 
 		processInfoBuilder
 				.buildAndPrepareExecution()
 				.executeSync();
+	}
+
+	@AllArgsConstructor
+	private enum PaySelectionProcessMode
+	{
+		CREATE_FROM(C_PaySelection_CreateFrom.class),
+		CREATE_PAYMENTS(C_PaySelection_CreatePayments.class);
+
+		@Getter
+		private final Class<? extends JavaProcess> processClass;
+
 	}
 
 	@And("^the pay selection identified by (.*) is completed$")
 	public void paysSelection_Complete(@NonNull final String paySelectionIdentifier)
 	{
 		final I_C_PaySelection paySelection = paySelectionTable.get(paySelectionIdentifier);
-		completePaySelection(paySelection);
-	}
-
-	public void completePaySelection(final I_C_PaySelection paySelection)
-	{
 		paySelection.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(paySelection, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
@@ -175,4 +171,5 @@ public class C_PaySelection_StepDef
 		assertThat(actualIds.size()).as("payments were created").isEqualTo(4); // TODO specify expected number of payments in the step
 
 	}
+
 }
