@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoicePaySchedule extends org.compiere.model.PO implements I_C_InvoicePaySchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -151445274L;
+	private static final long serialVersionUID = 1263134466L;
 
     /** Standard Constructor */
     public X_C_InvoicePaySchedule (final Properties ctx, final int C_InvoicePaySchedule_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_C_InvoicePaySchedule extends org.compiere.model.PO implements I_C
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
