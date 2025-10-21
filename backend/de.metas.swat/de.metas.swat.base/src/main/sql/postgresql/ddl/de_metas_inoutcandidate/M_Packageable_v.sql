@@ -155,7 +155,8 @@ FROM (SELECT
         AND s.IsActive = 'Y'
         AND (s.QtyToDeliver > 0 OR s.qtypicklist > 0)
         AND s.isclosed = 'N'
-        AND s.Carrier_Advising_Status IN ('NR', 'MAN', 'CO')
+        AND s.Carrier_Advising_Status IN ('NR', --NotRequested - no advising needed
+                                          'CO') --Completed
         AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)) p
 ;
 

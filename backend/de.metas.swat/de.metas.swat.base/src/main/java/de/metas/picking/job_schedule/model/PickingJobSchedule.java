@@ -9,15 +9,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder(toBuilder = true)
 public class PickingJobSchedule
 {
 	@NonNull PickingJobScheduleId id;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
-	@Nullable WorkplaceId workplaceId;
+	@NonNull WorkplaceId workplaceId;
 	@NonNull Quantity qtyToPick;
 	boolean processed;
 
@@ -25,10 +23,5 @@ public class PickingJobSchedule
 	public ShipmentScheduleAndJobScheduleId getShipmentScheduleAndJobScheduleId()
 	{
 		return ShipmentScheduleAndJobScheduleId.of(shipmentScheduleId, id);
-	}
-
-	public boolean isScheduled()
-	{
-		return workplaceId != null;
 	}
 }

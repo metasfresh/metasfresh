@@ -23,13 +23,12 @@
 package de.metas.inoutcandidate;
 
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +37,8 @@ public class ShipmentScheduleService
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
+	@NonNull private final PickingJobInfoProvider pickingJobInfoProvider;
+
 
 	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
 	{
@@ -52,13 +53,22 @@ public class ShipmentScheduleService
 		carrierServiceRepository.assignServicesToShipmentSchedule(shipmentSchedule.getId(), shipmentSchedule.getCarrierServices());
 	}
 
-	public boolean isEligibleForCarrierAdvise(@Nullable final ShipmentScheduleId id)
+	public boolean isEligibleForCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (id == null) {return true;}
+		if (shipmentSchedule.getM_Shipper_ID() <= 0
+				|| shipmentSchedule.isProcessed()
+				|| shipmentSchedule.isClosed()
+				|| !shipmentSchedule.isActive()
+				|| shipmentSchedule.getQtyToDeliver().signum() <= 0)
+		{
+			return false;
+		}
 
-		final boolean isScheduled = pickingJobScheduleRepository.getByShipmentScheduleId(id)
-				.map(PickingJobSchedule::isScheduled).orElse(false);
-		final boolean isPickingStarted = false; //TODO PickingJob is not accessible here (null or !DocStatus.isNotProcessed)
-		return !isScheduled && !isPickingStarted;
+		final ShipmentScheduleId id = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		final boolean isScheduled = pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
+						.onlyShipmentScheduleId(id)
+						.build());
+		final boolean isPickingInProgress = pickingJobInfoProvider.isPickingInProgress(id);
+		return !isScheduled && !isPickingInProgress;
 	}
 }

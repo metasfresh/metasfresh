@@ -26,7 +26,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -50,18 +49,6 @@ public class PickingJobScheduleRepository
 				.stream()
 				.map(PickingJobScheduleRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	public Optional<PickingJobSchedule> getByShipmentScheduleId(@NonNull final ShipmentScheduleId id)
-	{
-		return queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, id)
-				.create()
-				.stream()
-				.map(PickingJobScheduleRepository::fromRecord)
-				.findFirst();
 	}
 
 	public PickingJobSchedule create(@NonNull final PickingJobScheduleCreateRepoRequest request)
@@ -188,6 +175,11 @@ public class PickingJobScheduleRepository
 		return toSqlQuery(query)
 				.stream()
 				.map(PickingJobScheduleRepository::fromRecord);
+	}
+
+	public boolean anyMatch (@NonNull final PickingJobScheduleQuery query)
+	{
+		return toSqlQuery(query).anyMatch();
 	}
 
 	private IQuery<I_M_Picking_Job_Schedule> toSqlQuery(@NonNull final PickingJobScheduleQuery query)

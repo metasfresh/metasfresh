@@ -40,6 +40,8 @@ public enum PickingJobDocStatus
 		return docStatus;
 	}
 
+	public boolean isNotProcessed() {return !isProcessed();}
+
 	public boolean isProcessed() {return isCompleted() || this.equals(Voided);}
 
 	public boolean isCompleted()
