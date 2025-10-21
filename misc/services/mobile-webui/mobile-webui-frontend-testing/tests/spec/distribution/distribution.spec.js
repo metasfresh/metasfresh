@@ -1,11 +1,11 @@
-import { test } from "../../playwright.config";
-import { Backend } from "../utils/screens/Backend";
-import { LoginScreen } from "../utils/screens/LoginScreen";
-import { ApplicationsListScreen } from "../utils/screens/ApplicationsListScreen";
-import { DistributionJobsListScreen } from "../utils/screens/distribution/DistributionJobsListScreen";
-import { DistributionJobScreen } from '../utils/screens/distribution/DistributionJobScreen';
-import { DistributionLineScreen } from '../utils/screens/distribution/DistributionLineScreen';
-import { DistributionStepScreen } from '../utils/screens/distribution/DistributionStepScreen';
+import { test } from "../../../playwright.config";
+import { Backend } from "../../utils/screens/Backend";
+import { LoginScreen } from "../../utils/screens/LoginScreen";
+import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
+import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
+import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
+import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
+import { DistributionStepScreen } from '../../utils/screens/distribution/DistributionStepScreen';
 
 const createMasterdata = async ({ qtyToMove }) => {
     const response = await Backend.createMasterdata({

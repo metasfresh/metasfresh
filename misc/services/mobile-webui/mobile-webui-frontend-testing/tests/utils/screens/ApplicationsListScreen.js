@@ -4,6 +4,7 @@ import { expect } from "@playwright/test";
 import { LoginScreen } from "./LoginScreen";
 import { ScanAnythingScreen } from './scanAnything/ScanAnythingScreen';
 import { WorkplaceManagerScreen } from './workplaceManager/WorkplaceManagerScreen';
+import { BarcodeScannerComponent } from '../components/BarcodeScannerComponent';
 
 const NAME = 'HOME';
 /** @returns {import('@playwright/test').Locator} */
@@ -39,4 +40,7 @@ export const ApplicationsListScreen = {
         await ApplicationsListScreen.waitForScreen();
     }),
 
+    scanBarcode: async (barcode) => await test.step(`${NAME} - Scan barcode`, async () => {
+        await BarcodeScannerComponent.type(barcode);
+    }),
 }

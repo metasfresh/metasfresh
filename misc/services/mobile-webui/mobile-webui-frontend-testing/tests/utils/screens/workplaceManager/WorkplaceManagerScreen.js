@@ -3,10 +3,9 @@ import { test } from "../../../../playwright.config";
 import { expect } from "@playwright/test";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 
-const NAME = 'Workplace Manager';
-
+const NAME = 'WorkplaceManagerScreen';
 /** @returns {import('@playwright/test').Locator} */
-const containerElement = () => page.locator('#app-workplaceManager');
+const containerElement = () => page.locator('#WorkplaceManagerScreen');
 
 export const WorkplaceManagerScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -24,7 +23,7 @@ export const WorkplaceManagerScreen = {
         await WorkplaceManagerScreen.waitForScreen();
     }),
 
-    expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property`, async () => {
+    expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
         const row = await page.locator(
             `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`
         );
