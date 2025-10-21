@@ -280,6 +280,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.isComplex(record.isComplex())
 				.discount(Percent.of(record.getDiscount()))
 				.breaks(breaks)
+				.invoicePaySchedules(ImmutableList.of())
 				.build();
 
 	}
@@ -325,7 +326,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	{
 		return getById(id.getPaymentTermId()).getBreakById(id);
 	}
-
 
 	@Override
 	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)

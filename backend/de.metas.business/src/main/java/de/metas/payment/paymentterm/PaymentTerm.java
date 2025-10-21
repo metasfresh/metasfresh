@@ -25,43 +25,50 @@ package de.metas.payment.paymentterm;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.order.paymentschedule.InvoicePaySchedule;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.Setter;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
 
-@Value
+@EqualsAndHashCode
+@ToString
+@Getter
 public class PaymentTerm
 {
-	@NonNull PaymentTermId id;
-	@NonNull OrgId orgId;
-	@NonNull ClientId clientId;
+	@NonNull final PaymentTermId id;
+	@NonNull final OrgId orgId;
+	@NonNull final ClientId clientId;
 
-	@NonNull String value;
-	@NonNull String name;
-	@Nullable String description;
+	@NonNull final String value;
+	@NonNull final String name;
+	@Nullable final String description;
 
 	@Nullable Percent discount;
 	@Nullable Percent discount2;
 	@Nullable String netDay;
 
-	int discountDays;
-	int discountDays2;
-	int graceDays;
-	int netDays;
-	boolean allowOverrideDueDate;
-	boolean _default;
-	boolean isComplex;
+	@Setter int discountDays;
+	@Setter int discountDays2;
+	@Setter int graceDays;
+	@Setter int netDays;
+	@Setter boolean allowOverrideDueDate;
+	@Setter boolean _default;
+	@Setter boolean isComplex;
 
 	@NonNull ImmutableList<PaymentTermBreak> sortedBreaks;
 	@NonNull ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
+	@NonNull ImmutableList<InvoicePaySchedule> invoicePaySchedules;
 
 	@Builder
 	private PaymentTerm(
@@ -81,7 +88,8 @@ public class PaymentTerm
 			final boolean allowOverrideDueDate,
 			final boolean _default,
 			final boolean isComplex,
-			final @NonNull ImmutableList<PaymentTermBreak> breaks)
+			final @NonNull ImmutableList<PaymentTermBreak> breaks,
+			final @NonNull ImmutableList<InvoicePaySchedule> invoicePaySchedules )
 	{
 		this.id = id;
 		this.orgId = orgId;
@@ -105,6 +113,8 @@ public class PaymentTerm
 			Check.assumeNotEmpty(breaks, "If isComplex=true, then breaks shall not be empty");
 
 			checkPercentBreaks(breaks);
+
+			Check.assume(invoicePaySchedules.isEmpty(), "If isComplex=true, then invoicePaySchedules shall be empty");
 		}
 
 		this.sortedBreaks = isComplex
@@ -113,6 +123,8 @@ public class PaymentTerm
 		this.breaksById = isComplex
 				? Maps.uniqueIndex(breaks, PaymentTermBreak::getId)
 				: ImmutableMap.of();
+
+		this.invoicePaySchedules = invoicePaySchedules;
 	}
 
 	private static void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)

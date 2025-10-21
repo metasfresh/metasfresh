@@ -24,13 +24,16 @@ package de.metas.payment.paymentterm.interceptor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,9 +43,11 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_PaymentTerm_Break.class)
 @Component
+@RequiredArgsConstructor
 public class C_PaymentTerm_Break
 {
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	private final @NonNull IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	private final @NonNull PaymentTermService paymentTermService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_C_PaymentTerm_Break.COLUMNNAME_Percent)
 	public void assertTotalPercentageUnderLimit(@NonNull final I_C_PaymentTerm_Break record)
@@ -69,5 +74,14 @@ public class C_PaymentTerm_Break
 		{
 			throw new AdempiereException(PaymentTermConstants.C_PAYMENTTERM_BREAK_TotalPercentTooHigh, totalPercent);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
+	public void updatePaymentTermIsComplex(@NonNull final I_C_PaymentTerm_Break record)
+	{
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
+		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
+		paymentTerm.setComplex(true);
+		// paymentTermService.save(paymentTerm);
 	}
 }
