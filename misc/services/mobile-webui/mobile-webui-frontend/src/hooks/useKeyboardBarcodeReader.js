@@ -84,7 +84,7 @@ export const useKeyboardBarcodeReader = ({
       }, rateMs * 2);
 
       window.addEventListener('keydown', handleKeyDown);
-      // console.log('Enabled keyboard barcode reader', { rateMs, minLength });
+      console.log('Enabled keyboard barcode reader', { rateMs, minLength });
     } else {
       bufferRef.current = '';
       lastKeyTimeRef.current = 0;
@@ -94,7 +94,7 @@ export const useKeyboardBarcodeReader = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       clearInterval(intervalId);
-      // console.log('Disabled keyboard barcode reader');
+      console.log('Disabled keyboard barcode reader');
     };
   }, [onReadDone, onReadInProgress, rateMs, minLength, disabled]);
 };

@@ -118,7 +118,9 @@ const BarcodeScannerComponent = ({
 
   useEffect(
     () => {
-      videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+      if (isShowVideo) {
+        videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+      }
       if (!isInputTextReadonly) {
         inputTextRef?.current?.focus();
       }
