@@ -6,6 +6,7 @@ import { ChangeHUQtyDialog } from './ChangeHUQtyDialog';
 import { ClearanceDialog } from './ClearanceDialog';
 import { DISPOSAL_REASON_DAMAGED, HUDisposalScreen } from './HUDisposalScreen';
 import { HUBulkActionsScreen } from './HUBulkActionsScreen';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'HUManagerScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -27,8 +28,7 @@ export const HUManagerScreen = {
     scanHUQRCode: async ({ huQRCode }) => await test.step(`${NAME} - Scan HU QR Code`, async () => {
         await HUManagerScreen.expectVisible();
 
-        console.log('Scanning QR code:\n' + huQRCode);
-        await page.type('#input-text', huQRCode);
+        await BarcodeScannerComponent.type(huQRCode);
 
         await HUManagerScreen.waitForHUInfoPanel();
     }),
@@ -47,7 +47,7 @@ export const HUManagerScreen = {
     clickButton: async ({ testId }) => await test.step(`${NAME} - Click "${testId}" button`, async () => {
         await page.getByTestId(testId).tap();
     }),
-    
+
     expectButtonsInOrder: async (testIds) => await test.step(`${NAME} - Expect buttons in "${testIds.join()}" order`, async () => {
         const buttons = page.locator('.section .complete-btn');
         const actualTestIds = await buttons.evaluateAll((elements) =>
@@ -56,7 +56,7 @@ export const HUManagerScreen = {
 
         expect(actualTestIds).toEqual(testIds);
     }),
-        
+
     dispose: async ({ reason = DISPOSAL_REASON_DAMAGED } = {}) => await test.step(`${NAME} - Dispose HU`, async () => {
         await HUManagerScreen.clickButton({ testId: 'dispose-button' });
         await HUDisposalScreen.waitForScreen();

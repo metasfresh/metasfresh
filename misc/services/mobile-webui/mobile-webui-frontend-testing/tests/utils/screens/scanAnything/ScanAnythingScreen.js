@@ -2,6 +2,7 @@ import { page } from "../../common";
 import { test } from "../../../../playwright.config";
 import { expect } from "@playwright/test";
 import { WorkplaceManagerScreen } from '../workplaceManager/WorkplaceManagerScreen';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'ScanAnythingScreen';
 
@@ -20,7 +21,7 @@ export const ScanAnythingScreen = {
 
     scanWorkplace: async ({ qrCode }) => await test.step(`${NAME} - Scan Workplace QR code`, async () => {
         await ScanAnythingScreen.waitForScreen();
-        await page.locator('#input-text').type(`${qrCode}`)
+        await BarcodeScannerComponent.type(qrCode);
         await WorkplaceManagerScreen.waitForScreen();
     }),
 }
