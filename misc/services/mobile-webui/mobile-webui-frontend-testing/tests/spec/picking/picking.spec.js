@@ -85,7 +85,11 @@ test('Simple picking test', async ({ page }) => {
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
-    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+    await PickingJobScreen.pickHU({ 
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        isScanDirectly: true,
+        expectQtyEntered: '3' 
+    });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
     await Backend.expect({
         pickings: {
@@ -120,7 +124,6 @@ test('Simple picking test', async ({ page }) => {
             lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
         }
     });
-
 });
 
 // noinspection JSUnusedLocalSymbols
