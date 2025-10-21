@@ -135,3 +135,24 @@ Feature: Purchase order with complex payment term
       | C_PaySelection_ID |
       | paySel_1          |
     And the Pay selection identified by paySel_1 has pay selection lines with payments
+
+    # Prepare invoice candidate for invoicing
+
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID |
+      | invoice_candidate_1    | po2_l1         |
+    And update invoice candidates
+      | C_Invoice_Candidate_ID | InvoiceRule_Override | QtyToInvoice_Overrid |
+      | invoice_candidate_1    | I                    | 10                   |
+    And recompute invoice candidates if required
+      | C_Invoice_Candidate_ID |
+      | invoice_candidate_1    |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | invoice_candidate_1    |
+    And process invoice candidates
+      | C_Invoice_Candidate_ID |
+      | invoice_candidate_1    |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID |
+      | invoice_1               | invoice_candidate_1    |
