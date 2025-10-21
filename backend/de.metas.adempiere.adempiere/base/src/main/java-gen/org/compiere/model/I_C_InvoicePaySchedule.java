@@ -56,7 +56,7 @@ public interface I_C_InvoicePaySchedule
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_Currency_ID (int C_Currency_ID);
@@ -66,7 +66,7 @@ public interface I_C_InvoicePaySchedule
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_Currency_ID();
