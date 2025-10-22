@@ -35,6 +35,8 @@ import java.util.Optional;
 
 public interface IPaymentTermRepository extends ISingletonService
 {
+	void setIsComplexAndSave(@NonNull PaymentTermId paymentTermId, boolean isComplex);
+
 	@Nullable
 	Percent getPaymentTermDiscount(PaymentTermId paymentTermId);
 
@@ -68,4 +70,6 @@ public interface IPaymentTermRepository extends ISingletonService
 	PaymentTermBreak getPaymentTermBreakById(@NonNull PaymentTermBreakId id);
 
 	boolean hasPaySchedule(@NonNull PaymentTermId paymentTermId);
+
+	boolean hasPaymentTermBreaks(@NonNull PaymentTermId paymentTermId);
 }
