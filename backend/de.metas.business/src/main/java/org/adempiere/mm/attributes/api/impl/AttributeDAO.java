@@ -427,7 +427,7 @@ public class AttributeDAO implements IAttributeDAO
 	public AttributeListValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value, final boolean includeInactive)
 	{
 		//
-		// In case we are dealing with a high-volume attribute values set, we can not fetch all of them,
+		// In case we are dealing with a high-volume attribute values set, we cannot fetch all of them,
 		// but better to go directly and query.
 		if (isHighVolumeValuesList(attribute))
 		{
@@ -466,7 +466,7 @@ public class AttributeDAO implements IAttributeDAO
 			@NonNull final AttributeValueId attributeValueId)
 	{
 		//
-		// In case we are dealing with a high-volume attribute values set, we can not fetch all of them,
+		// In case we are dealing with a high-volume attribute values set, we cannot fetch all of them,
 		// but better to go directly and query.
 		if (isHighVolumeValuesList(attribute))
 		{
@@ -510,7 +510,7 @@ public class AttributeDAO implements IAttributeDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
 
 		//
-		// 07708: Apply AD_Val_Rule when filtering attributes for current context
+		// 07708: Apply AD_Val_Rule when filtering attributes for the current context
 		final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter;
 		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(attribute.getAD_Val_Rule_ID());
 		if (adValRuleId != null)
@@ -539,8 +539,8 @@ public class AttributeDAO implements IAttributeDAO
 			final boolean includeInactive,
 			// NOTE: we are caching this method only if we don't have a filter.
 			// If we have a filter:
-			// * that's mutable so it will screw up up our case
-			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karotten ID example from)
+			// * that's mutable, so it will screw up our case
+			// * in most of the cases, when we have a validation rule filter, we are dealing with a huge amount of data which needs to be filtered (see Karotten ID example from)
 			@CacheSkipIfNotNull final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter,
 			@NonNull final String orderByColumnName)
 	{
@@ -634,6 +634,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@SuppressWarnings("OptionalAssignedToNull")
 	public AttributeListValue changeAttributeValue(@NonNull final AttributeListValueChangeRequest request)
 	{
 		final I_M_AttributeValue record = loadOutOfTrx(request.getId(), I_M_AttributeValue.class);

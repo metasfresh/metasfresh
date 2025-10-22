@@ -32,7 +32,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
