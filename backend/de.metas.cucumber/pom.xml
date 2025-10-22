@@ -229,7 +229,7 @@
                         </configurationParameters>
                     </properties>
                     <additionalClasspathElements>
-                        <additionalClasspathElement>${project.basedir}/external-lib</additionalClasspathElement>
+                        <additionalClasspathElement>${project.basedir}/external-lib/*</additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
