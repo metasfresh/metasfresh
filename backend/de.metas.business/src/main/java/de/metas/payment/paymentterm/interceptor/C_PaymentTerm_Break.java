@@ -75,17 +75,14 @@ public class C_PaymentTerm_Break
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void afterSave(final I_C_PaymentTerm_Break record)
 	{
-		if (InterfaceWrapperHelper.isUIAction(record))
-		{
 			paymentTermRepository.setIsComplexAndSave(PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID()), true);
-		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void afterDelete(final I_C_PaymentTerm_Break record)
 	{
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
-		if (InterfaceWrapperHelper.isUIAction(record) && !paymentTermRepository.hasPaymentTermBreaks(paymentTermId))
+		if (!paymentTermRepository.hasPaymentTermBreaks(paymentTermId))
 		{
 			paymentTermRepository.setIsComplexAndSave(paymentTermId, false);
 		}
