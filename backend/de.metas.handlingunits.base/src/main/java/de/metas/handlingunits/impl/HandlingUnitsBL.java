@@ -348,7 +348,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			if(!packageHus.isEmpty())
 			{
 				final ImmutableList<Integer> packages = packageHus.stream().map(packageHU -> packageHU.getM_Package_ID()).collect(ImmutableList.toImmutableList());
-				throw new HUException(ERR_HUHasPackages, huId, packages)
+				throw new HUException(ERR_HUHasPackages, huId.getRepoId(), packages)
 						.markAsUserValidationError();
 			}
 		}
