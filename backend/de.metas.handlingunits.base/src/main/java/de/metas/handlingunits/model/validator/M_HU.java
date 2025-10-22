@@ -2,6 +2,7 @@ package de.metas.handlingunits.model.validator;
 
 import java.util.List;
 
+import de.metas.handlingunits.HuId;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -17,6 +18,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.segments.ShipmentScheduleSegmentFromHU;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -26,6 +28,9 @@ import lombok.NonNull;
 public class M_HU
 {
 	public static final M_HU INSTANCE = new M_HU();
+
+	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	final IHUPackageBL hupackageBL = Services.get(IHUPackageBL.class);
 
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
@@ -41,7 +46,6 @@ public class M_HU
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_M_HU hu)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		//
 		// Check: LUs shall always be Top-Level
@@ -127,7 +131,7 @@ public class M_HU
 		final int parentLocatorId = hu.getM_Locator_ID();
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(hu);
-		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
 
 		//
 		// Iterate children and update relevant fields from parent
@@ -152,12 +156,22 @@ public class M_HU
 	public void fireStorageSegmentChanged(final I_M_HU hu)
 	{
 		// Consider only VHUs
-		if (!Services.get(IHandlingUnitsBL.class).isVirtual(hu))
+		if (!handlingUnitsBL.isVirtual(hu))
 		{
 			return;
 		}
 
 		final ShipmentScheduleSegmentFromHU storageSegment = new ShipmentScheduleSegmentFromHU(hu);
 		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE },
+			ifColumnsChanged = { I_M_HU.COLUMNNAME_HUStatus })
+	public void destroyHUPackageOnHuDestruction(final I_M_HU hu)
+	{
+		if (handlingUnitsBL.isDestroyed(hu))
+		{
+			hupackageBL.destroyHUPackages(HuId.ofRepoId(hu.getM_HU_ID()));
+		}
 	}
 }

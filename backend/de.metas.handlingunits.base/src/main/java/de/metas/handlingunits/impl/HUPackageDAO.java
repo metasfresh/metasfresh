@@ -22,6 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -55,6 +56,17 @@ public class HUPackageDAO implements IHUPackageDAO
 				.create()
 				.list(I_M_Package_HU.class);
 	}
+
+	@Override
+	public List<I_M_Package_HU> retrievePackageHUs(final HuId huId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Package_HU.class)
+				.filter(new EqualsQueryFilter<>(I_M_Package_HU.COLUMN_M_HU_ID, huId))
+				.create()
+				.list(I_M_Package_HU.class);
+	}
+
 
 	@Override
 	public List<I_M_HU> retrieveHUs(final org.compiere.model.I_M_Package mpackage)

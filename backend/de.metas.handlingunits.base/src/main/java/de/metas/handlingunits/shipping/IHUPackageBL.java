@@ -17,6 +17,8 @@ public interface IHUPackageBL extends ISingletonService
 	 */
 	void destroyHUPackage(I_M_Package mpackage);
 
+	void destroyHUPackages(HuId huId);
+
 	/**
 	 * Creates M_Package and an {@link I_M_Package_HU}
 	 */

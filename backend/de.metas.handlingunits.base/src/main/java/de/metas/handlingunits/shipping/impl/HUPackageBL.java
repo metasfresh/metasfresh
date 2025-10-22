@@ -87,6 +87,16 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	@Override
+	public void destroyHUPackages(@NonNull final HuId huId)
+	{
+		final List<I_M_Package_HU> packageHus = huPackageDAO.retrievePackageHUs(huId);
+		for (final I_M_Package_HU packageHu : packageHus)
+		{
+			delete(packageHu);
+		}
+	}
+
+	@Override
 	public I_M_Package createM_Package(@NonNull final CreatePackageForHURequest request)
 	{
 		final I_M_HU hu = request.getHu();
