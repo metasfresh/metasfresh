@@ -848,17 +848,6 @@ public class AttributeDAO implements IAttributeDAO
 				.firstOnlyNotNull(I_M_AttributeSet.class);
 	}
 
-	@Override
-	@Cached(cacheName = I_M_AttributeSetInstance.Table_Name + "#ID=0")
-	public I_M_AttributeSetInstance retrieveNoAttributeSetInstance()
-	{
-		return queryBL
-				.createQueryBuilder(I_M_AttributeSetInstance.class)
-				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
-				.create()
-				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
-	}
-
 	private static final class AttributeListValueMap
 	{
 		public static AttributeListValueMap ofList(final List<AttributeListValue> list)

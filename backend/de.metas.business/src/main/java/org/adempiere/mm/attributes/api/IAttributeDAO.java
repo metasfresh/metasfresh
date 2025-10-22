@@ -68,11 +68,6 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	I_M_AttributeSet retrieveNoAttributeSet();
 
-	/**
-	 * Retrieves the "No Attribute Set Instance" (i.e. M_AttributeSetInstance_ID = {@link AttributeConstants#M_AttributeSetInstance_ID_None}).
-	 */
-	I_M_AttributeSetInstance retrieveNoAttributeSetInstance();
-
 	List<AttributeListValue> retrieveAttributeValues(I_M_Attribute attribute);
 
 	List<AttributeListValue> retrieveAttributeValuesByAttributeId(AttributeId attributeId);
@@ -211,8 +206,6 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return true if given attribute is expected to have a huge amount of attribute values
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
-
-	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
 
