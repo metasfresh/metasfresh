@@ -97,6 +97,12 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	@Override
+	public List<I_M_Package_HU> retrievePackageHUs(final HuId huId)
+	{
+		return huPackageDAO.retrievePackageHUs(huId);
+	}
+
+	@Override
 	public I_M_Package createM_Package(@NonNull final CreatePackageForHURequest request)
 	{
 		final I_M_HU hu = request.getHu();

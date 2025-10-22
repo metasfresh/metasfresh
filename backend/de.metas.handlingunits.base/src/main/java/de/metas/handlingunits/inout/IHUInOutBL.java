@@ -88,7 +88,7 @@ public interface IHUInOutBL extends ISingletonService
 	/**
 	 * Destroy all HUs which are assigned to this receipt.
 	 */
-	void destroyHUs(I_M_InOut inout);
+	void destroyHandlingUnitsForReversedInboundMovements(I_M_InOut inout);
 
 	/**
 	 * Set shipment line's QtyEntered, QtyEnteredTU, M_HU_PI_Item_Product from calculated or from overrides, based on {@link I_M_InOutLine#isManualPackingMaterial()}.

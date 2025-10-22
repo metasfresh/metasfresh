@@ -22,6 +22,7 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.document.DocBaseType;
@@ -63,6 +64,7 @@ import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
@@ -215,8 +217,18 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void destroyHUs(@NonNull final org.compiere.model.I_M_InOut inout)
+	public void destroyHandlingUnitsForReversedInboundMovements(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
+		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
+		if (movementType.isOutboundTransaction())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we are dealing with an outbound transaction!");
+			return;
+		}
+
+		// the incoming HU created from this M_InOut needs to be destroyed
+		copyAssignmentsToReversal(inout);
+
 		// services
 		final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -242,6 +254,7 @@ public class HUInOutBL implements IHUInOutBL
 			huContext.getHUPackingMaterialsCollector().setCollectIfOwnPackingMaterialsOnly(true);
 		}
 
+		huContext.setProperty(IHUContext.PROPERTY_IsReceiptReversal, true);
 		//
 		// Mark assigned HUs as destroyed
 		handlingUnitsBL.markDestroyed(huContext, hus);

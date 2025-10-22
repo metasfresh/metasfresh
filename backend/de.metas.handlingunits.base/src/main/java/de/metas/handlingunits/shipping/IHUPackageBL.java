@@ -9,6 +9,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import java.util.List;
 
 public interface IHUPackageBL extends ISingletonService
 {
@@ -18,6 +19,8 @@ public interface IHUPackageBL extends ISingletonService
 	void destroyHUPackage(I_M_Package mpackage);
 
 	void destroyHUPackages(HuId huId);
+
+	List<I_M_Package_HU> retrievePackageHUs(HuId huId);
 
 	/**
 	 * Creates M_Package and an {@link I_M_Package_HU}

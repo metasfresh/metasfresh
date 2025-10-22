@@ -46,6 +46,8 @@ public interface IHUContext extends IContextAware
 
 	String PROPERTY_AttributeTrxCandidates = "PROPERTY_AttributeTrxCandidates";
 
+	String PROPERTY_IsReceiptReversal = "IsReceiptReversal";
+
 	@Nullable
 	<T> T getProperty(String propertyName);
 
