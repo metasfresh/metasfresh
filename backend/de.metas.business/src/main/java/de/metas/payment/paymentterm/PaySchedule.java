@@ -13,7 +13,9 @@ public class PaySchedule
 {
 	@NonNull PayScheduleId id;
 	@NonNull PaymentTermId paymentTermId;
-	@Nullable Percent discount;
+	@NonNull Percent discount;
+	@NonNull Percent percentage;
+
 	@Nullable String netDay;
 
 	int discountDays;

@@ -1,6 +1,7 @@
 package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
+import org.jetbrains.annotations.Nullable;
 
 /** Generated Interface for C_PaymentTerm_Break
  *  @author metasfresh (generated) 
@@ -124,7 +125,7 @@ public interface I_C_PaymentTerm_Break
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (java.lang.String Description);
+	void setDescription (java.lang.@Nullable String Description);
 
 	/**
 	 * Get Description.

@@ -1,7 +1,6 @@
 package de.metas.payment.paymentterm;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
@@ -57,13 +56,7 @@ public interface IPaymentTermRepository extends ISingletonService
 	PaymentTermId retrievePaymentTermIdNotNull(@NonNull PaymentTermQuery build);
 
 	@NonNull
-	ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId);
-
-	@NonNull
-	default ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull final PaymentTermId paymentTermId)
-	{
-		return ImmutableList.copyOf(retrievePaymentTermBreaks(paymentTermId).get(paymentTermId));
-	}
+	ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull final PaymentTermId paymentTermId);
 
 	PaymentTermBreak getPaymentTermBreakById(@NonNull PaymentTermBreakId id);
 

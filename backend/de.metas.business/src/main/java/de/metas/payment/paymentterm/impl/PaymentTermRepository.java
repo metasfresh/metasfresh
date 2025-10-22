@@ -1,10 +1,6 @@
 package de.metas.payment.paymentterm.impl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
@@ -12,11 +8,8 @@ import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermLoaderAndSaver;
-import de.metas.payment.paymentterm.ReferenceDateType;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -24,16 +17,11 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_PaySchedule;
 import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_C_PaymentTerm_Break;
-import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.Optional;
 
 import static de.metas.util.Check.isNotBlank;
@@ -65,7 +53,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-
 	private PaymentTermLoaderAndSaver newLoaderAndSaver()
 	{
 		return PaymentTermLoaderAndSaver.builder()
@@ -77,8 +64,26 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@Override
 	public @NonNull PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
-		return newLoaderAndSaver().getByIdIfExists(paymentTermId)
-				.orElseThrow(() -> new AdempiereException("No active payment term found for " + paymentTermId));
+		return newLoaderAndSaver().getById(paymentTermId);
+	}
+
+	@NonNull
+	@Override
+	public ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull final PaymentTermId paymentTermId)
+	{
+		return newLoaderAndSaver().retrievePaymentTermBreaksList(paymentTermId);
+	}
+
+	@Override
+	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	{
+		return getById(id.getPaymentTermId()).getBreakById(id);
+	}
+
+	@Override
+	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
+	{
+		return !newLoaderAndSaver().getById(paymentTermId).getPaySchedules().isEmpty();
 	}
 
 	@Override
@@ -90,8 +95,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	{
 		return InterfaceWrapperHelper.load(paymentTermId, I_C_PaymentTerm.class);
 	}
-
-
 
 	@Nullable
 	@Override
@@ -200,32 +203,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			// augment and rethrow
 			throw e.appendParametersToMessage().setParameter("paymentTermQuery", query);
 		}
-	}
-
-
-
-	@NonNull
-	@Override
-	public ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
-	{
-		return newLoaderAndSaver().retrievePaymentTermBreaksForMultipleTerms(ImmutableList.of(paymentTermId));
-	}
-
-
-	@Override
-	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
-	{
-		return getById(id.getPaymentTermId()).getBreakById(id);
-	}
-
-	@Override
-	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
-	{
-		return queryBL
-				.createQueryBuilder(I_C_PaySchedule.class)
-				.addEqualsFilter(I_C_PaySchedule.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
-				.create()
-				.anyMatch();
 	}
 
 }
