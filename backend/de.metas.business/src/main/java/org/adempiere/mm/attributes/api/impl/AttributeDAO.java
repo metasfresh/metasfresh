@@ -16,6 +16,7 @@ import de.metas.javaclasses.JavaClassId;
 import de.metas.lang.SOTrx;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,6 +61,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -120,7 +122,6 @@ public class AttributeDAO implements IAttributeDAO
 	@NonNull
 	private AttributeSetDescriptor retrieveAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
 	{
-		Check.assume(!attributeSetId.isNone(), "attributeSetId is not none");
 		return retrieveAttributeIdsByAttributeSetIds(ImmutableSet.of(attributeSetId)).get(attributeSetId);
 	}
 
@@ -134,10 +135,11 @@ public class AttributeDAO implements IAttributeDAO
 
 		final AttributesMap attributesMap = getAttributesMap();
 
-		final ImmutableList<I_M_AttributeSet> records = queryBL.createQueryBuilderOutOfTrx(I_M_AttributeSet.class)
+		final ImmutableMap<AttributeSetId, I_M_AttributeSet> recordsById = queryBL.createQueryBuilderOutOfTrx(I_M_AttributeSet.class)
 				.addInArrayFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, attributeSetIds)
 				.orderBy(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID)
-				.list();
+				.stream()
+				.collect(GuavaCollectors.toImmutableMapByKey(record -> AttributeSetId.ofRepoId(record.getM_AttributeSet_ID())));
 
 		final ImmutableListMultimap<AttributeSetId, AttributeSetAttribute> attributesByAttributeSetId = queryBL.createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
 				.addOnlyActiveRecordsFilter()
@@ -149,9 +151,17 @@ public class AttributeDAO implements IAttributeDAO
 						record -> AttributeSetId.ofRepoId(record.getM_AttributeSet_ID()),
 						AttributeDAO::fromRecord));
 
-		return records.stream()
-				.map(record -> fromRecord(record, attributesByAttributeSetId))
-				.collect(ImmutableMap.toImmutableMap(AttributeSetDescriptor::getAttributeSetId, list -> list));
+		return attributeSetIds.stream()
+				.map(attributeSetId -> {
+					if (attributeSetId.isNone()) {return AttributeSetDescriptor.NONE;}
+
+					final I_M_AttributeSet record = recordsById.get(attributeSetId);
+					if (record == null) {return null;}
+
+					return fromRecord(record, attributesByAttributeSetId);
+				})
+				.filter(Objects::nonNull)
+				.collect(GuavaCollectors.toHashMapByKey(AttributeSetDescriptor::getAttributeSetId));
 	}
 
 	private static AttributeSetDescriptor fromRecord(
