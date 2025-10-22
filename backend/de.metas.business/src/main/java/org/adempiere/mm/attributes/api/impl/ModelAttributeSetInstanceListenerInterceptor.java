@@ -22,16 +22,14 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-
-import java.util.List;
-
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import lombok.NonNull;
+import java.util.List;
 
 /*package*/final class ModelAttributeSetInstanceListenerInterceptor extends AbstractModelInterceptor
 {
@@ -50,7 +48,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void onModelChange(final Object model, final ModelChangeType changeType) throws Exception
+	public void onModelChange(final Object model, final ModelChangeType changeType)
 	{
 		// Skip updating the ASI if automatic ASI updating is disabled (08091)
 		if (IModelAttributeSetInstanceListener.DYNATTR_DisableASIUpdateOnModelChange.getValue(model, false))
@@ -73,11 +71,9 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * @param model
-	 * @param columnNames
 	 * @return true if at least one of the given column names were changed.
 	 */
-	private final boolean isValueChanged(final Object model, final List<String> columnNames)
+	private static boolean isValueChanged(final Object model, final List<String> columnNames)
 	{
 		if (columnNames == IModelAttributeSetInstanceListener.ANY_SOURCE_COLUMN)
 		{

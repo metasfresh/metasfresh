@@ -11,8 +11,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 
 /*
@@ -40,7 +38,6 @@ import org.compiere.model.I_M_AttributeInstance;
 final class UpdateASIAttributeFromModelCommand
 {
 	private final transient IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL;
 
@@ -77,21 +74,14 @@ final class UpdateASIAttributeFromModelCommand
 			return;
 		}
 
-		if (asiAware.getM_Product_ID() <= 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(asiAware.getM_Product_ID());
+		if (productId == null)
 		{
 			return;
 		}
 
 		final AttributeId attributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(attributeCode);
-
 		if (attributeId == null)
-		{
-			return;
-		}
-
-		final ProductId productId = ProductId.ofRepoId(asiAware.getM_Product_ID());
-		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, attributeId);
-		if (attribute == null)
 		{
 			return;
 		}
@@ -99,7 +89,6 @@ final class UpdateASIAttributeFromModelCommand
 		attributeSetInstanceBL.getCreateASI(asiAware);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(asiAware.getM_AttributeSetInstance_ID());
 		final I_M_AttributeInstance ai = attributeSetInstanceBL.getAttributeInstance(asiId, attributeId);
-
 		if (ai != null)
 		{
 			// If it was set, just leave it as it is
