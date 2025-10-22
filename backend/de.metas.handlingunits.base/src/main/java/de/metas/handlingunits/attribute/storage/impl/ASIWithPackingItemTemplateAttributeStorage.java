@@ -159,8 +159,7 @@ import java.util.Properties;
 			final I_M_HU_PI_Attribute piAttribute,
 			final boolean isGeneratedAttribute)
 	{
-		final AIWithHUPIAttributeValue aiAttributeValue = new AIWithHUPIAttributeValue(this, attributeInstance, piAttribute, isGeneratedAttribute);
-		return aiAttributeValue;
+		return new AIWithHUPIAttributeValue(this, attributeInstance, piAttribute, isGeneratedAttribute);
 	}
 
 	@Override
@@ -176,9 +175,7 @@ import java.util.Properties;
 	}
 
 	/**
-	 * Method not supported.
-	 *
-	 * @throws UnsupportedOperationException
+	 * Method is not supported.
 	 */
 	@Override
 	protected void addChildAttributeStorage(final IAttributeStorage childAttributeStorage)
@@ -187,9 +184,7 @@ import java.util.Properties;
 	}
 
 	/**
-	 * Method not supported.
-	 *
-	 * @throws UnsupportedOperationException
+	 * Method is not supported.
 	 */
 	@Override
 	protected IAttributeStorage removeChildAttributeStorage(final IAttributeStorage childAttributeStorage)

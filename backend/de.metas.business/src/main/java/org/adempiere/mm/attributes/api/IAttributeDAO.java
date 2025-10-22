@@ -9,32 +9,27 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetAttribute;
+import org.adempiere.mm.attributes.AttributeSetAttributeIdsList;
 import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 public interface IAttributeDAO extends ISingletonService
 {
 	String CACHEKEY_ATTRIBUTE_VALUE = I_M_AttributeValue.Table_Name;
 
-	void save(I_M_AttributeSetInstance asi);
-
-	void save(I_M_AttributeInstance ai);
-
 	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
+
+	AttributeSetAttributeIdsList getAttributeIdsByAttributeSetId(@NonNull AttributeSetId attributeSetId);
 
 	MultiAttributeSetAttributeIdsList getAttributeIdsByAttributeSetIds(@NonNull Set<AttributeSetId> attributeSetIds);
 
@@ -45,11 +40,6 @@ public interface IAttributeDAO extends ISingletonService
 	<T extends I_M_Attribute> T getAttributeById(AttributeId attributeId, Class<T> type);
 
 	List<I_M_Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
-
-	/**
-	 * @return attributeIds ordered by M_AttributeUse.SeqNo
-	 */
-	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(AttributeSetInstanceId attributeSetInstanceId);
 
 	/**
 	 * @return attributes, ordered by M_AttributeUse.SeqNo
@@ -75,20 +65,6 @@ public interface IAttributeDAO extends ISingletonService
 	List<AttributeListValue> retrieveAttributeValuesByAttributeSetId(@NonNull AttributeSetId attributeSetId);
 
 	List<AttributeListValue> retrieveAttributeValuesByIds(Collection<AttributeValueId> attributeValueIds);
-
-	/**
-	 * Retrieves all attribute instances associated with an attribute instance set.
-	 *
-	 * @param attributeSetInstance may be {@code null}, in which case an empty list is returned.
-	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_AttributeUse.SeqNo
-	 */
-	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
-
-	/**
-	 * @param attributeSetInstanceId may be {@code null} or "none". In that case, always {@code null} is returned.
-	 * @return the attribute instance with the given {@code attributeSetInstanceId} and {@code attributeId}, or {@code null}.
-	 */
-	I_M_AttributeInstance retrieveAttributeInstance(AttributeSetInstanceId attributeSetInstanceId, AttributeId attributeId);
 
 	/**
 	 * Retrieve all attribute values that are defined for SO/PO transactions.
@@ -197,17 +173,9 @@ public interface IAttributeDAO extends ISingletonService
 	Optional<AttributeSetAttribute> getAttributeSetAttributeId(AttributeSetId attributeSetId, AttributeId attributeId);
 
 	/**
-	 * Creates a new {@link I_M_AttributeInstance}.
-	 * NOTE: it is not saving it
-	 */
-	I_M_AttributeInstance createNewAttributeInstance(Properties ctx, final I_M_AttributeSetInstance asi, final AttributeId attributeId, final String trxName);
-
-	/**
 	 * @return true if given attribute is expected to have a huge amount of attribute values
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
 
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
-
-	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
 }

@@ -69,7 +69,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;

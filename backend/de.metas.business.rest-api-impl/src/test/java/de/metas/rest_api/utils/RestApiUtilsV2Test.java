@@ -27,7 +27,6 @@ import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.test.AdempiereTestHelper;

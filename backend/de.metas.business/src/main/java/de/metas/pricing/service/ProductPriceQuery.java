@@ -83,7 +83,8 @@ public class ProductPriceQuery
 		/**
 		 * No ASI related matching at all
 		 */
-		IGNORE;
+		IGNORE,
+		;
 	}
 
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);

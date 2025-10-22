@@ -99,7 +99,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_Order;

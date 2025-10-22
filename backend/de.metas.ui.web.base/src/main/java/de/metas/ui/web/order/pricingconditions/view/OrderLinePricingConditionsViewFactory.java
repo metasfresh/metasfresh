@@ -1,17 +1,5 @@
 package de.metas.ui.web.order.pricingconditions.view;
 
-import java.math.BigDecimal;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
-
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -35,11 +23,21 @@ import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowsLoader.
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+
+import java.math.BigDecimal;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -103,7 +101,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		return rowsData;
 	}
 
-	private final PricingConditionsBreaksExtractor createPricingConditionsBreaksExtractor(final I_C_OrderLine salesOrderLine)
+	private PricingConditionsBreaksExtractor createPricingConditionsBreaksExtractor(final I_C_OrderLine salesOrderLine)
 	{
 		final PricingConditionsBreakQuery pricingConditionsBreakQuery = createPricingConditionsBreakQuery(salesOrderLine);
 
@@ -134,7 +132,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 				.build();
 	}
 
-	private final SourceDocumentLine createSourceDocumentLine(@NonNull final I_C_OrderLine orderLineRecord, @NonNull final SOTrx soTrx)
+	private SourceDocumentLine createSourceDocumentLine(@NonNull final I_C_OrderLine orderLineRecord, @NonNull final SOTrx soTrx)
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());

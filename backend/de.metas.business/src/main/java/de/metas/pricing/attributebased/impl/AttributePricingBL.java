@@ -72,14 +72,13 @@ public class AttributePricingBL implements IAttributePricingBL
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final AttributeSetId overrideAttributeSetId = Services.get(IProductBL.class).getAttributeSetId(productId);
 
-		final I_M_AttributeSetInstance resultASI = asiBL.prepareCopy(productPriceASI)
+		return asiBL.prepareCopy(productPriceASI)
 				.overrideAttributeSetId(overrideAttributeSetId)
 				// IMPORTANT: copy only those which are not empty (task #1272)
 				// NOTE: At the moment we use only the M_AttributeValue_ID so that's why we check only that field
 				.filter(ai -> ai.getM_AttributeValue_ID() > 0)
 				//
 				.copy();
-		return resultASI;
 	}
 
 	@Override

@@ -52,7 +52,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	/**
 	 * Build ASI Description
 	 * <p>
-	 * e.g. - Product Values - Instance Values - SerNo = #123 - Lot = \u00ab123\u00bb - GuaranteeDate = 10/25/2003
+	 * e.g. - Product Values - Instance Values - SerNo = #123 - Lot = «123» - GuaranteeDate = 10/25/2003
 	 *
 	 * @param asi may be {@code null}; in that case, an empty string is returned
 	 */
@@ -183,4 +183,13 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
 
 	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
+
+	void save(@NonNull I_M_AttributeSetInstance asi);
+
+	void save(@NonNull I_M_AttributeInstance ai);
+
+	/**
+	 * @return attributeIds ordered by M_AttributeUse.SeqNo
+	 */
+	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(@NonNull AttributeSetInstanceId attributeSetInstanceId);
 }

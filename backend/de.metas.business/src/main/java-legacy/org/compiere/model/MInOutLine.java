@@ -25,7 +25,6 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.WarehouseLocatorConflictException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
@@ -69,10 +68,10 @@ public class MInOutLine extends X_M_InOutLine
 			// setM_Product_ID (0);
 			setM_AttributeSetInstance_ID(0);
 			// setMovementQty (Env.ZERO);
-			setConfirmedQty(Env.ZERO);
-			setPickedQty(Env.ZERO);
-			setScrappedQty(Env.ZERO);
-			setTargetQty(Env.ZERO);
+			setConfirmedQty(BigDecimal.ZERO);
+			setPickedQty(BigDecimal.ZERO);
+			setScrappedQty(BigDecimal.ZERO);
+			setTargetQty(BigDecimal.ZERO);
 			setIsInvoiced(false);
 			setIsDescription(false);
 		}
@@ -715,13 +714,13 @@ public class MInOutLine extends X_M_InOutLine
 			if (m_il == null)
 			{
 				log.error("No Invoice Line for: " + this.toString());
-				return Env.ZERO;
+				return BigDecimal.ZERO;
 			}
 			return m_il.getLineNetAmt();
 		}
 		else if (MLandedCost.LANDEDCOSTDISTRIBUTION_Line.equals(CostDistribution))
 		{
-			return Env.ONE;
+			return BigDecimal.ONE;
 		}
 		else if (MLandedCost.LANDEDCOSTDISTRIBUTION_Quantity.equals(CostDistribution))
 		{
@@ -733,7 +732,7 @@ public class MInOutLine extends X_M_InOutLine
 			if (product == null)
 			{
 				log.error("No Product");
-				return Env.ZERO;
+				return BigDecimal.ZERO;
 			}
 			return getMovementQty().multiply(product.getVolume());
 		}
@@ -743,13 +742,13 @@ public class MInOutLine extends X_M_InOutLine
 			if (product == null)
 			{
 				log.error("No Product");
-				return Env.ZERO;
+				return BigDecimal.ZERO;
 			}
 			return getMovementQty().multiply(product.getWeight());
 		}
 		//
 		log.error("Invalid Criteria: " + CostDistribution);
-		return Env.ZERO;
+		return BigDecimal.ZERO;
 	}	// getBase
 
 	public boolean sameOrderLineUOM()

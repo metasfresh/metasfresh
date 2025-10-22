@@ -29,7 +29,6 @@ import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;

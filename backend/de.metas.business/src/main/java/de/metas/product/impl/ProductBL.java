@@ -469,13 +469,6 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isInstanceAttribute(@NonNull final ProductId productId)
-	{
-		final I_M_AttributeSet mas = getAttributeSetOrNull(productId);
-		return mas != null && mas.isInstanceAttribute();
-	}
-
-	@Override
 	public boolean isProductInCategory(
 			final ProductId productId,
 			final ProductCategoryId expectedProductCategoryId)

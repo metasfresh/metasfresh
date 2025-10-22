@@ -55,7 +55,7 @@ public class ASICopy
 		return new ASICopy(fromASI);
 	}
 
-	private final transient IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
+	private final transient IAttributeSetInstanceDAO asiDAO = Services.get(IAttributeSetInstanceDAO.class);
 	private final I_M_AttributeSetInstance _fromASI;
 	private AttributeSetId _overrideAttributeSetId;
 
@@ -72,11 +72,9 @@ public class ASICopy
 	}
 
 	/**
-	 * Sets a M_AttributeSet_ID to override the one that is coming from "fromASI".
+	 * Sets an M_AttributeSet_ID to override the one that is coming from "fromASI".
 	 * <p>
-	 * If the parameter is zero or negative the it will be ignored, so the attribute set from "fromASI" will be used.
-	 *
-	 * @param overrideAttributeSetId
+	 * If the parameter is zero or negative, then it will be ignored, so the attribute set from "fromASI" will be used.
 	 */
 	public ASICopy overrideAttributeSetId(final AttributeSetId overrideAttributeSetId)
 	{
@@ -91,8 +89,6 @@ public class ASICopy
 
 	/**
 	 * Adds a filter to attribute instances of "fromASI".
-	 *
-	 * @param filter
 	 */
 	public ASICopy filter(final Predicate<I_M_AttributeInstance> filter)
 	{
@@ -126,12 +122,12 @@ public class ASICopy
 				toASI.setM_AttributeSet_ID(overrideAttributeSetId.getRepoId());
 			}
 
-			InterfaceWrapperHelper.save(toASI);
+			asiDAO.save(toASI);
 		}
 
 		//
 		// Copy attribute instances
-		for (final I_M_AttributeInstance fromAI : attributesDAO.retrieveAttributeInstances(fromASI))
+		for (final I_M_AttributeInstance fromAI : asiDAO.retrieveAttributeInstances(fromASI))
 		{
 			// Check/skip attribute instance
 			if (isSkip(fromAI))
@@ -143,7 +139,7 @@ public class ASICopy
 			InterfaceWrapperHelper.copyValues(fromAI, toAI, true); // honorIsCalculated=true
 			toAI.setAD_Org_ID(toASI.getAD_Org_ID());
 			toAI.setM_AttributeSetInstance(toASI);
-			InterfaceWrapperHelper.save(toAI);
+			asiDAO.save(toAI);
 		}
 
 		//

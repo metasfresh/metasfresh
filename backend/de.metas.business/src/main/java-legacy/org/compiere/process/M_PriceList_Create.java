@@ -11,7 +11,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;

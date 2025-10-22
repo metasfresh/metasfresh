@@ -18,7 +18,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;

@@ -119,24 +119,20 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		return materialTrackingIdStr;
 	}
 
-	private final int getMaterialTrackingIdFromMaterialTrackingIdStr(final String materialTrackingIdStr)
+	private int getMaterialTrackingIdFromMaterialTrackingIdStr(final String materialTrackingIdStr)
 	{
 		if (Check.isEmpty(materialTrackingIdStr, true))
 		{
 			return -1;
 		}
 
-		final int materialTrackingId = Integer.parseInt(materialTrackingIdStr.trim());
-		return materialTrackingId;
+		return Integer.parseInt(materialTrackingIdStr.trim());
 	}
 
 	/**
 	 * Build a descriptive name for given material tracking
-	 *
-	 * @param materialTracking
-	 * @return
 	 */
-	private final String buildName(final I_M_Material_Tracking materialTracking)
+	private String buildName(final I_M_Material_Tracking materialTracking)
 	{
 		Check.assumeNotNull(materialTracking, "materialTracking not null");
 
@@ -340,7 +336,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		return materialTrackingId > 0;
 	}
 
-	private final int getMaterialTrackingId(final IContextAware context, final IAttributeSet attributeSet)
+	private int getMaterialTrackingId(final IContextAware context, final IAttributeSet attributeSet)
 	{
 		if (!attributeSet.hasAttribute(M_Attribute_Value_MaterialTracking))
 		{
@@ -353,8 +349,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		}
 
 		final String materialTrackingIdStr = materialTrackingIdObj.toString();
-		final int materialTrackingId = getMaterialTrackingIdFromMaterialTrackingIdStr(materialTrackingIdStr);
-		return materialTrackingId;
+		return getMaterialTrackingIdFromMaterialTrackingIdStr(materialTrackingIdStr);
 	}
 
 	@Override

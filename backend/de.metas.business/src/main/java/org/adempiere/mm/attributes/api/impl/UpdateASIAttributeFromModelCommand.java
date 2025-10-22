@@ -60,6 +60,7 @@ final class UpdateASIAttributeFromModelCommand
 		this.sourceModel = sourceModel;
 	}
 
+	@SuppressWarnings("unused")
 	public static class UpdateASIAttributeFromModelCommandBuilder
 	{
 		public void execute()

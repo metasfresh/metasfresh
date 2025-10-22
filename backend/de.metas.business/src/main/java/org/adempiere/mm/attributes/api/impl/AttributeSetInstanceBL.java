@@ -9,7 +9,6 @@ import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -23,9 +22,10 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -47,17 +47,18 @@ import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 {
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAttributeSetInstanceDAO asiDAO = Services.get(IAttributeSetInstanceDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 
 	@Override
 	public I_M_AttributeSetInstance getById(@NonNull final AttributeSetInstanceId asiId)
 	{
-		return attributeDAO.getAttributeSetInstanceById(asiId);
+		return asiDAO.getAttributeSetInstanceById(asiId);
 	}
 
 	@Override
@@ -138,7 +139,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		final I_M_AttributeSetInstance asiNew = newInstance(I_M_AttributeSetInstance.class);
 
 		// use the method from the service so if the product doesn't have an AS, it can be taken from product category
-		final AttributeSetId productAttributeSetId = Services.get(IProductBL.class).getAttributeSetId(productId);
+		final AttributeSetId productAttributeSetId = productBL.getAttributeSetId(productId);
 
 		asiNew.setM_AttributeSet_ID(productAttributeSetId.getRepoId());
 		InterfaceWrapperHelper.save(asiNew);
@@ -168,7 +169,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			@NonNull final AttributeListValue attributeValue)
 	{
 		// services
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final AttributeId attributeId = attributeValue.getAttributeId();
 
 		if (asiId.isNone())
@@ -277,8 +277,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public void cloneASI(final Object to, final Object from)
 	{
-		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-
 		final IAttributeSetInstanceAware toASIAware = attributeSetInstanceAwareFactoryService.createOrNull(to);
 		if (toASIAware == null)
 		{
@@ -303,8 +301,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public void cloneOrCreateASI(@Nullable final Object to, @Nullable final Object from)
 	{
-		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-
 		final IAttributeSetInstanceAware toASIAware = attributeSetInstanceAwareFactoryService.createOrNull(to);
 		if (toASIAware == null)
 		{
@@ -414,7 +410,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			final String stringValue = attributeSet.getValueAsString(attribute);
 			attributeInstance.setValue(stringValue);
 
-			final AttributeListValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, stringValue);
+			final AttributeListValue attributeValue = attributeDAO.retrieveAttributeValueOrNull(attribute, stringValue);
 			attributeInstance.setM_AttributeValue_ID(attributeValue != null ? attributeValue.getId().getRepoId() : -1);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
@@ -453,10 +449,8 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public boolean isStorageRelevant(@NonNull final I_M_AttributeInstance ai)
 	{
-		final IAttributesBL attributesService = Services.get(IAttributesBL.class);
-
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
-		return attributesService.isStorageRelevant(attributeId);
+		return attributeDAO.getAttributeById(attributeId).isStorageRelevant();
 	}
 
 	@Override
@@ -518,10 +512,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	{
 		Check.assumeNotEmpty(asiIds, "asiIds is not empty");
 
-		final Map<AttributeSetInstanceId, List<I_M_AttributeInstance>> instancesByAsiId = queryBL.createQueryBuilder(I_M_AttributeInstance.class)
-				.addInArrayFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiIds)
-				.create()
-				.list()
+		final Map<AttributeSetInstanceId, List<I_M_AttributeInstance>> instancesByAsiId = asiDAO.retrieveAttributeInstancesByAsiIds(asiIds)
 				.stream()
 				.collect(Collectors.groupingBy(ai -> AttributeSetInstanceId.ofRepoId(ai.getM_AttributeSetInstance_ID())));
 
@@ -546,7 +537,28 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public List<I_M_AttributeInstance> getAttributeInstances(final I_M_AttributeSetInstance attributeSetInstance)
 	{
-		return attributeDAO.retrieveAttributeInstances(attributeSetInstance);
+		//
+		// Ordering by M_AttributeUse.SeqNo
+		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSet_ID());
+		final Comparator<I_M_AttributeInstance> order = createAttributeInstanceOrderComparator(attributeSetId);
+
+		return asiDAO.retrieveAttributeInstances(attributeSetInstance)
+				.stream()
+				.sorted(order)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private Comparator<I_M_AttributeInstance> createAttributeInstanceOrderComparator(final AttributeSetId attributeSetId)
+	{
+		final List<AttributeId> attributeIds = attributeDAO.getAttributeIdsByAttributeSetId(attributeSetId).getAttributeIdsInOrder();
+		if (attributeIds.isEmpty())
+		{
+			return Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID);
+		}
+
+		return FixedOrderByKeyComparator.notMatchedAtTheEnd(
+				attributeIds,
+				ai -> AttributeId.ofRepoId(ai.getM_Attribute_ID()));
 	}
 
 	@Nullable
@@ -555,7 +567,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final AttributeId attributeId)
 	{
-		return attributeDAO.retrieveAttributeInstance(attributeSetInstanceId, attributeId);
+		return asiDAO.retrieveAttributeInstance(attributeSetInstanceId, attributeId);
 	}
 
 	@Override
@@ -565,7 +577,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			@NonNull final AttributeId attributeId,
 			final String trxName)
 	{
-		return attributeDAO.createNewAttributeInstance(ctx, asi, attributeId, trxName);
+		return asiDAO.createNewAttributeInstance(ctx, asi, attributeId, trxName);
 	}
 
 	@Override
@@ -614,6 +626,24 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 				.forEach(attribute -> setAttributeInstanceValue(asiId, attribute.getAttributeCode(), attribute.getValue()));
 
 		return asiId;
+	}
+
+	@Override
+	public void save(@NonNull final I_M_AttributeSetInstance asi)
+	{
+		asiDAO.save(asi);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_AttributeInstance ai)
+	{
+		asiDAO.save(ai);
+	}
+
+	@Override
+	public Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		return asiDAO.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
 	}
 
 }

@@ -29,7 +29,6 @@ import org.adempiere.mm.attributes.AttributeListValueTrxRestriction;
 import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetAttributeIdsList;
 import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
@@ -42,9 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeUse;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
@@ -54,7 +51,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +58,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -82,18 +77,6 @@ public class AttributeDAO implements IAttributeDAO
 			.build();
 
 	@Override
-	public void save(@NonNull final I_M_AttributeSetInstance asi)
-	{
-		saveRecord(asi);
-	}
-
-	@Override
-	public void save(@NonNull final I_M_AttributeInstance ai)
-	{
-		saveRecord(ai);
-	}
-
-	@Override
 	public I_M_AttributeSet getAttributeSetById(@NonNull final AttributeSetId attributeSetId)
 	{
 		if (attributeSetId.isNone())
@@ -106,7 +89,8 @@ public class AttributeDAO implements IAttributeDAO
 		}
 	}
 
-	private AttributeSetAttributeIdsList getAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
+	@Override
+	public AttributeSetAttributeIdsList getAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
 	{
 		if (attributeSetId.isNone())
 		{
@@ -245,19 +229,6 @@ public class AttributeDAO implements IAttributeDAO
 				.filter(I_M_Attribute::isActive)
 				.sorted(order)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
-	public Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
-	{
-		return queryBL
-				.createQueryBuilderOutOfTrx(I_M_AttributeInstance.class)
-				.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, attributeSetInstanceId)
-				.create()
-				.listDistinct(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, Integer.class)
-				.stream()
-				.map(AttributeId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -528,94 +499,6 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeSetInstance getAttributeSetInstanceById(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
-	{
-		return load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
-	}
-
-	@Override
-	public List<I_M_AttributeInstance> retrieveAttributeInstances(final I_M_AttributeSetInstance attributeSetInstance)
-	{
-		if (attributeSetInstance == null)
-		{
-			return ImmutableList.of();
-		}
-
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSetInstance_ID());
-		if (asiId.isNone())
-		{
-			return ImmutableList.of();
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
-		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
-		final ImmutableList<I_M_AttributeInstance> attributeInstances = retrieveAttributeInstances(ctx, asiId, trxName);
-		if (attributeInstances.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		//
-		// Ordering by M_AttributeUse.SeqNo
-		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSet_ID());
-		final Comparator<I_M_AttributeInstance> order = createAttributeInstanceOrderComparator(attributeSetId);
-
-		return attributeInstances
-				.stream()
-				.sorted(order)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private Comparator<I_M_AttributeInstance> createAttributeInstanceOrderComparator(final AttributeSetId attributeSetId)
-	{
-		final List<AttributeId> attributeIds = getAttributeIdsByAttributeSetId(attributeSetId).getAttributeIdsInOrder();
-		if (attributeIds.isEmpty())
-		{
-			return Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID);
-		}
-
-		return FixedOrderByKeyComparator.notMatchedAtTheEnd(
-				attributeIds,
-				ai -> AttributeId.ofRepoId(ai.getM_Attribute_ID()));
-	}
-
-	private ImmutableList<I_M_AttributeInstance> retrieveAttributeInstances(
-			final Properties ctx,
-			@NonNull final AttributeSetInstanceId asiId,
-			final String trxName)
-	{
-		if (asiId.getRepoId() <= 0)
-		{
-			return ImmutableList.of();
-		}
-
-		return queryBL
-				.createQueryBuilder(I_M_AttributeInstance.class, ctx, trxName)
-				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiId)
-				.orderBy(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID) // at least to have a predictable order
-				.create()
-				.listImmutable(I_M_AttributeInstance.class);
-	}
-
-	@Override
-	@Nullable
-	public I_M_AttributeInstance retrieveAttributeInstance(
-			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
-			@NonNull final AttributeId attributeId)
-	{
-		if (attributeSetInstanceId == null || attributeSetInstanceId.isNone())
-		{
-			return null;
-		}
-
-		return queryBL.createQueryBuilder(I_M_AttributeInstance.class)
-				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstanceId)
-				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeId)
-				.create()
-				.firstOnly(I_M_AttributeInstance.class);
-	}
-
-	@Override
 	public List<AttributeListValue> retrieveFilteredAttributeValues(final I_M_Attribute attribute, final SOTrx soTrx)
 	{
 		return retrieveAttributeValuesMap(attribute, false/* includeInactive */)
@@ -820,21 +703,6 @@ public class AttributeDAO implements IAttributeDAO
 	public Optional<AttributeSetAttribute> getAttributeSetAttributeId(final AttributeSetId attributeSetId, final AttributeId attributeId)
 	{
 		return getAttributeIdsByAttributeSetId(attributeSetId).getByAttributeId(attributeId);
-	}
-
-	@Override
-	public I_M_AttributeInstance createNewAttributeInstance(
-			final Properties ctx,
-			final I_M_AttributeSetInstance asi,
-			@NonNull final AttributeId attributeId,
-			final String trxName)
-	{
-		final I_M_AttributeInstance ai = InterfaceWrapperHelper.create(ctx, I_M_AttributeInstance.class, trxName);
-		ai.setAD_Org_ID(asi.getAD_Org_ID());
-		ai.setM_AttributeSetInstance(asi);
-		ai.setM_Attribute_ID(attributeId.getRepoId());
-
-		return ai;
 	}
 
 	@Override

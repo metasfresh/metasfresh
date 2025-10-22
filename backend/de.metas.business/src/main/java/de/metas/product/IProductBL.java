@@ -184,13 +184,6 @@ public interface IProductBL extends ISingletonService
 
 	boolean isASIMandatory(ProductId productId, boolean isSOTrx);
 
-	/**
-	 * Has the Product Instance Attribute
-	 *
-	 * @return true if instance attributes
-	 */
-	boolean isInstanceAttribute(ProductId productId);
-
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
 	String getProductValueAndName(@Nullable ProductId productId);

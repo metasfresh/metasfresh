@@ -1,6 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
 import de.metas.util.Services;
+import lombok.Getter;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -54,7 +55,7 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 	private String attributeKey;
 	private String valueString;
 	private boolean valueStringSet;
-	private BigDecimal valueNumber;
+	@Getter private BigDecimal valueNumber;
 	private boolean valueNumberSet;
 	private Date valueDate;
 	private boolean valueDateSet;
@@ -62,11 +63,6 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 	public AttributeInstanceExpectation(final ParentExpectationType parentExpectation)
 	{
 		super(parentExpectation);
-	}
-
-	public AttributeInstanceExpectation()
-	{
-		this(null);
 	}
 
 	public AttributeInstanceExpectation<ParentExpectationType> assertExpected(final I_M_AttributeSetInstance asi)
@@ -148,11 +144,6 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 		return this;
 	}
 
-	public BigDecimal getValueNumber()
-	{
-		return this.valueNumber;
-	}
-
 	public AttributeInstanceExpectation<ParentExpectationType> valueNumber(final String valueNumberStr)
 	{
 		return valueNumber(new BigDecimal(valueNumberStr));
@@ -177,7 +168,7 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 		return getAttributeNotNull(messageIfNotFound);
 	}
 
-	private final I_M_Attribute getAttributeNotNull(final ErrorMessage messageIfNotFound)
+	private I_M_Attribute getAttributeNotNull(final ErrorMessage messageIfNotFound)
 	{
 		if (attribute != null)
 		{

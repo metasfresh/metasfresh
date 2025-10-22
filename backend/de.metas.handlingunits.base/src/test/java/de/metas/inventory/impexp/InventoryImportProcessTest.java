@@ -85,7 +85,6 @@ public class InventoryImportProcessTest
 	private IAttributeSetInstanceBL asiBL;
 	private AttributesTestHelper attributesTestHelper;
 
-	private I_C_UOM uomEach;
 	private ProductId productId;
 
 	@BeforeEach
@@ -105,7 +104,7 @@ public class InventoryImportProcessTest
 		attributesTestHelper = new AttributesTestHelper();
 		setupAttributes();
 
-		uomEach = BusinessTestHelper.createUomEach();
+		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 		final I_M_AttributeSet attributeSet = attributesTestHelper.createM_AttributeSet();
 		final I_M_Product_Category productCategory = BusinessTestHelper.createM_Product_Cagetory("ProductCategory", attributeSet);
 		final I_M_Product product = BusinessTestHelper.createProduct("product", uomEach, productCategory);

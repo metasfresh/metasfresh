@@ -78,8 +78,7 @@ public class ImmutableAttributeSetTest
 
 		final ImmutableAttributeSet attributeSet = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 
-		assertThat(attributeSet.getAttributes()).contains(attrStringWithValue);
-		assertThat(attributeSet.getAttributes()).contains(attributeStringNull);
+		assertThat(attributeSet.getAttributes()).contains(attrStringWithValue, attributeStringNull);
 
 		assertThat(attributeSet.getValue(attrStringWithValue)).isEqualTo(attributeStringValue.getValue());
 		assertThat(attributeSet.getValue(attributeStringNull)).isNull();

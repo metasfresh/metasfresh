@@ -137,13 +137,13 @@ public class CountryAwareAttributeUpdater
 		return this;
 	}
 
-	private final Object getSourceModel()
+	private Object getSourceModel()
 	{
 		Check.assumeNotNull(sourceModel, "sourceModel not null");
 		return sourceModel;
 	}
 
-	private final String getSourceTableName()
+	private String getSourceTableName()
 	{
 		return InterfaceWrapperHelper.getModelTableName(getSourceModel());
 	}
@@ -154,7 +154,7 @@ public class CountryAwareAttributeUpdater
 		return this;
 	}
 
-	private final ICountryAwareFactory getCountryAwareFactory()
+	private ICountryAwareFactory getCountryAwareFactory()
 	{
 		Check.assumeNotNull(countryAwareFactory, "countryAwareFactory not null");
 		return countryAwareFactory;
@@ -166,7 +166,7 @@ public class CountryAwareAttributeUpdater
 		return this;
 	}
 
-	private final ICountryAwareAttributeService getCountryAwareAttributeService()
+	private ICountryAwareAttributeService getCountryAwareAttributeService()
 	{
 		Check.assumeNotNull(countryAwareAttributeService, "countryAwareAttributeService not null");
 		return countryAwareAttributeService;

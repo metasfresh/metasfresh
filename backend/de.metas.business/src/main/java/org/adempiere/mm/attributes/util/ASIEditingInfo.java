@@ -472,7 +472,7 @@ public final class ASIEditingInfo
 		if (AttributeSetInstanceId.isRegular(attributeSetInstanceId))
 		{
 			final Set<Integer> alreadyLoadedAttributeIds = attributes.keySet();
-			final Set<AttributeId> asiAttributeIds = attributesRepo.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
+			final Set<AttributeId> asiAttributeIds = asiBL.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
 			final Set<AttributeId> attributeIdsToLoad = Sets.difference(asiAttributeIds, alreadyLoadedAttributeIds);
 
 			attributesRepo.getAttributesByIds(attributeIdsToLoad)
