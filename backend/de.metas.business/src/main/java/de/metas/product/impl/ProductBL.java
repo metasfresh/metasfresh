@@ -710,7 +710,7 @@ public final class ProductBL implements IProductBL
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
 
 		return productRecord.getDiscontinuedFrom() == null
-				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
+				|| !TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).isAfter(targetDate);
 	}
 
 	@Override

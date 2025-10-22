@@ -40,8 +40,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.X_M_ProductScalePrice;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProductPricing;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -59,17 +57,9 @@ import java.util.Properties;
 public class ProductPA implements IProductPA
 {
 
-	public static final String WHERE_PRODUCT_PRICE = I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "=?";
-
 	public static final String WHERE_PRODUCT_SCALE_PRICE = I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?";
 
 	private static final Logger logger = LogManager.getLogger(ProductPA.class);
-
-	private static final String SQL_SELECT_ASI = "SELECT asi.* "
-			+ " FROM " + I_M_AttributeSetInstance.Table_Name + " asi"
-			+ " WHERE "//
-			+ "    asi." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSet_ID + "=?"
-			+ "    AND asi." + I_M_AttributeSetInstance.COLUMNNAME_SerNo + "=? ";
 
 	private final static String SQL_SCALEPRICE_FOR_QTY = //
 			" SELECT * "//
@@ -79,8 +69,6 @@ public class ProductPA implements IProductPA
 					+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_Qty + "<=?" //
 					+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_IsActive + "='Y'" //
 					+ " ORDER BY " + I_M_ProductScalePrice.COLUMNNAME_Qty + " DESC";
-
-	private static final String PREFIX_ERR_MSG_NONEXISTING_PROD = "Param 'productId' must be the of product that exists in the database. Was: ";
 
 	@Override
 	public I_M_Product retrieveProduct(
@@ -98,7 +86,7 @@ public class ProductPA implements IProductPA
 	}
 
 	@Cached(cacheName = I_M_Product.Table_Name + "#By#ColumnName")
-	/* package */I_M_Product retrieveProduct(
+		/* package */I_M_Product retrieveProduct(
 			final @CacheCtx Properties ctx,
 			final String colName,
 			final @CacheAllowMutable Object param,
@@ -124,18 +112,18 @@ public class ProductPA implements IProductPA
 	public BigDecimal retrievePriceStd(
 			final @NonNull OrgId orgId,
 			final int productId,
-			final int partnerId, 
-			final int priceListId, 
+			final int partnerId,
+			final int priceListId,
 			@Nullable final CountryId countryId,
 			final BigDecimal qty,
 			final boolean soTrx)
 	{
 		final MProductPricing pricing = new MProductPricing(
 				orgId,
-				productId, 
+				productId,
 				partnerId,
 				countryId,
-				qty, 
+				qty,
 				soTrx);
 		pricing.setM_PriceList_ID(priceListId);
 

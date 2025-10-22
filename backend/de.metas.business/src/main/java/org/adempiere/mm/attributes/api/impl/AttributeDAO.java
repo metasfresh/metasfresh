@@ -12,7 +12,6 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.javaclasses.JavaClassId;
-import de.metas.lang.SOTrx;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -800,14 +799,6 @@ public class AttributeDAO implements IAttributeDAO
 		public List<AttributeListValue> toList()
 		{
 			return ImmutableList.copyOf(map.values());
-		}
-
-		public List<AttributeListValue> getMatchingSOTrx(@Nullable final SOTrx soTrx)
-		{
-			return map.values()
-					.stream()
-					.filter(av -> av.isMatchingSOTrx(soTrx))
-					.collect(ImmutableList.toImmutableList());
 		}
 
 		@Nullable
