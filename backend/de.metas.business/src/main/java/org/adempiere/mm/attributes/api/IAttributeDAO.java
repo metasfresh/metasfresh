@@ -2,7 +2,6 @@ package org.adempiere.mm.attributes.api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
-import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -13,7 +12,6 @@ import org.adempiere.mm.attributes.AttributeSetDescriptorsCollection;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 
@@ -55,11 +53,6 @@ public interface IAttributeDAO extends ISingletonService
 	@NonNull
 	ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds);
 
-	/**
-	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeSetId#NONE}).
-	 */
-	I_M_AttributeSet retrieveNoAttributeSet();
-
 	List<AttributeListValue> retrieveAttributeValues(I_M_Attribute attribute);
 
 	List<AttributeListValue> retrieveAttributeValues(Attribute attribute);
@@ -69,13 +62,6 @@ public interface IAttributeDAO extends ISingletonService
 	List<AttributeListValue> retrieveAttributeValuesByAttributeSetId(@NonNull AttributeSetId attributeSetId);
 
 	List<AttributeListValue> retrieveAttributeValuesByIds(Collection<AttributeValueId> attributeValueIds);
-
-	/**
-	 * Retrieve all attribute values that are defined for SO/PO transactions.
-	 *
-	 * @param soTrx if NULL, retrieve all attribute values.
-	 */
-	List<AttributeListValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, SOTrx soTrx);
 
 	/**
 	 * Retrieves all attributes in a set that are (or aren't) instance attributes
@@ -128,7 +114,7 @@ public interface IAttributeDAO extends ISingletonService
 	 * * A&C,  A
 	 * * A&C,  C
 	 *
-	 * Now, when we call {@link #retrieveAttributeValueSubstitutes(I_M_Attribute, String)} with value="A" we will get a set of {"A&B", "A&C"}.
+	 * Now, when we call this method with value="A" we will get a set of {"A&B", "A&C"}.
 	 * </pre>
 	 *
 	 * @return substitutes (M_AttributeValue.Value).

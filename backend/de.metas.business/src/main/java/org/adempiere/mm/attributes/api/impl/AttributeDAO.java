@@ -35,6 +35,7 @@ import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetDescriptor;
 import org.adempiere.mm.attributes.AttributeSetDescriptorsCollection;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.AttributeSetMandatoryType;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.Attribute;
@@ -163,6 +164,7 @@ public class AttributeDAO implements IAttributeDAO
 				.name(record.getName())
 				.description(record.getDescription())
 				.isInstanceAttribute(record.isInstanceAttribute())
+				.mandatoryType(AttributeSetMandatoryType.ofCode(record.getMandatoryType()))
 				.attributes(attributesByAttributeSetId.get(attributeSetId))
 				.build();
 	}
@@ -553,13 +555,6 @@ public class AttributeDAO implements IAttributeDAO
 		return attribute.isHighVolume();
 	}
 
-	@Override
-	public List<AttributeListValue> retrieveFilteredAttributeValues(final I_M_Attribute attribute, final SOTrx soTrx)
-	{
-		return retrieveAttributeValuesMap(attribute, false/* includeInactive */)
-				.getMatchingSOTrx(soTrx);
-	}
-
 	private AttributeListValueMap retrieveAttributeValuesMap(@NonNull final I_M_Attribute attribute, final boolean includeInactive)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
@@ -753,17 +748,6 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		return getAttributeRecordById(attributeId);
-	}
-
-	@Override
-	@Cached(cacheName = I_M_AttributeSet.Table_Name + "#ID=0")
-	public I_M_AttributeSet retrieveNoAttributeSet()
-	{
-		return queryBL
-				.createQueryBuilder(I_M_AttributeSet.class)
-				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, AttributeSetId.NONE)
-				.create()
-				.firstOnlyNotNull(I_M_AttributeSet.class);
 	}
 
 	private static final class AttributeListValueMap

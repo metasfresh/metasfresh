@@ -25,7 +25,6 @@ package org.adempiere.mm.attributes.exceptions;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.impl.AttributesBL;
 
-@SuppressWarnings("serial")
 public class NoAttributeGeneratorException extends AdempiereException
 {
 	public NoAttributeGeneratorException(final String referenceName)

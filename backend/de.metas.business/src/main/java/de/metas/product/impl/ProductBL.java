@@ -18,6 +18,7 @@ import de.metas.gs1.ean13.EAN13;
 import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -57,7 +58,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.MAttributeSet;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -437,22 +437,8 @@ public final class ProductBL implements IProductBL
 		final AttributeSetId attributeSetId = getAttributeSetId(product);
 		if (!attributeSetId.isNone())
 		{
-			final MAttributeSet mas = MAttributeSet.get(attributeSetId);
-			if (mas == null || !mas.isInstanceAttribute())
-			{
-				return false;
-			}
-			// Outgoing transaction
-			else if (isSOTrx)
-			{
-				return mas.isMandatory();
-			}
-			// Incoming transaction
-			else
-			{
-				// isSOTrx == false
-				return mas.isMandatoryAlways();
-			}
+			return attributesRepo.getAttributeSetDescriptorById(attributeSetId)
+					.isASIMandatory(SOTrx.ofBoolean(isSOTrx));
 		}
 		//
 		// Default not mandatory
@@ -827,7 +813,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId)
 	{
-		return isValidEAN13Product(ean13, expectedProductId);
+		return getGS1ProductCodesCollection(expectedProductId).isValidProductNo(ean13, null);
 	}
 
 	@Override

@@ -21,7 +21,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.Attribute;
-import org.adempiere.mm.attributes.api.impl.AttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 
 import javax.annotation.Nullable;

@@ -46,7 +46,7 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 	private static final String VAR_Label = "Label";
 	private static final String VAR_Value = "Value";
 	private static final String VAR_UOM = "UOM";
-	private static final ImmutableSet<String> VARS = ImmutableSet.<String>of(
+	private static final ImmutableSet<String> VARS = ImmutableSet.of(
 			VAR_Label,
 			VAR_Value,
 			VAR_UOM);
@@ -178,8 +178,7 @@ final class AttributeDescriptionPatternEvalCtx implements Evaluatee2
 			}
 			else
 			{
-				final String valueStr = attributeValue != null ? attributeValue.toString() : null;
-				return ASIDescriptionBuilderCommand.formatStringValue(valueStr);
+				return ASIDescriptionBuilderCommand.formatStringValue(null);
 			}
 		}
 		else

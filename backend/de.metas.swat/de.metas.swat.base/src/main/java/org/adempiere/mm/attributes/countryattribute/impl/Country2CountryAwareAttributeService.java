@@ -38,7 +38,6 @@ import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.mm.attributes.countryattribute.ICountryAware;
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareAttributeService;
 import org.adempiere.mm.attributes.exceptions.AttributeRestrictedException;
-import org.adempiere.mm.attributes.exceptions.NoAttributeGeneratorException;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Country;
@@ -47,7 +46,7 @@ import java.util.Properties;
 
 public class Country2CountryAwareAttributeService implements ICountryAwareAttributeService
 {
-	public static final transient Country2CountryAwareAttributeService instance = new Country2CountryAwareAttributeService();
+	public static final Country2CountryAwareAttributeService instance = new Country2CountryAwareAttributeService();
 
 	private static final AdMessageKey MSG_NoCountryAttribute = AdMessageKey.of("de.metas.swat.CountryAttribute.error");
 
@@ -61,8 +60,7 @@ public class Country2CountryAwareAttributeService implements ICountryAwareAttrib
 	{
 		final int adClientId = countryAware.getAD_Client_ID();
 		final int adOrgId = countryAware.getAD_Org_ID();
-		final AttributeId countryAttributeId = Services.get(ICountryAttributeDAO.class).retrieveCountryAttributeId(adClientId, adOrgId);
-		return countryAttributeId;
+		return Services.get(ICountryAttributeDAO.class).retrieveCountryAttributeId(adClientId, adOrgId);
 	}
 
 	@Override
@@ -80,7 +78,7 @@ public class Country2CountryAwareAttributeService implements ICountryAwareAttrib
 		{
 			if (attributeAction == AttributeAction.Error)
 			{
-				throw new AdempiereException(MSG_NoCountryAttribute, new Object[] { country.getName() });
+				throw new AdempiereException(MSG_NoCountryAttribute, country.getName());
 			}
 			else if (attributeAction == AttributeAction.GenerateNew)
 			{

@@ -25,7 +25,9 @@ package org.adempiere.mm.attributes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.lang.SOTrx;
 import de.metas.util.OptionalBoolean;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,6 +39,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+@Getter
 @EqualsAndHashCode
 @ToString(of = "byId")
 public final class AttributeSetDescriptor
@@ -45,16 +48,18 @@ public final class AttributeSetDescriptor
 			.attributeSetId(AttributeSetId.NONE)
 			.name("NONE")
 			.isInstanceAttribute(false)
+			.mandatoryType(AttributeSetMandatoryType.NotMandatory)
 			.attributes(ImmutableList.of())
 			.build();
 
-	@NonNull @Getter private final AttributeSetId attributeSetId;
-	@NonNull @Getter private final String name;
-	@Nullable @Getter private final String description;
-	@Getter private final boolean isInstanceAttribute;
+	@NonNull private final AttributeSetId attributeSetId;
+	@NonNull private final String name;
+	@Nullable private final String description;
+	private final boolean isInstanceAttribute;
+	@NonNull private final AttributeSetMandatoryType mandatoryType;
 
-	@NonNull @Getter private final ImmutableList<AttributeId> attributeIdsInOrder;
-	@NonNull private final ImmutableMap<AttributeId, AttributeSetAttribute> byId;
+	@NonNull private final ImmutableList<AttributeId> attributeIdsInOrder;
+	@NonNull @Getter(AccessLevel.NONE) private final ImmutableMap<AttributeId, AttributeSetAttribute> byId;
 
 	@Builder
 	private AttributeSetDescriptor(
@@ -62,12 +67,14 @@ public final class AttributeSetDescriptor
 			@NonNull final String name,
 			@Nullable final String description,
 			final boolean isInstanceAttribute,
+			@NonNull final AttributeSetMandatoryType mandatoryType,
 			@NonNull final List<AttributeSetAttribute> attributes)
 	{
 		this.attributeSetId = attributeSetId;
 		this.name = name;
 		this.description = description;
 		this.isInstanceAttribute = isInstanceAttribute;
+		this.mandatoryType = mandatoryType;
 		this.attributeIdsInOrder = attributes.stream()
 				.sorted(Comparator.comparing(AttributeSetAttribute::getSeqNo))
 				.map(AttributeSetAttribute::getAttributeId)
@@ -106,4 +113,15 @@ public final class AttributeSetDescriptor
 				.orElse(OptionalBoolean.UNKNOWN);
 	}
 
+	public boolean isASIMandatory(@NonNull final SOTrx soTrx)
+	{
+		if (!isInstanceAttribute)
+		{
+			return false;
+		}
+		else
+		{
+			return mandatoryType.isASIMandatory(soTrx);
+		}
+	}
 }

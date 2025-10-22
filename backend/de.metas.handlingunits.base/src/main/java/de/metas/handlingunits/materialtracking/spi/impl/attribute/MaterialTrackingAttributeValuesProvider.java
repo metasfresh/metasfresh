@@ -24,7 +24,6 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
