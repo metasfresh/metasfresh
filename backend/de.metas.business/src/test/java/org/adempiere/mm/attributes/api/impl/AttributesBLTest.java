@@ -24,7 +24,6 @@ package org.adempiere.mm.attributes.api.impl;
 
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -92,12 +91,12 @@ public class AttributesBLTest
 		attributeGenerator = helper.createAD_JavaClass(MockedAttributeValueGenerator.class.getName());
 	}
 
-	private I_M_Attribute createM_Attribute(@NonNull AttributeValueType attributeValueType)
+	private I_M_Attribute createStringAttribute()
 	{
 		final I_M_Attribute attribute = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_Attribute.class);
 		attribute.setValue("attribute");
 		attribute.setName("attribute");
-		attribute.setAttributeValueType(attributeValueType.getCode());
+		attribute.setAttributeValueType(AttributeValueType.STRING.getCode());
 		attribute.setAD_JavaClass_ID(attributeGenerator.getAD_JavaClass_ID());
 		save(attribute);
 		return attribute;
@@ -106,7 +105,7 @@ public class AttributesBLTest
 	@Test
 	public void testGenerateValue()
 	{
-		final I_M_Attribute attribute = createM_Attribute(AttributeValueType.STRING);
+		final I_M_Attribute attribute = createStringAttribute();
 
 		final String generatedValueExpected = "12345";
 
@@ -122,7 +121,7 @@ public class AttributesBLTest
 	@Test
 	public void testGenerateValueType()
 	{
-		final I_M_Attribute attribute = createM_Attribute(AttributeValueType.STRING);
+		final I_M_Attribute attribute = createStringAttribute();
 
 		final String attributeValueTypeExpected = "abc";
 

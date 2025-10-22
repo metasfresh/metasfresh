@@ -109,7 +109,7 @@ public class AttributesTestHelper
 		return AttributeDAO.toAttributeListValue(record);
 	}
 
-	public I_M_AttributeValue_Mapping createM_AttributeValue_Mapping(
+	public void createM_AttributeValue_Mapping(
 			final AttributeListValue attributeValue,
 			final AttributeListValue attributeValueTo)
 	{
@@ -117,7 +117,6 @@ public class AttributesTestHelper
 		attributeValueMapping.setM_AttributeValue_ID(attributeValue.getId().getRepoId());
 		attributeValueMapping.setM_AttributeValue_To_ID(attributeValueTo.getId().getRepoId());
 		save(attributeValueMapping);
-		return attributeValueMapping;
 	}
 
 	public I_AD_JavaClass createAD_JavaClass(final String classname)
@@ -158,9 +157,6 @@ public class AttributesTestHelper
 	/**
 	 * Method needed to make sure the attribute was not already created
 	 * Normally, this will never happen anywhere else except testing
-	 *
-	 * @param name
-	 * @return
 	 */
 	public I_M_Attribute retrieveAttributeValue(String name)
 	{
@@ -256,8 +252,7 @@ public class AttributesTestHelper
 			final Class<?> javaClass,
 			final boolean isInstanceAttribute)
 	{
-		final I_C_UOM uom = null;
-		return createM_Attribute(name, valueType, javaClass, uom, isInstanceAttribute);
+		return createM_Attribute(name, valueType, javaClass, null, isInstanceAttribute);
 	}
 
 	public I_M_Attribute createM_Attribute(
@@ -265,8 +260,7 @@ public class AttributesTestHelper
 			final String valueType,
 			final boolean isInstanceAttribute)
 	{
-		final Class<?> javaClass = null;
-		final I_M_Attribute attr = createM_Attribute(name, valueType, javaClass, isInstanceAttribute);
+		final I_M_Attribute attr = createM_Attribute(name, valueType, null, isInstanceAttribute);
 		save(attr);
 
 		return attr;

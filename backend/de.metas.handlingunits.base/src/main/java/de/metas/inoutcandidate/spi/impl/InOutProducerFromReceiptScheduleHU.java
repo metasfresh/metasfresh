@@ -49,9 +49,9 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -563,10 +563,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	 * Transfer handling units from <code>allocs</code> to <code>receiptLine</code>.
 	 * <p>
 	 * Also collect the packing materials.
-	 *
-	 * @param rs
-	 * @param allocs
-	 * @param receiptLine
 	 */
 	private void transferHandlingUnits(
 			final IHUContext huContext,

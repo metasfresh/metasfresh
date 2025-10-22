@@ -7,11 +7,10 @@ import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.countryattribute.ICountryAware;
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareAttributeService;
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareFactory;
@@ -32,7 +31,6 @@ public class CountryAwareAttributeUpdater
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributeSetInstanceAwareFactoryService asiAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	private Object sourceModel;
 	private ICountryAwareFactory countryAwareFactory;

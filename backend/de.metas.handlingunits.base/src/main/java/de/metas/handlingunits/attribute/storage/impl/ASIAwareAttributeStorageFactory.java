@@ -74,8 +74,7 @@ public class ASIAwareAttributeStorageFactory extends AbstractModelAttributeStora
 			return asiNew;
 		}
 
-		final I_M_AttributeSetInstance asi = asiAware.getM_AttributeSetInstance();
-		return asi;
+		return asiAware.getM_AttributeSetInstance();
 	}
 
 	@Override
@@ -93,12 +92,7 @@ public class ASIAwareAttributeStorageFactory extends AbstractModelAttributeStora
 		}
 
 		// Case: null marker was returned. See "getModelFromObject" method.
-		if (model.getM_AttributeSetInstance_ID() <= 0)
-		{
-			return true;
-		}
-
-		return false;
+		return model.getM_AttributeSetInstance_ID() <= 0;
 	}
 
 	@Override

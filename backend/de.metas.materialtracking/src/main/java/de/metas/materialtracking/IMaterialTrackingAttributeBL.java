@@ -75,7 +75,7 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	/**
 	 * Check if the given ASI has a material tracking attribute. Note that this attribute's value can still be <code>null</code>, even if this method returns <code>true</code>.
 	 *
-	 * @param asi the asi to check; not {@code null}, but may be "none".
+	 * @param asiId the asi to check; not {@code null}, but may be "none".
 	 * @return <code>true</code> if the given asi's attribute set contains the <code>M_Attribute</code> with <code>value=M_Material_Tracking_ID.</code>
 	 */
 	boolean hasMaterialTrackingAttribute(AttributeSetInstanceId asiId);
