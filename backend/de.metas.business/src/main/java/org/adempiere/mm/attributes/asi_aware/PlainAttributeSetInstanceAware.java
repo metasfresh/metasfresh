@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api;
+package org.adempiere.mm.attributes.asi_aware;
 
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 

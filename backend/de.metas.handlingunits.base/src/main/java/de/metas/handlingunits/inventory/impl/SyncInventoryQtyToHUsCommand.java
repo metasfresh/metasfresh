@@ -47,7 +47,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.PlainAttributeSetInstanceAware;
 import org.adempiere.service.ISysConfigBL;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api;
+package org.adempiere.mm.attributes.asi_aware;
 
 /*
  * #%L
@@ -22,6 +22,8 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactory;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 

@@ -28,7 +28,7 @@ import java.util.List;
 
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.BPartnerAwareAttributeUpdater;
 import org.adempiere.mm.attributes.api.impl.InOutLineBPartnerAware;
 import org.compiere.model.I_M_InOutLine;

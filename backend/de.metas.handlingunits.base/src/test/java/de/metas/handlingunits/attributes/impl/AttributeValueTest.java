@@ -11,7 +11,7 @@ import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.impl.AttributeDAO;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Val_Rule;

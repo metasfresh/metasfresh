@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.interceptor;
+package org.adempiere.mm.attributes.asi_aware.interceptor;
 
 /*
  * #%L
@@ -30,7 +30,7 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;

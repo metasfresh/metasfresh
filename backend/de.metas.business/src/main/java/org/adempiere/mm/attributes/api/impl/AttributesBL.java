@@ -78,7 +78,7 @@ public class AttributesBL implements IAttributesBL
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@VisibleForTesting
-	static final String SYSCONFIG_AttributeAction = "de.metas.swat.AttributeAction";
+	public static final String SYSCONFIG_AttributeAction = "de.metas.swat.AttributeAction";
 	public static final AdMessageKey MSG_NoAttributeGenerator = AdMessageKey.of("de.metas.swat.Attribute.generatorError");
 
 	private static final MathContext DEFAULT_MATHCONTEXT = new MathContext(2, RoundingMode.HALF_UP);

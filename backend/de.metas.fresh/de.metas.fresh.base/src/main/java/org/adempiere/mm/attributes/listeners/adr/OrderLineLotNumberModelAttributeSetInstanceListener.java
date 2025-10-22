@@ -3,7 +3,7 @@ package org.adempiere.mm.attributes.listeners.adr;
 import java.util.List;
 
 import lombok.NonNull;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.LotNumberAttributeUpdater;
 
 import com.google.common.collect.ImmutableList;

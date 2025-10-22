@@ -1,5 +1,6 @@
-package org.adempiere.mm.attributes.api;
+package org.adempiere.mm.attributes.asi_aware.factory;
 
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.util.ISingletonService;

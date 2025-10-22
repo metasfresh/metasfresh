@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.NonNull;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.springframework.stereotype.Component;
 
 @Component

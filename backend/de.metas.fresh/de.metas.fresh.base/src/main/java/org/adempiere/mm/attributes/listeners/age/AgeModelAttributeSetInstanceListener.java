@@ -3,7 +3,7 @@ package org.adempiere.mm.attributes.listeners.age;
 import com.google.common.collect.ImmutableList;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.AgeAttributeCreator;
 import org.springframework.stereotype.Component;
 

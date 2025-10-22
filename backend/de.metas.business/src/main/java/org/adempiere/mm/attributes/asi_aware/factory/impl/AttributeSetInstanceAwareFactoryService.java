@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api.impl;
+package org.adempiere.mm.attributes.asi_aware.factory.impl;
 
 /*
  * #%L
@@ -25,9 +25,9 @@ package org.adempiere.mm.attributes.api.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactory;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactory;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import lombok.NonNull;

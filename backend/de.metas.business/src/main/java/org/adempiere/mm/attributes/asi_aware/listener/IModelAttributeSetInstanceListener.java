@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api;
+package org.adempiere.mm.attributes.asi_aware.listener;
 
 /*
  * #%L
@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.api;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 
 import java.util.ArrayList;
 import java.util.Collections;

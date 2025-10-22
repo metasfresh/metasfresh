@@ -1,9 +1,7 @@
-package org.adempiere.mm.attributes.api.impl;
+package org.adempiere.mm.attributes;
 
 import de.metas.util.Services;
 import lombok.Getter;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.test.AbstractExpectation;

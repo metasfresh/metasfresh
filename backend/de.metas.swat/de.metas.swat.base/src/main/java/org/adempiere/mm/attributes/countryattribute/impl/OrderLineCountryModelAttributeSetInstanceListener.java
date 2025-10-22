@@ -23,7 +23,7 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  */
 
 import lombok.NonNull;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 

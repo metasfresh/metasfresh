@@ -28,7 +28,7 @@ import java.util.List;
 
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeBL;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.countryattribute.impl.CountryAwareAttributeUpdater;
 import org.adempiere.mm.attributes.countryattribute.impl.OrderLineCountryAware;
 import org.compiere.model.I_C_OrderLine;

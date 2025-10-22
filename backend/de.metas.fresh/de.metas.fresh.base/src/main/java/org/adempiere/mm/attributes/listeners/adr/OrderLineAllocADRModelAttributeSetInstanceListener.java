@@ -27,7 +27,7 @@ import java.util.List;
 
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.BPartnerAwareAttributeUpdater;
 import org.adempiere.mm.attributes.api.impl.OrderLineBPartnerAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -75,13 +75,12 @@ public class OrderLineAllocADRModelAttributeSetInstanceListener implements IMode
 	}
 
 	@SuppressWarnings("unused")
-	private final boolean isEDIInput(final I_C_Order_Line_Alloc alloc)
+	private boolean isEDIInput(final I_C_Order_Line_Alloc alloc)
 	{
 		// Services
 		final IEDIOLCandBL ediOLCandBL = Services.get(IEDIOLCandBL.class);
 
 		final I_C_OLCand olCand = alloc.getC_OLCand();
-		final boolean ediInput = ediOLCandBL.isEDIInput(olCand);
-		return ediInput;
+		return ediOLCandBL.isEDIInput(olCand);
 	}
 }
