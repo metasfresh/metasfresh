@@ -82,7 +82,7 @@ final class UpdateASIAttributeFromModelCommand
 			return;
 		}
 
-		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode);
+		final AttributeId attributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(attributeCode);
 
 		if (attributeId == null)
 		{

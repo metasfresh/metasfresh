@@ -32,37 +32,47 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 @EqualsAndHashCode
 @ToString(of = "byId")
-public final class AttributeSetAttributeIdsList
+public final class AttributeSetDescriptor
 {
-	@NonNull @Getter AttributeSetId attributeSetId;
+	public static final AttributeSetDescriptor NONE = AttributeSetDescriptor.builder()
+			.attributeSetId(AttributeSetId.NONE)
+			.name("NONE")
+			.isInstanceAttribute(false)
+			.attributes(ImmutableList.of())
+			.build();
+
+	@NonNull @Getter private final AttributeSetId attributeSetId;
+	@NonNull @Getter private final String name;
+	@Nullable @Getter private final String description;
+	@Getter private final boolean isInstanceAttribute;
+
 	@NonNull @Getter private final ImmutableList<AttributeId> attributeIdsInOrder;
 	@NonNull private final ImmutableMap<AttributeId, AttributeSetAttribute> byId;
 
 	@Builder
-	private AttributeSetAttributeIdsList(
-			@NonNull AttributeSetId attributeSetId,
-			@NonNull final List<AttributeSetAttribute> list)
+	private AttributeSetDescriptor(
+			@NonNull final AttributeSetId attributeSetId,
+			@NonNull final String name,
+			@Nullable final String description,
+			final boolean isInstanceAttribute,
+			@NonNull final List<AttributeSetAttribute> attributes)
 	{
 		this.attributeSetId = attributeSetId;
-		this.attributeIdsInOrder = list.stream()
+		this.name = name;
+		this.description = description;
+		this.isInstanceAttribute = isInstanceAttribute;
+		this.attributeIdsInOrder = attributes.stream()
 				.sorted(Comparator.comparing(AttributeSetAttribute::getSeqNo))
 				.map(AttributeSetAttribute::getAttributeId)
 				.collect(ImmutableList.toImmutableList());
-		this.byId = Maps.uniqueIndex(list, AttributeSetAttribute::getAttributeId);
-	}
-
-	public static AttributeSetAttributeIdsList empty(@NonNull final AttributeSetId attributeSetId)
-	{
-		return AttributeSetAttributeIdsList.builder()
-				.attributeSetId(attributeSetId)
-				.list(ImmutableList.of())
-				.build();
+		this.byId = Maps.uniqueIndex(attributes, AttributeSetAttribute::getAttributeId);
 	}
 
 	public boolean contains(@NonNull final AttributeId attributeId)

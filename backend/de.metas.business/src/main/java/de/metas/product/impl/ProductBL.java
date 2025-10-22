@@ -46,6 +46,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetDescriptor;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,7 +54,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -361,7 +361,7 @@ public final class ProductBL implements IProductBL
 
 	@Override
 	@Nullable
-	public I_M_AttributeSet getAttributeSetOrNull(@NonNull final ProductId productId)
+	public AttributeSetDescriptor getAttributeSetOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getAttributeSetId(productId);
 		if (attributeSetId.isNone())
@@ -369,7 +369,7 @@ public final class ProductBL implements IProductBL
 			return null;
 		}
 
-		return attributesRepo.getAttributeSetById(attributeSetId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
 	}
 
 	@Nullable
@@ -676,7 +676,7 @@ public final class ProductBL implements IProductBL
 
 	@Nullable
 	@Override
-	public I_M_AttributeSet getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
+	public AttributeSetDescriptor getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = getMasterDataSchemaAttributeSetId(productId);
 		if (attributeSetId.isNone())
@@ -684,7 +684,7 @@ public final class ProductBL implements IProductBL
 			return null;
 		}
 
-		return attributesRepo.getAttributeSetById(attributeSetId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
 	}
 
 	@NonNull

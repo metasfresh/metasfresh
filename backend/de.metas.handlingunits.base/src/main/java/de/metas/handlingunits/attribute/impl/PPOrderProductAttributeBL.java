@@ -398,7 +398,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			final BigDecimal valueNumber = getValueNumberOrNull(ppOrderAttribute);
 
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-			final de.metas.handlingunits.model.I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId, de.metas.handlingunits.model.I_M_Attribute.class);
+			final de.metas.handlingunits.model.I_M_Attribute attribute = attributesRepo.getAttributeRecordById(attributeId, de.metas.handlingunits.model.I_M_Attribute.class);
 
 			return AttributeWithValue.newInstance(attribute, valueString, valueNumber);
 		}

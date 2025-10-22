@@ -122,6 +122,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -1389,6 +1390,16 @@ public class HUTestHelper
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 		attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
 				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()))
+				.value(value)
+				.name(name)
+				.build());
+	}
+
+	public void createAttributeListValue(final Attribute attribute, final String value, final String name)
+	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(attribute.getAttributeId())
 				.value(value)
 				.name(name)
 				.build());

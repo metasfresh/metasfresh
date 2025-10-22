@@ -133,7 +133,7 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 		// Iterate and create/update one PP_Order_ProductAttribute for each HU_Attribute
 		for (final I_M_HU_Attribute huAttribute : huAttributes)
 		{
-			final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttribute.getM_Attribute_ID());
+			final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(huAttribute.getM_Attribute_ID());
 
 			//
 			// Find existing PP_Order_ProductAttribute or create a new one

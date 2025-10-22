@@ -118,13 +118,13 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 	@Nullable
 	private I_C_BPartner getSubProducerBPartnerOrNull(final Properties ctx, final IAttributeSet attributeStorage)
 	{
-		final AttributeId subProducerAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
+		final AttributeId subProducerAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
 		if (subProducerAttributeId == null)
 		{
 			return null;
 		}
 
-		final I_M_Attribute subProducerAttribute = attributeDAO.getAttributeById(subProducerAttributeId);
+		final I_M_Attribute subProducerAttribute = attributeDAO.getAttributeRecordById(subProducerAttributeId);
 		final BigDecimal subProducerIdBD = attributeStorage.getValueAsBigDecimal(subProducerAttribute);
 		final int subProducerID = subProducerIdBD.intValueExact();
 		if (subProducerID <= 0)

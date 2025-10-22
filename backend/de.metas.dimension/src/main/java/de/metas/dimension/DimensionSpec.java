@@ -268,7 +268,7 @@ public class DimensionSpec
 	private List<I_M_Attribute> retrieveAttributesForDimensionSpec(final int dimensionSpecRecordId)
 	{
 		final ImmutableSet<AttributeId> attributeIds = retrieveAttributeIdsForDimensionSpec(dimensionSpecRecordId);
-		return Services.get(IAttributeDAO.class).getAttributesByIds(attributeIds);
+		return Services.get(IAttributeDAO.class).getAttributeRecordsByIds(attributeIds);
 	}
 
 	private ImmutableSet<AttributeId> retrieveAttributeIdsForDimensionSpec(final int dimensionSpecRecordId)

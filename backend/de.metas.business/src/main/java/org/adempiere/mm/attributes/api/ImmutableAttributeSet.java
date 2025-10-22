@@ -617,7 +617,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 				final Object attributeValue,
 				@Nullable final AttributeValueId attributeValueId)
 		{
-			final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeId);
+			final I_M_Attribute attribute = attributesRepo().getAttributeRecordById(attributeId);
 			attributeValue(attribute, attributeValue, attributeValueId);
 			return this;
 		}
@@ -632,7 +632,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 		public Builder attributeValue(@NonNull final AttributeListValue attributeValue)
 		{
-			final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeValue.getAttributeId());
+			final I_M_Attribute attribute = attributesRepo().getAttributeRecordById(attributeValue.getAttributeId());
 			final String value = attributeValue.getValue();
 			final AttributeValueId attributeValueId = attributeValue.getId();
 

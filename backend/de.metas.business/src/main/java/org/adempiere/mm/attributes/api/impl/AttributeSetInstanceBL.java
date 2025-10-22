@@ -242,7 +242,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			@Nullable final Object value)
 	{
 
-		final I_M_Attribute attributeRecord = attributeDAO.getAttributeById(attributeId);
+		final I_M_Attribute attributeRecord = attributeDAO.getAttributeRecordById(attributeId);
 		final I_M_AttributeInstance attributeInstance = getCreateAttributeInstance(asiId, attributeId);
 
 		setAttributeInstanceValue(attributeRecord, attributeInstance, value);
@@ -450,7 +450,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	public boolean isStorageRelevant(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
-		return attributeDAO.getAttributeById(attributeId).isStorageRelevant();
+		return attributeDAO.getAttributeRecordById(attributeId).isStorageRelevant();
 	}
 
 	@Override
@@ -480,7 +480,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 	private Object extractAttributeInstanceValue(final I_M_AttributeInstance instance)
 	{
-		final I_M_Attribute attribute = attributeDAO.getAttributeById(instance.getM_Attribute_ID());
+		final I_M_Attribute attribute = attributeDAO.getAttributeRecordById(instance.getM_Attribute_ID());
 		final String attributeValueType = attribute.getAttributeValueType();
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
@@ -550,7 +550,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 	private Comparator<I_M_AttributeInstance> createAttributeInstanceOrderComparator(final AttributeSetId attributeSetId)
 	{
-		final List<AttributeId> attributeIds = attributeDAO.getAttributeIdsByAttributeSetId(attributeSetId).getAttributeIdsInOrder();
+		final List<AttributeId> attributeIds = attributeDAO.getAttributeSetDescriptorById(attributeSetId).getAttributeIdsInOrder();
 		if (attributeIds.isEmpty())
 		{
 			return Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID);

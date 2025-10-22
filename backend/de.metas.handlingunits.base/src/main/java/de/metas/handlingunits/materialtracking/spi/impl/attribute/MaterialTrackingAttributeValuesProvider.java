@@ -21,6 +21,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
@@ -114,12 +115,12 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IHUAttributesBL huAttributesBL,
 			//
-			@NonNull final I_M_Attribute attribute)
+			@NonNull final Attribute attribute)
 	{
 		this.materialTrackingDAO = materialTrackingDAO;
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.huAttributesBL = huAttributesBL;
-		this.attributeCode = AttributeCode.ofString(attribute.getValue());
+		this.attributeCode = attribute.getAttributeCode();
 		this.isHighVolume = attribute.isHighVolume();
 	}
 

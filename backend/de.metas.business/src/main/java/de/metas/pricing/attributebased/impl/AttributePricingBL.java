@@ -11,6 +11,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -19,7 +20,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;
@@ -98,13 +98,13 @@ public class AttributePricingBL implements IAttributePricingBL
 
 	private PricingAttribute createPricingAttribute(final I_M_AttributeInstance instance)
 	{
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(instance.getM_Attribute_ID());
+		final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
 		final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(instance.getM_AttributeValue_ID());
 		final AttributeListValue attributeValue = attributeValueId != null
-				? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId)
+				? attributesRepo.retrieveAttributeValueOrNull(attributeId, attributeValueId)
 				: null;
 
-		return new PricingAttribute(attribute, attributeValue);
+		return new PricingAttribute(attributeValue);
 	}
 
 	// task 08839
@@ -139,13 +139,6 @@ public class AttributePricingBL implements IAttributePricingBL
 	@Value
 	private static class PricingAttribute implements IPricingAttribute
 	{
-		I_M_Attribute attribute;
-		AttributeListValue attributeValue;
-
-		private PricingAttribute(@NonNull final I_M_Attribute attribute, @Nullable final AttributeListValue attributeValue)
-		{
-			this.attribute = attribute;
-			this.attributeValue = attributeValue;
-		}
+		@Nullable AttributeListValue attributeValue;
 	}
 }

@@ -39,7 +39,7 @@ public class M_AttributeInstance
 	{
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(ai.getM_Attribute_ID());
+		final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(ai.getM_Attribute_ID());
 
 		//
 		// Skip it if attribute value type is not of type List

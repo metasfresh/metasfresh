@@ -148,7 +148,7 @@ public class ASIRepository
 		final HashMap<String, Object> valuesMap = new HashMap<>();
 		for (final I_M_AttributeInstance fromAI : asiBL.getAttributeInstances(asiId))
 		{
-			final I_M_Attribute attribute = attributesRepo.getAttributeById(fromAI.getM_Attribute_ID());
+			final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(fromAI.getM_Attribute_ID());
 			final String fieldName = attribute.getValue();
 			final DocumentFieldDescriptor fieldDescriptor = descriptor.getFieldOrNull(fieldName);
 

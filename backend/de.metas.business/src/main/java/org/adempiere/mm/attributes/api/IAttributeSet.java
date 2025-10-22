@@ -75,6 +75,11 @@ public interface IAttributeSet
 		return hasAttribute(attribute.getValue());
 	}
 
+	default boolean hasAttribute(@NonNull final Attribute attribute)
+	{
+		return hasAttribute(attribute.getAttributeCode());
+	}
+
 	/**
 	 * Gets {@link I_M_Attribute} by ID if exists in this attributes set.
 	 *
@@ -192,7 +197,8 @@ public interface IAttributeSet
 		return getValueAsDate(attribute.getValue());
 	}
 
-	@Nullable default LocalDateTime getValueAsLocalDateTime(final AttributeCode attributeCode)
+	@Nullable
+	default LocalDateTime getValueAsLocalDateTime(final AttributeCode attributeCode)
 	{
 		return TimeUtil.asLocalDateTime(getValueAsDate(attributeCode));
 	}

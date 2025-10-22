@@ -52,7 +52,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 			final I_M_HU_PI_Attribute huPIAttribute,
 			final Boolean isTemplateAttribute)
 	{
-		super(attributeStorage, Services.get(IAttributeDAO.class).getAttributeById(huPIAttribute.getM_Attribute_ID()));
+		super(attributeStorage, Services.get(IAttributeDAO.class).getAttributeRecordById(huPIAttribute.getM_Attribute_ID()));
 		this.huPIAttribute = huPIAttribute;
 
 		this._definedByTemplate = isTemplateAttribute; // null is OK

@@ -27,7 +27,7 @@ public interface IAttributeExcludeBL extends ISingletonService
 	 * @param soTrx
 	 * @return
 	 */
-	boolean isExcludedAttribute(I_M_Attribute attribute, AttributeSetId attributeSetId, int columnId, SOTrx soTrx);
+	boolean isExcludedAttribute(Attribute attribute, AttributeSetId attributeSetId, int columnId, SOTrx soTrx);
 	
 	/**
 	 * Gets the attribute set exclude for the current table and transaction type.

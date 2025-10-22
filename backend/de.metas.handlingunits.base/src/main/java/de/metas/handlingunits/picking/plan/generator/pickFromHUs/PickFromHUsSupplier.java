@@ -17,12 +17,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Attribute;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -151,10 +151,10 @@ public class PickFromHUsSupplier
 
 		if (request.isEnforceMandatoryAttributesOnPicking())
 		{
-			final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(request.getProductId());
-			for (final I_M_Attribute attribute : attributesMandatoryOnPicking)
+			final ImmutableList<Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(request.getProductId());
+			for (final Attribute attribute : attributesMandatoryOnPicking)
 			{
-				vhuQuery.addOnlyWithAttributeNotNull(AttributeCode.ofString(attribute.getValue()));
+				vhuQuery.addOnlyWithAttributeNotNull(attribute.getAttributeCode());
 			}
 		}
 

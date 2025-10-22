@@ -8,15 +8,16 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeSetAttributeIdsList;
+import org.adempiere.mm.attributes.AttributeSetDescriptor;
+import org.adempiere.mm.attributes.AttributeSetDescriptorsCollection;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -26,26 +27,28 @@ public interface IAttributeDAO extends ISingletonService
 {
 	String CACHEKEY_ATTRIBUTE_VALUE = I_M_AttributeValue.Table_Name;
 
-	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
+	Attribute getAttributeById(AttributeId id);
 
-	AttributeSetAttributeIdsList getAttributeIdsByAttributeSetId(@NonNull AttributeSetId attributeSetId);
+	Collection<Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
 
-	MultiAttributeSetAttributeIdsList getAttributeIdsByAttributeSetIds(@NonNull Set<AttributeSetId> attributeSetIds);
+	AttributeSetDescriptor getAttributeSetDescriptorById(@NonNull AttributeSetId attributeSetId);
 
-	I_M_Attribute getAttributeById(int attributeId);
+	AttributeSetDescriptorsCollection getAttributeSetDescriptorsByIds(@NonNull Set<AttributeSetId> attributeSetIds);
 
-	I_M_Attribute getAttributeById(AttributeId attributeId);
+	I_M_Attribute getAttributeRecordById(int attributeId);
 
-	<T extends I_M_Attribute> T getAttributeById(AttributeId attributeId, Class<T> type);
+	I_M_Attribute getAttributeRecordById(AttributeId attributeId);
 
-	List<I_M_Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
+	<T extends I_M_Attribute> T getAttributeRecordById(AttributeId attributeId, Class<T> type);
+
+	List<I_M_Attribute> getAttributeRecordsByIds(Collection<AttributeId> attributeIds);
 
 	/**
 	 * @return attributes, ordered by M_AttributeUse.SeqNo
 	 */
-	List<I_M_Attribute> getAttributesByAttributeSetId(AttributeSetId attributeSetId);
+	List<Attribute> getAttributesByAttributeSetId(AttributeSetId attributeSetId);
 
-	List<I_M_Attribute> getAllAttributes();
+	List<Attribute> getAllAttributes();
 
 	String getAttributeCodeById(AttributeId attributeId);
 
@@ -58,6 +61,8 @@ public interface IAttributeDAO extends ISingletonService
 	I_M_AttributeSet retrieveNoAttributeSet();
 
 	List<AttributeListValue> retrieveAttributeValues(I_M_Attribute attribute);
+
+	List<AttributeListValue> retrieveAttributeValues(Attribute attribute);
 
 	List<AttributeListValue> retrieveAttributeValuesByAttributeId(AttributeId attributeId);
 
@@ -75,7 +80,7 @@ public interface IAttributeDAO extends ISingletonService
 	/**
 	 * Retrieves all attributes in a set that are (or aren't) instance attributes
 	 */
-	List<I_M_Attribute> retrieveAttributes(AttributeSetId attributeSetId, boolean isInstanceAttribute);
+	List<Attribute> retrieveAttributes(AttributeSetId attributeSetId, boolean isInstanceAttribute);
 
 	/**
 	 * Check if an attribute belongs to an attribute set (via M_AttributeUse).
@@ -86,11 +91,20 @@ public interface IAttributeDAO extends ISingletonService
 
 	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 
+	@Nullable
+	AttributeListValue retrieveAttributeValueOrNull(@NonNull Attribute attribute, String value);
+
 	AttributeListValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
 
 	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, AttributeValueId attributeValueId);
 
-	AttributeListValue retrieveAttributeValueOrNull(I_M_Attribute attribute, AttributeValueId attributeValueId);
+	@Nullable
+	AttributeListValue retrieveAttributeValueOrNull(
+			@NonNull Attribute attribute,
+			@NonNull AttributeValueId attributeValueId);
+
+	@Nullable
+	AttributeListValue retrieveAttributeValueOrNull(@NonNull Attribute attribute, String value, boolean includeInactive);
 
 	AttributeListValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value, boolean includeInactive);
 
@@ -134,7 +148,7 @@ public interface IAttributeDAO extends ISingletonService
 	@NonNull
 	AttributeId getAttributeIdByCode(AttributeCode attributeCode);
 
-	AttributeId retrieveAttributeIdByValueOrNull(AttributeCode attributeCode);
+	AttributeId retrieveActiveAttributeIdByValueOrNull(AttributeCode attributeCode);
 
 	/**
 	 * Gets {@link I_M_Attribute} by it's Value (a.k.a. Internal Name)
@@ -162,17 +176,12 @@ public interface IAttributeDAO extends ISingletonService
 		return retrieveAttributeByValue(AttributeCode.ofString(value), I_M_Attribute.class);
 	}
 
-	<T extends I_M_Attribute> T retrieveAttributeByValueOrNull(AttributeCode attributeCode, Class<T> clazz);
+	<T extends I_M_Attribute> T retrieveActiveAttributeByValueOrNull(AttributeCode attributeCode, Class<T> clazz);
 
-	default I_M_Attribute retrieveAttributeByValueOrNull(@NonNull final AttributeCode attributeCode)
+	default I_M_Attribute retrieveActiveAttributeByValueOrNull(@NonNull final AttributeCode attributeCode)
 	{
-		return retrieveAttributeByValueOrNull(attributeCode, I_M_Attribute.class);
+		return retrieveActiveAttributeByValueOrNull(attributeCode, I_M_Attribute.class);
 	}
-
-	/**
-	 * @return true if given attribute is expected to have a huge amount of attribute values
-	 */
-	boolean isHighVolumeValuesList(I_M_Attribute attribute);
 
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
 }

@@ -16,12 +16,9 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 
@@ -94,22 +91,6 @@ public class MAttributeSet extends X_M_AttributeSet
 
 	/** Entry Exclude */
 	private X_M_AttributeSetExclude[] m_excludes = null;
-	/** Lot create Exclude */
-
-	/**
-	 * @param instanceAttributes true if for instance
-	 * @return instance or product(static) attribute
-	 */
-	public List<I_M_Attribute> getMAttributes(final boolean instanceAttributes)
-	{
-		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-
-		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(getM_AttributeSet_ID());
-		return attributesRepo.getAttributesByAttributeSetId(attributeSetId)
-				.stream()
-				.filter(attribute -> attribute.isInstanceAttribute() == instanceAttributes)
-				.collect(ImmutableList.toImmutableList());
-	}
 
 	/**
 	 * Something is Mandatory

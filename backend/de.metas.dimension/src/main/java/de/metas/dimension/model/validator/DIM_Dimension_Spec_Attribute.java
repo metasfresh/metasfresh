@@ -71,7 +71,7 @@ public class DIM_Dimension_Spec_Attribute
 		
 		else
 		{
-			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
+			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeRecordById(attributeId);
 			final String attributeValueType = attribute.getAttributeValueType();
 			
 			specAttr.setAttributeValueType(attributeValueType);

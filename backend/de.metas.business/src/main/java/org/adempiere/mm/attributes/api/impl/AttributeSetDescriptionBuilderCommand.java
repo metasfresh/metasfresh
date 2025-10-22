@@ -1,20 +1,5 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
@@ -22,6 +7,21 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_M_Attribute;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -66,7 +66,7 @@ public class AttributeSetDescriptionBuilderCommand
 	{
 		final TranslatableStringBuilder description = TranslatableStrings.builder();
 
-		for (final I_M_Attribute attribute : attributeSet.getAttributes())
+		for (final Attribute attribute : attributesRepo.getAttributesByIds(attributeSet.getAttributeIds()))
 		{
 			final ITranslatableString attributeDescription = buildAttributeDescription(attribute);
 			if (TranslatableStrings.isBlank(attributeDescription))
@@ -85,20 +85,19 @@ public class AttributeSetDescriptionBuilderCommand
 		return description.build();
 	}
 
-	private ITranslatableString buildAttributeDescription(@NonNull final I_M_Attribute attribute)
+	private ITranslatableString buildAttributeDescription(@NonNull final Attribute attribute)
 	{
-		final IStringExpression descriptionPattern = extractDescriptionPatternOrNull(attribute);
+		final IStringExpression descriptionPattern = attribute.getDescriptionPattern();
 		if (descriptionPattern == null)
 		{
 			return getAttributeDisplayValue(attribute);
 		}
 		else
 		{
-			final @NonNull AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+			final @NonNull AttributeCode attributeCode = attribute.getAttributeCode();
 
 			final AttributeDescriptionPatternEvalCtx ctx = AttributeDescriptionPatternEvalCtx.builder()
 					.attributesRepo(attributesRepo)
-					.attributesBL(attributesBL)
 					.uomsRepo(uomsRepo)
 					.attribute(attribute)
 					.attributeValue(attributeSet.getValue(attributeCode))
@@ -120,36 +119,35 @@ public class AttributeSetDescriptionBuilderCommand
 				: null;
 	}
 
-	private ITranslatableString getAttributeDisplayValue(@NonNull final I_M_Attribute attribute)
+	private ITranslatableString getAttributeDisplayValue(@NonNull final Attribute attribute)
 	{
-		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
-		final String attributeValueType = attribute.getAttributeValueType();
-		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		final AttributeCode attributeCode = attribute.getAttributeCode();
+		final AttributeValueType attributeValueType = attribute.getValueType();
+		if (AttributeValueType.STRING.equals(attributeValueType))
 		{
 			final String valueStr = attributeSet.getValueAsString(attributeCode);
 			return ASIDescriptionBuilderCommand.formatStringValue(valueStr);
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		else if (AttributeValueType.NUMBER.equals(attributeValueType))
 		{
 			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeCode);
 			if (valueBD != null)
 			{
-				final int displayType = attributesBL.getNumberDisplayType(attribute);
-				return ASIDescriptionBuilderCommand.formatNumber(valueBD, displayType);
+				return ASIDescriptionBuilderCommand.formatNumber(valueBD, attribute.getNumberDisplayType());
 			}
 			else
 			{
 				return null;
 			}
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		else if (AttributeValueType.DATE.equals(attributeValueType))
 		{
 			final LocalDate valueDate = attributeSet.getValueAsLocalDate(attributeCode);
 			return valueDate != null
 					? ASIDescriptionBuilderCommand.formatDateValue(valueDate)
 					: null;
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		else if (AttributeValueType.LIST.equals(attributeValueType))
 		{
 			final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeCode);
 			final AttributeListValue attributeValue = attributeValueId != null

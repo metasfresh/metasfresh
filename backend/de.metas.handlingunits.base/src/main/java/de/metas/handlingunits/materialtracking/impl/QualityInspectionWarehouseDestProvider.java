@@ -65,7 +65,7 @@ public final class QualityInspectionWarehouseDestProvider implements IReceiptSch
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
-		final AttributeId qualityInspectionCycleAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
+		final AttributeId qualityInspectionCycleAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
 		if(qualityInspectionCycleAttributeId == null)
 		{
 			return Optional.empty();

@@ -41,7 +41,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(M_Attribute_Value_MaterialTracking);
+		final AttributeId attributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(M_Attribute_Value_MaterialTracking);
 		return Optional.ofNullable(attributeId);
 	}
 
@@ -57,7 +57,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		final AttributeId attributeId = getMaterialTrackingAttributeIdOrFail();
-		return attributeDAO.getAttributeById(attributeId);
+		return attributeDAO.getAttributeRecordById(attributeId);
 	}
 
 	@Override

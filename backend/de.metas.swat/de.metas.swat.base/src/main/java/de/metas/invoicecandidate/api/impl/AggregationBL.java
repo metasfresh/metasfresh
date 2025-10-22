@@ -205,7 +205,7 @@ public class AggregationBL implements IAggregationBL
 		}
 
 		final Predicate<I_M_AttributeInstance> filter = ai -> {
-			final I_M_Attribute attribute = attributesDAO.getAttributeById(ai.getM_Attribute_ID());
+			final I_M_Attribute attribute = attributesDAO.getAttributeRecordById(ai.getM_Attribute_ID());
 			return attribute.isAttrDocumentRelevant();
 		};
 		return extractInvoiceLineAttributes(inOutLine.getM_AttributeSetInstance(), filter);

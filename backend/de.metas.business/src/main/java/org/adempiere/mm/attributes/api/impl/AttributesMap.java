@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import lombok.NonNull;
 import lombok.ToString;
@@ -10,8 +11,10 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.Attribute;
 
-import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @ToString
 class AttributesMap
@@ -26,9 +29,9 @@ class AttributesMap
 	}
 
 	@NonNull
-	public Attribute getAttributeByCode(final AttributeCode attributeCode)
+	public Attribute getByCode(final AttributeCode attributeCode)
 	{
-		final Attribute attribute = getAttributeByCodeOrNull(attributeCode);
+		final Attribute attribute = getByCodeOrNull(attributeCode);
 		if (attribute == null)
 		{
 			throw new AdempiereException("No active attribute found for `" + attributeCode + "`");
@@ -36,26 +39,13 @@ class AttributesMap
 		return attribute;
 	}
 
-	public Attribute getAttributeByCodeOrNull(final AttributeCode attributeCode)
+	public Attribute getByCodeOrNull(final AttributeCode attributeCode)
 	{
 		return attributesByCode.get(attributeCode);
 	}
 
-	@Nullable
-	public AttributeId getAttributeIdByCodeOrNull(@NonNull final AttributeCode attributeCode)
-	{
-		final Attribute attribute = getAttributeByCodeOrNull(attributeCode);
-		return attribute != null ? attribute.getAttributeId() : null;
-	}
-
 	@NonNull
-	public AttributeCode getAttributeCodeById(@NonNull final AttributeId id)
-	{
-		return getAttributeById(id).getAttributeCode();
-	}
-
-	@NonNull
-	public Attribute getAttributeById(@NonNull final AttributeId id)
+	public Attribute getById(@NonNull final AttributeId id)
 	{
 		final Attribute attribute = attributesById.get(id);
 		if (attribute == null)
@@ -66,9 +56,20 @@ class AttributesMap
 	}
 
 	@NonNull
-	public AttributeId getAttributeIdByCode(@NonNull final AttributeCode attributeCode)
+	public Set<Attribute> getByIds(@NonNull final Collection<AttributeId> ids)
 	{
-		return getAttributeByCode(attributeCode).getAttributeId();
+		if (ids.isEmpty()) {return ImmutableSet.of();}
+
+		return ids.stream()
+				.distinct()
+				.map(this::getById)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public AttributeId getIdByCode(@NonNull final AttributeCode attributeCode)
+	{
+		return getByCode(attributeCode).getAttributeId();
 	}
 
 	@NonNull
@@ -80,8 +81,20 @@ class AttributesMap
 		}
 
 		return orderedAttributeIds.stream()
-				.map(this::getAttributeCodeById)
+				.map(this::getById)
+				.filter(Attribute::isActive)
+				.map(Attribute::getAttributeCode)
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public Stream<Attribute> streamActive()
+	{
+		return attributesById.values().stream().filter(Attribute::isActive);
+	}
+
+	public boolean isActiveAttribute(final AttributeId id)
+	{
+		final Attribute attribute = attributesById.get(id);
+		return attribute != null && attribute.isActive();
+	}
 }

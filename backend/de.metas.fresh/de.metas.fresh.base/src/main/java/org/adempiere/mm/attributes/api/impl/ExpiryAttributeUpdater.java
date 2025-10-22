@@ -59,7 +59,7 @@ public class ExpiryAttributeUpdater
 		}
 
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final AttributeId expiredAttribute = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Expired);
+		final AttributeId expiredAttribute = attributesRepo.retrieveActiveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Expired);
 
 		if (expiredAttribute == null)
 		{

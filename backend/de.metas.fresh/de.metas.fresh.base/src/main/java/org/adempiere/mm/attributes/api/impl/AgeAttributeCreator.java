@@ -76,7 +76,7 @@ public class AgeAttributeCreator
 		}
 
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final AttributeId ageAttributeId = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
+		final AttributeId ageAttributeId = attributesRepo.retrieveActiveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
 
 		if (ageAttributeId == null)
 		{
