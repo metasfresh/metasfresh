@@ -11,7 +11,6 @@ import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -125,11 +124,6 @@ public class PaymentTermService
 		return paymentTermRepository.hasPaymentTermBreaks(paymentTermId);
 	}
 
-	public void updateById(@NonNull final PaymentTermId paymentTermId, @NonNull final Consumer<PaymentTerm> updater)
-	{
-		paymentTermRepository.updateById(paymentTermId, updater);
-	}
-	
 	public void updateIsComplexFlag(final PaymentTermId paymentTermId)
 	{
 		paymentTermRepository.updateById();

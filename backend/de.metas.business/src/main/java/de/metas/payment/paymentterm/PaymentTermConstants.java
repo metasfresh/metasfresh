@@ -35,8 +35,7 @@ public class PaymentTermConstants
 {
 	public static final AdMessageKey MSG_ComplexTermConflict = AdMessageKey.of("C_PaymentTerm_ComplexTermConflict");
 	public static final AdMessageKey C_PAYMENTTERM_BREAK_TotalPercentTooHigh = AdMessageKey.of("C_PaymentTerm_Break_TotalPercentTooHigh");
-	public static final AdMessageKey C_PAYMENTTERM_BREAK_DoNotExist = AdMessageKey.of("C_PaymentTerm_Break_DoNotExist");
-	public static final AdMessageKey C_PAYMENTTERM_CantHaveBreaksAndSchedules = AdMessageKey.of("C_PaymentTerm_CantHaveBreaksAndSchedules"); // TODO
+	public static final AdMessageKey C_PAYMENTTERM_BREAK_DoNotExist = AdMessageKey.of("C_PaymentTerm_Break_DoNotExist"); // TODO delete me if not needed
 
 	public static final Instant INFINITE_FUTURE_DATE = LocalDateTime.of(9999, Month.JANUARY, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
 }

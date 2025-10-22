@@ -71,13 +71,12 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@Override
 	public @NonNull PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
-		return getByIdIfExists(paymentTermId)
-				.orElseThrow(() -> new AdempiereException("No active payment term found for " + paymentTermId));
+		return getIndexedPaymentTerms().getById(paymentTermId);
 	}
 
 	private Optional<PaymentTerm> getByIdIfExists(@NonNull final PaymentTermId paymentTermId)
 	{
-		return getIndexedPaymentTerms().getById(paymentTermId);
+		return getIndexedPaymentTerms().getByIdIfExists(paymentTermId);
 	}
 
 	private PaymentTermMap getIndexedPaymentTerms()
@@ -100,7 +99,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@Override
 	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
 	{
-		return !newLoaderAndSaver().getById(paymentTermId).getPaySchedules().isEmpty();
+		return !newLoaderAndSaver().hasPaySchedule(paymentTermId);
 	}
 
 	@Override

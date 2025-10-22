@@ -26,7 +26,7 @@ public class C_PaySchedule
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
 		if (paymentTermService.hasPaymentTermBreaks(paymentTermId))
 		{
-			throw new AdempiereException(PaymentTermConstants.C_PAYMENTTERM_CantHaveBreaksAndSchedules);
+			throw new AdempiereException(PaymentTermConstants.MSG_ComplexTermConflict);
 		}
 	}
 }

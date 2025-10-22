@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -17,8 +19,16 @@ public class PaymentTermMap
 		paymentTermsById = Maps.uniqueIndex(paymentTerms, PaymentTerm::getId);
 	}
 
-	public Optional<PaymentTerm> getById(final PaymentTermId id)
+	@NonNull
+	public PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
-		return Optional.ofNullable(paymentTermsById.get(id));
+		return getByIdIfExists(paymentTermId)
+				.orElseThrow(() -> new AdempiereException("No active payment term found for " + paymentTermId));
 	}
+
+	public Optional<PaymentTerm> getByIdIfExists(@NonNull final PaymentTermId paymentTermId)
+	{
+		return Optional.ofNullable(paymentTermsById.get(paymentTermId));
+	}
+
 }
