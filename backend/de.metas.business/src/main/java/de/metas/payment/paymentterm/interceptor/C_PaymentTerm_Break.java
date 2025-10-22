@@ -35,7 +35,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -85,9 +84,10 @@ public class C_PaymentTerm_Break
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void afterDelete(final I_C_PaymentTerm_Break record)
 	{
-		if (InterfaceWrapperHelper.isUIAction(record))
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
+		if (InterfaceWrapperHelper.isUIAction(record) && !paymentTermRepository.hasPaymentTermBreaks(paymentTermId))
 		{
-			paymentTermRepository.setIsComplexAndSave(PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID()), false);
+			paymentTermRepository.setIsComplexAndSave(paymentTermId, false);
 		}
 	}
 

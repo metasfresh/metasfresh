@@ -70,4 +70,6 @@ public interface IPaymentTermRepository extends ISingletonService
 	PaymentTermBreak getPaymentTermBreakById(@NonNull PaymentTermBreakId id);
 
 	boolean hasPaySchedule(@NonNull PaymentTermId paymentTermId);
+
+	boolean hasPaymentTermBreaks(@NonNull PaymentTermId paymentTermId);
 }

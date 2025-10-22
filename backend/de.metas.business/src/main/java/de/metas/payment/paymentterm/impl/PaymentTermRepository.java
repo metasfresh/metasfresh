@@ -339,13 +339,22 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		return getById(id.getPaymentTermId()).getBreakById(id);
 	}
 
-
 	@Override
 	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_PaySchedule.class)
 				.addEqualsFilter(I_C_PaySchedule.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public boolean hasPaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_PaymentTerm_Break.class)
+				.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
 				.create()
 				.anyMatch();
 	}
