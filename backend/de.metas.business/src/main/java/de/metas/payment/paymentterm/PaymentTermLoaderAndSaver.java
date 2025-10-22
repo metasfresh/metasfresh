@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Builder
@@ -74,6 +75,12 @@ public class PaymentTermLoaderAndSaver
 	{
 		return getByIdIfExists(paymentTermId)
 				.orElseThrow(() -> new AdempiereException("No active payment term found for " + paymentTermId));
+	}
+
+	@NonNull
+	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	{
+		return getById(id.getPaymentTermId()).getBreakById(id);
 	}
 
 	@NonNull
@@ -331,6 +338,13 @@ public class PaymentTermLoaderAndSaver
 		final PaymentTermId paymentTermId = paymentTerm.getId();
 		final I_C_PaymentTerm paymentTermRecord = InterfaceWrapperHelper.load(paymentTermId, I_C_PaymentTerm.class);
 
+		// main
+		updateRecord(paymentTerm, paymentTermRecord);
+		InterfaceWrapperHelper.save(paymentTermRecord);
+
+		// paymentTerm.getSortedBreaks().forEach(line -> savePaymentTermBreak(line, paymentTermId));
+		// paymentTerm.getPaySchedules().forEach(line -> savePaySchedule(line, paymentTermId));
+
 		// breaks
 		final HashMap<PaymentTermBreakId, I_C_PaymentTerm_Break> paymentTermBreakRecords = getBreaksByPaymentTermId(paymentTermId)
 				.stream()
@@ -347,7 +361,6 @@ public class PaymentTermLoaderAndSaver
 			updatePaymentTermBreakRecord(paymentTermBreak, record);
 			InterfaceWrapperHelper.save(record);
 		}
-		InterfaceWrapperHelper.deleteAll(paymentTermBreakRecords.values());
 
 		// pay schedules
 		final HashMap<PayScheduleId, I_C_PaySchedule> payScheduleRecords = getPaySchedsByPaymentTermId(paymentTermId)
@@ -365,11 +378,6 @@ public class PaymentTermLoaderAndSaver
 			updatePayscheduleRecord(paySchedule, record);
 			InterfaceWrapperHelper.save(record);
 		}
-		InterfaceWrapperHelper.deleteAll(payScheduleRecords.values());
-
-		// main
-
-		updateRecord(paymentTerm, paymentTermRecord);
 
 		invalidateCache(paymentTermId);
 	}
@@ -410,6 +418,23 @@ public class PaymentTermLoaderAndSaver
 		target.setGraceDays(source.getGraceDays());
 		target.setNetDays(source.getNetDays());
 		target.setPercentage(source.getPercentage().toBigDecimal());
+	}
+
+	public void updateById(@NonNull final PaymentTermId paymentTermId, @NonNull final Consumer<PaymentTerm> updater)
+	{
+		trxManager.runInThreadInheritedTrx(() -> updateById0(paymentTermId, updater));
+	}
+
+	private void updateById0(@NonNull final PaymentTermId paymentTermId, @NonNull final Consumer<PaymentTerm> updater)
+	{
+		final PaymentTerm paymentTerm = getByIdIfExists(paymentTermId).orElse(null);
+		if (paymentTerm == null)
+		{
+			return;
+		}
+
+		updater.accept(paymentTerm);
+		save(paymentTerm);
 	}
 
 }

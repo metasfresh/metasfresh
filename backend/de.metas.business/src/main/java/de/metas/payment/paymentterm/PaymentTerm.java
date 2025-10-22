@@ -23,7 +23,7 @@
 package de.metas.payment.paymentterm;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -38,7 +38,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 @ToString
@@ -65,9 +71,9 @@ public class PaymentTerm
 	@Setter boolean _default;
 	@Setter boolean isComplex;
 
-	@NonNull ImmutableList<PaymentTermBreak> sortedBreaks;
-	@NonNull ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
-	@NonNull ImmutableList<PaySchedule> paySchedules;
+	@NonNull List<PaymentTermBreak> sortedBreaks;
+	@NonNull Map<PaymentTermBreakId, PaymentTermBreak> breaksById;
+	@NonNull List<PaySchedule> paySchedules;
 
 	@Builder
 	private PaymentTerm(
@@ -117,13 +123,13 @@ public class PaymentTerm
 		}
 
 		this.sortedBreaks = isComplex
-				? breaks.stream().sorted(Comparator.comparing(PaymentTermBreak::getSeqNo).thenComparing(PaymentTermBreak::getId)).collect(ImmutableList.toImmutableList())
-				: ImmutableList.of();
+				? breaks.stream().sorted(Comparator.comparing(PaymentTermBreak::getSeqNo).thenComparing(PaymentTermBreak::getId)).collect(Collectors.toList())
+				: Lists.newArrayList();
 		this.breaksById = isComplex
-				? Maps.uniqueIndex(breaks, PaymentTermBreak::getId)
-				: ImmutableMap.of();
+				? new HashMap<>(Maps.uniqueIndex(breaks, PaymentTermBreak::getId))
+				: new HashMap<>();
 
-		this.paySchedules = paySchedules;
+		this.paySchedules = new ArrayList<>(paySchedules);
 	}
 
 	private static void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)
@@ -132,9 +138,9 @@ public class PaymentTerm
 				.map(PaymentTermBreak::getPercent)
 				.reduce(Percent.ZERO, Percent::add);
 
-		if (totalPercent.compareTo(Percent.ONE_HUNDRED) != 0)
+		if (totalPercent.compareTo(Percent.ONE_HUNDRED) > 0)
 		{
-			throw new AdempiereException("Total percent must be exactly 100%, but it was: ")
+			throw new AdempiereException("Total percent must not be more then 100%, but it was: ")
 					.appendParametersToMessage()
 					.setParameter("Total", totalPercent);
 		}
@@ -151,6 +157,29 @@ public class PaymentTerm
 			throw new AdempiereException("No break found for id: " + id);
 		}
 		return paymentTermBreak;
+	}
+
+	public void removePaymentTermBreaksIf(final Predicate<PaymentTermBreak> predicate)
+	{
+		sortedBreaks.removeIf(predicate);
+		this.breaksById = breaksById.entrySet().stream()
+				.filter(entry -> !predicate.test(entry.getValue()))
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						Map.Entry::getValue,
+						(oldValue, newValue) -> oldValue,
+						HashMap::new
+				));
+
+		if (sortedBreaks.isEmpty())
+		{
+			isComplex = false;
+		}
+	}
+
+	public void removePaySchedulesIf(final Predicate<PaySchedule> predicate)
+	{
+		paySchedules.removeIf(predicate);
 	}
 }
 

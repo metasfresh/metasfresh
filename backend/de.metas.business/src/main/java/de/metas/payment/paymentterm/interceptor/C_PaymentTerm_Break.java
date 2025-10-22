@@ -33,9 +33,11 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -48,7 +50,7 @@ public class C_PaymentTerm_Break
 	private final @NonNull IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final @NonNull PaymentTermService paymentTermService;
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_C_PaymentTerm_Break.COLUMNNAME_Percent)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_PaymentTerm_Break.COLUMNNAME_Percent)
 	public void assertTotalPercentageOverLimit(@NonNull final I_C_PaymentTerm_Break record)
 	{
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
@@ -75,12 +77,41 @@ public class C_PaymentTerm_Break
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
-	public void updatePaymentTermIsComplex(@NonNull final I_C_PaymentTerm_Break record)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void afterSave(final I_C_PaymentTerm_Break record, final ModelChangeType timing)
 	{
-		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
-		// final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
-		// paymentTerm.setComplex(true);
-		// paymentTermService.save(paymentTerm);
+		if (InterfaceWrapperHelper.isUIAction(record))
+		{
+			if (timing.isNew() || InterfaceWrapperHelper.isValueChanged(record, I_C_PaymentTerm_Break.COLUMNNAME_Percent))
+			{
+				final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
+				paymentTermService.updateById(paymentTermId, paymentTerm -> paymentTerm.setComplex(true));
+			}
+		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void beforeDelete(final I_C_PaymentTerm_Break record)
+	{
+		if (InterfaceWrapperHelper.isUIAction(record))
+		{
+			final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
+			paymentTermService.updateById(paymentTermId, paymentTerm -> paymentTerm.removePaymentTermBreaksIf(paymentTermBreak -> PaymentTermBreakId.equals(paymentTermBreak.getId(), PaymentTermBreakId.ofRepoIdOrNull(paymentTermId, record.getC_PaymentTerm_Break_ID()))));
+
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	public void afterDelete(final I_C_PaymentTerm_Break record)
+	{
+		if (InterfaceWrapperHelper.isUIAction(record))
+		{
+			final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
+			if (!paymentTermService.hasPaymentTermBreaks(paymentTermId))
+			{
+				paymentTermService.updateById(paymentTermId, paymentTerm -> paymentTerm.setComplex(false));
+			}
+		}
+	}
+
 }

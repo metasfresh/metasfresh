@@ -5,7 +5,6 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
-import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermLoaderAndSaver;
 import de.metas.util.Services;
@@ -23,6 +22,7 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static de.metas.util.Check.isNotBlank;
 
@@ -75,15 +75,21 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	}
 
 	@Override
-	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
-	{
-		return getById(id.getPaymentTermId()).getBreakById(id);
-	}
-
-	@Override
 	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
 	{
 		return !newLoaderAndSaver().getById(paymentTermId).getPaySchedules().isEmpty();
+	}
+
+	@Override
+	public void save(@NonNull final PaymentTerm paymentTerm)
+	{
+		newLoaderAndSaver().save(paymentTerm);
+	}
+
+	@Override
+	public void updateById(@NonNull final PaymentTermId paymentTermId, @NonNull final Consumer<PaymentTerm> updater)
+	{
+		newLoaderAndSaver().updateById(paymentTermId, updater);
 	}
 
 	@Override

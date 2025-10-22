@@ -9,6 +9,7 @@ import org.compiere.model.I_C_PaymentTerm;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /*
  * #%L
@@ -46,6 +47,10 @@ public interface IPaymentTermRepository extends ISingletonService
 	@NonNull
 	Optional<PaymentTermId> retrievePaymentTermId(@NonNull PaymentTermQuery build);
 
+	void save(@NonNull PaymentTerm paymentTerm);
+
+	void updateById(@NonNull PaymentTermId paymentTermId, @NonNull Consumer<PaymentTerm> updater);
+
 	@Deprecated
 	I_C_PaymentTerm getRecordById(PaymentTermId paymentTermId);
 
@@ -57,8 +62,6 @@ public interface IPaymentTermRepository extends ISingletonService
 
 	@NonNull
 	ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull final PaymentTermId paymentTermId);
-
-	PaymentTermBreak getPaymentTermBreakById(@NonNull PaymentTermBreakId id);
 
 	boolean hasPaySchedule(@NonNull PaymentTermId paymentTermId);
 }

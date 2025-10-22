@@ -22,7 +22,6 @@
 
 package de.metas.payment.paymentterm.interceptor;
 
-import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
@@ -40,9 +39,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_PaymentTerm
 {
-	private  final @NonNull  PaymentTermService paymentTermService;
+	private final @NonNull PaymentTermService paymentTermService;
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = I_C_PaymentTerm.COLUMNNAME_IsComplex)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_PaymentTerm.COLUMNNAME_IsComplex)
 	public void assertValidComplexPaymentTerm(@NonNull final I_C_PaymentTerm record)
 	{
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
@@ -54,9 +53,7 @@ public class C_PaymentTerm
 					.setParameter("PaymentTerm", record.getName());
 		}
 
-		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
-
-		if (record.isComplex() && paymentTerm.getSortedBreaks().isEmpty())
+		if (record.isComplex() && paymentTermService.hasPaymentTermBreaks(paymentTermId))
 		{
 			throw new AdempiereException(PaymentTermConstants.C_PAYMENTTERM_BREAK_DoNotExist)
 					.appendParametersToMessage()
