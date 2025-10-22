@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,10 +24,13 @@ package org.adempiere.mm.attributes.api.impl;
 
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
@@ -37,6 +40,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class AttributesBLTest
 {
@@ -86,10 +91,21 @@ public class AttributesBLTest
 		attributeGenerator = helper.createAD_JavaClass(MockedAttributeValueGenerator.class.getName());
 	}
 
+	private I_M_Attribute createM_Attribute(@NonNull AttributeValueType attributeValueType)
+	{
+		final I_M_Attribute attribute = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_Attribute.class);
+		attribute.setValue("attribute");
+		attribute.setName("attribute");
+		attribute.setAttributeValueType(attributeValueType.getCode());
+		attribute.setAD_JavaClass_ID(attributeGenerator.getAD_JavaClass_ID());
+		save(attribute);
+		return attribute;
+	}
+
 	@Test
 	public void testGenerateValue()
 	{
-		final I_M_Attribute attribute = helper.createM_Attribute(attributeGenerator);
+		final I_M_Attribute attribute = createM_Attribute(AttributeValueType.STRING);
 
 		final String generatedValueExpected = "12345";
 
@@ -105,7 +121,7 @@ public class AttributesBLTest
 	@Test
 	public void testGenerateValueType()
 	{
-		final I_M_Attribute attribute = helper.createM_Attribute(attributeGenerator);
+		final I_M_Attribute attribute = createM_Attribute(AttributeValueType.STRING);
 
 		final String attributeValueTypeExpected = "abc";
 

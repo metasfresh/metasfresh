@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetMandatoryType;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.callout.M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -36,7 +37,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * Base context and helpers for {@link M_Attribute}s related tests.
  *
  * @author tsa
- *
  */
 @Disabled
 public class AttributesTestHelper
@@ -58,6 +58,8 @@ public class AttributesTestHelper
 	public I_M_AttributeSet createM_AttributeSet(final I_M_Attribute... attributes)
 	{
 		final I_M_AttributeSet as = InterfaceWrapperHelper.create(ctx, I_M_AttributeSet.class, ITrx.TRXNAME_None);
+		as.setName("AttributeSet");
+		as.setMandatoryType(AttributeSetMandatoryType.NotMandatory.getCode());
 		as.setIsInstanceAttribute(true);
 		save(as);
 
@@ -74,14 +76,6 @@ public class AttributesTestHelper
 		attributeUse.setM_AttributeSet_ID(as.getM_AttributeSet_ID());
 		attributeUse.setM_Attribute_ID(attribute.getM_Attribute_ID());
 		save(attributeUse);
-	}
-
-	public I_M_Attribute createM_Attribute(final I_AD_JavaClass javaClass)
-	{
-		final I_M_Attribute attribute = InterfaceWrapperHelper.create(ctx, I_M_Attribute.class, ITrx.TRXNAME_None);
-		attribute.setAD_JavaClass_ID(javaClass != null ? javaClass.getAD_JavaClass_ID() : -1);
-		save(attribute);
-		return attribute;
 	}
 
 	public I_M_Attribute createM_Attribute_TypeList(final String name)
@@ -251,11 +245,11 @@ public class AttributesTestHelper
 		//
 		// Configure UOM
 		attr.setC_UOM_ID(uom != null ? uom.getC_UOM_ID() : -1);
-		
+
 		attr.setIsStorageRelevant(storageRelevantAttribute);
 
 		saveRecord(attr);
-		
+
 		return attr;
 	}
 
