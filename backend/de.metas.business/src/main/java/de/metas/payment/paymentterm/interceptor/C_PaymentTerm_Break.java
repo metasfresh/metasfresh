@@ -24,7 +24,6 @@ package de.metas.payment.paymentterm.interceptor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.PaymentTermConstants;
@@ -50,7 +49,7 @@ public class C_PaymentTerm_Break
 	private final @NonNull PaymentTermService paymentTermService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_C_PaymentTerm_Break.COLUMNNAME_Percent)
-	public void assertTotalPercentageUnderLimit(@NonNull final I_C_PaymentTerm_Break record)
+	public void assertTotalPercentageOverLimit(@NonNull final I_C_PaymentTerm_Break record)
 	{
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
 		final PaymentTermBreakId currentBreakIdToExclude = PaymentTermBreakId.ofRepoIdOrNull(paymentTermId, record.getC_PaymentTerm_Break_ID());
@@ -80,8 +79,8 @@ public class C_PaymentTerm_Break
 	public void updatePaymentTermIsComplex(@NonNull final I_C_PaymentTerm_Break record)
 	{
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
-		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
-		paymentTerm.setComplex(true);
+		// final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
+		// paymentTerm.setComplex(true);
 		// paymentTermService.save(paymentTerm);
 	}
 }
