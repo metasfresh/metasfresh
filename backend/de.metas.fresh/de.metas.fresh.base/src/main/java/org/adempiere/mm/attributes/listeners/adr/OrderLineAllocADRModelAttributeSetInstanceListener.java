@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.listeners.adr;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.BPartnerAwareAttributeUpdater;
@@ -36,11 +37,13 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OrderLineAllocADRModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_C_Order_Line_Alloc.Table_Name;
 	}

@@ -459,6 +459,8 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	public void updateASIAttributeFromModel(@NonNull final AttributeCode attributeCode, @NonNull final Object fromModel)
 	{
 		UpdateASIAttributeFromModelCommand.builder()
+				.attributeSetInstanceAwareFactoryService(attributeSetInstanceAwareFactoryService)
+				.attributeDAO(attributeDAO)
 				.attributeSetInstanceBL(this)
 				//
 				.attributeCode(attributeCode)

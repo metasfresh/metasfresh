@@ -26,6 +26,7 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
@@ -33,7 +34,9 @@ import org.compiere.model.I_C_InvoiceLine;
 
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
+@Component
 public class InvoiceCountryModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 
@@ -41,7 +44,7 @@ public class InvoiceCountryModelAttributeSetInstanceListener implements IModelAt
 	private static final List<String> sourceColumnNames = Arrays.asList(I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID);
 
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_C_Invoice.Table_Name;
 	}

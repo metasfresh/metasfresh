@@ -1,7 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -35,27 +34,15 @@ import org.compiere.model.I_M_AttributeInstance;
  * #L%
  */
 
+@Builder
 final class UpdateASIAttributeFromModelCommand
 {
-	private final transient IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final transient IAttributeSetInstanceBL attributeSetInstanceBL;
+	@NonNull private final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService;
+	@NonNull private final IAttributeDAO attributeDAO;
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL;
 
-	private final AttributeCode attributeCode;
-	private final Object sourceModel;
-
-	@Builder
-	private UpdateASIAttributeFromModelCommand(
-			@NonNull final IAttributeSetInstanceBL attributeSetInstanceBL,
-			//
-			@NonNull final AttributeCode attributeCode,
-			@NonNull final Object sourceModel)
-	{
-		this.attributeSetInstanceBL = attributeSetInstanceBL;
-
-		this.attributeCode = attributeCode;
-		this.sourceModel = sourceModel;
-	}
+	@NonNull private final AttributeCode attributeCode;
+	@NonNull private final Object sourceModel;
 
 	@SuppressWarnings("unused")
 	public static class UpdateASIAttributeFromModelCommandBuilder

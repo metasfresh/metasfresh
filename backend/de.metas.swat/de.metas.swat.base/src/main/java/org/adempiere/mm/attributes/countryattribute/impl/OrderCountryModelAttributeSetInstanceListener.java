@@ -26,6 +26,7 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
@@ -33,14 +34,16 @@ import org.compiere.model.I_C_OrderLine;
 
 import de.metas.order.IOrderDAO;
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OrderCountryModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	private final OrderLineCountryModelAttributeSetInstanceListener orderLineListener = new OrderLineCountryModelAttributeSetInstanceListener();
 	private static final List<String> sourceColumnNames = Arrays.asList(I_C_Order.COLUMNNAME_C_BPartner_Location_ID);
 
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_C_Order.Table_Name;
 	}

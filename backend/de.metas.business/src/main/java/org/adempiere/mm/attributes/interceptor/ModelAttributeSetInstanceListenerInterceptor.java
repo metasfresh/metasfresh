@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api.impl;
+package org.adempiere.mm.attributes.interceptor;
 
 /*
  * #%L
@@ -22,29 +22,41 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
-/*package*/final class ModelAttributeSetInstanceListenerInterceptor extends AbstractModelInterceptor
+@Component
+public class ModelAttributeSetInstanceListenerInterceptor extends AbstractModelInterceptor
 {
-	private final IModelAttributeSetInstanceListener listener;
+	private static final Logger logger = LogManager.getLogger(ModelAttributeSetInstanceListenerInterceptor.class);
+	private final ImmutableListMultimap<String, IModelAttributeSetInstanceListener> listenersBySourceTableName;
 
-	public ModelAttributeSetInstanceListenerInterceptor(@NonNull final IModelAttributeSetInstanceListener listener)
+	public ModelAttributeSetInstanceListenerInterceptor(@NonNull final Optional<List<IModelAttributeSetInstanceListener>> listeners)
 	{
-		this.listener = listener;
+		final List<IModelAttributeSetInstanceListener> listenersList = listeners.orElseGet(ImmutableList::of);
+
+		listenersBySourceTableName = Multimaps.index(listenersList, IModelAttributeSetInstanceListener::getSourceTableName);
+		logger.info("Registered {} listeners: {}", listenersList.size(), listenersBySourceTableName);
 	}
 
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final org.compiere.model.I_AD_Client client)
 	{
-		final String tableName = listener.getSourceTableName();
-		engine.addModelChange(tableName, this);
+		listenersBySourceTableName.keySet()
+				.forEach(tableName -> engine.addModelChange(tableName, this));
 	}
 
 	@Override
@@ -56,17 +68,21 @@ import java.util.List;
 			return;
 		}
 
-		//
-		// Fire listener on BEFORE_NEW
-		if (changeType == ModelChangeType.BEFORE_NEW)
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+		for (final IModelAttributeSetInstanceListener listener : listenersBySourceTableName.get(tableName))
 		{
-			listener.modelChanged(model);
-		}
-		//
-		// Fire listener on BEFORE CHANGE, ONLY if one of the source columns were changed
-		else if (changeType == ModelChangeType.BEFORE_CHANGE && isValueChanged(model, listener.getSourceColumnNames()))
-		{
-			listener.modelChanged(model);
+			//
+			// Fire listener on BEFORE_NEW
+			if (changeType == ModelChangeType.BEFORE_NEW)
+			{
+				listener.modelChanged(model);
+			}
+			//
+			// Fire listener on BEFORE CHANGE, ONLY if one of the source columns were changed
+			else if (changeType == ModelChangeType.BEFORE_CHANGE && isValueChanged(model, listener.getSourceColumnNames()))
+			{
+				listener.modelChanged(model);
+			}
 		}
 	}
 

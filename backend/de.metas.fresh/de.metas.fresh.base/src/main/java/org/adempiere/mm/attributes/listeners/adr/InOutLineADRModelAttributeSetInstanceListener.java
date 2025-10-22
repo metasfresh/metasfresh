@@ -26,6 +26,7 @@ package org.adempiere.mm.attributes.listeners.adr;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.BPartnerAwareAttributeUpdater;
@@ -33,11 +34,13 @@ import org.adempiere.mm.attributes.api.impl.InOutLineBPartnerAware;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
+@Component
 public class InOutLineADRModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_M_InOutLine.Table_Name;
 	}

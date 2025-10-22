@@ -26,6 +26,7 @@ package org.adempiere.mm.attributes.listeners.inAusLand;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
@@ -33,7 +34,9 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inout.IInOutDAO;
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
+@Component
 public class InOutInAusLandModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	private final InOutLineInAusLandModelAttributeSetInstanceListener inoutLineListener = new InOutLineInAusLandModelAttributeSetInstanceListener();
@@ -41,7 +44,7 @@ public class InOutInAusLandModelAttributeSetInstanceListener implements IModelAt
 	private static final List<String> sourceColumnNames = Arrays.asList(I_M_InOut.COLUMNNAME_C_BPartner_Location_ID);
 
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_M_InOut.Table_Name;
 	}
