@@ -246,6 +246,7 @@ public class HUInOutBL implements IHUInOutBL
 		// Mark assigned HUs as destroyed
 		handlingUnitsBL.markDestroyed(huContext, hus);
 
+		// If the HUs were linked to M_Package_HU entries, delete them too
 		for (final I_M_HU hu : hus)
 		{
 			huPackageBL.destroyHUPackages(HuId.ofRepoId(hu.getM_HU_ID()));
