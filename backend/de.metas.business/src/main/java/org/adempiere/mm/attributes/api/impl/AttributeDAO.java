@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
 import de.metas.cache.CCache;
@@ -19,6 +18,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -141,7 +141,7 @@ public class AttributeDAO implements IAttributeDAO
 				.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(record -> AttributeSetId.ofRepoId(record.getM_AttributeSet_ID())));
 
-		final ImmutableListMultimap<AttributeSetId, AttributeSetAttribute> attributesByAttributeSetId = queryBL.createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
+		final ImmutableListMultimap<AttributeSetId, I_M_AttributeUse> attributeAssignmentRecordsByAttributeSetId = queryBL.createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSetIds)
 				.create()
@@ -149,7 +149,7 @@ public class AttributeDAO implements IAttributeDAO
 				.filter(record -> attributesMap.isActiveAttribute(AttributeId.ofRepoId(record.getM_Attribute_ID())))
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						record -> AttributeSetId.ofRepoId(record.getM_AttributeSet_ID()),
-						AttributeDAO::fromRecord));
+						record -> record));
 
 		return attributeSetIds.stream()
 				.map(attributeSetId -> {
@@ -158,7 +158,7 @@ public class AttributeDAO implements IAttributeDAO
 					final I_M_AttributeSet record = recordsById.get(attributeSetId);
 					if (record == null) {return null;}
 
-					return fromRecord(record, attributesByAttributeSetId);
+					return fromRecord(record, attributeAssignmentRecordsByAttributeSetId, attributesMap);
 				})
 				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toHashMapByKey(AttributeSetDescriptor::getAttributeSetId));
@@ -166,24 +166,35 @@ public class AttributeDAO implements IAttributeDAO
 
 	private static AttributeSetDescriptor fromRecord(
 			@NonNull final I_M_AttributeSet record,
-			@NonNull final ListMultimap<AttributeSetId, AttributeSetAttribute> attributesByAttributeSetId)
+			@NonNull final ImmutableListMultimap<AttributeSetId, I_M_AttributeUse> attributeAssignmentRecordsByAttributeSetId,
+			@NonNull final AttributesMap attributesMap)
 	{
 		final AttributeSetId attributeSetId = AttributeSetId.ofRepoId(record.getM_AttributeSet_ID());
+
 		return AttributeSetDescriptor.builder()
 				.attributeSetId(attributeSetId)
 				.name(record.getName())
 				.description(record.getDescription())
 				.isInstanceAttribute(record.isInstanceAttribute())
 				.mandatoryType(AttributeSetMandatoryType.ofCode(record.getMandatoryType()))
-				.attributes(attributesByAttributeSetId.get(attributeSetId))
+				.attributes(attributeAssignmentRecordsByAttributeSetId.get(attributeSetId)
+						.stream()
+						.map(attributeAssignmentRecord -> fromRecord(attributeAssignmentRecord, attributesMap))
+						.filter(Objects::nonNull)
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	private static AttributeSetAttribute fromRecord(final I_M_AttributeUse record)
+	@Nullable
+	private static AttributeSetAttribute fromRecord(@NonNull final I_M_AttributeUse record, @NonNull final AttributesMap attributesMap)
 	{
+		final AttributeId attributeId = AttributeId.ofRepoId(record.getM_Attribute_ID());
+		final Attribute attribute = attributesMap.getByIdOrNull(attributeId);
+		if (attribute == null || !attribute.isActive()) {return null;}
+
 		return AttributeSetAttribute.builder()
-				.attributeId(AttributeId.ofRepoId(record.getM_Attribute_ID()))
-				.seqNo(record.getSeqNo())
+				.attribute(attribute)
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.mandatoryOnReceipt(OptionalBoolean.ofNullableString(record.getMandatoryOnReceipt()))
 				.mandatoryOnPicking(OptionalBoolean.ofNullableString(record.getMandatoryOnPicking()))
 				.mandatoryOnShipment(OptionalBoolean.ofNullableString(record.getMandatoryOnShipment()))

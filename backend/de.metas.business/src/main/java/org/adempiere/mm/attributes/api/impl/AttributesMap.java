@@ -10,6 +10,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.Attribute;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -47,12 +49,18 @@ class AttributesMap
 	@NonNull
 	public Attribute getById(@NonNull final AttributeId id)
 	{
-		final Attribute attribute = attributesById.get(id);
+		final Attribute attribute = getByIdOrNull(id);
 		if (attribute == null)
 		{
 			throw new AdempiereException("No Attribute found for ID: " + id);
 		}
 		return attribute;
+	}
+
+	@Nullable
+	public Attribute getByIdOrNull(final @NotNull AttributeId id)
+	{
+		return attributesById.get(id);
 	}
 
 	@NonNull
@@ -94,7 +102,7 @@ class AttributesMap
 
 	public boolean isActiveAttribute(final AttributeId id)
 	{
-		final Attribute attribute = attributesById.get(id);
+		final Attribute attribute = getByIdOrNull(id);
 		return attribute != null && attribute.isActive();
 	}
 }
