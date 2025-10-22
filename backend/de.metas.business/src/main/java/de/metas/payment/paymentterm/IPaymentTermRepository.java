@@ -47,8 +47,6 @@ public interface IPaymentTermRepository extends ISingletonService
 	@NonNull
 	Optional<PaymentTermId> retrievePaymentTermId(@NonNull PaymentTermQuery build);
 
-	void save(@NonNull PaymentTerm paymentTerm);
-
 	void updateById(@NonNull PaymentTermId paymentTermId, @NonNull Consumer<PaymentTerm> updater);
 
 	@Deprecated
@@ -64,4 +62,6 @@ public interface IPaymentTermRepository extends ISingletonService
 	ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull final PaymentTermId paymentTermId);
 
 	boolean hasPaySchedule(@NonNull PaymentTermId paymentTermId);
+
+	boolean hasPaymentTermBreaks(@NonNull PaymentTermId paymentTermId);
 }

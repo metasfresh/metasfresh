@@ -47,7 +47,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_PaymentTerm_Break
 {
-	private final @NonNull IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final @NonNull PaymentTermService paymentTermService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_PaymentTerm_Break.COLUMNNAME_Percent)
@@ -82,22 +81,8 @@ public class C_PaymentTerm_Break
 	{
 		if (InterfaceWrapperHelper.isUIAction(record))
 		{
-			if (timing.isNew() || InterfaceWrapperHelper.isValueChanged(record, I_C_PaymentTerm_Break.COLUMNNAME_Percent))
-			{
-				final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
-				paymentTermService.updateById(paymentTermId, paymentTerm -> paymentTerm.setComplex(true));
-			}
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void beforeDelete(final I_C_PaymentTerm_Break record)
-	{
-		if (InterfaceWrapperHelper.isUIAction(record))
-		{
 			final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
-			paymentTermService.updateById(paymentTermId, paymentTerm -> paymentTerm.removePaymentTermBreaksIf(paymentTermBreak -> PaymentTermBreakId.equals(paymentTermBreak.getId(), PaymentTermBreakId.ofRepoIdOrNull(paymentTermId, record.getC_PaymentTerm_Break_ID()))));
-
+			paymentTermService.updateIsComplexFlag(paymentTermId);
 		}
 	}
 
@@ -107,10 +92,7 @@ public class C_PaymentTerm_Break
 		if (InterfaceWrapperHelper.isUIAction(record))
 		{
 			final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
-			if (!paymentTermService.hasPaymentTermBreaks(paymentTermId))
-			{
-				paymentTermService.updateById(paymentTermId, paymentTerm -> paymentTerm.setComplex(false));
-			}
+			paymentTermService.updateIsComplexFlag(paymentTermId);
 		}
 	}
 

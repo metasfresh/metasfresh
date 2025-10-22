@@ -1,12 +1,12 @@
 package de.metas.payment.paymentterm.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.PaymentTermLoaderAndSaver;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -18,6 +18,7 @@ import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -53,6 +54,12 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	@NonNull private final CCache<Integer, PaymentTermMap> cache = CCache.<Integer, PaymentTermMap>builder()
+			.tableName(I_C_PaymentTerm.Table_Name)
+			.additionalTableNameToResetFor(I_C_PaymentTerm_Break.Table_Name)
+			.initialCapacity(1)
+			.build();
+
 	private PaymentTermLoaderAndSaver newLoaderAndSaver()
 	{
 		return PaymentTermLoaderAndSaver.builder()
@@ -64,7 +71,23 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	@Override
 	public @NonNull PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
-		return newLoaderAndSaver().getById(paymentTermId);
+		return getByIdIfExists(paymentTermId)
+				.orElseThrow(() -> new AdempiereException("No active payment term found for " + paymentTermId));
+	}
+
+	private Optional<PaymentTerm> getByIdIfExists(@NonNull final PaymentTermId paymentTermId)
+	{
+		return getIndexedPaymentTerms().getById(paymentTermId);
+	}
+
+	private PaymentTermMap getIndexedPaymentTerms()
+	{
+		return cache.getOrLoad(0, this::retrieveIndexedPaymentTerms);
+	}
+
+	private PaymentTermMap retrieveIndexedPaymentTerms()
+	{
+		return newLoaderAndSaver().loadAll();
 	}
 
 	@NonNull
@@ -81,9 +104,9 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	}
 
 	@Override
-	public void save(@NonNull final PaymentTerm paymentTerm)
+	public boolean hasPaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
 	{
-		newLoaderAndSaver().save(paymentTerm);
+		return newLoaderAndSaver().hasPaymentTermBreaks(paymentTermId);
 	}
 
 	@Override
@@ -125,8 +148,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			return Optional.of(PaymentTermId.ofRepoId(contextPaymentTerm));
 		}
 
-		final int dbPaymentTermId = queryBL
-				.createQueryBuilder(I_C_PaymentTerm.class)
+		final int dbPaymentTermId = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsDefault, true)
 				.addOnlyContextClient(Env.getCtx())

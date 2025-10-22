@@ -23,57 +23,47 @@
 package de.metas.payment.paymentterm;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-@EqualsAndHashCode
-@ToString
-@Getter
+@Value
 public class PaymentTerm
 {
-	@NonNull final PaymentTermId id;
-	@NonNull final OrgId orgId;
-	@NonNull final ClientId clientId;
+	@NonNull PaymentTermId id;
+	@NonNull OrgId orgId;
+	@NonNull ClientId clientId;
 
-	@NonNull final String value;
-	@NonNull final String name;
-	@Nullable final String description;
+	@NonNull String value;
+	@NonNull String name;
+	@Nullable String description;
 
 	@Nullable Percent discount;
 	@Nullable Percent discount2;
 	@Nullable String netDay;
 
-	@Setter int discountDays;
-	@Setter int discountDays2;
-	@Setter int graceDays;
-	@Setter int netDays;
-	@Setter boolean allowOverrideDueDate;
-	@Setter boolean _default;
-	@Setter boolean isComplex;
+	int discountDays;
+	int discountDays2;
+	int graceDays;
+	int netDays;
+	boolean allowOverrideDueDate;
+	boolean isDefault;
+	boolean isComplex;
 
-	@NonNull List<PaymentTermBreak> sortedBreaks;
-	@NonNull Map<PaymentTermBreakId, PaymentTermBreak> breaksById;
-	@NonNull List<PaySchedule> paySchedules;
+	@NonNull ImmutableList<PaymentTermBreak> sortedBreaks;
+	@NonNull ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
+	@NonNull ImmutableList<PaySchedule> paySchedules;
 
 	@Builder
 	private PaymentTerm(
@@ -91,8 +81,7 @@ public class PaymentTerm
 			final int graceDays,
 			final int netDays,
 			final boolean allowOverrideDueDate,
-			final boolean _default,
-			final boolean isComplex,
+			final boolean isDefault,
 			final @NonNull ImmutableList<PaymentTermBreak> breaks,
 			final @NonNull ImmutableList<PaySchedule> paySchedules)
 	{
@@ -110,41 +99,32 @@ public class PaymentTerm
 		this.graceDays = graceDays;
 		this.netDays = netDays;
 		this.allowOverrideDueDate = allowOverrideDueDate;
-		this._default = _default;
-		this.isComplex = isComplex;
+		this.isDefault = isDefault;
 
-		if (isComplex)
+		if (!breaks.isEmpty() && computePercentSum(breaks).isOneHundred())
 		{
-			Check.assumeNotEmpty(breaks, "If isComplex=true, then breaks shall not be empty");
-
-			checkPercentBreaks(breaks);
-
 			Check.assume(paySchedules.isEmpty(), "If isComplex=true, then paySchedules shall be empty");
+
+			this.isComplex = true;
+
+			this.sortedBreaks = breaks.stream().sorted(Comparator.comparing(PaymentTermBreak::getSeqNo).thenComparing(PaymentTermBreak::getId)).collect(ImmutableList.toImmutableList());
+			this.breaksById = Maps.uniqueIndex(breaks, PaymentTermBreak::getId);
+			this.paySchedules = ImmutableList.of();
 		}
-
-		this.sortedBreaks = isComplex
-				? breaks.stream().sorted(Comparator.comparing(PaymentTermBreak::getSeqNo).thenComparing(PaymentTermBreak::getId)).collect(Collectors.toList())
-				: Lists.newArrayList();
-		this.breaksById = isComplex
-				? new HashMap<>(Maps.uniqueIndex(breaks, PaymentTermBreak::getId))
-				: new HashMap<>();
-
-		this.paySchedules = new ArrayList<>(paySchedules);
+		else
+		{
+			this.isComplex = false;
+			this.sortedBreaks = ImmutableList.of();
+			this.breaksById = ImmutableMap.of();
+			this.paySchedules = paySchedules;
+		}
 	}
 
-	private static void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)
+	private static Percent computePercentSum(final @NotNull ImmutableList<PaymentTermBreak> breaks)
 	{
-		final Percent totalPercent = breaks.stream()
+		return breaks.stream()
 				.map(PaymentTermBreak::getPercent)
 				.reduce(Percent.ZERO, Percent::add);
-
-		if (totalPercent.compareTo(Percent.ONE_HUNDRED) > 0)
-		{
-			throw new AdempiereException("Total percent must not be more then 100%, but it was: ")
-					.appendParametersToMessage()
-					.setParameter("Total", totalPercent);
-		}
-
 	}
 
 	public PaymentTermBreak getBreakById(final @NonNull PaymentTermBreakId id)
@@ -157,29 +137,6 @@ public class PaymentTerm
 			throw new AdempiereException("No break found for id: " + id);
 		}
 		return paymentTermBreak;
-	}
-
-	public void removePaymentTermBreaksIf(final Predicate<PaymentTermBreak> predicate)
-	{
-		sortedBreaks.removeIf(predicate);
-		this.breaksById = breaksById.entrySet().stream()
-				.filter(entry -> !predicate.test(entry.getValue()))
-				.collect(Collectors.toMap(
-						Map.Entry::getKey,
-						Map.Entry::getValue,
-						(oldValue, newValue) -> oldValue,
-						HashMap::new
-				));
-
-		if (sortedBreaks.isEmpty())
-		{
-			isComplex = false;
-		}
-	}
-
-	public void removePaySchedulesIf(final Predicate<PaySchedule> predicate)
-	{
-		paySchedules.removeIf(predicate);
 	}
 }
 

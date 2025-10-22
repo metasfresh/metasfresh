@@ -122,13 +122,21 @@ public class PaymentTermService
 
 	public boolean hasPaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
 	{
-		return paymentTermRepository.hasPaySchedule(paymentTermId);
+		return paymentTermRepository.hasPaymentTermBreaks(paymentTermId);
 	}
-
-	public void save(@NonNull final PaymentTerm paymentTerm) {paymentTermRepository.save(paymentTerm);}
 
 	public void updateById(@NonNull final PaymentTermId paymentTermId, @NonNull final Consumer<PaymentTerm> updater)
 	{
 		paymentTermRepository.updateById(paymentTermId, updater);
+	}
+	
+	public void updateIsComplexFlag(final PaymentTermId paymentTermId)
+	{
+		paymentTermRepository.updateById();
+		if (!hasPaymentTermBreaks(paymentTermId))
+		{
+			paymentTermService.updateById(paymentTermId, paymentTerm -> paymentTerm.setComplex(false));
+		}
+
 	}
 }

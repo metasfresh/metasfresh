@@ -20,15 +20,21 @@
  * #L%
  */
 
-package de.metas.payment.paymentterm;
+package de.metas.payment.paymentterm.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.cache.CCache;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaySchedule;
+import de.metas.payment.paymentterm.PayScheduleId;
+import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermBreak;
+import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
@@ -64,61 +70,16 @@ public class PaymentTermLoaderAndSaver
 	@NonNull private final HashMap<PaymentTermId, ImmutableList<I_C_PaymentTerm_Break>> breaksByPaymentTermId = new HashMap<>();
 	@NonNull private final HashMap<PaymentTermId, ImmutableList<I_C_PaySchedule>> paySchedsByPaymentTermId = new HashMap<>();
 
-	@NonNull private final CCache<Integer, PaymentTermMap> cache = CCache.<Integer, PaymentTermMap>builder()
-			.tableName(I_C_PaymentTerm.Table_Name)
-			.additionalTableNameToResetFor(I_C_PaymentTerm_Break.Table_Name)
-			.initialCapacity(1)
-			.build();
-
 	@NonNull
-	public PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
+	public PaymentTerm loadById(@NonNull final PaymentTermId paymentTermId)
 	{
 		return getByIdIfExists(paymentTermId)
 				.orElseThrow(() -> new AdempiereException("No active payment term found for " + paymentTermId));
 	}
 
-	@NonNull
-	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	public PaymentTermMap loadAll()
 	{
-		return getById(id.getPaymentTermId()).getBreakById(id);
-	}
-
-	@NonNull
-	public ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull final PaymentTermId paymentTermId)
-	{
-		return ImmutableList.copyOf(retrievePaymentTermBreaksForMultipleTerms(ImmutableList.of(paymentTermId)).get(paymentTermId));
-	}
-
-	@NonNull
-	private ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaksForMultipleTerms(
-			@NonNull final Collection<PaymentTermId> paymentTermIds)
-	{
-		if (paymentTermIds.isEmpty())
-		{
-			return ImmutableListMultimap.of();
-		}
-
-		return queryBL
-				.createQueryBuilder(I_C_PaymentTerm_Break.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
-				.orderBy(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID)
-				.orderBy(I_M_DiscountSchemaBreak.COLUMNNAME_SeqNo)
-				.create()
-				.stream(I_C_PaymentTerm_Break.class)
-				.map(PaymentTermLoaderAndSaver::toPaymentTermBreak)
-				.collect(GuavaCollectors.toImmutableListMultimap(termBreak -> termBreak.getId().getPaymentTermId()));
-	}
-
-	private PaymentTermMap getIndexedPaymentTerms()
-	{
-		return cache.getOrLoad(0, this::retrieveIndexedPaymentTerms);
-	}
-
-	private PaymentTermMap retrieveIndexedPaymentTerms()
-	{
-		final ImmutableList<I_C_PaymentTerm> paymentTermRecords = queryBL
-				.createQueryBuilder(I_C_PaymentTerm.class)
+		final ImmutableList<I_C_PaymentTerm> paymentTermRecords = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_C_PaymentTerm.class)
@@ -129,22 +90,45 @@ public class PaymentTermLoaderAndSaver
 			return new PaymentTermMap(ImmutableList.of());
 		}
 
-		final ImmutableList<PaymentTermId> paymentTermIds = paymentTermRecords.stream()
+		final ImmutableSet<PaymentTermId> paymentTermIds = paymentTermRecords.stream()
 				.map(PaymentTermLoaderAndSaver::extractId)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableListMultimap<PaymentTermId, PaymentTermBreak> paymentTermBreaksByPaymentTermId =
-				retrievePaymentTermBreaksForMultipleTerms(paymentTermIds);
-
-		final ImmutableListMultimap<PaymentTermId, PaySchedule> paySchedsByPaymentTermId =
-				retrievePaySchedulesForMultipleTerms(paymentTermIds);
+		final ImmutableListMultimap<PaymentTermId, PaymentTermBreak> paymentTermBreaksByPaymentTermId = retrievePaymentTermBreaksForMultipleTerms(paymentTermIds);
+		final ImmutableListMultimap<PaymentTermId, PaySchedule> paySchedsByPaymentTermId = retrievePaySchedulesForMultipleTerms(paymentTermIds);
 
 		final ImmutableList<PaymentTerm> paymentTerms = paymentTermRecords.stream()
-				.map(record -> fromRecord(record, paymentTermBreaksByPaymentTermId.get(extractId(record)), paySchedsByPaymentTermId.get(extractId(record))))
+				.map(record -> fromRecord(record, paymentTermBreaksByPaymentTermId, paySchedsByPaymentTermId))
 				.collect(ImmutableList.toImmutableList());
 
 		return new PaymentTermMap(paymentTerms);
 
+	}
+
+
+	@NonNull
+	public ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull final PaymentTermId paymentTermId)
+	{
+		return ImmutableList.copyOf(retrievePaymentTermBreaksForMultipleTerms(ImmutableList.of(paymentTermId)).get(paymentTermId));
+	}
+
+	@NonNull
+	private ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaksForMultipleTerms(@NonNull final Collection<PaymentTermId> paymentTermIds)
+	{
+		if (paymentTermIds.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_PaymentTerm_Break.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
+				.orderBy(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID)
+				.orderBy(I_M_DiscountSchemaBreak.COLUMNNAME_SeqNo)
+				.create()
+				.stream(I_C_PaymentTerm_Break.class)
+				.map(PaymentTermLoaderAndSaver::toPaymentTermBreak)
+				.collect(GuavaCollectors.toImmutableListMultimap(termBreak -> termBreak.getId().getPaymentTermId()));
 	}
 
 	@NonNull
@@ -153,24 +137,9 @@ public class PaymentTermLoaderAndSaver
 		return PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
 	}
 
-	private static class PaymentTermMap
+	public boolean hasPaymentTermBreaks(final @NonNull PaymentTermId paymentTermId)
 	{
-		private final ImmutableMap<PaymentTermId, PaymentTerm> paymentTermsById;
-
-		private PaymentTermMap(final Collection<PaymentTerm> paymentTerms)
-		{
-			paymentTermsById = Maps.uniqueIndex(paymentTerms, PaymentTerm::getId);
-		}
-
-		private Optional<PaymentTerm> getById(final PaymentTermId id)
-		{
-			return Optional.ofNullable(paymentTermsById.get(id));
-		}
-	}
-
-	private Optional<PaymentTerm> getByIdIfExists(@NonNull final PaymentTermId paymentTermId)
-	{
-		return getIndexedPaymentTerms().getById(paymentTermId);
+		return false;
 	}
 
 	@NonNull
@@ -182,8 +151,7 @@ public class PaymentTermLoaderAndSaver
 			return ImmutableListMultimap.of();
 		}
 
-		return queryBL
-				.createQueryBuilder(I_C_PaySchedule.class)
+		return queryBL.createQueryBuilder(I_C_PaySchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_PaySchedule.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
 				.orderBy(I_C_PaySchedule.COLUMNNAME_C_PaymentTerm_ID)
@@ -209,12 +177,14 @@ public class PaymentTermLoaderAndSaver
 	}
 
 	@NonNull
-	static private PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record,
-										  @NonNull final ImmutableList<PaymentTermBreak> breaks,
-										  @NonNull final ImmutableList<PaySchedule> paySchedules)
+	static private PaymentTerm fromRecord(
+			@NonNull final I_C_PaymentTerm record,
+			final ImmutableListMultimap<PaymentTermId, PaymentTermBreak> paymentTermBreaksByPaymentTermId,
+			final ImmutableListMultimap<PaymentTermId, PaySchedule> paySchedsByPaymentTermId)
 	{
+		final PaymentTermId paymentTermId = extractId(record);
 		return PaymentTerm.builder()
-				.id(extractId(record))
+				.id(paymentTermId)
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.value(record.getValue())
@@ -225,11 +195,10 @@ public class PaymentTermLoaderAndSaver
 				.graceDays(record.getGraceDays())
 				.netDay(record.getNetDay())
 				.discountDays(record.getDiscountDays())
-				._default(record.isDefault())
-				.isComplex(record.isComplex())
+				.isDefault(record.isDefault())
 				.discount(Percent.of(record.getDiscount()))
-				.breaks(breaks)
-				.paySchedules(paySchedules)
+				.breaks(paymentTermBreaksByPaymentTermId.get(paymentTermId))
+				.paySchedules(paySchedsByPaymentTermId.get(paymentTermId))
 				.build();
 
 	}
@@ -394,7 +363,7 @@ public class PaymentTermLoaderAndSaver
 		target.setNetDays(source.getNetDays());
 		target.setGraceDays(source.getGraceDays());
 		target.setNetDay(source.getNetDay());
-		target.setIsDefault(source.is_default());
+		target.setIsDefault(source.isDefault());
 		target.setIsComplex(source.isComplex());
 
 		target.setDiscount(CoalesceUtil.coalesceNotNull(Percent.toBigDecimalOrNull(source.getDiscount()), BigDecimal.ZERO));
