@@ -342,13 +342,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return;
 		}
 		final Boolean isReceiptReversal = huContext.getProperty(IHUContext.PROPERTY_IsReceiptReversal);
-		if(isReceiptReversal != null && !isReceiptReversal)
+		if(isReceiptReversal == null || !isReceiptReversal)
 		{
 			final List<I_M_Package_HU> packageHus = huPackageBL.retrievePackageHUs(huId);
 			if(!packageHus.isEmpty())
 			{
 				final ImmutableList<Integer> packages = packageHus.stream().map(packageHU -> packageHU.getM_Package_ID()).collect(ImmutableList.toImmutableList());
-				throw new HUException(ERR_HUHasPackages, packages)
+				throw new HUException(ERR_HUHasPackages, huId, packages)
 						.markAsUserValidationError();
 			}
 		}
