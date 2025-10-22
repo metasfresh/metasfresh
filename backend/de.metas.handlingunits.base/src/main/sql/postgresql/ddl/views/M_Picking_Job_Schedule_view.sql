@@ -52,8 +52,10 @@ SELECT -- Composed Key:
        --
        job_sched.qtytopick,
        job_sched.c_workplace_id,
-       shipment_sched.carrier_product_id
+       shipment_sched.carrier_advising_status,
+       shipment_sched.carrier_product_id,
+       shipment_sched.carrier_goods_type_id
 FROM m_packageable_v shipment_sched
          LEFT OUTER JOIN M_Picking_Job_Schedule job_sched ON job_sched.m_shipmentschedule_id = shipment_sched.m_shipmentschedule_id
-WHERE shipment_sched.carrier_product_id > 0
+WHERE shipment_sched.carrier_product_id > 0 OR get_sysconfig_value('de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet') = 'N'
 ;
