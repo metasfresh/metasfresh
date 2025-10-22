@@ -80,6 +80,16 @@ class AttributesMap
 		return getByCode(attributeCode).getAttributeId();
 	}
 
+	public Set<Attribute> getByCodes(final Set<AttributeCode> attributeCodes)
+	{
+		if (attributeCodes.isEmpty()) {return ImmutableSet.of();}
+
+		return attributeCodes.stream()
+				.distinct()
+				.map(this::getByCode)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	@NonNull
 	public ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds)
 	{
@@ -105,4 +115,5 @@ class AttributesMap
 		final Attribute attribute = getByIdOrNull(id);
 		return attribute != null && attribute.isActive();
 	}
+
 }

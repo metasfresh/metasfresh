@@ -11,12 +11,17 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IAttributeSetInstanceDAO extends ISingletonService
 {
-	I_M_AttributeSetInstance getAttributeSetInstanceById(@NonNull AttributeSetInstanceId attributeSetInstanceId);
+	I_M_AttributeSetInstance getRecordById(@NonNull AttributeSetInstanceId attributeSetInstanceId);
 
 	List<I_M_AttributeInstance> retrieveAttributeInstancesByAsiIds(@NonNull Set<AttributeSetInstanceId> asiIds);
+
+	Stream<I_M_AttributeInstance> streamAttributeInstances(
+			@NonNull AttributeSetInstanceId asiId,
+			@NonNull Set<AttributeId> attributeIds);
 
 	/**
 	 * Creates a new {@link I_M_AttributeInstance}.
@@ -35,6 +40,8 @@ public interface IAttributeSetInstanceDAO extends ISingletonService
 	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_AttributeUse.SeqNo
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(@Nullable I_M_AttributeSetInstance attributeSetInstance);
+
+	List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull AttributeSetInstanceId asiId);
 
 	/**
 	 * @param attributeSetInstanceId may be {@code null} or "none". In that case, always {@code null} is returned.

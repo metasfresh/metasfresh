@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.util.IdentifiersEvaluatee;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -46,6 +47,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -53,26 +55,35 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Evaluatees;
+import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -89,10 +100,12 @@ import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 @RequiredArgsConstructor
 public class C_OrderLine_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private static final String COLUMNNAME_PREFIX_ATTRIBUTE = "attribute:";
+
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	private final @NonNull M_Product_StepDefData productTable;
 	private final @NonNull C_BPartner_StepDefData partnerTable;
@@ -298,6 +311,9 @@ public class C_OrderLine_StepDef
 							.firstOnlyNotNull(I_C_OrderLine.class);
 
 					validateOrderLine(orderLineRecord, row);
+
+					row.getAsOptionalIdentifier()
+							.ifPresent(identifier -> orderLineTable.put(identifier, orderLineRecord));
 				});
 	}
 
@@ -308,10 +324,7 @@ public class C_OrderLine_StepDef
 				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.forEach(row -> {
 					final I_C_OrderLine orderLine = orderLineTable.get(row.getAsIdentifier());
-					assertThat(orderLine).isNotNull();
-
 					InterfaceWrapperHelper.refresh(orderLine);
-
 					validateOrderLine(orderLine, row);
 
 				});
@@ -447,57 +460,38 @@ public class C_OrderLine_StepDef
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final DataTableRow row)
 	{
-		final StepDefDataIdentifier orderIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID);
-		final Timestamp dateOrdered = row.getAsOptionalLocalDateTimestamp(I_C_OrderLine.COLUMNNAME_DateOrdered).orElse(null);
-
-		final Optional<StepDefDataIdentifier> productIdentifier = row.getAsOptionalIdentifier(I_C_OLCand.COLUMNNAME_M_Product_ID);
-		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
-		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
-		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
-		final BigDecimal price = row.getAsOptionalBigDecimal("price").orElse(null);
-		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
-		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
-		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
-		final Optional<StepDefDataIdentifier> taxCategoryIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_TaxCategory_ID);
-
-		final Integer expectedProductId = productIdentifier
-				.flatMap(productTable::getOptional)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> productIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
+		final SoftAssertions softly = new SoftAssertions();
 
 		final String uomBPartner355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
-
 		if (Check.isNotBlank(uomBPartner355Code))
 		{
 			final UomId bPartnerUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomBPartner355Code));
-			assertThat(orderLine.getC_UOM_BPartner_ID()).isEqualTo(bPartnerUOMId.getRepoId());
+			softly.assertThat(orderLine.getC_UOM_BPartner_ID()).isEqualTo(bPartnerUOMId.getRepoId());
 		}
 
 		final String isManualPriceStr = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_IsManualPrice);
-
 		if (Check.isNotBlank(isManualPriceStr))
 		{
 			final boolean isManualPrice = StringUtils.toBoolean(isManualPriceStr);
-			assertThat(orderLine.isManualPrice()).isEqualTo(isManualPrice);
+			softly.assertThat(orderLine.isManualPrice()).isEqualTo(isManualPrice);
 		}
 
 		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
-
 		if (Check.isNotBlank(bPartnerQtyItemCapacity))
 		{
-			assertThat(orderLine.getBPartner_QtyItemCapacity()).isEqualByComparingTo(bPartnerQtyItemCapacity);
+			softly.assertThat(orderLine.getBPartner_QtyItemCapacity()).isEqualByComparingTo(bPartnerQtyItemCapacity);
 		}
 
 		final BigDecimal qtyEnteredInBPartnerUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyEnteredInBPartnerUOM);
 		if (qtyEnteredInBPartnerUOM != null)
 		{
-			assertThat(orderLine.getQtyEnteredInBPartnerUOM()).isEqualByComparingTo(qtyEnteredInBPartnerUOM);
+			softly.assertThat(orderLine.getQtyEnteredInBPartnerUOM()).isEqualByComparingTo(qtyEnteredInBPartnerUOM);
 		}
 
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyEntered);
 		if (qtyEntered != null)
 		{
-			assertThat(orderLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
+			softly.assertThat(orderLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
 		}
 
 		final String uomCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
@@ -505,155 +499,294 @@ public class C_OrderLine_StepDef
 		if (Check.isNotBlank(uomCode))
 		{
 			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomCode));
-			assertThat(orderLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+			softly.assertThat(orderLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
 		}
 
 		final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
 
 		if (qtyItemCapacity != null)
 		{
-			assertThat(orderLine.getQtyItemCapacity()).isEqualByComparingTo(qtyItemCapacity);
+			softly.assertThat(orderLine.getQtyItemCapacity()).isEqualByComparingTo(qtyItemCapacity);
 		}
 
-		if (dateOrdered != null)
-		{
-			assertThat(orderLine.getDateOrdered()).as(COLUMNNAME_DateOrdered).isEqualTo(dateOrdered);
-		}
+		row.getAsOptionalLocalDateTimestamp(I_C_OrderLine.COLUMNNAME_DateOrdered)
+				.ifPresent(dateOrdered -> softly.assertThat(orderLine.getDateOrdered()).as(COLUMNNAME_DateOrdered).isEqualTo(dateOrdered));
 
+		final Optional<StepDefDataIdentifier> taxCategoryIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_TaxCategory_ID);
 		if (taxCategoryIdentifier.isPresent())
 		{
 			final Integer taxCategoryId = taxCategoryIdentifier.flatMap(taxCategoryTable::getOptional)
 					.map(I_C_TaxCategory::getC_TaxCategory_ID)
 					.orElseGet(() -> taxCategoryIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
-			assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
+			softly.assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
 		}
 
-		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
-		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered);
-		assertThat(orderLine.getPriceEntered()).as("PriceEntered").isEqualByComparingTo(price);
-		assertThat(orderLine.getDiscount()).as("Discount").isEqualByComparingTo(discount);
-		assertThat(orderLine.isProcessed()).as("Processed").isEqualTo(processed);
-		assertThat(orderLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
-		assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualByComparingTo(qtyordered);
-		assertThat(orderLine.getQtyInvoiced()).as("QtyInvoiced").isEqualByComparingTo(qtyinvoiced);
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID)
+				.ifPresent(orderIdentifier -> softly.assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID()));
 
-		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
-		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
+		row.getAsOptionalBigDecimal("qtydelivered")
+				.ifPresent(qtyDelivered -> softly.assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered));
+
+		row.getAsOptionalBigDecimal("price")
+				.ifPresent(price -> softly.assertThat(orderLine.getPriceEntered()).as("PriceEntered").isEqualByComparingTo(price));
+
+		row.getAsOptionalBigDecimal("discount")
+				.ifPresent(discount -> softly.assertThat(orderLine.getDiscount()).as("Discount").isEqualByComparingTo(discount));
+
+		row.getAsOptionalBoolean("processed")
+				.ifPresent(processed -> softly.assertThat(orderLine.isProcessed()).as("Processed").isEqualTo(processed));
+
+		row.getAsOptionalIdentifier(I_C_OLCand.COLUMNNAME_M_Product_ID)
+				.map(productIdentifier -> productTable.getIdOptional(productIdentifier)
+						.orElseGet(() -> productIdentifier.getAsId(ProductId.class)))
+				.ifPresent(productId -> softly.assertThat(orderLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(productId.getRepoId()));
+
+		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_QtyOrdered)
+				.ifPresent(qtyOrdered -> softly.assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualByComparingTo(qtyOrdered));
+
+		row.getAsOptionalBigDecimal("qtyinvoiced")
+				.ifPresent(qtyInvoiced -> softly.assertThat(orderLine.getQtyInvoiced()).as("QtyInvoiced").isEqualByComparingTo(qtyInvoiced));
+
+		row.getAsOptionalString("currencyCode")
+				.map(CurrencyCode::ofThreeLetterCode)
+				.ifPresent(currencyCode -> {
+					final Currency currency = currencyDAO.getByCurrencyCode(currencyCode);
+					softly.assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
+				});
 
 		final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(flatrateConditionsIdentifier))
 		{
 			final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
-			assertThat(orderLine.getC_Flatrate_Conditions_ID()).isEqualTo(flatrateConditions.getC_Flatrate_Conditions_ID());
+			softly.assertThat(orderLine.getC_Flatrate_Conditions_ID()).isEqualTo(flatrateConditions.getC_Flatrate_Conditions_ID());
 		}
 
 		final String x12de355StockCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		if (Check.isNotBlank(x12de355StockCode))
 		{
 			final UomId stockUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355StockCode));
-			assertThat(orderLine.getC_UOM_ID()).isEqualTo(stockUomId.getRepoId());
+			softly.assertThat(orderLine.getC_UOM_ID()).isEqualTo(stockUomId.getRepoId());
 		}
 
 		final String x12de355PriceCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName());
 		if (Check.isNotBlank(x12de355PriceCode))
 		{
 			final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355PriceCode));
-			assertThat(orderLine.getPrice_UOM_ID()).isEqualTo(productPriceUomId.getRepoId());
+			softly.assertThat(orderLine.getPrice_UOM_ID()).isEqualTo(productPriceUomId.getRepoId());
 		}
 
 		final String productDescription = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_ProductDescription);
 		if (de.metas.util.Check.isNotBlank(productDescription))
 		{
-			assertThat(orderLine.getProductDescription()).isEqualTo(productDescription);
+			softly.assertThat(orderLine.getProductDescription()).isEqualTo(productDescription);
 		}
 
-		final String attributeSetInstanceIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(attributeSetInstanceIdentifier))
-		{
-			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-			assertThat(expectedASI).isNotNull();
+		row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
+				.ifPresent(attributeSetInstanceIdentifier -> {
+					final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+					assertThat(expectedASI).isNotNull();
 
-			final AttributesKey expectedASIKey = AttributesKeys
-					.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
+					final AttributesKey expectedASIKey = AttributesKeys
+							.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
+							.orElse(AttributesKey.NONE);
 
-			final AttributesKey orderLineAttributesKeys = AttributesKeys
-					.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
+					final AttributesKey orderLineAttributesKeys = AttributesKeys
+							.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID()))
+							.orElse(AttributesKey.NONE);
 
-			assertThat(orderLineAttributesKeys).isEqualTo(expectedASIKey);
-		}
+					softly.assertThat(orderLineAttributesKeys).isEqualTo(expectedASIKey);
+				});
+
+		row.getAsOptionalString(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID + ":" + I_M_AttributeInstance.Table_Name + "." + I_M_AttributeInstance.COLUMNNAME_Value)
+				.ifPresent(asiValues -> {
+					final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
+
+					final String asiValuesParsed = resolveASIValueExpectationContextVars(orderLine, asiValues);
+
+					Arrays.asList(asiValuesParsed.split(","))
+							.forEach(expectation -> validateAttributeValue(softly, attributeSetInstanceId, AttributeIdentifierAndValue.parse(expectation)));
+				});
+
+		row.getColumnNames()
+				.stream()
+				.filter(columnName -> columnName.startsWith(COLUMNNAME_PREFIX_ATTRIBUTE))
+				.forEach(columnName -> {
+					final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
+					final StepDefDataIdentifier attributeIdentifier = StepDefDataIdentifier.ofString(columnName.substring(COLUMNNAME_PREFIX_ATTRIBUTE.length()));
+					@NonNull final String value = row.getAsString(columnName);
+					final String valueResolved = resolveASIValueExpectationContextVars(orderLine, value);
+
+					validateAttributeValue(softly, attributeSetInstanceId, AttributeIdentifierAndValue.of(attributeIdentifier, valueResolved));
+				});
 
 		final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(huPiItemProductIdentifier))
 		{
 			final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
 			final de.metas.handlingunits.model.I_C_OrderLine orderLineHU = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
-			assertThat(huPiItemProduct.getM_HU_PI_Item_Product_ID()).isEqualTo(orderLineHU.getM_HU_PI_Item_Product_ID());
-		}
-
-		final String asiValues = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID + ":" + I_M_AttributeInstance.Table_Name + "." + I_M_AttributeInstance.COLUMNNAME_Value);
-		if (Check.isNotBlank(asiValues))
-		{
-			StepDefUtil.splitIdentifiers(asiValues)
-					.forEach(value -> validateAttributeValue(orderLine, value));
+			softly.assertThat(huPiItemProduct.getM_HU_PI_Item_Product_ID()).isEqualTo(orderLineHU.getM_HU_PI_Item_Product_ID());
 		}
 
 		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyReserved);
 		if (qtyReserved != null)
 		{
-			assertThat(orderLine.getQtyReserved()).isEqualByComparingTo(qtyReserved);
+			softly.assertThat(orderLine.getQtyReserved()).isEqualByComparingTo(qtyReserved);
 		}
 
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(taxIdentifier))
 		{
 			final TaxId taxId = taxTable.getId(taxIdentifier);
-			assertThat(orderLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
+			softly.assertThat(orderLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
 		}
 
-		orderLineTable.putOrReplace(row.getAsIdentifier(), orderLine);
+		softly.assertAll();
 	}
 
-	private void validateAttributeValue(@NonNull final I_C_OrderLine orderLine, @NonNull final String value)
+	private String resolveASIValueExpectationContextVars(final @NotNull I_C_OrderLine orderLine, final String asiValues)
 	{
-		final List<String> expectedAttrValuePair = StepDefUtil.splitByColon(value);
-		if (expectedAttrValuePair.size() != 2)
+		return IStringExpression.compile(asiValues)
+				.evaluate(
+						Evaluatees.compose(
+								InterfaceWrapperHelper.getEvaluatee(orderLine),
+								IdentifiersEvaluatee.builder()
+										.table(productTable)
+										.table(orderTable)
+										.build()
+						),
+						IExpressionEvaluator.OnVariableNotFound.Preserve);
+	}
+
+	private void validateAttributeValue(
+			@NonNull final SoftAssertions softly,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final AttributeIdentifierAndValue expectation)
+	{
+		if (attributeSetInstanceId.isNone())
 		{
-			throw new RuntimeException("AttributeValue argument in wrong format! value=" + value);
+			throw new AdempiereException("No ASI set on C_OrderLine");
 		}
 
-		final String attributeIdentifier = expectedAttrValuePair.get(0);
-		final String expectedAttrValue = DataTableUtil.nullToken2Null(expectedAttrValuePair.get(1));
-
-		final I_M_Attribute attribute = attributeTable.get(attributeIdentifier);
-		assertThat(attribute).isNotNull();
-
-		final int attributeSetInstanceId = orderLine.getM_AttributeSetInstance_ID();
-		if (attributeSetInstanceId <= 0)
-		{
-			throw new AdempiereException("No ASI set on C_OrderLine")
-					.appendParametersToMessage()
-					.setParameter("C_OrderLine_ID", orderLine.getC_OrderLine_ID());
-		}
+		final Attribute attribute = attributeTable.get(expectation.getAttributeIdentifier());
 
 		final I_M_AttributeInstance attributeInstance = queryBL.createQueryBuilder(I_M_AttributeInstance.class)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstanceId)
-				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID())
+				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attribute.getAttributeId())
 				.create()
 				.firstOnlyOptional(I_M_AttributeInstance.class)
 				.orElseThrow(() -> new AdempiereException("No M_AttributeInstance found for M_Attribute_ID and ASI")
 						.appendParametersToMessage()
-						.setParameter("M_Attribute_ID", attribute.getM_Attribute_ID())
+						.setParameter("M_Attribute_ID", attribute)
 						.setParameter("M_AttributeSetInstance_ID", attributeSetInstanceId));
 
-		if (expectedAttrValue == null)
+		attribute.getValueType().apply(new AttributeValueType.CaseConsumer()
 		{
-			assertThat(attributeInstance.getValue()).isNull();
-		}
-		else
+			@Override
+			public void string()
+			{
+				final String expectedAttrValue = expectation.getValue();
+				if (expectedAttrValue.isEmpty())
+				{
+					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isNullOrEmpty();
+				}
+				else
+				{
+					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isEqualTo(expectedAttrValue);
+				}
+			}
+
+			@Override
+			public void number()
+			{
+				final BigDecimal expectedAttrValue = expectation.getValueAsBigDecimal();
+				if (expectedAttrValue == null)
+				{
+					softly.assertThat(attributeInstance.getValueNumber()).as(expectation.toString()).isNotNull();
+				}
+				else
+				{
+					softly.assertThat(attributeInstance.getValueNumber()).as(expectation.toString()).isEqualTo(expectedAttrValue);
+				}
+			}
+
+			@Override
+			public void date()
+			{
+				final LocalDate expectedAttrValue = expectation.getValueAsLocalDate();
+				if (expectedAttrValue == null)
+				{
+					softly.assertThat(attributeInstance.getValueDate()).as(expectation.toString()).isNotNull();
+				}
+				else
+				{
+					final LocalDate actualValue = TimeUtil.asLocalDate(attributeInstance.getValueDate());
+					softly.assertThat(actualValue).as(expectation.toString()).isEqualTo(expectedAttrValue);
+				}
+			}
+
+			@Override
+			public void list()
+			{
+				final String expectedAttrValue = expectation.getValue();
+				if (expectedAttrValue.isEmpty())
+				{
+					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isNullOrEmpty();
+				}
+				else
+				{
+					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isEqualTo(expectedAttrValue);
+				}
+			}
+		});
+	}
+
+	//
+	//
+	// ------------------------------------------------------------------------
+	//
+	//
+	@Value(staticConstructor = "of")
+	private static class AttributeIdentifierAndValue
+	{
+		@NonNull StepDefDataIdentifier attributeIdentifier;
+		@NonNull String value;
+
+		private static final String SEPARATOR = ":";
+
+		public static AttributeIdentifierAndValue parse(@NonNull final String string)
 		{
-			assertThat(attributeInstance.getValue()).isEqualTo(expectedAttrValue);
+			try
+			{
+				final int separatorIdx = string.indexOf(SEPARATOR);
+				final StepDefDataIdentifier attributeIdentifier = StepDefDataIdentifier.ofString(string.substring(0, separatorIdx));
+				final String expectedAttrValue = string.substring(separatorIdx + 1);
+				return of(attributeIdentifier, expectedAttrValue);
+			}
+			catch (Exception ex)
+			{
+				throw new AdempiereException("String not matching attributeIdentifier" + SEPARATOR + "value format: " + string, ex);
+			}
 		}
+
+		@Override
+		public String toString()
+		{
+			return attributeIdentifier + SEPARATOR + value;
+		}
+
+		public BigDecimal getValueAsBigDecimal()
+		{
+			return value.isEmpty()
+					? null
+					: NumberUtils.asBigDecimal(value);
+		}
+
+		public LocalDate getValueAsLocalDate()
+		{
+			return value.isEmpty()
+					? null
+					: LocalDate.parse(value);
+		}
+
 	}
 }

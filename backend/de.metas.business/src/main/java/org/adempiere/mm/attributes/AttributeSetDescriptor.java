@@ -33,6 +33,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.api.Attribute;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -80,6 +81,14 @@ public final class AttributeSetDescriptor
 				.map(AttributeSetAttribute::getAttributeId)
 				.collect(ImmutableList.toImmutableList());
 		this.byId = Maps.uniqueIndex(attributes, AttributeSetAttribute::getAttributeId);
+	}
+
+	public ImmutableList<Attribute> getAttributesInOrder()
+	{
+		return attributeIdsInOrder.stream()
+				.map(byId::get)
+				.map(AttributeSetAttribute::getAttribute)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public boolean contains(@NonNull final AttributeId attributeId)

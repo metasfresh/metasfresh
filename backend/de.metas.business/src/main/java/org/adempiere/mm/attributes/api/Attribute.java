@@ -30,6 +30,8 @@ public class Attribute
 	@Nullable ITranslatableString description;
 	@Nullable IStringExpression descriptionPattern;
 
+	@Nullable IStringExpression defaultValueSQL;
+
 	@Builder.Default boolean isActive = true;
 	boolean isInstanceAttribute;
 	boolean isMandatory;
@@ -60,5 +62,7 @@ public class Attribute
 	{
 		return uomId != null && UomId.equals(uomId, UomId.EACH);
 	}
+
+	public boolean isDefaultValueSet() {return defaultValueSQL != null;}
 
 }

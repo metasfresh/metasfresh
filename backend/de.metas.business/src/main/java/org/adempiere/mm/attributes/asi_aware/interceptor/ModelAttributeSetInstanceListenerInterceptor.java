@@ -62,6 +62,11 @@ public class ModelAttributeSetInstanceListenerInterceptor extends AbstractModelI
 	@Override
 	public void onModelChange(final Object model, final ModelChangeType changeType)
 	{
+		if (changeType != ModelChangeType.BEFORE_NEW && changeType != ModelChangeType.BEFORE_CHANGE)
+		{
+			return;
+		}
+
 		// Skip updating the ASI if automatic ASI updating is disabled (08091)
 		if (IModelAttributeSetInstanceListener.DYNATTR_DisableASIUpdateOnModelChange.getValue(model, false))
 		{
@@ -71,15 +76,7 @@ public class ModelAttributeSetInstanceListenerInterceptor extends AbstractModelI
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 		for (final IModelAttributeSetInstanceListener listener : listenersBySourceTableName.get(tableName))
 		{
-			//
-			// Fire listener on BEFORE_NEW
-			if (changeType == ModelChangeType.BEFORE_NEW)
-			{
-				listener.modelChanged(model);
-			}
-			//
-			// Fire listener on BEFORE CHANGE, ONLY if one of the source columns were changed
-			else if (changeType == ModelChangeType.BEFORE_CHANGE && isValueChanged(model, listener.getSourceColumnNames()))
+			if (changeType.isNew() || isValueChanged(model, listener.getSourceColumnNames()))
 			{
 				listener.modelChanged(model);
 			}

@@ -29,6 +29,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	Collection<Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
 
+	Collection<Attribute> getAttributesByCodes(Set<AttributeCode> attributeCodes);
+
 	AttributeSetDescriptor getAttributeSetDescriptorById(@NonNull AttributeSetId attributeSetId);
 
 	AttributeSetDescriptorsCollection getAttributeSetDescriptorsByIds(@NonNull Set<AttributeSetId> attributeSetIds);

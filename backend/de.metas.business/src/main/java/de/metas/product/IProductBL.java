@@ -97,6 +97,8 @@ public interface IProductBL extends ISingletonService
 	 */
 	AttributeSetId getAttributeSetId(I_M_Product product);
 
+	AttributeSetDescriptor getAttributeSet(@NonNull ProductId productId);
+
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
 	 *

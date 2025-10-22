@@ -353,6 +353,13 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public AttributeSetDescriptor getAttributeSet(@NonNull final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = getAttributeSetId(productId);
+		return attributesRepo.getAttributeSetDescriptorById(attributeSetId);
+	}
+
+	@Override
 	public AttributeSetId getAttributeSetId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);

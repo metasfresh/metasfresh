@@ -21,9 +21,9 @@ Feature: Product price validation (S0144_2)
       | M_AttributeSet_ID.Identifier | Name                  | MandatoryType |
       | attributeSet_03062022        | attributeSet_03062022 | N             |
     And add M_AttributeUse:
-      | M_AttributeUse_ID.Identifier | M_AttributeSet_ID.Identifier | M_Attribute_ID.Identifier | SeqNo |
-      | attributeUse_age             | attributeSet_03062022        | attr_age                  | 10    |
-      | attributeUse_Label           | attributeSet_03062022        | attr_Label                | 20    |
+      | M_AttributeSet_ID     | M_Attribute_ID | SeqNo |
+      | attributeSet_03062022 | attr_age       | 10    |
+      | attributeSet_03062022 | attr_Label     | 20    |
 
     And metasfresh contains M_PricingSystems
       | Identifier  | Name        | Value       |

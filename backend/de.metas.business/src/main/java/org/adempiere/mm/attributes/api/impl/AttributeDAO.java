@@ -17,6 +17,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -27,6 +28,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -98,6 +100,17 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		return getAttributesMap().getByIds(attributeIds);
+	}
+
+	@Override
+	public Collection<Attribute> getAttributesByCodes(final Set<AttributeCode> attributeCodes)
+	{
+		if (attributeCodes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return getAttributesMap().getByCodes(attributeCodes);
 	}
 
 	@Override
@@ -379,6 +392,9 @@ public class AttributeDAO implements IAttributeDAO
 				.displayName(trls.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, record.getName()))
 				.description(trls.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, record.getDescription()))
 				.descriptionPattern(extractDescriptionPattern(record))
+				//
+				.defaultValueSQL(extractDefaultValueSQL(record))
+				//
 				.isActive(record.isActive())
 				.isInstanceAttribute(record.isInstanceAttribute())
 				.isMandatory(record.isMandatory())
@@ -389,10 +405,37 @@ public class AttributeDAO implements IAttributeDAO
 				.uomId(UomId.ofRepoIdOrNull(record.getC_UOM_ID()))
 				//
 				.isHighVolume(record.isHighVolume())
-				.listValuesProviderJavaClassId(JavaClassId.ofRepoIdOrNull(record.getAD_JavaClass_ID()))
+				.listValuesProviderJavaClassId(extractListValuesProviderJavaClassId(record))
 				.listValRuleId(AdValRuleId.ofRepoIdOrNull(record.getAD_Val_Rule_ID()))
 				.listOrderBy(AttributeValuesOrderByType.ofNullableCode(record.getAttributeValuesOrderBy()))
 				.build();
+	}
+
+	@Nullable
+	private static IStringExpression extractDefaultValueSQL(final I_M_Attribute record)
+	{
+		final String defaultValueSQL = StringUtils.trimBlankToNull(record.getDefaultValueSQL());
+		if (defaultValueSQL == null)
+		{
+			return null;
+		}
+
+		try
+		{
+			return IStringExpression.compile(defaultValueSQL);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Invalid attribute's DefaultValueSQL", ex)
+					.setParameter("attribute", record)
+					.setParameter("DefaultValueSQL", record.getDefaultValueSQL());
+		}
+	}
+
+	@Nullable
+	public static JavaClassId extractListValuesProviderJavaClassId(final I_M_Attribute record)
+	{
+		return JavaClassId.ofRepoIdOrNull(record.getAD_JavaClass_ID());
 	}
 
 	private static IStringExpression extractDescriptionPattern(final I_M_Attribute record)

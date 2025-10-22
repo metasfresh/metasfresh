@@ -29,6 +29,7 @@ import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -187,7 +188,10 @@ public class AttributesBL implements IAttributesBL
 
 	private IAttributeValueHandler getAttributeValueHandlerOrNull(final org.compiere.model.I_M_Attribute attributeRecord)
 	{
-		return getAttributeValueHandlerOrNull(AttributeDAO.fromRecord(attributeRecord));
+		final JavaClassId listValuesProviderJavaClassId = AttributeDAO.extractListValuesProviderJavaClassId(attributeRecord);
+		return listValuesProviderJavaClassId != null
+				? javaClassBL.newInstance(listValuesProviderJavaClassId)
+				: null;
 	}
 
 	private IAttributeValueHandler getAttributeValueHandlerOrNull(final Attribute attribute)

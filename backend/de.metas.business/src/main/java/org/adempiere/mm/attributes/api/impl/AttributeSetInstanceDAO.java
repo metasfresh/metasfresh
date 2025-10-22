@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -26,7 +27,7 @@ public class AttributeSetInstanceDAO implements IAttributeSetInstanceDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public I_M_AttributeSetInstance getAttributeSetInstanceById(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+	public I_M_AttributeSetInstance getRecordById(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		return load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
 	}
@@ -49,6 +50,12 @@ public class AttributeSetInstanceDAO implements IAttributeSetInstanceDAO
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSetInstance_ID());
+		return retrieveAttributeInstances(asiId);
+	}
+
+	@Override
+	public List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull final AttributeSetInstanceId asiId)
+	{
 		if (asiId.isNone())
 		{
 			return ImmutableList.of();
@@ -77,6 +84,22 @@ public class AttributeSetInstanceDAO implements IAttributeSetInstanceDAO
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
 				.firstOnly(I_M_AttributeInstance.class);
+	}
+
+	@Override
+	public Stream<I_M_AttributeInstance> streamAttributeInstances(
+			@NonNull final AttributeSetInstanceId asiId,
+			@NonNull final Set<AttributeId> attributeIds)
+	{
+		if (asiId.isNone() || attributeIds.isEmpty())
+		{
+			return Stream.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_AttributeInstance.class)
+				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiId)
+				.addInArrayFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeIds)
+				.stream();
 	}
 
 	@Override

@@ -22,6 +22,7 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -243,6 +244,17 @@ public interface IAttributeSet
 	default AttributeValueId getAttributeValueIdOrNull(final AttributeCode attributeCode)
 	{
 		return null;
+	}
+
+	default boolean isValueSet(final Attribute attribute)
+	{
+		if (!hasAttribute(attribute))
+		{
+			return false;
+		}
+
+		final String value = getValueAsStringOrNull(attribute.getAttributeCode());
+		return value != null && !Check.isBlank(value);
 	}
 
 	/**

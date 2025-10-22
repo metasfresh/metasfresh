@@ -14,6 +14,7 @@ import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareF
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -194,4 +195,9 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * @return attributeIds ordered by M_AttributeUse.SeqNo
 	 */
 	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(@NonNull AttributeSetInstanceId attributeSetInstanceId);
+
+	AttributeSetInstanceId setInitialAttributes(
+			@NonNull ProductId productId,
+			@NonNull AttributeSetInstanceId asiId,
+			@NonNull Evaluatee evalCtx);
 }

@@ -3,12 +3,17 @@ package org.adempiere.mm.attributes.api.impl;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -22,28 +27,34 @@ import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.Null;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -54,6 +65,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 {
+	private static final Logger logger = LogManager.getLogger(AttributeSetInstanceBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IAttributeSetInstanceDAO asiDAO = Services.get(IAttributeSetInstanceDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -62,7 +74,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public I_M_AttributeSetInstance getById(@NonNull final AttributeSetInstanceId asiId)
 	{
-		return asiDAO.getAttributeSetInstanceById(asiId);
+		return asiDAO.getRecordById(asiId);
 	}
 
 	@Override
@@ -231,9 +243,36 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		return instanceNew;
 	}
 
-	private void setAttributeInstanceValue(final AttributeSetInstanceId asiId, final List<CreateAttributeInstanceReq> attributes)
+	private void createOrUpdateAttributeInstances(
+			@NonNull final AttributeSetInstanceId asiId,
+			@NonNull final List<CreateAttributeInstanceReq> requests)
 	{
-		attributes.forEach(attribute -> setAttributeInstanceValue(asiId, attribute.getAttributeCode(), attribute.getValue()));
+		if (requests.isEmpty()) {return;}
+
+		final ImmutableMap<AttributeCode, CreateAttributeInstanceReq> requestsByAttributeCode = Maps.uniqueIndex(requests, CreateAttributeInstanceReq::getAttributeCode);
+		final Collection<Attribute> attributes = attributeDAO.getAttributesByCodes(requestsByAttributeCode.keySet());
+		final ImmutableSet<AttributeId> attributeIds = attributes.stream().map(Attribute::getAttributeId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<AttributeId, I_M_AttributeInstance> aiRecords = asiDAO.streamAttributeInstances(asiId, attributeIds)
+				.collect(ImmutableMap.toImmutableMap(
+						aiRecord -> AttributeId.ofRepoId(aiRecord.getM_Attribute_ID()),
+						aiRecord -> aiRecord
+				));
+
+		attributes.forEach((attribute) -> {
+			final CreateAttributeInstanceReq request = requestsByAttributeCode.get(attribute.getAttributeCode());
+			I_M_AttributeInstance aiRecord = aiRecords.get(attribute.getAttributeId());
+			if (aiRecord == null)
+			{
+				aiRecord = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class);
+				aiRecord.setM_AttributeSetInstance_ID(asiId.getRepoId());
+				aiRecord.setM_Attribute_ID(attribute.getAttributeId().getRepoId());
+			}
+
+			updateAttributeInstanceRecord(aiRecord, request.getValue(), attribute);
+			asiDAO.save(aiRecord);
+		});
+
+		//attributes.forEach(attribute -> setAttributeInstanceValue(asiId, attribute.getAttributeCode(), attribute.getValue()));
 	}
 
 	@Override
@@ -646,7 +685,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			asiId = AttributeSetInstanceId.ofRepoId(asiCopy.getM_AttributeSetInstance_ID());
 		}
 
-		setAttributeInstanceValue(asiId, request.getAttributeInstanceBasicInfos());
+		createOrUpdateAttributeInstances(asiId, request.getAttributeInstanceBasicInfos());
 
 		return asiId;
 	}
@@ -667,5 +706,100 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	public Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		return asiDAO.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
+	}
+
+	@Override
+	public AttributeSetInstanceId setInitialAttributes(
+			@NonNull final ProductId productId,
+			@NonNull final AttributeSetInstanceId asiId,
+			@NonNull final Evaluatee evalCtx)
+	{
+		final ImmutableList<Attribute> attributes = productBL.getAttributeSet(productId)
+				.getAttributesInOrder()
+				.stream()
+				.filter(Attribute::isDefaultValueSet)
+				.collect(ImmutableList.toImmutableList());
+		if (attributes.isEmpty())
+		{
+			return asiId;
+		}
+
+		final ImmutableAttributeSet existingASI = getImmutableAttributeSetById(asiId);
+
+		final ArrayList<CreateAttributeInstanceReq> attributesToInit = new ArrayList<>();
+		for (final Attribute attribute : attributes)
+		{
+			if (existingASI.isValueSet(attribute))
+			{
+				continue;
+			}
+
+			generateDefaultValue(attribute, evalCtx)
+					.ifPresent(defaultValue -> attributesToInit.add(
+							CreateAttributeInstanceReq.builder()
+									.attributeCode(attribute.getAttributeCode())
+									.value(Null.unbox(defaultValue))
+									.build()
+					));
+		}
+
+		if (attributesToInit.isEmpty()) {return AttributeSetInstanceId.NONE;}
+
+		return addAttributes(
+				AddAttributesRequest.builder()
+						.productId(productId)
+						.existingAttributeSetIdOrNone(AttributeSetInstanceId.NONE)
+						.attributeInstanceBasicInfos(attributesToInit)
+						.build()
+		);
+	}
+
+	private static Optional<Object> generateDefaultValue(final Attribute attribute, final Evaluatee evalCtx)
+	{
+		try
+		{
+			if (attribute.getDefaultValueSQL() != null)
+			{
+				final String defaultValueSQL = attribute.getDefaultValueSQL().evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Fail);
+				final Object defaultValue = attribute.getValueType().map(new AttributeValueType.CaseMapper<Object>()
+				{
+					@Override
+					public Object string()
+					{
+						return DB.getSQLValueStringEx(ITrx.TRXNAME_ThreadInherited, defaultValueSQL);
+					}
+
+					@Override
+					public Object number()
+					{
+						return DB.getSQLValueBDEx(ITrx.TRXNAME_ThreadInherited, defaultValueSQL);
+					}
+
+					@Override
+					public Object date()
+					{
+						return DB.getSQLValueTSEx(ITrx.TRXNAME_ThreadInherited, defaultValueSQL);
+					}
+
+					@Override
+					public Object list()
+					{
+						// TODO: resolve the M_AttributeValue
+						return DB.getSQLValueStringEx(ITrx.TRXNAME_ThreadInherited, defaultValueSQL);
+					}
+				});
+
+				return Optional.of(Null.box(defaultValue));
+			}
+			else
+			{
+				return Optional.empty();
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed generating default value for {}. Returning empty.", attribute, ex);
+			return Optional.empty();
+		}
 	}
 }
