@@ -85,6 +85,19 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		return InterfaceWrapperHelper.load(paymentTermId, I_C_PaymentTerm.class);
 	}
 
+	@Override
+	public void setIsComplexAndSave(@NonNull final PaymentTermId paymentTermId, final boolean isComplex)
+	{
+		final I_C_PaymentTerm paymentTermRecord = getRecordById(paymentTermId);
+		paymentTermRecord.setIsComplex(isComplex);
+		save(paymentTermRecord);
+	}
+
+	private void save(@NonNull final I_C_PaymentTerm paymentTerm)
+	{
+		InterfaceWrapperHelper.save(paymentTerm);
+	}
+
 	public Optional<PaymentTerm> getByIdIfExists(@NonNull final PaymentTermId paymentTermId)
 	{
 		return getIndexedPaymentTerms().getById(paymentTermId);

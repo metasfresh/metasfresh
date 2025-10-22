@@ -34,6 +34,8 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -70,4 +72,23 @@ public class C_PaymentTerm_Break
 			throw new AdempiereException(PaymentTermConstants.C_PAYMENTTERM_BREAK_TotalPercentTooHigh, totalPercent);
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
+	public void afterSave(final I_C_PaymentTerm_Break record)
+	{
+		if (InterfaceWrapperHelper.isUIAction(record))
+		{
+			paymentTermRepository.setIsComplexAndSave(PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID()), true);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	public void afterDelete(final I_C_PaymentTerm_Break record)
+	{
+		if (InterfaceWrapperHelper.isUIAction(record))
+		{
+			paymentTermRepository.setIsComplexAndSave(PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID()), false);
+		}
+	}
+
 }
