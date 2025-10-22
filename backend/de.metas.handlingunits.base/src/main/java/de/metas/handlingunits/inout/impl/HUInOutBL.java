@@ -52,6 +52,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -98,6 +99,7 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 
 	@Override
 	public de.metas.handlingunits.model.I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -243,6 +245,11 @@ public class HUInOutBL implements IHUInOutBL
 		//
 		// Mark assigned HUs as destroyed
 		handlingUnitsBL.markDestroyed(huContext, hus);
+
+		for (final I_M_HU hu : hus)
+		{
+			huPackageBL.destroyHUPackages(HuId.ofRepoId(hu.getM_HU_ID()));
+		}
 	}
 
 	@Override
