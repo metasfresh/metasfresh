@@ -701,12 +701,6 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public Optional<AttributeSetAttribute> getAttributeSetAttributeId(final AttributeSetId attributeSetId, final AttributeId attributeId)
-	{
-		return getAttributeIdsByAttributeSetId(attributeSetId).getByAttributeId(attributeId);
-	}
-
-	@Override
 	@Cached(cacheName = I_M_AttributeSet.Table_Name + "#ID=0")
 	public I_M_AttributeSet retrieveNoAttributeSet()
 	{

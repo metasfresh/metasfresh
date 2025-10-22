@@ -8,7 +8,6 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetAttributeIdsList;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -169,8 +168,6 @@ public interface IAttributeDAO extends ISingletonService
 	{
 		return retrieveAttributeByValueOrNull(attributeCode, I_M_Attribute.class);
 	}
-
-	Optional<AttributeSetAttribute> getAttributeSetAttributeId(AttributeSetId attributeSetId, AttributeId attributeId);
 
 	/**
 	 * @return true if given attribute is expected to have a huge amount of attribute values

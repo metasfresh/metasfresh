@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -73,4 +74,26 @@ public final class AttributeSetAttributeIdsList
 	{
 		return Optional.ofNullable(byId.get(attributeId));
 	}
+
+	public OptionalBoolean getMandatoryOnReceipt(@NonNull final AttributeId attributeId)
+	{
+		return getByAttributeId(attributeId)
+				.map(AttributeSetAttribute::getMandatoryOnReceipt)
+				.orElse(OptionalBoolean.UNKNOWN);
+	}
+
+	public OptionalBoolean getMandatoryOnShipment(@NonNull final AttributeId attributeId)
+	{
+		return getByAttributeId(attributeId)
+				.map(AttributeSetAttribute::getMandatoryOnShipment)
+				.orElse(OptionalBoolean.UNKNOWN);
+	}
+
+	public OptionalBoolean getMandatoryOnPicking(@NonNull final AttributeId attributeId)
+	{
+		return getByAttributeId(attributeId)
+				.map(AttributeSetAttribute::getMandatoryOnPicking)
+				.orElse(OptionalBoolean.UNKNOWN);
+	}
+
 }

@@ -36,13 +36,11 @@ import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -213,18 +211,16 @@ public class AttributesBL implements IAttributesBL
 	public boolean hasAttributeAssigned(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-		return attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.isPresent();
+		return attributesRepo.getAttributeIdsByAttributeSetId(attributeSetId).contains(attributeId);
 	}
 
 	@Override
 	public boolean isMandatoryOnReceipt(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-		final Boolean mandatoryOnReceipt = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(AttributeSetAttribute::getMandatoryOnReceipt)
-				.map(OptionalBoolean::toBooleanOrNull)
-				.orElse(null);
+		final Boolean mandatoryOnReceipt = attributesRepo.getAttributeIdsByAttributeSetId(attributeSetId)
+				.getMandatoryOnReceipt(attributeId)
+				.toBooleanOrNull();
 		if (mandatoryOnReceipt != null)
 		{
 			return mandatoryOnReceipt;
@@ -237,11 +233,9 @@ public class AttributesBL implements IAttributesBL
 	public boolean isMandatoryOnShipment(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-		final Boolean mandatoryOnShipment = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(AttributeSetAttribute::getMandatoryOnShipment)
-				.map(OptionalBoolean::toBooleanOrNull)
-				.orElse(null);
-
+		final Boolean mandatoryOnShipment = attributesRepo.getAttributeIdsByAttributeSetId(attributeSetId)
+				.getMandatoryOnShipment(attributeId)
+				.toBooleanOrNull();
 		if (mandatoryOnShipment != null)
 		{
 			return mandatoryOnShipment;
@@ -274,12 +268,9 @@ public class AttributesBL implements IAttributesBL
 	public boolean isMandatoryOnPicking(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-
-		final Boolean mandatoryOnPicking = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(AttributeSetAttribute::getMandatoryOnPicking)
-				.map(OptionalBoolean::toBooleanOrNull)
-				.orElse(null);
-
+		final Boolean mandatoryOnPicking = attributesRepo.getAttributeIdsByAttributeSetId(attributeSetId)
+				.getMandatoryOnPicking(attributeId)
+				.toBooleanOrNull();
 		if (mandatoryOnPicking != null)
 		{
 			return mandatoryOnPicking;
