@@ -15,6 +15,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.trace.HUAccessService;
@@ -133,7 +134,7 @@ class DistributionEventProcessCommand
 			Check.assumeNotNull(event.getUnpick(), "Unpick must be set when unpicking");
 
 			ddOrderMoveScheduleService.unpick(stepId.toScheduleId(),
-											  HUQRCode.fromNullableGlobalQRCodeJsonString(event.getUnpick().getUnpickToTargetQRCode()));
+					HUQRCode.fromNullableGlobalQRCodeJsonString(event.getUnpick().getUnpickToTargetQRCode()));
 
 			return changedJob.removeStep(stepId);
 		}
@@ -214,8 +215,16 @@ class DistributionEventProcessCommand
 	private HuId resolveHuIdToPick(@NonNull final DistributionJobLine line)
 	{
 		final JsonDistributionEvent.PickFrom pickFrom = Check.assumeNotNull(event.getPickFrom(), "pickFrom must be set");
-		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(Check.assumeNotNull(pickFrom.getQrCode(), "pickFrom.qrCode must be set"));
-		final HuId sourceHuId = huQRCodesService.getHuIdByQRCode(huQRCode);
+		final IHUQRCode huQRCode = huQRCodesService.parse(Check.assumeNotNull(pickFrom.getQrCode(), "pickFrom.qrCode must be set"));
+		final HuId sourceHuId;
+		if (huQRCode instanceof HUQRCode)
+		{
+			sourceHuId = huQRCodesService.getHuIdByQRCode((HUQRCode)huQRCode);
+		}
+		else
+		{
+			throw new AdempiereException("Invalid QRCode: " + huQRCode);
+		}
 
 		final Quantity sourceHUQty = huAccessService.retrieveProductQty(sourceHuId, line.getProductId())
 				.orElseThrow(() -> new AdempiereException(PRODUCT_DOES_NOT_MATCH));
