@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.order.paymentschedule.PaySchedule;
+import de.metas.order.paymentschedule.PayScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
@@ -31,6 +33,7 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.time.DayOfWeek;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -90,6 +93,14 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	{
 		final I_C_PaymentTerm paymentTermRecord = getRecordById(paymentTermId);
 		paymentTermRecord.setIsComplex(isComplex);
+		save(paymentTermRecord);
+	}
+
+	@Override
+	public void setIsValidAndSave(@NonNull final PaymentTermId paymentTermId, final boolean isValid)
+	{
+		final I_C_PaymentTerm paymentTermRecord = getRecordById(paymentTermId);
+		paymentTermRecord.setIsValid(isValid);
 		save(paymentTermRecord);
 	}
 
@@ -235,11 +246,8 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.map(PaymentTermRepository::extractId)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableListMultimap<PaymentTermId, PaymentTermBreak> breaksByPaymentTermId =
-				retrievePaymentTermBreaksForMultipleTerms(paymentTermIds);
-
 		final ImmutableList<PaymentTerm> paymentTerms = paymentTermRecords.stream()
-				.map(record -> fromRecord(record, breaksByPaymentTermId.get(extractId(record))))
+				.map(record -> fromRecord(record, paymentTermIds))
 				.collect(ImmutableList.toImmutableList());
 
 		return new PaymentTermMap(paymentTerms);
@@ -268,15 +276,44 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	}
 
 	@NonNull
+	private ImmutableListMultimap<PaymentTermId, PaySchedule> retrievePayschedulesForMultipleTerms(
+			@NonNull final Collection<PaymentTermId> paymentTermIds)
+	{
+		if (paymentTermIds.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_PaySchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_PaySchedule.COLUMNNAME_C_PaymentTerm_ID, paymentTermIds)
+				.create()
+				.stream(I_C_PaySchedule.class)
+				.map(PaymentTermRepository::toPaySchedule)
+				.collect(GuavaCollectors.toImmutableListMultimap(paySched -> paySched.getId().getPaymentTermId()));
+	}
+
+	@NonNull
 	@Override
 	public ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
 	{
 		return retrievePaymentTermBreaksForMultipleTerms(ImmutableList.of(paymentTermId));
 	}
 
-	@NonNull
-	static private PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record, @NonNull final ImmutableList<PaymentTermBreak> breaks)
+	@Override
+	public @NonNull ImmutableListMultimap<PaymentTermId, PaySchedule> retrievePaySchedules(@NonNull final PaymentTermId paymentTermId)
 	{
+		return retrievePayschedulesForMultipleTerms(ImmutableList.of(paymentTermId));
+	}
+
+	@NonNull
+	private PaymentTerm fromRecord(@NonNull final I_C_PaymentTerm record,
+								   @NonNull final ImmutableList<PaymentTermId> paymentTermIds
+	)
+	{
+		final PaymentTermId paymentTermId = extractId(record);
+
 		return PaymentTerm.builder()
 				.id(extractId(record))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
@@ -292,7 +329,8 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.isDefault(record.isDefault())
 				.isComplex(record.isComplex())
 				.discount(Percent.of(record.getDiscount()))
-				.breaks(breaks)
+				.breaks(retrievePaymentTermBreaksForMultipleTerms(paymentTermIds).get(paymentTermId))
+				.paySchedules(retrievePayschedulesForMultipleTerms(paymentTermIds).get(paymentTermId))
 				.build();
 
 	}
@@ -333,10 +371,20 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.build();
 	}
 
-	@Override
-	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	private static PaySchedule toPaySchedule(@NonNull final I_C_PaySchedule record)
 	{
-		return getById(id.getPaymentTermId()).getBreakById(id);
+		final PayScheduleId id = PayScheduleId.ofRepoId(PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID()), record.getC_PaySchedule_ID());
+
+		return PaySchedule.builder()
+				.id(id)
+				.percentage(Percent.of(record.getPercentage()))
+				.discount(Percent.of(record.getDiscount()))
+				.netDays(record.getNetDays())
+				.netDay(record.getNetDay() != null ? DayOfWeek.of(Integer.parseInt(record.getNetDay())) : null)  // TODO: maybe create eunum for the list
+				.graceDays(record.getGraceDays())
+				.discountDays(record.getDiscountDays())
+				.isValid(record.isValid())
+				.build();
 	}
 
 	@Override
@@ -358,4 +406,17 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.create()
 				.anyMatch();
 	}
+
+	@Override
+	public I_C_PaySchedule getPayScheduleRecordById(@NonNull final PayScheduleId payScheduleId)
+	{
+		return InterfaceWrapperHelper.load(payScheduleId, I_C_PaySchedule.class);
+	}
+
+	@Override
+	public void savePayScheduleRecord(@NonNull final I_C_PaySchedule payScheduleRecord)
+	{
+		InterfaceWrapperHelper.save(payScheduleRecord);
+	}
+
 }

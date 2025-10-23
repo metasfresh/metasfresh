@@ -2,10 +2,13 @@ package de.metas.payment.paymentterm;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import de.metas.order.paymentschedule.PaySchedule;
+import de.metas.order.paymentschedule.PayScheduleId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.model.I_C_PaySchedule;
 import org.compiere.model.I_C_PaymentTerm;
 
 import javax.annotation.Nullable;
@@ -37,6 +40,8 @@ public interface IPaymentTermRepository extends ISingletonService
 {
 	void setIsComplexAndSave(@NonNull PaymentTermId paymentTermId, boolean isComplex);
 
+	void setIsValidAndSave(@NonNull PaymentTermId paymentTermId, boolean isValid);
+
 	@Nullable
 	Percent getPaymentTermDiscount(PaymentTermId paymentTermId);
 
@@ -67,9 +72,20 @@ public interface IPaymentTermRepository extends ISingletonService
 		return ImmutableList.copyOf(retrievePaymentTermBreaks(paymentTermId).get(paymentTermId));
 	}
 
-	PaymentTermBreak getPaymentTermBreakById(@NonNull PaymentTermBreakId id);
+	@NonNull
+	default ImmutableList<PaySchedule> retrievePayScheduleList(@NonNull final PaymentTermId paymentTermId)
+	{
+		return ImmutableList.copyOf(retrievePaySchedules(paymentTermId).get(paymentTermId));
+	}
+
+	@NonNull
+	ImmutableListMultimap<PaymentTermId, PaySchedule> retrievePaySchedules(@NonNull PaymentTermId paymentTermId);
 
 	boolean hasPaySchedule(@NonNull PaymentTermId paymentTermId);
 
 	boolean hasPaymentTermBreaks(@NonNull PaymentTermId paymentTermId);
+
+	I_C_PaySchedule getPayScheduleRecordById(@NonNull PayScheduleId payScheduleId);
+
+	void savePayScheduleRecord(@NonNull I_C_PaySchedule payScheduleRecord);
 }

@@ -25,6 +25,7 @@ package de.metas.payment.paymentterm;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.order.paymentschedule.PaySchedule;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
@@ -62,6 +63,7 @@ public class PaymentTerm
 
 	@NonNull ImmutableList<PaymentTermBreak> sortedBreaks;
 	@NonNull ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
+	@NonNull ImmutableList<PaySchedule> paySchedules;
 
 	@Builder
 	private PaymentTerm(
@@ -81,7 +83,8 @@ public class PaymentTerm
 			final boolean allowOverrideDueDate,
 			final boolean isDefault,
 			final boolean isComplex,
-			final @NonNull ImmutableList<PaymentTermBreak> breaks)
+			final @NonNull ImmutableList<PaymentTermBreak> breaks,
+			final @NonNull ImmutableList<PaySchedule> paySchedules)
 	{
 		this.id = id;
 		this.orgId = orgId;
@@ -103,6 +106,7 @@ public class PaymentTerm
 		if (isComplex)
 		{
 			Check.assumeNotEmpty(breaks, "If isComplex=true, then breaks shall not be empty");
+			Check.assume(paySchedules.isEmpty(), "If isComplex=true, then pay scheds shall be empty");
 
 			checkPercentBreaks(breaks);
 		}
@@ -113,6 +117,8 @@ public class PaymentTerm
 		this.breaksById = isComplex
 				? Maps.uniqueIndex(breaks, PaymentTermBreak::getId)
 				: ImmutableMap.of();
+
+		this.paySchedules = paySchedules;
 	}
 
 	private static void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)

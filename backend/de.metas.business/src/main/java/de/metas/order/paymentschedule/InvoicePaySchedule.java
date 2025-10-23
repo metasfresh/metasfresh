@@ -8,8 +8,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collector;
 
 @EqualsAndHashCode
@@ -45,5 +47,26 @@ public class InvoicePaySchedule
 	public void markAsValid(final boolean isValid)
 	{
 		lines.forEach(line -> line.setValid(isValid));
+	}
+
+	public boolean validate(@NonNull final BigDecimal grandTotal)
+	{
+		final AtomicBoolean isValid = new AtomicBoolean(false);
+
+		final ImmutableList<InvoicePayScheduleLine> schedules = getLines();
+		if (schedules.isEmpty())
+		{
+			return false;
+		}
+
+		final BigDecimal totalDue = schedules.stream()
+				.map(line -> line.getDueAmount().toBigDecimal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		isValid.set(grandTotal.compareTo(totalDue) == 0);
+
+		markAsValid(isValid.get());
+
+		return isValid.get();
 	}
 }

@@ -1,16 +1,20 @@
 package de.metas.payment.paymentterm;
 
 import de.metas.cache.CCache;
+import de.metas.order.paymentschedule.PaySchedule;
+import de.metas.order.paymentschedule.PayScheduleId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_PaySchedule;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -48,7 +52,7 @@ public class PaymentTermService
 	 * @param basePaymentTermId may be null
 	 * @param discount          may be null
 	 */
-	public PaymentTermId getOrCreateDerivedPaymentTerm(
+	public @Nullable PaymentTermId getOrCreateDerivedPaymentTerm(
 			@Nullable final PaymentTermId basePaymentTermId,
 			@Nullable final Percent discount)
 	{
@@ -114,18 +118,67 @@ public class PaymentTermService
 		return paymentTermRepository.getById(paymentTermId);
 	}
 
+	public void setPaymentTermIsValidAndSave(@NonNull final PaymentTermId paymentTermId, final boolean isValid)
+	{
+		paymentTermRepository.setIsValidAndSave(paymentTermId, isValid);
+	}
+
 	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
 	{
 		return paymentTermRepository.hasPaySchedule(paymentTermId);
 	}
 
-	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
-	{
-		return paymentTermRepository.getPaymentTermBreakById(id);
-	}
-
 	public boolean hasPaymentTermBreaks(final PaymentTermId paymentTermId)
 	{
 		return paymentTermRepository.hasPaymentTermBreaks(paymentTermId);
+	}
+
+	private I_C_PaySchedule getPayScheduleRecordById(@NonNull final PayScheduleId payScheduleId)
+	{
+		return paymentTermRepository.getPayScheduleRecordById(payScheduleId);
+	}
+
+	public boolean validate(@NonNull final PaymentTermId paymentTermId)
+	{
+		final List<PaySchedule> paySchedules = paymentTermRepository.retrievePayScheduleList(paymentTermId);
+
+		if (paySchedules.isEmpty())
+		{
+			return true;
+		}
+		if (paySchedules.size() == 1)
+		{
+
+			if (paySchedules.get(0).isValid())
+			{
+				final I_C_PaySchedule payScheduleRecord = getPayScheduleRecordById(paySchedules.get(0).getId());
+				payScheduleRecord.setIsValid(false);
+				savePayScheduleRecord(payScheduleRecord);
+			}
+			return false;
+		}
+
+		final Percent total = paySchedules.stream()
+				.map(PaySchedule::getPercentage)
+				.reduce(Percent.ZERO, Percent::add);
+
+		if (total.isOneHundred())
+		{
+			paySchedules.forEach(paySchedule -> {
+
+				final I_C_PaySchedule payScheduleRecord = getPayScheduleRecordById(paySchedule.getId());
+				payScheduleRecord.setIsValid(true);
+				savePayScheduleRecord(payScheduleRecord);
+			});
+			return true;
+		}
+
+		return false;
+
+	}
+
+	private void savePayScheduleRecord(@NonNull final I_C_PaySchedule payScheduleRecord)
+	{
+		paymentTermRepository.savePayScheduleRecord(payScheduleRecord);
 	}
 }

@@ -22,21 +22,15 @@
 
 package de.metas.order.paymentschedule;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermService;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +39,6 @@ public class InvoicePayScheduleService
 	@NonNull private final InvoicePayScheduleRepository invoicePayScheduleRepository;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final PaymentTermService paymentTermService;
-	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public void createInvoicePaySchedules(final I_C_Invoice invoice)
 	{
@@ -62,46 +55,18 @@ public class InvoicePayScheduleService
 
 	public void create(@NonNull final InvoicePayScheduleCreateRequest request) {invoicePayScheduleRepository.create(request);}
 
-	private Optional<InvoicePaySchedule> getByInvoiceId(@NonNull final InvoiceId invoiceId) {return invoicePayScheduleRepository.getByInvoiceId(invoiceId);}
-
-	public boolean validate(@NonNull final InvoiceId invoiceId)
+	public boolean validate(@NonNull final InvoiceId invoiceId, @NonNull final BigDecimal grandTotal)
 	{
-		final AtomicBoolean isValid = new AtomicBoolean(false);
+		final AtomicReference<Boolean> validationResult = new AtomicReference<>(false);
 
-		final org.compiere.model.I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
-		getByInvoiceId(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()))
-				.ifPresent(invoicePaySchedule -> {
+		invoicePayScheduleRepository.updateById(invoiceId, invoicePaySchedule -> {
+			final boolean result = invoicePaySchedule.validate(grandTotal);
 
-					final ImmutableList<InvoicePayScheduleLine> schedules = invoicePaySchedule.getLines();
-					if (schedules.isEmpty())
-					{
-						invoiceRecord.setIsPayScheduleValid(false);
-						invoiceBL.save(invoiceRecord);
-						isValid.set(false);
-					}
+			validationResult.set(result);
+		});
 
-					final BigDecimal totalDue = schedules.stream()
-							.map(InvoicePayScheduleLine::getDueAmount)
-							.reduce(Money.zero(CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID())), Money::add)
-							.toBigDecimal();
+		return validationResult.get();
 
-					isValid.set(invoiceRecord.getGrandTotal().compareTo(totalDue) == 0);
-
-					if (invoiceRecord.isPayScheduleValid() != isValid.get())
-					{
-						invoiceRecord.setIsPayScheduleValid(isValid.get());
-						invoiceBL.save(invoiceRecord);
-					}
-
-					markAsValid(invoiceId, isValid.get());
-				});
-
-		return isValid.get();
-	}
-
-	private void markAsValid(@NonNull final InvoiceId invoiceId, final boolean isValid)
-	{
-		invoicePayScheduleRepository.updateById(invoiceId, invoicePaySchedule -> invoicePaySchedule.markAsValid(isValid));
 	}
 
 }

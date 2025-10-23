@@ -26,6 +26,7 @@ import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,6 +50,29 @@ public class C_PaymentTerm
 			throw new AdempiereException(PaymentTermConstants.MSG_ComplexTermConflict)
 					.appendParametersToMessage()
 					.setParameter("PaymentTerm", record.getName());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(@NonNull final I_C_PaymentTerm record, @NonNull final ModelChangeType type)
+	{
+		if (record.isDueFixed())
+		{
+			int dd = record.getFixMonthDay();
+			if (dd < 1 || dd > 31)
+			{
+				throw new AdempiereException("@Invalid@ @FixMonthDay@");
+			}
+			dd = record.getFixMonthCutoff();
+			if (dd < 1 || dd > 31)
+			{
+				throw new AdempiereException("@Invalid@ @FixMonthCutoff@");
+			}
+		}
+		if (!type.isNew() || !record.isValid())
+		{
+			final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
+			record.setIsValid(paymentTermService.validate(paymentTermId));
 		}
 	}
 }

@@ -16,53 +16,55 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
-import org.compiere.model.MPaymentTerm;
-import org.compiere.util.AdempiereUserError;
- 
 /**
- *	Validate Payment Term and Schedule	
- *	
- *  @author Jorg Janke
- *  @version $Id: PaymentTermValidate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
+ * Validate Payment Term and Schedule
+ *
+ * @author Jorg Janke
+ * @version $Id: PaymentTermValidate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
 public class PaymentTermValidate extends JavaProcess
 {
+	@NonNull final PaymentTermService paymentTermService = SpringContextHolder.instance.getBean(PaymentTermService.class);
+
 	/**
-	 *  Prepare - e.g., get Parameters.
+	 * Prepare - e.g., get Parameters.
 	 */
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		final ProcessInfoParameter[] para = getParametersAsArray();
+		for (final ProcessInfoParameter processInfoParameter : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
-			else
+			final String name = processInfoParameter.getParameterName();
+			if (processInfoParameter.getParameter() != null)
+			{
 				log.error("Unknown Parameter: " + name);
+			}
+
 		}
-	}	//	prepare
+	}    //	prepare
 
 	/**
-	 *  Perform process.
-	 *  @return Message
-	 *  @throws Exception if not successful
+	 * Perform process.
+	 *
+	 * @return Message
+	 * @throws Exception if not successful
 	 */
 	protected String doIt() throws Exception
 	{
 		log.info("C_PaymentTerm_ID=" + getRecord_ID());
-		MPaymentTerm pt = new MPaymentTerm (getCtx(), getRecord_ID(), get_TrxName());
-		String msg = pt.validate();
-		pt.save();
-		//
-		if ("@OK@".equals(msg))
-			return msg;
-		throw new AdempiereUserError (msg);
-	}	//	doIt
 
-}	//	PaymentTermValidate
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(getRecord_ID());
+		final boolean isValid = paymentTermService.validate(paymentTermId);
+		paymentTermService.setPaymentTermIsValidAndSave(paymentTermId, isValid);
+		//
+		return isValid ? "@OK@" : "@Invalid@ @C_PaymentTerm_ID@=" + paymentTermId;
+	}    //	doIt
+
+}    //	PaymentTermValidate

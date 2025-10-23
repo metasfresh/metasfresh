@@ -22,61 +22,76 @@
 
 package de.metas.order.paymentschedule;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
 import java.util.Optional;
 
 @Value
 public class PayScheduleId implements RepoIdAware
 {
-	@JsonCreator
-	public static PayScheduleId ofRepoId(final int repoId)
-	{
-		return new PayScheduleId(repoId);
-	}
-
-	@Nullable
-	public static PayScheduleId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new PayScheduleId(repoId) : null;
-	}
-
 	@NonNull
-	public static Optional<PayScheduleId> optionalOfRepoId(final int repoId)
-	{
-		return Optional.ofNullable(ofRepoIdOrNull(repoId));
-	}
+	PaymentTermId paymentTermId;
 
 	int repoId;
 
-	private PayScheduleId(final int repoId)
+	public static PayScheduleId ofRepoId(@NonNull final PaymentTermId paymentTermId, final int payScheduleId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_PaySchedule_ID");
+		return new PayScheduleId(paymentTermId, payScheduleId);
 	}
 
-	@JsonValue
-	@Override
-	public int getRepoId()
+	public static PayScheduleId ofRepoId(final int paymentTermId, final int payScheduleId)
 	{
-		return repoId;
+		return new PayScheduleId(PaymentTermId.ofRepoId(paymentTermId), payScheduleId);
+	}
+
+	@Nullable
+	public static PayScheduleId ofRepoIdOrNull(
+			@Nullable final Integer paymentTermId,
+			@Nullable final Integer payScheduleId)
+	{
+		return paymentTermId != null && paymentTermId > 0 && payScheduleId != null && payScheduleId > 0
+				? ofRepoId(paymentTermId, payScheduleId)
+				: null;
+	}
+
+	public static Optional<PayScheduleId> optionalOfRepoId(
+			@Nullable final Integer paymentTermId,
+			@Nullable final Integer payScheduleId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(paymentTermId, payScheduleId));
+	}
+
+	@Nullable
+	public static PayScheduleId ofRepoIdOrNull(
+			@Nullable final PaymentTermId paymentTermId,
+			@Nullable final Integer payScheduleId)
+	{
+		return paymentTermId != null && payScheduleId != null && payScheduleId > 0 ? ofRepoId(paymentTermId, payScheduleId) : null;
+	}
+
+	@Jacksonized
+	@Builder
+	private PayScheduleId(@NonNull final PaymentTermId paymentTermId, final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "payScheduleId");
+		this.paymentTermId = paymentTermId;
 	}
 
 	public static int toRepoId(@Nullable final PayScheduleId payScheduleId)
 	{
-		return toRepoIdOr(payScheduleId, -1);
+		return payScheduleId != null ? payScheduleId.getRepoId() : -1;
 	}
 
-	public static int toRepoIdOr(@Nullable final PayScheduleId payScheduleId, final int defaultValue)
+	@Nullable
+	public static Integer toRepoIdOrNull(@Nullable final PayScheduleId payScheduleId)
 	{
-		return payScheduleId != null ? payScheduleId.getRepoId() : defaultValue;
+		return payScheduleId != null ? payScheduleId.getRepoId() : null;
 	}
-
-	public static boolean equals(@Nullable final PayScheduleId id1, @Nullable final PayScheduleId id2) {return Objects.equals(id1, id2);}
 }

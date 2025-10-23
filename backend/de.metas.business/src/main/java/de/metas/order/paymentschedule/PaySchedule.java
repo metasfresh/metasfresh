@@ -28,6 +28,8 @@ import lombok.NonNull;
 import lombok.Value;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.DayOfWeek;
+
 @Value
 @Builder
 public class PaySchedule
@@ -36,8 +38,9 @@ public class PaySchedule
 	@NonNull Percent discount;
 	@NonNull Percent percentage;
 
-	@Nullable String netDay;
+	@Nullable DayOfWeek netDay;
 
+	boolean isValid;
 	int discountDays;
 	int graceDays;
 	int netDays;

@@ -23,16 +23,25 @@
 package de.metas.payment.paymentterm.interceptor;
 
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.impl.InvoiceBL;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.InvoicePayScheduleService;
 import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxListenerManager;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoicePaySchedule;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Interceptor(I_C_InvoicePaySchedule.class)
 @Component
@@ -41,12 +50,10 @@ public class C_InvoicePaySchedule
 {
 	@NonNull private final InvoicePayScheduleService invoicePayScheduleService;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final InvoiceBL invoiceBL = Services.get(InvoiceBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_InvoicePaySchedule.COLUMNNAME_DueAmt })
-	public void afterSave(@NonNull final I_C_InvoicePaySchedule record)
-	{
-		invoicePayScheduleService.validate(InvoiceId.ofRepoId(record.getC_Invoice_ID()));
-	}
+	@NonNull private static final ThreadLocal<Set<OrderId>> to_validate_OrderIds = ThreadLocal.withInitial(HashSet::new);
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_InvoicePaySchedule.COLUMNNAME_Processed })
 	public void updateOrderPaySchedules(@NonNull final I_C_InvoicePaySchedule record)
@@ -54,7 +61,46 @@ public class C_InvoicePaySchedule
 		final OrderId orderId = OrderId.ofRepoIdOrNull(record.getC_Order_ID());
 		if (orderId != null)
 		{
-			orderPayScheduleService.updatePayScheduleStatus(orderId);
+			final Set<OrderId> idsToValidate = to_validate_OrderIds.get();
+			final ITrxListenerManager listenerManager = trxManager.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(record));
+
+			if (idsToValidate.add(orderId))
+			{
+				listenerManager.runBeforeCommit(() -> orderPayScheduleService.updatePayScheduleStatus(orderId));
+
+				listenerManager.runAfterCommit(to_validate_OrderIds::remove);
+			}
 		}
+
 	}
+
+	@NonNull private static final ThreadLocal<Set<InvoiceId>> to_validate_invoiceIds = ThreadLocal.withInitial(HashSet::new);
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_InvoicePaySchedule.COLUMNNAME_DueAmt })
+	public void validateInvoicePaySchedules(@NonNull final I_C_InvoicePaySchedule record)
+	{
+		final Set<InvoiceId> idsToValidate = to_validate_invoiceIds.get();
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(record.getC_Invoice_ID());
+		final ITrxListenerManager listenerManager = trxManager.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(record));
+
+		if (idsToValidate.add(invoiceId))
+		{
+			listenerManager.runBeforeCommit(() -> {
+
+				final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
+				final boolean isValid = invoicePayScheduleService.validate(invoiceId, invoiceRecord.getGrandTotal());
+
+				if (invoiceRecord.isPayScheduleValid() != isValid)
+				{
+					invoiceRecord.setIsPayScheduleValid(isValid);
+					invoiceBL.save(invoiceRecord);
+				}
+
+			});
+
+			listenerManager.runAfterCommit(to_validate_invoiceIds::remove);
+		}
+
+	}
+
 }
