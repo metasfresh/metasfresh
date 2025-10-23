@@ -7,6 +7,7 @@ import { useDistributionLineProps, useDistributionScreenDefinition } from './Dis
 import { trl } from '../../../utils/translations';
 import { distributionLineScreenLocation } from '../../../routes/distribution';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
+import { getScannedHUQRCodeInfo } from '../../../api/picking';
 
 const DistributionLinePickFromScreen = () => {
   const { applicationId, history, wfProcessId, activityId, lineId } = useDistributionScreenDefinition({
@@ -19,14 +20,27 @@ const DistributionLinePickFromScreen = () => {
 
   const { productId, qtyToPickRemaining, uom } = useDistributionLineProps({ wfProcessId, activityId, lineId });
 
-  const resolveScannedBarcode = (scannedBarcode) => {
-    const parsedHUQRCode = parseQRCodeString(scannedBarcode);
+  const resolveScannedBarcode = async (scannedBarcode) => {
+    let parsedQRCode = parseQRCodeString({
+      string: scannedBarcode,
+      returnFalseOnError: true,
+      checkOnlyPreciseFormats: true, // consider only precise formats, all the others will be matched on backend.
+    });
 
-    if (productId != null && parsedHUQRCode.productId != null && parsedHUQRCode.productId !== productId) {
+    if (!parsedQRCode) {
+      const huInfoFromBackend = await getScannedHUQRCodeInfo({ qrCode: scannedBarcode });
+      parsedQRCode = parseQRCodeString({
+        string: huInfoFromBackend?.huQRCode?.code,
+        returnFalseOnError: false, // fail
+        checkOnlyPreciseFormats: false, // after we have checked the backend, it's fine to try matching everything
+      });
+    }
+
+    if (productId != null && parsedQRCode?.productId != null && parsedQRCode.productId !== productId) {
       throw trl('activities.distribution.qrcode.differentProduct');
     }
 
-    return { scannedBarcode };
+    return { scannedBarcode: toQRCodeString(parsedQRCode) };
   };
 
   const onResult = ({ qty, scannedBarcode }) => {

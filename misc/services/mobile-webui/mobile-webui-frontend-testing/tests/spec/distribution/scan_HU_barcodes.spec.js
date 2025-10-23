@@ -7,7 +7,7 @@ import { DistributionJobScreen } from '../../utils/screens/distribution/Distribu
 import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
 import { DistributionStepScreen } from '../../utils/screens/distribution/DistributionStepScreen';
 
-const createMasterdata = async ({ qtyToMove }) => {
+const createMasterdata = async ({ externalBarcode } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -29,7 +29,7 @@ const createMasterdata = async ({ qtyToMove }) => {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh1', qty: qtyToMove }
+                "HU1": { product: 'P1', warehouse: 'wh1', qty: 100, externalBarcode }
             },
             distributionOrders: {
                 "DD1": {
@@ -37,21 +37,24 @@ const createMasterdata = async ({ qtyToMove }) => {
                     warehouseTo: "wh2",
                     warehouseInTransit: "whInTransit",
                     plant: "plantId",
-                    lines: [{ product: "P1", qtyEntered: qtyToMove }],
+                    lines: [{ product: "P1", qtyEntered: 100 }],
                 }
             },
         }
     });
-}
+};
 
-// noinspection JSUnusedLocalSymbols
-test('Scan by M_HU_ID', async ({ page }) => {
-    const masterdata = await createMasterdata({ qtyToMove: 100 });
+const expectHU = async ({ warehouse }) => {
     await Backend.expect({
         hus: {
-            [masterdata.handlingUnits.HU1.qrCode]: { warehouse: 'wh1', huStatus: 'A', storages: { P1: '100 PCE' } },
+            HU1: { warehouse, huStatus: 'A', storages: { P1: '100 PCE' } },
         }
     });
+};
+
+// noinspection JSUnusedLocalSymbols
+const standardTest = async ({ masterdata, huBarcodeToScan }) => {
+    await expectHU({ warehouse: 'wh1' });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -61,26 +64,37 @@ test('Scan by M_HU_ID', async ({ page }) => {
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({
-        huQRCode: masterdata.handlingUnits.HU1.huId,
+        huQRCode: huBarcodeToScan,
         qtyToMove: '100',
         expectedQtyToMove: '100'
     });
-    await Backend.expect({
-        hus: {
-            [masterdata.handlingUnits.HU1.qrCode]: { warehouse: 'whInTransit', huStatus: 'A', storages: { P1: '100 PCE' } },
-        }
-    });
+    await expectHU({ warehouse: 'whInTransit' });
 
     await DistributionLineScreen.clickStepButton({ index: 1 });
     await DistributionStepScreen.scanDropToLocator({ dropToLocatorQRCode: masterdata.warehouses.wh2.locatorQRCode });
-    await Backend.expect({
-        hus: {
-            [masterdata.handlingUnits.HU1.qrCode]: { warehouse: 'wh2', huStatus: 'A', storages: { P1: '100 PCE' } },
-        }
-    });
+    await expectHU({ warehouse: 'wh2' });
 
     await DistributionStepScreen.expectVisible();
     await DistributionStepScreen.goBack();
     await DistributionLineScreen.goBack();
     await DistributionJobScreen.complete();
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Scan by HU QR Code', async ({ page }) => {
+    const masterdata = await createMasterdata();
+    await standardTest({ masterdata, huBarcodeToScan: masterdata.handlingUnits.HU1.qrCode });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan by M_HU_ID', async ({ page }) => {
+    const masterdata = await createMasterdata();
+    await standardTest({ masterdata, huBarcodeToScan: masterdata.handlingUnits.HU1.huId });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan by ExternalBarcode', async ({ page }) => {
+    const externalBarcode = "EXT" + Date.now();
+    const masterdata = await createMasterdata({ externalBarcode });
+    await standardTest({ masterdata, huBarcodeToScan: externalBarcode });
 });

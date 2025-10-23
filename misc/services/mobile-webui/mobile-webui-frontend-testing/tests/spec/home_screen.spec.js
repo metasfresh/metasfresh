@@ -27,26 +27,34 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
     });
 }
 
-// noinspection JSUnusedLocalSymbols
-test('Scan HU QR Code', async ({ page }) => {
-    const masterdata = await createMasterdata();
+test.describe('Scan HU codes', () => {
+    const runTest = async ({ masterdata, huBarcode }) => {
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.scanBarcode(huBarcode);
+        await HUManagerScreen.waitForScreen();
+        await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    };
 
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.scanBarcode(masterdata.handlingUnits.HU1.qrCode);
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
-});
+    // noinspection JSUnusedLocalSymbols
+    test('Scan HU QR Code', async ({ page }) => {
+        const masterdata = await createMasterdata();
+        await runTest({ masterdata, huBarcode: masterdata.handlingUnits.HU1.qrCode });
+    });
 
-// noinspection JSUnusedLocalSymbols
-test('Scan HU ID Code', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    // noinspection JSUnusedLocalSymbols
+    test('Scan HU ID Code', async ({ page }) => {
+        const masterdata = await createMasterdata();
+        await runTest({ masterdata, huBarcode: masterdata.handlingUnits.HU1.huId });
+    });
 
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.scanBarcode(masterdata.handlingUnits.HU1.huId);
-    await HUManagerScreen.waitForScreen();
-    await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+    // noinspection JSUnusedLocalSymbols
+    test('Scan ExternalBarcode', async ({ page }) => {
+        const externalBarcode = "EXT" + Date.now();
+        const masterdata = await createMasterdata({ externalBarcode });
+        await runTest({ masterdata, huBarcode: externalBarcode });
+    });
+
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -67,8 +75,10 @@ test('Scan Workplace code', async ({ page }) => {
     await test.step('Scan workplace2', async () => {
         await ApplicationsListScreen.scanBarcode(masterdata.workplaces.workplace2.qrCode);
         await WorkplaceManagerScreen.waitForScreen();
-        await WorkplaceManagerScreen.expectHeaderProperty({ caption: 'Name', value: masterdata.workplaces.workplace2
-                .name });
+        await WorkplaceManagerScreen.expectHeaderProperty({
+            caption: 'Name', value: masterdata.workplaces.workplace2
+                .name
+        });
         await WorkplaceManagerScreen.expectHeaderProperty({ caption: 'Assigned', value: 'Yes' });
         await WorkplaceManagerScreen.goBack();
     });
