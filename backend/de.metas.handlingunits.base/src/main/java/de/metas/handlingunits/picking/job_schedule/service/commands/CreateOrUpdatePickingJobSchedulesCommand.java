@@ -3,7 +3,6 @@ package de.metas.handlingunits.picking.job_schedule.service.commands;
 import com.google.common.collect.Sets;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.CarrierProductId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
@@ -66,7 +65,7 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 
 		if(sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false))
 		{
-			shipmentScheduleBL.getByIds(shipmentScheduleIds).values().forEach(CreateOrUpdatePickingJobSchedulesCommand::assumeCarrierProductSet);
+			shipmentSchedules.getByIds(shipmentScheduleIds).forEach(CreateOrUpdatePickingJobSchedulesCommand::assumeCarrierProductSet);
 		}
 
 		final ShipmentScheduleAndJobScheduleIdSet existingJobScheduleIds = pickingJobScheduleRepository.getIdsByShipmentScheduleIdsAndWorkplaceId(shipmentScheduleIds, workplaceId);
