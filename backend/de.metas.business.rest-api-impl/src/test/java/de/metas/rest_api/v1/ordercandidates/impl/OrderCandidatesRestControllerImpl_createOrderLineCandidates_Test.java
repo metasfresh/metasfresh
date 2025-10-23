@@ -63,6 +63,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -265,7 +266,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
 				jsonConverters,
-				new OLCandRepository(),
+				new OLCandRepository(ExternalSystemRepository.newInstanceForUnitTesting()),
 				bpartnerRestController,
 				NoopPerformanceMonitoringService.INSTANCE);
 

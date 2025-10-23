@@ -53,6 +53,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "orgCode": "001",
             "externalHeaderId": "14042022",
             "externalLineId": "14042022_0",
+            "externalSystemCode": "Shopware6",
             "dataSource": "int-Shopware",
             "bpartner": {
                 "bpartnerIdentifier": "gln-1354423215434",
@@ -73,6 +74,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "orgCode": "001",
             "externalHeaderId": "14042022",
             "externalLineId": "14042022_1",
+            "externalSystemCode": "Shopware6",
             "dataSource": "int-Shopware",
             "bpartner": {
                 "bpartnerIdentifier": "gln-1354423215434",
@@ -93,6 +95,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "orgCode": "001",
             "externalHeaderId": "14042022",
             "externalLineId": "14042022_2",
+            "externalSystemCode": "Shopware6",
             "dataSource": "int-Shopware",
             "bpartner": {
                 "bpartnerIdentifier": "gln-1354423215434",
@@ -114,6 +117,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "orgCode": "001",
             "externalHeaderId": "14042022",
             "externalLineId": "14042022_3",
+            "externalSystemCode": "Shopware6",
             "dataSource": "int-Shopware",
             "bpartner": {
                 "bpartnerIdentifier": "gln-1354423215434",
@@ -139,11 +143,11 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | C_OLCand_ID.Identifier              |
       | olCand_1,olCand_2,olCand_3,olCand_4 |
     And validate C_OLCand:
-      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier      | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | OPT.AD_InputDataSource_ID.Name | IsError | OPT.Processed | OPT.ExternalHeaderId | OPT.ExternalLineId | OPT.PriceActual |
-      | olCand_1               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 2          | F            | S               | 14042022        | Shopware                       | N       | N             | 14042022             | 14042022_0         | 10.00           |
-      | olCand_2               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 1          | F            | S               | 14042022        | Shopware                       | N       | N             | 14042022             | 14042022_1         | 10.00           |
-      | olCand_3               | olCand_Customer          | olCand_Customer_location          | product_priceChange_14042022 | 2          | F            | S               | 14042022_new1   | Shopware                       | N       | N             | 14042022             | 14042022_2         | 20.00           |
-      | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | N             | 14042022             | 14042022_3         | 10.00           |
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier      | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | OPT.AD_InputDataSource_ID.Name | IsError | OPT.Processed | OPT.ExternalHeaderId | OPT.ExternalLineId | OPT.PriceActual | ExternalSystem.Value |
+      | olCand_1               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 2          | F            | S               | 14042022        | Shopware                       | N       | N             | 14042022             | 14042022_0         | 10.00           | Shopware6            |
+      | olCand_2               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 1          | F            | S               | 14042022        | Shopware                       | N       | N             | 14042022             | 14042022_1         | 10.00           | Shopware6            |
+      | olCand_3               | olCand_Customer          | olCand_Customer_location          | product_priceChange_14042022 | 2          | F            | S               | 14042022_new1   | Shopware                       | N       | N             | 14042022             | 14042022_2         | 20.00           | Shopware6            |
+      | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | N             | 14042022             | 14042022_3         | 10.00           | Shopware6            |
 
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | IsActive |
@@ -153,7 +157,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 """
 {
     "externalHeaderId": "14042022",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
     "closeOrder": false
@@ -179,11 +183,11 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | orderLine_2_1             | order_2               | 2021-11-20  | product_14042022        | 0            | 3          | 0           | 10    | 0        | EUR          | true      |
 
     And validate C_OLCand:
-      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier      | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | OPT.AD_InputDataSource_ID.Name | IsError | OPT.Processed | OPT.ExternalHeaderId | OPT.ExternalLineId | OPT.PriceActual | OPT.AD_Issue_ID.Identifier |
-      | olCand_1               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 2          | F            | S               | 14042022        | Shopware                       | N       | Y             | 14042022             | 14042022_0         | 10.00           | null                       |
-      | olCand_2               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 1          | F            | S               | 14042022        | Shopware                       | N       | Y             | 14042022             | 14042022_1         | 10.00           | null                       |
-      | olCand_3               | olCand_Customer          | olCand_Customer_location          | product_priceChange_14042022 | 2          | F            | S               | 14042022_new1   | Shopware                       | Y       | N             | 14042022             | 14042022_2         | 20.00           | issue_olCand_3             |
-      | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | Y             | 14042022             | 14042022_3         | 10.00           | null                       |
+      | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier      | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | OPT.AD_InputDataSource_ID.Name | IsError | OPT.Processed | OPT.ExternalHeaderId | OPT.ExternalLineId | OPT.PriceActual | OPT.AD_Issue_ID.Identifier | ExternalSystem.Value |
+      | olCand_1               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 2          | F            | S               | 14042022        | Shopware                       | N       | Y             | 14042022             | 14042022_0         | 10.00           | null                       | Shopware6            |
+      | olCand_2               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 1          | F            | S               | 14042022        | Shopware                       | N       | Y             | 14042022             | 14042022_1         | 10.00           | null                       | Shopware6            |
+      | olCand_3               | olCand_Customer          | olCand_Customer_location          | product_priceChange_14042022 | 2          | F            | S               | 14042022_new1   | Shopware                       | Y       | N             | 14042022             | 14042022_2         | 20.00           | issue_olCand_3             | Shopware6            |
+      | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | Y             | 14042022             | 14042022_3         | 10.00           | null                       | Shopware6            |
     And validate AD_Issue
       | AD_Issue_ID.Identifier | IssueSummary                         |
       | issue_olCand_3         | Produkt ist nicht auf der Preisliste |
@@ -232,6 +236,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "orgCode": "001",
             "externalHeaderId": "11092025",
             "externalLineId": "11092025_0",
+            "externalSystemCode": "Shopware6",
             "dataSource": "int-Shopware",
             "bpartner": {
                 "bpartnerIdentifier": "gln-1234543215432",

@@ -61,8 +61,8 @@ Feature: Sales order API
       | Identifier              | InternalName      |
       | dataSource_09182025_010 | test_09182025_010 |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered |
-      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_010 | externalId_09182025_010 | customer      | 2025-04-01  |
+      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered | ExternalSystem.Value |
+      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_010 | externalId_09182025_010 | customer      | 2025-04-01  | Shopware6            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_l1      | so         | product      | 10         |
@@ -76,7 +76,7 @@ Feature: Sales order API
 {
   "orgCode": "001",
   "externalId": "externalId_09182025_010",
-  "dataSource": "int-test_09182025_010"
+  "externalSystemCode": "Shopware6"
 }
 """
     Then the metasfresh REST-API responds with
@@ -94,8 +94,8 @@ Feature: Sales order API
       | Identifier              | InternalName      |
       | dataSource_09182025_020 | test_09182025_020 |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered |
-      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_020 | externalId_09182025_020 | customer      | 2025-04-01  |
+      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered | ExternalSystem.Value |
+      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_020 | externalId_09182025_020 | customer      | 2025-04-01  | Shopware6            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_l1      | so         | product      | 10         |
@@ -115,7 +115,7 @@ Feature: Sales order API
 {
   "orgCode": "001",
   "externalId": "externalId_09182025_020",
-  "dataSource": "int-test_09182025_020"
+  "externalSystemCode": "Shopware6"
 }
 """
     Then the metasfresh REST-API responds with

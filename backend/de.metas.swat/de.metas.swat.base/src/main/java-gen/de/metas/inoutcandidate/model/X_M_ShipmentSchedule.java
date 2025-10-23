@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 603690521L;
+	private static final long serialVersionUID = -1939828172L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -1679,5 +1679,20 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.lang.String getStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_Status);
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 }

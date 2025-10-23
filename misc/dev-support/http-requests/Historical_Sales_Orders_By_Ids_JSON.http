@@ -15,8 +15,8 @@ accept: application/json;charset=UTF-8
       "value": "externalHeaderId_10052022_1"
     },
     {
-      "name": "DataSource",
-      "value": "int-Shopware"
+      "name": "ExternalSystemCode",
+      "value": "Shopware6"
     }
   ]
 }

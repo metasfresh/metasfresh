@@ -22,6 +22,8 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.error.AdIssueId;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -32,7 +34,6 @@ import de.metas.order.impl.DocTypeService;
 import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
-import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -49,9 +50,9 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -85,27 +86,23 @@ import java.util.Optional;
  */
 
 @Service
+@RequiredArgsConstructor
 public class JsonConverters
 {
 	public static final String DEFAULT_DATA_SOURCE_DEST_INTERNAL_NAME = "int-DEST.de.metas.ordercandidate";
 
-	private final CurrencyService currencyService;
-	private final DocTypeService docTypeService;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-	public JsonConverters(
-			@NonNull final CurrencyService currencyService,
-			@NonNull final DocTypeService docTypeService)
-	{
-		this.currencyService = currencyService;
-		this.docTypeService = docTypeService;
-	}
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final CurrencyService currencyService;
+	@NonNull private final DocTypeService docTypeService;
 
-	public final OLCandCreateRequestBuilder fromJson(
+	@NonNull
+	public final OLCandCreateRequest fromJson(
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
@@ -220,6 +217,7 @@ public class JsonConverters
 				.dataDestId(dataDestId)
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
+				.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(request.getExternalSystemCode())))
 				//
 				.bpartner(bPartnerInfo)
 				.billBPartner(masterdataProvider.getBPartnerInfo(request.getBillBPartner(), orgId).orElse(null))
@@ -280,6 +278,7 @@ public class JsonConverters
 				.bpartnerName(request.getBpartnerName())
 				.email(request.getEmail())
 				.phone(request.getPhone())
+				.build()
 				;
 	}
 
@@ -288,41 +287,26 @@ public class JsonConverters
 			@NonNull final OrgId orgId,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final String dataDestIdentifier = CoalesceUtil.coalesce(request.getDataDest(), DEFAULT_DATA_SOURCE_DEST_INTERNAL_NAME);
-		if (Check.isEmpty(dataDestIdentifier))
-		{
-			throw new MissingPropertyException("dataDest", request);
-		}
-		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier, orgId);
+		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(DEFAULT_DATA_SOURCE_DEST_INTERNAL_NAME, orgId);
 		if (dataDestId == null)
 		{
 			throw MissingResourceException.builder()
 					.resourceName("dataDest")
-					.resourceIdentifier(dataDestIdentifier)
+					.resourceIdentifier(DEFAULT_DATA_SOURCE_DEST_INTERNAL_NAME)
 					.parentResource(request).build();
 		}
 		return dataDestId;
 	}
 
+	@Nullable
 	private InputDataSourceId retrieveDataSourceId(
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final OrgId orgId,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final String dataSourceIdentifier = request.getDataSource();
-		if (Check.isEmpty(dataSourceIdentifier))
-		{
-			throw new MissingPropertyException("dataSource", request);
-		}
-		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceIdentifier, orgId);
-		if (dataSourceId == null)
-		{
-			throw MissingResourceException.builder()
-					.resourceName("dataSource")
-					.resourceIdentifier(dataSourceIdentifier)
-					.parentResource(request).build();
-		}
-		return dataSourceId;
+		return Optional.ofNullable(request.getDataSource())
+				.map(dataSourceIdentifier -> masterdataProvider.getDataSourceId(dataSourceIdentifier, orgId))
+				.orElse(null);
 	}
 
 	@Nullable

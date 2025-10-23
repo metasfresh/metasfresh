@@ -41,6 +41,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "orgCode": "001",
     "externalLineId": "externalLineId_S0469_10",
     "externalHeaderId": "externalHeaderId_S0469_10",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "dataDest": null,
     "bpartner": {
@@ -69,7 +70,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 """
 {
     "externalHeaderId": "externalHeaderId_S0469_10",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": true
@@ -152,6 +153,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "orgCode": "001",
     "externalLineId": "externalLineId_S0469_20",
     "externalHeaderId": "externalHeaderId_S0469_20",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "dataDest": null,
     "bpartner": {
@@ -180,7 +182,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 """
 {
     "externalHeaderId": "externalHeaderId_S0469_20",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": true

@@ -37,6 +37,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderId;
@@ -48,7 +49,6 @@ import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.order.JsonSalesOrder;
 import de.metas.rest_api.v2.order.JsonSalesOrderAttachment;
 import de.metas.rest_api.v2.order.JsonSalesOrderCreateRequest;
@@ -65,6 +65,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -93,29 +94,17 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales")
 @Profile(Profiles.PROFILE_App)
+@RequiredArgsConstructor
 public class SalesOrderRestController
 {
 	private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
-	private final OrderService orderService;
-	private final AttachmentEntryService attachmentEntryService;
-	private final BpartnerRestController bpartnerRestController;
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
-	private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final OrderService orderService;
+	@NonNull private final AttachmentEntryService attachmentEntryService;
+	@NonNull private final BpartnerRestController bpartnerRestController;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
-
-	public SalesOrderRestController(
-			@NonNull final OrderService orderService,
-			@NonNull final AttachmentEntryService attachmentEntryService,
-			@NonNull final JsonServiceFactory jsonServiceFactory,
-			@NonNull final BpartnerRestController bpartnerRestController,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
-	{
-		this.orderService = orderService;
-		this.attachmentEntryService = attachmentEntryService;
-		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
-		this.bpartnerRestController = bpartnerRestController;
-		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
-	}
 
 	@ApiOperation("Create new order payment")
 	@ApiResponses(value = {
@@ -225,6 +214,7 @@ public class SalesOrderRestController
 					.bpartnerRestController(bpartnerRestController)
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
+					.externalSystemRepository(externalSystemRepository)
 					.build();
 
 			return orderService.getOrderId(request, masterdataProvider)

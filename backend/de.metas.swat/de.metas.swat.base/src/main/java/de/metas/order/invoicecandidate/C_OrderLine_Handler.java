@@ -228,6 +228,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 
 		// external identifiers
+		icRecord.setExternalSystem_ID(order.getExternalSystem_ID());
 		icRecord.setExternalLineId(orderLine.getExternalId());
 		icRecord.setExternalHeaderId(order.getExternalId());
 

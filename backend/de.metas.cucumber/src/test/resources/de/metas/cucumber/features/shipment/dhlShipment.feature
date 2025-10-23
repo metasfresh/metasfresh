@@ -97,6 +97,7 @@ Feature: Dhl Shipment
       "orgCode": "001",
       "externalHeaderId": "dhl_01",
       "externalLineId": "dhl_01",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
           "bpartnerIdentifier": "gln-1122334455667",
@@ -125,7 +126,7 @@ Feature: Dhl Shipment
 """
 {
     "externalHeaderId": "dhl_01",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": false

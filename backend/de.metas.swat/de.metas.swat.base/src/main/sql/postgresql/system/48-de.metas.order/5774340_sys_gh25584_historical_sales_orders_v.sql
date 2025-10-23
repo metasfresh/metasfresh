@@ -1,3 +1,6 @@
+DROP VIEW IF EXISTS historical_sales_orders_json_v
+;
+
 DROP VIEW IF EXISTS Historical_Sales_Orders_V
 ;
 

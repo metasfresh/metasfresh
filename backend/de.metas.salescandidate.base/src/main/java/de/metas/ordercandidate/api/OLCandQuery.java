@@ -38,6 +38,11 @@ public class OLCandQuery
 	String externalHeaderId;
 
 	/**
+	 * {@link de.metas.externalsystem.model.I_ExternalSystem#COLUMNNAME_Value} of the external system the candidates in question were added with.
+	 */
+	String externalSystemCode;
+
+	/**
 	 * {@link I_AD_InputDataSource#COLUMNNAME_InternalName} of the data source the candidates in question were added with.
 	 */
 	String inputDataSourceName;
@@ -47,6 +52,7 @@ public class OLCandQuery
 	OrgId orgId;
 
 	public OLCandQuery(
+			final String externalSystemCode,
 			final String externalHeaderId,
 			final String inputDataSourceName,
 			final String externalLineId,
@@ -56,13 +62,14 @@ public class OLCandQuery
 		{
 			Check.assumeNotEmpty(externalHeaderId, "If externalHeaderId is specified, then it may not be empty");
 
-			if (inputDataSourceName == null && externalLineId == null)
+			if (externalSystemCode == null && externalLineId == null)
 			{
-				Check.assumeNotEmpty(inputDataSourceName, "If externalHeaderId is specified, then inputDataSourceName or externalLineId should be defined; externalHeaderId={}", externalHeaderId);
-				Check.assumeNotEmpty(externalLineId, "If externalHeaderId is specified, then inputDataSourceName or externalLineId should be defined; externalHeaderId={}", externalHeaderId);
+				Check.assumeNotEmpty(externalSystemCode, "If externalHeaderId is specified, then externalSystemCode or externalLineId should be defined; externalHeaderId={}", externalHeaderId);
+				Check.assumeNotEmpty(externalLineId, "If externalHeaderId is specified, then externalSystemCode or externalLineId should be defined; externalHeaderId={}", externalHeaderId);
 			}
 		}
 
+		this.externalSystemCode = externalSystemCode;
 		this.externalHeaderId = externalHeaderId;
 		this.inputDataSourceName = inputDataSourceName;
 
