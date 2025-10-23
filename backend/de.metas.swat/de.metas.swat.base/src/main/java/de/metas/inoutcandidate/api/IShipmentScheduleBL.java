@@ -200,4 +200,10 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void assertSalesOrderCanBeReactivated(@NonNull OrderId salesOrderId);
 
 	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	Quantity getQtyRemainingToScheduleForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	ShipmentScheduleLoadingCache<I_M_ShipmentSchedule> newLoadingCache();
+
+	<T extends I_M_ShipmentSchedule> ShipmentScheduleLoadingCache<T> newLoadingCache(@NonNull Class<T> modelClass);
 }

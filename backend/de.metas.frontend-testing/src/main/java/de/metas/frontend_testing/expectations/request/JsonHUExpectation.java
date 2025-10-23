@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.expectations.request;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.QtyTU;
 import lombok.Builder;
 import lombok.Value;
@@ -14,6 +15,7 @@ import java.util.Map;
 @Jacksonized
 public class JsonHUExpectation
 {
+	@Nullable Identifier warehouse;
 	@Nullable String huStatus;
 	@Nullable Map<String, String> storages;
 	@Nullable Map<String, String> attributes;
