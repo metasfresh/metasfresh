@@ -41,4 +41,9 @@ public class InvoicePaySchedule
 			return Optional.of(new InvoicePaySchedule(invoiceId, lines));
 		});
 	}
+
+	public void markAsValid(final boolean isValid)
+	{
+		lines.forEach(line -> line.setValid(isValid));
+	}
 }

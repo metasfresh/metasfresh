@@ -46,6 +46,7 @@ public class InvoicePayScheduleLine
 	final @NonNull OrderPayScheduleId orderPayScheduleId;
 
 	@Setter @NonNull Instant dueDate;
+	@Setter boolean isValid;
 	final @NonNull Money dueAmount;
 
 }

@@ -17,9 +17,12 @@
 package org.compiere.model;
 
 import de.metas.i18n.Msg;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.paymentschedule.InvoicePayScheduleService;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -40,7 +43,7 @@ import static java.math.BigDecimal.ZERO;
  */
 public class MPaymentTerm extends X_C_PaymentTerm
 {
-
+	@NonNull final InvoicePayScheduleService invoicePayScheduleService = SpringContextHolder.instance.getBean(InvoicePayScheduleService.class);
 	/**
 	 *
 	 */
@@ -53,7 +56,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	 * @param C_PaymentTerm_ID id
 	 * @param trxName          transaction
 	 */
-	public MPaymentTerm(Properties ctx, int C_PaymentTerm_ID, String trxName)
+	public MPaymentTerm(final Properties ctx, final int C_PaymentTerm_ID, final String trxName)
 	{
 		super(ctx, C_PaymentTerm_ID, trxName);
 		if (C_PaymentTerm_ID == 0)
@@ -77,7 +80,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	 * @param rs      result set
 	 * @param trxName transaction
 	 */
-	public MPaymentTerm(Properties ctx, ResultSet rs, String trxName)
+	public MPaymentTerm(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}    //	MPaymentTerm
@@ -93,21 +96,21 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	 * @param requery if true re-query
 	 * @return array of schedule
 	 */
-	public MPaySchedule[] getSchedule(boolean requery)
+	public MPaySchedule[] getSchedule(final boolean requery)
 	{
 		if (m_schedule != null && !requery)
 			return m_schedule;
-		String sql = "SELECT * FROM C_PaySchedule WHERE C_PaymentTerm_ID=? AND IsActive='Y' ORDER BY NetDays";
-		ArrayList<MPaySchedule> list = new ArrayList<>();
+		final String sql = "SELECT * FROM C_PaySchedule WHERE C_PaymentTerm_ID=? AND IsActive='Y' ORDER BY NetDays";
+		final ArrayList<MPaySchedule> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			pstmt.setInt(1, getC_PaymentTerm_ID());
-			ResultSet rs = pstmt.executeQuery();
+			final ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				MPaySchedule ps = new MPaySchedule(getCtx(), rs, get_TrxName());
+				final MPaySchedule ps = new MPaySchedule(getCtx(), rs, get_TrxName());
 				ps.setParent(this);
 				list.add(ps);
 			}
@@ -115,7 +118,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 			pstmt.close();
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("getSchedule", e);
 		}
@@ -125,7 +128,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 				pstmt.close();
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			pstmt = null;
 		}
@@ -160,21 +163,21 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		}
 
 		//	Add up
-		BigDecimal total = Env.ZERO;
-		for (int i = 0; i < m_schedule.length; i++)
+		BigDecimal total = ZERO;
+		for (final MPaySchedule mPaySchedule : m_schedule)
 		{
-			BigDecimal percent = m_schedule[i].getPercentage();
+			final BigDecimal percent = mPaySchedule.getPercentage();
 			if (percent != null)
 				total = total.add(percent);
 		}
-		boolean valid = total.compareTo(Env.ONEHUNDRED) == 0;
+		final boolean valid = total.compareTo(Env.ONEHUNDRED) == 0;
 		setIsValid(valid);
-		for (int i = 0; i < m_schedule.length; i++)
+		for (final MPaySchedule mPaySchedule : m_schedule)
 		{
-			if (m_schedule[i].isValid() != valid)
+			if (mPaySchedule.isValid() != valid)
 			{
-				m_schedule[i].setIsValid(valid);
-				m_schedule[i].save();
+				mPaySchedule.setIsValid(valid);
+				mPaySchedule.save();
 			}
 		}
 		String msg = "@OK@";
@@ -188,7 +191,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	 *    @param C_Invoice_ID invoice
 	 *    @return true if payment schedule is valid
 	 */
-	public boolean apply(int C_Invoice_ID)
+	public boolean apply(final int C_Invoice_ID)
 	{
 		MInvoice invoice = new MInvoice(getCtx(), C_Invoice_ID, get_TrxName());
 		if (invoice == null || invoice.get_ID() == 0)
@@ -220,7 +223,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		if (m_schedule.length <= 1)
 			return applyNoSchedule(invoice);
 		else    //	only if valid
-			return applySchedule(invoice);
+			return invoicePayScheduleService.validate(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 	}    //	apply
 
 	/**
@@ -245,10 +248,10 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	 *
 	 * @param C_Invoice_ID id
 	 */
-	private void deleteInvoicePaySchedule(int C_Invoice_ID)
+	private void deleteInvoicePaySchedule(final int C_Invoice_ID)
 	{
-		String sql = "DELETE FROM C_InvoicePaySchedule WHERE C_Invoice_ID=" + C_Invoice_ID;
-		int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+		final String sql = "DELETE FROM C_InvoicePaySchedule WHERE C_Invoice_ID=" + C_Invoice_ID;
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		log.debug("C_Invoice_ID=" + C_Invoice_ID + " - #" + no);
 	}    //	deleteInvoicePaySchedule
 
@@ -259,7 +262,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MPaymentTerm[");
+		final StringBuffer sb = new StringBuffer("MPaymentTerm[");
 		sb.append(get_ID()).append("-").append(getName())
 				.append(",Valid=").append(isValid())
 				.append("]");
@@ -273,7 +276,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	 * @return true
 	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		if (isDueFixed())
 		{

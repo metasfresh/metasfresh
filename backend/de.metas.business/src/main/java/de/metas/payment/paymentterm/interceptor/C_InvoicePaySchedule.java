@@ -23,8 +23,7 @@
 package de.metas.payment.paymentterm.interceptor;
 
 import de.metas.invoice.InvoiceId;
-import de.metas.order.paymentschedule.InvoicePayScheduleValidator;
-import de.metas.payment.paymentterm.PaymentTermService;
+import de.metas.order.paymentschedule.InvoicePayScheduleService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -38,12 +37,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_InvoicePaySchedule
 {
-	private final @NonNull PaymentTermService paymentTermService;
+	private final @NonNull InvoicePayScheduleService invoicePayScheduleService;
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE } , ifColumnsChanged = {I_C_InvoicePaySchedule.COLUMNNAME_DueAmt})
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_InvoicePaySchedule.COLUMNNAME_DueAmt })
 	public void afterSave(final I_C_InvoicePaySchedule record)
 	{
-		final InvoicePayScheduleValidator validator = new InvoicePayScheduleValidator(paymentTermService);
-		validator.validate(InvoiceId.ofRepoId(record.getC_Invoice_ID()));
+		invoicePayScheduleService.validate(InvoiceId.ofRepoId(record.getC_Invoice_ID()));
 	}
 }
