@@ -15,9 +15,9 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetAttributeIdsList;
+import org.adempiere.mm.attributes.AttributeSetDescriptor;
 import org.adempiere.mm.attributes.AttributeValueType;
-import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
+import org.adempiere.mm.attributes.AttributeSetDescriptorsCollection;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
@@ -58,9 +58,9 @@ public class AttributesIncludedTabDescriptorService
 	private AttributesIncludedTabMap retrieveMap()
 	{
 		final AttributesIncludedTabUserConfigList userConfigs = userConfigRepository.list();
-		final MultiAttributeSetAttributeIdsList attributeSets = attributeDAO.getAttributeIdsByAttributeSetIds(userConfigs.getAttributeSetIds());
+		final AttributeSetDescriptorsCollection attributeSets = attributeDAO.getAttributeSetDescriptorsByIds(userConfigs.getAttributeSetIds());
 		final ImmutableMap<AttributeId, I_M_Attribute> attributesById = Maps.uniqueIndex(
-				attributeDAO.getAttributesByIds(attributeSets.getAttributeIds()),
+				attributeDAO.getAttributeRecordsByIds(attributeSets.getAttributeIds()),
 				attribute -> AttributeId.ofRepoId(attribute.getM_Attribute_ID())
 		);
 
@@ -71,10 +71,10 @@ public class AttributesIncludedTabDescriptorService
 
 	private static AttributesIncludedTabDescriptor toAttributesIncludedTab(
 			@NonNull final AttributesIncludedTabUserConfig userConfig,
-			@NonNull final MultiAttributeSetAttributeIdsList attributeSets,
+			@NonNull final AttributeSetDescriptorsCollection attributeSets,
 			@NonNull final ImmutableMap<AttributeId, I_M_Attribute> attributesById)
 	{
-		final AttributeSetAttributeIdsList attributeSet = attributeSets.getByAttributeSetId(userConfig.getAttributeSetId());
+		final AttributeSetDescriptor attributeSet = attributeSets.getByAttributeSetId(userConfig.getAttributeSetId());
 
 		return AttributesIncludedTabDescriptor.builder()
 				.id(userConfig.getId())

@@ -122,10 +122,11 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
@@ -1389,6 +1390,16 @@ public class HUTestHelper
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 		attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
 				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()))
+				.value(value)
+				.name(name)
+				.build());
+	}
+
+	public void createAttributeListValue(final Attribute attribute, final String value, final String name)
+	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(attribute.getAttributeId())
 				.value(value)
 				.name(name)
 				.build());

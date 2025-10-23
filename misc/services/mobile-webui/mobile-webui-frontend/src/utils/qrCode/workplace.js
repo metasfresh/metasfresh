@@ -20,9 +20,13 @@
  * #L%
  */
 
-import { QRCODE_SEPARATOR } from './common';
+import { parseQRCodeType, QRCODE_SEPARATOR } from './common';
 
 export const QRCODE_TYPE_WORKPLACE = 'WORKPLACE';
+
+export const isWorkplaceQRCode = (string) => {
+  return parseQRCodeType(string) === QRCODE_TYPE_WORKPLACE;
+};
 
 export const parseWorkplaceQRCodeString = (string) => {
   let remainingString = string;

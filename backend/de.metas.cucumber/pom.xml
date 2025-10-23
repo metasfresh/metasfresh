@@ -228,6 +228,9 @@
                             cucumber.junit-platform.naming-strategy=surefire
                         </configurationParameters>
                     </properties>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/external-lib/*</additionalClasspathElement>
+                    </additionalClasspathElements>
                 </configuration>
             </plugin>
         </plugins>

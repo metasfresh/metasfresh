@@ -2062,4 +2062,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		return invoices.get(0).getDateInvoiced().toInstant();
 	}
+
+
+	@Override
+	public Amount retrieveOpenAmt(final InvoiceId invoiceId)
+	{
+		return invoiceDAO.retrieveOpenAmt(invoiceId);
+	}
 }

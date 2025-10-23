@@ -25,6 +25,8 @@ package de.metas.order.paymentschedule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
@@ -118,7 +120,7 @@ public class InvoicePayScheduleLoaderAndSaver
 				.id(InvoicePayScheduleId.ofRepoId(record.getC_InvoicePaySchedule_ID()))
 				.orderPayScheduleId(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
-				// .dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID()))) TODO
+				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
 				.dueDate(record.getDueDate().toInstant())
 				.build();
 	}

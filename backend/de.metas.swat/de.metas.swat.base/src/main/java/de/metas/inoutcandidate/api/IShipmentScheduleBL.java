@@ -41,7 +41,7 @@ import de.metas.storage.IStorageQuery;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -200,4 +200,10 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void assertSalesOrderCanBeReactivated(@NonNull OrderId salesOrderId);
 
 	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	Quantity getQtyRemainingToScheduleForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	ShipmentScheduleLoadingCache<I_M_ShipmentSchedule> newLoadingCache();
+
+	<T extends I_M_ShipmentSchedule> ShipmentScheduleLoadingCache<T> newLoadingCache(@NonNull Class<T> modelClass);
 }

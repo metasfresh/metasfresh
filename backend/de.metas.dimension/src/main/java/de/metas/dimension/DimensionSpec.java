@@ -1,40 +1,13 @@
 package de.metas.dimension;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-
 import de.metas.cache.CCache;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
@@ -46,6 +19,30 @@ import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 /*
  * #%L
@@ -111,7 +108,6 @@ public class DimensionSpec
 	 * In other words, create a "projection" of the given asi, with respect to the given dimensionSpec.
 	 *
 	 * @return the new ASI if at least one of the relevant attribute/value couple in the given ASI, null otherwise
-	 *
 	 * @deprecated this method does not correctly handle dimensions with multiple M_AttributeValue_IDs in one group and is also only used by an oboslete feature.
 	 */
 	@Deprecated
@@ -223,10 +219,11 @@ public class DimensionSpec
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
+		final I_M_AttributeInstance attributeInstance = asiBL.getAttributeInstance(asiId, attributeId);
 		if (attributeInstance == null)
 		{
 			return DimensionConstants.DIM_EMPTY;
@@ -271,7 +268,7 @@ public class DimensionSpec
 	private List<I_M_Attribute> retrieveAttributesForDimensionSpec(final int dimensionSpecRecordId)
 	{
 		final ImmutableSet<AttributeId> attributeIds = retrieveAttributeIdsForDimensionSpec(dimensionSpecRecordId);
-		return Services.get(IAttributeDAO.class).getAttributesByIds(attributeIds);
+		return Services.get(IAttributeDAO.class).getAttributeRecordsByIds(attributeIds);
 	}
 
 	private ImmutableSet<AttributeId> retrieveAttributeIdsForDimensionSpec(final int dimensionSpecRecordId)
@@ -405,7 +402,7 @@ public class DimensionSpec
 			@NonNull final Builder<DimensionSpecGroup> list)
 	{
 		final Collection<Entry<IPair<String, AttributeId>, Collection<AttributeValueId>>> //
-		entrySet = groupNameToAttributeValueIds.asMap().entrySet();
+				entrySet = groupNameToAttributeValueIds.asMap().entrySet();
 
 		final ArrayList<DimensionSpecGroup> newGroups = new ArrayList<>();
 		for (final Entry<IPair<String, AttributeId>, Collection<AttributeValueId>> entry : entrySet)
@@ -421,7 +418,7 @@ public class DimensionSpec
 					groupAttributeId);
 			newGroups.add(newGroup);
 		}
-		
+
 		newGroups.sort(Comparator.comparing(DimensionSpecGroup::getAttributesKey));
 		list.addAll(newGroups);
 	}

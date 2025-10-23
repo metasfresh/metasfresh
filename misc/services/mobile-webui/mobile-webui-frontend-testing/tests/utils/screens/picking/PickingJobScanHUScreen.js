@@ -1,5 +1,6 @@
 import { test } from "../../../../playwright.config";
 import { page } from "../../common";
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'PickingJobScanHUScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -11,7 +12,6 @@ export const PickingJobScanHUScreen = {
     }),
 
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {
-        console.log('Scanning HU QR code:\n' + qrCode);
-        await page.type('#input-text', qrCode);
+        await BarcodeScannerComponent.type(qrCode);
     }),
 };

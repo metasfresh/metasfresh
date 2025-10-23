@@ -85,6 +85,19 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		return InterfaceWrapperHelper.load(paymentTermId, I_C_PaymentTerm.class);
 	}
 
+	@Override
+	public void setIsComplexAndSave(@NonNull final PaymentTermId paymentTermId, final boolean isComplex)
+	{
+		final I_C_PaymentTerm paymentTermRecord = getRecordById(paymentTermId);
+		paymentTermRecord.setIsComplex(isComplex);
+		save(paymentTermRecord);
+	}
+
+	private void save(@NonNull final I_C_PaymentTerm paymentTerm)
+	{
+		InterfaceWrapperHelper.save(paymentTerm);
+	}
+
 	public Optional<PaymentTerm> getByIdIfExists(@NonNull final PaymentTermId paymentTermId)
 	{
 		return getIndexedPaymentTerms().getById(paymentTermId);
@@ -326,13 +339,22 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		return getById(id.getPaymentTermId()).getBreakById(id);
 	}
 
-
 	@Override
 	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_PaySchedule.class)
 				.addEqualsFilter(I_C_PaySchedule.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public boolean hasPaymentTermBreaks(@NonNull final PaymentTermId paymentTermId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_PaymentTerm_Break.class)
+				.addEqualsFilter(I_C_PaymentTerm_Break.COLUMNNAME_C_PaymentTerm_ID, paymentTermId)
 				.create()
 				.anyMatch();
 	}
