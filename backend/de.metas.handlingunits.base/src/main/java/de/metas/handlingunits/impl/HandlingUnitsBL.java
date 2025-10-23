@@ -33,6 +33,7 @@ import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -42,7 +43,6 @@ import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHUIterator;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -126,6 +126,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -186,6 +187,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean existsById(@NonNull final HuId huId) {return handlingUnitsRepo.existsById(huId);}
+
+	@Override
 	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
 	{
 		return handlingUnitsRepo.getBySelectionId(selectionId);
@@ -195,6 +199,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
 	{
 		return handlingUnitsRepo.getHuIdsBySelectionId(selectionId);
+	}
+
+	@Override
+	public void saveHU(final I_M_HU hu)
+	{
+		handlingUnitsRepo.saveHU(hu);
 	}
 
 	@Override
@@ -409,9 +419,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public IHUDisplayNameBuilder buildDisplayName(final I_M_HU hu)
+	public HUDisplayNameBuilder buildDisplayName(@Nullable final I_M_HU hu)
 	{
-		return new HUDisplayNameBuilder(hu);
+		return HUDisplayNameBuilder.builder()
+				.handlingUnitsBL(this)
+				.hu(hu)
+				.build();
 	}
 
 	@Override
@@ -961,9 +974,27 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI_Item getPIItem(@NonNull final I_M_HU_Item huItem)
 	{
 		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
-		return piItemId != null
-				? handlingUnitsRepo.getPackingInstructionItemById(piItemId)
-				: null;
+		return piItemId != null ? getPIItem(piItemId) : null;
+	}
+
+	@Override
+	public @NonNull I_M_HU_PI_Item getPIItem(@NonNull final HuPackingInstructionsItemId piItemId)
+	{
+		return handlingUnitsRepo.getPackingInstructionItemById(piItemId);
+	}
+
+	@NonNull
+	@Override
+	public List<I_M_HU_PI_Item> getPIItems(@NonNull final Collection<I_M_HU_Item> huItems)
+	{
+		final ImmutableSet<HuPackingInstructionsItemId> piItemIds = huItems.stream()
+				.map(huItem -> HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return !piItemIds.isEmpty()
+				? handlingUnitsRepo.getPackingInstructionItemsByIds(piItemIds)
+				: ImmutableList.of();
 	}
 
 	@Override
@@ -1072,6 +1103,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getEffectivePI(@NonNull final HuId huId)
 	{
 		return getEffectivePI(getById(huId));
+	}
+
+	@Override
+	public HUPIItemProduct getPIItemProduct(final HUPIItemProductId piItemProductId)
+	{
+		return huPIItemProductDAO.getById(piItemProductId);
 	}
 
 	@Override
@@ -1436,7 +1473,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	@NonNull
-	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
 	{
 		return handlingUnitsRepo.retrievePIInfo(piItemIds);
 	}
