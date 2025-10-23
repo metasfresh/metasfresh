@@ -217,9 +217,15 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void destroyHandlingUnitsForReversedInboundMovements(@NonNull final org.compiere.model.I_M_InOut inout)
+	public void destroyHandlingUnitsIfReversedInboundTransaction(@NonNull final org.compiere.model.I_M_InOut reversalInout)
 	{
-		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
+		if(reversalInout.getReversal_ID() <= 0)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we not dealing with a reversal!");
+			return;
+		}
+
+		final MovementType movementType = MovementType.ofCode(reversalInout.getMovementType());
 		if (movementType.isOutboundTransaction())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we are dealing with an outbound transaction!");
@@ -227,7 +233,7 @@ public class HUInOutBL implements IHUInOutBL
 		}
 
 		// the incoming HU created from this M_InOut needs to be destroyed
-		copyAssignmentsToReversal(inout);
+		copyAssignmentsToReversal(reversalInout);
 
 		// services
 		final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
@@ -235,8 +241,8 @@ public class HUInOutBL implements IHUInOutBL
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 		//
-		// Get inout's assigned HUs
-		final List<I_M_HU> hus = huInOutDAO.retrieveHandlingUnits(inout);
+		// Get reversalInout's assigned HUs
+		final List<I_M_HU> hus = huInOutDAO.retrieveHandlingUnits(reversalInout);
 		if (hus.isEmpty())
 		{
 			return;
@@ -246,10 +252,10 @@ public class HUInOutBL implements IHUInOutBL
 
 		//
 		// Create and configure the huContext for destroying the HUs
-		final IContextAware context = InterfaceWrapperHelper.getContextAware(inout);
+		final IContextAware context = InterfaceWrapperHelper.getContextAware(reversalInout);
 		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
 		// If we deal with a receipt, we shall collect (and move back to Gebinde lager), only those packing materials that we own.
-		if (!MovementType.ofCode(inout.getMovementType()).isOutboundTransaction())
+		if (!MovementType.ofCode(reversalInout.getMovementType()).isOutboundTransaction())
 		{
 			huContext.getHUPackingMaterialsCollector().setCollectIfOwnPackingMaterialsOnly(true);
 		}
@@ -260,10 +266,11 @@ public class HUInOutBL implements IHUInOutBL
 		handlingUnitsBL.markDestroyed(huContext, hus);
 
 		// If the HUs were linked to M_Package_HU entries, delete them too
-		for (final I_M_HU hu : hus)
-		{
-			huPackageBL.destroyHUPackages(HuId.ofRepoId(hu.getM_HU_ID()));
-		}
+
+		final Set<HuId> huIds = hus.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		huPackageBL.destroyHUPackages(huIds);
 	}
 
 	@Override

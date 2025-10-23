@@ -113,7 +113,7 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void destroyHandlingUnitsForReversedInboundMovements(final I_M_InOut inout)
 	{
-		huInOutBL.destroyHandlingUnitsForReversedInboundMovements(inout);
+		huInOutBL.destroyHandlingUnitsIfReversedInboundTransaction(inout);
 	}
 
 	/**

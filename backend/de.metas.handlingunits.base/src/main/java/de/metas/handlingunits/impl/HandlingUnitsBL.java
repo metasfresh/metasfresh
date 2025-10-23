@@ -69,7 +69,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
@@ -91,6 +90,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -341,14 +341,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			logger.info("markDestroyed - the given M_HU_ID={} is temporarily protected from destruction; -> nothing to do", hu.getM_HU_ID());
 			return;
 		}
-		final Boolean isReceiptReversal = huContext.getProperty(IHUContext.PROPERTY_IsReceiptReversal);
-		if(isReceiptReversal == null || !isReceiptReversal)
+		final boolean isReceiptReversal = huContext.isPropertyTrue(IHUContext.PROPERTY_IsReceiptReversal);
+		if(!isReceiptReversal)
 		{
-			final List<I_M_Package_HU> packageHus = huPackageBL.retrievePackageHUs(huId);
-			if(!packageHus.isEmpty())
+			final List<PackageId> packageIds = huPackageBL.retrievePackageIds(huId);
+			if(!packageIds.isEmpty())
 			{
-				final ImmutableList<Integer> packages = packageHus.stream().map(packageHU -> packageHU.getM_Package_ID()).collect(ImmutableList.toImmutableList());
-				throw new HUException(ERR_HUHasPackages, huId.getRepoId(), packages)
+				throw new HUException(ERR_HUHasPackages, huId.getRepoId(), packageIds)
 						.markAsUserValidationError();
 			}
 		}

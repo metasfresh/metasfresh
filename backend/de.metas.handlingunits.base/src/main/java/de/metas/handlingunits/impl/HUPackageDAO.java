@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public class HUPackageDAO implements IHUPackageDAO
 {
@@ -58,13 +59,32 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
-	public List<I_M_Package_HU> retrievePackageHUs(final HuId huId)
+	public List<I_M_Package_HU> retrievePackageHUs(final Set<HuId> huIds)
+	{
+		if (huIds == null || huIds.isEmpty())
+		{
+			return Collections.emptyList();
+		}
+		return queryBL
+				.createQueryBuilder(I_M_Package_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Package_HU.COLUMNNAME_M_HU_ID, huIds)
+				.create()
+				.list(I_M_Package_HU.class);
+	}
+
+	@Override
+	public List<PackageId> retrievePackageIds(final HuId huId)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class)
-				.filter(new EqualsQueryFilter<>(I_M_Package_HU.COLUMN_M_HU_ID, huId))
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Package_HU.COLUMNNAME_M_HU_ID, huId)
+				.andCollect(I_M_Package_HU.COLUMNNAME_M_Package_ID, I_M_Package.class)
+				.addOnlyActiveRecordsFilter()
 				.create()
-				.list(I_M_Package_HU.class);
+				.listIds(PackageId::ofRepoId);
+
 	}
 
 

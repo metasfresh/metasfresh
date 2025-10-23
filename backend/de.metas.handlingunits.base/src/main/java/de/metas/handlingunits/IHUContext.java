@@ -119,4 +119,6 @@ public interface IHUContext extends IContextAware
 	 * @return {@code true} if the HU shall not be destroyed right now
 	 */
 	boolean isDontDestroyHu(@NonNull HuId ofRepoId);
+
+	boolean isPropertyTrue(@NonNull String propertyName);
 }
