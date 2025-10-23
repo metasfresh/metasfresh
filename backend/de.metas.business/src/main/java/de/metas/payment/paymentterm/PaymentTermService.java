@@ -124,4 +124,8 @@ public class PaymentTermService
 		return paymentTermRepository.getPaymentTermBreakById(id);
 	}
 
+	public boolean hasPaymentTermBreaks(final PaymentTermId paymentTermId)
+	{
+		return paymentTermRepository.hasPaymentTermBreaks(paymentTermId);
+	}
 }

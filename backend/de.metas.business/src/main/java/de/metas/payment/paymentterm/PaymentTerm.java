@@ -57,7 +57,7 @@ public class PaymentTerm
 	int graceDays;
 	int netDays;
 	boolean allowOverrideDueDate;
-	boolean _default;
+	boolean isDefault;
 	boolean isComplex;
 
 	@NonNull ImmutableList<PaymentTermBreak> sortedBreaks;
@@ -79,7 +79,7 @@ public class PaymentTerm
 			final int graceDays,
 			final int netDays,
 			final boolean allowOverrideDueDate,
-			final boolean _default,
+			final boolean isDefault,
 			final boolean isComplex,
 			final @NonNull ImmutableList<PaymentTermBreak> breaks)
 	{
@@ -97,7 +97,7 @@ public class PaymentTerm
 		this.graceDays = graceDays;
 		this.netDays = netDays;
 		this.allowOverrideDueDate = allowOverrideDueDate;
-		this._default = _default;
+		this.isDefault = isDefault;
 		this.isComplex = isComplex;
 
 		if (isComplex)
