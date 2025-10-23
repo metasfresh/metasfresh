@@ -23,7 +23,9 @@
 package de.metas.payment.paymentterm.interceptor;
 
 import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.InvoicePayScheduleService;
+import de.metas.order.paymentschedule.OrderPayScheduleService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -37,11 +39,22 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class C_InvoicePaySchedule
 {
-	private final @NonNull InvoicePayScheduleService invoicePayScheduleService;
+	@NonNull private final InvoicePayScheduleService invoicePayScheduleService;
+	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_InvoicePaySchedule.COLUMNNAME_DueAmt })
-	public void afterSave(final I_C_InvoicePaySchedule record)
+	public void afterSave(@NonNull final I_C_InvoicePaySchedule record)
 	{
 		invoicePayScheduleService.validate(InvoiceId.ofRepoId(record.getC_Invoice_ID()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_InvoicePaySchedule.COLUMNNAME_Processed })
+	public void updateOrderPaySchedules(@NonNull final I_C_InvoicePaySchedule record)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(record.getC_Order_ID());
+		if (orderId != null)
+		{
+			orderPayScheduleService.updatePayScheduleStatus(orderId);
+		}
 	}
 }

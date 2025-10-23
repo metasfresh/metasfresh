@@ -62,7 +62,7 @@ public class InvoicePayScheduleService
 
 	public void create(@NonNull final InvoicePayScheduleCreateRequest request) {invoicePayScheduleRepository.create(request);}
 
-	public Optional<InvoicePaySchedule> getByInvoiceId(@NonNull final InvoiceId invoiceId) {return invoicePayScheduleRepository.getByInvoiceId(invoiceId);}
+	private Optional<InvoicePaySchedule> getByInvoiceId(@NonNull final InvoiceId invoiceId) {return invoicePayScheduleRepository.getByInvoiceId(invoiceId);}
 
 	public boolean validate(@NonNull final InvoiceId invoiceId)
 	{
