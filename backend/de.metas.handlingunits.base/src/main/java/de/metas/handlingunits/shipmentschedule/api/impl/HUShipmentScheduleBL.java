@@ -50,6 +50,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
@@ -847,12 +848,24 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
+	public Quantity getQtyRemainingToScheduleForPicking(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		return shipmentScheduleBL.getQtyRemainingToScheduleForPicking(shipmentScheduleRecord);
+	}
+
+	@Override
 	public void flagForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (shipmentScheduleIds.isEmpty()) {return;}
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesService.flagForRecompute(shipmentScheduleIds);
+	}
+
+	@Override
+	public ShipmentScheduleLoadingCache<I_M_ShipmentSchedule> newLoadingCache()
+	{
+		return shipmentScheduleBL.newLoadingCache(I_M_ShipmentSchedule.class);
 	}
 
 }
