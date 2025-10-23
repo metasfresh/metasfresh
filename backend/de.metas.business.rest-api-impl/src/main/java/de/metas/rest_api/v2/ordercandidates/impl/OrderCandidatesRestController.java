@@ -1,5 +1,6 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.Profiles;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
@@ -12,12 +13,12 @@ import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -55,7 +56,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales/candidates" })
 @Profile(Profiles.PROFILE_App)
-@RequiredArgsConstructor
 public class OrderCandidatesRestController
 {
 	private final String PATH_BULK = "/bulk";
@@ -63,13 +63,34 @@ public class OrderCandidatesRestController
 
 	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestController.class);
 
-	@NonNull private final BpartnerRestController bpartnerRestController;
-	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
-	@NonNull private final OrderCandidateRestControllerService orderCandidateRestControllerService;
-	@NonNull private final JsonRetrieverService jsonRetrieverService;
-	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	private final BpartnerRestController bpartnerRestController;
+	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final OrderCandidateRestControllerService orderCandidateRestControllerService;
+	private final JsonRetrieverService jsonRetrieverService;
+	private final ExternalSystemRepository externalSystemRepository;
 
-	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
+	private PermissionServiceFactory permissionServiceFactory;
+
+	public OrderCandidatesRestController(
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final BpartnerRestController bpartnerRestController,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService,
+			@NonNull final ExternalSystemRepository externalSystemRepository)
+	{
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.bpartnerRestController = bpartnerRestController;
+		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.orderCandidateRestControllerService = orderCandidateRestControllerService;
+		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
+		this.externalSystemRepository = externalSystemRepository;
+	}
+
+	@VisibleForTesting
+	public void setPermissionServiceFactory(@NonNull final PermissionServiceFactory permissionServiceFactory)
+	{
+		this.permissionServiceFactory = permissionServiceFactory;
+	}
 
 	@PostMapping
 	public ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidate(@RequestBody @NonNull final JsonOLCandCreateRequest request)
