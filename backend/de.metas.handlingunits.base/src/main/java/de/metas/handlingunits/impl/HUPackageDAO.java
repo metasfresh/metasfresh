@@ -30,6 +30,7 @@ import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -59,12 +60,8 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
-	public List<I_M_Package_HU> retrievePackageHUs(final Set<HuId> huIds)
+	public List<I_M_Package_HU> retrievePackageHUs(@NonNull final Set<HuId> huIds)
 	{
-		if (huIds == null || huIds.isEmpty())
-		{
-			return Collections.emptyList();
-		}
 		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class)
 				.addOnlyActiveRecordsFilter()
@@ -74,7 +71,7 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
-	public List<PackageId> retrievePackageIds(final HuId huId)
+	public List<PackageId> retrievePackageIds(@NonNull final HuId huId)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class)
@@ -84,7 +81,6 @@ public class HUPackageDAO implements IHUPackageDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listIds(PackageId::ofRepoId);
-
 	}
 
 

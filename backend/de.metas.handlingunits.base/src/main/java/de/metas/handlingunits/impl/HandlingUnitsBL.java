@@ -347,7 +347,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			final List<PackageId> packageIds = huPackageBL.retrievePackageIds(huId);
 			if(!packageIds.isEmpty())
 			{
-				throw new HUException(ERR_HUHasPackages, huId.getRepoId(), packageIds)
+				throw new HUException(ERR_HUHasPackages, huId.getRepoId(), packageIds.stream().map(PackageId::getRepoId).collect(ImmutableList.toImmutableList()))
 						.markAsUserValidationError();
 			}
 		}
@@ -1433,7 +1433,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	@NonNull
-	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
 	{
 		return handlingUnitsRepo.retrievePIInfo(piItemIds);
 	}
