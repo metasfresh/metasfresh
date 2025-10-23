@@ -129,7 +129,7 @@ class HUQRCodeGenerateCommand
 		if (request.getAttributeId() != null)
 		{
 			attributeId = request.getAttributeId();
-			attribute = attributeDAO.getAttributeById(attributeId);
+			attribute = attributeDAO.getAttributeRecordById(attributeId);
 		}
 		else if (request.getCode() != null)
 		{

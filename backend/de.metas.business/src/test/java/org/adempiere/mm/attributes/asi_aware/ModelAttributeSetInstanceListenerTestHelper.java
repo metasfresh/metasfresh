@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api.impl;
+package org.adempiere.mm.attributes.asi_aware;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -10,8 +10,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeAction;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.impl.AttributesBL;
+import org.adempiere.mm.attributes.AttributesTestHelper;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
@@ -46,7 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestHelper
 {
 	// services
-	public final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	public final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	public final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public final I_M_Product product;
@@ -60,7 +62,7 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 		super();
 
 		productCategoryAttributeSet = createM_AttributeSet();
-		category = createProductCategory("ProductCategory", productCategoryAttributeSet);
+		category = createProductCategory(productCategoryAttributeSet);
 		product = createM_Product("Product", category);
 
 		this.bpartner = create(ctx, I_C_BPartner.class, ITrx.TRXNAME_None);
@@ -80,16 +82,6 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 		save(attribute);
 	}
 
-	public I_M_Product createM_Product(final String name, final I_M_AttributeSet as)
-	{
-		final I_M_Product product = create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
-		product.setValue(name);
-		product.setName(name);
-		product.setM_AttributeSet(as);
-		save(product);
-		return product;
-	}
-
 	public I_M_Product createM_Product(@NonNull final String name, @NonNull final I_M_Product_Category category)
 	{
 		final I_M_Product product = create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
@@ -100,11 +92,10 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 		return product;
 	}
 
-	private I_M_Product_Category createProductCategory(@NonNull final String name,
-			@NonNull final I_M_AttributeSet attributeSet)
+	private I_M_Product_Category createProductCategory(@NonNull final I_M_AttributeSet attributeSet)
 	{
 		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
-		productCategory.setName(name);
+		productCategory.setName("ProductCategory");
 		productCategory.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
 		save(productCategory);
 
@@ -184,7 +175,7 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 			final I_M_Attribute attribute)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi == null ? -1 : asi.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
+		final I_M_AttributeInstance ai = asiBL.getAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		if (expectedAttributeValue == null)
 		{
 			assertThat(ai).as("No AI expected").isNull();

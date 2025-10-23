@@ -1,21 +1,6 @@
 package de.metas.ui.web.pattribute;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -30,6 +15,20 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -59,6 +58,7 @@ public class ASIRepository
 	// services
 	private static final Logger logger = LogManager.getLogger(ASIRepository.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final ASIDescriptorFactory descriptorsFactory;
 
@@ -96,10 +96,8 @@ public class ASIRepository
 
 	/**
 	 * Retrieves {@link ASIDocument} for given ASI. The document will be readonly and not save-able.
-	 *
 	 * IMPORTANT: the retrieved document is not cached, so next time it will be retrieved again
 	 *
-	 * @param attributeSetInstanceId
 	 * @return ASI document
 	 */
 	public ASIDocument loadReadonly(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
@@ -148,9 +146,9 @@ public class ASIRepository
 		}
 
 		final HashMap<String, Object> valuesMap = new HashMap<>();
-		for (final I_M_AttributeInstance fromAI : attributesRepo.retrieveAttributeInstances(asiId))
+		for (final I_M_AttributeInstance fromAI : asiBL.getAttributeInstances(asiId))
 		{
-			final I_M_Attribute attribute = attributesRepo.getAttributeById(fromAI.getM_Attribute_ID());
+			final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(fromAI.getM_Attribute_ID());
 			final String fieldName = attribute.getValue();
 			final DocumentFieldDescriptor fieldDescriptor = descriptor.getFieldOrNull(fieldName);
 
@@ -182,7 +180,7 @@ public class ASIRepository
 		return asiDoc;
 	}
 
-	private final void commit(final ASIDocument asiDoc)
+	private void commit(final ASIDocument asiDoc)
 	{
 		final DocumentId asiDocId = asiDoc.getDocumentId();
 		if (asiDoc.isCompleted())
@@ -203,7 +201,7 @@ public class ASIRepository
 			@NonNull final DocumentCollection documentsCollection,
 			@NonNull final Function<ASIDocument, R> processor)
 	{
-		try (final IAutoCloseable readLock = getASIDocumentNoLock(asiDocId).lockForReading())
+		try (final IAutoCloseable ignored = getASIDocumentNoLock(asiDocId).lockForReading())
 		{
 			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId)
 					.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
@@ -218,7 +216,7 @@ public class ASIRepository
 			@NonNull final DocumentCollection documentsCollection,
 			@NonNull final Function<ASIDocument, R> processor)
 	{
-		try (final IAutoCloseable readLock = getASIDocumentNoLock(asiDocId).lockForWriting())
+		try (final IAutoCloseable ignored = getASIDocumentNoLock(asiDocId).lockForWriting())
 		{
 			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId)
 					.copy(CopyMode.CheckOutWritable, changesCollector)

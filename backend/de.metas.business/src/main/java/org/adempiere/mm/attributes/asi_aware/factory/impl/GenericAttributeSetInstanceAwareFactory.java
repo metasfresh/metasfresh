@@ -1,8 +1,8 @@
-package org.adempiere.mm.attributes.api.impl;
+package org.adempiere.mm.attributes.asi_aware.factory.impl;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactory;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 /*

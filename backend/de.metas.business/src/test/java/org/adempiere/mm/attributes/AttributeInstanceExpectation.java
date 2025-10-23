@@ -1,9 +1,9 @@
-package org.adempiere.mm.attributes.api.impl;
+package org.adempiere.mm.attributes;
 
 import de.metas.util.Services;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import lombok.Getter;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
@@ -53,7 +53,7 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 	private String attributeKey;
 	private String valueString;
 	private boolean valueStringSet;
-	private BigDecimal valueNumber;
+	@Getter private BigDecimal valueNumber;
 	private boolean valueNumberSet;
 	private Date valueDate;
 	private boolean valueDateSet;
@@ -61,11 +61,6 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 	public AttributeInstanceExpectation(final ParentExpectationType parentExpectation)
 	{
 		super(parentExpectation);
-	}
-
-	public AttributeInstanceExpectation()
-	{
-		this(null);
 	}
 
 	public AttributeInstanceExpectation<ParentExpectationType> assertExpected(final I_M_AttributeSetInstance asi)
@@ -77,8 +72,8 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(getAttributeNotNull().getM_Attribute_ID());
 
-		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class)
-				.retrieveAttributeInstance(
+		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeSetInstanceBL.class)
+				.getAttributeInstance(
 						asi == null
 								? null
 								: AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID()),
@@ -102,7 +97,7 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 			final AttributeId attributeActualId = AttributeId.ofRepoIdOrNull(attributeInstance.getM_Attribute_ID());
 			assertNotNull(messageToUse.expect("M_Attribute_ID not null"), attributeActualId);
 
-			final I_M_Attribute attributeActual = Services.get(IAttributeDAO.class).getAttributeById(attributeActualId);
+			final I_M_Attribute attributeActual = Services.get(IAttributeDAO.class).getAttributeRecordById(attributeActualId);
 			assertEquals(messageToUse.expect("M_Attribute.Value"), attributeKey, attributeActual.getValue());
 		}
 		if (valueStringSet)
@@ -147,11 +142,6 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 		return this;
 	}
 
-	public BigDecimal getValueNumber()
-	{
-		return this.valueNumber;
-	}
-
 	public AttributeInstanceExpectation<ParentExpectationType> valueNumber(final String valueNumberStr)
 	{
 		return valueNumber(new BigDecimal(valueNumberStr));
@@ -176,7 +166,7 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 		return getAttributeNotNull(messageIfNotFound);
 	}
 
-	private final I_M_Attribute getAttributeNotNull(final ErrorMessage messageIfNotFound)
+	private I_M_Attribute getAttributeNotNull(final ErrorMessage messageIfNotFound)
 	{
 		if (attribute != null)
 		{

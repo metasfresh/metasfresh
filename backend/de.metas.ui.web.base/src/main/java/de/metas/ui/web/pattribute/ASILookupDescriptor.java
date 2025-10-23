@@ -47,6 +47,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValuesProvider;
@@ -66,7 +67,7 @@ import java.util.Set;
 @ToString
 public final class ASILookupDescriptor implements ISqlLookupDescriptor, LookupDataSourceFetcher
 {
-	public static ASILookupDescriptor of(@NonNull final I_M_Attribute attribute)
+	public static ASILookupDescriptor of(@NonNull final Attribute attribute)
 	{
 		final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 		final IAttributeValuesProvider attributeValuesProvider = attributesBL.createAttributeValuesProvider(attribute);

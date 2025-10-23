@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api;
+package org.adempiere.mm.attributes.asi_aware.listener;
 
 /*
  * #%L
@@ -22,25 +22,26 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-
 /**
- * Listens on model (which is also {@link IAttributeSetInstanceAware}).<br>
- * Use {@link IModelAttributeSetInstanceListenerService#registerListener(IModelAttributeSetInstanceListener)} to register your own listener.
+ * Listens on the model (which is also {@link IAttributeSetInstanceAware}).<br>
+ * Use {@link org.springframework.stereotype.Component} to register your own listener.
  *
  * @author tsa
- *
  */
 public interface IModelAttributeSetInstanceListener
 {
 	/**
 	 * Flag used to specify that we don't want automatic ASI update when a model is changed.
-	 *
+	 * <p>
 	 * Example use case: you want to create an order line on which you precisely set the ASI and don't want to be changed.
 	 */
 	ModelDynAttributeAccessor<Object, Boolean> DYNATTR_DisableASIUpdateOnModelChange = new ModelDynAttributeAccessor<>(
@@ -50,11 +51,12 @@ public interface IModelAttributeSetInstanceListener
 	/**
 	 * {@link #getSourceColumnNames()} can return this constant to indicate that it does not matter which particular column was changed.
 	 */
-	List<String> ANY_SOURCE_COLUMN = Collections.unmodifiableList(new ArrayList<String>());
+	List<String> ANY_SOURCE_COLUMN = Collections.unmodifiableList(new ArrayList<>());
 
 	/**
 	 * @return Listened model's Table_Name
 	 */
+	@NonNull
 	String getSourceTableName();
 
 	/**
@@ -69,7 +71,6 @@ public interface IModelAttributeSetInstanceListener
 	 * <li>{@link ModelChangeType#BEFORE_CHANGE} and at least one of the changed columns is one of those returned by {@link #getSourceColumnNames()}.
 	 * </ul>
 	 *
-	 * @param model
 	 */
 	void modelChanged(Object model);
 }

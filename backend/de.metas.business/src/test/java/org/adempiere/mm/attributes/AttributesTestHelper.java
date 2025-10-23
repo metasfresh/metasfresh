@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api.impl;
+package org.adempiere.mm.attributes;
 
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
@@ -7,9 +7,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.impl.AttributeDAO;
 import org.adempiere.mm.attributes.callout.M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,7 +34,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * Base context and helpers for {@link M_Attribute}s related tests.
  *
  * @author tsa
- *
  */
 @Disabled
 public class AttributesTestHelper
@@ -58,6 +55,8 @@ public class AttributesTestHelper
 	public I_M_AttributeSet createM_AttributeSet(final I_M_Attribute... attributes)
 	{
 		final I_M_AttributeSet as = InterfaceWrapperHelper.create(ctx, I_M_AttributeSet.class, ITrx.TRXNAME_None);
+		as.setName("AttributeSet");
+		as.setMandatoryType(AttributeSetMandatoryType.NotMandatory.getCode());
 		as.setIsInstanceAttribute(true);
 		save(as);
 
@@ -74,14 +73,6 @@ public class AttributesTestHelper
 		attributeUse.setM_AttributeSet_ID(as.getM_AttributeSet_ID());
 		attributeUse.setM_Attribute_ID(attribute.getM_Attribute_ID());
 		save(attributeUse);
-	}
-
-	public I_M_Attribute createM_Attribute(final I_AD_JavaClass javaClass)
-	{
-		final I_M_Attribute attribute = InterfaceWrapperHelper.create(ctx, I_M_Attribute.class, ITrx.TRXNAME_None);
-		attribute.setAD_JavaClass_ID(javaClass != null ? javaClass.getAD_JavaClass_ID() : -1);
-		save(attribute);
-		return attribute;
 	}
 
 	public I_M_Attribute createM_Attribute_TypeList(final String name)
@@ -118,7 +109,7 @@ public class AttributesTestHelper
 		return AttributeDAO.toAttributeListValue(record);
 	}
 
-	public I_M_AttributeValue_Mapping createM_AttributeValue_Mapping(
+	public void createM_AttributeValue_Mapping(
 			final AttributeListValue attributeValue,
 			final AttributeListValue attributeValueTo)
 	{
@@ -126,7 +117,6 @@ public class AttributesTestHelper
 		attributeValueMapping.setM_AttributeValue_ID(attributeValue.getId().getRepoId());
 		attributeValueMapping.setM_AttributeValue_To_ID(attributeValueTo.getId().getRepoId());
 		save(attributeValueMapping);
-		return attributeValueMapping;
 	}
 
 	public I_AD_JavaClass createAD_JavaClass(final String classname)
@@ -167,9 +157,6 @@ public class AttributesTestHelper
 	/**
 	 * Method needed to make sure the attribute was not already created
 	 * Normally, this will never happen anywhere else except testing
-	 *
-	 * @param name
-	 * @return
 	 */
 	public I_M_Attribute retrieveAttributeValue(String name)
 	{
@@ -251,11 +238,11 @@ public class AttributesTestHelper
 		//
 		// Configure UOM
 		attr.setC_UOM_ID(uom != null ? uom.getC_UOM_ID() : -1);
-		
+
 		attr.setIsStorageRelevant(storageRelevantAttribute);
 
 		saveRecord(attr);
-		
+
 		return attr;
 	}
 
@@ -265,8 +252,7 @@ public class AttributesTestHelper
 			final Class<?> javaClass,
 			final boolean isInstanceAttribute)
 	{
-		final I_C_UOM uom = null;
-		return createM_Attribute(name, valueType, javaClass, uom, isInstanceAttribute);
+		return createM_Attribute(name, valueType, javaClass, null, isInstanceAttribute);
 	}
 
 	public I_M_Attribute createM_Attribute(
@@ -274,8 +260,7 @@ public class AttributesTestHelper
 			final String valueType,
 			final boolean isInstanceAttribute)
 	{
-		final Class<?> javaClass = null;
-		final I_M_Attribute attr = createM_Attribute(name, valueType, javaClass, isInstanceAttribute);
+		final I_M_Attribute attr = createM_Attribute(name, valueType, null, isInstanceAttribute);
 		save(attr);
 
 		return attr;

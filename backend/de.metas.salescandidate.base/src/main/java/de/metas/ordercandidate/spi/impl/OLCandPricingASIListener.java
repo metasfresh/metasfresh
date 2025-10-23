@@ -22,20 +22,21 @@ package de.metas.ordercandidate.spi.impl;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * Keeps the olCand's ASI up to date after changes in the product or the pricing.
@@ -43,8 +44,12 @@ import de.metas.util.Services;
  * @author ts
  * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
  */
+@Component
 public class OLCandPricingASIListener implements IModelAttributeSetInstanceListener
 {
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
+	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
 	// don't fire on particular columns, because we also need it to fire on other columns from other modules
 	private static final List<String> SOURCE_COLUMN_NAMES = ANY_SOURCE_COLUMN;
@@ -55,7 +60,7 @@ public class OLCandPricingASIListener implements IModelAttributeSetInstanceListe
 	// I_C_OLCand.COLUMNNAME_PriceInternal);
 
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_C_OLCand.Table_Name;
 	}
@@ -93,9 +98,6 @@ public class OLCandPricingASIListener implements IModelAttributeSetInstanceListe
 			return; // nothing to do
 		}
 
-		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-
 		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(olCand);
 		Check.assumeNotNull(asiAware,
 				"We have an asiAware for C_OLCand {}, because we implemented and registered the factory {}",
@@ -107,7 +109,6 @@ public class OLCandPricingASIListener implements IModelAttributeSetInstanceListe
 		{
 			attributeSetInstanceBL.getCreateASI(asiAware);
 
-			final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 			attributePricingBL.addToASI(asiAware, pricingAttributes);
 		}
 	}

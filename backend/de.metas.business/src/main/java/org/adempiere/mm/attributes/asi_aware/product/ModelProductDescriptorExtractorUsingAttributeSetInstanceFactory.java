@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api.impl;
+package org.adempiere.mm.attributes.asi_aware.product;
 
 import com.google.common.base.Preconditions;
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -7,8 +7,8 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.springframework.stereotype.Service;
 

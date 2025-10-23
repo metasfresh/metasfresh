@@ -67,7 +67,7 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
@@ -142,7 +142,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
 	private final transient IInvoiceCandidateListeners invoiceCandListeners = Services.get(IInvoiceCandidateListeners.class);
-	private final transient IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final transient IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
@@ -418,7 +418,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsSOTrx(header.isSOTrx());
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
-			if(Check.isBlank(invoice.getEMail()))
+			if (Check.isBlank(invoice.getEMail()))
 			{
 				invoice.setEMail(invoiceHeader.getEMail());
 			}
@@ -432,7 +432,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(invoiceHeader.getM_InOut_ID()));
 				invoice.setM_InOut_ID(inout.getM_InOut_ID()); // task 06630
-				if(!Check.isBlank(inout.getEMail()))
+				if (!Check.isBlank(inout.getEMail()))
 				{
 					invoice.setEMail(inout.getEMail());
 				}
@@ -473,9 +473,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
 				// That way we can undo all invoice lines if the creation of one of them fails.
 				final DefaultInvoiceLineGeneratorRunnable genLines = new DefaultInvoiceLineGeneratorRunnable(invoice,
-																											 aggregate, processedLines,
-																											 errorCandidates, errorException,
-																											 trxName);
+						aggregate, processedLines,
+						errorCandidates, errorException,
+						trxName);
 
 				// task 08927: we already do the ILAs in here, so we won't need to update them again.
 				InvoiceCandBL.DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.setValue(invoice, Boolean.TRUE);
@@ -554,9 +554,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private final String trxName;
 
 		private DefaultInvoiceLineGeneratorRunnable(final I_C_Invoice invoice,
-				final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
-				final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
-				final String trxName)
+													final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
+													final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
+													final String trxName)
 		{
 			createdLines = new ArrayList<>();
 
@@ -821,7 +821,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// Create ASI
 			final I_M_AttributeSetInstance asi = create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
 			asi.setM_AttributeSet_ID(AttributeSetId.NONE.getRepoId());
-			attributesRepo.save(asi);
+			asiBL.save(asi);
 
 			// Create one Attribute Instance for each invoice line attribute
 			for (final IInvoiceLineAttribute invoiceLineAttribute : invoiceLineAttributes)
@@ -839,7 +839,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			ai.setAD_Org_ID(asi.getAD_Org_ID());
 			ai.setM_AttributeSetInstance(asi);
 			ai.setIsActive(true);
-			attributesRepo.save(ai);
+			asiBL.save(ai);
 		}
 
 		@Override
@@ -959,7 +959,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (getInvoicingParams() != null && getInvoicingParams().isAssumeOneInvoice())
 		{
 			Check.errorIf(aggregationResult.size() > 1, "The shall be only one invoice, but instead there are {}; aggregationResult={}",
-						  aggregationResult.size(), aggregationResult);
+					aggregationResult.size(), aggregationResult);
 		}
 
 		//
@@ -1059,8 +1059,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
 					note.setAD_Message_ID(msgBL.getIdByAdMessage(MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
-												  .map(AdMessageId::getRepoId)
-												  .orElse(-1));
+							.map(AdMessageId::getRepoId)
+							.orElse(-1));
 
 					note.setAD_User_ID(userId);
 

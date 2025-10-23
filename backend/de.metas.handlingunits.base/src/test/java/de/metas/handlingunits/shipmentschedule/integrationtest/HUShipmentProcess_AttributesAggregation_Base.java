@@ -10,7 +10,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Attribute;
@@ -19,7 +19,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.jupiter.api.Assertions;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 /*
  * #%L
@@ -76,7 +76,7 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 	@Override
 	protected void step10_createShipmentSchedules()
 	{
-		shipmentSchedules = Arrays.asList(
+		shipmentSchedules = Collections.singletonList(
 				createShipmentSchedule() // shipment schedule 0
 		);
 	}
@@ -261,7 +261,7 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 		Assertions.assertNotNull(asi, "ASI exists for " + inoutLine);
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance ai = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
+		final I_M_AttributeInstance ai = Services.get(IAttributeSetInstanceBL.class).getAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		Assertions.assertNotNull(ai, "AI exists for " + inoutLine + "'s ASI=" + asi + ", Attribute=" + attribute);
 
 		final String valueStringActual = ai.getValue();
@@ -278,7 +278,7 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance ai = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
+		final I_M_AttributeInstance ai = Services.get(IAttributeSetInstanceBL.class).getAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		Assertions.assertNull(ai, "AI does not exists for " + inoutLine + "'s ASI=" + asi + ", Attribute=" + attribute);
 	}
 }

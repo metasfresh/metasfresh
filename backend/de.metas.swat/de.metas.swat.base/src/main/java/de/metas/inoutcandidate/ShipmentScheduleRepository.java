@@ -60,7 +60,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -103,7 +103,7 @@ public class ShipmentScheduleRepository
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final ModelCacheInvalidationService cacheInvalidationService;
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
@@ -391,7 +391,7 @@ public class ShipmentScheduleRepository
 					.filter(asiId -> !asiId.equals(AttributeSetInstanceId.NONE))
 					.collect(ImmutableSet.toImmutableSet());
 
-			shipmentScheduleStream = shipmentScheduleStream.filter(shipmentSchedule -> shipmentSchedule.hasAttributes(targetAsiIds, attributeDAO));
+			shipmentScheduleStream = shipmentScheduleStream.filter(shipmentSchedule -> shipmentSchedule.hasAttributes(targetAsiIds, asiBL));
 		}
 
 		return shipmentScheduleStream;

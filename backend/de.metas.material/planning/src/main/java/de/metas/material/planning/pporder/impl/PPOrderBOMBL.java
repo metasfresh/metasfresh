@@ -51,7 +51,7 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -90,7 +90,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
-	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
@@ -190,7 +190,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		if (orderBOMLine.getM_AttributeSetInstance_ID() <= 0 && bomLine.getM_AttributeSetInstance_ID() > 0)
 		{
 			final I_M_AttributeSetInstance asi = bomLine.getM_AttributeSetInstance();
-			final I_M_AttributeSetInstance asiCopy = attributesRepo.copy(asi);
+			final I_M_AttributeSetInstance asiCopy = asiBL.copy(asi);
 			orderBOMLine.setM_AttributeSetInstance_ID(asiCopy.getM_AttributeSetInstance_ID());
 		}
 

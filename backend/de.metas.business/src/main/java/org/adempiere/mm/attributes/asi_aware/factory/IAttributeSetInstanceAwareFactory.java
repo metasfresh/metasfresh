@@ -1,4 +1,4 @@
-package org.adempiere.mm.attributes.api;
+package org.adempiere.mm.attributes.asi_aware.factory;
 
 /*
  * #%L
@@ -22,7 +22,7 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
-
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 
 public interface IAttributeSetInstanceAwareFactory
 {

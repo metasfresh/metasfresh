@@ -1,18 +1,18 @@
-package org.adempiere.mm.attributes.api;
-
-import javax.annotation.Nullable;
-
-import lombok.Getter;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
+package org.adempiere.mm.attributes.asi_aware;
 
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -82,7 +82,7 @@ public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAwar
 	@Override
 	public I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
-		return Services.get(IAttributeDAO.class).getAttributeSetInstanceById(attributeSetInstanceId);
+		return Services.get(IAttributeSetInstanceBL.class).getById(attributeSetInstanceId);
 	}
 
 	@Override

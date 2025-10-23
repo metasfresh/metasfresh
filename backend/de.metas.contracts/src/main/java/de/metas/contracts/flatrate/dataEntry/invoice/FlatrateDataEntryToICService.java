@@ -60,7 +60,7 @@ import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -79,8 +79,8 @@ import java.util.Map;
 public class FlatrateDataEntryToICService
 {
 
-	final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 
@@ -111,7 +111,7 @@ public class FlatrateDataEntryToICService
 		final ICsCreationContext context = createExecutionContext(flatrateTermId, flatrateDataEntryHandler);
 
 		final FlatrateDataEntry entry = flatrateDataEntryRepo.getById(flatrateDataEntryId);
-		
+
 		final ImmutableMap<AttributeSetInstanceId, IPair<Quantity, List<FlatrateDataEntryDetail>>> priceRelevantASIs = createPriceRelevantASIs(entry, context);
 
 		return createInvoiceCandidates(priceRelevantASIs, entry, context);
@@ -183,7 +183,7 @@ public class FlatrateDataEntryToICService
 			final List<FlatrateDataEntryDetail> details = dataEntryKey2Detail.getValue(); //
 			final AttributeSetInstanceId asiId = details.get(0).getAsiId(); // all detail's ASI-IDs are equal for our purpose.
 
-			final I_M_AttributeSetInstance attributeSetInstanceRecord = attributeDAO.getAttributeSetInstanceById(asiId);
+			final I_M_AttributeSetInstance attributeSetInstanceRecord = asiBL.getById(asiId);
 			final I_M_ProductPrice productPriceRecord = ProductPrices.newQuery(priceListVersion)
 					.setProductId(context.getProductId())
 					.onlyValidPrices(true)
@@ -246,14 +246,14 @@ public class FlatrateDataEntryToICService
 					context);
 
 			createAndSaveDetailRecords(newRecord,
-									   entry,
-									   quantityListIPair.getRight(),
-									   context);
+					entry,
+					quantityListIPair.getRight(),
+					context);
 			result.add(newRecord);
 		}
 		return result.build();
 	}
-	
+
 	private I_C_Invoice_Candidate createAndSaveCandidateRecord(
 			@NonNull final FlatrateDataEntry entry,
 			@NonNull final AttributeSetInstanceId asiId,
@@ -349,16 +349,11 @@ public class FlatrateDataEntryToICService
 	@Data
 	private static class ICsCreationContext
 	{
-		@NonNull
-		final FlatrateTerm flatrateTerm;
-		@NonNull
-		final CountryId countryId;
-		@NonNull
-		final PricingSystemId pricingSystemId;
-		@NonNull
-		final ProductId productId;
-		@NonNull
-		final FlatrateDataEntryHandler flatrateDataEntryHandler;
+		@NonNull final FlatrateTerm flatrateTerm;
+		@NonNull final CountryId countryId;
+		@NonNull final PricingSystemId pricingSystemId;
+		@NonNull final ProductId productId;
+		@NonNull final FlatrateDataEntryHandler flatrateDataEntryHandler;
 
 		PriceListVersionId priceListVersionId;
 	}
