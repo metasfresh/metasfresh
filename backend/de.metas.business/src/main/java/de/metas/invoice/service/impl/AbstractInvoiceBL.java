@@ -542,7 +542,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		return setPaymentStatus(
-				invoice, 
+				invoice,
 				invoiceOpenResult.getOpenAmt().withoutAPAdjusted().withoutCMAdjusted().toBigDecimal(),
 				computePaymentStatus(invoiceOpenResult)
 		);
@@ -2063,10 +2063,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return invoices.get(0).getDateInvoiced().toInstant();
 	}
 
-
 	@Override
 	public Amount retrieveOpenAmt(final InvoiceId invoiceId)
 	{
 		return invoiceDAO.retrieveOpenAmt(invoiceId);
+	}
+
+	@Override
+	public void save(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		invoiceDAO.save(invoice);
 	}
 }

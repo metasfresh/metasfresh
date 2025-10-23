@@ -31,6 +31,7 @@ import org.compiere.model.I_C_InvoicePaySchedule;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -81,5 +82,10 @@ public class InvoicePayScheduleRepository
 	public void updateById(@NonNull final InvoiceId invoiceId, @NonNull final Consumer<InvoicePaySchedule> updater)
 	{
 		newLoaderAndSaver().updateById(invoiceId, updater);
+	}
+
+	public Optional<InvoicePaySchedule> getByInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		return newLoaderAndSaver().loadByInvoiceId(invoiceId);
 	}
 }

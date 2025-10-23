@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
@@ -60,7 +61,8 @@ import static de.metas.util.Check.isNotBlank;
 
 public class PaymentTermRepository implements IPaymentTermRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final @NonNull IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final @NonNull IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	private final CCache<Integer, PaymentTermMap> cache = CCache.<Integer, PaymentTermMap>builder()
 			.tableName(I_C_PaymentTerm.Table_Name)
@@ -289,7 +291,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.graceDays(record.getGraceDays())
 				.netDay(record.getNetDay())
 				.discountDays(record.getDiscountDays())
-				._default(record.isDefault())
+				.isDefault(record.isDefault())
 				.isComplex(record.isComplex())
 				.discount(Percent.of(record.getDiscount()))
 				.breaks(breaks)
@@ -358,5 +360,4 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.create()
 				.anyMatch();
 	}
-
 }

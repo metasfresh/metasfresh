@@ -17,6 +17,13 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
+import java.util.List;
+
+import de.metas.invoice.InvoiceId;
+import de.metas.payment.paymentterm.PaymentTermService;
+import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_InvoicePaySchedule;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
@@ -36,6 +43,7 @@ import org.compiere.util.Env;
  */
 public class InvoicePayScheduleValidate extends JavaProcess
 {
+	@NonNull private final PaymentTermService paymentTermService = SpringContextHolder.instance.getBean(PaymentTermService.class);
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
@@ -60,8 +68,8 @@ public class InvoicePayScheduleValidate extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		log.info("C_InvoicePaySchedule_ID=" + getRecord_ID());
-		MInvoicePaySchedule[] schedule = MInvoicePaySchedule.getInvoicePaySchedule
-			(getCtx(), 0, getRecord_ID(), null);
+		final List<I_C_InvoicePaySchedule> schedule = paymentTermService.retrievePaySchedulesForInvoiceId(InvoiceId.ofRepoId(getRecord_ID()));
+
 		if (schedule.length == 0)
 			throw new IllegalArgumentException("InvoicePayScheduleValidate - No Schedule");
 		//	Get Invoice

@@ -250,24 +250,5 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 		return true;
 	}	//	beforeSave
 
-	/**
-	 * 	After Save
-	 *	@param newRecord new
-	 *	@param success success
-	 *	@return success
-	 */
-	@Override
-	protected boolean afterSave (boolean newRecord, boolean success)
-	{
-		if (is_ValueChanged("DueAmt"))
-		{
-			log.debug("afterSave");
-			getParent();
-			MInvoice.validatePaySchedule(m_parent);
-			saveRecord(m_parent);
-		}
-		return success;
-	}	//	afterSave
-
 
 }	//	MInvoicePaySchedule

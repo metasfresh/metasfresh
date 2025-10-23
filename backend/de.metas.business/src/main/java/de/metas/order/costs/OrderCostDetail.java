@@ -83,7 +83,8 @@ public class OrderCostDetail
 
 	void addInOutCost(@NonNull Money amt, @NonNull Quantity qty)
 	{
-		this.inoutCostAmount = this.inoutCostAmount.add(amt);
+		this.inoutCostAmount =
+				this.inoutCostAmount.add(amt);
 		this.inoutQty = this.inoutQty.add(qty);
 	}
 

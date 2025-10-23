@@ -16,31 +16,27 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import de.metas.i18n.Msg;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
-import de.metas.i18n.Msg;
-import lombok.NonNull;
-
+import static java.math.BigDecimal.ZERO;
 
 /**
- *	Payment Term Model
+ * Payment Term Model
  *
- *  @author Jorg Janke
- *  @version $Id: MPaymentTerm.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: MPaymentTerm.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MPaymentTerm extends X_C_PaymentTerm
 {
@@ -51,48 +47,53 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	private static final long serialVersionUID = 2494915482340569386L;
 
 	/**
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param C_PaymentTerm_ID id
-	 *	@param trxName transaction
+	 * Standard Constructor
+	 *
+	 * @param ctx              context
+	 * @param C_PaymentTerm_ID id
+	 * @param trxName          transaction
 	 */
 	public MPaymentTerm(Properties ctx, int C_PaymentTerm_ID, String trxName)
 	{
 		super(ctx, C_PaymentTerm_ID, trxName);
 		if (C_PaymentTerm_ID == 0)
 		{
-			setAfterDelivery (false);
-			setNetDays (0);
-			setDiscount (ZERO);
-			setDiscount2 (ZERO);
-			setDiscountDays (0);
-			setDiscountDays2 (0);
-			setGraceDays (0);
-			setIsDueFixed (false);
-			setIsValid (false);
-		}	}	//	MPaymentTerm
+			setAfterDelivery(false);
+			setNetDays(0);
+			setDiscount(ZERO);
+			setDiscount2(ZERO);
+			setDiscountDays(0);
+			setDiscountDays2(0);
+			setGraceDays(0);
+			setIsDueFixed(false);
+			setIsValid(false);
+		}
+	}    //	MPaymentTerm
 
 	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
+	 * Load Constructor
+	 *
+	 * @param ctx     context
+	 * @param rs      result set
+	 * @param trxName transaction
 	 */
 	public MPaymentTerm(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MPaymentTerm
-
-
-	/**	Payment Schedule children			*/
-	private MPaySchedule[]				m_schedule;
+	}    //	MPaymentTerm
 
 	/**
-	 * 	Get Payment Schedule
-	 * 	@param requery if true re-query
-	 *	@return array of schedule
+	 * Payment Schedule children
 	 */
-	public MPaySchedule[] getSchedule (boolean requery)
+	private MPaySchedule[] m_schedule;
+
+	/**
+	 * Get Payment Schedule
+	 *
+	 * @param requery if true re-query
+	 * @return array of schedule
+	 */
+	public MPaySchedule[] getSchedule(boolean requery)
 	{
 		if (m_schedule != null && !requery)
 			return m_schedule;
@@ -108,7 +109,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 			{
 				MPaySchedule ps = new MPaySchedule(getCtx(), rs, get_TrxName());
 				ps.setParent(this);
-				list.add (ps);
+				list.add(ps);
 			}
 			rs.close();
 			pstmt.close();
@@ -132,11 +133,12 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		m_schedule = new MPaySchedule[list.size()];
 		list.toArray(m_schedule);
 		return m_schedule;
-	}	//	getSchedule
+	}    //	getSchedule
 
 	/**
-	 * 	Validate Payment Term & Schedule
-	 *	@return Validation Message @OK@ or error
+	 * Validate Payment Term & Schedule
+	 *
+	 * @return Validation Message @OK@ or error
 	 */
 	public String validate()
 	{
@@ -166,7 +168,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 				total = total.add(percent);
 		}
 		boolean valid = total.compareTo(Env.ONEHUNDRED) == 0;
-		setIsValid (valid);
+		setIsValid(valid);
 		for (int i = 0; i < m_schedule.length; i++)
 		{
 			if (m_schedule[i].isValid() != valid)
@@ -179,31 +181,31 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		if (!valid)
 			msg = "@Total@ = " + total + " - @Difference@ = " + Env.ONEHUNDRED.subtract(total);
 		return Msg.parseTranslation(getCtx(), msg);
-	}	//	validate
-
+	}    //	validate
 
 	/*************************************************************************
 	 * 	Apply Payment Term to Invoice -
-	 *	@param C_Invoice_ID invoice
-	 *	@return true if payment schedule is valid
+	 *    @param C_Invoice_ID invoice
+	 *    @return true if payment schedule is valid
 	 */
-	public boolean apply (int C_Invoice_ID)
+	public boolean apply(int C_Invoice_ID)
 	{
-		MInvoice invoice = new MInvoice (getCtx(), C_Invoice_ID, get_TrxName());
+		MInvoice invoice = new MInvoice(getCtx(), C_Invoice_ID, get_TrxName());
 		if (invoice == null || invoice.get_ID() == 0)
 		{
 			log.error("apply - Not valid C_Invoice_ID=" + C_Invoice_ID);
 			return false;
 		}
-		return apply (invoice);
-	}	//	apply
+		return apply(invoice);
+	}    //	apply
 
 	/**
-	 * 	Apply Payment Term to Invoice
-	 *	@param invoice invoice
-	 *	@return true if payment schedule is valid
+	 * Apply Payment Term to Invoice
+	 *
+	 * @param invoice invoice
+	 * @return true if payment schedule is valid
 	 */
-	public boolean apply (@Nullable final I_C_Invoice invoice)
+	public boolean apply(@Nullable final I_C_Invoice invoice)
 	{
 		if (invoice == null || invoice.getC_Invoice_ID() == 0)
 		{
@@ -212,97 +214,66 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		}
 
 		if (!isValid())
-			return applyNoSchedule (invoice);
+			return applyNoSchedule(invoice);
 		//
 		getSchedule(true);
 		if (m_schedule.length <= 1)
-			return applyNoSchedule (invoice);
-		else	//	only if valid
+			return applyNoSchedule(invoice);
+		else    //	only if valid
 			return applySchedule(invoice);
-	}	//	apply
+	}    //	apply
 
 	/**
-	 * 	Apply Payment Term without schedule to Invoice
-	 *	@param invoice invoice
-	 *	@return false as no payment schedule
+	 * Apply Payment Term without schedule to Invoice
+	 *
+	 * @param invoice invoice
+	 * @return false as no payment schedule
 	 */
-	private boolean applyNoSchedule (@NonNull final I_C_Invoice invoice)
+	private boolean applyNoSchedule(@NonNull final I_C_Invoice invoice)
 	{
-		deleteInvoicePaySchedule (invoice.getC_Invoice_ID());
+		deleteInvoicePaySchedule(invoice.getC_Invoice_ID());
 		//	updateInvoice
 		if (invoice.getC_PaymentTerm_ID() != getC_PaymentTerm_ID())
 			invoice.setC_PaymentTerm_ID(getC_PaymentTerm_ID());
 		if (invoice.isPayScheduleValid())
 			invoice.setIsPayScheduleValid(false);
 		return false;
-	}	//	applyNoSchedule
+	}    //	applyNoSchedule
 
 	/**
-	 * 	Apply Payment Term with schedule to Invoice
-	 *	@param invoice invoice
-	 *	@return true if payment schedule is valid
+	 * Delete existing Invoice Payment Schedule
+	 *
+	 * @param C_Invoice_ID id
 	 */
-	private boolean applySchedule (@NonNull final I_C_Invoice invoice)
-	{
-		deleteInvoicePaySchedule (invoice.getC_Invoice_ID());
-		//	Create Schedule
-		MInvoicePaySchedule ips = null;
-		BigDecimal remainder = invoice.getGrandTotal();
-		for (int i = 0; i < m_schedule.length; i++)
-		{
-			ips = new MInvoicePaySchedule (invoice, m_schedule[i]);
-			saveRecord(ips);
-			log.debug(ips.toString());
-			remainder = remainder.subtract(ips.getDueAmt());
-		}	//	for all schedules
-		//	Remainder - update last
-		if (remainder.compareTo(ZERO) != 0 && ips != null)
-		{
-			ips.setDueAmt(ips.getDueAmt().add(remainder));
-			saveRecord(ips);
-			log.debug("Remainder=" + remainder + " - " + ips);
-		}
-
-		//	updateInvoice
-		if (invoice.getC_PaymentTerm_ID() != getC_PaymentTerm_ID())
-			invoice.setC_PaymentTerm_ID(getC_PaymentTerm_ID());
-		return MInvoice.validatePaySchedule(invoice);
-	}	//	applySchedule
-
-	/**
-	 * 	Delete existing Invoice Payment Schedule
-	 *	@param C_Invoice_ID id
-	 *	@param trxName transaction
-	 */
-	private void deleteInvoicePaySchedule (int C_Invoice_ID)
+	private void deleteInvoicePaySchedule(int C_Invoice_ID)
 	{
 		String sql = "DELETE FROM C_InvoicePaySchedule WHERE C_Invoice_ID=" + C_Invoice_ID;
 		int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		log.debug("C_Invoice_ID=" + C_Invoice_ID + " - #" + no);
-	}	//	deleteInvoicePaySchedule
-
+	}    //	deleteInvoicePaySchedule
 
 	/**************************************************************************
 	 * 	String Representation
-	 *	@return info
+	 *    @return info
 	 */
 	@Override
-	public String toString ()
+	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MPaymentTerm[");
+		StringBuffer sb = new StringBuffer("MPaymentTerm[");
 		sb.append(get_ID()).append("-").append(getName())
-			.append(",Valid=").append(isValid())
-			.append ("]");
-		return sb.toString ();
-	}	//	toString
+				.append(",Valid=").append(isValid())
+				.append("]");
+		return sb.toString();
+	}    //	toString
 
 	/**
-	 * 	Before Save
-	 *	@param newRecord new
-	 *	@return true
+	 * Before Save
+	 *
+	 * @param newRecord new
+	 * @return true
 	 */
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	protected boolean beforeSave(boolean newRecord)
 	{
 		if (isDueFixed())
 		{
@@ -321,6 +292,6 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		if (!newRecord || !isValid())
 			validate();
 		return true;
-	}	//	beforeSave
+	}    //	beforeSave
 
-}	//	MPaymentTerm
+}    //	MPaymentTerm

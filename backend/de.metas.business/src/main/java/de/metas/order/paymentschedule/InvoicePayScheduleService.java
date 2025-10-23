@@ -29,6 +29,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class InvoicePayScheduleService
@@ -50,9 +52,7 @@ public class InvoicePayScheduleService
 
 	public void deleteByInvoiceId(@NonNull final InvoiceId invoiceId) {invoicePayScheduleRepository.deleteByInvoiceId(invoiceId);}
 
-	public void create(@NonNull final InvoicePayScheduleCreateRequest request)
-	{
-		invoicePayScheduleRepository.create(request);
-	}
+	public void create(@NonNull final InvoicePayScheduleCreateRequest request) { invoicePayScheduleRepository.create(request); }
 
+	public Optional<InvoicePaySchedule> getByInvoiceId(@NonNull final InvoiceId invoiceId) { return invoicePayScheduleRepository.getByInvoiceId(invoiceId);	}
 }
