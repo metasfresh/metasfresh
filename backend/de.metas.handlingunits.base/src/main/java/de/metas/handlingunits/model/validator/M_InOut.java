@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -44,10 +43,11 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
@@ -120,6 +120,11 @@ public class M_InOut
 	public void destroyHandlingUnitsForReversedInboundMovements(final I_M_InOut inout)
 	{
 		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
+		if(inout.getReversal_ID() <= 0)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we not dealing with a reversal!");
+			return;
+		}
 		if (movementType.isOutboundTransaction())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we are dealing with an outbound transaction!");
