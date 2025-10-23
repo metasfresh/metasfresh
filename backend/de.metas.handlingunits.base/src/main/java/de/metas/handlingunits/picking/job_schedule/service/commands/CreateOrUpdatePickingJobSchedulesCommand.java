@@ -24,7 +24,7 @@ import java.util.Set;
 @Builder
 public class CreateOrUpdatePickingJobSchedulesCommand
 {
-	private static final String SYS_CFG_CARRIER_PRODUCT_REQUIRED = "de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet";
+	private static final String SYSCONFIG_CARRIER_PRODUCT_REQUIRED = "de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet";
 	private static final AdMessageKey ERROR_CARRIER_PRODUCT_NOT_SET = AdMessageKey.of("de.metas.handlingunits.picking.job_schedule.CarrierProductNotSet");
 
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
@@ -44,7 +44,7 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 			return;
 		}
 
-		if(sysConfigBL.getBooleanValue(SYS_CFG_CARRIER_PRODUCT_REQUIRED, false))
+		if(sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false))
 		{
 			shipmentScheduleBL.getByIds(shipmentScheduleIds).values().forEach(CreateOrUpdatePickingJobSchedulesCommand::assumeCarrierProductSet);
 		}

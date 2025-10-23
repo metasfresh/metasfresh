@@ -23,6 +23,8 @@ package de.metas.inoutcandidate.agg.key.impl;
  */
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
@@ -74,8 +76,14 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 		if (ShipperId.ofRepoIdOrNull(sched.getM_Shipper_ID()) != null)
 		{
 			values.add(sched.getM_Shipper_ID());
-			values.add(sched.getCarrier_Product_ID());
-			values.add(sched.getCarrier_Goods_Type_ID());
+			if (CarrierGoodsTypeId.ofRepoIdOrNull(sched.getCarrier_Goods_Type_ID()) != null)
+			{
+				values.add(sched.getCarrier_Goods_Type_ID());
+			}
+			if (CarrierProductId.ofRepoIdOrNull(sched.getCarrier_Product_ID()) != null)
+			{
+				values.add(sched.getCarrier_Product_ID());
+			}
 		}
 
 		if (sched.getC_Async_Batch_ID() > 0)
