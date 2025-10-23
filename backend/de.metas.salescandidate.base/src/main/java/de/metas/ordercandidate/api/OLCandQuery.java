@@ -29,7 +29,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class OLCandQuery
 {
 	/**
@@ -51,9 +50,10 @@ public class OLCandQuery
 
 	OrgId orgId;
 
-	public OLCandQuery(
-			final String externalSystemCode,
+	@Builder
+	private OLCandQuery(
 			final String externalHeaderId,
+			final String externalSystemCode,
 			final String inputDataSourceName,
 			final String externalLineId,
 			final OrgId orgId)
@@ -69,8 +69,8 @@ public class OLCandQuery
 			}
 		}
 
-		this.externalSystemCode = externalSystemCode;
 		this.externalHeaderId = externalHeaderId;
+		this.externalSystemCode = externalSystemCode;
 		this.inputDataSourceName = inputDataSourceName;
 
 		this.externalLineId = externalLineId;

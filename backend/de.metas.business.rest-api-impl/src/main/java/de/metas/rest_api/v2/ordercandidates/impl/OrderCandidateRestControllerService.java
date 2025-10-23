@@ -113,11 +113,9 @@ public class OrderCandidateRestControllerService
 			return false;
 		}
 
-		final String externalSystemCode = olCandRequest.getExternalSystemCode();
-
 		final OLCandQuery olCandQuery = OLCandQuery.builder()
 				.externalHeaderId(olCandRequest.getExternalHeaderId())
-				.externalSystemCode(externalSystemCode)
+				.externalSystemCode(olCandRequest.getExternalSystemCode())
 				.build();
 
 		return queryToOLCandList.computeIfAbsent(olCandQuery, olCandRepo::getByQuery)
