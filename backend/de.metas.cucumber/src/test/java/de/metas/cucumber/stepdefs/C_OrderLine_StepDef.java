@@ -53,6 +53,8 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -313,7 +315,7 @@ public class C_OrderLine_StepDef
 					validateOrderLine(orderLineRecord, row);
 
 					row.getAsOptionalIdentifier()
-							.ifPresent(identifier -> orderLineTable.put(identifier, orderLineRecord));
+							.ifPresent(identifier -> orderLineTable.putOrReplaceIfSameId(identifier, orderLineRecord));
 				});
 	}
 
@@ -684,57 +686,53 @@ public class C_OrderLine_StepDef
 			@Override
 			public void string()
 			{
-				final String expectedAttrValue = expectation.getValue();
-				if (expectedAttrValue.isEmpty())
+				if (expectation.isNullPlaceholder())
 				{
 					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isNullOrEmpty();
 				}
 				else
 				{
-					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isEqualTo(expectedAttrValue);
+					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isEqualTo(expectation.getValueAsString());
 				}
 			}
 
 			@Override
 			public void number()
 			{
-				final BigDecimal expectedAttrValue = expectation.getValueAsBigDecimal();
-				if (expectedAttrValue == null)
+				if (expectation.isNullPlaceholder())
 				{
 					softly.assertThat(attributeInstance.getValueNumber()).as(expectation.toString()).isNotNull();
 				}
 				else
 				{
-					softly.assertThat(attributeInstance.getValueNumber()).as(expectation.toString()).isEqualTo(expectedAttrValue);
+					softly.assertThat(attributeInstance.getValueNumber()).as(expectation.toString()).isEqualTo(expectation.getValueAsBigDecimal());
 				}
 			}
 
 			@Override
 			public void date()
 			{
-				final LocalDate expectedAttrValue = expectation.getValueAsLocalDate();
-				if (expectedAttrValue == null)
+				if (expectation.isNullPlaceholder())
 				{
 					softly.assertThat(attributeInstance.getValueDate()).as(expectation.toString()).isNotNull();
 				}
 				else
 				{
 					final LocalDate actualValue = TimeUtil.asLocalDate(attributeInstance.getValueDate());
-					softly.assertThat(actualValue).as(expectation.toString()).isEqualTo(expectedAttrValue);
+					softly.assertThat(actualValue).as(expectation.toString()).isEqualTo(expectation.getValueAsLocalDate());
 				}
 			}
 
 			@Override
 			public void list()
 			{
-				final String expectedAttrValue = expectation.getValue();
-				if (expectedAttrValue.isEmpty())
+				if (expectation.isNullPlaceholder())
 				{
 					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isNullOrEmpty();
 				}
 				else
 				{
-					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isEqualTo(expectedAttrValue);
+					softly.assertThat(attributeInstance.getValue()).as(expectation.toString()).isEqualTo(expectation.getValueAsString());
 				}
 			}
 		});
@@ -749,7 +747,7 @@ public class C_OrderLine_StepDef
 	private static class AttributeIdentifierAndValue
 	{
 		@NonNull StepDefDataIdentifier attributeIdentifier;
-		@NonNull String value;
+		@NonNull @Getter(AccessLevel.NONE) String value;
 
 		private static final String SEPARATOR = ":";
 
@@ -774,18 +772,24 @@ public class C_OrderLine_StepDef
 			return attributeIdentifier + SEPARATOR + value;
 		}
 
+		public boolean isNullPlaceholder()
+		{
+			return value.isEmpty() || "null".equals(value);
+		}
+
+		public String getValueAsString()
+		{
+			return isNullPlaceholder() ? null : value;
+		}
+
 		public BigDecimal getValueAsBigDecimal()
 		{
-			return value.isEmpty()
-					? null
-					: NumberUtils.asBigDecimal(value);
+			return isNullPlaceholder() ? null : NumberUtils.asBigDecimal(value);
 		}
 
 		public LocalDate getValueAsLocalDate()
 		{
-			return value.isEmpty()
-					? null
-					: LocalDate.parse(value);
+			return isNullPlaceholder() ? null : LocalDate.parse(value);
 		}
 
 	}
