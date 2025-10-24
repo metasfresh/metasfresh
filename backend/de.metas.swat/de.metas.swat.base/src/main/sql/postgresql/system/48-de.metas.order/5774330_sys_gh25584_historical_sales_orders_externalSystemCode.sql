@@ -31,7 +31,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 -- Value: Historical_Sales_Orders_By_Ids_JSON
 -- Classname: de.metas.postgrest.process.PostgRESTProcessExecutor
 -- 2025-10-23T14:46:11.097Z
-UPDATE AD_Process SET JSONPath='/historical_sales_orders_json_v?or=(Order_ID.eq.@C_Order_ID/-1@,and(ExternalId.ilike.@ExternalId/-1@,ExternalSystemCode.@ExternalSystemCode/-1@))&limit=@Limit/2000@&offset=@Offset/0@',Updated=TO_TIMESTAMP('2025-10-23 14:46:11.097000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585484
+UPDATE AD_Process SET JSONPath='/historical_sales_orders_json_v?or=(Order_ID.eq.@C_Order_ID/-1@,and(ExternalId.ilike.@ExternalId/-1@,ExternalSystemCode.ilike.@ExternalSystemCode/-1@))&limit=@Limit/2000@&offset=@Offset/0@',Updated=TO_TIMESTAMP('2025-10-23 14:46:11.097000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585484
 ;
 
 -- Process: Historical_Shipments_JSON(de.metas.postgrest.process.PostgRESTProcessExecutor)
