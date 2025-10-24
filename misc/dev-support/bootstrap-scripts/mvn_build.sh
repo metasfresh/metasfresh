@@ -31,7 +31,7 @@ export JAVA_HOME=c:/Users/tobia/.jdks/temurin-21.0.7
 MULTITHREAD_PARAM=''
 #MULTITHREAD_PARAM='-T2C'
 
-ADDITIONAL_PARAMS='-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true -DskipTests'
+ADDITIONAL_PARAMS='-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true'
 #ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS} -DskipTests'
 #ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS} -Dmaven.test.skip=true'
 
@@ -50,4 +50,4 @@ mvn --file ../../services/procurement-webui/procurement-webui-backend/pom.xml --
 
 mvn --file ../../services/federated-rabbitmq/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS
 
-echo "$(date): Done"
+echo "$(date): mvn_build.sh is Done"
