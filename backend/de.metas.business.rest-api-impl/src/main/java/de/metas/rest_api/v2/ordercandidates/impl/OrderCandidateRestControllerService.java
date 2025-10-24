@@ -38,6 +38,7 @@ import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCand;
@@ -115,7 +116,7 @@ public class OrderCandidateRestControllerService
 
 		final OLCandQuery olCandQuery = OLCandQuery.builder()
 				.externalHeaderId(olCandRequest.getExternalHeaderId())
-				.externalSystemCode(olCandRequest.getExternalSystemCode())
+				.externalSystemType(ExternalSystemType.ofValue(olCandRequest.getExternalSystemCode()))
 				.build();
 
 		return queryToOLCandList.computeIfAbsent(olCandQuery, olCandRepo::getByQuery)
@@ -217,7 +218,7 @@ public class OrderCandidateRestControllerService
 	{
 		final OLCandQuery olCandQuery = OLCandQuery.builder()
 				.externalHeaderId(externalHeaderId)
-				.externalSystemCode(externalSystemCode)
+				.externalSystemType(ExternalSystemType.ofValue(externalSystemCode))
 				.build();
 
 		return olCandRepo.getByQuery(olCandQuery)

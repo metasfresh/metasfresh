@@ -1,10 +1,12 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -39,7 +41,7 @@ public class OLCandQuery
 	/**
 	 * {@link de.metas.externalsystem.model.I_ExternalSystem#COLUMNNAME_Value} of the external system the candidates in question were added with.
 	 */
-	String externalSystemCode;
+	ExternalSystemType externalSystemType;
 
 	/**
 	 * {@link I_AD_InputDataSource#COLUMNNAME_InternalName} of the data source the candidates in question were added with.
@@ -53,7 +55,7 @@ public class OLCandQuery
 	@Builder
 	private OLCandQuery(
 			final String externalHeaderId,
-			final String externalSystemCode,
+			final ExternalSystemType externalSystemType,
 			final String inputDataSourceName,
 			final String externalLineId,
 			final OrgId orgId)
@@ -62,15 +64,14 @@ public class OLCandQuery
 		{
 			Check.assumeNotEmpty(externalHeaderId, "If externalHeaderId is specified, then it may not be empty");
 
-			if (externalSystemCode == null && externalLineId == null)
+			if (externalSystemType == null && externalLineId == null)
 			{
-				Check.assumeNotEmpty(externalSystemCode, "If externalHeaderId is specified, then externalSystemCode or externalLineId should be defined; externalHeaderId={}", externalHeaderId);
-				Check.assumeNotEmpty(externalLineId, "If externalHeaderId is specified, then externalSystemCode or externalLineId should be defined; externalHeaderId={}", externalHeaderId);
+				throw new AdempiereException("If externalHeaderId is specified, then externalSystemType or externalLineId should be defined; externalHeaderId=" + externalHeaderId);
 			}
 		}
 
 		this.externalHeaderId = externalHeaderId;
-		this.externalSystemCode = externalSystemCode;
+		this.externalSystemType = externalSystemType;
 		this.inputDataSourceName = inputDataSourceName;
 
 		this.externalLineId = externalLineId;

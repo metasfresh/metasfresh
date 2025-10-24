@@ -16,6 +16,7 @@ import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.logging.LogManager;
@@ -332,7 +333,7 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 
 		final OLCandQuery query = OLCandQuery
 				.builder()
-				.externalSystemCode(externalSystemCode)
+				.externalSystemType(ExternalSystemType.ofValue(externalSystemCode))
 				.externalHeaderId(externalHeaderId)
 				.build();
 

@@ -60,6 +60,7 @@ public class OLCandCreateRequest
 	/**
 	 * Mandatory; an Identifier of an existing ExternalSystem record.
 	 */
+	@NonNull
 	ExternalSystemId externalSystemId;
 
 	/**

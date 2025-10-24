@@ -11,7 +11,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalsystem.ExternalSystemType;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.location.LocationId;
@@ -370,9 +369,9 @@ public class OLCandRepository
 		{
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_ExternalHeaderId, olCandQuery.getExternalHeaderId());
 		}
-		if (Check.isNotBlank(olCandQuery.getExternalSystemCode()))
+		if (olCandQuery.getExternalSystemType() != null)
 		{
-			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(olCandQuery.getExternalSystemCode()));
+			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(olCandQuery.getExternalSystemType());
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_ExternalSystem_ID, externalSystemId);
 		}
 		if (Check.isNotBlank(olCandQuery.getInputDataSourceName()))

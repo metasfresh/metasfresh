@@ -39,8 +39,8 @@ Feature: Invoice export via postgREST
       | Identifier           | InternalName   |
       | dataSource_S0474_010 | test_S0474_010 |
     When metasfresh contains External System
-      | Name        | Value          |
-      | Test System | test_S0474_010 |
+      | Name                 | Value          |
+      | TestSystem_S0474_010 | test_S0474_010 |
     And metasfresh contains C_Invoice:
       | Identifier            | REST.Context             | AD_InputDataSource_ID | ExternalSystem.Value | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesInvoiceS0474_010 | salesInvoiceS0474_010_ID | dataSource_S0474_010  | test_S0474_010       | customer1     | Ausgangsrechnung        | S0474_010  | 2025-05-01   | Spot                     | true    | EUR                 |
