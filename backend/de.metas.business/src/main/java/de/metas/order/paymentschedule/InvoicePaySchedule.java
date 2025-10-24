@@ -2,13 +2,13 @@ package de.metas.order.paymentschedule;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.invoice.InvoiceId;
+import de.metas.money.Money;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,7 +49,7 @@ public class InvoicePaySchedule
 		lines.forEach(line -> line.setValid(isValid));
 	}
 
-	public boolean validate(@NonNull final BigDecimal grandTotal)
+	public boolean validate(@NonNull final Money grandTotal)
 	{
 		final AtomicBoolean isValid = new AtomicBoolean(false);
 
@@ -59,11 +59,11 @@ public class InvoicePaySchedule
 			return false;
 		}
 
-		final BigDecimal totalDue = schedules.stream()
-				.map(line -> line.getDueAmount().toBigDecimal())
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		final Money totalDue = schedules.stream()
+				.map(InvoicePayScheduleLine::getDueAmount)
+				.reduce(Money.zero(grandTotal.getCurrencyId()), Money::add);
 
-		isValid.set(grandTotal.compareTo(totalDue) == 0);
+		isValid.set(grandTotal.isEqualByComparingTo(totalDue));
 
 		markAsValid(isValid.get());
 

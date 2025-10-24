@@ -140,10 +140,11 @@ public class PaymentTermService
 
 	public boolean validate(@NonNull final PaymentTermId paymentTermId)
 	{
-		final List<PaySchedule> paySchedules = paymentTermRepository.retrievePayScheduleList(paymentTermId);
+		final List<PaySchedule> paySchedules = paymentTermRepository.retrievePaySchedules(paymentTermId);
 
 		if (paySchedules.isEmpty())
 		{
+
 			return true;
 		}
 		if (paySchedules.size() == 1)

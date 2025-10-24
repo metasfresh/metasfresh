@@ -30,16 +30,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaySchedule;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
 
 @Interceptor(I_C_PaySchedule.class)
 @Component
@@ -49,6 +46,8 @@ public class C_PaySchedule
 	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	@NonNull private static final String PROPERTY_C_PaySchedule = C_PaySchedule.class.getName();
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_PaySchedule record)
 	{
@@ -56,27 +55,20 @@ public class C_PaySchedule
 		if (paymentTermService.hasPaymentTermBreaks(paymentTermId)) {throw new AdempiereException(PaymentTermConstants.MSG_ComplexTermConflict);}
 	}
 
-	@NonNull private static final ThreadLocal<Set<PaymentTermId>> to_validate_paymentTermIds = ThreadLocal.withInitial(HashSet::new);
-
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void validatePaySchedules(@NonNull final I_C_PaySchedule record)
 	{
-		final Set<PaymentTermId> idsToValidate = to_validate_paymentTermIds.get();
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
-		final ITrxListenerManager listenerManager = trxManager.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(record));
 
-		if (idsToValidate.add(paymentTermId))
-		{
+		trxManager.accumulateAndProcessBeforeCommit(
+				PROPERTY_C_PaySchedule,
+				Collections.singleton(paymentTermId),
+				uniquePaymentTermIds -> uniquePaymentTermIds.forEach(id -> {
 
-			listenerManager.runBeforeCommit(() -> {
+					final boolean isValid = paymentTermService.validate(id);
+					paymentTermService.setPaymentTermIsValidAndSave(id, isValid);
 
-				final boolean isValid = paymentTermService.validate(paymentTermId);
-				paymentTermService.setPaymentTermIsValidAndSave(paymentTermId, isValid);
-
-			});
-
-			listenerManager.runAfterCommit(to_validate_paymentTermIds::remove);
-		}
-
+				})
+		);
 	}
 }

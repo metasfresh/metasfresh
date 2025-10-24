@@ -23,19 +23,10 @@ import de.metas.process.ProcessInfoParameter;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-/**
- * Validate Payment Term and Schedule
- *
- * @author Jorg Janke
- * @version $Id: PaymentTermValidate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
- */
 public class PaymentTermValidate extends JavaProcess
 {
 	@NonNull final PaymentTermService paymentTermService = SpringContextHolder.instance.getBean(PaymentTermService.class);
 
-	/**
-	 * Prepare - e.g., get Parameters.
-	 */
 	protected void prepare()
 	{
 		final ProcessInfoParameter[] para = getParametersAsArray();
@@ -44,27 +35,20 @@ public class PaymentTermValidate extends JavaProcess
 			final String name = processInfoParameter.getParameterName();
 			if (processInfoParameter.getParameter() != null)
 			{
-				log.error("Unknown Parameter: " + name);
+				log.error("Unknown Parameter: {}", name);
 			}
 
 		}
-	}    //	prepare
+	}
 
-	/**
-	 * Perform process.
-	 *
-	 * @return Message
-	 * @throws Exception if not successful
-	 */
 	protected String doIt() throws Exception
 	{
-		log.info("C_PaymentTerm_ID=" + getRecord_ID());
+		log.info("C_PaymentTerm_ID={}", getRecord_ID());
 
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(getRecord_ID());
 		final boolean isValid = paymentTermService.validate(paymentTermId);
-		paymentTermService.setPaymentTermIsValidAndSave(paymentTermId, isValid);
 		//
 		return isValid ? "@OK@" : "@Invalid@ @C_PaymentTerm_ID@=" + paymentTermId;
-	}    //	doIt
+	}
 
-}    //	PaymentTermValidate
+}

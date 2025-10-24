@@ -149,21 +149,16 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	{
 		final String sql = "DELETE FROM C_InvoicePaySchedule WHERE C_Invoice_ID=" + C_Invoice_ID;
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
-		log.debug("C_Invoice_ID=" + C_Invoice_ID + " - #" + no);
+		log.debug("C_Invoice_ID={} - #{}", C_Invoice_ID, no);
 	}    //	deleteInvoicePaySchedule
 
-	/**************************************************************************
-	 * 	String Representation
-	 *    @return info
-	 */
+
 	@Override
 	public String toString()
 	{
-		final StringBuffer sb = new StringBuffer("MPaymentTerm[");
-		sb.append(get_ID()).append("-").append(getName())
-				.append(",Valid=").append(isValid())
-				.append("]");
-		return sb.toString();
-	}    //	toString
+		return "MPaymentTerm[" + get_ID() + "-" + getName()
+				+ ",Valid=" + isValid()
+				+ "]";
+	}
 
-}    //	MPaymentTerm
+}

@@ -302,9 +302,9 @@ public class PaymentTermRepository implements IPaymentTermRepository
 	}
 
 	@Override
-	public @NonNull ImmutableListMultimap<PaymentTermId, PaySchedule> retrievePaySchedules(@NonNull final PaymentTermId paymentTermId)
+	public @NonNull ImmutableList<PaySchedule> retrievePaySchedules(@NonNull final PaymentTermId paymentTermId)
 	{
-		return retrievePayschedulesForMultipleTerms(ImmutableList.of(paymentTermId));
+		return getById(paymentTermId).getPaySchedules();
 	}
 
 	@NonNull

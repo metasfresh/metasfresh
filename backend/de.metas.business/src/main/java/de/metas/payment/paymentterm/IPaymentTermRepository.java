@@ -72,14 +72,7 @@ public interface IPaymentTermRepository extends ISingletonService
 		return ImmutableList.copyOf(retrievePaymentTermBreaks(paymentTermId).get(paymentTermId));
 	}
 
-	@NonNull
-	default ImmutableList<PaySchedule> retrievePayScheduleList(@NonNull final PaymentTermId paymentTermId)
-	{
-		return ImmutableList.copyOf(retrievePaySchedules(paymentTermId).get(paymentTermId));
-	}
-
-	@NonNull
-	ImmutableListMultimap<PaymentTermId, PaySchedule> retrievePaySchedules(@NonNull PaymentTermId paymentTermId);
+	@NonNull ImmutableList<PaySchedule> retrievePaySchedules(@NonNull final PaymentTermId paymentTermId);
 
 	boolean hasPaySchedule(@NonNull PaymentTermId paymentTermId);
 
