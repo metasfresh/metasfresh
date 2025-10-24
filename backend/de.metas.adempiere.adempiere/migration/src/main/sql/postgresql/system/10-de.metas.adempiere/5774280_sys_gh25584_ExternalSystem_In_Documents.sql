@@ -319,9 +319,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=755060
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,755060,0,257,637926,1000029,'F',TO_TIMESTAMP('2025-10-22 10:53:00.791000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Externes System',64,0,0,TO_TIMESTAMP('2025-10-22 10:53:00.791000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
-CREATE UNIQUE INDEX M_InOut_ExternalHeader_ID ON M_InOut (ExternalSystem_ID,ExternalId,AD_Org_ID) WHERE IsActive='Y' AND ExternalId IS NOT NULL
-;
-
 -- Column: C_Invoice_Candidate.ExternalSystem_ID
 -- 2025-10-22T12:26:00.846Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,591421,583968,0,30,540270,'XX','ExternalSystem_ID',TO_TIMESTAMP('2025-10-22 12:26:00.592000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','de.metas.invoicecandidate',0,10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Externes System',0,0,TO_TIMESTAMP('2025-10-22 12:26:00.592000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
@@ -439,9 +436,6 @@ ALTER TABLE C_OLCand
 
 -- 2025-10-22T12:57:21.348Z
 INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,591421,1000000,1000000,540128,TO_TIMESTAMP('2025-10-22 12:57:21.335000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.invoicecandidate','Y','COL',TO_TIMESTAMP('2025-10-22 12:57:21.335000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
-CREATE UNIQUE INDEX C_Invoice_ExternalHeader_ID ON C_Invoice (ExternalSystem_ID,ExternalId,AD_Org_ID) WHERE IsActive='Y' AND ExternalId IS NOT NULL
 ;
 
 -- Run mode: SWING_CLIENT
