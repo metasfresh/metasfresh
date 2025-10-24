@@ -125,12 +125,11 @@ public class BankAccountService
 	}
 
 	@NonNull
-	public String getBankNameIfAny(@NonNull final BankAccountId bankAccountId)
+	public Optional<String> getBankName(@NonNull final BankAccountId bankAccountId)
 	{
-		return Optional.ofNullable(bankAccountDAO.getById(bankAccountId))
+		return Optional.of(bankAccountDAO.getById(bankAccountId))
 				.map(BankAccount::getBankId)
-				.flatMap(bankId -> Optional.ofNullable(bankRepo.getById(bankId)))
-				.map(Bank::getBankName)
-				.orElse("");
+				.map(bankRepo::getById)
+				.map(Bank::getBankName);
 	}
 }

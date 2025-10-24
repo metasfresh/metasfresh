@@ -129,6 +129,7 @@ import static java.math.BigDecimal.ZERO;
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
 	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
+	private static final AdMessageKey ERR_SEPA_Export_NoBankName = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_NoBankName");
 
 	protected static final String BIC_NOTPROVIDED = "NOTPROVIDED";
 
@@ -588,10 +589,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				final boolean hasNoBIC = Check.isBlank(finInstnId.getBIC()) || BIC_NOTPROVIDED.equals(finInstnId.getBIC());
 				if (hasNoBIC)
 				{
-					final String bankName =  bankAccountService.getBankNameIfAny(BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()));
-					Check.errorIf(Check.isBlank(bankName), SepaMarshallerException.class,
-								  "Zahlart={}, but line {} has no information about the bank name",
-								  paymentType, createInfo(line));
+					final String bankName = bankAccountService.getBankName(BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()))
+							.orElseThrow(() ->
+									new AdempiereException(ERR_SEPA_Export_NoBankName, paymentType, createInfo(line)));
 
 					finInstnId.setNm(bankName);
 					finInstnId.setBIC(null); // if we use Nm, then there should be no BIC element
