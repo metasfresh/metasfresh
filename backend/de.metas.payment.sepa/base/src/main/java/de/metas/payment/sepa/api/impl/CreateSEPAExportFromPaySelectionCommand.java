@@ -62,7 +62,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 class CreateSEPAExportFromPaySelectionCommand
 {
 	@NonNull private static final AdMessageKey ERR_C_BP_BankAccount_BankNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccount_BankNotSet");
-	@NonNull private static final AdMessageKey ERR_C_BP_BankAccount_IBANNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccountIBANNotSet");
+	@NonNull private static final AdMessageKey ERR_C_BP_BankAccount_IBANNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccount_IBANNotSet");
 	@NonNull private static final AdMessageKey ERR_C_BP_BankAccount_SEPA_CreditorIdentifierNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccount_SEPA_CreditorIdentifierNotSet");
 	@NonNull private static final AdMessageKey ERR_C_Bank_SwiftCodeNotSet = AdMessageKey.of("de.metas.payment.sepa.C_Bank_SwiftCodeNotSet");
 	@NonNull private static final AdMessageKey ERR_SEPA_Invoice_Nor_Order_Set = AdMessageKey.of("SEPA_Invoice_Nor_Order_Set");
