@@ -22,26 +22,28 @@
 
 package de.metas.material.process;
 
-import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.ReceiptScheduleQuery;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
+import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.QtyDemandQtySupplyId;
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class QtyDemand_QtySupply_V_to_ReceiptSchedule extends JavaProcess implements IProcessPrecondition
 {
-	IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final QtyDemandSupplyRepository demandSupplyRepository = SpringContextHolder.instance.getBean(QtyDemandSupplyRepository.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -56,17 +58,14 @@ public class QtyDemand_QtySupply_V_to_ReceiptSchedule extends JavaProcess implem
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_QtyDemand_QtySupply_V currentRow = InterfaceWrapperHelper.load(getRecord_ID(), I_QtyDemand_QtySupply_V.class);
-
-		final List<TableRecordReference> recordReferences = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Product_ID, currentRow.getM_Product_ID())
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID, currentRow.getM_Warehouse_ID())
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_AD_Org_ID, currentRow.getAD_Org_ID())
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID, currentRow.getAttributesKey(), ASIQueryFilterModifier.instance)
-				.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, 0)
-				.create()
-				.listIds(ReceiptScheduleId::ofRepoId)
+		final QtyDemandQtySupply currentRow = demandSupplyRepository.getById(QtyDemandQtySupplyId.ofRepoId(getRecord_ID()));
+		final ReceiptScheduleQuery receiptScheduleQuery = ReceiptScheduleQuery.builder()
+				.warehouseId(currentRow.getWarehouseId())
+				.orgId(currentRow.getOrgId())
+				.productId(currentRow.getProductId())
+				.attributesKey(currentRow.getAttributesKey())
+				.build();
+		final List<TableRecordReference> recordReferences = receiptScheduleDAO.listIdsByQuery(receiptScheduleQuery)
 				.stream()
 				.map(id -> TableRecordReference.of(I_M_ReceiptSchedule.Table_Name, id))
 				.collect(Collectors.toList());

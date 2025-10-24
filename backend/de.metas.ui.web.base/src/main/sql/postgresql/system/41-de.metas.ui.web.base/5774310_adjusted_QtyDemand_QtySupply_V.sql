@@ -17,7 +17,13 @@ SELECT t.ad_client_id,
        SUM(qtyToProduce)                                                                                                       AS qtyToProduce,
        SUM(qtyForecasted)                                                                                                      AS qtyForecasted,
        SUM(qtyStock)                                                                                                           AS qtyStock,
-       ROW_NUMBER() OVER (ORDER BY t.ad_client_id, t.ad_org_id, p.m_product_id, p.c_uom_id, t.attributesKey, t.m_warehouse_id) AS QtyDemand_QtySupply_V_ID
+       abs((('x' || substr(md5(concat_ws('#',
+                                      t.ad_client_id::text,
+                                      t.ad_org_id::text,
+                                      p.m_product_id::text,
+                                      p.c_uom_id::text,
+                                      coalesce(t.attributesKey, '')::text,
+                                      coalesce(t.m_warehouse_id, 0)::text)), 1, 8))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID
 FROM m_product p
          INNER JOIN
      (

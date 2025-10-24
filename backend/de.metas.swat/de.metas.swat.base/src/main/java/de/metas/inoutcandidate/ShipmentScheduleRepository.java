@@ -40,6 +40,7 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -58,6 +59,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -72,6 +74,7 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -412,6 +415,36 @@ public class ShipmentScheduleRepository
 				.orElseThrow(() -> new AdempiereException("No shipment schedule found for package " + packageId));
 	}
 
+	public List<ShipmentScheduleId> listIdsByQuery(@NonNull final ShipmentScheduleQuery query)
+	{
+		if (query.getProductId() == null &&
+				query.getWarehouseId() == null &&
+				query.getAttributesKey() == null &&
+				query.getOrgId() == null)
+		{
+			throw new AdempiereException("At least one of the following parameters must be set: productId, warehouseId, attributesKey, orgId");
+		}
+		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter();
+		if (query.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, query.getProductId());
+		}
+		if (query.getWarehouseId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
+		}
+		if (query.getAttributesKey() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
+		}
+		if (query.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		}
+		return queryBuilder.create().listIds(ShipmentScheduleId::ofRepoId);
+	}
+
 	@Value
 	@Builder
 	public static class ShipmentScheduleQuery
@@ -445,5 +478,9 @@ public class ShipmentScheduleRepository
 		@Builder.Default
 		boolean onlyIfAllFromOrderExportable = false;
 
+		@Nullable OrgId orgId;
+		@Nullable AttributesKey attributesKey;
+		@Nullable ProductId productId;
+		@Nullable WarehouseId warehouseId;
 	}
 }

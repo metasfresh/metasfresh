@@ -22,27 +22,28 @@
 
 package de.metas.material.process;
 
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
-import de.metas.mforecast.impl.ForecastId;
+import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.QtyDemandQtySupplyId;
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
+import de.metas.mforecast.IForecastDAO;
+import de.metas.mforecast.impl.ForecastQuery;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_ForecastLine;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class QtyDemand_QtySupply_V_to_Forecast extends JavaProcess implements IProcessPrecondition
 {
-	IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final QtyDemandSupplyRepository demandSupplyRepository = SpringContextHolder.instance.getBean(QtyDemandSupplyRepository.class);
+	private final IForecastDAO forecastDAO = Services.get(IForecastDAO.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -57,17 +58,14 @@ public class QtyDemand_QtySupply_V_to_Forecast extends JavaProcess implements IP
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_QtyDemand_QtySupply_V currentRow = InterfaceWrapperHelper.load(getRecord_ID(), I_QtyDemand_QtySupply_V.class);
-		final List<TableRecordReference> recordReferences = queryBL.createQueryBuilder(I_M_ForecastLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Product_ID, currentRow.getM_Product_ID())
-				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_AttributeSetInstance_ID, currentRow.getAttributesKey(), ASIQueryFilterModifier.instance)
-				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Warehouse_ID, currentRow.getM_Warehouse_ID())
-				.addNotEqualsFilter(I_M_ForecastLine.COLUMNNAME_Qty, 0)
-				.andCollect(I_M_ForecastLine.COLUMN_M_Forecast_ID)
-				.addEqualsFilter(I_M_Forecast.COLUMNNAME_AD_Org_ID, currentRow.getAD_Org_ID())
-				.create()
-				.listIds(ForecastId::ofRepoId)
+		final QtyDemandQtySupply currentRow = demandSupplyRepository.getById(QtyDemandQtySupplyId.ofRepoId(getRecord_ID()));
+		final ForecastQuery forecastQuery = ForecastQuery.builder()
+				.warehouseId(currentRow.getWarehouseId())
+				.orgId(currentRow.getOrgId())
+				.productId(currentRow.getProductId())
+				.attributesKey(currentRow.getAttributesKey())
+				.build();
+		final List<TableRecordReference> recordReferences = forecastDAO.listIdsByQuery(forecastQuery)
 				.stream()
 				.map(id -> TableRecordReference.of(I_M_Forecast.Table_Name, id))
 				.collect(Collectors.toList());
