@@ -588,7 +588,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				final boolean hasNoBIC = Check.isBlank(finInstnId.getBIC()) || BIC_NOTPROVIDED.equals(finInstnId.getBIC());
 				if (hasNoBIC)
 				{
-					final String bankName = getBankNameIfAny(line);
+					final String bankName =  bankAccountService.getBankNameIfAny(BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()));
 					Check.errorIf(Check.isBlank(bankName), SepaMarshallerException.class,
 								  "Zahlart={}, but line {} has no information about the bank name",
 								  paymentType, createInfo(line));
@@ -911,15 +911,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		return ibanToUse.startsWith("CH") || ibanToUse.startsWith("LI");
 	}
 
-	protected String getBankNameIfAny(final I_SEPA_Export_Line line)
-	{
-		return Optional.ofNullable(bankAccountDAO.getById(
-						BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID())))
-				.map(BankAccount::getBankId)
-				.flatMap(bankId -> Optional.ofNullable(bankRepo.getById(bankId)))
-				.map(Bank::getBankName)
-				.orElse("");
-	}
 
 	private PartyIdentification32CH copyPartyIdentificationSEPA2(final PartyIdentification32CHNameAndId initgPty)
 	{

@@ -140,7 +140,13 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setC_Currency_ID(bpBankAccount.getCurrencyId().getRepoId());
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
 
-		exportLine.setIBAN(selectIBANOrNull(bpBankAccount));
+		final String IBAN = selectIBANOrNull(bpBankAccount);
+		if (Check.isBlank(IBAN))
+		{
+			throw new AdempiereException(ERR_C_BP_BankAccount_IBANNotSet, bpBankAccount);
+		}
+
+		exportLine.setIBAN(IBAN);
 
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
 		// set this field

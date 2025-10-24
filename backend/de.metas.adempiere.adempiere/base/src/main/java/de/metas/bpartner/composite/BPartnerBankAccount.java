@@ -87,7 +87,7 @@ public class BPartnerBankAccount
 	 */
 	@Setter(AccessLevel.NONE)
 	@JsonIgnore
-	private BPartnerId bpartnerId;
+	private @Nullable BPartnerId bpartnerId;
 
 	@Nullable
 	private String iban;
