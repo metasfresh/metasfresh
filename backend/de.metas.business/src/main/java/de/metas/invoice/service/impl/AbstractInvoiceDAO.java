@@ -177,6 +177,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
+	@NonNull
 	public Amount retrieveOpenAmt(final InvoiceId invoiceId)
 	{
 		final org.compiere.model.I_C_Invoice invoice = getByIdInTrx(invoiceId);

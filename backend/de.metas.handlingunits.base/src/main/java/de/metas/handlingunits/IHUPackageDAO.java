@@ -32,11 +32,16 @@ import org.compiere.model.I_M_Package;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface IHUPackageDAO extends ISingletonService
 {
 
 	List<I_M_Package_HU> retrievePackageHUs(org.compiere.model.I_M_Package mpackage);
+
+	List<I_M_Package_HU> retrievePackageHUs(Set<HuId> huIds);
+
+	List<PackageId> retrievePackageIds(HuId huId);
 
 	List<I_M_HU> retrieveHUs(org.compiere.model.I_M_Package mpackage);
 

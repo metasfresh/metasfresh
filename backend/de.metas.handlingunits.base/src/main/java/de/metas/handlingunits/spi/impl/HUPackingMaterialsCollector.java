@@ -467,7 +467,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		}
 
 		// retrieve the attribute
-		final AttributeId trackingAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(AttributeCode.ofString(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID));
+		final AttributeId trackingAttributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(AttributeCode.ofString(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID));
 		if (trackingAttributeId == null)
 		{
 			return -1;

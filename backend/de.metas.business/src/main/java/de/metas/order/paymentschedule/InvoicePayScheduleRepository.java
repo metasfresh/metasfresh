@@ -63,7 +63,7 @@ public class InvoicePayScheduleRepository
 		record.setC_Order_ID(request.getOrderId().getRepoId());
 		record.setC_OrderPaySchedule_ID(request.getOrderPayScheduleId().getRepoId());
 		record.setDueAmt(request.getDueAmount().toBigDecimal());
-		// record.setC_Currency_ID(request.getDueAmount().getCurrencyId().getRepoId()); TODO
+		record.setC_Currency_ID(request.getDueAmount().getCurrencyId().getRepoId());
 		record.setDueDate(TimeUtil.asTimestamp(request.getDueDate()));
 		saveRecord(record);
 	}

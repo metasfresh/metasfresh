@@ -61,4 +61,6 @@ public interface IPaySelectionDAO extends ISingletonService
 	 * Make a direct SQL-update to the given {@code C_PaySelection.TotalAmount} and send a cache invalidation event.
 	 */
 	void updatePaySelectionTotalAmt(@NonNull PaySelectionId paySelectionId);
+
+	I_C_PaySelectionLine getPaySelectionLinesById(@NonNull PaySelectionLineId paySelectionLineId);
 }

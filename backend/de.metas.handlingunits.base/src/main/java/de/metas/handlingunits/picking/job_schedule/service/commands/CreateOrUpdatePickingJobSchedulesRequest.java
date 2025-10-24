@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -14,5 +15,5 @@ public class CreateOrUpdatePickingJobSchedulesRequest
 {
 	@NonNull ShipmentScheduleAndJobScheduleIdSet shipmentScheduleAndJobScheduleIds;
 	@NonNull WorkplaceId workplaceId;
-	@NonNull BigDecimal qtyToPickBD;
+	@Nullable BigDecimal qtyToPickBD;
 }

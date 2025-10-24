@@ -23,7 +23,18 @@ const READER_OPTIONS = {
   delayBetweenScanAttempts: 600,
 };
 
-const useConfigParams = () => {
+const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRunningParam } = {}) => {
+  const isShowInputText =
+    isShowInputTextParam != null ? isShowInputTextParam : useBooleanSetting('barcodeScanner.showInputText');
+
+  const isInputTextReadonly = isShowInputText
+    ? useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet)
+    : true;
+
+  const isShowVideo = isShowVideoParam != null ? isShowVideoParam : useBooleanSetting('barcodeScanner.useCamera', true);
+
+  const continuousRunning = continuousRunningParam != null ? continuousRunningParam : true;
+
   return {
     okBeepParams: {
       name: 'OK',
@@ -39,63 +50,66 @@ const useConfigParams = () => {
       beepDurationMillis: useNumber('barcodeScanner.onError.beep.durationMillis', 100),
       vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
     },
-    isShowInputText: useBooleanSetting('barcodeScanner.showInputText'),
-    isInputTextReadonly: useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet),
+    isShowInputText,
+    isInputTextReadonly,
     triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
       'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
       0
     ),
     textChangedDebounceMillis: usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300),
     scanDuplicatesIntervalMillis: usePositiveNumberSetting('barcodeScanner.scanDuplicatesIntervalMillis', 0),
+    isShowVideo,
+    continuousRunning,
   };
 };
 
 const BarcodeScannerComponent = ({
+  isShowInputText: isShowInputTextParam,
+  isShowVideo: isShowVideoParam,
   resolveScannedBarcode,
   onResolvedResult,
   inputPlaceholderText,
-  continuousRunning,
+  continuousRunning: continuousRunningParam,
 }) => {
   const {
+    okBeepParams,
+    errorBeepParams,
     isShowInputText,
     isInputTextReadonly,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
     scanDuplicatesIntervalMillis,
-    okBeepParams,
-    errorBeepParams,
-  } = useConfigParams();
-  // console.log('BarcodeScannerComponent', {
-  //   isShowInputText,
-  //   isInputTextReadonly,
-  //   triggerOnChangeIfLengthGreaterThan,
-  //   textChangedDebounceMillis,
-  //   scanDuplicatesIntervalMillis,
-  // });
+    isShowVideo,
+    continuousRunning,
+  } = useConfigParams({ isShowInputTextParam, isShowVideoParam, continuousRunningParam });
 
-  const mountedRef = useRef(true);
-  const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
 
+  //
+  // Video
+  const mountedRef = useRef(true);
+  const videoRef = useRef();
   useEffect(() => {
     mountedRef.current = true;
 
-    const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-      if (mountedRef.current === false) {
-        controls.stop();
-      } else if (typeof result !== 'undefined') {
-        validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
-      }
-    });
+    if (isShowVideo) {
+      const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
+      codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
+        if (mountedRef.current === false) {
+          controls.stop();
+        } else if (typeof result !== 'undefined') {
+          validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
+        }
+      });
+    }
 
     return () => {
       mountedRef.current = false;
     };
-  }, []);
+  }, [isShowVideo]);
 
   useEffect(() => {
     return () => handleInputTextChangedDebounced.cancel();
@@ -103,7 +117,9 @@ const BarcodeScannerComponent = ({
 
   useEffect(
     () => {
-      videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+      if (isShowVideo) {
+        videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+      }
       if (!isInputTextReadonly) {
         inputTextRef?.current?.focus();
       }
@@ -112,20 +128,21 @@ const BarcodeScannerComponent = ({
 
   useKeyboardBarcodeReader({
     onReadDone: (barcode) => {
-      console.log('onReadDone', barcode);
+      // console.log('onReadDone', barcode);
       validateScannedBarcodeAndForward({ scannedBarcode: barcode });
       if (inputTextRef?.current) {
         inputTextRef.current.value = '';
       }
     },
     onReadInProgress: (barcode) => {
+      // console.log('onReadInProgress', barcode);
       if (inputTextRef?.current) {
         inputTextRef.current.value = barcode;
       }
     },
     rateMs: textChangedDebounceMillis,
     minLength: triggerOnChangeIfLengthGreaterThan,
-    disabled: !isInputTextReadonly || isProcessing,
+    disabled: isProcessing,
   });
 
   const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
@@ -244,14 +261,14 @@ const BarcodeScannerComponent = ({
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
-      <video key="video" ref={videoRef} width="100%" height="100%" />
-      {isShowInputText && !isProcessing && (
+      {isShowVideo && <video key="video" ref={videoRef} width="100%" height="100%" />}
+      {!isProcessing && (
         <input
           id="input-text"
           key="input-text"
           ref={inputTextRef}
           className="input-text"
-          type="text"
+          type={isShowInputText ? 'text' : 'hidden'}
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
           readOnly={isInputTextReadonly}
           onFocus={handleInputTextFocus}
@@ -266,12 +283,12 @@ const BarcodeScannerComponent = ({
 };
 
 BarcodeScannerComponent.propTypes = {
-  //
-  // Props:
+  isShowInputText: PropTypes.bool,
+  isShowVideo: PropTypes.bool,
   resolveScannedBarcode: PropTypes.func,
-  onResolvedResult: PropTypes.func.isRequired,
   inputPlaceholderText: PropTypes.string,
   continuousRunning: PropTypes.bool,
+  onResolvedResult: PropTypes.func.isRequired,
 };
 
 export default BarcodeScannerComponent;

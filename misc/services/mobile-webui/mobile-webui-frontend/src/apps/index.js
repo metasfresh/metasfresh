@@ -6,6 +6,8 @@ import * as pickingApp from './picking';
 import * as posApp from './pos';
 import * as huConsolidationApp from './huConsolidation';
 import * as inventoryApp from './inventory';
+import { toastError } from '../utils/toast';
+import { appLaunchersLocation } from '../routes/launchers';
 
 const registeredApplications = {};
 
@@ -39,11 +41,8 @@ export const isApplicationFullScreen = (applicationId) => {
   return !!registeredApplications?.[applicationId]?.isFullScreen;
 };
 
-export const getApplicationStartFunction = (applicationId) => {
+const getApplicationStartFunction = (applicationId) => {
   return registeredApplications[applicationId]?.startApplication;
-};
-export const getApplicationStartByQRCodeFunction = (applicationId) => {
-  return registeredApplications[applicationId]?.startApplicationByQRCode;
 };
 
 export const getApplicationRoutes = () => {
@@ -103,6 +102,58 @@ export const fireWFActivityCompleted = ({ applicationId, defaultAction, ...param
       defaultAction?.();
     }
   };
+};
+
+export const startApplicationById = ({ applicationId, dispatch, history }) => {
+  const startApplicationFunc = getApplicationStartFunction(applicationId);
+  if (startApplicationFunc) {
+    startApplicationFunc({ dispatch, history });
+  } else {
+    history.push(appLaunchersLocation({ applicationId }));
+  }
+};
+
+export const startApplicationByScannedCode = async ({
+  scannedBarcode,
+  callerApplicationId,
+  onlyApplicationIds,
+  dispatch,
+  history,
+}) => {
+  for (const applicationDescriptor of Object.values(registeredApplications)) {
+    const startApplicationByQRCodeFn = applicationDescriptor.startApplicationByQRCode;
+    if (!startApplicationByQRCodeFn) {
+      continue;
+    }
+
+    if (onlyApplicationIds && !onlyApplicationIds.includes(applicationDescriptor.applicationId)) {
+      console.log(
+        `Skipping ${applicationDescriptor.applicationId} because it is not in the list of allowed applications`
+      );
+      continue;
+    }
+
+    try {
+      console.log(`Trying to start ${applicationDescriptor.applicationId}`);
+      const result = await startApplicationByQRCodeFn({
+        qrCode: scannedBarcode,
+        callerApplicationId,
+        dispatch,
+        history,
+      });
+      console.log(`Got result for ${applicationDescriptor.applicationId}: ${result}`);
+      if (result === undefined || result === true) {
+        console.log('Start OK');
+        return;
+      }
+    } catch (error) {
+      toastError({ axiosError: error, fallbackMessageKey: 'error.qrCode.invalid', context: { scannedBarcode } });
+      return;
+    }
+  }
+
+  // No application can handle given scannedBarcode => ERROR
+  toastError({ messageKey: 'error.qrCode.invalid', context: { scannedBarcode } });
 };
 
 //

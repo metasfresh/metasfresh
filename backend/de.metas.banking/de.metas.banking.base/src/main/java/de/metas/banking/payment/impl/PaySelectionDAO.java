@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PaySelectionDAO implements IPaySelectionDAO
@@ -265,6 +266,12 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				+ "WHERE C_PaySelection_ID=?";
 		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { paySelectionId }, ITrx.TRXNAME_ThreadInherited);
 		// note: no point in sending a cache-invalidation event just yet, because it wasn't committed
+	}
+
+	@Override
+	public I_C_PaySelectionLine getPaySelectionLinesById(@NonNull final PaySelectionLineId paySelectionLineId)
+	{
+		return load(paySelectionLineId, I_C_PaySelectionLine.class);
 	}
 
 }

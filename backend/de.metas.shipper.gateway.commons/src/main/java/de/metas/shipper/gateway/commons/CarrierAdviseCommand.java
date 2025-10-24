@@ -109,6 +109,7 @@ public class CarrierAdviseCommand
 		final ShipmentSchedule shipmentSchedule = retrieveShipmentSchedule();
 		if (!shipmentSchedule.isCarrierAdvisingRequired())
 		{
+			updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.NotRequested);
 			logger.info("Skip adviseShipment for {} because it is not required", shipmentSchedule.getId());
 			return;
 		}

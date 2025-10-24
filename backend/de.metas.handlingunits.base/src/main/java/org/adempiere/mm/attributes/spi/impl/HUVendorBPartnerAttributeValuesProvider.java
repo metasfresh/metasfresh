@@ -17,7 +17,6 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -68,13 +67,6 @@ class HUVendorBPartnerAttributeValuesProvider implements IAttributeValuesProvide
 			.tableName(I_C_BPartner.Table_Name)
 			.cacheName(CACHE_PREFIX)
 			.build();
-
-	private final I_M_Attribute attribute;
-
-	public HUVendorBPartnerAttributeValuesProvider(@NonNull final I_M_Attribute attribute)
-	{
-		this.attribute = attribute;
-	}
 
 	@Override
 	public String getCachePrefix()

@@ -438,4 +438,6 @@ public interface IInvoiceBL extends ISingletonService
 
 	@Nullable
 	Instant getUniqueInvoiceDateForOrderId(@NonNull OrderId orderId);
+
+	Amount retrieveOpenAmt(InvoiceId invoiceId);
 }

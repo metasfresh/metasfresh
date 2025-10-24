@@ -696,7 +696,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			huContext.setProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
 		}
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final AttributeId attrId_CostPrice = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_CostPrice);
+		final AttributeId attrId_CostPrice = attributesRepo.retrieveActiveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_CostPrice);
 		initialAttributeValueDefaults.put(attrId_CostPrice, priceActual);
 
 		//

@@ -68,8 +68,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -159,7 +159,7 @@ class OLCandOrderFactory
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR = AdMessageKey.of("OLCandProcessor.OLCandGroupingError");
-	private static final String SYS_CFG_USE_QTY_UOM_ON_MANUAL_PRICE = "de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice";
+	private static final String SYSCONFIG_USE_QTY_UOM_ON_MANUAL_PRICE = "de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice";
 
 	//
 	// Parameters
@@ -554,7 +554,7 @@ class OLCandOrderFactory
 			if (candidate.isManualPrice())
 			{
 				currentOrderLine.setPriceEntered(candidate.getPriceActual());
-				if(sysConfigBL.getBooleanValue(SYS_CFG_USE_QTY_UOM_ON_MANUAL_PRICE, false))
+				if(sysConfigBL.getBooleanValue(SYSCONFIG_USE_QTY_UOM_ON_MANUAL_PRICE, false))
 				{
 					currentOrderLine.setPrice_UOM_ID(candidate.getQty().getUomId().getRepoId());
 				}

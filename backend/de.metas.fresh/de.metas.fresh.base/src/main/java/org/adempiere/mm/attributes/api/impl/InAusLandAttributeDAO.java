@@ -75,7 +75,7 @@ public class InAusLandAttributeDAO implements IInAusLandAttributeDAO
 			return null;
 		}
 
-		return Services.get(IAttributeDAO.class).getAttributeById(inAusLandAttributeId);
+		return Services.get(IAttributeDAO.class).getAttributeRecordById(inAusLandAttributeId);
 	}
 
 }

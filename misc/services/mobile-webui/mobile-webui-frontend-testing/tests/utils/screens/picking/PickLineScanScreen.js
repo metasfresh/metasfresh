@@ -3,6 +3,7 @@ import { test } from '../../../../playwright.config';
 import { GetQuantityDialog } from './GetQuantityDialog';
 import { PickingJobScreen } from './PickingJobScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'PickLineScanScreen';
 
@@ -14,8 +15,7 @@ export const PickLineScanScreen = {
     }),
 
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {
-        console.log('Scanning HU QR code:\n' + qrCode);
-        await page.type('#input-text', qrCode);
+        await BarcodeScannerComponent.type(qrCode);
     }),
 
     pickHU: async ({ qrCode, qtyEntered, expectQtyEntered, catchWeightQRCode, qtyNotFoundReason, expectGoBackToPickingJob = true } = {}) => await step(`${NAME} - Scan HU and Pick`, async () => {
