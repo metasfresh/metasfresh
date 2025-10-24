@@ -76,13 +76,17 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 		if (ShipperId.ofRepoIdOrNull(sched.getM_Shipper_ID()) != null)
 		{
 			values.add(sched.getM_Shipper_ID());
-			if (CarrierGoodsTypeId.ofRepoIdOrNull(sched.getCarrier_Goods_Type_ID()) != null)
+
+			final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoIdOrNull(sched.getCarrier_Goods_Type_ID());
+			if (carrierGoodsTypeId != null)
 			{
-				values.add(sched.getCarrier_Goods_Type_ID());
+				values.add("cgt:" + carrierGoodsTypeId.getRepoId());
 			}
-			if (CarrierProductId.ofRepoIdOrNull(sched.getCarrier_Product_ID()) != null)
+
+			final CarrierProductId carrierProductId = CarrierProductId.ofRepoIdOrNull(sched.getCarrier_Product_ID());
+			if (carrierProductId != null)
 			{
-				values.add(sched.getCarrier_Product_ID());
+				values.add("cpr:" + carrierProductId.getRepoId());
 			}
 		}
 

@@ -63,7 +63,7 @@ public class ShipmentScheduleService
 			return false;
 		}
 
-		return pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
+		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
 				.onlyShipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
 				.build());
 	}
