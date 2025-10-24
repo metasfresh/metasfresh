@@ -22,18 +22,13 @@ package de.metas.inoutcandidate.agg.key.impl;
  * #L%
  */
 
-import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.DocTypeId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.OrderId;
-import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
@@ -50,7 +45,7 @@ import java.util.List;
  */
 public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHandler<I_M_ShipmentSchedule>
 {
-	private static final String VERSION = "2";
+	private static final String VERSION = "1";
 
 	@Override
 	public List<Object> getValues(@NonNull final I_M_ShipmentSchedule sched)
@@ -60,29 +55,26 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 
 		final List<Object> values = new ArrayList<>();
 
-		values.add("v:" + VERSION);
+		values.add(VERSION);
 
-		values.add("dt:" + DocTypeId.toRepoId(DocTypeId.ofRepoIdOrNull(sched.getC_DocType_ID())));
-		values.add("bp:" + shipmentScheduleEffectiveBL.getBPartnerId(sched).getRepoId());
-		values.add("bpl:" + BPartnerLocationId.toRepoId(shipmentScheduleEffectiveBL.getBPartnerLocationId(sched)));
+		values.add(sched.getC_DocType_ID());
+		values.add(shipmentScheduleEffectiveBL.getBPartnerId(sched).getRepoId());
+		values.add(shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched));
 		if (!shipmentScheduleBL.isSchedAllowsConsolidate(sched))
 		{
-			final OrderId orderId = OrderId.ofRepoIdOrNull(sched.getC_Order_ID());
-			values.add("ord:" + OrderId.toRepoId(orderId));
+			values.add(sched.getC_Order_ID());
 		}
-		values.add("wh:" + shipmentScheduleEffectiveBL.getWarehouseId(sched).getRepoId());
-
-		final BPartnerContactId bpartnerContactId = shipmentScheduleEffectiveBL.getBPartnerContactId(sched);
-		if (bpartnerContactId != null)
+		values.add(shipmentScheduleEffectiveBL.getWarehouseId(sched));
+		final BPartnerContactId adUserID = shipmentScheduleEffectiveBL.getBPartnerContactId(sched);
+		if (adUserID != null)
 		{
-			values.add("bpc:" + bpartnerContactId.getRepoId());
+			values.add(BPartnerContactId.toRepoId(adUserID));
 		}
-		values.add("org:" + sched.getAD_Org_ID());
+		values.add(sched.getAD_Org_ID());
 
-		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(sched.getM_Shipper_ID());
-		if (shipperId != null)
+		if (sched.getM_Shipper_ID() > 0)
 		{
-			values.add("shp:" + shipperId.getRepoId());
+			values.add(sched.getM_Shipper_ID());
 
 			final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoIdOrNull(sched.getCarrier_Goods_Type_ID());
 			if (carrierGoodsTypeId != null)
@@ -97,21 +89,15 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 			}
 		}
 
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(sched.getC_Async_Batch_ID());
-		if (asyncBatchId != null)
+		if (sched.getC_Async_Batch_ID() > 0)
 		{
-			values.add("ab:" + asyncBatchId.getRepoId());
+			values.add(sched.getC_Async_Batch_ID());
 		}
 
-		final String externalHeaderId = sched.getExternalHeaderId();
-		if (externalHeaderId != null)
-		{
-			values.add("extId:" + externalHeaderId);
-		}
+		values.add(sched.getExternalHeaderId());
 
 		return values;
 	}
-
 
 	@Override
 	public String toString()
