@@ -3,9 +3,9 @@
 -- Process: M_HU_Trace_Report_Excel(de.metas.handlingunits.trace.process.M_HU_Trace_Report_Excel)
 -- 2025-10-24T13:08:27.500Z
 UPDATE AD_Process_Trl SET Description='Purpose:
-Generates a complete traceability overview for a selected product and lot number (batch).
-The report tracks the chosen handling units (HUs) throughout their entire lifecycle – from goods receipt, through production and storage, to shipment to the customer.
-It helps identify where materials originated, how they were used in production, and where they were delivered.
+Creates a complete traceability overview for the product and batch (lot number).
+The report tracks handling units (HUs) throughout their entire lifecycle – from receipt of goods by the supplier through production and storage to shipment to the customer.
+This makes it possible to understand where materials come from, how they were used, and where they were delivered.
 
 Process Parameters:
 • Product: The product for which the traceability analysis is to be performed.
@@ -44,8 +44,8 @@ UPDATE AD_Process base SET Description=trl.Description, Updated=trl.Updated, Upd
 -- Classname: de.metas.handlingunits.trace.process.M_HU_Trace_Report_Excel
 -- 2025-10-24T13:14:34.228Z
 UPDATE AD_Process SET Description='Zweck:
-Erstellt eine vollständige Rückverfolgbarkeitsübersicht für ein ausgewähltes Produkt und eine bestimmte Charge (Losnummer).
-Der Bericht verfolgt die gewählten Handling Units (HUs) über ihren gesamten Lebenszyklus hinweg – von der Warenanlieferung durch den Lieferanten über die Produktion und Lagerung bis hin zum Versand an den Kunden.
+Erstellt eine vollständige Rückverfolgbarkeitsübersicht für Produkt und Charge (Losnummer).
+Der Bericht verfolgt die Handling Units (HUs) über ihren gesamten Lebenszyklus hinweg – von der Warenanlieferung durch den Lieferanten über die Produktion und Lagerung bis hin zum Versand an den Kunden.
 So lässt sich nachvollziehen, woher Materialien stammen, wie sie verwendet wurden und wohin sie geliefert wurden.
 
 Prozessparameter:
