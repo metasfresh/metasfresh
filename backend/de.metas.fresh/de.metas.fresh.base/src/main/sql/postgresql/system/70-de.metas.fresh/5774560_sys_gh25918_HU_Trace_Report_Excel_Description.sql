@@ -24,7 +24,7 @@ Report 2_ Columns:
 • 2_Produkt Nr.: The internal product number of the finished good or component.
 • 2_Produktname: The product name or description.
 • 2_Menge: Quantity of the product in the transaction.
-• 2_Maßeinheit: The lot or batch number (unit of measure displayed in Excel).
+• 2_Maßeinheit: Unit of measure (UOM) used for the quantity.
 • 2_Leer: Supplier’s lot number, if available (blank if not applicable).
 • 2_Belegdatum: Document date or best-before date, depending on context.
 • 2_Freigabestatus: Clearance or quality status of the lot.
@@ -65,7 +65,7 @@ Berichtsspalten (2_):
 • 2_Produkt Nr.: Interne Produktnummer des Fertigprodukts oder der Komponente.
 • 2_Produktname: Produktbezeichnung oder Beschreibung.
 • 2_Menge: Menge des Produkts in der jeweiligen Bewegung.
-• 2_Maßeinheit: Chargen- oder Losnummer (Maßeinheit wird in Excel angezeigt).
+• 2_Maßeinheit: Einheit, in der die Menge gemessen wird (Maßeinheit).
 • 2_Leer: Lieferantenchargennummer, falls vorhanden (leer, wenn nicht zutreffend).
 • 2_Belegdatum: Belegdatum oder Mindesthaltbarkeitsdatum, je nach Kontext.
 • 2_Freigabestatus: Freigabe- oder Qualitätsstatus der Charge.
