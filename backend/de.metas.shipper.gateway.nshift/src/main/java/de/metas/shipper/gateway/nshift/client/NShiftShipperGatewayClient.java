@@ -109,6 +109,10 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
 				.build());
 
+		if (response.isError())
+		{
+			throw new ShipperGatewayException("nShift request failed pls check ShipmentOrderLog");
+		}
 		return updateDeliveryOrder(deliveryOrder, response);
 	}
 
