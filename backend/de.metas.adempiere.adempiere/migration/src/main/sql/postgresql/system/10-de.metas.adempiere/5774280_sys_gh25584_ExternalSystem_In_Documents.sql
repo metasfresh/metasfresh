@@ -438,9 +438,6 @@ ALTER TABLE C_OLCand
 INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,591421,1000000,1000000,540128,TO_TIMESTAMP('2025-10-22 12:57:21.335000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.invoicecandidate','Y','COL',TO_TIMESTAMP('2025-10-22 12:57:21.335000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
-CREATE UNIQUE INDEX C_Invoice_ExternalHeader_ID ON C_Invoice (ExternalSystem_ID,ExternalId,AD_Org_ID) WHERE IsActive='Y' AND ExternalId IS NOT NULL
-;
-
 -- Run mode: SWING_CLIENT
 
 -- Field: Rechnung(167,D) -> Rechnung(263,D) -> Externes System
