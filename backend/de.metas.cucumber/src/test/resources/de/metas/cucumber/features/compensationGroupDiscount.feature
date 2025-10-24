@@ -42,7 +42,6 @@ Feature: Allow order discount via API (compensation group)
       "externalHeaderId": "externalHeaderId60",
       "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
-      "dataDest": null,
       "bpartner": {
         "bpartnerIdentifier": "gln-bPLocation60",
         "bpartnerLocationIdentifier": "gln-bPLocation60",
@@ -78,7 +77,6 @@ Feature: Allow order discount via API (compensation group)
       "externalLineId": "externalLineId2",
       "externalHeaderId": "externalHeaderId60",
       "externalSystemCode": "Shopware6",
-      "dataDest": null,
       "bpartner": {
         "bpartnerIdentifier": "gln-bPLocation60",
         "bpartnerLocationIdentifier": "gln-bPLocation60",
