@@ -59,6 +59,10 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
@@ -164,6 +168,7 @@ public class C_Invoice_StepDef
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -508,6 +513,12 @@ public class C_Invoice_StepDef
 				.map(warehouseTable::getId)
 				.ifPresent(warehouseId -> softly.assertThat(invoice.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(warehouseId.getRepoId()));
 
+		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> {
+					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+					softly.assertThat(invoice.getExternalSystem_ID()).as("ExternalSystem_ID for value=%s", externalSystemValue).isEqualTo(externalSystemId.getRepoId());
+				});
+		
 		softly.assertAll();
 	}
 
@@ -793,6 +804,12 @@ public class C_Invoice_StepDef
 				.ifPresent(dataSourceId -> invoice.setAD_InputDataSource_ID(dataSourceId.getRepoId()));
 
 		paymentTermStepDef.extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
+
+		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> {
+					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+					invoice.setExternalSystem_ID(externalSystemId.getRepoId());
+				});
 
 		invoiceDAO.save(invoice);
 

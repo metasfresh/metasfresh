@@ -33,8 +33,9 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.i18n.AdMessageKey;
-import de.metas.impexp.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
@@ -188,19 +189,12 @@ public class OrderService
 	public Optional<OrderId> getOrderId(@NonNull final JsonOrderRevertRequest request, @NonNull final MasterdataProvider masterdataProvider)
 	{
 		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
-		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(request.getDataSource(), orgId);
-		if (dataSourceId == null)
-		{
-			throw MissingResourceException.builder()
-					.resourceName("dataSource")
-					.resourceIdentifier(request.getDataSource())
-					.parentResource(request).build();
-		}
+		final ExternalSystemId externalSystemId = masterdataProvider.getExternalSystemId(ExternalSystemType.ofValue(request.getExternalSystemCode()));
 
 		final OrderQuery orderQuery = OrderQuery.builder()
 				.orgId(orgId)
 				.externalId(ExternalId.of(request.getExternalId()))
-				.inputDataSourceId(dataSourceId)
+				.externalSystemId(externalSystemId)
 				.build();
 
 		return orderDAO.retrieveByOrderCriteria(orderQuery)

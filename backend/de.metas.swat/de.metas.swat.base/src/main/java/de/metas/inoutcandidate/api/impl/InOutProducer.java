@@ -512,6 +512,7 @@ public class InOutProducer implements IInOutProducer
 			}
 
 			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+			receiptHeader.setExternalSystem_ID(order.getExternalSystem_ID());
 		}
 		if (order != null && order.isDropShip())
 		{

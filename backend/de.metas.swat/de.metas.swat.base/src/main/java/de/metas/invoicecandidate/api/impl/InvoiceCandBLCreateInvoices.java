@@ -12,6 +12,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -426,6 +427,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
 			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
+			invoice.setExternalSystem_ID(ExternalSystemId.toRepoId(invoiceHeader.getExternalSystemId()));
 			invoice.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(invoiceHeader.getAD_InputDataSource_ID()));
 
 			if (invoiceHeader.getM_InOut_ID() > 0)

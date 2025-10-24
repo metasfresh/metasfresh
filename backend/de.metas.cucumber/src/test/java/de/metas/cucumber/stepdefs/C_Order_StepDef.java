@@ -43,6 +43,10 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
@@ -153,6 +157,7 @@ public class C_Order_StepDef
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	private final @NonNull C_BPartner_StepDefData bpartnerTable;
 	private final @NonNull C_Order_StepDefData orderTable;
@@ -363,6 +368,12 @@ public class C_Order_StepDef
 						.orElseGet(() -> dataSourceIdentifier.getAsId(InputDataSourceId.class)))
 				.ifPresent(inputDataSourceId -> order.setAD_InputDataSource_ID(inputDataSourceId.getRepoId()));
 
+		tableRow.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> {
+					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+					order.setExternalSystem_ID(externalSystemId.getRepoId());
+				});
+		
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
@@ -717,6 +728,12 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_POReference)
 				.ifPresent(poReference -> softly.assertThat(order.getPOReference()).as("POReference for Identifier=%s", identifierStr).isEqualTo(poReference));
+
+		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> {
+					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+					softly.assertThat(order.getExternalSystem_ID()).as("ExternalSystem_ID for value=%s", externalSystemValue).isEqualTo(externalSystemId.getRepoId());
+				});
 
 		row.getAsOptionalString(I_C_Order.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName)
 				.ifPresent(internalName -> {
