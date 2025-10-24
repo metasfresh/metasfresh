@@ -123,5 +123,3 @@ GROUP BY t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p
 
 -- default grouping by t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p.name, p.value, t.c_uom_id, t.attributesKey, t.m_warehouse_id
 -- grouping can be adjusted as needed
-
-
