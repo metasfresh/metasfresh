@@ -22,10 +22,6 @@ All problems with compiling the code and running tests are related to this.
 When using with maven, the settings.xml file which is located at the relative path `./misc/dev-support/maven/settings.xml` needs to be used. 
 That path is relative to the `metasfresh` folder.
 
-**Important**, you need to override the local repository because you are running in the windows-11 wsl ubuntu app.
-Be sure to run maven with 
-`-Dmaven.repo.local=/mnt/c/Users/tobia/.m2/new_dawn_uat_java21`
-
 If you run into problems with local paths, please explain the problem and ask me for help.
 
 ### The git-plugin
@@ -64,6 +60,10 @@ cd ./misc/dev-support/bootstrap-scripts
 
 If you read the script, you also see which parts need to be build before the `backend` can be build
 
+### Lombok
+
+If a lombok error occurs, it's usually does to some duplicated methods that were introduced by a merge
+
 ### Frontend (React/Node.js)
 ```bash
 cd frontend/
@@ -94,12 +94,10 @@ yarn lintfix
 
 cypress testing is defunct and plays no role currently. please ignore it.
 
-## Docker Build & Deployment
-
-The project uses Docker extensively for builds and deployments:
+## Build the Backend code
 
 ```bash
-build.sh
+metasfresh/misc/dev-support/bootstrap-scripts/mvn_build.sh
 ```
 
 ## Architecture Overview
@@ -146,7 +144,6 @@ Important: both parent-pom and commonly used java-code need to be installed to t
 1. Each feature typically spans multiple Maven modules
 2. Generate database models using launch configurations (`.launch` files)
 3. Follow existing patterns for services, repositories, and REST controllers
-4. Use Spring Boot profiles for configuration
 
 ### Frontend Development  
 1. Component development in `frontend/src/components/`

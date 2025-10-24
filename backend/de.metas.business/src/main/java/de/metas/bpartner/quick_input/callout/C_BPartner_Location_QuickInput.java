@@ -40,7 +40,8 @@ import org.compiere.model.MakeUniqueLocationNameCommand;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;import javax.annotation.PostConstruct;
+import javax.annotation.Nullable;
+
 @Component
 @Callout(I_C_BPartner_Location_QuickInput.class)
 public class C_BPartner_Location_QuickInput

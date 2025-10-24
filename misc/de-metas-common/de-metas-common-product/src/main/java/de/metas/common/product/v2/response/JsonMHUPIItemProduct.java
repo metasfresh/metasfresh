@@ -78,9 +78,11 @@ public class JsonMHUPIItemProduct
 	@JsonProperty("qty")
 	BigDecimal qty;
 
-@Schema(			description = "This is the `C_UOM.UOMSymbol` of the M_HU_PI_Item_Product.C_UOM_ID.",			nullable = true	)
-	@ApiModelProperty("This is the `C_UOM.X12DE355` of the M_HU_PI_Item_Product.C_UOM_ID.")
->>>>>>> origin/new_dawn_uat
+	@Schema(
+			type = "string",
+			description = "This is the `C_UOM.UOMSymbol` of the M_HU_PI_Item_Product.C_UOM_ID.",
+			nullable = true
+	)
 	@Nullable
 	@JsonProperty("uom")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)

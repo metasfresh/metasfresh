@@ -89,8 +89,15 @@ public class JsonProduct
 	@JsonProperty("uom")
 	String uom;
 
-@Schema(description = "This is the `C_UOM.X12DE355` of the products unit of measurement.")	@NonNull	@JsonProperty("uomX12DE355")	String uomX12DE355;	@Schema( //			nullable = true, //			type = "java.lang.Integer", //			description = "This translates to `M_Product.Manufacturer_ID`.")
->>>>>>> origin/new_dawn_uat
+	@Schema(description = "This is the `C_UOM.X12DE355` of the products unit of measurement.")
+	@NonNull
+	@JsonProperty("uomX12DE355")
+	String uomX12DE355;
+
+	@Schema( //
+			nullable = true, //
+			type = "java.lang.Integer", //
+			description = "This translates to `M_Product.Manufacturer_ID`.")
 	@Nullable
 	@JsonProperty("manufacturerId")
 	JsonMetasfreshId manufacturerId;
