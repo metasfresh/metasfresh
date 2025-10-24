@@ -22,6 +22,8 @@
 
 package de.metas.inoutcandidate;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
@@ -46,6 +48,27 @@ public class ShipmentScheduleService
 		return shipmentSchedule;
 	}
 
+	public ImmutableMap<ShipmentScheduleId, ShipmentSchedule> getByIds(@NonNull final ImmutableSet<ShipmentScheduleId> ids)
+	{
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> shipmentSchedules = shipmentScheduleRepository.getByIds(ids);
+
+		if (shipmentSchedules.isEmpty())
+		{
+			return shipmentSchedules;
+		}
+
+		final ImmutableMap<ShipmentScheduleId, ImmutableSet<CarrierServiceId>> carrierServicesByShipmentScheduleId = carrierServiceRepository.getAssignedServiceIdsByShipmentScheduleIds(shipmentSchedules.keySet());
+
+		for (final ShipmentSchedule shipmentSchedule : shipmentSchedules.values())
+		{
+			final ImmutableSet<CarrierServiceId> carrierServices = carrierServicesByShipmentScheduleId.getOrDefault(shipmentSchedule.getId(), ImmutableSet.of());
+			shipmentSchedule.setCarrierServices(carrierServices);
+		}
+
+		return shipmentSchedules;
+	}
+
+
 	public void save(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		shipmentScheduleRepository.save(shipmentSchedule);
@@ -65,6 +88,22 @@ public class ShipmentScheduleService
 
 		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
 				.onlyShipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
+				.build());
+	}
+
+	public boolean isEligibleForCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule)
+	{
+		if (shipmentSchedule.getShipperId() == null
+				|| shipmentSchedule.isProcessed()
+				// || shipmentSchedule.isClosed() //TODO
+				// || !shipmentSchedule.isActive()
+				|| shipmentSchedule.getQuantityToDeliver().signum() <= 0)
+		{
+			return false;
+		}
+
+		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
+				.onlyShipmentScheduleId(shipmentSchedule.getId())
 				.build());
 	}
 }

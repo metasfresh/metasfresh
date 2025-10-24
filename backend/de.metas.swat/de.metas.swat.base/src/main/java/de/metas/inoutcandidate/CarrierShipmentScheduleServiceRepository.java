@@ -22,6 +22,7 @@
 
 package de.metas.inoutcandidate;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.inout.ShipmentScheduleId;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Repository that deals with {@link I_Carrier_Service} records assigned via {@link I_M_ShipmentSchedule_Carrier_Service}.
@@ -58,6 +60,24 @@ public class CarrierShipmentScheduleServiceRepository
 				.andCollect(I_M_ShipmentSchedule_Carrier_Service.COLUMN_Carrier_Service_ID)
 				.create()
 				.listIds(CarrierServiceId::ofRepoId));
+	}
+
+	public ImmutableMap<ShipmentScheduleId, ImmutableSet<CarrierServiceId>> getAssignedServiceIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.stream()
+				.collect(Collectors.collectingAndThen(
+						Collectors.groupingBy(s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID()),
+								Collectors.mapping(s -> CarrierServiceId.ofRepoId(s.getCarrier_Service_ID()),
+										ImmutableSet.toImmutableSet())),
+						ImmutableMap::copyOf));
 	}
 
 	public void assignServicesToShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId, final @NonNull Set<CarrierServiceId> serviceIds)

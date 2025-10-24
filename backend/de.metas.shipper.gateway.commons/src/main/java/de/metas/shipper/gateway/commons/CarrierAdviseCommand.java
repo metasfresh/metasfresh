@@ -84,7 +84,7 @@ public class CarrierAdviseCommand
 	private final static Logger logger = LogManager.getLogger(CarrierAdviseCommand.class);
 	// Services
 	private final ShipperGatewayServicesRegistry shipperRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
-	private final ShipmentScheduleService shipmentScheduleRepository = SpringContextHolder.instance.getBean(ShipmentScheduleService.class);
+	private final ShipmentScheduleService shipmentScheduleService = SpringContextHolder.instance.getBean(ShipmentScheduleService.class);
 	private final CarrierProductRepository productRepository = SpringContextHolder.instance.getBean(CarrierProductRepository.class);
 	private final CarrierGoodsTypeRepository goodsTypeRepository = SpringContextHolder.instance.getBean(CarrierGoodsTypeRepository.class);
 	private final CarrierShipmentOrderServiceRepository carrierServiceRepository = SpringContextHolder.instance.getBean(CarrierShipmentOrderServiceRepository.class);
@@ -143,7 +143,7 @@ public class CarrierAdviseCommand
 
 	private ShipmentSchedule retrieveShipmentSchedule()
 	{
-		return shipmentScheduleRepository.getById(shipmentScheduleId);
+		return shipmentScheduleService.getById(shipmentScheduleId);
 	}
 
 	private JsonDeliveryAdvisorRequest createAdvisorRequest(@NonNull final ShipmentSchedule shipmentSchedule, final ShipperGatewayClient client)
@@ -247,6 +247,6 @@ public class CarrierAdviseCommand
 	private void updateAdviseStatusAndSave(@NonNull final ShipmentSchedule shipmentSchedule, @NonNull final CarrierAdviseStatus status)
 	{
 		shipmentSchedule.setCarrierAdvisingStatus(status);
-		shipmentScheduleRepository.save(shipmentSchedule);
+		shipmentScheduleService.save(shipmentSchedule);
 	}
 }
