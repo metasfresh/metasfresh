@@ -23,6 +23,7 @@
 package de.metas.material.process;
 
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
+import de.metas.mforecast.impl.ForecastId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -35,9 +36,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
-import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class QtyDemand_QtySupply_V_to_Forecast extends JavaProcess implements IProcessPrecondition
@@ -58,20 +58,20 @@ public class QtyDemand_QtySupply_V_to_Forecast extends JavaProcess implements IP
 	protected String doIt() throws Exception
 	{
 		final I_QtyDemand_QtySupply_V currentRow = InterfaceWrapperHelper.load(getRecord_ID(), I_QtyDemand_QtySupply_V.class);
-		getResult().setRecordsToOpen(
-				queryBL.createQueryBuilder(I_M_ForecastLine.class)
-						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Product_ID, currentRow.getM_Product_ID())
-						.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_AttributeSetInstance_ID, currentRow.getAttributesKey(), ASIQueryFilterModifier.instance)
-						.addNotEqualsFilter(I_M_ForecastLine.COLUMNNAME_Qty, 0)
-						.andCollect(I_M_ForecastLine.COLUMN_M_Forecast_ID)
-						.addEqualsFilter(I_M_Forecast.COLUMNNAME_M_Warehouse_ID, currentRow.getM_Warehouse_ID())
-						.addEqualsFilter(I_M_Forecast.COLUMNNAME_AD_Org_ID, currentRow.getAD_Org_ID())
-						.create()
-						.listIds(PPOrderCandidateId::ofRepoId)
-						.stream()
-						.map(id -> TableRecordReference.of(I_PP_Order_Candidate.Table_Name, id))
-						.collect(Collectors.toList()));
+		final List<TableRecordReference> recordReferences = queryBL.createQueryBuilder(I_M_ForecastLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Product_ID, currentRow.getM_Product_ID())
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_AttributeSetInstance_ID, currentRow.getAttributesKey(), ASIQueryFilterModifier.instance)
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Warehouse_ID, currentRow.getM_Warehouse_ID())
+				.addNotEqualsFilter(I_M_ForecastLine.COLUMNNAME_Qty, 0)
+				.andCollect(I_M_ForecastLine.COLUMN_M_Forecast_ID)
+				.addEqualsFilter(I_M_Forecast.COLUMNNAME_AD_Org_ID, currentRow.getAD_Org_ID())
+				.create()
+				.listIds(ForecastId::ofRepoId)
+				.stream()
+				.map(id -> TableRecordReference.of(I_M_Forecast.Table_Name, id))
+				.collect(Collectors.toList());
+		getResult().setRecordsToOpen(recordReferences);
 		return MSG_OK;
 	}
 

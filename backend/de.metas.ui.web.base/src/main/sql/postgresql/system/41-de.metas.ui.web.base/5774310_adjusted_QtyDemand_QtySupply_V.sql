@@ -77,7 +77,7 @@ FROM m_product p
          -- Forecasts (Qty Forecasted)
          SELECT f.ad_client_id,
                 f.ad_org_id,
-                COALESCE(fl.m_warehouse_id, f.m_warehouse_id)                     AS m_warehouse_id,
+                fl.m_warehouse_id                                                 AS m_warehouse_id,
                 fl.m_product_id,
                 generateasistorageattributeskey(fl.m_attributesetinstance_id)     AS attributesKey,
                 0::numeric                                                        AS qtyReserved,
@@ -113,5 +113,6 @@ FROM m_product p
          LEFT OUTER JOIN m_warehouse w ON w.m_warehouse_id = t.m_warehouse_id
 GROUP BY t.ad_client_id, t.ad_org_id, p.m_product_id, p.name, p.value, p.c_uom_id, t.attributesKey, t.m_warehouse_id
 ;
+
 -- default grouping by t.ad_client_id, t.ad_org_id, p.m_product_id, p.name, p.value, t.c_uom_id, t.attributesKey, t.m_warehouse_id
 -- grouping can be adjusted as needed
