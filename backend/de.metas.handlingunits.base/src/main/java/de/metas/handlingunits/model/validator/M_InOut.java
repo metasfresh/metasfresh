@@ -120,11 +120,6 @@ public class M_InOut
 	public void destroyHandlingUnitsForReversedInboundMovements(final I_M_InOut inout)
 	{
 		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
-		if(inout.getReversal_ID() <= 0)
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we not dealing with a reversal!");
-			return;
-		}
 		if (movementType.isOutboundTransaction())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we are dealing with an outbound transaction!");
@@ -255,7 +250,7 @@ public class M_InOut
 	public void removeHUAssignmentsForShipment(final I_M_InOut shipment)
 	{
 		final MovementType movementType = MovementType.ofCode(shipment.getMovementType());
-		
+
 		// Make sure we deal with a shipment (and not a customer-return)
 		final boolean isShipment = shipment.isSOTrx() && movementType.isOutboundTransaction();
 		if (!isShipment)
@@ -337,7 +332,8 @@ public class M_InOut
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
 	 * <p>
-	 * @implSpec  <a href="http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29">issue</a>
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29">issue</a>
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void updateReversedQtys(final I_M_InOut inout)
