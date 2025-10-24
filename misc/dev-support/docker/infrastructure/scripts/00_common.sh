@@ -28,7 +28,7 @@
 auto_detect_branch_name() {
     CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
     if [ -z "$CURRENT_BRANCH" ]; then
-        echo "!! Unable to detect current git branch !!"
+        echo "!! Unable to detect current git branch !!" >&2
         exit 1
     fi
 
@@ -37,25 +37,27 @@ auto_detect_branch_name() {
     BEST_MATCH_LENGTH=0
 
     for ENV_FILE in ../env-files/*.env; do
-        if [ -f "$ENV_FILE" ]; then
-            BASENAME=$(basename "$ENV_FILE" .env)
-            # Check if current branch starts with this env file name
-            case "$CURRENT_BRANCH" in
-                "$BASENAME"*)
-                    LENGTH=${#BASENAME}
-                    if [ $LENGTH -gt $BEST_MATCH_LENGTH ]; then
-                        BEST_MATCH="$BASENAME"
-                        BEST_MATCH_LENGTH=$LENGTH
-                    fi
-                    ;;
-            esac
-        fi
+        # Skip if no .env files exist (glob doesn't expand)
+        [ -f "$ENV_FILE" ] || continue
+        
+        BASENAME=$(basename "$ENV_FILE" .env)
+        # Check if current branch starts with this env file name
+        case "$CURRENT_BRANCH" in
+            "$BASENAME"*)
+                LENGTH=${#BASENAME}
+                if [ "$LENGTH" -gt "$BEST_MATCH_LENGTH" ]; then
+                    BEST_MATCH="$BASENAME"
+                    BEST_MATCH_LENGTH="$LENGTH"
+                fi
+                ;;
+        esac
     done
 
     if [ -z "$BEST_MATCH" ]; then
-        echo "!! No matching env file found for branch: $CURRENT_BRANCH !!"
-        echo "!! Available env files: !!"
+        echo "!! No matching env file found for branch: $CURRENT_BRANCH !!" >&2
+        echo "!! Branch names should start with one of these prefixes: !!" >&2
         for ENV_FILE in ../env-files/*.env; do
+            [ -f "$ENV_FILE" ] || continue
             basename "$ENV_FILE" .env
         done
         exit 1
@@ -67,7 +69,7 @@ auto_detect_branch_name() {
 # Resolve BRANCH_NAME from parameter or auto-detect
 # Usage: resolve_branch_name "$1"
 resolve_branch_name() {
-    if [ ! -z "$1" ]; then
+    if [ -n "$1" ]; then
         echo "$1"
     else
         echo "No branch name provided, auto-detecting from current git branch..." >&2
