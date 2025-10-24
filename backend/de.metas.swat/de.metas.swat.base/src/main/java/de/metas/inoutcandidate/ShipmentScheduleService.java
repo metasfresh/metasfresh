@@ -23,6 +23,9 @@
 package de.metas.inoutcandidate;
 
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
+import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,8 @@ public class ShipmentScheduleService
 {
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
+	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
+
 
 	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
 	{
@@ -45,5 +50,21 @@ public class ShipmentScheduleService
 	{
 		shipmentScheduleRepository.save(shipmentSchedule);
 		carrierServiceRepository.assignServicesToShipmentSchedule(shipmentSchedule.getId(), shipmentSchedule.getCarrierServices());
+	}
+
+	public boolean isEligibleForCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (shipmentSchedule.getM_Shipper_ID() <= 0
+				|| shipmentSchedule.isProcessed()
+				|| shipmentSchedule.isClosed()
+				|| !shipmentSchedule.isActive()
+				|| shipmentSchedule.getQtyToDeliver().signum() <= 0)
+		{
+			return false;
+		}
+
+		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
+				.onlyShipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
+				.build());
 	}
 }
