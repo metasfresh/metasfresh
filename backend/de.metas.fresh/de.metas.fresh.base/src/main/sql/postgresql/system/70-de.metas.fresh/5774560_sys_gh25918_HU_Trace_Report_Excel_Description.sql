@@ -79,8 +79,8 @@ Berichtsspalten (2_):
 
 -- 2025-10-24T13:14:34.297Z
 UPDATE AD_Process_Trl trl SET Description='Zweck:
-Erstellt eine vollständige Rückverfolgbarkeitsübersicht für Produkt und Charge (Losnummer).
-Der Bericht verfolgt die Handling Units (HUs) über ihren gesamten Lebenszyklus hinweg – von der Warenanlieferung durch den Lieferanten über die Produktion und Lagerung bis hin zum Versand an den Kunden.
+Erstellt eine vollständige Rückverfolgbarkeitsübersicht für ein ausgewähltes Produkt und eine bestimmte Charge (Losnummer).
+Der Bericht verfolgt die gewählten Handling Units (HUs) über ihren gesamten Lebenszyklus hinweg – von der Warenanlieferung durch den Lieferanten über die Produktion und Lagerung bis hin zum Versand an den Kunden.
 So lässt sich nachvollziehen, woher Materialien stammen, wie sie verwendet wurden und wohin sie geliefert wurden.
 
 Prozessparameter:
@@ -100,7 +100,7 @@ Berichtsspalten (2_):
 • 2_Produkt Nr.: Interne Produktnummer des Fertigprodukts oder der Komponente.
 • 2_Produktname: Produktbezeichnung oder Beschreibung.
 • 2_Menge: Menge des Produkts in der jeweiligen Bewegung.
-• 2_Maßeinheit: Einheit, in der die Menge gemessen wird (Maßeinheit).
+• 2_Maßeinheit: Chargen- oder Losnummer (Maßeinheit wird in Excel angezeigt).
 • 2_Leer: Lieferantenchargennummer, falls vorhanden (leer, wenn nicht zutreffend).
 • 2_Belegdatum: Belegdatum oder Mindesthaltbarkeitsdatum, je nach Kontext.
 • 2_Freigabestatus: Freigabe- oder Qualitätsstatus der Charge.
