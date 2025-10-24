@@ -22,13 +22,17 @@ package de.metas.inoutcandidate.agg.key.impl;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -46,7 +50,7 @@ import java.util.List;
  */
 public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHandler<I_M_ShipmentSchedule>
 {
-	private static final String VERSION = "1";
+	private static final String VERSION = "2";
 
 	@Override
 	public List<Object> getValues(@NonNull final I_M_ShipmentSchedule sched)
@@ -56,45 +60,58 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 
 		final List<Object> values = new ArrayList<>();
 
-		values.add(VERSION);
+		values.add("v:" + VERSION);
 
-		values.add(sched.getC_DocType_ID());
-		values.add(shipmentScheduleEffectiveBL.getBPartnerId(sched).getRepoId());
-		values.add(shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched));
+		values.add("dt:" + DocTypeId.toRepoId(DocTypeId.ofRepoIdOrNull(sched.getC_DocType_ID())));
+		values.add("bp:" + shipmentScheduleEffectiveBL.getBPartnerId(sched).getRepoId());
+		values.add("bpl:" + BPartnerLocationId.toRepoId(shipmentScheduleEffectiveBL.getBPartnerLocationId(sched)));
 		if (!shipmentScheduleBL.isSchedAllowsConsolidate(sched))
 		{
-			values.add(sched.getC_Order_ID());
+			final OrderId orderId = OrderId.ofRepoIdOrNull(sched.getC_Order_ID());
+			values.add("ord:" + OrderId.toRepoId(orderId));
 		}
-		values.add(shipmentScheduleEffectiveBL.getWarehouseId(sched));
-		final BPartnerContactId adUserID = shipmentScheduleEffectiveBL.getBPartnerContactId(sched);
-		if (adUserID != null)
-		{
-			values.add(BPartnerContactId.toRepoId(adUserID));
-		}
-		values.add(sched.getAD_Org_ID());
+		values.add("wh:" + shipmentScheduleEffectiveBL.getWarehouseId(sched).getRepoId());
 
-		if (ShipperId.ofRepoIdOrNull(sched.getM_Shipper_ID()) != null)
+		final BPartnerContactId bpartnerContactId = shipmentScheduleEffectiveBL.getBPartnerContactId(sched);
+		if (bpartnerContactId != null)
 		{
-			values.add(sched.getM_Shipper_ID());
-			if (CarrierGoodsTypeId.ofRepoIdOrNull(sched.getCarrier_Goods_Type_ID()) != null)
+			values.add("bpc:" + bpartnerContactId.getRepoId());
+		}
+		values.add("org:" + sched.getAD_Org_ID());
+
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(sched.getM_Shipper_ID());
+		if (shipperId != null)
+		{
+			values.add("shp:" + shipperId.getRepoId());
+
+			final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoIdOrNull(sched.getCarrier_Goods_Type_ID());
+			if (carrierGoodsTypeId != null)
 			{
-				values.add(sched.getCarrier_Goods_Type_ID());
+				values.add("cgt:" + carrierGoodsTypeId.getRepoId());
 			}
-			if (CarrierProductId.ofRepoIdOrNull(sched.getCarrier_Product_ID()) != null)
+
+			final CarrierProductId carrierProductId = CarrierProductId.ofRepoIdOrNull(sched.getCarrier_Product_ID());
+			if (carrierProductId != null)
 			{
-				values.add(sched.getCarrier_Product_ID());
+				values.add("cpr:" + carrierProductId.getRepoId());
 			}
 		}
 
-		if (sched.getC_Async_Batch_ID() > 0)
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(sched.getC_Async_Batch_ID());
+		if (asyncBatchId != null)
 		{
-			values.add(sched.getC_Async_Batch_ID());
+			values.add("ab:" + asyncBatchId.getRepoId());
 		}
 
-		values.add(sched.getExternalHeaderId());
+		final String externalHeaderId = sched.getExternalHeaderId();
+		if (externalHeaderId != null)
+		{
+			values.add("extId:" + externalHeaderId);
+		}
 
 		return values;
 	}
+
 
 	@Override
 	public String toString()
