@@ -128,6 +128,6 @@ class ChartOfAccountsImportHelper
 			}
 		}
 
-		return OrgId.ofRepoId(importRecord.getAD_Org_ID());
+		return OrgId.ANY;
 	}
 }
