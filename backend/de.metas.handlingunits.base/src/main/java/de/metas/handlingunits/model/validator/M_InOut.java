@@ -235,7 +235,7 @@ public class M_InOut
 	public void removeHUAssignmentsForShipment(final I_M_InOut shipment)
 	{
 		final MovementType movementType = MovementType.ofCode(shipment.getMovementType());
-		
+
 		// Make sure we deal with a shipment (and not a customer-return)
 		final boolean isShipment = shipment.isSOTrx() && movementType.isOutboundTransaction();
 		if (!isShipment)
