@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.tree.AdTreeId;
@@ -50,7 +51,7 @@ final class ChartOfAccountsMap
 
 	public ChartOfAccounts getById(@NonNull final ChartOfAccountsId chartOfAccountsId)
 	{
-		ChartOfAccounts chartOfAccounts = byId.get(chartOfAccountsId);
+		final ChartOfAccounts chartOfAccounts = byId.get(chartOfAccountsId);
 		if (chartOfAccounts == null)
 		{
 			throw new AdempiereException("No Chart of Accounts found for " + chartOfAccountsId);
@@ -65,18 +66,19 @@ final class ChartOfAccountsMap
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public Optional<ChartOfAccounts> getByName(@NonNull final String chartOfAccountsName, @NonNull final ClientId clientId)
+	public Optional<ChartOfAccounts> getByName(@NonNull final String chartOfAccountsName, @NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return list.stream()
-				.filter(matchByName(chartOfAccountsName, clientId))
+				.filter(matchByName(chartOfAccountsName, clientId, orgId))
 				.findFirst();
 	}
 
-	private static Predicate<ChartOfAccounts> matchByName(@NonNull final String chartOfAccountsName, @NonNull final ClientId clientId)
+	private static Predicate<ChartOfAccounts> matchByName(@NonNull final String chartOfAccountsName, @NonNull final ClientId clientId,  @NonNull final OrgId orgId)
 	{
 		return chartOfAccounts ->
 				Objects.equals(chartOfAccounts.getName(), chartOfAccountsName)
-						&& ClientId.equals(chartOfAccounts.getClientId(), clientId);
+						&& ClientId.equals(chartOfAccounts.getClientId(), clientId)
+						 && OrgId.equals(chartOfAccounts.getOrgId(), orgId);
 	}
 
 	public Optional<ChartOfAccounts> getByTreeId(@NonNull final AdTreeId treeId)
