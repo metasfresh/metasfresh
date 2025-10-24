@@ -46,8 +46,8 @@ Feature: Shipments export via postgREST
       | TestSystem_S0475_010 | test_S0475_010 |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | AD_InputDataSource_ID | ExternalId           | ExternalSyste.Value |
-      | o_1        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | dataSource_S0475_010  | externalId_S0475_010 | test_S0475_010      |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | AD_InputDataSource_ID | ExternalId           | ExternalSystem.Value |
+      | o_1        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | dataSource_S0475_010  | externalId_S0475_010 | test_S0475_010       |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID      | QtyEntered | ExternalId               |
       | ol_1       | o_1                   | product_S0475_010 | 100        | externalLineId_S0475_010 |
