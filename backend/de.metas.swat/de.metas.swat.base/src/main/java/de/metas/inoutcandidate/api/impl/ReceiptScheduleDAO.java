@@ -355,12 +355,17 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public List<ReceiptScheduleId> listIdsByQuery(@NonNull final ReceiptScheduleQuery query)
 	{
-		return queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+		final IQueryBuilder<I_M_ReceiptSchedule> builder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Product_ID, query.getProductId())
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId())
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_AD_Org_ID, query.getOrgId())
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
+		if (query.isOnlyNonZeroQty())
+		{
+			builder.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, 0);
+		}
+		return builder
 				.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, 0)
 				.create()
 				.listIds(ReceiptScheduleId::ofRepoId);

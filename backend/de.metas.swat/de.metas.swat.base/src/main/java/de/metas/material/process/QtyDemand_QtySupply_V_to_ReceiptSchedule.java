@@ -64,6 +64,7 @@ public class QtyDemand_QtySupply_V_to_ReceiptSchedule extends JavaProcess implem
 				.orgId(currentRow.getOrgId())
 				.productId(currentRow.getProductId())
 				.attributesKey(currentRow.getAttributesKey())
+				.onlyNonZeroQty(true)
 				.build();
 		final List<TableRecordReference> recordReferences = receiptScheduleDAO.listIdsByQuery(receiptScheduleQuery)
 				.stream()

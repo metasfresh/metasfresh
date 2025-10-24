@@ -229,14 +229,17 @@ public class PPOrderCandidateDAO
 
 	public List<PPOrderCandidateId> listIdsByQuery(@NonNull final PPOrderCandidatesQuery query)
 	{
-		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+		final IQueryBuilder<I_PP_Order_Candidate> builder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, query.getProductId())
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId())
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_AD_Org_ID, query.getOrgId())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance)
-				.addNotEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, 0)
-				.create()
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
+		if (query.isOnlyNonZeroQty())
+		{
+			builder.addNotEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, 0);
+		}
+		return builder.create()
 				.listIds(PPOrderCandidateId::ofRepoId);
 	}
 }

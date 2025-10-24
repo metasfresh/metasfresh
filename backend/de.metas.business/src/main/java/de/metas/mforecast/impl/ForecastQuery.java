@@ -38,4 +38,5 @@ public class ForecastQuery
 	@NonNull AttributesKey attributesKey;
 	@NonNull ProductId productId;
 	@NonNull WarehouseId warehouseId;
+	@Builder.Default boolean onlyNonZeroQty = false;
 }

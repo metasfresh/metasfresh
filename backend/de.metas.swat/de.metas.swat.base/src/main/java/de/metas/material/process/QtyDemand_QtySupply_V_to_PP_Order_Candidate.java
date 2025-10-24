@@ -63,6 +63,7 @@ public class QtyDemand_QtySupply_V_to_PP_Order_Candidate extends JavaProcess imp
 				.orgId(currentRow.getOrgId())
 				.productId(currentRow.getProductId())
 				.attributesKey(currentRow.getAttributesKey())
+				.onlyNonZeroQty(true)
 				.build();
 
 		final List<TableRecordReference> recordReferences = ppOrderCandidateDAO.listIdsByQuery(ppOrderCandidatesQuery)

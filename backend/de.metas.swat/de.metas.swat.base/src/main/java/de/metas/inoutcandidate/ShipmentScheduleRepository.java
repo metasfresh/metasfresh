@@ -442,6 +442,10 @@ public class ShipmentScheduleRepository
 		{
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID, query.getOrgId());
 		}
+		if (query.isOnlyNonZeroQty())
+		{
+			queryBuilder.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyReserved, 0);
+		}
 		return queryBuilder.create().listIds(ShipmentScheduleId::ofRepoId);
 	}
 
@@ -482,5 +486,6 @@ public class ShipmentScheduleRepository
 		@Nullable AttributesKey attributesKey;
 		@Nullable ProductId productId;
 		@Nullable WarehouseId warehouseId;
+		@Builder.Default boolean onlyNonZeroQty = false;
 	}
 }

@@ -62,6 +62,7 @@ public class QtyDemand_QtySupply_V_to_ShipmentSchedule extends JavaProcess imple
 				.orgId(currentRow.getOrgId())
 				.productId(currentRow.getProductId())
 				.attributesKey(currentRow.getAttributesKey())
+				.onlyNonZeroQty(true)
 				.build();
 
 		final List<TableRecordReference> recordReferences = shipmentScheduleRepository.listIdsByQuery(shipmentScheduleQuery)

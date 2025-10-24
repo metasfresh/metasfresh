@@ -64,6 +64,7 @@ public class QtyDemand_QtySupply_V_to_Forecast extends JavaProcess implements IP
 				.orgId(currentRow.getOrgId())
 				.productId(currentRow.getProductId())
 				.attributesKey(currentRow.getAttributesKey())
+				.onlyNonZeroQty(true)
 				.build();
 		final List<TableRecordReference> recordReferences = forecastDAO.listIdsByQuery(forecastQuery)
 				.stream()
