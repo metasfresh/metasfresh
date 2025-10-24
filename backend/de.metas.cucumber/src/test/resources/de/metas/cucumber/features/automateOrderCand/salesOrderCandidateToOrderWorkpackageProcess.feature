@@ -115,7 +115,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
         },
         {
             "orgCode": "001",
-            "externalHeaderId": "14042022",
+            "externalHeaderId": "14042022_new2",
             "externalLineId": "14042022_3",
             "externalSystemCode": "Shopware6",
             "dataSource": "int-Shopware",
@@ -147,7 +147,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | olCand_1               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 2          | F            | S               | 14042022        | Shopware                       | N       | N             | 14042022             | 14042022_0         | 10.00           | Shopware6            |
       | olCand_2               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 1          | F            | S               | 14042022        | Shopware                       | N       | N             | 14042022             | 14042022_1         | 10.00           | Shopware6            |
       | olCand_3               | olCand_Customer          | olCand_Customer_location          | product_priceChange_14042022 | 2          | F            | S               | 14042022_new1   | Shopware                       | N       | N             | 14042022             | 14042022_2         | 20.00           | Shopware6            |
-      | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | N             | 14042022             | 14042022_3         | 10.00           | Shopware6            |
+      | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | N             | 14042022_new2        | 14042022_3         | 10.00           | Shopware6            |
 
     And update M_ProductPrice:
       | M_ProductPrice_ID.Identifier | IsActive |
@@ -165,7 +165,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 """
     Then process metasfresh response
       | C_Order_ID.Identifier |
-      | order_1,order_2       |
+      | order_1               |
 
     And validate the created orders
       | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
@@ -175,9 +175,23 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | orderLine_1_1             | order_1               | 2021-11-20  | product_14042022        | 0            | 2          | 0           | 10    | 0        | EUR          | true      |
       | orderLine_1_2             | order_1               | 2021-11-20  | product_14042022        | 0            | 1          | 0           | 10    | 0        | EUR          | true      |
 
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "14042022_new2",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    Then process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_2               |
+
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference   | processed | DocStatus |
-      | order_2               | 14042022   | olCand_Customer          | olCand_Customer_location          | 2021-11-20  | SOO         | EUR          | F            | S               | 14042022_new2 | true      | CO        |
+      | C_Order_ID.Identifier | externalId    | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference   | processed | DocStatus |
+      | order_2               | 14042022_new2 | olCand_Customer          | olCand_Customer_location          | 2021-11-20  | SOO         | EUR          | F            | S               | 14042022_new2 | true      | CO        |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_2_1             | order_2               | 2021-11-20  | product_14042022        | 0            | 3          | 0           | 10    | 0        | EUR          | true      |
@@ -187,7 +201,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | olCand_1               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 2          | F            | S               | 14042022        | Shopware                       | N       | Y             | 14042022             | 14042022_0         | 10.00           | null                       | Shopware6            |
       | olCand_2               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 1          | F            | S               | 14042022        | Shopware                       | N       | Y             | 14042022             | 14042022_1         | 10.00           | null                       | Shopware6            |
       | olCand_3               | olCand_Customer          | olCand_Customer_location          | product_priceChange_14042022 | 2          | F            | S               | 14042022_new1   | Shopware                       | Y       | N             | 14042022             | 14042022_2         | 20.00           | issue_olCand_3             | Shopware6            |
-      | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | Y             | 14042022             | 14042022_3         | 10.00           | null                       | Shopware6            |
+      | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | Y             | 14042022_new2        | 14042022_3         | 10.00           | null                       | Shopware6            |
     And validate AD_Issue
       | AD_Issue_ID.Identifier | IssueSummary                         |
       | issue_olCand_3         | Produkt ist nicht auf der Preisliste |
