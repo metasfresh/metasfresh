@@ -8,6 +8,7 @@ SELECT t.ad_client_id,
        p.name                                                                                                                  AS ProductName,
        p.value                                                                                                                 AS ProductValue,
        p.m_product_id,
+       p.m_product_category_id,
        p.c_uom_id,
        t.attributesKey,
        t.m_warehouse_id,
@@ -89,7 +90,7 @@ FROM m_product p
                   INNER JOIN m_forecast f ON f.m_forecast_id = fl.m_forecast_id
                   INNER JOIN m_product p ON fl.m_product_id = p.m_product_id
          WHERE COALESCE(fl.qty, 0) <> 0
-         GROUP BY f.ad_client_id, f.ad_org_id, COALESCE(fl.m_warehouse_id, f.m_warehouse_id), fl.m_product_id, p.c_uom_id, attributesKey
+         GROUP BY f.ad_client_id, f.ad_org_id, fl.m_warehouse_id, fl.m_product_id, p.c_uom_id, attributesKey
 
          UNION ALL
 
@@ -111,8 +112,8 @@ FROM m_product p
          GROUP BY s.ad_client_id, s.ad_org_id, s.m_warehouse_id, s.m_product_id, p.c_uom_id, s.attributeskey) AS t
      ON p.m_product_id = t.m_product_id
          LEFT OUTER JOIN m_warehouse w ON w.m_warehouse_id = t.m_warehouse_id
-GROUP BY t.ad_client_id, t.ad_org_id, p.m_product_id, p.name, p.value, p.c_uom_id, t.attributesKey, t.m_warehouse_id
+GROUP BY t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p.name, p.value, p.c_uom_id, t.attributesKey, t.m_warehouse_id
 ;
 
--- default grouping by t.ad_client_id, t.ad_org_id, p.m_product_id, p.name, p.value, t.c_uom_id, t.attributesKey, t.m_warehouse_id
+-- default grouping by t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p.name, p.value, t.c_uom_id, t.attributesKey, t.m_warehouse_id
 -- grouping can be adjusted as needed

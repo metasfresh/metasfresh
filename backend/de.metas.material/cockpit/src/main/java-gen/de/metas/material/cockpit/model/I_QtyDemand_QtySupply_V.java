@@ -5,19 +5,18 @@ import org.adempiere.model.ModelColumn;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
-/**
- * Generated Interface for QtyDemand_QtySupply_V
- *
- * @author metasfresh (generated)
+/** Generated Interface for QtyDemand_QtySupply_V
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_QtyDemand_QtySupply_V
+public interface I_QtyDemand_QtySupply_V 
 {
 
 	String Table_Name = "QtyDemand_QtySupply_V";
 
-	//	/** AD_Table_ID=542218 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=542218 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
 
 	/**
 	 * Get Client.
@@ -39,7 +38,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID(int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -60,7 +59,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributesKey(@Nullable java.lang.String AttributesKey);
+	void setAttributesKey (@Nullable java.lang.String AttributesKey);
 
 	/**
 	 * Get AttributesKey (technical).
@@ -69,8 +68,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
-	java.lang.String getAttributesKey();
+	@Nullable java.lang.String getAttributesKey();
 
 	ModelColumn<I_QtyDemand_QtySupply_V, Object> COLUMN_AttributesKey = new ModelColumn<>(I_QtyDemand_QtySupply_V.class, "AttributesKey", null);
 	String COLUMNNAME_AttributesKey = "AttributesKey";
@@ -83,7 +81,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_UOM_ID(int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
 	 * Get UOM.
@@ -98,6 +96,28 @@ public interface I_QtyDemand_QtySupply_V
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+	 * Set Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_Category_ID (int M_Product_Category_ID);
+
+	/**
+	 * Get Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_Category_ID();
+
+	String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -105,7 +125,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID(int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
 	 * Get Product.
@@ -127,7 +147,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Warehouse_ID(int M_Warehouse_ID);
+	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
 	 * Get Warehouse.
@@ -145,22 +165,21 @@ public interface I_QtyDemand_QtySupply_V
 	 * Set Product Name.
 	 * Name of the Product
 	 *
-	 * <br>Type: Text
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductName(@Nullable java.lang.String ProductName);
+	void setProductName (@Nullable java.lang.String ProductName);
 
 	/**
 	 * Get Product Name.
 	 * Name of the Product
 	 *
-	 * <br>Type: Text
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
-	java.lang.String getProductName();
+	@Nullable java.lang.String getProductName();
 
 	ModelColumn<I_QtyDemand_QtySupply_V, Object> COLUMN_ProductName = new ModelColumn<>(I_QtyDemand_QtySupply_V.class, "ProductName", null);
 	String COLUMNNAME_ProductName = "ProductName";
@@ -168,25 +187,24 @@ public interface I_QtyDemand_QtySupply_V
 	/**
 	 * Set Product Value.
 	 * Product identifier;
-	 * "val-<search key>", "ext-<external id>" or internal M_Product_ID
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductValue(@Nullable java.lang.String ProductValue);
+	void setProductValue (@Nullable java.lang.String ProductValue);
 
 	/**
 	 * Get Product Value.
 	 * Product identifier;
-	 * "val-<search key>", "ext-<external id>" or internal M_Product_ID
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
-	java.lang.String getProductValue();
+	@Nullable java.lang.String getProductValue();
 
 	ModelColumn<I_QtyDemand_QtySupply_V, Object> COLUMN_ProductValue = new ModelColumn<>(I_QtyDemand_QtySupply_V.class, "ProductValue", null);
 	String COLUMNNAME_ProductValue = "ProductValue";
@@ -198,7 +216,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyDemand_QtySupply_V_ID(int QtyDemand_QtySupply_V_ID);
+	void setQtyDemand_QtySupply_V_ID (int QtyDemand_QtySupply_V_ID);
 
 	/**
 	 * Get MD_Cockpit QtyDemand and QtySupply.
@@ -213,16 +231,16 @@ public interface I_QtyDemand_QtySupply_V
 	String COLUMNNAME_QtyDemand_QtySupply_V_ID = "QtyDemand_QtySupply_V_ID";
 
 	/**
-	 * Set Forecast - open.
+	 * Set Forecast - pending.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyForecasted(@Nullable BigDecimal QtyForecasted);
+	void setQtyForecasted (@Nullable BigDecimal QtyForecasted);
 
 	/**
-	 * Get Forecast - open.
+	 * Get Forecast - pending.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -241,7 +259,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyReserved(@Nullable BigDecimal QtyReserved);
+	void setQtyReserved (@Nullable BigDecimal QtyReserved);
 
 	/**
 	 * Get Qty Reserved.
@@ -263,7 +281,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyStock(@Nullable BigDecimal QtyStock);
+	void setQtyStock (@Nullable BigDecimal QtyStock);
 
 	/**
 	 * Get Stock.
@@ -284,7 +302,7 @@ public interface I_QtyDemand_QtySupply_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyToMove(@Nullable BigDecimal QtyToMove);
+	void setQtyToMove (@Nullable BigDecimal QtyToMove);
 
 	/**
 	 * Get Quantity to move.
@@ -299,16 +317,16 @@ public interface I_QtyDemand_QtySupply_V
 	String COLUMNNAME_QtyToMove = "QtyToMove";
 
 	/**
-	 * Set qtytoproduce.
+	 * Set Production - pending.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyToProduce(@Nullable BigDecimal QtyToProduce);
+	void setQtyToProduce (@Nullable BigDecimal QtyToProduce);
 
 	/**
-	 * Get qtytoproduce.
+	 * Get Production - pending.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

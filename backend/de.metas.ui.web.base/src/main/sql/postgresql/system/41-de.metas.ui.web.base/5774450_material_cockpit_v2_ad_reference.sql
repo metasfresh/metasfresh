@@ -304,3 +304,78 @@ UPDATE AD_UI_Element SET SeqNo=15,Updated=TO_TIMESTAMP('2025-10-24 09:46:13.8380
 UPDATE AD_Column SET AD_Reference_ID=10,Updated=TO_TIMESTAMP('2025-10-24 09:48:31.629000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591430
 ;
 
+-- Column: QtyDemand_QtySupply_V.M_Product_Category_ID
+-- 2025-10-24T10:16:24.747Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,591436,453,0,19,542218,'XX','M_Product_Category_ID',TO_TIMESTAMP('2025-10-24 10:16:24.555000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Kategorie eines Produktes','de.metas.material.cockpit',0,10,'Identifiziert die Kategorie zu der ein Produkt gehört. Produktkategorien werden für Preisfindung und Auswahl verwendet.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N',0,'Produkt Kategorie',0,0,TO_TIMESTAMP('2025-10-24 10:16:24.555000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2025-10-24T10:16:24.751Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=591436 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2025-10-24T10:16:24.755Z
+/* DDL */  select update_Column_Translation_From_AD_Element(453)
+;
+
+-- Field: Material Cockpit v2(541963,D) -> MD_Cockpit QtyDemand and QtySupply(548476,D) -> Produkt Kategorie
+-- Column: QtyDemand_QtySupply_V.M_Product_Category_ID
+-- 2025-10-24T10:17:20.909Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591436,755084,0,548476,0,TO_TIMESTAMP('2025-10-24 10:17:20.712000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Kategorie eines Produktes',0,'U',0,'Identifiziert die Kategorie zu der ein Produkt gehört. Produktkategorien werden für Preisfindung und Auswahl verwendet.',0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Produkt Kategorie',0,0,10,0,1,1,TO_TIMESTAMP('2025-10-24 10:17:20.712000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-10-24T10:17:20.912Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=755084 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-10-24T10:17:20.914Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(453)
+;
+
+-- 2025-10-24T10:17:20.942Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=755084
+;
+
+-- 2025-10-24T10:17:20.945Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(755084)
+;
+
+-- Column: QtyDemand_QtySupply_V.M_Product_Category_ID
+-- 2025-10-24T10:17:35.222Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-10-24 10:17:35.222000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591436
+;
+
+-- UI Element: Material Cockpit v2(541963,D) -> MD_Cockpit QtyDemand and QtySupply(548476,D) -> Main -> 10 -> main.Produkt
+-- Column: QtyDemand_QtySupply_V.M_Product_ID
+-- 2025-10-24T10:18:16.391Z
+UPDATE AD_UI_Element SET SeqNo=30,Updated=TO_TIMESTAMP('2025-10-24 10:18:16.391000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637948
+;
+
+-- UI Element: Material Cockpit v2(541963,D) -> MD_Cockpit QtyDemand and QtySupply(548476,D) -> Main -> 10 -> main.Maßeinheit
+-- Column: QtyDemand_QtySupply_V.C_UOM_ID
+-- 2025-10-24T10:18:21.169Z
+UPDATE AD_UI_Element SET SeqNo=50,Updated=TO_TIMESTAMP('2025-10-24 10:18:21.169000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637934
+;
+
+-- UI Element: Material Cockpit v2(541963,D) -> MD_Cockpit QtyDemand and QtySupply(548476,D) -> Main -> 10 -> main.AttributesKey (technical)
+-- Column: QtyDemand_QtySupply_V.AttributesKey
+-- 2025-10-24T10:18:24.649Z
+UPDATE AD_UI_Element SET SeqNo=60,Updated=TO_TIMESTAMP('2025-10-24 10:18:24.649000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637935
+;
+
+-- UI Element: Material Cockpit v2(541963,D) -> MD_Cockpit QtyDemand and QtySupply(548476,D) -> Main -> 10 -> main.Lager
+-- Column: QtyDemand_QtySupply_V.M_Warehouse_ID
+-- 2025-10-24T10:18:29.947Z
+UPDATE AD_UI_Element SET SeqNo=70,Updated=TO_TIMESTAMP('2025-10-24 10:18:29.947000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637936
+;
+
+-- UI Element: Material Cockpit v2(541963,D) -> MD_Cockpit QtyDemand and QtySupply(548476,D) -> Main -> 10 -> main.Produkt Kategorie
+-- Column: QtyDemand_QtySupply_V.M_Product_Category_ID
+-- 2025-10-24T10:18:45.722Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,755084,0,548476,553650,637949,'F',TO_TIMESTAMP('2025-10-24 10:18:45.532000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Kategorie eines Produktes','Identifiziert die Kategorie zu der ein Produkt gehört. Produktkategorien werden für Preisfindung und Auswahl verwendet.','Y','N','N','Y','N','N','N',0,'Produkt Kategorie',40,0,0,TO_TIMESTAMP('2025-10-24 10:18:45.532000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Column: QtyDemand_QtySupply_V.M_Product_Category_ID
+-- 2025-10-24T10:20:27.629Z
+UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=540153, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2025-10-24 10:20:27.629000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591436
+;
+

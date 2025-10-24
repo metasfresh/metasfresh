@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_QtyDemand_QtySupply_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1676666809L;
+	private static final long serialVersionUID = -108491773L;
 
     /** Standard Constructor */
     public X_QtyDemand_QtySupply_V (final Properties ctx, final int QtyDemand_QtySupply_V_ID, @Nullable final String trxName)
@@ -60,6 +60,21 @@ public class X_QtyDemand_QtySupply_V extends org.compiere.model.PO implements I_
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setM_Product_Category_ID (final int M_Product_Category_ID)
+	{
+		if (M_Product_Category_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Product_Category_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Product_Category_ID, M_Product_Category_ID);
+	}
+
+	@Override
+	public int getM_Product_Category_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_Category_ID);
 	}
 
 	@Override
