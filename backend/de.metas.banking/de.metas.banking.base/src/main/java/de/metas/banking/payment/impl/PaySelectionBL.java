@@ -100,7 +100,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void updateFromDocument(final I_C_PaySelectionLine psl)
+	public void updateFromDocument(@NonNull final I_C_PaySelectionLine psl)
 	{
 		if (paymentRequestBL.isUpdatedFromPaymentRequest(psl))
 		{
@@ -130,7 +130,7 @@ public class PaySelectionBL implements IPaySelectionBL
 				final BPartnerId invoiceBPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 				psl.setC_BPartner_ID(invoiceBPartnerId.getRepoId());
 
-				psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(null, invoiceId, currencyId)));
+				psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(psl, currencyId)));
 
 				if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
 				{
@@ -146,7 +146,7 @@ public class PaySelectionBL implements IPaySelectionBL
 				final BPartnerId orderBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 				psl.setC_BPartner_ID(orderBPartnerId.getRepoId());
 
-				psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(orderId, null, currencyId)));
+				psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(psl, currencyId)));
 
 				if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
 				{
@@ -160,27 +160,31 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Nullable
-	private BPartnerBankAccountId getBPartnerBankAccountId(@Nullable final OrderId orderId,
-														   @Nullable final InvoiceId invoiceId,
-														   @NonNull final CurrencyId currencyId)
+	private BPartnerBankAccountId getBPartnerBankAccountId(@NonNull final I_C_PaySelectionLine psl, @NonNull final CurrencyId currencyId)
 	{
-		Check.assumeSingleNonNull("One if order or invoice shall not be null", orderId, invoiceId);
-
 		final BPartnerId partnerId;
 		final BPBankAcctUse acceptedBankAccountUsage;
 
-		if (orderId != null)
+		final PaySelectionLineType lineType = extractType(psl);
+		switch (lineType)
 		{
-			final I_C_Order order = orderBL.getById(orderId);
-			partnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-			acceptedBankAccountUsage = orderBL.isSalesOrder(order) ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
-		}
-		else
-		{
-			final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-			partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-			final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
-			acceptedBankAccountUsage = invoiceDocBaseType.isIncomingCash() ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
+			case Invoice:
+
+				final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(psl.getC_Invoice_ID()));
+				partnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+				final InvoiceDocBaseType invoiceDocBaseType = invoiceBL.getInvoiceDocBaseType(invoice);
+				acceptedBankAccountUsage = invoiceDocBaseType.isIncomingCash() ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
+
+				break;
+
+			case Order:
+				final I_C_Order order = orderBL.getById(OrderId.ofRepoId(psl.getC_Order_ID()));
+				partnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+				acceptedBankAccountUsage = orderBL.isSalesOrder(order) ? BPBankAcctUse.DEBIT : BPBankAcctUse.DEPOSIT;
+
+				break;
+			default:
+				throw new AdempiereException("Not supported type for line " + psl);
 		}
 
 		final List<BPartnerBankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(partnerId, currencyId);
@@ -546,7 +550,8 @@ public class PaySelectionBL implements IPaySelectionBL
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private static PaySelectionLineType extractType(final I_C_PaySelectionLine line)
+	@Override
+	public PaySelectionLineType extractType(final I_C_PaySelectionLine line)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(line.getC_Order_ID());
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
@@ -572,5 +577,11 @@ public class PaySelectionBL implements IPaySelectionBL
 	public I_C_PaySelectionLine getPaySelectionLineById(@NonNull final PaySelectionLineId paySelectionLineId)
 	{
 		return paySelectionDAO.getPaySelectionLinesById(paySelectionLineId);
+	}
+
+	@Override
+	public List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull final I_C_PaySelection paySelection)
+	{
+		return paySelectionDAO.retrievePaySelectionLines(paySelection);
 	}
 }

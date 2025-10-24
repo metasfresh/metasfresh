@@ -40,7 +40,6 @@ import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
@@ -88,7 +87,7 @@ public class BPartnerBankAccount
 	 */
 	@Setter(AccessLevel.NONE)
 	@JsonIgnore
-	private @org.jetbrains.annotations.Nullable BPartnerId bpartnerId;
+	private @Nullable BPartnerId bpartnerId;
 
 	@Nullable
 	private String iban;
@@ -126,7 +125,6 @@ public class BPartnerBankAccount
 
 	@Nullable
 	private String accountCountry;
-
 
 	@Builder(toBuilder = true)
 	private BPartnerBankAccount(
