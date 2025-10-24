@@ -591,7 +591,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				{
 					final String bankName = bankAccountService.getBankName(BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()))
 							.orElseThrow(() ->
-									new AdempiereException(ERR_SEPA_Export_NoBankName, paymentType, createInfo(line)));
+									new SepaMarshallerException(ERR_SEPA_Export_NoBankName, paymentType, createInfo(line)));
 
 					finInstnId.setNm(bankName);
 					finInstnId.setBIC(null); // if we use Nm, then there should be no BIC element
