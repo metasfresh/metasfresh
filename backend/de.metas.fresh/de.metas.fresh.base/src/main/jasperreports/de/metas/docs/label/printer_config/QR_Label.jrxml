@@ -6,8 +6,14 @@
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="295"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="701"/>
-	<parameter name="$WEBUI_ViewId" class="java.lang.String"/>
-	<parameter name="$WEBUI_ViewSelectedIds" class="java.lang.String"/>
+	<parameter name="$WEBUI_ViewId" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="$WEBUI_ViewSelectedIds" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="p_view_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{$WEBUI_ViewId}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_printer_config_ids" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{$WEBUI_ViewSelectedIds}]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT pc.AD_Printer_Config_ID,
        pc.Name,
@@ -18,11 +24,11 @@
        )::text AS QRCodeData
 FROM AD_Printer_Config pc
 WHERE CASE
-          WHEN $P{$WEBUI_ViewSelectedIds} = 'all'
+          WHEN $P{ad_printer_config_ids} = 'all'
               THEN pc.AD_Printer_Config_ID IN (SELECT vs.IntKey1
                                                FROM T_WEBUI_ViewSelection vs
-                                               WHERE vs.UUID = $P{$WEBUI_ViewId})
-              ELSE pc.AD_Printer_Config_ID = ANY (REGEXP_SPLIT_TO_ARRAY($P{$WEBUI_ViewSelectedIds}, ',')::INT[])
+                                               WHERE vs.UUID = $P{p_view_id})
+              ELSE pc.AD_Printer_Config_ID = ANY (REGEXP_SPLIT_TO_ARRAY($P{ad_printer_config_ids}, ',')::INT[])
       END
 ;]]>
 	</queryString>
