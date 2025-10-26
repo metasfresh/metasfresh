@@ -6,7 +6,8 @@
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="295"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="701"/>
-	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
+	<parameter name="p_view_id" class="java.lang.String"/>
+	<parameter name="AD_Printer_Config_IDs" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT pc.AD_Printer_Config_ID,
        pc.Name,
@@ -15,11 +16,14 @@
                'printerConfigId', pc.AD_Printer_Config_ID,
                'caption', pc.Name
        )::text AS QRCodeData
-FROM T_Selection s
-         INNER JOIN AD_Printer_Config pc
-                    ON s.T_Selection_ID = pc.AD_Printer_Config_ID
-WHERE s.AD_PInstance_ID = $P{AD_PInstance_ID}
-ORDER BY s.T_Selection_ID
+FROM AD_Printer_Config pc
+WHERE CASE
+          WHEN $P{AD_Printer_Config_IDs} = 'all'
+              THEN pc.AD_Printer_Config_ID IN (SELECT vs.IntKey1
+                                               FROM T_WEBUI_ViewSelection vs
+                                               WHERE vs.UUID = $P{p_view_id})
+              ELSE pc.AD_Printer_Config_ID = ANY (REGEXP_SPLIT_TO_ARRAY($P{AD_Printer_Config_IDs}, ',')::INT[])
+      END
 ;]]>
 	</queryString>
 	<field name="ad_printer_config_id" class="java.math.BigDecimal">
