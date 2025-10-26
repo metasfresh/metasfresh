@@ -69,7 +69,7 @@ class ChartOfAccountsImportHelper
 		// Try searching by ID
 		chartOfAccountsId = chartOfAccountsService.getByName(extractChartOfAccountsNameNotNull(importRecord),
 						ClientId.ofRepoId(importRecord.getAD_Client_ID()),
-						OrgId.ofRepoId(importRecord.getAD_Org_ID()))
+						extractOrgId(importRecord))
 				.map(ChartOfAccounts::getId)
 				.orElse(null);
 
@@ -80,7 +80,7 @@ class ChartOfAccountsImportHelper
 					ChartOfAccountsCreateRequest.builder()
 							.name(extractChartOfAccountsNameNotNull(importRecord))
 							.clientId(ClientId.ofRepoId(importRecord.getAD_Client_ID()))
-							.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
+							.orgId(extractOrgId(importRecord))
 							.build());
 			chartOfAccountsId = newChartOfAccounts.getId();
 		}
