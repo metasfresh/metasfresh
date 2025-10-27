@@ -14,22 +14,10 @@
 	<parameter name="ad_printer_config_ids" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{$WEBUI_ViewSelectedIds}]]></defaultValueExpression>
 	</parameter>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT pc.AD_Printer_Config_ID,
-       pc.Name,
-       'PRINTER_CFG#1#' ||
-       JSON_BUILD_OBJECT(
-               'printerConfigId', pc.AD_Printer_Config_ID,
-               'caption', pc.Name
-       )::text AS QRCodeData
-FROM AD_Printer_Config pc
-WHERE CASE
-          WHEN $P{ad_printer_config_ids} = 'all'
-              THEN pc.AD_Printer_Config_ID IN (SELECT vs.IntKey1
-                                               FROM T_WEBUI_ViewSelection vs
-                                               WHERE vs.UUID = $P{p_view_id})
-              ELSE pc.AD_Printer_Config_ID = ANY (REGEXP_SPLIT_TO_ARRAY($P{ad_printer_config_ids}, ',')::INT[])
-      END
+		<![CDATA[SELECT * 
+FROM report.Printer_Config_QRCode_Label($P{ad_printer_config_ids},$P{p_view_id},$P{RECORD_ID})
 ;]]>
 	</queryString>
 	<field name="ad_printer_config_id" class="java.math.BigDecimal">
@@ -42,9 +30,9 @@ WHERE CASE
 		<property name="com.jaspersoft.studio.field.label" value="name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="ad_printer_config"/>
 	</field>
-	<field name="qrcodedata" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="qrcodedata"/>
-		<property name="com.jaspersoft.studio.field.label" value="qrcodedata"/>
+	<field name="qrcode_data" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="qrcode_data"/>
+		<property name="com.jaspersoft.studio.field.label" value="qrcode_data"/>
 	</field>
 	<detail>
 		<band height="262" splitType="Stretch">
@@ -62,7 +50,7 @@ WHERE CASE
 					<property name="com.jaspersoft.studio.unit.margin" value="mm"/>
 				</reportElement>
 				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" margin="0" errorCorrectionLevel="M">
-					<jr:codeExpression><![CDATA[$F{qrcodedata}]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA[$F{qrcode_data}]]></jr:codeExpression>
 				</jr:QRCode>
 			</componentElement>
 		</band>
