@@ -19,6 +19,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
@@ -183,6 +184,45 @@ public class PurchaseOrderToShipperTransportationRepository
 				.quantity(Quantitys.of(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
 				.orderAndLineId(OrderAndLineId.of(OrderId.ofRepoId(inOutLine.getC_Order_ID()), orderLineId))
 				.build();
+	}
+
+	@Nullable
+	public ShipperTransportationId getByQueryOrNull(@NonNull final ShipperTransportationQuery query)
+	{
+		final IQueryBuilder<I_M_ShippingPackage> builder = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter();
+		final ShipperTransportationId id = query.getId();
+		if (id != null)
+		{
+			builder.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, id);
+		}
+
+		final OrderId orderId = query.getOrderId();
+		if (orderId != null)
+		{
+			builder.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId);
+		}
+		final boolean onlyRecordsWithNullOrderLineId = query.isOnlyRecordsWithNullOrderLineId();
+		if (onlyRecordsWithNullOrderLineId)
+		{
+			builder.addIsNull(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID);
+		}
+		else
+		{
+			final List<OrderLineId> orderLineIds = query.getOrderLineIds();
+			if (orderLineIds != null && !orderLineIds.isEmpty())
+			{
+				builder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineIds);
+			}
+		}
+
+		return builder.create()
+				.list()
+				.stream()
+				.map(I_M_ShippingPackage::getM_ShipperTransportation_ID)
+				.map(ShipperTransportationId::ofRepoId)
+				.findFirst()
+				.orElse(null);
 	}
 
 }

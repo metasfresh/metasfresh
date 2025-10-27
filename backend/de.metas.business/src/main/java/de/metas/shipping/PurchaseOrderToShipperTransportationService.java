@@ -159,8 +159,9 @@ public class PurchaseOrderToShipperTransportationService
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate = PurchaseShippingPackageCreateRequest.builder()
-				.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+				.orderId(orderId)
 				.datePromised(order.getDatePromised().toInstant())
 				.shipperTransportationId(shipperTransportationIdToUse)
 				.shiperId(ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID()))
@@ -168,10 +169,17 @@ public class PurchaseOrderToShipperTransportationService
 				.orgId(orgId);
 		if (isOrderLinesWithoutLUQtyExist)
 		{
-			//create a generic package for all order lines without LUQty set on them
-			repo.addPurchaseOrderToShipperTransportation(requestTemplate
-					// .sscc(sscc18CodeBL.generate(orgId)) //No requirements currently ask for this
+			final ShipperTransportationId existingShipperTransportationId = repo.getByQueryOrNull(ShipperTransportationQuery.builder()
+					.orderId(orderId)
+					.onlyRecordsWithNullOrderLineId(true)
 					.build());
+			if (existingShipperTransportationId == null)
+			{
+				//create a generic package for all order lines without LUQty set on them
+				repo.addPurchaseOrderToShipperTransportation(requestTemplate
+						// .sscc(sscc18CodeBL.generate(orgId)) //No requirements currently ask for this
+						.build());
+			}
 		}
 		orderLinesWithLUQty
 				.forEach(ol -> addPurchaseOrderLineToShipperTransportationId(requestTemplate, ol));
