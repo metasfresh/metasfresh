@@ -381,7 +381,8 @@ public class C_Order_StepDef
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_M_Shipper_ID)
 				.map(shipperTable::get)
 				.map(shipperTable::extractIdFromRecord)
-				.ifPresent(shipperId -> order.setM_Shipper_ID(ShipperId.toRepoId(shipperId)));
+				.map(ShipperId::getRepoId)
+				.ifPresent(order::setM_Shipper_ID);
 
 		saveRecord(order);
 

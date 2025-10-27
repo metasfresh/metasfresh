@@ -40,5 +40,4 @@ public class M_Shipper_StepDefData extends StepDefData<I_M_Shipper>
 	{
 		return ShipperId.ofRepoId(record.getM_Shipper_ID());
 	}
-
 }
