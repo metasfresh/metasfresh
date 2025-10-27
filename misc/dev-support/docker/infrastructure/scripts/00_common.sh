@@ -24,6 +24,28 @@
 
 # Common utility functions for infrastructure scripts
 
+# Detect if we need winpty (only in interactive TTY on Windows)
+# Returns "winpty" if needed, empty string otherwise
+get_winpty() {
+    if [ -t 0 ]; then
+        # stdin is a TTY, use winpty
+        echo "winpty"
+    else
+        # stdin is not a TTY (e.g., piped, redirected, or non-interactive), skip winpty
+        echo ""
+    fi
+}
+
+# Get docker exec flags based on TTY availability
+# Returns "-it" if TTY available, "-i" otherwise
+get_docker_exec_flags() {
+    if [ -t 0 ]; then
+        echo "-it"
+    else
+        echo "-i"
+    fi
+}
+
 # Auto-detect BRANCH_NAME from git branch
 auto_detect_branch_name() {
     CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
