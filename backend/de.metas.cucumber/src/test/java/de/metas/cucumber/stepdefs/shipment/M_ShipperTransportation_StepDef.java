@@ -168,7 +168,7 @@ public class M_ShipperTransportation_StepDef
 				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
 				.create()
 				.count();
-		assertThat(actualShippingPackages).as("Number of M_ShippingPackages for TransportationOrderId" + shipperTransportationId).isEqualTo(expectedShippingPackages);
+		assertThat(actualShippingPackages).as("Number of M_ShippingPackages for M_ShipperTransportation_ID" + shipperTransportationId).isEqualTo(expectedShippingPackages);
 	}
 
 	@And("metasfresh contains M_ShippingPackage")
