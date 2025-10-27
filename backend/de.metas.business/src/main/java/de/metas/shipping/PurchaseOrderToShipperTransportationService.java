@@ -168,19 +168,12 @@ public class PurchaseOrderToShipperTransportationService
 				.bPartnerLocationId(bPartnerLocationId)
 				.orgId(orgId);
 
-		if (isOrderLinesWithoutLUQtyExist)
+		if (isOrderLinesWithoutLUQtyExist && !repo.isShippingPackageExistsForOrderWithNoLine(orderId))
 		{
-			final PurchaseShippingPackageQuery build = PurchaseShippingPackageQuery.builder()
-					.orderId(orderId)
-					.onlyRecordsWithNullOrderLineId(true)
-					.build();
-			if (!repo.isShippingPackageExistsForQuery(build))
-			{
-				//create a generic package for all order lines without LUQty set on them
-				repo.addPurchaseOrderToShipperTransportation(requestTemplate
-						// .sscc(sscc18CodeBL.generate(orgId)) //No requirements currently ask for this
-						.build());
-			}
+			//create a generic package for all order lines without LUQty set on them
+			repo.addPurchaseOrderToShipperTransportation(requestTemplate
+					// .sscc(sscc18CodeBL.generate(orgId)) //No requirements currently ask for this
+					.build());
 		}
 		orderLinesWithLUQty
 				.forEach(ol -> addPurchaseOrderLineToShipperTransportationId(requestTemplate, ol));
