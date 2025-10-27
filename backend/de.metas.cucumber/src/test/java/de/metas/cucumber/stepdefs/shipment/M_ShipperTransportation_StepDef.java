@@ -159,6 +159,18 @@ public class M_ShipperTransportation_StepDef
 		deliveryInstructionTable.putOrReplace(row.getAsIdentifier(), shipperTransportationRecord);
 	}
 
+	@And("^metasfresh contains exactly (.*) M_ShippingPackages for transportation order: (.*)$")
+	public void validateShippingPackagesForTransportationOrder(final int expectedShippingPackages, @NonNull final String transportationOrderIdentifier)
+	{
+		final int shipperTransportationId = deliveryInstructionTable.get(transportationOrderIdentifier)
+				.getM_ShipperTransportation_ID();
+		final int actualShippingPackages = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.create()
+				.count();
+		assertThat(actualShippingPackages).as("Number of M_ShippingPackages for TransportationOrderId" + shipperTransportationId).isEqualTo(expectedShippingPackages);
+	}
+
 	@And("metasfresh contains M_ShippingPackage")
 	public void add_M_ShippingPackage(@NonNull final DataTable dataTable)
 	{
