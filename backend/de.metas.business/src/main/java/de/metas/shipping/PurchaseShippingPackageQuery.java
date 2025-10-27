@@ -23,37 +23,15 @@
 package de.metas.shipping;
 
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 @Value
 @Builder
-public class ShipperTransportationQuery
+public class PurchaseShippingPackageQuery
 {
-	@Nullable ShipperTransportationId id;
-	@Nullable OrderId orderId;
-	@Nullable List<OrderLineId> orderLineIds;
+	@NonNull OrderId orderId;
 	@Builder.Default boolean onlyRecordsWithNullOrderLineId = false;
 
-	public ShipperTransportationQuery(@Nullable final ShipperTransportationId id,
-									  @Nullable final OrderId orderId,
-									  @Nullable final List<OrderLineId> orderLineIds,
-									  final boolean onlyRecordsWithNullOrderLineId)
-	{
-		if (id == null && orderId == null && orderLineIds == null)
-		{
-			throw new IllegalArgumentException("At least one query parameter must be non-null");
-		}
-		this.id = id;
-		this.orderId = orderId;
-		this.onlyRecordsWithNullOrderLineId = onlyRecordsWithNullOrderLineId;
-		//if onlyRecordsWithNullOrderLineId is true, then orderLineIds is ignored
-		this.orderLineIds = orderLineIds;
-
-	}
 }

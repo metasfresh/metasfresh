@@ -167,13 +167,14 @@ public class PurchaseOrderToShipperTransportationService
 				.shiperId(ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID()))
 				.bPartnerLocationId(bPartnerLocationId)
 				.orgId(orgId);
+
 		if (isOrderLinesWithoutLUQtyExist)
 		{
-			final ShipperTransportationId existingShipperTransportationId = repo.getByQueryOrNull(ShipperTransportationQuery.builder()
+			final PurchaseShippingPackageQuery build = PurchaseShippingPackageQuery.builder()
 					.orderId(orderId)
 					.onlyRecordsWithNullOrderLineId(true)
-					.build());
-			if (existingShipperTransportationId == null)
+					.build();
+			if (!repo.isShippingPackageExistsForQuery(build))
 			{
 				//create a generic package for all order lines without LUQty set on them
 				repo.addPurchaseOrderToShipperTransportation(requestTemplate
