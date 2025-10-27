@@ -168,7 +168,7 @@ public class PurchaseOrderToShipperTransportationService
 				.bPartnerLocationId(bPartnerLocationId)
 				.orgId(orgId);
 
-		if (isOrderLinesWithoutLUQtyExist && !repo.isShippingPackageExistsForOrderWithNoLine(orderId))
+		if (isOrderLinesWithoutLUQtyExist && !repo.isShippingPackageExistsForPurchaseOrderWithNoOrderLine(orderId))
 		{
 			//create a generic package for all order lines without LUQty set on them
 			repo.addPurchaseOrderToShipperTransportation(requestTemplate

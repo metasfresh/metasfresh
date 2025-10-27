@@ -185,7 +185,7 @@ public class PurchaseOrderToShipperTransportationRepository
 				.build();
 	}
 
-	public boolean isShippingPackageExistsForOrderWithNoLine(@NonNull final OrderId orderId)
+	public boolean isShippingPackageExistsForPurchaseOrderWithNoOrderLine(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addOnlyActiveRecordsFilter()
