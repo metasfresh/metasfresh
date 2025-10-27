@@ -222,7 +222,7 @@
                             <tag>${env.BRANCH_NAME_DOCKERIZED}_LATEST</tag>
                         </tags>
                         <auth>
-                            <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <!-- Docker registry credentials are provided via environment variables in CI/CD -->
                             <username>${env.DOCKER_PUSH_REGISTRY_USERNAME}</username>
                             <password>${env.DOCKER_PUSH_REGISTRY_PASSWORD}</password>
                         </auth>
