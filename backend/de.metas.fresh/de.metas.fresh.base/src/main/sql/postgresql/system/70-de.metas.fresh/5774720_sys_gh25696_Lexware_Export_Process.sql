@@ -1422,3 +1422,14 @@ UPDATE AD_TreeNodeMM SET Parent_ID=542265, SeqNo=0, Updated=now(), UpdatedBy=100
 UPDATE AD_TreeNodeMM SET Parent_ID=542265, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542266 AND AD_Tree_ID=10
 ;
 
+-- Value: Invoice Lexware Export (Excel)
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2025-10-27T13:44:00.349Z
+UPDATE AD_Process SET IsTranslateExcelHeaders='N',Updated=TO_TIMESTAMP('2025-10-27 13:44:00.151000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585519
+;
+
+-- Value: Partner Lexware Export (Excel)
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2025-10-27T13:44:10.342Z
+UPDATE AD_Process SET IsTranslateExcelHeaders='N',Updated=TO_TIMESTAMP('2025-10-27 13:44:10.141000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585518
+;
