@@ -23,9 +23,11 @@
 package de.metas.inoutcandidate;
 
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,10 +36,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ShipmentScheduleService
 {
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
-
 
 	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
 	{
@@ -58,7 +61,7 @@ public class ShipmentScheduleService
 				|| shipmentSchedule.isProcessed()
 				|| shipmentSchedule.isClosed()
 				|| !shipmentSchedule.isActive()
-				|| shipmentSchedule.getQtyToDeliver().signum() <= 0)
+				|| shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule).signum() <= 0)
 		{
 			return false;
 		}

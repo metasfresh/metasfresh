@@ -80,6 +80,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
@@ -400,7 +401,7 @@ public class ShipmentScheduleRepository
 		return shipmentScheduleStream;
 	}
 
-	public ShipmentSchedule loadByPackageId(final @NonNull PackageId packageId)
+	public List<ShipmentSchedule> loadByPackageId(final @NonNull PackageId packageId)
 	{
 		//TODO Adrian verify if there's a cleaner way to get the associated shipment schedule.
 		return queryBL.createQueryBuilder(I_M_Package.class)
@@ -410,9 +411,9 @@ public class ShipmentScheduleRepository
 				.andCollect(I_M_InOutLine.COLUMN_C_OrderLine_ID)
 				.andCollectChildren(I_M_ShipmentSchedule.COLUMN_C_OrderLine_ID)
 				.create()
-				.firstOptional()
+				.stream()
 				.map(this::ofRecord)
-				.orElseThrow(() -> new AdempiereException("No shipment schedule found for package " + packageId));
+				.collect(Collectors.toList());
 	}
 
 	public List<ShipmentScheduleId> listIdsByQuery(@NonNull final ShipmentScheduleQuery query)
