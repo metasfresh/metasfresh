@@ -34,13 +34,15 @@ BRANCH_NAME=$(resolve_branch_name "$1")
 
 set -u
 
-# the winpty is needed to avoid an error when running the script in git bash on windows
+# Detect if winpty is needed (only in interactive TTY on Windows)
+WINPTY=$(get_winpty)
+DOCKER_EXEC_FLAGS=$(get_docker_exec_flags)
 
 echo "Stopping ${BRANCH_NAME}_postgrest"
-winpty docker stop ${BRANCH_NAME}_postgrest
+$WINPTY docker stop ${BRANCH_NAME}_postgrest
 
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "alter database metasfresh rename to metasfresh_template_${BRANCH_NAME};"
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "alter database metasfresh_template_${BRANCH_NAME} is_template true;"
+$WINPTY docker exec $DOCKER_EXEC_FLAGS ${BRANCH_NAME}_db  psql -U postgres -c "alter database metasfresh rename to metasfresh_template_${BRANCH_NAME};"
+$WINPTY docker exec $DOCKER_EXEC_FLAGS ${BRANCH_NAME}_db  psql -U postgres -c "alter database metasfresh_template_${BRANCH_NAME} with is_template true;"
 
 echo "The local database has been converted to a template database."
 echo "You can drop this template database by running "
