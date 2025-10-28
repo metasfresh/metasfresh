@@ -47,7 +47,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
