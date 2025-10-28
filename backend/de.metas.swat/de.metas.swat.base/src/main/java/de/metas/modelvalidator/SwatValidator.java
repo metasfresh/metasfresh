@@ -158,7 +158,7 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.activity.model.validator.C_OrderLine(), client); // 06788
 		engine.addModelValidator(new de.metas.activity.model.validator.C_InvoiceLine(), client); // 06788
 
-		engine.addModelValidator(new M_ShipperTransportation(orderPayScheduleService), client); // 06899
+		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
 
 		// task 09700
 		final IModelInterceptor counterDocHandlerInterceptor = Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);
