@@ -185,4 +185,15 @@ public class PurchaseOrderToShipperTransportationRepository
 				.build();
 	}
 
+	public boolean isShippingPackageExistsForPurchaseOrderWithNoOrderLine(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_IsToBeFetched, true)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
+				.addIsNull(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID)
+				.create()
+				.anyMatch();
+	}
+
 }
