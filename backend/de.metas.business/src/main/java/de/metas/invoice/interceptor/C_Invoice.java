@@ -406,7 +406,7 @@ public class C_Invoice // 03771
 		invoiceBL.setInvoiceLineTaxes(invoice);
 	}
 
-	@ModelChange(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateOrderPaySchedules(@NonNull final I_C_Invoice invoice)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());

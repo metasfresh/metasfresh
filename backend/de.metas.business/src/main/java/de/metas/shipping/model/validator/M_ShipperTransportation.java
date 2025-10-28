@@ -31,6 +31,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -52,7 +53,7 @@ public class M_ShipperTransportation
 		CopyRecordFactory.enableForTableName(I_M_ShipperTransportation.Table_Name);
 	}
 
-	@ModelChange(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void syncOrderDates(final I_M_ShipperTransportation transportOrder)
 	{
 		if (transportOrder.getETA() != null || transportOrder.getBLDate() != null)
