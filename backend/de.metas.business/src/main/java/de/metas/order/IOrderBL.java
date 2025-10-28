@@ -40,6 +40,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.request.RequestTypeId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.tax.api.Tax;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
@@ -47,6 +48,7 @@ import lombok.NonNull;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
@@ -356,4 +358,10 @@ public interface IOrderBL extends ISingletonService
 	PaymentTermId getPaymentTermId(@NonNull I_C_Order orderRecord);
 
 	Money getGrandTotal(@NonNull I_C_Order order);
+
+	void save(I_C_Order order);
+
+	void syncDatesFromTransportOrder(@NonNull OrderId orderId, @NonNull I_M_ShipperTransportation transportOrder);
+
+	void syncDateInvoicedFromInvoice(@NonNull OrderId orderId, @NonNull I_C_Invoice invoice);
 }

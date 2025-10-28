@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
@@ -289,6 +288,27 @@ public interface I_C_Order
 	int getBill_User_ID();
 
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
+	 * Set B/L Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBLDate (@Nullable java.sql.Timestamp BLDate);
+
+	/**
+	 * Get B/L Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getBLDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_BLDate = new ModelColumn<>(I_C_Order.class, "BLDate", null);
+	String COLUMNNAME_BLDate = "BLDate";
 
 	/**
 	 * Set Address.
@@ -878,7 +898,7 @@ public interface I_C_Order
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -888,7 +908,7 @@ public interface I_C_Order
 	 * Get Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1464,6 +1484,29 @@ public interface I_C_Order
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
+	 * Set ETA.
+	 * Estimated Arrival Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setETA (@Nullable java.sql.Timestamp ETA);
+
+	/**
+	 * Get ETA.
+	 * Estimated Arrival Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getETA();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ETA = new ModelColumn<>(I_C_Order.class, "ETA", null);
+	String COLUMNNAME_ETA = "ETA";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -1729,6 +1772,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_C_Order.class, "IncotermLocation", null);
 	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
+	/**
+	 * Set Invoice date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceDate (@Nullable java.sql.Timestamp InvoiceDate);
+
+	/**
+	 * Get Invoice date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getInvoiceDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_InvoiceDate = new ModelColumn<>(I_C_Order.class, "InvoiceDate", null);
+	String COLUMNNAME_InvoiceDate = "InvoiceDate";
 
 	/**
 	 * Set Invoice Rule.
@@ -3193,25 +3257,4 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_Weight = new ModelColumn<>(I_C_Order.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
-
-	/**
-	 * Set External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystem_ID (int ExternalSystem_ID);
-
-	/**
-	 * Get External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternalSystem_ID();
-
-	ModelColumn<I_C_Order, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Order.class, "ExternalSystem_ID", null);
-	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }

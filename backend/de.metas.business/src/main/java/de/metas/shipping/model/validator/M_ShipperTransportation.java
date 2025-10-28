@@ -23,11 +23,12 @@ package de.metas.shipping.model.validator;
  */
 
 import de.metas.copy_with_details.CopyRecordFactory;
-import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.order.IOrderBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -39,8 +40,8 @@ import org.compiere.model.ModelValidator;
 @RequiredArgsConstructor
 public class M_ShipperTransportation
 {
-	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-	private final OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Init
 	public void setupCallouts()
@@ -51,10 +52,13 @@ public class M_ShipperTransportation
 		CopyRecordFactory.enableForTableName(I_M_ShipperTransportation.Table_Name);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_ShipperTransportation.COLUMNNAME_ETA, I_M_ShipperTransportation.COLUMNNAME_BLDate })
-	public void updateOrderPaySchedules(final I_M_ShipperTransportation transportOrder)
+	@ModelChange(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void syncOrderDates(final I_M_ShipperTransportation transportOrder)
 	{
-		shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()))
-				.forEach(orderPayScheduleService::updatePayScheduleStatus);
+		if (transportOrder.getETA() != null || transportOrder.getBLDate() != null)
+		{
+			shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()))
+					.forEach(orderId -> orderBL.syncDatesFromTransportOrder(orderId, transportOrder));
+		}
 	}
 }
