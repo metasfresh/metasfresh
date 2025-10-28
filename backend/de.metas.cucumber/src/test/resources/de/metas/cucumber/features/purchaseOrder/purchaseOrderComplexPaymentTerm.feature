@@ -115,6 +115,7 @@ Feature: Purchase order with complex payment term
     And update transport order
       | M_ShipperTransportation_ID | ETA        | BLDate     |
       | shipperTransp_1            | 2025-10-19 | 2025-10-25 |
+    And the transport order identified by shipperTransp_1 is completed
     Then the order identified by po2 has following pay schedules
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB21                  | 2025-10-10 | 25.58  | WP     |

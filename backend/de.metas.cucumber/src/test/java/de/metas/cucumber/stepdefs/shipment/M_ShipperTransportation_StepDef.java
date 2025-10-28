@@ -31,6 +31,8 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Package_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -45,6 +47,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
@@ -67,11 +70,13 @@ public class M_ShipperTransportation_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 
+
 	private final M_InOut_StepDefData shipmentTable;
 	private final C_Order_StepDefData orderTable;
 
-	public final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	@And("validate M_ShipperTransportation:")
 	public void validateM_ShipperTransportation(@NonNull final DataTable dataTable)
@@ -239,4 +244,13 @@ public class M_ShipperTransportation_StepDef
 
 		deliveryInstructionTable.putOrReplace(tableRow.getAsIdentifier(), record);
 	}
+
+	@And("^the transport order identified by (.*) is completed$")
+	public void completeTransportOrder(@NonNull final String orderIdentifier)
+	{
+		final I_M_ShipperTransportation transportOrder = deliveryInstructionTable.get(orderIdentifier);
+		transportOrder.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(transportOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
 }
