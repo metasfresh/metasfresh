@@ -61,8 +61,5 @@ public interface IShipperTransportationDAO extends ISingletonService
 	@NonNull
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
 
-	@NonNull
-	Optional<ShipperTransportationReference> getEarliestShipperTransportationByOrderId(final OrderId orderId);
-
 	ImmutableList<OrderId> retrieveOrderIds(@NonNull ShipperTransportationId shipperTransportationId);
 }

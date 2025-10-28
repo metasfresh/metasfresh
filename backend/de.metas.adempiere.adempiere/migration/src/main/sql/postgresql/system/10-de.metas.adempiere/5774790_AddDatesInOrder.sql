@@ -147,3 +147,21 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,755107,0,294,553653,637959,'F',TO_TIMESTAMP('2025-10-28 08:42:18.677000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Voraussichtliches Ankunftsdatum','Y','N','N','Y','N','N','N',0,'ETA',30,0,0,TO_TIMESTAMP('2025-10-28 08:42:18.677000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+----------------------
+
+
+-- Column: C_Order.InvoiceDate
+-- 2025-10-28T14:00:17.629Z
+UPDATE AD_Column SET IsCalculated='Y',Updated=TO_TIMESTAMP('2025-10-28 14:00:17.629000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591443
+;
+
+-- Column: C_Order.ETA
+-- 2025-10-28T14:00:28.560Z
+UPDATE AD_Column SET IsCalculated='Y',Updated=TO_TIMESTAMP('2025-10-28 14:00:28.560000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591441
+;
+
+-- Column: C_Order.BLDate
+-- 2025-10-28T14:00:38.518Z
+UPDATE AD_Column SET IsCalculated='Y',Updated=TO_TIMESTAMP('2025-10-28 14:00:38.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591442
+;
+
