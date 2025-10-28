@@ -44,24 +44,40 @@ public class M_ShipmentSchedule
 	@NonNull private final ShipmentScheduleService shipmentScheduleService;
 
 	@ModelChange(timings = {
-			ModelValidator.TYPE_AFTER_NEW,
-			ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate,
-			I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override })
-	public void requestCarrierAdvice(final I_M_ShipmentSchedule shipmentSchedule)
+			I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override,
+			I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID })
+	public void markAsCarrierAdviceRequested(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		if (!shipmentScheduleService.isEligibleForCarrierAdvise(shipmentSchedule))
 		{
 			return;
 		}
 
+		shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Requested.getCode());
+		shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW,
+			ModelValidator.TYPE_AFTER_CHANGE })
+	public void requestCarrierAdvice(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (!isMarkedAsCarrierAdviceRequested(shipmentSchedule))
+		{
+			return;
+		}
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID());
 		AdviseDeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(shipmentScheduleId, asyncBatchId);
+	}
 
-		shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Requested.getCode());
-		shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
+	private boolean isMarkedAsCarrierAdviceRequested(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return CarrierAdviseStatus.Requested.equals(CarrierAdviseStatus.ofCode(shipmentSchedule.getCarrier_Advising_Status()));
 	}
 }
