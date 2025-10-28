@@ -7,6 +7,7 @@ import de.metas.shipper.gateway.dhl.oauth2.CustomOAuth2TokenRetriever;
 import de.metas.shipper.gateway.dhl.oauth2.OAuth2AuthorizationInterceptor;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	}
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}

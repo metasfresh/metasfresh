@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 247353525L;
+	private static final long serialVersionUID = -283356033L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -1070,6 +1070,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isHaddexCheck() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHaddexCheck);
+	}
+
+	@Override
+	public void setIsInvoiceEmailCcToMember (final boolean IsInvoiceEmailCcToMember)
+	{
+		set_Value (COLUMNNAME_IsInvoiceEmailCcToMember, IsInvoiceEmailCcToMember);
+	}
+
+	@Override
+	public boolean isInvoiceEmailCcToMember() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceEmailCcToMember);
 	}
 
 	@Override

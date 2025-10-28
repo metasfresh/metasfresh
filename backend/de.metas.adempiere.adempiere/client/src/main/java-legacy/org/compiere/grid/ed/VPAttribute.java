@@ -16,8 +16,25 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import org.adempiere.images.Images;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.VEditorDialogButtonAlign;
+import org.compiere.grid.ed.menu.EditorContextPopupMenu;
+import org.compiere.model.GridField;
+import org.compiere.model.GridTab;
+import org.compiere.model.MPAttributeLookup;
+import org.compiere.swing.CMenuItem;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -25,47 +42,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.util.Objects;
 import java.util.Properties;
-
-import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
-import javax.swing.LookAndFeel;
-import javax.swing.SwingConstants;
-
-import org.adempiere.images.Images;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.util.ASIEditingInfo;
-import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.plaf.VEditorDialogButtonAlign;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.grid.ed.menu.EditorContextPopupMenu;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
-import org.compiere.model.MPAttributeLookup;
-import org.compiere.swing.CMenuItem;
-import org.compiere.util.Env;
-import org.compiere.util.SwingUtils;
-import org.slf4j.Logger;
-
-import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 /**
  * Product Attribute Set Instance Editor
  *
  * @author Jorg Janke
- * @version $Id: VPAttribute.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- * 
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <li>BF [ 1895041 ] NPE when move product with attribute set
- *         <li>BF [ 1770177 ] Inventory Move Locator Error - integrated MGrigioni bug fix
- *         <li>BF [ 2011222 ] ASI Dialog is reseting locator
+ * <li>BF [ 1895041 ] NPE when move product with attribute set
+ * <li>BF [ 1770177 ] Inventory Move Locator Error - integrated MGrigioni bug fix
+ * <li>BF [ 2011222 ] ASI Dialog is reseting locator
+ * @version $Id: VPAttribute.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
 public class VPAttribute extends JComponent
 		implements VEditor, ActionListener
@@ -81,35 +68,35 @@ public class VPAttribute extends JComponent
 	public VPAttribute()
 	{
 		this(null, false, false, true, 0, null);
-	}	// VAssigment
+	}    // VAssigment
 
 	/**
 	 * Create Product Attribute Set Instance Editor.
-	 * 
-	 * @param mandatory mandatory
-	 * @param isReadOnly read only
+	 *
+	 * @param mandatory    mandatory
+	 * @param isReadOnly   read only
 	 * @param isUpdateable updateable
-	 * @param WindowNo WindowNo
-	 * @param lookup Model Product Attribute
+	 * @param WindowNo     WindowNo
+	 * @param lookup       Model Product Attribute
 	 */
 	public VPAttribute(final boolean mandatory, final boolean isReadOnly, final boolean isUpdateable,
-			final int WindowNo, final MPAttributeLookup lookup)
+					   final int WindowNo, final MPAttributeLookup lookup)
 	{
 		this(null, mandatory, isReadOnly, isUpdateable, WindowNo, lookup);
 	}
 
 	/**
 	 * Create Product Attribute Set Instance Editor.
-	 * 
+	 *
 	 * @param gridTab
-	 * @param mandatory mandatory
-	 * @param isReadOnly read only
+	 * @param mandatory    mandatory
+	 * @param isReadOnly   read only
 	 * @param isUpdateable updateable
-	 * @param WindowNo WindowNo
-	 * @param lookup Model Product Attribute
+	 * @param WindowNo     WindowNo
+	 * @param lookup       Model Product Attribute
 	 */
 	public VPAttribute(final GridTab gridTab, final boolean mandatory, final boolean isReadOnly, final boolean isUpdateable,
-			final int WindowNo, final MPAttributeLookup lookup)
+					   final int WindowNo, final MPAttributeLookup lookup)
 	{
 		super();
 		super.setName("M_AttributeSetInstance_ID");
@@ -191,32 +178,52 @@ public class VPAttribute extends JComponent
 				attributeContext = attributeContextNew;
 			}
 		});
-	}	// VPAttribute
+	}    // VPAttribute
 
-	/** Data Value */
+	/**
+	 * Data Value
+	 */
 	private Object m_value = new Object();
-	/** The Attribute Instance */
+	/**
+	 * The Attribute Instance
+	 */
 	private MPAttributeLookup m_mPAttribute;
 
-	/** The Text Field */
+	/**
+	 * The Text Field
+	 */
 	private JTextField m_text = new JTextField(VLookup.DISPLAY_LENGTH);
-	/** The Button */
+	/**
+	 * The Button
+	 */
 	private VEditorActionButton m_button = null;
 
 	private boolean m_readWrite;
 	private boolean m_mandatory;
-	/** Product Attributes context to be used */
+	/**
+	 * Product Attributes context to be used
+	 */
 	private IVPAttributeContext attributeContext;
-	/** The Grid Tab * */
+	/**
+	 * The Grid Tab *
+	 */
 	private GridTab m_GridTab; // added for processCallout
-	/** The Grid Field * */
+	/**
+	 * The Grid Field *
+	 */
 	private GridField m_GridField; // added for processCallout
 
-	/** Calling Window Info */
+	/**
+	 * Calling Window Info
+	 */
 	private GridField m_mField;
-	/** No Instance Key */
+	/**
+	 * No Instance Key
+	 */
 	private static Integer NO_INSTANCE = new Integer(0);
-	/** Logger */
+	/**
+	 * Logger
+	 */
 	private static final transient Logger log = LogManager.getLogger(VPAttribute.class);
 
 	/**
@@ -231,11 +238,11 @@ public class VPAttribute extends JComponent
 		m_mPAttribute = null;
 		m_GridField = null;
 		m_GridTab = null;
-	}	// dispose
+	}    // dispose
 
 	/**
 	 * Set Mandatory
-	 * 
+	 *
 	 * @param mandatory mandatory
 	 */
 	@Override
@@ -243,22 +250,22 @@ public class VPAttribute extends JComponent
 	{
 		m_mandatory = mandatory;
 		setBackground(false);
-	}	// setMandatory
+	}    // setMandatory
 
 	/**
 	 * Get Mandatory
-	 * 
+	 *
 	 * @return mandatory
 	 */
 	@Override
 	public boolean isMandatory()
 	{
 		return m_mandatory;
-	}	// isMandatory
+	}    // isMandatory
 
 	/**
 	 * Set ReadWrite
-	 * 
+	 *
 	 * @param rw read write
 	 */
 	@Override
@@ -267,33 +274,33 @@ public class VPAttribute extends JComponent
 		m_readWrite = rw;
 		m_button.setReadWrite(rw);
 		setBackground(false);
-	}	// setReadWrite
+	}    // setReadWrite
 
 	/**
 	 * Is Read Write
-	 * 
+	 *
 	 * @return read write
 	 */
 	@Override
 	public boolean isReadWrite()
 	{
 		return m_readWrite;
-	}	// isReadWrite
+	}    // isReadWrite
 
 	/**
 	 * Set Foreground
-	 * 
+	 *
 	 * @param color color
 	 */
 	@Override
 	public void setForeground(final Color color)
 	{
 		m_text.setForeground(color);
-	}	// SetForeground
+	}    // SetForeground
 
 	/**
 	 * Set Background
-	 * 
+	 *
 	 * @param error Error
 	 */
 	@Override
@@ -315,22 +322,22 @@ public class VPAttribute extends JComponent
 		{
 			setBackground(AdempierePLAF.getInfoBackground());
 		}
-	}	// setBackground
+	}    // setBackground
 
 	/**
 	 * Set Background
-	 * 
+	 *
 	 * @param color Color
 	 */
 	@Override
 	public void setBackground(final Color color)
 	{
 		m_text.setBackground(color);
-	}	// setBackground
+	}    // setBackground
 
 	/**************************************************************************
 	 * Set/lookup Value
-	 * 
+	 *
 	 * @param value value
 	 */
 	@Override
@@ -351,19 +358,19 @@ public class VPAttribute extends JComponent
 		// new value
 		log.debug("Value=" + value);
 		m_value = value;
-		m_text.setText(m_mPAttribute.getDisplay(value));	// loads value
-	}	// setValue
+		m_text.setText(m_mPAttribute.getDisplay(value));    // loads value
+	}    // setValue
 
 	/**
 	 * Get Value
-	 * 
+	 *
 	 * @return value
 	 */
 	@Override
 	public Object getValue()
 	{
 		return m_value;
-	}	// getValue
+	}    // getValue
 
 	private AttributeSetInstanceId getAttributeSetInstanceId()
 	{
@@ -389,7 +396,7 @@ public class VPAttribute extends JComponent
 	public String getDisplay()
 	{
 		return m_text.getText();
-	}	// getDisplay
+	}    // getDisplay
 
 	@Override
 	public void setField(final GridField mField)
@@ -413,7 +420,7 @@ public class VPAttribute extends JComponent
 		}
 
 		EditorContextPopupMenu.onGridFieldSet(this);
-	}	// setField
+	}    // setField
 
 	@Override
 	public GridField getField()
@@ -452,7 +459,7 @@ public class VPAttribute extends JComponent
 		{
 			Services.get(IClientUI.class).error(attributeContext.getWindowNo(), ex);
 		}
-	}	// actionPerformed
+	}    // actionPerformed
 
 	private void actionButton()
 	{
@@ -460,77 +467,8 @@ public class VPAttribute extends JComponent
 		{
 			return;
 		}
-		try (final IAutoCloseable buttonDisabled = m_button.temporaryDisable())
-		{
-			actionButton0();
-		}
-	}
-
-	private void actionButton0()
-	{
-		final ASIEditingInfo asiInfo = ASIEditingInfo.of(
-				attributeContext.getProductId(), // product
-				getAttributeSetInstanceId(), // ASI
-				getTableName(), getAD_Column_ID(), // caller TableName/AD_Column_ID
-				attributeContext.getSoTrx());
-		if (asiInfo.isExcludedAttributeSet())
-		{
-			return;
-		}
-
-		final VPAttributeDialog vad = new VPAttributeDialog( //
-				SwingUtils.getFrame(this) //
-				, asiInfo //
-				, attributeContext //
-		);
-		if (!vad.isChanged())
-		{
-			return;
-		}
-
-		final AttributeSetInstanceId previousAttributeSetInstanceId = asiInfo.getAttributeSetInstanceId();
-		final AttributeSetInstanceId newAttributeSetInstanceId = vad.getAttributeSetInstanceId();
-		final int M_Locator_ID = vad.getM_Locator_ID();
-
-		//
-		// Actually set the value
-		m_text.setText(vad.getM_AttributeSetInstanceName());
-		m_value = new Object();				// force re-query display
-		if (newAttributeSetInstanceId == null || newAttributeSetInstanceId.isNone())
-		{
-			setValue(null);
-		}
-		else
-		{
-			setValue(newAttributeSetInstanceId.getRepoId());
-		}
-		// Change Locator
-		if (m_GridTab != null && M_Locator_ID > 0)
-		{
-			m_GridTab.setValue("M_Locator_ID", M_Locator_ID);
-		}
-
-		//
-		// Fire events
-		try
-		{
-			String columnName = "M_AttributeSetInstance_ID";
-			if (m_GridField != null)
-			{
-				columnName = m_GridField.getColumnName();
-			}
-			fireVetoableChange(columnName, new Object(), getValue());
-		}
-		catch (final PropertyVetoException pve)
-		{
-			log.error("", pve);
-		}
-		if (Objects.equals(newAttributeSetInstanceId, previousAttributeSetInstanceId)
-				&& m_GridTab != null && m_GridField != null)
-		{
-			// force Change - user does not realize that embedded object is already saved.
-			m_GridTab.processFieldChange(m_GridField);
-		}
+		
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -558,4 +496,4 @@ public class VPAttribute extends JComponent
 	{
 		m_text.addMouseListener(l);
 	}
-}	// VPAttribute
+}    // VPAttribute

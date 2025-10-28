@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -54,6 +56,7 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 	 *
 	 */
 	private static final long serialVersionUID = -7312020496358784755L;
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private static CCache<Integer, MADBoilerPlateVar> s_cache = new CCache<>(Table_Name, 20, 0);
 	private static CCache<Integer, Map<String, MADBoilerPlateVar>> s_cacheByValue = new CCache<>(Table_Name + "_Client", 2);
@@ -130,7 +133,7 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 		final String type = getType();
 		if (TYPE_SQL.equals(type))
 		{
-			return evaluateSQL(context);
+			return msgBL.parseTranslation(context.getAD_Language(), evaluateSQL(context));
 		}
 		else if (TYPE_RuleEngine.equals(type))
 		{

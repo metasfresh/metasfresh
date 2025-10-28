@@ -109,6 +109,12 @@ public class OrderBillLocationAdapter
 		IDocumentBillLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
 	}
 
+	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentBillLocationAdapter.super.setRenderedAddress(from);
+	}
+
 	public void setFromBillLocation(@NonNull final I_C_Order from)
 	{
 		setFrom(OrderDocumentLocationAdapterFactory.billLocationAdapter(from).toDocumentLocation());

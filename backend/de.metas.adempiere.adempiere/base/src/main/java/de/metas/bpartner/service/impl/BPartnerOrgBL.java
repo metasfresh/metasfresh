@@ -53,6 +53,12 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	}
 
 	@Override
+	public I_C_BPartner retrieveLinkedBPartner(@NonNull final OrgId orgId)
+	{
+		return retrieveLinkedBPartner(orgId.getRepoId());
+	}
+
+	@Override
 	public Optional<BPartnerId> retrieveLinkedBPartnerId(@NonNull final OrgId orgId)
 	{
 		assume(orgId.isRegular(), "Given orgId={} needs to be a regular >0 (i.e. not 'any') Org-ID", orgId);
@@ -125,7 +131,7 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 			final I_C_BPartner orgBPartner = bPartnerPA.retrieveOrgBPartner(ctx, orgId, I_C_BPartner.class, trxName);
 			defaultContact = bPartnerPA.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 		}
-		catch (OrgHasNoBPartnerLinkException e)
+		catch (final OrgHasNoBPartnerLinkException e)
 		{
 			defaultContact = null;
 		}

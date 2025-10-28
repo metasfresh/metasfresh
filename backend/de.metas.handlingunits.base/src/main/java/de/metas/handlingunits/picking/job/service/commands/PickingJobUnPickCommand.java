@@ -174,7 +174,7 @@ public class PickingJobUnPickCommand
 		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
 
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
-		huShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getShipmentScheduleId());
+		huShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
 		changeHUStatusFromPickedToActive(topLevelHUs);
 
 		moveToTargetHUIfNeeded(huIdAndQRCodeList);

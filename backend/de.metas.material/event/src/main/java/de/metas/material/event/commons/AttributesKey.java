@@ -73,7 +73,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	@NonNull
 	public static AttributesKey ofString(@Nullable final String attributesKeyString)
 	{
-		if (attributesKeyString == null || attributesKeyString.trim().isEmpty())
+		if (attributesKeyString == null || attributesKeyString.trim().isEmpty() || attributesKeyString.equals(NONE.getAsString()))
 		{
 			return NONE;
 		}

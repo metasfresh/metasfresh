@@ -49,6 +49,10 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.issue.AD_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.model.I_AD_InputDataSource;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
@@ -68,6 +72,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -98,6 +103,7 @@ import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Locat
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ErrorMsg;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalHeaderId;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalLineId;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalSystem_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_HandOver_Location_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_HandOver_Partner_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_IsError;
@@ -117,6 +123,7 @@ public class C_OLCand_StepDef
 
 	private static final Logger logger = LogManager.getLogger(C_OLCand_StepDef.class);
 
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Order_StepDefData orderTable;
@@ -370,6 +377,12 @@ public class C_OLCand_StepDef
 				softly.assertThat(olCand.getHandOver_Location_ID()).isEqualTo(handOverLocation.getC_BPartner_Location_ID());
 			}
 
+			Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value))
+					.ifPresent(externalSystemValue -> {
+						final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+						softly.assertThat(olCand.getExternalSystem_ID()).as("ExternalSystem_ID for value=%s", externalSystemValue).isEqualTo(externalSystemId.getRepoId());
+					});
+
 			softly.assertAll();
 		}
 	}
@@ -592,10 +605,14 @@ public class C_OLCand_StepDef
 		final I_M_Product product = productTable.get(productIdentifier);
 		assertThat(product).isNotNull();
 
+		final String externalSystemValue = DataTableUtil.extractStringForColumnName(row, I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value);
+		final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+
 		final IQueryBuilder<I_C_OLCand> queryBuilder = queryBL.createQueryBuilder(I_C_OLCand.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_QtyEntered, qtyEntered)
-				.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID());
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addEqualsFilter(COLUMNNAME_ExternalSystem_ID, externalSystemId);
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(bpartnerIdentifier))

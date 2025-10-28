@@ -44,6 +44,7 @@ import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -63,6 +64,7 @@ import org.compiere.model.X_C_DocType;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -128,6 +130,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * @return true if the given invoice is an Invoice (API or ARI)
 	 */
 	boolean isInvoice(@NonNull I_C_Invoice invoice);
+
+	InvoiceDocBaseType getInvoiceDocBaseType(@NonNull I_C_Invoice invoice);
 
 	/**
 	 * @return true if the given invoice is a CreditMemo (APC or ARC)
@@ -432,4 +436,8 @@ public interface IInvoiceBL extends ISingletonService
 
 	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
+	@Nullable
+	Instant getUniqueInvoiceDateForOrderId(@NonNull OrderId orderId);
+
+	Amount retrieveOpenAmt(InvoiceId invoiceId);
 }

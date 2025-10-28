@@ -34,6 +34,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -78,6 +79,17 @@ public class ApiResponseAuditRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
+	public Optional<ApiResponseAudit> getLatestByRequestId(@NonNull final ApiRequestAuditId apiRequestAuditId)
+	{
+		return queryBL.createQueryBuilder(I_API_Response_Audit.class)
+				.addEqualsFilter(I_API_Response_Audit.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId.getRepoId())
+				.orderByDescending(I_API_Response_Audit.COLUMN_API_Response_Audit_ID)
+				.create()
+				.firstOptional()
+				.map(this::recordToResponseAudit);
+	}
+	
 	public void delete(@NonNull final ApiResponseAuditId apiResponseAuditId)
 	{
 		final I_API_Response_Audit record = InterfaceWrapperHelper.load(apiResponseAuditId, I_API_Response_Audit.class);
@@ -95,6 +107,7 @@ public class ApiResponseAuditRepository
 				.body(record.getBody())
 				.httpCode(record.getHttpCode())
 				.time(TimeUtil.asInstant(record.getTime()))
+				.httpHeaders(record.getHttpHeaders())
 				.build();
 	}
 }

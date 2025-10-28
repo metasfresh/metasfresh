@@ -94,7 +94,6 @@ public class MProduct extends X_M_Product
 			setIsSelfService(true);
 			setIsExcludeAutoDelivery(false);
 			setProcessing(false);	// N
-			setLowLevel(0);
 		}
 	}	// MProduct
 

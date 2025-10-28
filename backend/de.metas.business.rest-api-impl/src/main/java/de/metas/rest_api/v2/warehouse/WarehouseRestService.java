@@ -45,7 +45,6 @@ import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -64,6 +63,8 @@ import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.Warehouse;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 import org.compiere.model.I_AD_Org;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -85,7 +86,8 @@ public class WarehouseRestService
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
-	private final ExternalReferenceRestControllerService externalReferenceService;
+	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceService;
 
 	@NonNull
 	public JsonResponseUpsert upsertWarehouses(
@@ -410,27 +412,8 @@ public class WarehouseRestService
 	@NonNull
 	public JsonLocator resolveLocatorScannedCode(@NonNull final ScannedCode scannedCode)
 	{
-		//
-		// Try as global QR code
-		final GlobalQRCode globalQRCode = scannedCode.toGlobalQRCodeIfMatching().orNullIfError();
-		if (globalQRCode != null)
-		{
-			if (LocatorQRCode.isTypeMatching(globalQRCode))
-			{
-				final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(globalQRCode);
-				return toJsonLocator(locatorQRCode);
-			}
-			else
-			{
-				throw new AdempiereException("Invalid Global Locator QR code");
-			}
-		}
-
-		//
-		// Try as Locator Value
-		return warehouseBL.getLocatorQRCodeByValue(scannedCode.getAsString())
-				.map(WarehouseRestService::toJsonLocator)
-				.orElseThrow();
+		final LocatorScannedCodeResolverResult result = locatorScannedCodeResolver.resolve(scannedCode);
+		return toJsonLocator(result.getLocatorQRCode());
 	}
 
 	private static JsonLocator toJsonLocator(final LocatorQRCode locatorQRCode)

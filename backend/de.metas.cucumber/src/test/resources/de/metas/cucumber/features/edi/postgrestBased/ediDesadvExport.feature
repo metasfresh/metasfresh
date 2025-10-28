@@ -39,8 +39,8 @@ Feature: EDI DESADV export via postgREST
       | product_S0468_010 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription | productGTIN |
 
     And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID      | OPT.GTIN            |
-      | bp_1_S0468_010        | customer1     | product_S0468_010 | bPartnerProductGTIN |
+      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID      | GTIN          |
+      | bp_1_S0468_010        | customer1     | product_S0468_010 | 0575095404663 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID | M_Product_ID      | Name                |
       | pm_1_S0468_010          | product_S0468_010 | packingMaterialTest |
@@ -212,7 +212,7 @@ Feature: EDI DESADV export via postgREST
             "DesadvLine": {
               "Product": {
                 "Name": "postgRESTExportProductName",
-                "GTIN_CU": "bPartnerProductGTIN",
+                "GTIN_CU": "0575095404663",
                 "GTIN_TU": null,
                 "NetWeight": 0,
                 "Description": "postgRESTExportProductDescription",
@@ -241,7 +241,7 @@ Feature: EDI DESADV export via postgREST
             "QtyCUsPerLU": 100,
             "QtyCUsPerTU": 10,
             "BestBeforeDate": null,
-            "GTIN_TU_PackingMaterial": "bPartnerProductGTIN",
+            "GTIN_TU_PackingMaterial": "0575095404663",
             "QtyCUsPerLU_InInvoiceUOM": 100,
             "QtyCUsPerTU_InInvoiceUOM": 10,
             "M_HU_PackagingCode_TU_Text": "ISO1"

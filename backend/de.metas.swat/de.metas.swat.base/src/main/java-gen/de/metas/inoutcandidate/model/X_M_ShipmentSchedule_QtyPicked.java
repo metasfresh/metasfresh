@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implements I_M_ShipmentSchedule_QtyPicked, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2033499692L;
+	private static final long serialVersionUID = -1209934410L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_QtyPicked (final Properties ctx, final int M_ShipmentSchedule_QtyPicked_ID, @Nullable final String trxName)
@@ -114,6 +114,21 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	public int getM_LU_HU_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_LU_HU_ID);
+	}
+
+	@Override
+	public void setM_Picking_Job_Schedule_ID (final int M_Picking_Job_Schedule_ID)
+	{
+		if (M_Picking_Job_Schedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Job_Schedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Job_Schedule_ID, M_Picking_Job_Schedule_ID);
+	}
+
+	@Override
+	public int getM_Picking_Job_Schedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Schedule_ID);
 	}
 
 	@Override

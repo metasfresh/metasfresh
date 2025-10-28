@@ -16,6 +16,7 @@ Feature: check invoice candidates status
     "orgCode": "001",
     "externalLineId": "ExtLine_1",
     "externalHeaderId": "ExtHeader_1",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "2156425",
@@ -42,7 +43,7 @@ Feature: check invoice candidates status
    """
 {
     "externalHeaderId": "ExtHeader_1",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": true

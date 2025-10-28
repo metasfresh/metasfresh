@@ -12,7 +12,27 @@ export const useKeyboardBarcodeReader = ({
   const lastKeyTimeRef = useRef(0);
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = async (event) => {
+      //
+      // Handle Ctrl+V (or Cmd+V on Mac)
+      if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+        try {
+          const clipboardText = await navigator.clipboard.readText();
+          if (clipboardText?.length < minLength) {
+            return;
+          }
+          console.log('Pasted text:', clipboardText);
+
+          event.preventDefault(); // Prevent default paste behavior
+          onReadDone(clipboardText);
+          bufferRef.current = '';
+          lastKeyTimeRef.current = 0;
+          return;
+        } catch (error) {
+          console.error('Failed to read clipboard:', error);
+        }
+      }
+
       // Ignore key events with Ctrl, Alt or Meta modifiers
       if (event.ctrlKey || event.altKey || event.metaKey) {
         return;
@@ -51,6 +71,7 @@ export const useKeyboardBarcodeReader = ({
       }
     };
 
+    // console.log('Enabling keyboard barcode reader', { disabled });
     let intervalId;
     if (!disabled) {
       // Flush leftovers if needed, using interval
@@ -63,6 +84,7 @@ export const useKeyboardBarcodeReader = ({
       }, rateMs * 2);
 
       window.addEventListener('keydown', handleKeyDown);
+      console.log('Enabled keyboard barcode reader', { rateMs, minLength });
     } else {
       bufferRef.current = '';
       lastKeyTimeRef.current = 0;
@@ -72,6 +94,7 @@ export const useKeyboardBarcodeReader = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       clearInterval(intervalId);
+      console.log('Disabled keyboard barcode reader');
     };
   }, [onReadDone, onReadInProgress, rateMs, minLength, disabled]);
 };

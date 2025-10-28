@@ -11,7 +11,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -35,6 +35,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_M_InOut;
@@ -88,9 +89,19 @@ import java.util.function.Function;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Service
+@RequiredArgsConstructor
 public class HUTraceEventsService
 {
-	private static final Logger logger = LogManager.getLogger(HUTraceEventsService.class);
+	@NonNull private static final Logger logger = LogManager.getLogger(HUTraceEventsService.class);
+	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IHUAttributesBL huAttributeService = Services.get(IHUAttributesBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	@NonNull private final HUTraceRepository huTraceRepository;
+	@NonNull private final HUAccessService huAccessService;
+	@NonNull private final InventoryService inventoryService;
 
 	/**
 	 * The method {@link #createAndAddFor(I_M_HU_Trx_Hdr, List)} will ignore hu transaction lines that reference one of these tables, because there is already dedicated code to handles events around those tables.
@@ -100,32 +111,6 @@ public class HUTraceEventsService
 			I_M_MovementLine.Table_Name,
 			I_PP_Cost_Collector.Table_Name,
 			I_M_ShipmentSchedule_QtyPicked.Table_Name);
-	private final transient HUTraceRepository huTraceRepository;
-	private final transient HUAccessService huAccessService;
-
-	private final transient InventoryRepository inventoryRepository;
-
-	private final transient IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
-
-	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-
-	private final IHUAttributesBL huAttributeService = Services.get(IHUAttributesBL.class);
-
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
-	final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-
-	public HUTraceEventsService(
-			@NonNull final HUTraceRepository huTraceRepository,
-			@NonNull final HUAccessService huAccessService,
-			@NonNull final InventoryRepository inventoryRepository)
-	{
-		this.huAccessService = huAccessService;
-		this.huTraceRepository = huTraceRepository;
-		this.inventoryRepository = inventoryRepository;
-	}
 
 	/**
 	 * Creates one event for the given cost collector and adds it to the {@link HUTraceRepository}.<br>
@@ -217,7 +202,7 @@ public class HUTraceEventsService
 	{
 		for (final I_M_InventoryLine inventoryLineRecord : inventoryLines)
 		{
-			final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord);
+			final InventoryLine inventoryLine = inventoryService.toInventoryLine(inventoryLineRecord);
 
 			final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryLine.getInventoryLineHUs();
 
@@ -484,7 +469,7 @@ public class HUTraceEventsService
 					if (!huStatusBL.isPhysicalHU(sourceVhu))
 					{
 						logger.debug("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) has status={}; nothing to do with that sourceVhu; sourceVhu={}; sourceTrxLine={}; trxLine={}",
-									 sourceVhu.getHUStatus(), sourceVhu, sourceTrxLine, trxLine);
+								sourceVhu.getHUStatus(), sourceVhu, sourceTrxLine, trxLine);
 						continue;
 					}
 
@@ -493,7 +478,7 @@ public class HUTraceEventsService
 					if (sourceVhu.getM_HU_ID() == vhu.getM_HU_ID())
 					{
 						logger.debug("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) is the same as vhu of the current trxLine itself; nothing to do with that sourceVhu; vhu/sourceVhu={}; sourceTrxLine={}; trxLine={}",
-									 sourceVhu, sourceTrxLine, trxLine);
+								sourceVhu, sourceTrxLine, trxLine);
 						continue; // the source-HU might be the same if e.g. only the status was changed
 					}
 
@@ -746,7 +731,7 @@ public class HUTraceEventsService
 	}
 
 	private void createTraceForPOIssueOrReceiptHU(final @NonNull HUTraceEventBuilder builder, @NonNull final I_PP_Cost_Collector ppCostCollector,
-			@NonNull final I_M_HU hu)
+												  @NonNull final I_M_HU hu)
 	{
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID());
 

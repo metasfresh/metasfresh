@@ -1,6 +1,6 @@
-export const generateEAN13 = ({ prefix = '761' } = {}) => {
+export const generateEAN13 = ({ prefix = '761', productCode: productCodeParam } = {}) => {
 
-    const productCode = generateRandomDigits(12 - prefix.length);
+    const productCode = productCodeParam ? productCodeParam : generateRandomDigits(12 - prefix.length);
     const codeWithoutCheckDigit = `${prefix}${productCode}`;
     const checkDigit = computeCheckDigit(codeWithoutCheckDigit);
     const ean13Code = `${codeWithoutCheckDigit}${checkDigit}`;

@@ -30,6 +30,7 @@ import lombok.NonNull;
 @Builder
 public class MsgFromMfContext
 {
+	@NonNull private final String orgCode;
 	@NonNull private final String scriptingRequestBody;
 	@NonNull private final String scriptIdentifier;
 
@@ -40,4 +41,6 @@ public class MsgFromMfContext
 	@NonNull private final String outboundHttpEP;
 	@NonNull private final String outboundHttpToken;
 	@NonNull private final String outboundHttpMethod;
+	@NonNull private final String outboundRecordTableName;
+	@NonNull private final String outboundRecordId;
 }

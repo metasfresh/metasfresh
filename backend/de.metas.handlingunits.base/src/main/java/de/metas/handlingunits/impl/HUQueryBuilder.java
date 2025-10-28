@@ -74,6 +74,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * {@link IHUQueryBuilder} implementation.
@@ -612,6 +613,12 @@ import java.util.Set;
 	}
 
 	@Override
+	public Stream<I_M_HU> stream()
+	{
+		return list().stream();
+	}
+
+	@Override
 	public List<I_M_HU> list(final int limit)
 	{
 		final IQuery<I_M_HU> query = createQuery();
@@ -662,6 +669,12 @@ import java.util.Set;
 	{
 		final int huRepoId = createQuery().firstId();
 		return Optional.ofNullable(HuId.ofRepoIdOrNull(huRepoId));
+	}
+
+	@Override
+	public Optional<HuId> firstIdOnly()
+	{
+		return createQuery().firstIdOnlyOptional(HuId::ofRepoIdOrNull);
 	}
 
 	@Override
@@ -811,11 +824,11 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithProductIds(final Collection<Integer> productIds)
+	public IHUQueryBuilder addOnlyWithProductIds(final Collection<ProductId> productIds)
 	{
 		if (productIds != null && !productIds.isEmpty())
 		{
-			_onlyWithProductIds.addAll(ProductId.ofRepoIds(productIds));
+			_onlyWithProductIds.addAll(productIds);
 		}
 		else
 		{

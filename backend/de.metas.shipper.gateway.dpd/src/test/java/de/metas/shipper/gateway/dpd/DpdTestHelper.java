@@ -25,7 +25,6 @@ package de.metas.shipper.gateway.dpd;
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Strings;
 import de.metas.location.CountryCode;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
@@ -40,12 +39,13 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -120,7 +120,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.deliveryOrderParcels(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.shipperProduct(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -168,7 +168,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.deliveryOrderParcels(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.shipperProduct(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -216,7 +216,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.deliveryOrderParcels(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.shipperProduct(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -264,7 +264,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.deliveryOrderParcels(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.shipperProduct(DpdShipperProduct.DPD_CLASSIC)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -280,12 +280,12 @@ class DpdTestHelper
 	}
 
 	@NonNull
-	private static List<DeliveryOrderLine> createDeliveryOrderLines(@NonNull final ImmutableList<Integer> packageIds)
+	private static List<DeliveryOrderParcel> createDeliveryOrderLines(@NonNull final ImmutableList<Integer> packageIds)
 	{
-		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLinesBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<DeliveryOrderParcel> deliveryOrderLinesBuilder = ImmutableList.builder();
 		for (final Integer packageId : packageIds)
 		{
-			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
+			final DeliveryOrderParcel deliveryOrderParcel = DeliveryOrderParcel.builder()
 					// .repoId()
 					.content("the epic package " + packageId + " description")
 					.grossWeightKg(BigDecimal.ONE) // same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
@@ -298,7 +298,7 @@ class DpdTestHelper
 					.packageId(PackageId.ofRepoId(packageId))
 					.build();
 
-			deliveryOrderLinesBuilder.add(deliveryOrderLine);
+			deliveryOrderLinesBuilder.add(deliveryOrderParcel);
 		}
 		return deliveryOrderLinesBuilder.build();
 	}
@@ -309,7 +309,7 @@ class DpdTestHelper
 		// check 1: draft DO <->> initial dummy DO
 		final DeliveryOrder draftDeliveryOrder = createDraftDeliveryOrderFromDummy(initialDeliveryOrder);
 		Assertions.assertEquals( initialDeliveryOrder,  draftDeliveryOrder, "nothing should be changed");
-		Assertions.assertEquals(5, draftDeliveryOrder.getDeliveryOrderLines().size());
+		Assertions.assertEquals(5, draftDeliveryOrder.getDeliveryOrderParcels().size());
 
 		//
 		// check 2: persisted DO <-> initial dummy DO => create updatedDummy DO
@@ -319,14 +319,14 @@ class DpdTestHelper
 				.build();
 		Assertions.assertNotNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
 		Assertions.assertEquals(updatedDummyDeliveryOrder, persistedDeliveryOrder,"only the repoId should change after the first persistence");
-		Assertions.assertEquals(5, persistedDeliveryOrder.getDeliveryOrderLines().size());
-		Assertions.assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
+		Assertions.assertEquals(5, persistedDeliveryOrder.getDeliveryOrderParcels().size());
+		Assertions.assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderParcels().size());
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
 		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
 		Assertions.assertEquals( updatedDummyDeliveryOrder,  deserialisedDO, "nothing should be changed");
-		Assertions.assertEquals(5, deserialisedDO.getDeliveryOrderLines().size());
+		Assertions.assertEquals(5, deserialisedDO.getDeliveryOrderParcels().size());
 
 		//
 		// check 4: run Client.completeDeliveryOrder
@@ -343,8 +343,8 @@ class DpdTestHelper
 				.customDeliveryData(customDeliveryData)
 				.build();
 		Assertions.assertEquals(updatedDummyDeliveryOrder, completedDeliveryOrder,"only awb, pdf label data and tracking url should be modified");
-		Assertions.assertEquals(5, completedDeliveryOrder.getDeliveryOrderLines().size());
-		Assertions.assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
+		Assertions.assertEquals(5, completedDeliveryOrder.getDeliveryOrderParcels().size());
+		Assertions.assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderParcels().size());
 		Assertions.assertTrue(Strings.isNotBlank(completedDeliveryOrder.getTrackingNumber()));
 		//noinspection ConstantConditions
 		Assertions.assertTrue(DpdOrderCustomDeliveryData.cast(completedDeliveryOrder.getCustomDeliveryData()).getPdfData().length > 1);
@@ -353,13 +353,13 @@ class DpdTestHelper
 		// check 5: persist the completed delivery order: nothing should be modified
 		final DeliveryOrder savedCompletedDeliveryOrder = orderRepository.save(completedDeliveryOrder);
 		Assertions.assertEquals(updatedDummyDeliveryOrder, savedCompletedDeliveryOrder,"nothing should be modified");
-		Assertions.assertEquals(5, savedCompletedDeliveryOrder.getDeliveryOrderLines().size());
+		Assertions.assertEquals(5, savedCompletedDeliveryOrder.getDeliveryOrderParcels().size());
 
 		//
 		// check 6: retrieve the persisted completed DO. nothing should be modified
 		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
-		Assertions.assertEquals(5,  updatedDummyDeliveryOrder.getDeliveryOrderLines().size(), 5);
-		Assertions.assertEquals(5, deserialisedCompletedDeliveryOrder.getDeliveryOrderLines().size());
+		Assertions.assertEquals(5,  updatedDummyDeliveryOrder.getDeliveryOrderParcels().size(), 5);
+		Assertions.assertEquals(5, deserialisedCompletedDeliveryOrder.getDeliveryOrderParcels().size());
 		Assertions.assertEquals( updatedDummyDeliveryOrder,  deserialisedCompletedDeliveryOrder, "nothing should be modified");
 		Assertions.assertTrue(Strings.isNotBlank(deserialisedCompletedDeliveryOrder.getTrackingNumber()));
 		//noinspection ConstantConditions
@@ -401,7 +401,7 @@ class DpdTestHelper
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
 
 		//
-		final ImmutableList<DeliveryOrderLine> deliveryOrderLines = deliveryOrder.getDeliveryOrderLines();
+		final ImmutableList<DeliveryOrderParcel> deliveryOrderParcels = deliveryOrder.getDeliveryOrderParcels();
 
 		//
 		final String customerReference = deliveryOrder.getCustomerReference();
@@ -423,7 +423,7 @@ class DpdTestHelper
 				shipperTransportationId,
 				customerReference,
 				DpdOrderCustomDeliveryData.cast(customDeliveryData),
-				deliveryOrderLines
+				deliveryOrderParcels
 		);
 	}
 

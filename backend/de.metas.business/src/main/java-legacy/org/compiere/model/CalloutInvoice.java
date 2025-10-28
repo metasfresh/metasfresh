@@ -89,7 +89,7 @@ public class CalloutInvoice extends CalloutEngine
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
-	
+
 	/**
 	 * Invoice Header- BPartner.
 	 * - M_PriceList_ID (+ Context)
@@ -344,7 +344,7 @@ public class CalloutInvoice extends CalloutEngine
 		final boolean isSOTrx = invoice.isSOTrx();
 
 		final int bpartnerID = invoice.getC_BPartner_ID();
-			
+
 		final BigDecimal qty = invoiceLine.getQtyInvoiced();
 		final CountryId countryId = extractCountryIdOrNull(invoice);
 
@@ -674,7 +674,7 @@ public class CalloutInvoice extends CalloutEngine
 
 				priceActual = priceStdMinusDiscount;
 				invoiceLine.setPriceActual(priceActual); // 08763 align the behavior to that of order line
-				invoiceLine.setDiscount(Percent.toBigDecimalOrNull(discount));	
+				invoiceLine.setDiscount(Percent.toBigDecimalOrNull(discount));
 				invoiceLine.setPriceEntered(priceStd); // 08763 align the behavior to that of order line
 
 				calloutField.putContext(CTX_DiscountSchema, pp.isDiscountSchema());

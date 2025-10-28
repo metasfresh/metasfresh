@@ -20,6 +20,7 @@ SELECT o.C_Order_ID
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END)                                    AS DatePromised
      , o.externalid                             AS ExternalId
+     , esystem.value                            AS ExternalSystemCode
      , (CASE
             WHEN dsource.internalname IS NOT NULL
                 THEN 'int-' || dsource.internalname
@@ -48,6 +49,7 @@ FROM C_Order o
          LEFT JOIN C_Currency c ON c.C_Currency_ID = o.C_Currency_ID
          LEFT JOIN C_PaymentTerm pterm ON pterm.c_paymentterm_id = o.c_paymentterm_id
          LEFT JOIN AD_InputDataSource dsource ON dsource.ad_inputdatasource_id = o.ad_inputdatasource_id
+         LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = o.externalsystem_id
 WHERE dt.docbasetype = 'SOO'
   AND dt.docsubtype = 'SO'
   AND o.DocStatus IN ('CO')

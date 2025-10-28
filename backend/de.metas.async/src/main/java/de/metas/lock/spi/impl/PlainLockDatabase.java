@@ -32,6 +32,7 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.AbstractLockDatabase;
+import de.metas.lock.api.impl.LockRecordsByFilter;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.logging.LogManager;
@@ -84,12 +85,10 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	public void dump()
 	{
 		System.out.println("\n\n\n LOCKS (" + getClass() + ") ------------------------------------------------------------ ");
-		locks.values()
-				.stream()
-				.forEach(lock -> System.out.println(lock));
+		locks.values().forEach(System.out::println);
 	}
 
-	private final LockKey createKey(final int adTableId, final int recordId)
+	private LockKey createKey(final int adTableId, final int recordId)
 	{
 		Check.assume(adTableId > 0, "adTableId > 0");
 		Check.assume(recordId > 0, "recordId > 0");
@@ -106,7 +105,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	public boolean isLocked(final int adTableId, final int recordId, final LockOwner lockOwner)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final LockKey key = createKey(adTableId, recordId);
 			final RecordLocks recordLock = locks.get(key);
@@ -137,7 +136,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected int lockBySelection(final ILockCommand lockCommand)
 	{
-		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
+		final AdTableId adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
 		final PInstanceId adPInstanceId = lockCommand.getSelectionToLock_AD_PInstance_ID();
 
 		int countLocked = 0;
@@ -159,33 +158,35 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected int lockByFilters(final ILockCommand lockCommand)
 	{
-		@SuppressWarnings("unchecked") final IQueryFilter<Object> selectionToLockFilters = (IQueryFilter<Object>)lockCommand.getSelectionToLock_Filters();
+		final List<LockRecordsByFilter> lockRecordsByFilterList = lockCommand.getSelectionToLock_Filters();
 
 		final LockOwner lockOwner = lockCommand.getOwner();
 		assertValidLockOwner(lockOwner);
 
-		//
-		// Retrieve records to lock
-		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final String tableName = adTableDAO.retrieveTableName(adTableId);
-		final Comparator<Object> orderByComparator = null; // don't care
-		final List<Object> recordsToLock = POJOLookupMap.get().getRecords(tableName, Object.class, selectionToLockFilters, orderByComparator);
-
 		int countLocked = 0;
-		for (final Object recordToLock : recordsToLock)
+		for (final LockRecordsByFilter lockRecordsByFilter : lockRecordsByFilterList)
 		{
-			final TableRecordReference recordToLockRef = TableRecordReference.of(recordToLock);
-			final boolean locked = lockRecord(lockCommand, recordToLockRef);
-			if (!locked)
-			{
-				throw new LockFailedException("Record already locked: " + recordToLock)
-						.setLockCommand(lockCommand);
-			}
+			//
+			// Retrieve records to lock
+			final String tableName = adTableDAO.retrieveTableName(lockRecordsByFilter.getTableId());
+			final IQueryFilter<Object> filters = (IQueryFilter<Object>)lockRecordsByFilter.getFilters();
+			final Comparator<Object> orderByComparator = null; // don't care
+			final List<Object> recordsToLock = POJOLookupMap.get().getRecords(tableName, Object.class, filters, orderByComparator);
 
-			if (locked)
+			for (final Object recordToLock : recordsToLock)
 			{
-				countLocked++;
+				final TableRecordReference recordToLockRef = TableRecordReference.of(recordToLock);
+				final boolean locked = lockRecord(lockCommand, recordToLockRef);
+				if (locked)
+				{
+					countLocked++;
+				}
+				else
+				{
+					throw new LockFailedException("Record already locked: " + recordToLock)
+							.setLockCommand(lockCommand);
+				}
 			}
 		}
 
@@ -202,7 +203,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	{
 		final LockKey recordKey = createKeyForRecord(record);
 
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final RecordLocks recordLock = locks.computeIfAbsent(recordKey, RecordLocks::new);
 			return recordLock.addLock(new LockInfo(recordKey, lockCommand));
@@ -214,7 +215,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	{
 		final LockKey recordKey = createKeyForRecord(record);
 
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final RecordLocks recordLock = locks.get(recordKey);
 			if (recordLock == null)
@@ -251,7 +252,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	private boolean unlockForKey(final LockOwner ownerRequired, final LockKey recordKey)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final RecordLocks recordLock = locks.get(recordKey);
 			if (recordLock == null)
@@ -280,9 +281,9 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return countUnlocked;
 	}
 
-	private final int updateRecordLocks(final ToIntFunction<RecordLocks> processor)
+	private int updateRecordLocks(final ToIntFunction<RecordLocks> processor)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			int countAffected = 0;
 
@@ -306,7 +307,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected int unlockBySelection(final IUnlockCommand unlockCommand)
 	{
-		final int adTableId = unlockCommand.getSelectionToUnlock_AD_Table_ID();
+		final AdTableId adTableId = unlockCommand.getSelectionToUnlock_AD_Table_ID();
 		final PInstanceId adPInstanceId = unlockCommand.getSelectionToUnlock_AD_PInstance_ID();
 
 		int countUnlocked = 0;
@@ -322,7 +323,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return countUnlocked;
 	}
 
-	private List<TableRecordReference> retrieveSelection(final int adTableId, final PInstanceId pinstanceId)
+	private List<TableRecordReference> retrieveSelection(final AdTableId adTableId, final PInstanceId pinstanceId)
 	{
 		// NOTE: below comes a fucked up, not optimum implementation shit which shall do the work for testing
 
@@ -346,7 +347,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	public List<LockKey> getLocks()
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			return new ArrayList<>(locks.keySet());
 		}
@@ -388,7 +389,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	public String getLockedObjectsInfo()
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final StringBuilder sb = new StringBuilder();
 			for (final LockKey key : locks.keySet())
@@ -411,7 +412,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	public int getLocksCount()
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			return locks.size();
 		}
@@ -667,7 +668,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
 		Check.assumeNotNull(lockOwner.isRealOwner(), "Lock owner shall be real owner but it was {}", lockOwner);
 
-		try (CloseableReentrantLock l = mainLock.open())
+		try (CloseableReentrantLock ignored = mainLock.open())
 		{
 			final List<RecordLocks> recordLocksList = locks.values().stream()
 					.filter(recordLocks -> recordLocks.hasOwner(lockOwner))

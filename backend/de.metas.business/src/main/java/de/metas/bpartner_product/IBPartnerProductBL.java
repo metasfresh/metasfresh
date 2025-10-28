@@ -1,9 +1,15 @@
 package de.metas.bpartner_product;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_C_BPartner_Product;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -35,4 +41,8 @@ public interface IBPartnerProductBL extends ISingletonService
 	 * if soTrx = PURCHASE and C_BPartner_Product.IsExcludedFromPurchase = 'Y' => error
 	 */
 	void assertNotExcludedFromTransaction(SOTrx soTrx, ProductId productId, BPartnerId partnerId);
+
+	void setProductCodeFieldsFromGTIN(@NonNull I_C_BPartner_Product record, @Nullable GTIN gtin);
+
+	void setProductCodeFieldsFromEAN13ProductCode(@NonNull I_C_BPartner_Product record, @Nullable EAN13ProductCode ean13ProductCode);
 }

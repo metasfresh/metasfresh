@@ -2,8 +2,8 @@ package de.metas.dunning.document.archive;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.dunning.DunningTestBase;
@@ -70,14 +70,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+@SuppressWarnings("DataFlowIssue")
 public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestBase
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
 	private final UserRepository userRepository = new UserRepository();
 	private final BPartnerBL bpartnerBL = new BPartnerBL(userRepository);
 	private final DunningDocOutboundLogMailRecipientProvider dunningDocOutboundLogMailRecipientProvider = new DunningDocOutboundLogMailRecipientProvider(
-			new DocOutBoundRecipientRepository(bpartnerBL),
+			new DocOutBoundRecipientService(bpartnerBL),
 			orderEmailPropagationSysConfigRepository,
 			bpartnerBL,
 			new DunningService());
@@ -87,8 +88,10 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 	private I_C_BPartner bPartnerRecord;
 	private I_C_BPartner_Location bPartnerLocationRecord;
 
-	private I_C_Dunning dunning;
 	private I_C_DunningLevel dunningLevel1_10;
+
+	@SuppressWarnings({ "SameParameterValue", "deprecation" })
+	private static Date date(final int year, final int month, final int day) {return TimeUtil.getDay(year, month, day);}
 
 	@Override
 	protected void createMasterData()
@@ -104,7 +107,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 
 		//
 		// Setup Levels
-		dunning = createDunning("Dunning");
+		final I_C_Dunning dunning = createDunning("Dunning");
 		dunning.setCreateLevelsSequentially(true);
 		InterfaceWrapperHelper.save(dunning);
 
@@ -139,7 +142,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		createDocLineSourceRecord(candidateRecord2, docLineRecord2);
 
 		// invoke the method under test
-		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+		final Optional<DocOutBoundRecipients> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
 				DocOutboundLogMailRecipientRequest.builder()
 						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
 						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
@@ -147,8 +150,8 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 						.build());
 
 		assertThat(result).isPresent();
-		assertThat(result.get().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
-		assertThat(result.get().getEmailAddress()).isEqualTo("userRecord.EMail");
+		assertThat(result.get().getTo().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
+		assertThat(result.get().getTo().getEmailAddress()).isEqualTo("userRecord.EMail");
 	}
 
 	@Test
@@ -173,7 +176,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		createSysConfigOrderEmailPropagation("N");
 
 		// invoke the method under test
-		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+		final Optional<DocOutBoundRecipients> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
 				DocOutboundLogMailRecipientRequest.builder()
 						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
 						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
@@ -181,8 +184,8 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 						.build());
 
 		assertThat(result).isPresent();
-		assertThat(result.get().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
-		assertThat(result.get().getEmailAddress()).isEqualTo("userRecord.EMail");
+		assertThat(result.get().getTo().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
+		assertThat(result.get().getTo().getEmailAddress()).isEqualTo("userRecord.EMail");
 	}
 
 	@Test
@@ -207,7 +210,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		createSysConfigOrderEmailPropagation(I_C_Doc_Outbound_Log.Table_Name);
 
 		// invoke the method under test
-		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+		final Optional<DocOutBoundRecipients> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
 				DocOutboundLogMailRecipientRequest.builder()
 						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
 						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
@@ -215,8 +218,8 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 						.build());
 
 		assertThat(result).isPresent();
-		assertThat(result.get().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
-		assertThat(result.get().getEmailAddress()).isEqualTo("test@test.test");
+		assertThat(result.get().getTo().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
+		assertThat(result.get().getTo().getEmailAddress()).isEqualTo("test@test.test");
 	}
 
 	@Test
@@ -245,7 +248,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		createDocLineSourceRecord(candidateRecord2, docLineRecord2);
 
 		// invoke the method under test
-		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+		final Optional<DocOutBoundRecipients> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
 				DocOutboundLogMailRecipientRequest.builder()
 						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
 						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
@@ -253,8 +256,8 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 						.build());
 
 		assertThat(result).isPresent();
-		assertThat(result.get().getId().getRepoId()).isEqualTo(bPartnerUserRecord.getAD_User_ID());
-		assertThat(result.get().getEmailAddress()).isEqualTo("bPartnerUserRecord.EMail");
+		assertThat(result.get().getTo().getId().getRepoId()).isEqualTo(bPartnerUserRecord.getAD_User_ID());
+		assertThat(result.get().getTo().getEmailAddress()).isEqualTo("bPartnerUserRecord.EMail");
 	}
 
 	@Test
@@ -266,7 +269,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 
 		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(userRecord, "invoiceRecord.EMail");
 
-		final Date dunningDate = TimeUtil.getDay(2013, 02, 01);
+		final Date dunningDate = date(2013, 2, 1);
 		final PlainDunningContext context = createPlainDunningContext(dunningDate, dunningLevel1_10);
 
 		final IDunnableDoc sourceDoc = new DunnableDocBuilder()
@@ -283,7 +286,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 				.setTotalAmt(BigDecimal.valueOf(100)) // totalAmt,
 				.setOpenAmt(BigDecimal.valueOf(100)) // openAmt,
 				//
-				.setDueDate(TimeUtil.getDay(2013, 01, 01)) // dueDate,
+				.setDueDate(date(2013, 1, 1)) // dueDate,
 				.setGraceDate(null)
 				.setDaysDue(15) // daysDue,
 				.create();
@@ -300,28 +303,23 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 
 		assertThat(dunningDoc.getC_Dunning_Contact_ID()).isEqualTo(dunningUserRecord.getAD_User_ID());
 
-		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
-				DocOutboundLogMailRecipientRequest.builder()
-						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDoc.getC_DunningDoc_ID()))
-						.clientId(ClientId.ofRepoId(dunningDoc.getAD_Client_ID()))
-						.orgId(OrgId.ofRepoId(dunningDoc.getAD_Org_ID()))
-						.build());
+		final DocOutBoundRecipients result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+						DocOutboundLogMailRecipientRequest.builder()
+								.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDoc.getC_DunningDoc_ID()))
+								.clientId(ClientId.ofRepoId(dunningDoc.getAD_Client_ID()))
+								.orgId(OrgId.ofRepoId(dunningDoc.getAD_Org_ID()))
+								.build()
+				)
+				.orElse(null);
 
-		assertThat(result).isPresent();
-		assertThat(result.get().getId().getRepoId()).isEqualTo(dunningUserRecord.getAD_User_ID());
-		assertThat(result.get().getEmailAddress()).isEqualTo("dunningUserRecord.EMail");
-
+		assertThat(result).isNotNull();
+		assertThat(result.getTo().getId().getRepoId()).isEqualTo(dunningUserRecord.getAD_User_ID());
+		assertThat(result.getTo().getEmailAddress()).isEqualTo("dunningUserRecord.EMail");
 	}
 
 	private I_C_DunningDoc retrieveDunningDocForCandidate(final I_C_Dunning_Candidate candidate)
 	{
-		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, pojo -> {
-			if (pojo.getC_Dunning_Candidate_ID() != candidate.getC_Dunning_Candidate_ID())
-			{
-				return false;
-			}
-			return true;
-		});
+		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, pojo -> pojo.getC_Dunning_Candidate_ID() == candidate.getC_Dunning_Candidate_ID());
 		if (lineSrc == null)
 		{
 			return null;
@@ -355,7 +353,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		createDocLineSourceRecord(candidateRecord2, docLineRecord2);
 
 		// invoke the method under test
-		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+		final Optional<DocOutBoundRecipients> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
 				DocOutboundLogMailRecipientRequest.builder()
 						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
 						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
@@ -363,10 +361,11 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 						.build());
 
 		assertThat(result).isPresent();
-		assertThat(result.get().getId().getRepoId()).isEqualTo(bPartnerUserRecord.getAD_User_ID());
-		assertThat(result.get().getEmailAddress()).isEqualTo("bPartnerUserRecord.EMail");
+		assertThat(result.get().getTo().getId().getRepoId()).isEqualTo(bPartnerUserRecord.getAD_User_ID());
+		assertThat(result.get().getTo().getEmailAddress()).isEqualTo("bPartnerUserRecord.EMail");
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private org.compiere.model.I_AD_User createUserRecord(final String eMail)
 	{
 		return createUserRecord(eMail, false);
@@ -432,12 +431,11 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 		saveRecord(docLineSourceRecord2);
 	}
 
-	private I_AD_SysConfig createSysConfigOrderEmailPropagation(final String value)
+	private void createSysConfigOrderEmailPropagation(final String value)
 	{
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
-		sysConfig.setName(orderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
+		sysConfig.setName(OrderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
 		sysConfig.setValue(value);
 		saveRecord(sysConfig);
-		return sysConfig;
 	}
 }

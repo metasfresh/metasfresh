@@ -30,6 +30,7 @@ import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.GetScannedBarcodeSuggestionsRequest;
@@ -78,14 +79,14 @@ public class WorkflowRestAPIService
 	@NonNull private final MobileApplicationService mobileApplicationService;
 	@NonNull private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
-	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final IUserRolePermissions permissions)
+	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final MobileApplicationPermissions permissions)
 	{
 		mobileApplicationService.assertAccess(applicationId, permissions);
 	}
 
-	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final IUserRolePermissions userPermissions)
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
-		return mobileApplicationService.streamMobileApplicationInfos(userPermissions);
+		return mobileApplicationService.streamMobileApplicationInfos(userId, permissions);
 	}
 
 	public WorkflowLaunchersList getLaunchers(@NonNull final WorkflowLaunchersQuery query)
@@ -112,9 +113,9 @@ public class WorkflowRestAPIService
 		}
 	}
 
-	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications(@NonNull final IUserRolePermissions permissions)
+	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
-		return mobileApplicationService.streamMobileApplicationsOfType(WorkflowBasedMobileApplication.class, permissions);
+		return mobileApplicationService.streamMobileApplicationsOfType(WorkflowBasedMobileApplication.class, userId, permissions);
 	}
 
 	private QueryLimit getLaunchersLimit()
@@ -162,10 +163,10 @@ public class WorkflowRestAPIService
 				.abort(wfProcessId, callerId);
 	}
 
-	public void abortAllWFProcesses(@NonNull final IUserRolePermissions permissions)
+	public void abortAllWFProcesses(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
-		streamWorkflowBasedMobileApplications(permissions)
-				.forEach(application -> abortAllNoFail(application, permissions.getUserId()));
+		streamWorkflowBasedMobileApplications(userId, permissions)
+				.forEach(application -> abortAllNoFail(application, userId));
 	}
 
 	private static void abortAllNoFail(@NonNull final WorkflowBasedMobileApplication application, final @NonNull UserId callerId)

@@ -81,11 +81,14 @@ public class Fact_Acct_StepDef
 	}
 
 	@And("^no Fact_Acct records are found for documents (.*)$")
-	public void assertNoFactAccts(@NonNull final String identifiersStr) throws Throwable
+	public void assertNoFactAccts(@NonNull final String commaSeparatedIdentifiers) throws Throwable
 	{
+		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		AccountingCucumberHelper.waitUtilPosted(recordRefs);
+		
 		newFactAcctValidator()
 				.factAcctTabularStringConverter(factAcctTabularStringConverter)
-				.matchers(FactAcctMatchers.noRecords(identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(identifiersStr)))
+				.matchers(FactAcctMatchers.noRecords(recordRefs))
 				.validate();
 	}
 

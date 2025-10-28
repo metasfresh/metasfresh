@@ -22,7 +22,7 @@
 
 package de.metas.handlingunits.picking.plan.generator;
 
-import de.metas.picking.api.PackageableList;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,12 +31,12 @@ import lombok.Value;
 @Value
 public class CreatePickingPlanRequest
 {
-	@NonNull PackageableList packageables;
+	@NonNull ScheduledPackageableList packageables;
 	boolean considerAttributes;
 
 	@Builder
 	private CreatePickingPlanRequest(
-			@NonNull final PackageableList packageables,
+			@NonNull final ScheduledPackageableList packageables,
 			final boolean considerAttributes)
 	{
 		Check.assume(!packageables.isEmpty(), "packageables shall not be empty");

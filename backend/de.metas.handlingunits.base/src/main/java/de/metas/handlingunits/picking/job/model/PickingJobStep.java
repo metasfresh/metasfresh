@@ -27,9 +27,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -54,7 +54,7 @@ public class PickingJobStep
 	boolean isGeneratedOnFly;
 
 	@NonNull OrderAndLineId salesOrderAndLineId;
-	@NonNull ShipmentScheduleId shipmentScheduleId;
+	@NonNull ShipmentScheduleAndJobScheduleId scheduleId;
 
 	//
 	// What?
@@ -78,7 +78,7 @@ public class PickingJobStep
 			@NonNull final PickingJobStepId id,
 			final boolean isGeneratedOnFly,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ShipmentScheduleAndJobScheduleId scheduleId,
 			//
 			// What?
 			@NonNull final ProductId productId,
@@ -94,7 +94,7 @@ public class PickingJobStep
 		this.id = id;
 		this.isGeneratedOnFly = isGeneratedOnFly;
 		this.salesOrderAndLineId = salesOrderAndLineId;
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.scheduleId = scheduleId;
 		this.productId = productId;
 		this.productName = productName;
 		this.qtyToPick = qtyToPick;

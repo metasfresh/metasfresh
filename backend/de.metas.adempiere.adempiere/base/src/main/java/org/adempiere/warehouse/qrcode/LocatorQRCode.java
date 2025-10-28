@@ -1,12 +1,13 @@
 package org.adempiere.warehouse.qrcode;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Locator;
 
@@ -15,7 +16,6 @@ import java.util.Objects;
 
 @Value
 @Builder
-@Jacksonized // NOTE: we are making it json friendly mainly for snapshot testing
 public class LocatorQRCode
 {
 	@NonNull LocatorId locatorId;
@@ -29,8 +29,10 @@ public class LocatorQRCode
 	@Deprecated
 	public String toString() {return toGlobalQRCodeJsonString();}
 
+	@JsonValue
 	public String toGlobalQRCodeJsonString() {return LocatorQRCodeJsonConverter.toGlobalQRCodeJsonString(this);}
 
+	@JsonCreator
 	public static LocatorQRCode ofGlobalQRCodeJsonString(final String json) {return LocatorQRCodeJsonConverter.fromGlobalQRCodeJsonString(json);}
 
 	public static LocatorQRCode ofGlobalQRCode(final GlobalQRCode globalQRCode) {return LocatorQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);}
@@ -55,7 +57,7 @@ public class LocatorQRCode
 	{
 		return LocatorQRCodeJsonConverter.toGlobalQRCode(this);
 	}
-	
+
 	public ScannedCode toScannedCode()
 	{
 		return ScannedCode.ofString(toGlobalQRCodeJsonString());

@@ -22,22 +22,23 @@
 
 package de.metas.externalreference;
 
+import de.metas.externalsystem.ExternalSystem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class ExternalId<T extends IExternalSystem>
+public class ExternalId
 {
 	@NonNull
-	T externalSystem;
+	ExternalSystem externalSystem;
 
 	@NonNull
 	String id;
 
 	@NonNull
-	public static ExternalId of(@NonNull final IExternalSystem externalSystem, @NonNull final String id)
+	public static ExternalId of(@NonNull final ExternalSystem externalSystem, @NonNull final String id)
 	{
 		return new ExternalId(externalSystem, id);
 	}

@@ -8,6 +8,7 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
@@ -80,7 +81,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 
 		final I_DerKurier_DeliveryOrder headerRecord = headerRecords.get(0);
 		assertThat(headerRecord.getDK_Sender_Street()).isEqualTo(deliveryOrder.getPickupAddress().getStreet1());
-		assertThat(headerRecord.getDerKurier_DeliveryOrder_ID()).isEqualTo(savedDeliveryOrder.getOrderId().getOrderIdAsInt());
+		assertThat(headerRecord.getDerKurier_DeliveryOrder_ID()).isEqualTo(savedDeliveryOrder.getId().getRepoId());
 		assertThat(headerRecord.getM_Shipper_ID()).isEqualTo(M_SHIPPER_ID.getRepoId());
 		assertThat(headerRecord.getM_ShipperTransportation_ID()).isEqualTo(M_SHIPPER_TRANSPORTATION_ID.getRepoId());
 
@@ -110,10 +111,11 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final Address pickupAddress = DerKurierTestTools.createPickupAddress();
 		final PickupDate pickupDate = DerKurierTestTools.createPickupDate();
 
-		// create a builder, add properties that are mandatory, but not related to the deliveryOrderLine's data
+		// create a builder, add properties that are mandatory, but not related to the deliveryOrderParcel's data
 		final DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.pickupAddress(pickupAddress) // pickupAddress is mandatory, but not coming from I_DerKurier_DeliveryOrderLine
 				.pickupDate(pickupDate) // same as pickupAddress
+				.shipperId(ShipperId.ofRepoId(1))
 				.shipperProduct(DerKurierShipperProduct.OVERNIGHT);
 
 		// invoke the method under test

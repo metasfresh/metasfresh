@@ -121,6 +121,27 @@ public interface I_MobileUI_UserProfile_MFG
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow issuing any HU.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowIssuingAnyHU (@Nullable java.lang.String IsAllowIssuingAnyHU);
+
+	/**
+	 * Get Allow issuing any HU.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAllowIssuingAnyHU();
+
+	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsAllowIssuingAnyHU = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsAllowIssuingAnyHU", null);
+	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
+
+	/**
 	 * Set Scan Resource QR Code.
 	 * User needs to scan the resource QR code first
 	 *

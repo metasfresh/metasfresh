@@ -31,13 +31,18 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.elementvalue.ChartOfAccounts;
 import de.metas.elementvalue.ChartOfAccountsCreateRequest;
 import de.metas.elementvalue.ChartOfAccountsService;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_I_ElementValue;
+import org.compiere.util.Env;
 
 class ChartOfAccountsImportHelper
 {
@@ -45,12 +50,13 @@ class ChartOfAccountsImportHelper
 
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	ChartOfAccountsImportHelper(
 			@NonNull final ChartOfAccountsService chartOfAccountsService)
 	{
 		this.chartOfAccountsService = chartOfAccountsService;
 	}
-
 
 	public ChartOfAccountsId importChartOfAccounts(@NonNull final I_I_ElementValue importRecord)
 	{
@@ -61,7 +67,9 @@ class ChartOfAccountsImportHelper
 		}
 
 		// Try searching by ID
-		chartOfAccountsId = chartOfAccountsService.getByName(extractChartOfAccountsNameNotNull(importRecord), ClientId.ofRepoId(importRecord.getAD_Client_ID()))
+		chartOfAccountsId = chartOfAccountsService.getByName(extractChartOfAccountsNameNotNull(importRecord),
+						ClientId.ofRepoId(importRecord.getAD_Client_ID()),
+						extractOrgId(importRecord))
 				.map(ChartOfAccounts::getId)
 				.orElse(null);
 
@@ -72,6 +80,7 @@ class ChartOfAccountsImportHelper
 					ChartOfAccountsCreateRequest.builder()
 							.name(extractChartOfAccountsNameNotNull(importRecord))
 							.clientId(ClientId.ofRepoId(importRecord.getAD_Client_ID()))
+							.orgId(extractOrgId(importRecord))
 							.build());
 			chartOfAccountsId = newChartOfAccounts.getId();
 		}
@@ -104,5 +113,21 @@ class ChartOfAccountsImportHelper
 		final AcctSchemaElement accountElement = acctSchema.getSchemaElementByType(AcctSchemaElementType.Account);
 		accountElement.setChartOfAccountsId(chartOfAccountsId);
 		acctSchemasRepo.saveAcctSchemaElement(accountElement);
+	}
+
+	@NonNull
+	public OrgId extractOrgId(@NonNull final I_I_ElementValue importRecord)
+	{
+		final String orgValue = importRecord.getOrgValue();
+		if (Check.isNotBlank(orgValue))
+		{
+			final I_AD_Org orgRecord = orgDAO.retrieveOrganizationByValue(Env.getCtx(), orgValue);
+			if (orgRecord != null)
+			{
+				return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+			}
+		}
+
+		return OrgId.ANY;
 	}
 }

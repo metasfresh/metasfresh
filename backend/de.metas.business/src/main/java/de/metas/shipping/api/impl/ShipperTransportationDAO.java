@@ -1,10 +1,13 @@
 package de.metas.shipping.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.lang.SOTrx;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
+import de.metas.shipping.api.ShipperTransportationReference;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -20,6 +23,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -139,5 +143,48 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.orgId(request.getOrgId())
 				.build())
 				.orElseGet(() -> create(request));
+	}
+
+	@NonNull
+	@Override
+	public Optional<ShipperTransportationReference> getEarliestShipperTransportationByOrderId(final OrderId orderId)
+	{
+		final I_M_ShipperTransportation record = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+				.orderBy(I_M_ShipperTransportation.COLUMNNAME_DateDoc)
+				.create()
+				.first();
+
+		if (record == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(toShipperTransportationReference(record));
+
+	}
+
+	private static ShipperTransportationReference toShipperTransportationReference(@NotNull final I_M_ShipperTransportation record)
+	{
+		final ShipperTransportationId id = ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
+		return ShipperTransportationReference.builder()
+				.id(id)
+				.billOfLadingDate(TimeUtil.asInstant(record.getBLDate()))
+				.ETADate(TimeUtil.asInstant(record.getETA()))
+				.build();
+	}
+
+	@Override
+	public ImmutableList<OrderId> retrieveOrderIds(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, OrderId.class);
+
 	}
 }

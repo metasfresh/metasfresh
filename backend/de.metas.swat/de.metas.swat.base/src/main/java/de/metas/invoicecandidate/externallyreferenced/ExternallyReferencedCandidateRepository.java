@@ -24,6 +24,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -159,6 +160,7 @@ public class ExternallyReferencedCandidateRepository
 		icRecord.setDescription(ic.getLineDescription());
 		icRecord.setPOReference(ic.getPoReference());
 		icRecord.setPresetDateInvoiced(TimeUtil.asTimestamp(ic.getPresetDateInvoiced(), timeZone));
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(ic.getPaymentTermId()));
 
 		icRecord.setExternalHeaderId(ExternalId.toValue(ic.getExternalHeaderId()));
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
@@ -296,6 +298,7 @@ public class ExternallyReferencedCandidateRepository
 		candidate.lineDescription(icRecord.getDescription());
 
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
+		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 
 		return candidate.build();
 	}

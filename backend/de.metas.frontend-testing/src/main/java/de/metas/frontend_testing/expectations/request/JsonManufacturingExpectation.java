@@ -24,6 +24,7 @@ public class JsonManufacturingExpectation
 	@Jacksonized
 	public static class ReceivedHU
 	{
+		@Nullable Identifier lu;
 		@Nullable Identifier tu;
 		@Nullable QtyAndUOMString qty;
 	}

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -412496844L;
+	private static final long serialVersionUID = -1317397113L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -341,17 +341,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	@Override
 	public void setC_BPartner_SalesRep_ID (final int C_BPartner_SalesRep_ID)
 	{
-		if (C_BPartner_SalesRep_ID < 1) 
+		if (C_BPartner_SalesRep_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, C_BPartner_SalesRep_ID);
 	}
 
 	@Override
-	public int getC_BPartner_SalesRep_ID() 
+	public int getC_BPartner_SalesRep_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
 	}
+
 	@Override
 	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
 	{
@@ -561,6 +562,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getC_Incoterms_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
+	}
+
+	@Override
+	public void setCommission_DateFrom (final @Nullable java.sql.Timestamp Commission_DateFrom)
+	{
+		set_Value (COLUMNNAME_Commission_DateFrom, Commission_DateFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getCommission_DateFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_Commission_DateFrom);
 	}
 
 	@Override
@@ -1523,6 +1536,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setLC_Date (final @Nullable java.sql.Timestamp LC_Date)
+	{
+		set_Value (COLUMNNAME_LC_Date, LC_Date);
+	}
+
+	@Override
+	public java.sql.Timestamp getLC_Date() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_LC_Date);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Order getLink_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_Link_Order_ID, org.compiere.model.I_C_Order.class);
@@ -1759,10 +1784,10 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
-	/** Rückerstattung = E */
-	public static final String PAYMENTRULE_Reimbursement = "E";
-	/** Verrechnung = F */
-	public static final String PAYMENTRULE_Settlement = "F";
+	/** Reimbursement = E */
+	public static final String PAYMENTRULE_Reimbursement  = "E";
+	/** Settlement = F */
+	public static final String PAYMENTRULE_Settlement  = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
@@ -1922,6 +1947,17 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public java.lang.String getPromotionCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_PromotionCode);
+	}
+
+	@Override
+	public void setPurchaser_User_ID (final int Purchaser_User_ID)
+	{
+		throw new IllegalArgumentException ("Purchaser_User_ID is virtual column");	}
+
+	@Override
+	public int getPurchaser_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Purchaser_User_ID);
 	}
 
 	@Override
@@ -2200,5 +2236,20 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 }

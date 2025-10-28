@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_MigrationScript;
 import org.compiere.model.MSequence;
 import org.compiere.util.Ini;
@@ -150,11 +151,8 @@ class MigrationScriptFileLogger
 
 	private static Path createPath(@NonNull final String dbType)
 	{
-		final int adClientId = 0;
-		final int scriptId = MSequence.getNextID(adClientId, I_AD_MigrationScript.Table_Name) * 10;
-
+		final int scriptId = MSequence.getNextID(ClientId.SYSTEM.getRepoId(), I_AD_MigrationScript.Table_Name) * 10;
 		final String filename = scriptId + "_migration_" + FORMATTER_ScriptFilenameTimestamp.format(LocalDate.now()) + "_" + dbType + ".sql";
-
 		return getMigrationScriptDirectory().resolve(filename);
 	}
 
@@ -177,7 +175,7 @@ class MigrationScriptFileLogger
 			{
 				throw AdempiereException.wrapIfNeeded(ex);
 			}
-			
+
 			_path = path;
 		}
 		return _path;

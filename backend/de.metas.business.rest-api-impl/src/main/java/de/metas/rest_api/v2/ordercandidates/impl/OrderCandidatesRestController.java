@@ -6,9 +6,11 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
+import de.metas.common.util.Check;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.logging.LogManager;
-import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
@@ -65,6 +67,7 @@ public class OrderCandidatesRestController
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final OrderCandidateRestControllerService orderCandidateRestControllerService;
 	private final JsonRetrieverService jsonRetrieverService;
+	private final ExternalSystemRepository externalSystemRepository;
 
 	private PermissionServiceFactory permissionServiceFactory;
 
@@ -72,13 +75,15 @@ public class OrderCandidatesRestController
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService)
+			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService,
+			@NonNull final ExternalSystemRepository externalSystemRepository)
 	{
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.orderCandidateRestControllerService = orderCandidateRestControllerService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
+		this.externalSystemRepository = externalSystemRepository;
 	}
 
 	@VisibleForTesting
@@ -105,6 +110,7 @@ public class OrderCandidatesRestController
 					.bpartnerRestController(bpartnerRestController)
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
+					.externalSystemRepository(externalSystemRepository)
 					.build();
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -112,7 +118,9 @@ public class OrderCandidatesRestController
 			final JsonOLCandCreateBulkResponse response = trxManager
 					.callInNewTrx(() -> orderCandidateRestControllerService.creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
 
-			return new ResponseEntity<>(response, HttpStatus.CREATED);
+			return Check.isEmpty(response.getErrors())
+					? new ResponseEntity<>(response, HttpStatus.CREATED)
+					: new ResponseEntity<>(response, HttpStatus.MULTI_STATUS);
 		}
 		catch (final Exception ex)
 		{

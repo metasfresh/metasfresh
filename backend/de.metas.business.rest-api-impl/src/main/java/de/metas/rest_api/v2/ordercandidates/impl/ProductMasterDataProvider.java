@@ -5,7 +5,6 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
@@ -42,10 +41,9 @@ import org.compiere.model.I_M_Product;
  */
 
 @RequiredArgsConstructor
-final class ProductMasterDataProvider
+public final class ProductMasterDataProvider
 {
 	private final IProductBL productsBL = Services.get(IProductBL.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService;
 

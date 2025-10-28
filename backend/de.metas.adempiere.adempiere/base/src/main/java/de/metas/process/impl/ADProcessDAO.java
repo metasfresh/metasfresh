@@ -95,8 +95,11 @@ public class ADProcessDAO implements IADProcessDAO
 
 	@Override
 	@Cached(cacheName = I_AD_Process.Table_Name + "#by#Classname", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public AdProcessId retrieveProcessIdByClassIfUnique(final String processClassname)
+	@Nullable
+	public AdProcessId retrieveProcessIdByClassIfUnique(@NonNull final String processClassname)
 	{
+		Check.assumeNotEmpty(processClassname, "processClassname is not empty");
+		
 		final Set<AdProcessId> processIds = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Process.class)
 				.addEqualsFilter(I_AD_Process.COLUMN_Classname, processClassname)

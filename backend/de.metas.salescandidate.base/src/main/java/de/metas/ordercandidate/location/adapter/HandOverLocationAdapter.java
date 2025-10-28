@@ -111,6 +111,12 @@ public class HandOverLocationAdapter
 	}
 
 	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentHandOverLocationAdapter.super.setRenderedAddress(from);
+	}
+
+	@Override
 	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
 	{
 		return documentLocationBL.toPlainDocumentLocation(this);

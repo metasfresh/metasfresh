@@ -46,7 +46,7 @@ public class DeliveryPosition
 	PackageDimensions packageDimensions;
 
 	@Nullable
-	CustomDeliveryData customDeliveryData;
+	CustomDeliveryLineData customDeliveryData;
 
 	ImmutableSet<PackageId> packageIds;
 
@@ -57,7 +57,7 @@ public class DeliveryPosition
 			final BigDecimal grossWeightKg,
 			final String content,
 			@Nullable final PackageDimensions packageDimensions,
-			@Nullable final CustomDeliveryData customDeliveryData,
+			@Nullable final CustomDeliveryLineData customDeliveryData,
 			@Singular final ImmutableSet<PackageId> packageIds)
 	{
 		Check.assume(numberOfPackages > 0, "numberOfPackages > 0");

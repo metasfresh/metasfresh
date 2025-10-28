@@ -27,6 +27,7 @@ import de.metas.elementvalue.ChartOfAccountsService;
 import de.metas.elementvalue.ElementValue;
 import lombok.NonNull;
 import org.adempiere.model.tree.AdTreeId;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,6 +44,15 @@ public class TreeNodeService
 	{
 		this.treeNodeRepo = treeNodeRepo;
 		this.chartOfAccountsService = chartOfAccountsService;
+	}
+
+	public static TreeNodeService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new TreeNodeService(
+				new TreeNodeRepository(),
+				ChartOfAccountsService.newInstanceForUnitTesting()
+		);
 	}
 
 	public void updateTreeNode(@NonNull final ElementValue elementValue)

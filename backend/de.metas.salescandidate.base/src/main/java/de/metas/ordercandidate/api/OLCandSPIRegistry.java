@@ -1,6 +1,9 @@
 package de.metas.ordercandidate.api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -13,6 +16,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Trace;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -200,6 +204,15 @@ public class OLCandSPIRegistry
 
 					final AdIssueId issueId = errorManager.createIssue(e);
 					olCand.setAD_Issue_ID(issueId.getRepoId());
+
+					olCand.setErrorMsgJSON(JsonObjectMapperHolder.toJsonNonNull(JsonErrorItem.builder()
+							.message(me.getLocalizedMessage())
+							.errorCode(AdempiereException.extractErrorCodeOrNull(me))
+							.stackTrace(Trace.toOneLineStackTraceString(me.getStackTrace()))
+							.adIssueId(JsonMetasfreshId.of(issueId.getRepoId()))
+							.errorCode(AdempiereException.extractErrorCodeOrNull(me))
+							.throwable(me)
+							.build()));
 
 					break;
 				}

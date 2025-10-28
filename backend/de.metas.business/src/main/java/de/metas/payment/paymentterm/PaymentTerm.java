@@ -22,16 +22,21 @@
 
 package de.metas.payment.paymentterm;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 
-@Builder
 @Value
 public class PaymentTerm
 {
@@ -53,5 +58,88 @@ public class PaymentTerm
 	int netDays;
 	boolean allowOverrideDueDate;
 	boolean _default;
+	boolean isComplex;
+
+	@NonNull ImmutableList<PaymentTermBreak> sortedBreaks;
+	@NonNull ImmutableMap<PaymentTermBreakId, PaymentTermBreak> breaksById;
+
+	@Builder
+	private PaymentTerm(
+			final @NonNull PaymentTermId id,
+			final @NonNull OrgId orgId,
+			final @NonNull ClientId clientId,
+			final @NonNull String value,
+			final @NonNull String name,
+			final @Nullable String description,
+			final @Nullable Percent discount,
+			final @Nullable Percent discount2,
+			final @Nullable String netDay,
+			final int discountDays,
+			final int discountDays2,
+			final int graceDays,
+			final int netDays,
+			final boolean allowOverrideDueDate,
+			final boolean _default,
+			final boolean isComplex,
+			final @NonNull ImmutableList<PaymentTermBreak> breaks)
+	{
+		this.id = id;
+		this.orgId = orgId;
+		this.clientId = clientId;
+		this.value = value;
+		this.name = name;
+		this.description = description;
+		this.discount = discount;
+		this.discount2 = discount2;
+		this.netDay = netDay;
+		this.discountDays = discountDays;
+		this.discountDays2 = discountDays2;
+		this.graceDays = graceDays;
+		this.netDays = netDays;
+		this.allowOverrideDueDate = allowOverrideDueDate;
+		this._default = _default;
+		this.isComplex = isComplex;
+
+		if (isComplex)
+		{
+			Check.assumeNotEmpty(breaks, "If isComplex=true, then breaks shall not be empty");
+
+			checkPercentBreaks(breaks);
+		}
+
+		this.sortedBreaks = isComplex
+				? breaks.stream().sorted(Comparator.comparing(PaymentTermBreak::getSeqNo).thenComparing(PaymentTermBreak::getId)).collect(ImmutableList.toImmutableList())
+				: ImmutableList.of();
+		this.breaksById = isComplex
+				? Maps.uniqueIndex(breaks, PaymentTermBreak::getId)
+				: ImmutableMap.of();
+	}
+
+	private static void checkPercentBreaks(@NonNull final ImmutableList<PaymentTermBreak> breaks)
+	{
+		final Percent totalPercent = breaks.stream()
+				.map(PaymentTermBreak::getPercent)
+				.reduce(Percent.ZERO, Percent::add);
+
+		if (totalPercent.compareTo(Percent.ONE_HUNDRED) != 0)
+		{
+			throw new AdempiereException("Total percent must be exactly 100%, but it was: ")
+					.appendParametersToMessage()
+					.setParameter("Total", totalPercent);
+		}
+
+	}
+
+	public PaymentTermBreak getBreakById(final @NonNull PaymentTermBreakId id)
+	{
+		Check.assumeNotEmpty(breaksById, "Payment term does not support breaks: {}", this);
+
+		final PaymentTermBreak paymentTermBreak = breaksById.get(id);
+		if (paymentTermBreak == null)
+		{
+			throw new AdempiereException("No break found for id: " + id);
+		}
+		return paymentTermBreak;
+	}
 }
 

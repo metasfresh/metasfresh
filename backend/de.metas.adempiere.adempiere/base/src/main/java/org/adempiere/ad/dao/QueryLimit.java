@@ -120,7 +120,6 @@ public final class QueryLimit
 		return isNoLimit() ? noLimitValue : value;
 	}
 
-
 	public boolean isLimited()
 	{
 		return !isNoLimit();
@@ -154,6 +153,11 @@ public final class QueryLimit
 	public boolean isLimitHitOrExceeded(@NonNull final Collection<?> collection)
 	{
 		return isLimited() && value <= collection.size();
+	}
+
+	public boolean isBelowLimit(@NonNull final Collection<?> collection)
+	{
+		return isNoLimit() || value > collection.size();
 	}
 
 	public QueryLimit minusSizeOf(@NonNull final Collection<?> collection)

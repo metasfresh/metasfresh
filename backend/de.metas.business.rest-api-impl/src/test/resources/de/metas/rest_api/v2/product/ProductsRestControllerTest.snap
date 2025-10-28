@@ -40,7 +40,8 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
         "productCategoryId": 3,
         "productNo": "value1",
         "uom": "Ea",
-        "uomConversions": [ ]
+        "uomConversions": [ ],
+        "uomX12DE355": "PCE"
       },
       {
         "bpartners": [ ],
@@ -52,7 +53,8 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
         "productCategoryId": 4,
         "productNo": "value2",
         "uom": "Kg",
-        "uomConversions": [ ]
+        "uomConversions": [ ],
+        "uomX12DE355": "KGM"
       }
     ]
   }

@@ -12,7 +12,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.email.EMailAddress;
@@ -87,7 +87,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient ArchiveFileNameService archiveFileNameService = SpringContextHolder.instance.getBean(ArchiveFileNameService.class);
 	private final transient MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final transient BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
-	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = SpringContextHolder.instance.getBean(DocOutBoundRecipientRepository.class);
+	private final transient DocOutBoundRecipientService docOutBoundRecipientService = SpringContextHolder.instance.getBean(DocOutBoundRecipientService.class);
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
@@ -168,6 +168,9 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final EMailAddress mailTo = EMailAddress.optionalOfNullable(docOutboundLogRecord.getCurrentEMailAddress())
 				.orElseThrow(() -> new AdempiereException("C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log=" + docOutboundLogRecord));
 
+
+		final EMailAddress mailCc = EMailAddress.ofNullableString(docOutboundLogRecord.getCurrentEMailAddressCC());
+
 		// Create and send email
 		final ArchiveEmailSentStatus status;
 		{
@@ -183,6 +186,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				mailService.sendEMail(EMailRequest.builder()
 						.mailbox(mailbox)
 						.to(mailTo)
+						.cc(mailCc)
 						.subject(emailParams.getSubject())
 						.message(emailParams.getMessage())
 						.html(emailParams.isHtml())
@@ -202,7 +206,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 					null,
 					mailbox.getEmail(),
 					mailTo,
-					null,
+					mailCc,
 					null,
 					status);
 		}
@@ -294,7 +298,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		DocOutBoundRecipient recipient = null;
 		if (docOutboundLogRecord.getCurrentEMailRecipient_ID() > 0)
 		{
-			recipient = docOutBoundRecipientRepository.getById(DocOutBoundRecipientId.ofRepoId(docOutboundLogRecord.getCurrentEMailRecipient_ID()));
+			recipient = docOutBoundRecipientService.getById(DocOutBoundRecipientId.ofRepoId(docOutboundLogRecord.getCurrentEMailRecipient_ID()));
 			final Language userLanguage = recipient.getUserLanguage();
 			if (userLanguage != null)
 			{

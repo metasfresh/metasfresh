@@ -14,6 +14,7 @@ import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPick
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -49,7 +50,8 @@ public class HUConsolidationRestController
 
 	private void assertApplicationAccess()
 	{
-		mobileApplicationService.assertAccess(mobileApplication.getApplicationId(), Env.getUserRolePermissions());
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+		mobileApplicationService.assertAccess(mobileApplication.getApplicationId(), permissions);
 	}
 
 	private static @NotNull UserId getLoggedUserId() {return Env.getLoggedUserId();}

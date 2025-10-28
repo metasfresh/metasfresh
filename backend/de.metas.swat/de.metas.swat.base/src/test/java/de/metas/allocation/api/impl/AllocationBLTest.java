@@ -115,7 +115,7 @@ public class AllocationBLTest
 		final Timestamp firstDate = new Timestamp(1000000);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
-		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
+		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		InterfaceWrapperHelper.save(type);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -162,6 +162,7 @@ public class AllocationBLTest
 		assertThat(lines.get(0).getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
 
 		assertThat(invoiceDAO.retrieveOpenAmt(invoice))
+				.as("OpenAmt")
 				.isEqualByComparingTo(invoice.getGrandTotal().subtract(payment1.getPayAmt()));
 	}
 
@@ -172,7 +173,7 @@ public class AllocationBLTest
 		final Timestamp firstDate = new Timestamp(1000000);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
-		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
+		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		InterfaceWrapperHelper.save(type);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -254,7 +255,7 @@ public class AllocationBLTest
 		assertThat(lines.get(2).getC_Payment_ID()).isEqualTo(payment3.getC_Payment_ID());
 		assertThat(lines.get(2).getAmount()).isEqualByComparingTo("50"); // payAmt of payment2
 
-		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isZero();
+		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).as("OpenAmt").isZero();
 	}
 
 	@Test
@@ -264,7 +265,7 @@ public class AllocationBLTest
 		final Timestamp firstDate = new Timestamp(1000000);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
-		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
+		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		saveRecord(type);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -346,7 +347,7 @@ public class AllocationBLTest
 		assertThat(lines.get(2).getC_Payment_ID()).isEqualTo(payment3.getC_Payment_ID());
 		assertThat(lines.get(2).getAmount()).isEqualByComparingTo("50"); // partial payAmt of payment2
 
-		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isZero();
+		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).as("OpenAmt").isZero();
 	}
 
 	@Nested

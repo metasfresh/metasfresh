@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.v1.JsonErrorItem;
-import de.metas.common.util.Check;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
@@ -43,21 +43,30 @@ import java.util.List;
 @EqualsAndHashCode(doNotUseGetters = true)
 public final class JsonOLCandCreateBulkResponse
 {
+	@NonNull
+	public static JsonOLCandCreateBulkResponse multiStatus(@NonNull final List<JsonOLCand> olCands, @NonNull @Singular final List<JsonErrorItem> errors)
+	{
+		return new JsonOLCandCreateBulkResponse(olCands, errors);
+	}
+
+	@NonNull
 	public static JsonOLCandCreateBulkResponse ok(@NonNull final List<JsonOLCand> olCands)
 	{
 		return new JsonOLCandCreateBulkResponse(olCands, null);
 	}
 
+	@NonNull
 	public static JsonOLCandCreateBulkResponse error(@NonNull final JsonErrorItem error)
 	{
-		final List<JsonOLCand> olCands = null;
-		return new JsonOLCandCreateBulkResponse(olCands, ImmutableList.of(error));
+		return new JsonOLCandCreateBulkResponse(null, ImmutableList.of(error));
 	}
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Getter
 	private final List<JsonOLCand> result;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Getter
 	private final List<JsonErrorItem> errors;
 
 	@JsonCreator
@@ -65,39 +74,7 @@ public final class JsonOLCandCreateBulkResponse
 			@JsonProperty("result") @Nullable final List<JsonOLCand> olCands,
 			@JsonProperty("errors") @Nullable @Singular final List<JsonErrorItem> errors)
 	{
-		if (errors == null || errors.isEmpty())
-		{
-			this.result = olCands != null ? ImmutableList.copyOf(olCands) : ImmutableList.of();
-			this.errors = ImmutableList.of();
-		}
-		else
-		{
-			Check.assume(olCands == null || olCands.isEmpty(), "No olCands shall be provided when error");
-			this.result = null;
-			this.errors = ImmutableList.copyOf(errors);
-		}
-	}
-
-	public boolean isError()
-	{
-		return !errors.isEmpty();
-	}
-
-	public JsonErrorItem getError()
-	{
-		if (errors.isEmpty())
-		{
-			throw new IllegalStateException("Not an error result: " + this);
-		}
-		return Check.singleElement(errors);
-	}
-
-	public List<JsonOLCand> getResult()
-	{
-		if (!errors.isEmpty())
-		{
-			throw new IllegalStateException("Not a successful result: " + this, getError().getThrowable());
-		}
-		return result;
+		this.result = olCands != null ? ImmutableList.copyOf(olCands) : ImmutableList.of();
+		this.errors = errors != null ? ImmutableList.copyOf(errors) : ImmutableList.of();
 	}
 }

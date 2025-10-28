@@ -32,6 +32,7 @@ import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -94,7 +95,8 @@ public class WorkflowRestController
 
 	private void assertAccess(final MobileApplicationId applicationId)
 	{
-		workflowRestAPIService.assertAccess(applicationId, Env.getUserRolePermissions());
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+		workflowRestAPIService.assertAccess(applicationId, permissions);
 	}
 
 	private JsonOpts newJsonOpts()
@@ -114,10 +116,13 @@ public class WorkflowRestController
 	public JsonMobileApplicationsList getMobileApplications()
 	{
 		final JsonOpts jsonOpts = newJsonOpts();
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+
 		return JsonMobileApplicationsList.builder()
 				.applications(
-						workflowRestAPIService.streamMobileApplicationInfos(Env.getUserRolePermissions())
-								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
+						workflowRestAPIService.streamMobileApplicationInfos(loggedUserId, permissions)
+								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts, permissions))
 								.sorted(Comparator.comparing(JsonMobileApplication::getSortNo).thenComparing(JsonMobileApplication::getCaption))
 								.collect(ImmutableList.toImmutableList()))
 				.build();
@@ -234,7 +239,10 @@ public class WorkflowRestController
 	@PostMapping("/wfProcess/abortAll")
 	public void abortAll()
 	{
-		workflowRestAPIService.abortAllWFProcesses(Env.getUserRolePermissions());
+		workflowRestAPIService.abortAllWFProcesses(
+				Env.getLoggedUserId(),
+				Env.getUserRolePermissions().getMobileApplicationPermissions()
+		);
 	}
 
 	public JsonWFProcess toJson(final WFProcess wfProcess)

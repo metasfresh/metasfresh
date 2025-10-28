@@ -104,7 +104,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
-				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
+				.externalSystemName(JsonExternalSystemName.of(config.getType().getValue()))
 				.parameters(extractParameters(config))
 				.orgCode(getOrgCode(config))
 				.command(externalRequest)

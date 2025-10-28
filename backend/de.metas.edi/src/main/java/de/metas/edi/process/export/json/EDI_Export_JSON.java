@@ -60,11 +60,6 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 				.build();
 	}
 
-	private boolean isCalledViaAPI()
-	{
-		return ProcessCalledFrom.API.equals(getProcessInfo().getProcessCalledFrom());
-	}
-
 	@Override
 	protected final String afterPostgRESTCall()
 	{

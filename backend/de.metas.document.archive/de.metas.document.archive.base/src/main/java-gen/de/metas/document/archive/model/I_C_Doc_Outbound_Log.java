@@ -236,6 +236,48 @@ public interface I_C_Doc_Outbound_Log
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_CurrentEMailAddress = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "CurrentEMailAddress", null);
 	String COLUMNNAME_CurrentEMailAddress = "CurrentEMailAddress";
 
+
+	/**
+	 * Set EMail Address CC.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrentEMailAddressCC (@Nullable java.lang.String CurrentEMailAddressCC);
+
+	/**
+	 * Get EMail Address CC.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrentEMailAddressCC();
+
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_CurrentEMailAddressCC = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "CurrentEMailAddressCC", null);
+	String COLUMNNAME_CurrentEMailAddressCC = "CurrentEMailAddressCC";
+
+	/**
+	 * Set Cc Email Recipient.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrentEMailCCRecipient_ID (int CurrentEMailCCRecipient_ID);
+
+	/**
+	 * Get Cc Email Recipient.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrentEMailCCRecipient_ID();
+
+	String COLUMNNAME_CurrentEMailCCRecipient_ID = "CurrentEMailCCRecipient_ID";
+
 	/**
 	 * Set eMail Receipient.
 	 *

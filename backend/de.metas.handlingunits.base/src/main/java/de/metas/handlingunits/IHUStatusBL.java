@@ -103,7 +103,7 @@ public interface IHUStatusBL extends ISingletonService
 	/**
 	 * Set the status of the HU. <br>
 	 * In case we are dealing with a status that implies moving to/from Gebindelager, also do the collection of HUs in the huContext given as parameter (task 07617).<br>
-	 *
+	 * <p>
 	 * NOTE: this method is not saving the HU.
 	 *
 	 * @param huContext mandatory, because depending on the given {@code huStatus}, we might need the context's {@link IHUContext#getHUPackingMaterialsCollector()}.
