@@ -85,7 +85,7 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(
 				ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
 
-		final String invoiceEmail = propagateToDocOutboundLog? invoiceRecord.getEMail() : null;
+		final String invoiceEmail = propagateToDocOutboundLog ? invoiceRecord.getEMail() : null;
 
 		final String locationEmail = invoiceBL.getLocationEmail(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
 

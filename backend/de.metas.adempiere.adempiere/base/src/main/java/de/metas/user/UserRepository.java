@@ -114,7 +114,7 @@ public class UserRepository
 		return queryBL.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerId)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDunningContact, true)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDunningContact_Default, true)
 				.create()
 				.firstIdOnlyOptional(UserId::ofRepoIdOrNull);
 	}

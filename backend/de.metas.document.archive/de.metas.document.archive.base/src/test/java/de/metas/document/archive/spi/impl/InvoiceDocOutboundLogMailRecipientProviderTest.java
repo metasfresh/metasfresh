@@ -197,12 +197,11 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		assertThat(result.get().getBPartnerLanguage()).isEqualTo(asLanguage(AD_Language_en_US));
 	}
 
-	private I_AD_SysConfig createSysConfigOrderEmailPropagation(final String value)
+	private void createSysConfigOrderEmailPropagation(final String value)
 	{
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
-		sysConfig.setName(orderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
+		sysConfig.setName(OrderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
 		sysConfig.setValue(value);
 		saveRecord(sysConfig);
-		return sysConfig;
 	}
 }

@@ -38,7 +38,7 @@ import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.Mode;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
@@ -770,7 +770,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.contactType(ContactType.BILL_TO_DEFAULT)
 				.bpartnerId(billBPartnerLocationId.getBpartnerId())
 				.bPartnerLocationId(billBPartnerLocationId)
-				.ifNotFound(IfNotFound.RETURN_NULL)
+				.mode(Mode.BY_CONTACT_TYPE_OR_NULL)
 				.build());
 		final Optional<BPartnerContactId> billContactId = billContact != null
 				? Optional.of(BPartnerContactId.of(billContact.getBpartnerId(), billContact.getId()))

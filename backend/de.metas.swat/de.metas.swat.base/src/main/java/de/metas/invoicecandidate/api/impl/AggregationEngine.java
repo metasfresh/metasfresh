@@ -19,7 +19,7 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.Mode;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
@@ -614,7 +614,7 @@ public final class AggregationEngine
 					.contactType(ContactType.BILL_TO_DEFAULT)
 					.bpartnerId(billBPLocationId.getBpartnerId())
 					.bPartnerLocationId(billBPLocationId)
-					.ifNotFound(IfNotFound.RETURN_NULL)
+					.mode(Mode.BY_CONTACT_TYPE_OR_NULL)
 					.build());
 			if (defaultBillContact != null)
 			{

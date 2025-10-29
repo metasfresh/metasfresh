@@ -152,7 +152,7 @@ public class BPartnerBL implements IBPartnerBL
 		for (final BPartnerId bpartnerId : bpartnerIds)
 		{
 			final I_C_BPartner bpartner = bpartners.get(bpartnerId);
-			String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
+			final String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
 			result.put(bpartnerId, name);
 		}
 
@@ -210,7 +210,7 @@ public class BPartnerBL implements IBPartnerBL
 				request.getBpartnerId().getRepoId(),
 				ITrx.TRXNAME_None);
 
-		final boolean ifNotFoundReturnNull = RetrieveContactRequest.IfNotFound.RETURN_NULL.equals(request.getIfNotFound());
+		final RetrieveContactRequest.Mode mode = request.getMode();
 		final boolean onlyActiveContacts = request.isOnlyActive();
 
 		// we will collect the candidates for our return value into these variables
@@ -258,17 +258,15 @@ public class BPartnerBL implements IBPartnerBL
 			if (recordMatchesType(contactRecord, request.getContactType()))
 			{
 				defaultContactOfType = contact;
-
-				if (ifNotFoundReturnNull)
+				if (mode.isByContactTypeOrNull())
 				{
 					return defaultContactOfType;
 				}
 			}
 		}
 
-		if (ifNotFoundReturnNull)
+		if (mode.isByContactTypeOrNull())
 		{
-			// no user of the given type was found
 			return null;
 		}
 
@@ -806,6 +804,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	@Nullable
 	public I_C_BPartner_Location extractShipToLocation(@NonNull final org.compiere.model.I_C_BPartner bp)
 	{
 		I_C_BPartner_Location bPartnerLocation = null;
