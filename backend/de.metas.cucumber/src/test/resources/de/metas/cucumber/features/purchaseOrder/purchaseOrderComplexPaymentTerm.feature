@@ -202,8 +202,8 @@ Feature: Purchase order with complex payment term
       | C_Invoice_Candidate_ID | C_OrderLine_ID |
       | invoice_candidate_2    | po3_l1         |
     And update invoice candidates
-      | C_Invoice_Candidate_ID | DateToInvoice_Override |
-      | invoice_candidate_2    | 2025-10-30             |
+      | C_Invoice_Candidate_ID |
+      | invoice_candidate_2    |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID |
       | invoice_candidate_2    |
