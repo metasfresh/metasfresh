@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Order
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1317397113L;
+	private static final long serialVersionUID = 909993800L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -202,6 +202,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setBLDate (final @Nullable java.sql.Timestamp BLDate)
+	{
+		set_Value (COLUMNNAME_BLDate, BLDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getBLDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_BLDate);
+	}
+
+	@Override
 	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
@@ -341,14 +353,14 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	@Override
 	public void setC_BPartner_SalesRep_ID (final int C_BPartner_SalesRep_ID)
 	{
-		if (C_BPartner_SalesRep_ID < 1)
+		if (C_BPartner_SalesRep_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, C_BPartner_SalesRep_ID);
 	}
 
 	@Override
-	public int getC_BPartner_SalesRep_ID()
+	public int getC_BPartner_SalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
 	}
@@ -1073,6 +1085,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setETA (final @Nullable java.sql.Timestamp ETA)
+	{
+		set_Value (COLUMNNAME_ETA, ETA);
+	}
+
+	@Override
+	public java.sql.Timestamp getETA() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ETA);
+	}
+
+	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
@@ -1254,6 +1278,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public java.lang.String getIncotermLocation() 
 	{
 		return get_ValueAsString(COLUMNNAME_IncotermLocation);
+	}
+
+	@Override
+	public void setInvoiceDate (final @Nullable java.sql.Timestamp InvoiceDate)
+	{
+		set_Value (COLUMNNAME_InvoiceDate, InvoiceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getInvoiceDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_InvoiceDate);
 	}
 
 	/** 
