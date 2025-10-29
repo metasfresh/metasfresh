@@ -291,6 +291,9 @@ public interface I_C_Order
 
 	/**
 	 * Set B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier.
+	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
+	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -300,6 +303,9 @@ public interface I_C_Order
 
 	/**
 	 * Get B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier.
+	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
+	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1485,7 +1491,9 @@ public interface I_C_Order
 
 	/**
 	 * Set ETA.
-	 * Estimated Arrival Date
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
+	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
+	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1495,7 +1503,9 @@ public interface I_C_Order
 
 	/**
 	 * Get ETA.
-	 * Estimated Arrival Date
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
+	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
+	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1775,6 +1785,9 @@ public interface I_C_Order
 
 	/**
 	 * Set Invoice date.
+	 * Date when the supplier’s invoice was issued.
+	 * The Invoice Date is automatically synchronized from the Supplier Invoice to the Purchase Order when the invoice is received or posted in the system.
+	 * Manual changes of the Invoice Date in the Purchase Order are not allowed — it is always derived from the corresponding Supplier Invoice.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1784,6 +1797,9 @@ public interface I_C_Order
 
 	/**
 	 * Get Invoice date.
+	 * Date when the supplier’s invoice was issued.
+	 * The Invoice Date is automatically synchronized from the Supplier Invoice to the Purchase Order when the invoice is received or posted in the system.
+	 * Manual changes of the Invoice Date in the Purchase Order are not allowed — it is always derived from the corresponding Supplier Invoice.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
