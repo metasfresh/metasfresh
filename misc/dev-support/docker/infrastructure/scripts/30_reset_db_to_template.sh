@@ -34,16 +34,18 @@ BRANCH_NAME=$(resolve_branch_name "$1")
 
 set -u
 
-# the winpty is needed to avoid an error when running the script in git bash on windows
+# Detect if winpty is needed (only in interactive TTY on Windows)
+WINPTY=$(get_winpty)
+DOCKER_EXEC_FLAGS=$(get_docker_exec_flags)
 
 echo "Stopping ${BRANCH_NAME}_postgrest"
-winpty docker stop ${BRANCH_NAME}_postgrest
+$WINPTY docker stop ${BRANCH_NAME}_postgrest
 
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "drop database if exists metasfresh;"
-winpty docker exec -it ${BRANCH_NAME}_db  psql -U postgres -c "create database metasfresh template metasfresh_template_${BRANCH_NAME};"
+$WINPTY docker exec $DOCKER_EXEC_FLAGS ${BRANCH_NAME}_db  psql -U postgres -c "drop database if exists metasfresh;"
+$WINPTY docker exec $DOCKER_EXEC_FLAGS ${BRANCH_NAME}_db  psql -U postgres -c "create database metasfresh template metasfresh_template_${BRANCH_NAME};"
 
 echo "Starting ${BRANCH_NAME}_postgrest again"
-winpty docker start ${BRANCH_NAME}_postgrest
+$WINPTY docker start ${BRANCH_NAME}_postgrest
 
 echo "The local database has been recreated from the template database."
 echo "You can rerun this script to reset the local database to the template database."

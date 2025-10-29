@@ -1,7 +1,0 @@
-{
-    "priceSystemName":  "TestPriceSystem",
-    "priceListName": "TestPriceList",
-    "pricePrecision": "3",
-    "currency": "CHF",
-    "country": "Switzerland"
-}
