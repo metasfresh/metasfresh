@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
@@ -45,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
@@ -53,9 +56,14 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @RequiredArgsConstructor
 public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 {
+	private static final Logger logger = Logger.getLogger(ScriptedImportConversionDynamicRouteBuilder.class.getName());
+
+	public static final String SCRIPTED_IMPORT_CONVERSION_PROCESSOR_ID = "ScriptedImportConversionProcessorId";
+
 	@NonNull private final String endpointName;
 	@NonNull private final String scriptIdentifier;
 	@NonNull private final JavaScriptRepo javaScriptRepo;
+	@NonNull private final JavaScriptExecutorService javaScriptExecutorService;
 	@NonNull private final ProducerTemplate producerTemplate;
 
 	@Override
@@ -69,7 +77,7 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 		from("direct:" + getRouteId())
 				.routeId(getRouteId())
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
-				.process(new ScriptedImportConversionProcessor(new JavaScriptExecutorService(), scriptIdentifier, javaScriptRepo))
+				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo)).id(SCRIPTED_IMPORT_CONVERSION_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
 						.log(LoggingLevel.INFO, "Nothing to process for ${routeId}")
@@ -85,10 +93,10 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 
 	private void handleItemInList(@NonNull final Exchange exchange)
 	{
+		final ScriptedImportedConversionToMfRequest request = exchange.getIn().getBody(ScriptedImportedConversionToMfRequest.class);
+
 		try
 		{
-			final ScriptedImportedConversionToMfRequest request = exchange.getIn().getBody(ScriptedImportedConversionToMfRequest.class);
-
 			final CamelServiceRouteIdWithRequestType camelRouteIdWithRequestType = CamelServiceRouteIdWithRequestType.ofRouteId(request.getCamelServiceRouteID());
 			final Object payload = JsonObjectMapperHolder.sharedJsonObjectMapper()
 					.readValue(request.getRequestBody(), camelRouteIdWithRequestType.getRequestType());
@@ -98,6 +106,7 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 		}
 		catch (final Exception e)
 		{
+			logger.log(Level.WARNING, "Exception caught when handling request: " + request, e);
 			exchange.getMessage().setBody(e.getMessage());
 		}
 	}
@@ -125,7 +134,8 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 	/**
 	 * Aggregates each split item’s response into a single List<Object>.
 	 */
-	private static class ResponseAggregationStrategy implements AggregationStrategy
+	@VisibleForTesting
+	public static class ResponseAggregationStrategy implements AggregationStrategy
 	{
 		private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 

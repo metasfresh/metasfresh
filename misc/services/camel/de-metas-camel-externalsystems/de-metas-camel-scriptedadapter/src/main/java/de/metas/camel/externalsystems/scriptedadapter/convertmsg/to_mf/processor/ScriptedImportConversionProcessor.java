@@ -29,6 +29,7 @@ import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.ScriptedImportedConversionToMfRequest;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
@@ -49,6 +50,11 @@ public class ScriptedImportConversionProcessor implements Processor
 	public void process(@NonNull final Exchange exchange) throws JsonProcessingException
 	{
 		final String request = exchange.getIn().getBody(String.class);
+		if (Check.isEmpty(request))
+		{
+			exchange.getIn().setBody(null);
+			return;
+		}
 
 		final String script = javaScriptRepo.get(scriptIdentifier);
 

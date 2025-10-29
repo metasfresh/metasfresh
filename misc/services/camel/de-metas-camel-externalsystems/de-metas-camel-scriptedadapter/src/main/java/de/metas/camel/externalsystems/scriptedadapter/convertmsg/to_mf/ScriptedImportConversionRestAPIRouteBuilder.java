@@ -32,6 +32,7 @@ import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.error.ErrorProcessor;
 import de.metas.camel.externalsystems.common.v2.ExternalStatusCreateCamelRequest;
+import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.IExternalSystemService;
@@ -95,6 +96,7 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 	@NonNull private final ProducerTemplate producerTemplate;
 
 	private JavaScriptRepo javaScriptRepo;
+	private JavaScriptExecutorService javaScriptExecutorService;
 
 	@Override
 	public void configure()
@@ -102,6 +104,7 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 		CamelRouteUtil.setupProperties(getContext());
 
 		javaScriptRepo = new JavaScriptRepo(getContext().resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
+		javaScriptExecutorService = new JavaScriptExecutorService();
 
 		//@formatter:off
 		errorHandler(defaultErrorHandler());
@@ -163,6 +166,11 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 	private void prepareResponse(@NonNull final Exchange exchange)
 	{
 		@SuppressWarnings("unchecked") final List<Object> list = exchange.getIn().getBody(List.class);
+		if (list == null)
+		{
+			throw new RuntimeCamelException("Nothing has been processed!");
+		}
+
 		if (list.size() == 1)
 		{
 			final String singleResponse = String.valueOf(list.get(0));
@@ -239,7 +247,7 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 		final String scriptIdentifier = request.getParameters().get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER);
 		final CamelContext camelContext = getCamelContext();
 
-		camelContext.addRoutes(new ScriptedImportConversionDynamicRouteBuilder(endpointName, scriptIdentifier, javaScriptRepo, producerTemplate));
+		camelContext.addRoutes(new ScriptedImportConversionDynamicRouteBuilder(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate));
 
 		camelContext.getRouteController().startRoute(endpointName);
 
