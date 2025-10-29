@@ -183,8 +183,8 @@ Feature: Purchase order with complex payment term
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | po3_l1     | po3        | product      | 10         |
-    And the order identified by po1 is completed
-    Then the order identified by po1 has following pay schedules
+    And the order identified by po3 is completed
+    Then the order identified by po3 has following pay schedules
     # In the last line, dueamt is computed as total - previous due amounts, to avoid rounding issues
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB31                  | 2025-10-10 | 25.58  | WP     |
@@ -216,7 +216,7 @@ Feature: Purchase order with complex payment term
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID | C_Invoice_Candidate_ID |
       | invoice_2    | invoice_candidate_2    |
-    Then the order identified by po23 has following pay schedules
+    Then the order identified by po3 has following pay schedules
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB31                  | 2025-10-10 | 25.58  | WP     |
       | PTB32                  | 2025-10-30 | 76.72  | WP     |
