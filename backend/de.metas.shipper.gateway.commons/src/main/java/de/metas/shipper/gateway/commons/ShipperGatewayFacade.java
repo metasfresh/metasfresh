@@ -135,37 +135,39 @@ public class ShipperGatewayFacade
 				.pickupDate(pickupDate)
 				.timeFrom(timeFrom)
 				.timeTo(timeTo)
-				.carrierProductId(getCommonCarrierProductId(shipmentSchedules))
-				.carrierGoodsTypeId(getCommonCarrierGoodsTypeId(shipmentSchedules))
+				.carrierProductId(getCommonCarrierProductIdOrNull(shipmentSchedules))
+				.carrierGoodsTypeId(getCommonCarrierGoodsTypeIdOrNull(shipmentSchedules))
 				.carrierServices(carrierServices)
 				.asyncBatchId(asyncBatchId)
 				.build();
 	}
 
-	private CarrierGoodsTypeId getCommonCarrierGoodsTypeId(final List<ShipmentSchedule> shipmentSchedules)
+	@Nullable
+	private CarrierGoodsTypeId getCommonCarrierGoodsTypeIdOrNull(final List<ShipmentSchedule> shipmentSchedules)
 	{
 		final Set<CarrierGoodsTypeId> goodsTypeIds = shipmentSchedules.stream()
 				.map(ShipmentSchedule::getCarrierGoodsTypeId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		if (goodsTypeIds.size() != 1)
+		if (goodsTypeIds.size() > 1)
 		{
 			throw new ShipperGatewayException("No common CarrierGoodsTypeId found for shipment schedules: " + shipmentSchedules);
 		}
-		return goodsTypeIds.iterator().next();
+		return goodsTypeIds.stream().findFirst().orElse(null);
 	}
 
-	private CarrierProductId getCommonCarrierProductId(final List<ShipmentSchedule> shipmentSchedules)
+	@Nullable
+	private CarrierProductId getCommonCarrierProductIdOrNull(final List<ShipmentSchedule> shipmentSchedules)
 	{
 		final Set<CarrierProductId> carrierProductIds = shipmentSchedules.stream()
 				.map(ShipmentSchedule::getCarrierProductId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		if (carrierProductIds.size() != 1)
+		if (carrierProductIds.size() > 1)
 		{
 			throw new ShipperGatewayException("No common CarrierProductId found for shipment schedules: " + shipmentSchedules);
 		}
-		return carrierProductIds.iterator().next();
+		return carrierProductIds.stream().findFirst().orElse(null);
 	}
 
 	private List<ShipmentSchedule> retrieveShipmentSchedulesByPackageId(@NonNull final PackageId packageId)
