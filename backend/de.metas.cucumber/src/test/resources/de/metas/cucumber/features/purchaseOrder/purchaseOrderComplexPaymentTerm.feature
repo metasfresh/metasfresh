@@ -60,6 +60,13 @@ Feature: Purchase order with complex payment term
       | PTB22      | pt_PO_2          | 25      | 0          | LC                | 20    |
       | PTB23      | pt_PO_2          | 25      | 0          | BL                | 30    |
       | PTB24      | pt_PO_2          | 25      | 0          | ET                | 40    |
+    And metasfresh contains C_PaymentTerm
+      | Identifier | IsComplex |
+      | pt_PO_3    | Y         |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB31      | pt_PO_3          | 25      | 1          | OD                | 10    |
+      | PTB32      | pt_PO_3          | 75      | 0          | IV                | 20    |
 
 
   @from:cucumber
@@ -168,3 +175,48 @@ Feature: Purchase order with complex payment term
       | C_Invoice_ID | IsPaid |
       | invoice_1    | Y      |
 
+  @from:cucumber
+  Scenario: Order pay schedules are updated when Invoice Date is changed
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po3        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO_3          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po3_l1     | po3        | product      | 10         |
+    And the order identified by po1 is completed
+    Then the order identified by po1 has following pay schedules
+    # In the last line, dueamt is computed as total - previous due amounts, to avoid rounding issues
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB31                  | 2025-10-10 | 25.58  | WP     |
+      | PTB32                  | 9999-01-01 | 76.72  | PR     |
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
+      | receiptSchedule_2    | po3        | po3_l1         | vendor        | vendorLocation         | product      | 10         | wh             |
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID | M_HU_ID          | M_ReceiptSchedule_ID | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
+      | huLuTuConfig_2             | processedTopHU_2 | receiptSchedule_2    | N               | 10          | 101                     | 1000006       |
+    And create material receipt
+      | M_HU_ID          | M_ReceiptSchedule_ID | M_InOut_ID |
+      | processedTopHU_2 | receiptSchedule_2    | inOut_2    |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID |
+      | invoice_candidate_2    | po3_l1         |
+    And update invoice candidates
+      | C_Invoice_Candidate_ID | DateToInvoice_Override |
+      | invoice_candidate_2    | 2025-10-30             |
+    And recompute invoice candidates if required
+      | C_Invoice_Candidate_ID |
+      | invoice_candidate_2    |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | invoice_candidate_2    |
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID |
+      | invoice_candidate_2    |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID | C_Invoice_Candidate_ID |
+      | invoice_2    | invoice_candidate_2    |
+    Then the order identified by po23 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB31                  | 2025-10-10 | 25.58  | WP     |
+      | PTB32                  | 2025-10-30 | 76.72  | WP     |
