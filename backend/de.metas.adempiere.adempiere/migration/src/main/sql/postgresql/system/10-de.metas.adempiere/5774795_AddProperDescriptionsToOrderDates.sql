@@ -379,3 +379,21 @@ UPDATE AD_Column SET Description='Date when the supplier’s invoice was issued.
 UPDATE AD_Field SET Name='Invoice date', Description='Date when the supplier’s invoice was issued. The Invoice Date is automatically synchronized from the Supplier Invoice to the Purchase Order when the invoice is received or posted in the system. Manual changes of the Invoice Date in the Purchase Order are not allowed — it is always derived from the corresponding Supplier Invoice.', Help=NULL WHERE AD_Column_ID=591443
 ;
 
+
+-- UI Element: Bestellung_OLD(181,D) -> Bestellung(294,D) -> advanced edit -> 10 -> dates.Invoice date
+-- Column: C_Order.InvoiceDate
+-- 2025-10-29T08:59:42.396Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2025-10-29 08:59:42.396000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637957
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Bestellung(294,D) -> advanced edit -> 10 -> dates.ETA
+-- Column: C_Order.ETA
+-- 2025-10-29T08:59:45.590Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2025-10-29 08:59:45.590000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637959
+;
+
+-- UI Element: Bestellung_OLD(181,D) -> Bestellung(294,D) -> advanced edit -> 10 -> dates.B/L Datum
+-- Column: C_Order.BLDate
+-- 2025-10-29T08:59:48.620Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2025-10-29 08:59:48.620000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637958
+;
