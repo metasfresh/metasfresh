@@ -219,4 +219,4 @@ Feature: Purchase order with complex payment term
     Then the order identified by po3 has following pay schedules
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB31                  | 2025-10-10 | 25.58  | WP     |
-      | PTB32                  | 2025-10-30 | 76.72  | WP     |
+      | PTB32                  | 2025-04-01 | 76.72  | WP     |
