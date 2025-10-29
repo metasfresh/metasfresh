@@ -41,6 +41,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -143,20 +144,28 @@ public class ShipperGatewayFacade
 
 	private CarrierGoodsTypeId getCommonCarrierGoodsTypeId(final List<ShipmentSchedule> shipmentSchedules)
 	{
-		return shipmentSchedules.stream()
+		final Set<CarrierGoodsTypeId> goodsTypeIds = shipmentSchedules.stream()
 				.map(ShipmentSchedule::getCarrierGoodsTypeId)
-				.distinct()
-				.findFirst()
-				.orElseThrow(() -> new ShipperGatewayException("No common CarrierGoodsTypeId found for shipment schedules: " + shipmentSchedules));
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (goodsTypeIds.size() != 1)
+		{
+			throw new ShipperGatewayException("No common CarrierGoodsTypeId found for shipment schedules: " + shipmentSchedules);
+		}
+		return goodsTypeIds.iterator().next();
 	}
 
 	private CarrierProductId getCommonCarrierProductId(final List<ShipmentSchedule> shipmentSchedules)
 	{
-		return shipmentSchedules.stream()
+		final Set<CarrierProductId> carrierProductIds = shipmentSchedules.stream()
 				.map(ShipmentSchedule::getCarrierProductId)
-				.distinct()
-				.findFirst()
-				.orElseThrow(() -> new ShipperGatewayException("No common CarrierProductId found for shipment schedules: " + shipmentSchedules));
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (carrierProductIds.size() != 1)
+		{
+			throw new ShipperGatewayException("No common CarrierProductId found for shipment schedules: " + shipmentSchedules);
+		}
+		return carrierProductIds.iterator().next();
 	}
 
 	private List<ShipmentSchedule> retrieveShipmentSchedulesByPackageId(@NonNull final PackageId packageId)

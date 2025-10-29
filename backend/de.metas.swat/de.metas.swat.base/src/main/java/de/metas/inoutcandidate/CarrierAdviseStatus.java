@@ -54,4 +54,6 @@ public enum CarrierAdviseStatus implements ReferenceListAwareEnum
 
 	@JsonValue
 	public String toJson() {return getCode();}
+
+	public boolean isRequested() {return Requested.equals(this);}
 }
