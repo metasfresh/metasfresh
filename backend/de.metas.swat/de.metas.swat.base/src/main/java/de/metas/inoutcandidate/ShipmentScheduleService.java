@@ -57,8 +57,7 @@ public class ShipmentScheduleService
 
 	public boolean isEligibleForCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (shipmentSchedule.getM_Shipper_ID() <= 0
-				|| shipmentSchedule.isProcessed()
+		if (shipmentSchedule.isProcessed()
 				|| shipmentSchedule.isClosed()
 				|| !shipmentSchedule.isActive()
 				|| shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule).signum() <= 0)
@@ -66,8 +65,7 @@ public class ShipmentScheduleService
 			return false;
 		}
 
-		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
-				.onlyShipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
-				.build());
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID());
+		return shipmentScheduleId == null || !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
 	}
 }
