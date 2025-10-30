@@ -127,7 +127,8 @@ public class PurchaseOrderToShipperTransportationService
 		addPurchaseOrderToShipperTransportation(orderDAO.getById(purchaseOrderId), shipperTransportationId);
 	}
 
-	private void addPurchaseOrderToShipperTransportation(final @NonNull org.compiere.model.I_C_Order order, final @Nullable ShipperTransportationId shipperTransportationId)
+	private void addPurchaseOrderToShipperTransportation(@NonNull final org.compiere.model.I_C_Order order,
+														 @Nullable final ShipperTransportationId shipperTransportationId)
 	{
 		final ShipperId shipperId;
 		if (shipperTransportationId != null)
@@ -141,12 +142,12 @@ public class PurchaseOrderToShipperTransportationService
 		}
 		if (shipperId == null)
 		{
-			Loggables.addLog("Purchase order with ID: {}, because no Shipper is set on it", order.getC_Order_ID());
+			Loggables.addLog("Skipping purchase order with ID: {}, because no Shipper is set on it", order.getC_Order_ID());
 			return;
 		}
 		if (order.getM_Shipper_ID() > 0 && shipperId.getRepoId() != order.getM_Shipper_ID())
 		{
-			Loggables.addLog("Ignoring C_Order.M_Shipper_ID={} of C_Order_ID={}, because M_ShipperTransportation_ID={} takes precedence", order.getM_Shipper_ID(), order.getM_Shipper_ID(), shipperTransportationId);
+			Loggables.addLog("Ignoring C_Order.M_Shipper_ID={} of C_Order_ID={}, because M_ShipperTransportation_ID={} takes precedence", order.getM_Shipper_ID(), order.getM_Shipper_ID(), ShipperTransportationId.toRepoId(shipperTransportationId));
 		}
 
 		final ShipperTransportationId shipperTransportationIdToUse = shipperTransportationId != null
