@@ -183,17 +183,16 @@ public class PurchaseOrderToShipperTransportationService
 				.orgId(orgId);
 
 		if (isOrderLinesWithoutLUQtyExist && !repo.isShippingPackageExistsForPurchaseOrderWithNoOrderLine(orderId))
-
 		{
 			//create a generic package for all order lines without LUQty set on them
 			repo.addPurchaseOrderToShipperTransportation(requestTemplate
 					// .sscc(sscc18CodeBL.generate(orgId)) //No requirements currently ask for this
 					.build());
 		}
-		orderLinesWithLUQty
-				.forEach(ol ->
-
-						addPurchaseOrderLineToShipperTransportationId(requestTemplate, ol));
+		for (final I_C_OrderLine ol : orderLinesWithLUQty)
+		{
+			addPurchaseOrderLineToShipperTransportationId(requestTemplate, ol);
+		}
 	}
 
 	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate, @NonNull final I_C_OrderLine ol)
