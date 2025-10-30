@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.shipping;
 
 import com.google.common.collect.ImmutableList;
@@ -37,28 +59,6 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Service
 @RequiredArgsConstructor
@@ -125,13 +125,32 @@ public class PurchaseOrderToShipperTransportationService
 		addPurchaseOrderToShipperTransportation(orderDAO.getById(purchaseOrderId), shipperTransportationId);
 	}
 
-	private void addPurchaseOrderToShipperTransportation(final @NonNull org.compiere.model.I_C_Order order, final @Nullable ShipperTransportationId shipperTransportationId)
+	private void addPurchaseOrderToShipperTransportation(@NonNull final org.compiere.model.I_C_Order order,
+														 @Nullable final ShipperTransportationId shipperTransportationId)
 	{
-		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
+		final ShipperId shipperId;
+		if (shipperTransportationId != null)
+		{
+			final I_M_ShipperTransportation shipperTransportationRecord = shipperTransportationDAO.getById(shipperTransportationId);
+			shipperId = ShipperId.ofRepoId(shipperTransportationRecord.getM_Shipper_ID());
+		}
+		else
+		{
+			shipperId = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
+		}
 		if (shipperId == null)
 		{
+<<<<<<< HEAD
+=======
+			Loggables.addLog("Skipping purchase order with ID: {}, because no Shipper is set on it", order.getC_Order_ID());
+>>>>>>> fb2f54dd96 (Allow purchase-order with divergin shipper to be added to transportation-order (#21563))
 			return;
 		}
+		if (order.getM_Shipper_ID() > 0 && shipperId.getRepoId() != order.getM_Shipper_ID())
+		{
+			Loggables.addLog("Ignoring C_Order.M_Shipper_ID={} of C_Order_ID={}, because M_ShipperTransportation_ID={} takes precedence", order.getM_Shipper_ID(), order.getM_Shipper_ID(), ShipperTransportationId.toRepoId(shipperTransportationId));
+		}
+
 		final ShipperTransportationId shipperTransportationIdToUse = shipperTransportationId != null
 				? shipperTransportationId
 				: shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
@@ -169,8 +188,10 @@ public class PurchaseOrderToShipperTransportationService
 					// .sscc(sscc18CodeBL.generate(orgId)) //No requirements currently ask for this
 					.build());
 		}
-		orderLinesWithLUQty
-				.forEach(ol -> addPurchaseOrderLineToShipperTransportationId(requestTemplate, ol));
+		for (final I_C_OrderLine ol : orderLinesWithLUQty)
+		{
+			addPurchaseOrderLineToShipperTransportationId(requestTemplate, ol);
+		}
 	}
 
 	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate, @NonNull final I_C_OrderLine ol)
