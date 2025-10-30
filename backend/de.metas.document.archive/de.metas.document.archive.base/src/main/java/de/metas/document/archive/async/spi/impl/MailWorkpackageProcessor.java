@@ -177,7 +177,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			final ArrayList<EMailAttachment> emailAttachments = extractAttachments(docOutboundLogRecord, archive);
 			if (emailAttachments.isEmpty())
 			{
-				status = ArchiveEmailSentStatus.MESSAGE_NOT_SENT;
+				status = ArchiveEmailSentStatus.Failure;
 				Loggables.addLog("No documents to attach on email for C_Doc_Outbound_Log_ID={}; -> not sending mail", docOutboundLogRecord.getC_Doc_Outbound_Log_ID());
 			}
 			else
@@ -193,7 +193,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 						.attachments(emailAttachments)
 						.build());
 
-				status = ArchiveEmailSentStatus.MESSAGE_SENT;
+				status = ArchiveEmailSentStatus.Success;
 			}
 		}
 
@@ -233,7 +233,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		return result;
 	}
 
-	private static EMailAttachment toEmailAttachment(@NonNull de.metas.attachments.EmailAttachment attachment)
+	private static EMailAttachment toEmailAttachment(@NonNull final de.metas.attachments.EmailAttachment attachment)
 	{
 		final String filename = attachment.getFilename();
 		final EMailAttachment emailAttachment = EMailAttachment.ofNullable(filename, attachment.getAttachmentDataSupplier().get());

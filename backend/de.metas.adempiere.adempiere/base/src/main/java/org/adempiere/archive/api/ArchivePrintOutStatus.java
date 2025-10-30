@@ -23,20 +23,16 @@
 package org.adempiere.archive.api;
 
 import lombok.Getter;
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public enum ArchivePrintOutStatus
 {
-	Success("Success"),
-	Failure("Failure");
+	Success("Print_Success"), // X_C_Doc_Outbound_Log_Line.STATUS_Print_Success
+	Failure("Print_Failure");// X_C_Doc_Outbound_Log_Line.STATUS_Print_Failure
 
 	@Getter
 	private final String code;
 
-	ArchivePrintOutStatus(@NonNull final String code)
-	{
-		this.code = code;
-	}
-
-	public boolean isSuccess() { return Success.equals(this); }
+	public boolean isSuccess() {return Success.equals(this);}
 }
