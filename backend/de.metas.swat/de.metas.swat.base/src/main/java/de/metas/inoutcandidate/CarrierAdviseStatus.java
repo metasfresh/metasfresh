@@ -61,5 +61,5 @@ public enum CarrierAdviseStatus implements ReferenceListAwareEnum
 
 	public boolean isInProgress() {return InProgress.equals(this);}
 
-	public boolean isEligibleForEnqueue() {return !isManual() && isInProgress();}
+	public boolean isEligibleForEnqueue() {return !isManual() && !isInProgress() && !isRequested();}
 }

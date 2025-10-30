@@ -57,11 +57,12 @@ public class ShipmentScheduleService
 
 	public boolean isEligibleForCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
+		final CarrierAdviseStatus carrierAdviseStatus = CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status());
 		if (shipmentSchedule.isProcessed()
 				|| shipmentSchedule.isClosed()
 				|| !shipmentSchedule.isActive()
 				|| shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule).signum() <= 0
-				|| !CarrierAdviseStatus.ofCode(shipmentSchedule.getCarrier_Advising_Status()).isEligibleForEnqueue())
+				|| (carrierAdviseStatus != null && !carrierAdviseStatus.isEligibleForEnqueue()))
 		{
 			return false;
 		}

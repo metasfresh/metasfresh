@@ -64,7 +64,8 @@ public class M_ShipmentSchedule
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
-			ModelValidator.TYPE_AFTER_CHANGE })
+			ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status })
 	public void requestCarrierAdvice(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		if (!isMarkedAsCarrierAdviceRequested(shipmentSchedule))
