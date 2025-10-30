@@ -32,12 +32,9 @@ import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.api.ShipperTransportationReference;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
@@ -45,7 +42,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -120,17 +116,13 @@ public class OrderPayScheduleService
 			return null;
 		}
 
-		final OrderId orderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
-		final Optional<ShipperTransportationReference> shipperTransportationReference = shipperTransportationDAO.getEarliestShipperTransportationByOrderId(orderId);
-		final DatesFromShipper shipperDates = extractShipperDates(shipperTransportationReference);
-
 		return OrderSchedulingContext.builder()
 				.orderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.orderDate(TimeUtil.asInstant(orderRecord.getDateOrdered()))
 				.letterOfCreditDate(TimeUtil.asInstant(orderRecord.getLC_Date()))
-				.billOfLadingDate(shipperDates.getBillOfLadingDate())
-				.ETADate(shipperDates.getEtaDate())
-				.invoiceDate(invoiceBL.getUniqueInvoiceDateForOrderId(orderId))
+				.billOfLadingDate(TimeUtil.asInstant(orderRecord.getBLDate()))
+				.ETADate(TimeUtil.asInstant(orderRecord.getETA()))
+				.invoiceDate(TimeUtil.asInstant(orderRecord.getInvoiceDate()))
 				.grandTotal(grandTotal)
 				.precision(orderBL.getAmountPrecision(orderRecord))
 				.paymentTerm(paymentTerm)
@@ -140,20 +132,5 @@ public class OrderPayScheduleService
 	public void create(@NonNull final OrderPayScheduleCreateRequest request)
 	{
 		orderPayScheduleRepository.create(request);
-	}
-
-	@Value(staticConstructor = "of")
-	private static class DatesFromShipper
-	{
-		@Getter @Nullable Instant billOfLadingDate;
-		@Getter @Nullable Instant etaDate;
-	}
-
-	private static DatesFromShipper extractShipperDates(@NonNull final Optional<ShipperTransportationReference> shipperTransportationReference)
-	{
-		return shipperTransportationReference.map(ref -> DatesFromShipper.of(
-				ref.getBillOfLadingDate(),
-				ref.getETADate()
-		)).orElseGet(() -> DatesFromShipper.of(null, null));
 	}
 }
