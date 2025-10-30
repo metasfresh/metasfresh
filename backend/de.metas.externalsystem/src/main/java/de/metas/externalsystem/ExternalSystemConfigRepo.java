@@ -211,6 +211,11 @@ public class ExternalSystemConfigRepo
 			return getPCMConfigByValue(value)
 					.map(this::getExternalSystemParentConfig);
 		}
+		else if (type.isScriptedImportConversion())
+		{
+			return getScriptedImportConversionConfigByValue(value)
+					.map(this::getExternalSystemParentConfig);
+		}
 		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 	}
 
@@ -1132,6 +1137,16 @@ public class ExternalSystemConfigRepo
 				.addEqualsFilter(I_ExternalSystem_Config_ProCareManagement.COLUMNNAME_ExternalSystemValue, value)
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_ProCareManagement.class);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_ScriptedImportConversion> getScriptedImportConversionConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedImportConversion.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ScriptedImportConversion.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ScriptedImportConversion.class);
 	}
 
 	@NonNull

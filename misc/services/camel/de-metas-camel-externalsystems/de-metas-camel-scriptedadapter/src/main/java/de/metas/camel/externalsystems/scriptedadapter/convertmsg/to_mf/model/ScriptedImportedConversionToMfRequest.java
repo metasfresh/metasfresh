@@ -20,16 +20,21 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter;
+package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model;
 
-public interface ScriptedAdapterConstants
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+@Builder
+@Jacksonized
+@Value
+public class ScriptedImportedConversionToMfRequest
 {
-	String ROUTE_MSG_FROM_MF_CONTEXT = "ScriptedAdapterConvertMsgFromMFContext";
-	String ATTACHMENT_FILE_NAME = "scripted-adapter-log.txt";
+	@NonNull
+	String camelServiceRouteID;
 
-	String SCRIPTED_IMPORT_CONVERSION_SYSTEM_NAME = "ScriptedImportConversion";
-	String PROPERTY_SCRIPTED_SCRIPTED_IMPORTED_CONVERSION_CONTEXT = "ScriptedImportedConversionRouteContext";
-	String PREFIX_IMPORT_AUTHORITY = "IMPORT:";
-	String PROPERTY_ENDPOINT_NAME = "endpointName";
-	String FIELD_ERROR_MESSAGE = "errorMessage";
+	@NonNull
+	String requestBody;
 }
