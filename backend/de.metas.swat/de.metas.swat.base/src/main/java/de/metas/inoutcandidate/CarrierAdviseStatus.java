@@ -56,4 +56,10 @@ public enum CarrierAdviseStatus implements ReferenceListAwareEnum
 	public String toJson() {return getCode();}
 
 	public boolean isRequested() {return Requested.equals(this);}
+
+	public boolean isManual() {return Manual.equals(this);}
+
+	public boolean isInProgress() {return InProgress.equals(this);}
+
+	public boolean isEligibleForEnqueue() {return !isManual() && isInProgress();}
 }

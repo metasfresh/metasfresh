@@ -78,7 +78,6 @@ public class M_ShipmentSchedule
 
 	private boolean isMarkedAsCarrierAdviceRequested(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final CarrierAdviseStatus carrierAdviseStatus = CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status());
-		return carrierAdviseStatus != null && carrierAdviseStatus.isRequested();
+		return CarrierAdviseStatus.ofCode(shipmentSchedule.getCarrier_Advising_Status()).isRequested();
 	}
 }

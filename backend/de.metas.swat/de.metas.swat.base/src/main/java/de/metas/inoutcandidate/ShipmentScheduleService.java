@@ -60,7 +60,8 @@ public class ShipmentScheduleService
 		if (shipmentSchedule.isProcessed()
 				|| shipmentSchedule.isClosed()
 				|| !shipmentSchedule.isActive()
-				|| shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule).signum() <= 0)
+				|| shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule).signum() <= 0
+				|| !CarrierAdviseStatus.ofCode(shipmentSchedule.getCarrier_Advising_Status()).isEligibleForEnqueue())
 		{
 			return false;
 		}
