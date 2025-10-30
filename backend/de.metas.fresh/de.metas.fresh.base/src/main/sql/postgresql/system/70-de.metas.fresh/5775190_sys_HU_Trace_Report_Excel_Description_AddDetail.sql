@@ -36,6 +36,14 @@ Report 2_ Columns:
 • 2_Trace_ID: Internal traceability identifier linking related transactions',Updated=TO_TIMESTAMP('2025-10-30 13:08:27.500000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585253
 ;
 
+
+
+-- 2025-10-30T13:08:27.569Z
+UPDATE AD_Process base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+
+
 -- Value: M_HU_Trace_Report_Excel
 -- Classname: de.metas.handlingunits.trace.process.M_HU_Trace_Report_Excel
 -- 2025-10-30T13:14:34.228Z
