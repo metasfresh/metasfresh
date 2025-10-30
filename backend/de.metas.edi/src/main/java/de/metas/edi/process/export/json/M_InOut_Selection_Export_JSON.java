@@ -62,7 +62,7 @@ public class M_InOut_Selection_Export_JSON extends JavaProcess implements IProce
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final IInOutDAO invoiceDAO = Services.get(IInOutDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	private int countExported;
 	private int countErrors;
@@ -82,10 +82,10 @@ public class M_InOut_Selection_Export_JSON extends JavaProcess implements IProce
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("No invoice selected");
 			}
-			final I_M_InOut invoiceRecord = invoiceDAO.getById(inoutId, I_M_InOut.class);
-			final boolean singleInvoiceCanBeEdiSent = DocStatus.ofCode(invoiceRecord.getDocStatus()).isCompleted()
-					&& invoiceRecord.isEdiEnabled()
-					&& EDIExportStatus.ofCode(invoiceRecord.getEDI_ExportStatus()).isPending();
+			final I_M_InOut inOutRecord = inOutDAO.getById(inoutId, I_M_InOut.class);
+			final boolean singleInvoiceCanBeEdiSent = DocStatus.ofCode(inOutRecord.getDocStatus()).isCompleted()
+					&& inOutRecord.isEdiEnabled()
+					&& EDIExportStatus.ofCode(inOutRecord.getEDI_ExportStatus()).isPending();
 			if (!singleInvoiceCanBeEdiSent)
 			{
 				return ProcessPreconditionsResolution.reject(notReadyInfo);
