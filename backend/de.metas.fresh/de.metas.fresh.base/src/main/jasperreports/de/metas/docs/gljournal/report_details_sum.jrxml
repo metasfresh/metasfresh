@@ -57,7 +57,7 @@
 	<detail>
 		<band height="33" splitType="Stretch">
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="141" y="12" width="60" height="16" forecolor="#000000" backcolor="#FFFFFF" uuid="36feb35b-1e70-49a8-905e-f493c5f6ee77">
+				<reportElement key="textField-24" mode="Transparent" x="141" y="12" width="70" height="16" forecolor="#000000" backcolor="#FFFFFF" uuid="36feb35b-1e70-49a8-905e-f493c5f6ee77">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -73,7 +73,7 @@
 				<textFieldExpression><![CDATA[$F{totaldr}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="276" y="12" width="60" height="16" forecolor="#000000" backcolor="#FFFFFF" uuid="a8d9c6c9-6a4a-4c33-801b-624a1fb3c43e">
+				<reportElement key="textField-24" mode="Transparent" x="276" y="12" width="70" height="16" forecolor="#000000" backcolor="#FFFFFF" uuid="a8d9c6c9-6a4a-4c33-801b-624a1fb3c43e">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<box rightPadding="3">
@@ -93,7 +93,7 @@
 				</reportElement>
 			</line>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="201" y="12" width="30" height="16" forecolor="#000000" backcolor="#FFFFFF" uuid="18429b21-4a5d-475a-893c-e6e3ab36da16">
+				<reportElement key="textField-24" mode="Transparent" x="212" y="12" width="30" height="16" forecolor="#000000" backcolor="#FFFFFF" uuid="18429b21-4a5d-475a-893c-e6e3ab36da16">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -109,7 +109,7 @@
 				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="337" y="12" width="30" height="16" forecolor="#000000" backcolor="#FFFFFF" uuid="779f7d04-bac4-4ae1-a69e-60d6e5e9230d">
+				<reportElement key="textField-24" mode="Transparent" x="347" y="12" width="30" height="16" forecolor="#000000" backcolor="#FFFFFF" uuid="779f7d04-bac4-4ae1-a69e-60d6e5e9230d">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>

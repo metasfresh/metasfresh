@@ -98,7 +98,7 @@
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="37" y="83" width="508" height="13" isPrintWhenDetailOverflows="true" uuid="5373ad6f-88ae-4046-865d-43d65cb7d376"/>
+				<reportElement x="37" y="74" width="508" height="13" isPrintWhenDetailOverflows="true" uuid="5373ad6f-88ae-4046-865d-43d65cb7d376"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>

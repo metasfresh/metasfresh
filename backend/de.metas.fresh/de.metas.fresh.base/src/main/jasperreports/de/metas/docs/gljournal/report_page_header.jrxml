@@ -49,7 +49,7 @@
 	</background>
 	<title>
 		<band height="32" splitType="Stretch">
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" x="464" y="0" width="63" height="12" forecolor="#000000" uuid="22714c45-8b08-4e22-8709-ca45e774a269">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -64,7 +64,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-3" x="464" y="15" width="63" height="12" uuid="4d25504c-873e-4c89-bc6e-c9cdc2281305">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
