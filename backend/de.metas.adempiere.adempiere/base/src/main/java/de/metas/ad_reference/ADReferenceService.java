@@ -217,6 +217,7 @@ public class ADReferenceService
 				.keyColumn(keyColumn)
 				.autoComplete(autoComplete)
 				.tooltipType(tooltipType)
+				// dev-note: custom windows are handled directly in WindowRestController
 				.zoomSO_Window_ID(soWindowId)
 				.zoomPO_Window_ID(poWindowId)
 				.zoomAD_Window_ID_Override(CoalesceUtil.coalesce(soWindowId, poWindowId))
