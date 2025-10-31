@@ -36,7 +36,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.compiere.model.I_M_InventoryLine;
 
-public class M_Inventory_Update_CountQty_to_BookQty extends JavaProcess implements IProcessPrecondition
+public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implements IProcessPrecondition
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private static final AdMessageKey MSG_M_INVENTORY_UPDATE_QTYCOUNT_TO_QTYBOOK_ProcessedDoc = AdMessageKey.of("M_Inventory_Update_CountQty_to_BookQty_ProcessedDoc");
