@@ -23,7 +23,7 @@
 package de.metas.inventory.process;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.inventory.IInventoryLineHUDAO;
+import de.metas.handlingunits.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -34,7 +34,7 @@ import lombok.NonNull;
 
 public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implements IProcessPrecondition
 {
-	@NonNull private final IInventoryLineHUDAO inventoryLineHUDAO = Services.get(IInventoryLineHUDAO.class);
+	@NonNull private final IInventoryDAO inventoryLineHUDAO = Services.get(IInventoryDAO.class);
 
 	@NonNull private static final AdMessageKey MSG_M_INVENTORY_UPDATE_QTYCOUNT_TO_QTYBOOK_ProcessedDoc = AdMessageKey.of("M_Inventory_Update_CountQty_to_BookQty_ProcessedDoc");
 

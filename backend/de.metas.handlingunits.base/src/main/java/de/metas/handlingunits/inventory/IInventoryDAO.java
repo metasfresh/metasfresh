@@ -20,12 +20,13 @@
  * #L%
  */
 
-package de.metas.inventory;
+package de.metas.handlingunits.inventory;
 
+import de.metas.inventory.InventoryId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
-public interface IInventoryLineHUDAO extends ISingletonService
+public interface IInventoryDAO extends ISingletonService
 {
 	void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId);
 }

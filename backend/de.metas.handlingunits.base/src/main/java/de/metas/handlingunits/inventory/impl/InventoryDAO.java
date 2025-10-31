@@ -20,10 +20,10 @@
  * #L%
  */
 
-package de.metas.inventory.impl;
+package de.metas.handlingunits.inventory.impl;
 
+import de.metas.handlingunits.inventory.IInventoryDAO;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
-import de.metas.inventory.IInventoryLineHUDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -32,7 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.compiere.model.I_M_InventoryLine;
 
-public class InventoryLineHUDAO implements IInventoryLineHUDAO
+public class InventoryDAO implements IInventoryDAO
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
