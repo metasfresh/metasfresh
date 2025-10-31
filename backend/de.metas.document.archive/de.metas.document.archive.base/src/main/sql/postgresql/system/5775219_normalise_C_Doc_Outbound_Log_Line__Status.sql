@@ -13,6 +13,3 @@ SET status    =
     updatedBy = 100,
     updated   = TO_TIMESTAMP('2025-10-30 19:29:39', 'YYYY-MM-DD HH24:MI:SS')
 ;
-
-select * from c_doc_outbound_log where
-(select COUNT(*) from C_Doc_Outbound_Log_Line where  C_Doc_Outbound_Log_Line.Action = 'eMail'   AND C_Doc_Outbound_Log_Line.C_Doc_Outbound_Log_ID =    C_Doc_Outbound_Log.C_Doc_Outbound_Log_ID AND    C_Doc_Outbound_Log_Line.Status = 'Email_Success')
