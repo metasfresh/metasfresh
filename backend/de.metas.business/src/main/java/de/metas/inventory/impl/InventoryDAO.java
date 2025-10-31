@@ -7,8 +7,10 @@ import de.metas.inventory.InventoryLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
@@ -148,5 +150,17 @@ public class InventoryDAO implements IInventoryDAO
 	public void save(I_M_InventoryLine inventoryLine)
 	{
 		saveRecord(inventoryLine);
+	}
+
+
+	@Override
+	public void setQtyCountToQtyBookForInventoryLines(@NonNull final InventoryId inventoryId)
+	{
+		final ICompositeQueryUpdater<I_M_InventoryLine> updaterInventoryLine = queryBL.createCompositeQueryUpdater(I_M_InventoryLine.class)
+				.addSetColumnFromColumn(I_M_InventoryLine.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(I_M_InventoryLine.COLUMNNAME_QtyBook));
+
+		queryBL.createQueryBuilder(I_M_InventoryLine.class)
+				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.create().update(updaterInventoryLine);
 	}
 }

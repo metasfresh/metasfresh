@@ -62,4 +62,6 @@ public interface IInventoryDAO extends ISingletonService
 	Optional<Instant> getMinInventoryDate(@NonNull Collection<InventoryId> inventoryIds);
 
 	void save(I_M_InventoryLine inventoryLine);
+
+	void setQtyCountToQtyBookForInventoryLines(@NonNull InventoryId inventoryId);
 }

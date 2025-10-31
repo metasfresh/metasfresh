@@ -22,23 +22,24 @@
 
 package de.metas.inventory.process;
 
-import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineHuRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
-import org.compiere.model.I_M_InventoryLine;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implements IProcessPrecondition
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@Autowired
+	@NonNull private InventoryLineHuRepository inventoryLineHuRepository;
+
+	@NonNull private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	@NonNull private static final AdMessageKey MSG_M_INVENTORY_UPDATE_QTYCOUNT_TO_QTYBOOK_ProcessedDoc = AdMessageKey.of("M_Inventory_Update_CountQty_to_BookQty_ProcessedDoc");
 
 	@Override
@@ -56,7 +57,7 @@ public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implemen
 
 		if (context.isProcessedDocument().isTrue())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_M_INVENTORY_UPDATE_QTYCOUNT_TO_QTYBOOK_ProcessedDoc));
+			return ProcessPreconditionsResolution.reject(MSG_M_INVENTORY_UPDATE_QTYCOUNT_TO_QTYBOOK_ProcessedDoc);
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -68,20 +69,10 @@ public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implemen
 		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
 
 		// update M_InventoryLine
-		final ICompositeQueryUpdater<I_M_InventoryLine> updaterInventoryLine = queryBL.createCompositeQueryUpdater(I_M_InventoryLine.class)
-				.addSetColumnFromColumn(I_M_InventoryLine.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(I_M_InventoryLine.COLUMNNAME_QtyBook));
-
-		queryBL.createQueryBuilder(I_M_InventoryLine.class)
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
-				.create().update(updaterInventoryLine);
+		inventoryDAO.setQtyCountToQtyBookForInventoryLines(inventoryId);
 
 		// update M_InventoryLine_HU
-		final ICompositeQueryUpdater<I_M_InventoryLine_HU> updaterInventoryLineHU = queryBL.createCompositeQueryUpdater(I_M_InventoryLine_HU.class)
-				.addSetColumnFromColumn(I_M_InventoryLine_HU.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(I_M_InventoryLine_HU.COLUMNNAME_QtyBook));
-
-		queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
-				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_Inventory_ID, inventoryId)
-				.create().update(updaterInventoryLineHU);
+		inventoryLineHuRepository.setQtyCountToQtyBookForInventoryLinesHU(inventoryId);
 
 		return MSG_OK;
 	}
