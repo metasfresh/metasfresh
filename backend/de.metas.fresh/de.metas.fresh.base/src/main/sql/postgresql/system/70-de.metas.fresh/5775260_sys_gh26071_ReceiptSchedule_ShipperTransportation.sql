@@ -20,6 +20,12 @@ UPDATE AD_Column SET ColumnSQL='(SELECT MAX(st.m_shippertransportation_id) from 
 ;
 
 -- Column: M_ReceiptSchedule.M_ShipperTransportation_ID
+-- Source Table: M_ShippingPackage
+-- 2025-10-31T11:01:48.302Z
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,591446,0,540183,540524,TO_TIMESTAMP('2025-10-31 11:01:47.624000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'L','Y',550698,540031,TO_TIMESTAMP('2025-10-31 11:01:47.624000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Column: M_ReceiptSchedule.M_ShipperTransportation_ID
 -- 2025-10-31T08:58:31.749Z
 UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=542013, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2025-10-31 08:58:31.749000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591446
 ;
