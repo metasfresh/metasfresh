@@ -22,11 +22,12 @@
 
 package org.adempiere.archive.api;
 
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum ArchivePrintOutStatus
+public enum ArchivePrintOutStatus implements ReferenceListAwareEnum
 {
 	Success("Print_Success"), // X_C_Doc_Outbound_Log_Line.STATUS_Print_Success
 	Failure("Print_Failure");// X_C_Doc_Outbound_Log_Line.STATUS_Print_Failure

@@ -148,7 +148,7 @@ import java.sql.Timestamp;
 					to, // to
 					null, // cc
 					null, // bcc
-					ArchiveEmailSentStatus.Success // status
+					emailSentStatus.isSentOK() ? ArchiveEmailSentStatus.Success : ArchiveEmailSentStatus.Failure // status
 			);
 		}
 
