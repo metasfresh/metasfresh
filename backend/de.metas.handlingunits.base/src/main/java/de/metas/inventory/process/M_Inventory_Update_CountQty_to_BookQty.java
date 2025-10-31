@@ -31,7 +31,9 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.compiere.model.I_M_InventoryLine;
 
 public class M_Inventory_Update_CountQty_to_BookQty extends JavaProcess implements IProcessPrecondition
@@ -66,24 +68,20 @@ public class M_Inventory_Update_CountQty_to_BookQty extends JavaProcess implemen
 		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
 
 		// update M_InventoryLine
-		queryBL
-				.createQueryBuilder(I_M_InventoryLine.class)
+		final ICompositeQueryUpdater<I_M_InventoryLine> updaterInventoryLine = queryBL.createCompositeQueryUpdater(I_M_InventoryLine.class)
+				.addSetColumnFromColumn(I_M_InventoryLine.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(I_M_InventoryLine.COLUMNNAME_QtyBook));
+
+		queryBL.createQueryBuilder(I_M_InventoryLine.class)
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_M_InventoryLine.COLUMNNAME_QtyCount, I_M_InventoryLine.COLUMNNAME_QtyBook)
-				.execute();
+				.create().update(updaterInventoryLine);
 
 		// update M_InventoryLine_HU
-		queryBL
-				.createQueryBuilder(I_M_InventoryLine_HU.class)
-				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_Inventory_ID, inventoryId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_M_InventoryLine_HU.COLUMNNAME_QtyCount, I_M_InventoryLine_HU.COLUMNNAME_QtyBook)
-				.execute();
+		final ICompositeQueryUpdater<I_M_InventoryLine_HU> updaterInventoryLineHU = queryBL.createCompositeQueryUpdater(I_M_InventoryLine_HU.class)
+				.addSetColumnFromColumn(I_M_InventoryLine_HU.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(I_M_InventoryLine_HU.COLUMNNAME_QtyBook));
 
-		// Needs chaceh reset??
+		queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
+				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.create().update(updaterInventoryLineHU);
 
 		return MSG_OK;
 	}
