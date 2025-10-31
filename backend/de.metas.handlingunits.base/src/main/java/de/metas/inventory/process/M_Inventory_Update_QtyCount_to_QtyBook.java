@@ -23,23 +23,19 @@
 package de.metas.inventory.process;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.IInventoryLineHUDAO;
 import de.metas.inventory.InventoryId;
-import de.metas.inventory.InventoryLineHuRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implements IProcessPrecondition
 {
-	@Autowired
-	@NonNull private InventoryLineHuRepository inventoryLineHuRepository;
+	@NonNull private final IInventoryLineHUDAO inventoryLineHUDAO = Services.get(IInventoryLineHUDAO.class);
 
-	@NonNull private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	@NonNull private static final AdMessageKey MSG_M_INVENTORY_UPDATE_QTYCOUNT_TO_QTYBOOK_ProcessedDoc = AdMessageKey.of("M_Inventory_Update_CountQty_to_BookQty_ProcessedDoc");
 
 	@Override
@@ -67,12 +63,7 @@ public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implemen
 	protected String doIt() throws Exception
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
-
-		// update M_InventoryLine
-		inventoryDAO.setQtyCountToQtyBookForInventoryLines(inventoryId);
-
-		// update M_InventoryLine_HU
-		inventoryLineHuRepository.setQtyCountToQtyBookForInventoryLinesHU(inventoryId);
+		inventoryLineHUDAO.setQtyCountToQtyBookForInventory(inventoryId);
 
 		return MSG_OK;
 	}
