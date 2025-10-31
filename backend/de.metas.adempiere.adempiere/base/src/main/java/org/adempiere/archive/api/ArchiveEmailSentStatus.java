@@ -23,7 +23,9 @@
 package org.adempiere.archive.api;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -37,4 +39,7 @@ public enum ArchiveEmailSentStatus implements ReferenceListAwareEnum
 
 	public boolean isSuccess() {return Success.equals(this);}
 
+	private static final ReferenceListAwareEnums.ValuesIndex<ArchiveEmailSentStatus> index = ReferenceListAwareEnums.index(values());
+
+	public static ArchiveEmailSentStatus ofCode(@NonNull final String code) {return index.ofCode(code);}
 }
