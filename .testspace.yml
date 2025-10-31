@@ -16,10 +16,8 @@ release:
   - gray_knight_hotfix
   - keen_hawk_uat
   - task_force_uat
-  - electric_light_uat
   - feisty_sloth_uat
   - arctic_north_uat
-  - blue_horizon_uat
   - big_coconut_uat
   - clone_wars_uat
   - epic_party_uat
@@ -32,7 +30,6 @@ release:
   - intensive_care_hotfix
   - intensive_care_release
   - iron_plant_uat
-  - koala_yawn_uat
   - massive_entropy_uat
   - massive_entropy_hotfix
   - mad_orange_uat
@@ -54,14 +51,13 @@ release:
   - soft_panda_release
   - science_vessel_uat
   - science_vessel_hotfix
+  - science_vessel_release
   - secondary_opinion_uat
   - secondary_opinion_hotfix
-  - tasty_ham_uat
-  - tasty_ham_hotfix
   - tenacious_d_uat
   - vampire_textbook_uat
   - vampire_textbook_hotfix
   - vampire_textbook_release
   - yoyo_uat
   - yoyo_hotfix
-  - science_vessel_release
+
