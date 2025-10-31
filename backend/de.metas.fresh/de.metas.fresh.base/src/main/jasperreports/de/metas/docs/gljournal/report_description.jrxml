@@ -28,7 +28,7 @@
 		<property name="com.jaspersoft.studio.field.name" value="description"/>
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
 	</field>
-	<field name="datedoc" class="java.lang.String">
+	<field name="datedoc" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.name" value="datedoc"/>
 		<property name="com.jaspersoft.studio.field.label" value="datedoc"/>
 	</field>
@@ -39,6 +39,10 @@
 	<field name="totalcr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="totalcr"/>
 		<property name="com.jaspersoft.studio.field.label" value="totalcr"/>
+	</field>
+	<field name="cursymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cursymbol"/>
+		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
