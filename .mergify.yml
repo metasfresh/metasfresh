@@ -17,7 +17,7 @@ pull_request_rules:
     conditions:
       - merged
       - merged-at>2023-03-15T00:00:00Z # don't jump on every merged PR throughout history
-      - or: &ALL_BASE_BRANCHES # this rule should apply to both the project-branches from above, and master
+      - or: &ALL_BASE_BRANCHES # this rule should apply to the project-branches from above
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
               # UAT BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
@@ -96,18 +96,6 @@ pull_request_rules:
           - "branch:{{base}}"
       delete_head_branch: {}
 
-  - name: After master-PR is integrated, add two labels branch:master and in:5.177_master; also, delete the PR-branch
-    conditions:
-      - merged
-      - merged-at>2024-07-09T00:00:00Z # don't jump on every merged PR throughout history
-      - base=master
-    actions:
-      label:
-        add:
-          - "branch:{{base}}"
-          - "in:5.178_master"
-      delete_head_branch: {}
-
   - name: Automatic squash-merge successful PRs into the respective base-branch
     conditions:
       - check-success=testspace-analytics
@@ -115,7 +103,6 @@ pull_request_rules:
       - label=ops:auto_squash_merge
       - or:
           - or: *ALL_BASE_BRANCHES
-          - base=master
       - or:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
@@ -130,7 +117,6 @@ pull_request_rules:
       - label=ops:auto_merge_commit
       - or:
           - or: *ALL_BASE_BRANCHES
-          - base=master
       - or:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
