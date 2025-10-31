@@ -141,6 +141,6 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	@Override
 	public OptionalBoolean isProcessedDocument()
 	{
-		return OptionalBoolean.ofBoolean(!document.isProcessed());
+		return OptionalBoolean.ofBoolean(document.isProcessed());
 	}
 }
