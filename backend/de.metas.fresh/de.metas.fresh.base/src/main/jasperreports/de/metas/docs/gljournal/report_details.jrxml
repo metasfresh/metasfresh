@@ -84,7 +84,7 @@
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="30" splitType="Stretch">
+		<band height="33" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="8" width="25" height="16" forecolor="#000000" uuid="4a3cc346-8ac1-4d8b-ae88-e305f12239b6">
@@ -184,7 +184,7 @@
 				</reportElement>
 			</line>
 			<line>
-				<reportElement x="31" y="28" width="545" height="1" uuid="c2635227-44d3-4052-8b44-facea365a336">
+				<reportElement x="31" y="30" width="545" height="1" uuid="c2635227-44d3-4052-8b44-facea365a336">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 			</line>
@@ -393,6 +393,9 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
+		</band>
+		<band height="10">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 	</detail>
 	<columnFooter>
