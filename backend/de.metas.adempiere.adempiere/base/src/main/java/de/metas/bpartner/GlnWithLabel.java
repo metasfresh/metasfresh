@@ -30,8 +30,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * It happens that a company has one GLN in the real world, but it's decided that there shall be more than one {@link org.compiere.model.I_C_BPartner} records in metasfresh.
- * To identify such partners, an additional {@link org.compiere.model.I_C_BPartner#COLUMNNAME_Lookup_Label} can be set.
+ * Represents a GLN (Global Location Number) with an optional lookup label for differentiating BPartners.
+ * <p>
+ * In some business scenarios, a single company has one physical GLN in the real world,
+ * but multiple {@link org.compiere.model.I_C_BPartner} records need to be maintained in metasfresh
+ * to represent different aspects or divisions of that company.
+ * <p>
+ * To uniquely identify such partners that share the same GLN, an additional
+ * {@link org.compiere.model.I_C_BPartner#COLUMNNAME_Lookup_Label} can be set.
+ * This class combines both the GLN and the optional label for lookup purposes.
+ * <p>
+ * String format: {@code {GLN}_{LABEL}} (e.g., "1234567890123_division_A")
+ * <br>If no label is present, only the GLN is used (e.g., "1234567890123")
+ * <p>
+ * <b>Note:</b> The GLN portion is assumed to not contain underscores. The first underscore
+ * in the string separates the GLN from the label.
  */
 @Value
 public class GlnWithLabel
@@ -44,7 +57,6 @@ public class GlnWithLabel
 		{
 			final GLN gln1 = GLN.ofString(matcher.group(1));
 			return new GlnWithLabel(gln1, matcher.group(2));
-			
 		}
 		final GLN gln = GLN.ofString(value);
 		return new GlnWithLabel(gln, null);

@@ -72,7 +72,8 @@ public class BPartnerQuery
 			@Nullable final BPartnerId bPartnerId,
 			@Nullable final ExternalId externalId,
 			@Nullable final String bpartnerValue,
-			@Nullable final String bpartnerName, final String glnLookupLabel,
+			@Nullable final String bpartnerName,
+			@Nullable final String glnLookupLabel,
 			@NonNull @Singular final Set<GLN> glns,
 			//
 			@NonNull @Singular final Set<OrgId> onlyOrgIds,
