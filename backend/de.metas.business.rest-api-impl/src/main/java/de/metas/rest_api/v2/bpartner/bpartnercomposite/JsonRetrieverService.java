@@ -32,6 +32,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -291,7 +292,8 @@ public class JsonRetrieverService
 			@NonNull final OrgId orgId,
 			@NonNull final ExternalIdentifier bpartnerIdentifier)
 	{
-		return getBPartnerComposite(orgId, bpartnerIdentifier).map(this::toJson);
+		return getBPartnerComposite(orgId, bpartnerIdentifier)
+				.map(this::toJson);
 	}
 
 	public Optional<QueryResultPage<JsonResponseComposite>> getJsonBPartnerComposites(
@@ -381,9 +383,9 @@ public class JsonRetrieverService
 				.salesPartnerCode(bpartner.getSalesPartnerCode())
 				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
 				.paymentRule(Optional.ofNullable(bpartner.getPaymentRule())
-									 .map(PaymentRule::getCode)
-									 .map(JSONPaymentRule::ofCode)
-									 .orElse(null))
+						.map(PaymentRule::getCode)
+						.map(JSONPaymentRule::ofCode)
+						.orElse(null))
 				.internalName(bpartner.getInternalName())
 				.vatId(bpartner.getVatId())
 				.changeInfo(jsonChangeInfo)
@@ -465,10 +467,9 @@ public class JsonRetrieverService
 			String titleTrl = null;
 			if (contact.getTitleId() != null)
 			{
-				final Title title = titleRepository.getByIdAndLang(contact.getTitleId(),language);
+				final Title title = titleRepository.getByIdAndLang(contact.getTitleId(), language);
 				titleTrl = title.getTitle();
 			}
-
 
 			Job job = null;
 			if (contact.getJobId() != null)
@@ -597,7 +598,11 @@ public class JsonRetrieverService
 		{
 			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofGLN(orgId, bpartnerIdentifier.asGLN());
 		}
-		else if (ExternalIdentifier.Type.METASFRESH_ID.equals(bpartnerIdentifier.getType()))
+		else if (ExternalIdentifier.Type.GLN_WITH_LABEL.equals(bpartnerIdentifier.getType()))
+		{
+			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofGlnWithLabel(orgId, bpartnerIdentifier.asGlnWithLabel());
+		}
+				else if (ExternalIdentifier.Type.METASFRESH_ID.equals(bpartnerIdentifier.getType()))
 		{
 			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofMetasfreshId(orgId, bpartnerIdentifier.asMetasfreshId());
 		}
@@ -653,6 +658,14 @@ public class JsonRetrieverService
 						.gln(bPartnerExternalIdentifier.asGLN())
 						.build();
 				return bpartnersRepo.retrieveBPartnerIdBy(glnQuery);
+			case GLN_WITH_LABEL:
+				final GlnWithLabel glnWithLabel = bPartnerExternalIdentifier.asGlnWithLabel();
+				final BPartnerQuery glnWithLabelQuery = BPartnerQuery.builder()
+						.onlyOrgId(orgId)
+						.gln(glnWithLabel.getGln())
+						.glnLookupLabel(glnWithLabel.getLabel())
+						.build();
+				return bpartnersRepo.retrieveBPartnerIdBy(glnWithLabelQuery);
 			default:
 				throw new InvalidIdentifierException("Given external identifier type is not supported!")
 						.setParameter("externalIdentifierType", bPartnerExternalIdentifier.getType())

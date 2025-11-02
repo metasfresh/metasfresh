@@ -135,7 +135,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class BpartnerRestControllerTest
 {
 	private BpartnerRestController bpartnerRestController;
@@ -163,7 +163,7 @@ class BpartnerRestControllerTest
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		currencyRepository = new CurrencyRepository();
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
-		
+
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
@@ -194,12 +194,11 @@ class BpartnerRestControllerTest
 
 	@Test
 	void retrieveBPartner_ext()
-
 	{
 		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
 
 		// invoke the method under test
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(bPartnerExternalIdentifier);
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(bPartnerExternalIdentifier, null);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
@@ -211,7 +210,7 @@ class BpartnerRestControllerTest
 	void retrieveBPartner_id()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(Integer.toString(C_BPARTNER_ID));
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(null, Integer.toString(C_BPARTNER_ID));
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
@@ -225,7 +224,7 @@ class BpartnerRestControllerTest
 		final String bPartnerExternalIdentifier = String.join("-", "gln", C_BPARTNER_LOCATION_GLN);
 
 		// invoke the method under test
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(bPartnerExternalIdentifier);
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(null, bPartnerExternalIdentifier);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
@@ -349,7 +348,7 @@ class BpartnerRestControllerTest
 				.requestItem(requestItem)
 				.build();
 
-		SystemTime.setTimeSource( new TimeSource()
+		SystemTime.setTimeSource(new TimeSource()
 		{
 			@Override
 			public long millis()
@@ -393,15 +392,15 @@ class BpartnerRestControllerTest
 		partner.setCode("other12345");
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.builder()
-									.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
-									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
-									.build())
+						.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
+						.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+						.build())
 				.requestItem(JsonRequestBPartnerUpsertItem.builder()
-									 .bpartnerIdentifier("ext-ALBERTA-1234567")
-									 .bpartnerComposite(JsonRequestComposite.builder()
-																.bpartner(partner)
-																.build())
-									 .build())
+						.bpartnerIdentifier("ext-ALBERTA-1234567")
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.bpartner(partner)
+								.build())
+						.build())
 				.build();
 
 		createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
@@ -419,15 +418,15 @@ class BpartnerRestControllerTest
 		partner.setCode("ext-ALBERTA-esb");
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.builder()
-									.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
-									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
-									.build())
+						.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
+						.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+						.build())
 				.requestItem(JsonRequestBPartnerUpsertItem.builder()
-									 .bpartnerIdentifier("ext-ALBERTA-1234567")
-									 .bpartnerComposite(JsonRequestComposite.builder()
-																.bpartner(partner)
-																.build())
-									 .build())
+						.bpartnerIdentifier("ext-ALBERTA-1234567")
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.bpartner(partner)
+								.build())
+						.build())
 				.build();
 
 		createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
@@ -483,7 +482,7 @@ class BpartnerRestControllerTest
 		assertThat(bpartnerRecord.getName()).isEqualTo("bpartnerRecord.name_updated");
 
 		// use the rest controller to get the json that we can then verify
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("12345");
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(null, "12345");
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -598,7 +597,7 @@ class BpartnerRestControllerTest
 			assertThat(bpartnerRecord.getValue()).isEqualTo(initialValue);
 			initialCounts.assertExternalReferencesCountChangedBy(1);
 			final I_S_ExternalReference externalReference = getExternalReference(externalBusinessKey.asExternalValueAndSystem().getValue(),
-																				 BPartnerExternalReferenceType.BPARTNER_VALUE.getCode());
+					BPartnerExternalReferenceType.BPARTNER_VALUE.getCode());
 
 			assertThat(externalReference.getRecord_ID()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 		}
@@ -720,10 +719,10 @@ class BpartnerRestControllerTest
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
 				"ext-" + EXTERNAL_SYSTEM_NAME + "-" + C_BPARTNER_EXTERNAL_ID,
 				JsonRequestContactUpsert.builder().requestItem(JsonRequestContactUpsertItem
-																	   .builder()
-																	   .contactIdentifier(contactIdentifier)
-																	   .contact(jsonContact)
-																	   .build()).build());
+						.builder()
+						.contactIdentifier(contactIdentifier)
+						.contact(jsonContact)
+						.build()).build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
@@ -790,9 +789,9 @@ class BpartnerRestControllerTest
 				String.valueOf(C_BPARTNER_ID),
 				JsonRequestBankAccountsUpsert.builder()
 						.requestItem(JsonRequestBankAccountUpsertItem.builder()
-											 .iban("iban-1")
-											 .currencyCode("EUR")
-											 .build())
+								.iban("iban-1")
+								.currencyCode("EUR")
+								.build())
 						.build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);

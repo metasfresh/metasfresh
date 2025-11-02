@@ -25,6 +25,7 @@ import org.adempiere.ad.dao.impl.StringStartsWithFilter;
 import org.adempiere.ad.dao.impl.ValidFromToMatchesQueryFilter;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -428,6 +429,8 @@ public interface ICompositeQueryFilterProxy<T, RT>
 				.build());
 	}
 
+
+	
 	default <ST> RT addNotInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()

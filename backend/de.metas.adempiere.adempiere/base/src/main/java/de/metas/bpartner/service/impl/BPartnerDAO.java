@@ -1569,6 +1569,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return GLNQuery.builder()
 				.glns(query.getGlns())
+				.glnLookupLabel(query.getGlnLookupLabel())
 				.onlyOrgIds(query.getOnlyOrgIds())
 				.build();
 	}

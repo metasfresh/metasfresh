@@ -4,6 +4,7 @@ import de.metas.process.PInstanceId;
 import lombok.NonNull;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
 
 import java.util.Properties;
 

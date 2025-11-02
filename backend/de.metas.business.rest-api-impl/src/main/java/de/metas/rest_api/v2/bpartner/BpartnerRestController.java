@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.bpartner;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.Profiles;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -95,24 +96,6 @@ public class BpartnerRestController
 		this.bpartnerEndpointService = bpartnerEndpointService;
 		this.jsonServiceFactory = jsonServiceFactory;
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
-	}
-
-	//
-	@ApiOperation("The identified bpartner needs to be in the current user's organisation.")
-	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved bpartner"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	})
-	@GetMapping("{bpartnerIdentifier}")
-	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
-
-			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
-			@PathVariable("bpartnerIdentifier") //
-			@NonNull final String bpartnerIdentifierStr)
-	{
-		return retrieveBPartner(null, bpartnerIdentifierStr);
 	}
 
 	@GetMapping("{orgCode}/{bpartnerIdentifier}")
