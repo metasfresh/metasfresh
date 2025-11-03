@@ -340,3 +340,12 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=755927
 /* DDL */ select AD_Element_Link_Create_Missing_Field(755927)
 ;
 
+-- Column: C_BPartner.IncotermLocation
+-- 2025-11-03T09:56:25.694Z
+UPDATE AD_Column SET MandatoryLogic='@C_Incoterms_Customer_ID/-1@>0',Updated=TO_TIMESTAMP('2025-11-03 09:56:25.694000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591466
+;
+
+-- Column: C_BPartner.PO_IncotermLocation
+-- 2025-11-03T09:57:16.103Z
+UPDATE AD_Column SET MandatoryLogic='@C_Incoterms_Vendor_ID/-1@>0',Updated=TO_TIMESTAMP('2025-11-03 09:57:16.103000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591467
+;

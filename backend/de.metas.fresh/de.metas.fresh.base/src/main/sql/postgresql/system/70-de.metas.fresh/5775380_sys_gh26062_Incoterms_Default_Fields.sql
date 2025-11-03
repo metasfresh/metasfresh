@@ -55,6 +55,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_Incoterms','ALTER TABLE public.C_Incoterms ADD COLUMN DefaultLocation VARCHAR(255)')
 ;
 
+-- Column: C_Incoterms.DefaultLocation
+-- 2025-11-03T09:50:38.782Z
+UPDATE AD_Column SET MandatoryLogic='@IsDefault@=''Y''',Updated=TO_TIMESTAMP('2025-11-03 09:50:38.782000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591465
+;
+
 -- Field: Incoterm(541268,D) -> Incoterms(544583,D) -> Standard
 -- Column: C_Incoterms.IsDefault
 -- 2025-10-31T15:19:24.395Z

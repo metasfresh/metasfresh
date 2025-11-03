@@ -318,3 +318,12 @@ UPDATE AD_Field SET DisplayLogic='@C_Incoterms_ID/-1@>0',Updated=TO_TIMESTAMP('2
 UPDATE AD_Field SET DisplayLogic='@PO_Incoterms_ID/-1@>0',Updated=TO_TIMESTAMP('2025-10-31 11:52:14.747000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=755918
 ;
 
+-- Column: C_BP_Group.IncotermLocation
+-- 2025-11-03T09:53:28.472Z
+UPDATE AD_Column SET MandatoryLogic='@C_Incoterms_ID/-1@>0',Updated=TO_TIMESTAMP('2025-11-03 09:53:28.472000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591448
+;
+
+-- Column: C_BP_Group.PO_IncotermLocation
+-- 2025-11-03T09:53:53.002Z
+UPDATE AD_Column SET MandatoryLogic='@PO_Incoterms_ID/-1@>0',Updated=TO_TIMESTAMP('2025-11-03 09:53:53.002000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591450
+;
