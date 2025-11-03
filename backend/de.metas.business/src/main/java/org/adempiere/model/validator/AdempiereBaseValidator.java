@@ -136,12 +136,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass()); // 04599
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type()); // 04599
 
-		//
-		// Incoterms
-		{
-			engine.addModelValidator(new de.metas.incoterms.model.interceptor.C_Incoterms());
-		}
-
 		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance); // FRESH-727
 
 		//
