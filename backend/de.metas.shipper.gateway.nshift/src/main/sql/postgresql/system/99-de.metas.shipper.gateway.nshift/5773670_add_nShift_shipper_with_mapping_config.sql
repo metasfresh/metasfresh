@@ -1,7 +1,7 @@
 -- Run mode: WEBUI
 
 -- 2025-10-19T13:10:34.121Z
-INSERT INTO M_Shipper (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,IsDefault,M_Shipper_ID,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2025-10-19 13:10:33.928000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',2191317,'Y','N',540019,'nShift',TO_TIMESTAMP('2025-10-19 13:10:33.928000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',2191317,'1000001')
+INSERT INTO M_Shipper (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,IsDefault,M_Shipper_ID,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2025-10-19 13:10:33.928000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',2191317,'Y','N',540019,'nShift',TO_TIMESTAMP('2025-10-19 13:10:33.928000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',2191317,'nShift')
 ;
 
 -- 2025-10-19T13:10:37.392Z

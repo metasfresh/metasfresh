@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseType;
@@ -43,6 +44,10 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
@@ -58,6 +63,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -134,6 +140,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_IsDropShip;
 import static org.compiere.model.I_C_Order.COLUMNNAME_IsUseHandOver_Location;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_Shipper_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
@@ -153,6 +160,7 @@ public class C_Order_StepDef
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	private final @NonNull C_BPartner_StepDefData bpartnerTable;
 	private final @NonNull C_Order_StepDefData orderTable;
@@ -164,6 +172,7 @@ public class C_Order_StepDef
 	private final @NonNull AD_InputDataSource_StepDefData dataSourceTable;
 	private final @NonNull TestContext restTestContext;
 	private final @NonNull C_PaymentTerm_StepDef paymentTermStepDef;
+	private final @NonNull M_Shipper_StepDefData shipperTable;
 
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
@@ -251,7 +260,7 @@ public class C_Order_StepDef
 		final String deliveryRule = tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DeliveryRule).orElse(null);
 		if (Check.isNotBlank(deliveryRule))
 		{
-			// note that IF the C_BPartner has a deliveryRule set (not-mandatory there), this values will be overwritten by it
+			// note that IF the C_BPartner has a deliveryRule set (not-mandatory there), it will overwrite this value
 			order.setDeliveryRule(deliveryRule);
 		}
 
@@ -362,6 +371,18 @@ public class C_Order_StepDef
 				.map(dataSourceIdentifier -> dataSourceTable.getIdOptional(dataSourceIdentifier)
 						.orElseGet(() -> dataSourceIdentifier.getAsId(InputDataSourceId.class)))
 				.ifPresent(inputDataSourceId -> order.setAD_InputDataSource_ID(inputDataSourceId.getRepoId()));
+
+		tableRow.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> {
+					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+					order.setExternalSystem_ID(externalSystemId.getRepoId());
+				});
+
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_M_Shipper_ID)
+				.map(shipperTable::get)
+				.map(shipperTable::extractIdFromRecord)
+				.map(ShipperId::getRepoId)
+				.ifPresent(order::setM_Shipper_ID);
 
 		saveRecord(order);
 
@@ -717,6 +738,12 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_POReference)
 				.ifPresent(poReference -> softly.assertThat(order.getPOReference()).as("POReference for Identifier=%s", identifierStr).isEqualTo(poReference));
+
+		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> {
+					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+					softly.assertThat(order.getExternalSystem_ID()).as("ExternalSystem_ID for value=%s", externalSystemValue).isEqualTo(externalSystemId.getRepoId());
+				});
 
 		row.getAsOptionalString(I_C_Order.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName)
 				.ifPresent(internalName -> {

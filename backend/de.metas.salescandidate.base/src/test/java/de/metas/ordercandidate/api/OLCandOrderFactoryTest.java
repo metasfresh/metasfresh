@@ -28,6 +28,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -75,6 +77,7 @@ class OLCandOrderFactoryTest
 	private CountryId countryDE;
 	private I_C_UOM uomKg;
 	private ProductId productId;
+	private ExternalSystemId externalSystemId;
 
 	@BeforeEach
 	void beforeEach()
@@ -102,6 +105,7 @@ class OLCandOrderFactoryTest
 		countryDE = createCountry("DE", "@A1@ @CO@");
 		uomKg = createUomKg();
 		productId = createProduct("product");
+		externalSystemId = ExternalSystemId.ofRepoId(createExternalSystem().getExternalSystem_ID());
 	}
 
 	public I_C_UOM createUomKg()
@@ -112,6 +116,15 @@ class OLCandOrderFactoryTest
 		uom.setX12DE355(X12DE355.KILOGRAM.getCode());
 		saveRecord(uom);
 		return uom;
+	}
+
+	public I_ExternalSystem createExternalSystem()
+	{
+		final I_ExternalSystem externalSystem = newInstanceOutOfTrx(I_ExternalSystem.class);
+		externalSystem.setValue("test");
+		externalSystem.setName("test");
+		saveRecord(externalSystem);
+		return externalSystem;
 	}
 
 	public ProductId createProduct(@NonNull final String name)
@@ -195,6 +208,7 @@ class OLCandOrderFactoryTest
 		{
 			final I_C_OLCand olCandRecord = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
 			OLCandDocumentLocationAdapterFactory.bpartnerLocationAdapter(olCandRecord).setFrom(location);
+			olCandRecord.setExternalSystem_ID(externalSystemId.getRepoId());
 			olCandRecord.setM_Product_ID(productId.getRepoId());
 			olCandRecord.setC_UOM_ID(uomKg.getC_UOM_ID());
 			olCandRecord.setApplySalesRepFrom(AssignSalesRepRule.CandidateFirst.getCode());

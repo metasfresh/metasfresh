@@ -96,6 +96,11 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 		}
 
 		values.add(sched.getExternalHeaderId());
+		
+		if (sched.getExternalSystem_ID() > 0)
+		{
+			values.add(sched.getExternalSystem_ID());
+		}
 
 		return values;
 	}

@@ -221,6 +221,7 @@ public class JsonOLCandModelTest
 						.contact(jsonContact)
 						.build())
 				.dateRequired(LocalDate.of(2018, 03, 20))
+				.externalSystemCode("Other")
 				.dataSource("int-dataSourceInternalName")
 				.poReference("poReference")
 				.build();

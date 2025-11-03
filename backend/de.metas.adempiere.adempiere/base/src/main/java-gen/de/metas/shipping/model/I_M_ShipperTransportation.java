@@ -120,6 +120,9 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier.
+	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
+	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -129,6 +132,9 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier.
+	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
+	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -387,7 +393,9 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set ETA.
-	 * Estimated Arrival Date
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
+	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
+	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -397,7 +405,9 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get ETA.
-	 * Estimated Arrival Date
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
+	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
+	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false

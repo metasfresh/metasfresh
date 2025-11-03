@@ -1775,4 +1775,19 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	{
 		return get_ValueAsString(COLUMNNAME_Status);
 	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
+	}
 }

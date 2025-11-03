@@ -2375,6 +2375,27 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_Status = "Status";
 
 	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+	
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

@@ -10,6 +10,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocSubType;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
@@ -508,6 +509,12 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		if (dataSourceId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_AD_InputDataSource_ID, dataSourceId);
+		}
+		
+		final ExternalSystemId externalSystemId = orderQuery.getExternalSystemId(); 
+		if (externalSystemId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalSystem_ID, externalSystemId);
 		}
 
 		return queryBuilder

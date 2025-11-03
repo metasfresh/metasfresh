@@ -26,4 +26,10 @@ public interface ScriptedAdapterConstants
 {
 	String ROUTE_MSG_FROM_MF_CONTEXT = "ScriptedAdapterConvertMsgFromMFContext";
 	String ATTACHMENT_FILE_NAME = "scripted-adapter-log.txt";
+
+	String SCRIPTED_IMPORT_CONVERSION_SYSTEM_NAME = "ScriptedImportConversion";
+	String PROPERTY_SCRIPTED_SCRIPTED_IMPORTED_CONVERSION_CONTEXT = "ScriptedImportedConversionRouteContext";
+	String PREFIX_IMPORT_AUTHORITY = "IMPORT:";
+	String PROPERTY_ENDPOINT_NAME = "endpointName";
+	String FIELD_ERROR_MESSAGE = "errorMessage";
 }
