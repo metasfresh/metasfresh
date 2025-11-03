@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.commons.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierProductId;
@@ -43,10 +44,17 @@ import org.compiere.model.I_M_ShipmentSchedule_Carrier_Service;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	@NonNull private static final AdMessageKey ONLY_ONE_SHIPPER_ALLOWED = AdMessageKey.of("OnlyOneShipperAllowed"); //TODO adMsg
+
 	@NonNull private final CarrierAdviseProcessHelper helper = CarrierAdviseProcessHelper.newInstance();
+
+	private static final String PARAM_IsIncludeCarrierAdviseManual = "isIncludeCarrierAdviseManual";
+	@Param(parameterName = PARAM_IsIncludeCarrierAdviseManual, mandatory = true)
+	private boolean p_IsIncludeCarrierAdviseManual;
 
 	private static final String PARAM_Shipper = I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID;
 	@Param(parameterName = PARAM_Shipper, mandatory = true)
@@ -64,6 +72,14 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 	@Param(parameterName = PARAM_CarrierProductService)
 	private CarrierServiceId p_CarrierProductService;
 
+	private static final String PARAM_CarrierProductService2 = I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_Carrier_Service_ID + "2";
+	@Param(parameterName = PARAM_CarrierProductService2)
+	private CarrierServiceId p_CarrierProductService2;
+
+	private static final String PARAM_CarrierProductService3 = I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_Carrier_Service_ID + "3";
+	@Param(parameterName = PARAM_CarrierProductService3)
+	private CarrierServiceId p_CarrierProductService3;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
@@ -76,7 +92,7 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 				.collect(ImmutableSet.toImmutableSet());
 		if (helper.isSingleShipper(shipmentScheduleIds))
 		{
-			return ProcessPreconditionsResolution.reject("Only one shipper is allowed"); //TODO adMsg
+			return ProcessPreconditionsResolution.reject(ONLY_ONE_SHIPPER_ALLOWED);
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -85,7 +101,19 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 	@Override
 	protected String doIt() throws Exception
 	{
-		return "";
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getSelectedIncludedRecordIds(I_M_ShipmentSchedule.class, ShipmentScheduleId::ofRepoId);
+		final ImmutableSet<CarrierServiceId> carrierServiceIds = Stream.of(p_CarrierProductService, p_CarrierProductService2, p_CarrierProductService3)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		helper.updateEligibleShipmentSchedules(shipmentScheduleIds, CarrierAdviseUpdateRequest.builder()
+						.isIncludeCarrierAdviseManual(p_IsIncludeCarrierAdviseManual)
+						.carrierProductId(p_CarrierProduct)
+						.carrierGoodsTypeId(p_GoodsType)
+						.carrierServiceIds(carrierServiceIds)
+						.build());
+
+		return MSG_OK;
 	}
 
 	@Override
@@ -94,6 +122,10 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 		if (Objects.equals(PARAM_Shipper, parameter.getColumnName()))
 		{
 			return CollectionUtils.singleElement(helper.getShipperIds(getSelectedIncludedRecordIds(I_M_ShipmentSchedule.class, ShipmentScheduleId::ofRepoId)));
+		}
+		else if (Objects.equals(PARAM_IsIncludeCarrierAdviseManual, parameter.getColumnName()))
+		{
+			return false;
 		}
 		else
 		{

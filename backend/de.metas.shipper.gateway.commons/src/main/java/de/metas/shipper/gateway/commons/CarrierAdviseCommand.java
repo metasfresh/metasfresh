@@ -107,21 +107,21 @@ public class CarrierAdviseCommand
 	public void execute()
 	{
 		final ShipmentSchedule shipmentSchedule = retrieveShipmentSchedule();
-		if (!shipmentSchedule.isCarrierAdvisingRequired())
+		if (!shipmentSchedule.getCarrierAdvisingStatus().isRequested())
 		{
-			updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.NotRequested);
-			logger.info("Skip adviseShipment for {} because it is not required", shipmentSchedule.getId());
+			logger.info("Skip adviseShipment for {} because it is not requested", shipmentSchedule.getId());
 			return;
 		}
 		updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.InProgress);
 
 		try
 		{
-			@NonNull final ShipperGatewayId shipperGatewayId = getShipperGatewayId(shipmentSchedule.getShipperId());
+			final ShipperId shipperId = Check.assumeNotNull(shipmentSchedule.getShipperId(), "shipmentSchedule.shipperId should be set at this point");
+			final ShipperGatewayId shipperGatewayId = getShipperGatewayId(shipperId);
 
 			final ShipperGatewayClient client = shipperRegistry
 					.getClientFactory(shipperGatewayId)
-					.newClientForShipperId(shipmentSchedule.getShipperId());
+					.newClientForShipperId(shipperId);
 
 			final JsonDeliveryAdvisorRequest request = createAdvisorRequest(shipmentSchedule, client);
 			logger.debug("AdviseShipment request: {}", request);

@@ -24,7 +24,6 @@ package de.metas.inoutcandidate;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.cache.model.ModelCacheInvalidationService;
-import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;

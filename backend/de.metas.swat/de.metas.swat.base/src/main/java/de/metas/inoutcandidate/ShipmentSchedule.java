@@ -50,86 +50,37 @@ import java.util.Set;
 @Builder
 public class ShipmentSchedule
 {
-	@NonNull
-	private final ShipmentScheduleId id;
-
-	@NonNull
-	private final OrgId orgId;
-
-	@NonNull
-	private final BPartnerId shipBPartnerId;
-
-	@NonNull
-	private final BPartnerLocationId shipLocationId;
-
-	@Nullable
-	private final BPartnerContactId shipContactId;
-
-	@Nullable
-	private final BPartnerId billBPartnerId;
-
-	@Nullable
-	private final BPartnerLocationId billLocationId;
-
-	@Nullable
-	private final BPartnerContactId billContactId;
-
-	@Nullable
-	private final OrderAndLineId orderAndLineId;
-
-	@Nullable
-	private final LocalDateTime dateOrdered;
-
-	private final LocalDate deliveryDateEffective;
-
+	@NonNull private final ShipmentScheduleId id;
+	@NonNull private final OrgId orgId;
+	@NonNull private final BPartnerId shipBPartnerId;
+	@NonNull private final BPartnerLocationId shipLocationId;
+	@Nullable private final BPartnerContactId shipContactId;
+	@Nullable private final BPartnerId billBPartnerId;
+	@Nullable private final BPartnerLocationId billLocationId;
+	@Nullable private final BPartnerContactId billContactId;
+	@Nullable private final OrderAndLineId orderAndLineId;
+	@Nullable private final LocalDateTime dateOrdered;
+	@Nullable private final LocalDate deliveryDateEffective;
 	private int numberOfItemsForSameShipment;
-
-	@NonNull
-	private final ProductId productId;
-
-	@NonNull
-	private final Quantity quantityToDeliver;
-
-	@NonNull
-	private final Quantity orderedQuantity;
-
-	@NonNull
-	private final Quantity deliveredQuantity;
-
-	@Nullable
-	private final AttributeSetInstanceId attributeSetInstanceId;
-
-	@NonNull
-	private APIExportStatus exportStatus;
-
-	@Nullable
-	private final ShipperId shipperId;
-
+	@NonNull private final ProductId productId;
+	@NonNull private final Quantity quantityToDeliver;
+	@NonNull private final Quantity orderedQuantity;
+	@NonNull private final Quantity deliveredQuantity;
+	@Nullable private final AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull private APIExportStatus exportStatus;
+	@Nullable private final ShipperId shipperId;
 	private boolean isProcessed;
-
+	private boolean isClosed;
+	private boolean isActive;
 	@NonNull private CarrierAdviseStatus carrierAdvisingStatus;
-
 	@Nullable private String carrierAdviseErrorMessage;
-
 	@Nullable private CarrierProductId carrierProductId;
-
 	@Nullable private CarrierGoodsTypeId carrierGoodsTypeId;
-
 	@NonNull @Singular private Set<CarrierServiceId> carrierServices;
 
-	public boolean isCarrierAdvisingRequired()
+	public boolean hasAttributes(@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds, @NonNull final IAttributeSetInstanceBL asiBL)
 	{
-		return carrierAdvisingStatus != CarrierAdviseStatus.Manual;
-	}
-
-	public boolean hasAttributes(
-			@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds,
-			@NonNull final IAttributeSetInstanceBL asiBL)
-	{
-		final ImmutableSet<AttributeSetInstanceId> nonNullTargetAsiIds = targetAsiIds
-				.stream()
-				.filter(asiId -> !AttributeSetInstanceId.NONE.equals(asiId))
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<AttributeSetInstanceId> nonNullTargetAsiIds = targetAsiIds.stream().filter(asiId -> !AttributeSetInstanceId.NONE.equals(asiId)).collect(ImmutableSet.toImmutableSet());
 
 		if (nonNullTargetAsiIds.isEmpty())
 		{
@@ -143,8 +94,6 @@ public class ShipmentSchedule
 
 		final ImmutableAttributeSet shipmentScheduleAsi = asiBL.getImmutableAttributeSetById(getAttributeSetInstanceId());
 
-		return nonNullTargetAsiIds.stream()
-				.map(asiBL::getImmutableAttributeSetById)
-				.anyMatch(shipmentScheduleAsi::containsAttributeValues);
+		return nonNullTargetAsiIds.stream().map(asiBL::getImmutableAttributeSetById).anyMatch(shipmentScheduleAsi::containsAttributeValues);
 	}
 }

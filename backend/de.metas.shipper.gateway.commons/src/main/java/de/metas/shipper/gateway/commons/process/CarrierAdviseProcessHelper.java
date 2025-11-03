@@ -26,8 +26,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.ShipmentScheduleService;
-import de.metas.shipper.gateway.commons.async.AdviseDeliveryOrderWorkpackageProcessor;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -52,13 +52,10 @@ final class CarrierAdviseProcessHelper
 	@NonNull private final ShipmentScheduleService shipmentScheduleService;
 	@NonNull private final ITrxManager trxManager;
 
-
-
 	@Builder
 	private CarrierAdviseProcessHelper(
 			@NonNull final ShipmentScheduleService shipmentScheduleService,
-			@NonNull final ITrxManager trxManager
-			)
+			@NonNull final ITrxManager trxManager)
 	{
 		this.shipmentScheduleService = shipmentScheduleService;
 		this.trxManager = trxManager;
@@ -71,36 +68,59 @@ final class CarrierAdviseProcessHelper
 
 	public ImmutableSet<ShipperId> getShipperIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		return CollectionUtils.extractDistinctElements(shipmentScheduleService.getByIds(shipmentScheduleIds).values(), ShipmentSchedule::getShipperId)
+		return CollectionUtils.extractDistinctElements(shipmentScheduleService.getByIds(shipmentScheduleIds), ShipmentSchedule::getShipperId)
 				.stream()
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void requestCarrierAdvises(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
+	public void requestCarrierAdvises(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds, final boolean isIncludeCarrierAdviseManual)
 	{
-		shipmentScheduleService.getByIds(shipmentScheduleIds).values()
-				.forEach(this::requestCarrierAdvice);
+		shipmentScheduleService.getByIds(shipmentScheduleIds)
+				.forEach(schedule -> requestCarrierAdvise(schedule, isIncludeCarrierAdviseManual));
 	}
 
-	private void requestCarrierAdvice(final ShipmentSchedule shipmentSchedule)
+	public void requestCarrierAdvises(@NonNull final ShipmentScheduleQuery query)
+	{
+		shipmentScheduleService.getBy(query)
+				.forEach(schedule -> requestCarrierAdvise(schedule, false));
+	}
+
+	private void requestCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
-		trxManager.runInThreadInheritedTrx(() -> advise(shipmentSchedule));
+		trxManager.runInThreadInheritedTrx(() -> advise(shipmentSchedule, isIncludeCarrierAdviseManual));
 	}
 
-	private void advise(final ShipmentSchedule shipmentSchedule)
+	private void advise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
 	{
-		if (!shipmentScheduleService.isEligibleForCarrierAdvise(shipmentSchedule))
+		if (!shipmentScheduleService.isEligibleForCarrierAdvise(shipmentSchedule, isIncludeCarrierAdviseManual))
 		{
 			return;
 		}
 
-		final ShipmentScheduleId shipmentScheduleId = shipmentSchedule.getId();
-		AdviseDeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(shipmentScheduleId, null);
-
 		shipmentSchedule.setCarrierAdvisingStatus(CarrierAdviseStatus.Requested);
 		shipmentSchedule.setCarrierProductId(null);
 		shipmentScheduleService.save(shipmentSchedule);
+	}
+
+	public void updateEligibleShipmentSchedules(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds, @NonNull final CarrierAdviseUpdateRequest request)
+	{
+		shipmentScheduleService.getByIds(shipmentScheduleIds)
+				.forEach(schedule -> updateEligibleShipmentSchedule(schedule, request));
+	}
+
+	private void updateEligibleShipmentSchedule(@NonNull final ShipmentSchedule shipmentSchedule, @NonNull final CarrierAdviseUpdateRequest request)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+		trxManager.runInThreadInheritedTrx(() -> update(shipmentSchedule, request));
+	}
+
+	private void update(@NonNull final ShipmentSchedule shipmentSchedule, @NonNull final CarrierAdviseUpdateRequest request)
+	{
+		shipmentSchedule.setCarrierAdvisingStatus(CarrierAdviseStatus.Manual);
+		shipmentSchedule.setCarrierProductId(request.getCarrierProductId());
+		shipmentSchedule.setCarrierGoodsTypeId(request.getCarrierGoodsTypeId());
+		shipmentSchedule.setCarrierServices(request.getCarrierServiceIds());
 	}
 }

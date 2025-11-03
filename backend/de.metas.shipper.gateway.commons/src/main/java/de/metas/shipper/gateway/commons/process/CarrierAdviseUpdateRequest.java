@@ -22,24 +22,21 @@
 
 package de.metas.shipper.gateway.commons.process;
 
-import de.metas.inoutcandidate.ShipmentScheduleQuery;
-import de.metas.process.JavaProcess;
+import com.google.common.collect.ImmutableSet;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.inoutcandidate.CarrierServiceId;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
-public class M_ShipmentSchedule_Advise_Schedule extends JavaProcess
+@Builder
+@Value
+public class CarrierAdviseUpdateRequest
 {
-	@NonNull private final CarrierAdviseProcessHelper helper = CarrierAdviseProcessHelper.newInstance();
-
-	@Override
-	protected String doIt() throws Exception
-	{
-		helper.requestCarrierAdvises(ShipmentScheduleQuery.builder()
-						.fromCompleteOrderOrNullOrder(true)
-						.onlyPreparationDateToday(true)
-						.includeWithQtyToDeliverZero(false)
-						.includeProcessed(false)
-						.orderByOrderId(true)
-						.build());
-		return MSG_OK;
-	}
+	boolean isIncludeCarrierAdviseManual;
+	@NonNull CarrierProductId carrierProductId;
+	@NonNull CarrierGoodsTypeId carrierGoodsTypeId;
+	@NonNull @Singular ImmutableSet<CarrierServiceId> carrierServiceIds;
 }

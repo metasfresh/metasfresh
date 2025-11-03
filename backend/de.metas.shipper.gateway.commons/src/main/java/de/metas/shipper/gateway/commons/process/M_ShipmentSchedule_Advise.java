@@ -29,12 +29,18 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import lombok.NonNull;
 
 public class M_ShipmentSchedule_Advise extends JavaProcess implements IProcessPrecondition
 {
 	@NonNull private final CarrierAdviseProcessHelper helper = CarrierAdviseProcessHelper.newInstance();
+
+	private static final String PARAM_IsIncludeCarrierAdviseManual = "isIncludeCarrierAdviseManual";
+	@Param(parameterName = PARAM_IsIncludeCarrierAdviseManual, mandatory = true)
+	private boolean p_IsIncludeCarrierAdviseManual;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -47,10 +53,11 @@ public class M_ShipmentSchedule_Advise extends JavaProcess implements IProcessPr
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getSelectedIncludedRecordIds(I_M_ShipmentSchedule.class, ShipmentScheduleId::ofRepoId);
-		helper.requestCarrierAdvises(shipmentScheduleIds);
+		helper.requestCarrierAdvises(shipmentScheduleIds, p_IsIncludeCarrierAdviseManual);
 		return MSG_OK;
 	}
 }
