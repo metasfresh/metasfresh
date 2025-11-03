@@ -23,9 +23,11 @@
 package de.metas.inoutcandidate;
 
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,10 +36,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ShipmentScheduleService
 {
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
-
 
 	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
 	{
@@ -54,17 +57,17 @@ public class ShipmentScheduleService
 
 	public boolean isEligibleForCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (shipmentSchedule.getM_Shipper_ID() <= 0
-				|| shipmentSchedule.isProcessed()
+		final CarrierAdviseStatus carrierAdviseStatus = CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status());
+		if (shipmentSchedule.isProcessed()
 				|| shipmentSchedule.isClosed()
 				|| !shipmentSchedule.isActive()
-				|| shipmentSchedule.getQtyToDeliver().signum() <= 0)
+				|| shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule).signum() <= 0
+				|| (carrierAdviseStatus != null && !carrierAdviseStatus.isEligibleForEnqueue()))
 		{
 			return false;
 		}
 
-		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
-				.onlyShipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
-				.build());
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID());
+		return shipmentScheduleId == null || !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
 	}
 }

@@ -89,6 +89,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	@Override
 	public void prepareSelection(@NonNull final PInstanceId pInstanceId)
 	{
+		// make sure that we don't have a ton of ICs being updated by the app-Server while we do our own updates over here
+		// otherwise, we can easly run into DB-deadloacks
+		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
+
 		// Here we just need the "set" of ICs (in no particular order) and prepare them one by one.
 		// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
 		final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pInstanceId);
@@ -96,10 +100,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Create invoice candidates changes checker.
 		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
 		icChangesChecker.setBeforeChanges(unorderedICs);
-
-		// make sure that we don't have a ton of ICs being updated by the app-Server while we do our own updates over here
-		// otherwise, we can easly run into DB-deadloacks
-		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
 
 		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
 		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
