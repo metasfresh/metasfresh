@@ -22,21 +22,24 @@
 
 package org.adempiere.archive.api;
 
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-public enum ArchivePrintOutStatus
+@RequiredArgsConstructor
+public enum ArchivePrintOutStatus implements ReferenceListAwareEnum
 {
-	Success("Success"),
-	Failure("Failure");
+	Success("Print_Success"), // X_C_Doc_Outbound_Log_Line.STATUS_Print_Success
+	Failure("Print_Failure");// X_C_Doc_Outbound_Log_Line.STATUS_Print_Failure
 
 	@Getter
 	private final String code;
 
-	ArchivePrintOutStatus(@NonNull final String code)
-	{
-		this.code = code;
-	}
+	public boolean isSuccess() {return Success.equals(this);}
 
-	public boolean isSuccess() { return Success.equals(this); }
+	private static final ReferenceListAwareEnums.ValuesIndex<ArchivePrintOutStatus> index = ReferenceListAwareEnums.index(values());
+
+	public static ArchivePrintOutStatus ofCode(@NonNull final String code) {return index.ofCode(code);}
 }

@@ -86,6 +86,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.tax.api.Tax;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -109,6 +110,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -1437,5 +1439,28 @@ public class OrderBL implements IOrderBL
 	{
 		final BigDecimal grandTotal = order.getGrandTotal();
 		return Money.of(grandTotal, CurrencyId.ofRepoId(order.getC_Currency_ID()));
+	}
+
+	@Override
+	public void save(final I_C_Order order)
+	{
+		orderDAO.save(order);
+	}
+
+	@Override
+	public void syncDatesFromTransportOrder(@NonNull final OrderId orderId, @NonNull final I_M_ShipperTransportation transportOrder)
+	{
+		final I_C_Order order = getById(orderId);
+		order.setBLDate(transportOrder.getBLDate());
+		order.setETA(transportOrder.getETA());
+		save(order);
+	}
+
+	@Override
+	public void syncDateInvoicedFromInvoice(@NonNull final OrderId orderId, @NonNull final I_C_Invoice invoice)
+	{
+		final I_C_Order order = getById(orderId);
+		order.setInvoiceDate(invoice.getDateInvoiced());
+		save(order);
 	}
 }

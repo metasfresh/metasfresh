@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.shipping.api.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -7,7 +29,6 @@ import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.api.ShipperTransportationReference;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -23,7 +44,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -39,6 +59,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@NonNull
 	@Override
 	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId shipperItransportationId)
 	{
@@ -143,37 +164,6 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.orgId(request.getOrgId())
 				.build())
 				.orElseGet(() -> create(request));
-	}
-
-	@NonNull
-	@Override
-	public Optional<ShipperTransportationReference> getEarliestShipperTransportationByOrderId(final OrderId orderId)
-	{
-		final I_M_ShipperTransportation record = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
-				.orderBy(I_M_ShipperTransportation.COLUMNNAME_DateDoc)
-				.create()
-				.first();
-
-		if (record == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(toShipperTransportationReference(record));
-
-	}
-
-	private static ShipperTransportationReference toShipperTransportationReference(@NotNull final I_M_ShipperTransportation record)
-	{
-		final ShipperTransportationId id = ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
-		return ShipperTransportationReference.builder()
-				.id(id)
-				.billOfLadingDate(TimeUtil.asInstant(record.getBLDate()))
-				.ETADate(TimeUtil.asInstant(record.getETA()))
-				.build();
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de-metas-camel-scriptedadapter
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,21 +20,21 @@
  * #L%
  */
 
-package de.metas.shipping.api;
+package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model;
 
-import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-
-@Value
 @Builder
-public class ShipperTransportationReference
+@Jacksonized
+@Value
+public class ScriptedImportedConversionToMfRequest
 {
-	@NonNull ShipperTransportationId id;
-	@Nullable Instant billOfLadingDate;
-	@Nullable Instant ETADate;
+	@NonNull
+	String camelServiceRouteID;
+
+	@NonNull
+	String requestBody;
 }
