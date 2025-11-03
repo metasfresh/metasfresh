@@ -22,7 +22,12 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpoint;
+import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointRepository;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
@@ -52,11 +57,9 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_DATA;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 
@@ -68,9 +71,12 @@ public class ExternalSystemScriptedExportConversionService
 
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
+	private final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	@NonNull
 	private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
+	@NonNull
+	private final ExternalSystemOutboundEndpointRepository externalSystemOutboundEndpointRepository;
 
 	@NonNull
 	public Stream<ExternalSystemScriptedExportConversionConfig> retrieveActiveConfigs()
@@ -104,13 +110,22 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final Properties context,
 			@NonNull final String outboundDataProcessRecordId)
 	{
+		final ExternalSystemOutboundEndpoint endpoint = externalSystemOutboundEndpointRepository.getById(config.getExternalSystemOutboundEndpointId());
+		final String outboundEndpointData;
+		try
+		{
+			outboundEndpointData = objectMapper.writeValueAsString(endpoint);
+		}
+		catch (final JsonProcessingException exception)
+		{
+			throw new RuntimeException("Failed converting endpoint's properties to string: " + endpoint, exception);
+		}
+
 		final Map<String, String> parameters = new HashMap<>();
 
 		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, getOutboundProcessResponse(config, context, outboundDataProcessRecordId));
 		parameters.put(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, config.getScriptIdentifier());
-		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP, config.getOutboundHttpEndpoint());
-		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN, config.getOutboundHttpToken());
-		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD, config.getOutboundHttpMethod());
+		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_DATA, outboundEndpointData);
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, tableDAO.retrieveTableName(config.getAdTableId()));
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, outboundDataProcessRecordId);
 
