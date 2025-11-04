@@ -45,19 +45,6 @@ public class BPartnerQueryService
 		return createBPartnerQuery(queryLookupKeys.getCompositeLookupKeys(), queryLookupKeys.getOrgId());
 	}
 
-	public BPartnerQuery createQuery(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys, @NonNull final OrgId onlyOrgId)
-	{
-		return createBPartnerQuery(queryLookupKeys, onlyOrgId);
-	}
-
-	/**
-	 * Creates a query that advises the repo to fail if no matching bpartner is found.
-	 */
-	public BPartnerQuery createQueryFailIfNotExists(@NonNull final BPartnerCompositeLookupKey queryLookupKey)
-	{
-		return createQueryFailIfNotExists(queryLookupKey, null/* orgId */);
-	}
-
 	public BPartnerQuery createQueryFailIfNotExists(
 			@NonNull final BPartnerCompositeLookupKey queryLookupKey,
 			@Nullable final OrgId orgId)

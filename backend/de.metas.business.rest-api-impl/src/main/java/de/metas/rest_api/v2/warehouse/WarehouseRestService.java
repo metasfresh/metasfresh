@@ -40,6 +40,7 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouse;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouseUpsert;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouseUpsertItem;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceValueAndSystem;
@@ -107,7 +108,7 @@ public class WarehouseRestService
 		final SyncAdvise syncAdvise = request.getSyncAdvise();
 
 		final ImmutableList<JsonResponseUpsertItem> responseList =
-				request.getRequestItems()
+				Check.assumeNotNull(request.getRequestItems(), "JsonRequestWarehouseUpsert={} has to have reQuestItems", request)
 						.stream()
 						.map(reqItem -> upsertWarehouseItem(reqItem, syncAdvise, orgCode))
 						.collect(ImmutableList.toImmutableList());
