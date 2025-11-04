@@ -149,6 +149,7 @@ class ShipmentScheduleRepositoryTest
 
 		// when
 		final ShipmentScheduleQuery query = ShipmentScheduleQuery.builder()
+				.includeInvalid(false)
 				.exportStatus(APIExportStatus.Pending)
 				.canBeExportedFrom(canBeExportedFrom.toInstant())
 				.build();
