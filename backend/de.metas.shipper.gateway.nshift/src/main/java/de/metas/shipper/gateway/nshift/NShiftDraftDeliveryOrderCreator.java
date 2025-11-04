@@ -71,6 +71,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository;
 
@@ -208,9 +209,9 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	}
 
 	@NonNull
-	public static PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
+	public PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
 	{
-		final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
+		//TODO Add dimensions to M_Package and retrieve from there
 		return huPackageBL.retrievePackageDimensions(packageId, toUomId);
 	}
 }

@@ -27,6 +27,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
@@ -45,7 +46,7 @@ public interface IHUPackageDAO extends ISingletonService
 
 	List<I_M_HU> retrieveHUs(org.compiere.model.I_M_Package mpackage);
 
-	List<I_M_Package> retrievePackages(Collection<PackageId> packageIds);
+	List<I_M_HU> retrieveHUs(@NonNull PackageId packageId);
 
 	/**
 	 * @param hu

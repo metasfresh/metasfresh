@@ -83,34 +83,22 @@ public class HUPackageDAO implements IHUPackageDAO
 				.listIds(PackageId::ofRepoId);
 	}
 
+	@Override
+	public List<I_M_HU> retrieveHUs(@NonNull final org.compiere.model.I_M_Package mpackage)
+	{
+		return retrieveHUs(PackageId.ofRepoId(mpackage.getM_Package_ID()));
+	}
 
 	@Override
-	public List<I_M_HU> retrieveHUs(final org.compiere.model.I_M_Package mpackage)
+	public List<I_M_HU> retrieveHUs(@NonNull final PackageId packageId)
 	{
-		Check.assumeNotNull(mpackage, "mpackage not null");
-
-		return queryBL.createQueryBuilder(I_M_Package_HU.class, mpackage)
-				.addEqualsFilter(I_M_Package_HU.COLUMN_M_Package_ID, mpackage.getM_Package_ID())
+		return queryBL.createQueryBuilder(I_M_Package_HU.class)
+				.addEqualsFilter(I_M_Package_HU.COLUMN_M_Package_ID, packageId)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_M_Package_HU.COLUMN_M_HU_ID)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_M_HU.class);
-	}
-
-	@Override
-	public List<I_M_Package> retrievePackages(final Collection<PackageId> packageIds)
-	{
-		if (packageIds == null || packageIds.isEmpty())
-		{
-			return Collections.emptyList();
-		}
-
-		return queryBL
-				.createQueryBuilder(I_M_Package.class)
-				.addInArrayOrAllFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_Package_ID, packageIds)
-				.create()
-				.list(I_M_Package.class);
 	}
 
 	@Override

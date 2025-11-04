@@ -38,9 +38,6 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -51,7 +48,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
@@ -373,8 +369,4 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	void createTUPackingInstructions(CreateTUPackingInstructionsRequest request);
 
 	Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(@Nullable final BPartnerId bpartnerId, @NonNull final HuPackingInstructionsId luPIId, @NonNull final HUPIItemProductId piItemProductId);
-
-	Set<I_M_Product> getProductsInPackage(@NonNull PackageId packageId);
-
-	Quantity getTotalQtyOfProductInPackage(@NonNull PackageId packageId, @NonNull ProductId productId);
 }

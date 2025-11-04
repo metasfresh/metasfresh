@@ -58,7 +58,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
@@ -68,11 +67,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.shipping.mpackage.PackageId;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -92,7 +86,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -1371,31 +1364,5 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.orderBy(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID)
 				.create()
 				.firstOptional(I_M_HU_PI_Item.class);
-	}
-
-	@Override
-	public Set<I_M_Product> getProductsInPackage(@NonNull final PackageId packageId)
-	{
-		return ImmutableSet.copyOf(queryBL.createQueryBuilder(I_M_Package_HU.class)
-				.addEqualsFilter(I_M_Package_HU.COLUMN_M_Package_ID, packageId)
-				.andCollect(I_M_Package_HU.COLUMN_M_HU_ID, I_M_HU.class)
-				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
-				.andCollectChildren(I_M_HU_Item_Storage.COLUMN_M_HU_Item_ID)
-				.andCollect(I_M_HU_Item_Storage.COLUMNNAME_M_Product_ID, I_M_Product.class)
-				.create()
-				.list());
-	}
-
-	@Override
-	public Quantity getTotalQtyOfProductInPackage(@NonNull final PackageId packageId, @NonNull final ProductId productId)
-	{
-		return queryBL.createQueryBuilder(I_M_Package_HU.class, packageId)
-				.andCollect(I_M_Package_HU.COLUMN_M_HU_ID, I_M_HU.class)
-				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
-				.andCollectChildren(I_M_HU_Item_Storage.COLUMN_M_HU_Item_ID)
-				.create()
-				.stream()
-				.map(hus -> Quantitys.of(hus.getQty(), UomId.ofRepoId(hus.getC_UOM_ID())))
-				.reduce(Quantitys.zero(productId), Quantity::add);
 	}
 }

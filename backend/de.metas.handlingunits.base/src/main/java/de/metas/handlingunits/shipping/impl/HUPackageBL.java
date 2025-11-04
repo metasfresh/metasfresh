@@ -1,9 +1,10 @@
 package de.metas.handlingunits.shipping.impl;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -14,9 +15,11 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
@@ -78,7 +81,8 @@ public class HUPackageBL implements IHUPackageBL
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
@@ -291,17 +295,21 @@ public class HUPackageBL implements IHUPackageBL
 		{
 			return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
 		}
-		final Set<I_M_Product> productsInPackage = handlingUnitsDAO.getProductsInPackage(packageId);
 
-		if (productsInPackage.size() == 1)
+		final List<I_M_HU> hus = huPackageDAO.retrieveHUs(packageId);
+		final ImmutableMap<ProductId, Quantity> productToStockingQtyMap = handlingUnitsBL.getStorageFactory().streamHUProductStorages(hus)
+				.collect(ImmutableMap.toImmutableMap(IHUProductStorage::getProductId, IHUProductStorage::getQtyInStockingUOM, Quantity::add));
+
+		if (productToStockingQtyMap.size() == 1)
 		{
-			final I_M_Product product = productsInPackage.iterator().next();
+			final ProductId productId = productToStockingQtyMap.keySet().iterator().next();
+			final I_M_Product product = productDAO.getById(productId);
 			if (!product.isSelfPacked())
 			{
 				throw new AdempiereException("Cannot calculate package dimensions for package " + packageId + " because it contains a product which is not self-packed.");
 			}
-			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-			final Quantity totalQuantity = handlingUnitsDAO.getTotalQtyOfProductInPackage(packageId, productId);
+
+			final Quantity totalQuantity = productToStockingQtyMap.get(productId);
 			Check.assumeEquals(totalQuantity.getUomId(), UomId.ofRepoId(product.getC_UOM_ID()), "totalQtyInProductUOM's UOM shall be the same as product's UOM");
 			return createPackageDimensions(product, totalQuantity);
 		}
