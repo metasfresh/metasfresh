@@ -24,6 +24,7 @@ package de.metas.bpartner;
 
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.regex.Matcher;
@@ -49,17 +50,25 @@ import java.util.regex.Pattern;
 @Value
 public class GlnWithLabel
 {
+	private static final Pattern PATTERN = Pattern.compile("([^_]+)_(.+)");
+
 	public static GlnWithLabel ofString(@NonNull final String value)
 	{
-		final Pattern pattern = Pattern.compile("([^_]+)_(.+)");
-		final Matcher matcher = pattern.matcher(value);
-		if (matcher.matches())
+		try
 		{
-			final GLN gln1 = GLN.ofString(matcher.group(1));
-			return new GlnWithLabel(gln1, matcher.group(2));
+			final Matcher matcher = PATTERN.matcher(value);
+			if (matcher.matches())
+			{
+				final GLN gln1 = GLN.ofString(matcher.group(1));
+				return new GlnWithLabel(gln1, matcher.group(2));
+			}
+			final GLN gln = GLN.ofString(value);
+			return new GlnWithLabel(gln, null);
 		}
-		final GLN gln = GLN.ofString(value);
-		return new GlnWithLabel(gln, null);
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Invalid format of GlnWithLabel string " + value, e);
+		}
 	}
 
 	public static GlnWithLabel ofGLN(@NonNull final GLN gln, @Nullable final String label)

@@ -21,6 +21,7 @@ Feature: create or update BPartner v2
             "bpartner":{
                "code":"test_code1",
                "name":"test_name",
+               "glnLookupLabel":"DIVISION_A",
                "companyName":"test_company",
                "parentId":null,
                "phone":null,

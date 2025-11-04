@@ -25,7 +25,6 @@ import org.adempiere.ad.dao.impl.StringStartsWithFilter;
 import org.adempiere.ad.dao.impl.ValidFromToMatchesQueryFilter;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.time.Instant;

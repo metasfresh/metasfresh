@@ -69,10 +69,10 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
@@ -198,7 +198,7 @@ class BpartnerRestControllerTest
 		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
 
 		// invoke the method under test
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(bPartnerExternalIdentifier, null);
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(null, bPartnerExternalIdentifier);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();

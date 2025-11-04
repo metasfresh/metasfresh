@@ -18,11 +18,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
@@ -160,18 +158,18 @@ final class GLNLoadingCache
 				.stream()
 				.collect(GuavaCollectors.toImmutableListMultimap(bpl -> BPartnerId.ofRepoId(bpl.getC_BPartner_ID())));
 
-		final ImmutableMap<Integer, I_C_BPartner> bpartnerId2BPartner =
+		final ImmutableMap<BPartnerId, I_C_BPartner> bpartnerId2BPartner =
 				queryBL
 						.createQueryBuilder(I_C_BPartner.class)
 						.addInArrayFilter(I_C_BPartner.COLUMN_C_BPartner_ID, bpartnerId2Locations.keySet())
 						.create().list()
 						.stream()
-						.collect(GuavaCollectors.toImmutableMapByKey(I_C_BPartner::getC_BPartner_ID));
+						.collect(GuavaCollectors.toImmutableMapByKey(bp -> BPartnerId.ofRepoId(bp.getC_BPartner_ID())));
 
 		final ImmutableListMultimap.Builder<GLN, GLNLocation> locationsByGLN = ImmutableListMultimap.builder();
 		for (final I_C_BPartner_Location bPartnerLocation : bpartnerId2Locations.values())
 		{
-			final I_C_BPartner bPartner = bpartnerId2BPartner.get(bPartnerLocation.getC_BPartner_ID());
+			final I_C_BPartner bPartner = bpartnerId2BPartner.get(BPartnerId.ofRepoId(bPartnerLocation.getC_BPartner_ID()));
 			final GLNLocation glnLocation = toGLNLocation(
 					bPartnerLocation,
 					bPartner.getLookup_Label());
@@ -247,13 +245,13 @@ final class GLNLoadingCache
 
 		private boolean isMatchingLookupLabel(@Nullable final String glnLookupLabel)
 		{
-			if(Check.isBlank(glnLookupLabel))
+			if (Check.isBlank(glnLookupLabel))
 			{
 				return true;
 			}
 			return glnLookupLabel.equals(glnWithLabel.getLabel());
 		}
-		
+
 		private boolean isMatchingOrgId(@Nullable final Set<OrgId> onlyOrgIds)
 		{
 			if (onlyOrgIds == null || onlyOrgIds.isEmpty())
