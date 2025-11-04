@@ -22,22 +22,12 @@
 
 package de.metas.shipper.gateway.nshift.client;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
-import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
-import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
-import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
-import de.metas.shipper.client.nshift.NShiftConstants;
 import de.metas.shipper.client.nshift.NShiftShipAdvisorService;
-import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -45,54 +35,8 @@ public class ShipAdvisorService
 {
 	private final NShiftShipAdvisorService shipAdvisorService;
 
-	@VisibleForTesting
-	JsonDeliveryRequest advise(@NonNull final JsonDeliveryRequest deliveryRequest)
-	{
-		// For now, I ignore a set Shipper Product
-
-		final ImmutableList<JsonDeliveryOrderParcel> deliveryOrderParcels = deliveryRequest.getDeliveryOrderParcels();
-		Check.assumeNotEmpty(deliveryOrderParcels, "deliveryOrderParcels is not empty");
-		final JsonDeliveryAdvisorResponse response = advise(JsonDeliveryAdvisorRequest.builder()
-						.pickupAddress(deliveryRequest.getPickupAddress())
-						.pickupDate(deliveryRequest.getPickupDate())
-						.pickupNote(deliveryRequest.getPickupNote())
-						.deliveryAddress(deliveryRequest.getDeliveryAddress())
-						.deliveryContact(deliveryRequest.getDeliveryContact())
-						.deliveryDate(deliveryRequest.getDeliveryDate())
-						.deliveryNote(deliveryRequest.getDeliveryNote())
-						.shipperConfig(deliveryRequest.getShipperConfig().toBuilder()
-								.additionalProperty(NShiftConstants.SERVICE_LEVEL, "Test") //FIXME hardcoded NShift.ShippingRule.ServiceLevel should be come from config repo, so the config isn't mutated
-								.build())
-						.item(JsonDeliveryAdvisorRequestItem.builder() // When moved to shipment schedule we only have "1 line", so I only use one here as well
-								.grossWeightKg(computeTotalGrossWeightKg(deliveryOrderParcels))
-								.packageDimensions(deliveryOrderParcels.get(0).getPackageDimensions())
-								.numberOfItems(deliveryOrderParcels.size())
-										.build())
-								.build()
-		);
-
-		if(response.isError())
-		{
-			//noinspection DataFlowIssue
-			throw new AdempiereException(response.getErrorMessage());
-		}
-
-		return deliveryRequest.toBuilder()
-				.shipperProduct(response.getShipperProduct())
-				.services(response.getShipperProductServices())
-				.goodsType(response.getGoodsType())
-				.build();
-	}
-
 	public JsonDeliveryAdvisorResponse advise(@NonNull final JsonDeliveryAdvisorRequest deliveryRequest)
 	{
 		return shipAdvisorService.advise(deliveryRequest);
-	}
-	
-	private static BigDecimal computeTotalGrossWeightKg(@NonNull final ImmutableList<JsonDeliveryOrderParcel> parcels)
-	{
-		return parcels.stream()
-				.map(JsonDeliveryOrderParcel::getGrossWeightKg)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }

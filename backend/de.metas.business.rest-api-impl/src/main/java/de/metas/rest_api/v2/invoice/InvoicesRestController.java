@@ -26,6 +26,7 @@ import de.metas.Profiles;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
@@ -88,6 +89,7 @@ public class InvoicesRestController
 	private final @NonNull BpartnerRestController bpartnerRestController;
 	private final @NonNull ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final @NonNull JsonServiceFactory jsonServiceFactory;
+	private final @NonNull ExternalSystemRepository externalSystemRepository;
 
 	@ApiOperation("Create new invoice candidates")
 	@ApiResponses(value = {
@@ -105,6 +107,7 @@ public class InvoicesRestController
 				.bpartnerRestController(bpartnerRestController)
 				.externalReferenceRestControllerService(externalReferenceRestControllerService)
 				.jsonRetrieverService(jsonServiceFactory.createRetriever())
+				.externalSystemRepository(externalSystemRepository)
 				.build();
 		// TODO make individual IC accessible via URL, then return "created" instead
 		final JsonCreateInvoiceCandidatesResponse response = createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider);

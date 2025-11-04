@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.error.AdIssueId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.order.DeliveryRule;
@@ -402,6 +403,12 @@ public final class OLCand implements IProductPriceAware
 	public int getAD_DataDestination_ID()
 	{
 		return olCandRecord.getAD_DataDestination_ID();
+	}
+
+	@NonNull
+	public ExternalSystemId getExternalSystemId()
+	{
+		return ExternalSystemId.ofRepoId(olCandRecord.getExternalSystem_ID());
 	}
 
 	// FIXME hardcoded (08691)

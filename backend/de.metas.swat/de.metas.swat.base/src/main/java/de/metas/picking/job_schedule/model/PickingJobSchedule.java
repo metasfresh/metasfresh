@@ -19,6 +19,7 @@ public class PickingJobSchedule
 	@NonNull Quantity qtyToPick;
 	boolean processed;
 
+	@NonNull
 	public ShipmentScheduleAndJobScheduleId getShipmentScheduleAndJobScheduleId()
 	{
 		return ShipmentScheduleAndJobScheduleId.of(shipmentScheduleId, id);

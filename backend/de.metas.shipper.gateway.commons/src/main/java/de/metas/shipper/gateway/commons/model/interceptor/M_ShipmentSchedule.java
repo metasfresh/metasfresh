@@ -24,38 +24,62 @@ package de.metas.shipper.gateway.commons.model.interceptor;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipper.gateway.commons.async.AdviseDeliveryOrderWorkpackageProcessor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 @Interceptor(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
+	@NonNull private final ShipmentScheduleService shipmentScheduleService;
 
 	@ModelChange(timings = {
-			ModelValidator.TYPE_AFTER_NEW,
-			ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate,
-			I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override })
-	public void requestCarrierAdvice(final I_M_ShipmentSchedule shipmentSchedule)
+			I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override,
+			I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID })
+	public void markAsCarrierAdviceRequested(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (shipmentSchedule.getM_Shipper_ID() <= 0
-				|| shipmentSchedule.isProcessed()
-				|| shipmentSchedule.isClosed()
-				|| !shipmentSchedule.isActive()
-				|| shipmentSchedule.getQtyToDeliver().signum() <= 0)
+		if (!shipmentScheduleService.isEligibleForCarrierAdvise(shipmentSchedule))
 		{
 			return;
 		}
 
+		shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Requested.getCode());
+		shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW,
+			ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status })
+	public void requestCarrierAdvice(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (!isMarkedAsCarrierAdviceRequested(shipmentSchedule))
+		{
+			return;
+		}
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID());
 		AdviseDeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(shipmentScheduleId, asyncBatchId);
+	}
+
+	private boolean isMarkedAsCarrierAdviceRequested(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final CarrierAdviseStatus carrierAdviseStatus = CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status());
+		return carrierAdviseStatus != null && carrierAdviseStatus.isRequested();
 	}
 }

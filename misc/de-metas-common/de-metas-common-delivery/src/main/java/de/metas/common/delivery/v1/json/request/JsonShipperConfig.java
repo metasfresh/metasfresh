@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 @Value
-@Builder(toBuilder = true) //FIXME
+@Builder
 @Jacksonized
 public class JsonShipperConfig
 {

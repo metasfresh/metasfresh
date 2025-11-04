@@ -51,7 +51,6 @@ public class JsonDeliveryResponseItem
 	@JsonIgnore
 	public JsonDeliveryResponseItem withoutPDFContents()
 	{
-		final JsonDeliveryResponseItem item = toBuilder().labelPdfBase64(null).build();
-		return item;
+		return toBuilder().labelPdfBase64(null).build();
 	}
 }

@@ -25,6 +25,7 @@ package de.metas.mforecast;
 import com.google.common.collect.ImmutableSet;
 import de.metas.mforecast.ForecastRequest.ForecastLineRequest;
 import de.metas.mforecast.impl.ForecastId;
+import de.metas.mforecast.impl.ForecastQuery;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_Forecast;
@@ -51,4 +52,6 @@ public interface IForecastDAO extends ISingletonService
 	I_M_Forecast getById(@NonNull ForecastId forecastId);
 
 	void save(@NonNull I_M_Forecast forecastRecord);
+
+	List<ForecastId> listIdsByQuery(@NonNull final ForecastQuery forecastQuery);
 }

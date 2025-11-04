@@ -35,11 +35,11 @@ import javax.annotation.Nullable;
 @JsonDeserialize(builder = JsonOLCandProcessRequest.JsonOLCandProcessRequestBuilder.class)
 public class JsonOLCandProcessRequest
 {
-	@ApiModelProperty(required = true, value = "This translates to 'C_OLCand.externalLineId'.")
+	@ApiModelProperty(required = true, value = "This translates to 'C_OLCand.externalHeaderId'.")
 	String externalHeaderId;
 
-	@ApiModelProperty(required = true, value = "This translates to 'AD_InputDataSource.internalName' of the data source the candidates in question were added with.")
-	String inputDataSourceName;
+	@ApiModelProperty(required = true, value = "This translates to 'ExternalSystem.value' of the external system the candidates in question were added with.")
+	String externalSystemCode;
 
 	Boolean ship;
 
@@ -50,13 +50,13 @@ public class JsonOLCandProcessRequest
 	@Builder
 	JsonOLCandProcessRequest(
 			@JsonProperty("externalHeaderId") @NonNull final String externalHeaderId,
-			@JsonProperty("inputDataSourceName") @NonNull final String inputDataSourceName,
+			@JsonProperty("externalSystemCode") @NonNull final String externalSystemCode,
 			@JsonProperty("ship") @NonNull final Boolean ship,
 			@JsonProperty("invoice") @NonNull final Boolean invoice,
 			@JsonProperty("closeOrder") @Nullable final Boolean closeOrder)
 	{
 		this.externalHeaderId = externalHeaderId;
-		this.inputDataSourceName = inputDataSourceName;
+		this.externalSystemCode = externalSystemCode;
 		this.ship = ship;
 		this.invoice = invoice;
 		this.closeOrder = closeOrder;

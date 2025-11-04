@@ -208,7 +208,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		return buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection)
 				+ " UNION "
-				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
+				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, paySelection);
 	}
 
 	private @NonNull String buildInvoiceSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
@@ -383,7 +383,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
-	private @NonNull String buildOrderSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
+	private @NonNull String buildOrderSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final I_C_PaySelection paySelection)
 	{
 		String sql = "SELECT "
 				+ " -1 as C_Invoice_ID," // 1
@@ -396,7 +396,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " o.Bill_BPartner_ID as C_BPartner_ID," // 8
 				// C_BP_BankAccount_ID
 				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID = o.Bill_BPartner_ID AND bpb.IsActive='Y' "
-				+ " AND bpb.IBAN IS NOT NULL AND bpb.C_Currency_ID = o.C_Currency_ID) as C_BP_BankAccount_ID "  //9
+				+ " AND bpb.C_Currency_ID = o.C_Currency_ID) as C_BP_BankAccount_ID "  //9
 				//
 				+ " FROM C_Order o "
 				+ " INNER JOIN C_Doctype dt on o.C_Doctype_ID = dt.C_Doctype_ID "

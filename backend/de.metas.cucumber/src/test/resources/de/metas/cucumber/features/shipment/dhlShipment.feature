@@ -6,6 +6,7 @@ Feature: Dhl Shipment
     Given infrastructure and metasfresh are running
     And metasfresh has date and time 2022-12-12T12:12:12+01:00[Europe/Berlin]
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And ensure product accounts exist
     And load M_Shipper:
       | Identifier  | Name |
@@ -19,8 +20,8 @@ Feature: Dhl Shipment
 
     #Karton
     And load M_Product:
-      | Identifier | OPT.M_Product_ID |
-      | packing_product_1       | 2003135          |
+      | Identifier        | OPT.M_Product_ID |
+      | packing_product_1 | 2003135          |
     #Configure dimensions of packing product
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name   | OPT.Length | OPT.Width | OPT.Height | OPT.C_UOM_Dimension_ID.Identifier |
@@ -64,7 +65,7 @@ Feature: Dhl Shipment
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_BPartners:
       | Identifier   | Name         | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
-      | dhl_customer | dhl_customer | ps_dhl_1                      | Y              | dhl_customer    | I               | 1000002                    |
+      | dhl_customer | dhl_customer | ps_dhl_1                      | Y              | dhl_customer    | I               | 1000002                |
 
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
@@ -89,6 +90,9 @@ Feature: Dhl Shipment
 
   @Id:S0335.1_100
   Scenario: Auto-processing of olcand and shipped via DHL
+    When metasfresh contains External System
+      | Name                 | Value                |
+      | TestSystem_S0335_100 | TestSystem_S0335_100 |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """
 {
@@ -97,6 +101,7 @@ Feature: Dhl Shipment
       "orgCode": "001",
       "externalHeaderId": "dhl_01",
       "externalLineId": "dhl_01",
+      "externalSystemCode": "TestSystem_S0335_100",
       "dataSource": "int-Shopware",
       "bpartner": {
           "bpartnerIdentifier": "gln-1122334455667",
@@ -125,7 +130,7 @@ Feature: Dhl Shipment
 """
 {
     "externalHeaderId": "dhl_01",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "TestSystem_S0335_100",
     "ship": true,
     "invoice": true,
     "closeOrder": false

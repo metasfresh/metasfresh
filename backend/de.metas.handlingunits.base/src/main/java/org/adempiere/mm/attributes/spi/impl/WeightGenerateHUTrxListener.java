@@ -22,7 +22,6 @@ package org.adempiere.mm.attributes.spi.impl;
  * #L%
  */
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
@@ -63,8 +62,8 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		//
 		// In case we are adjusting the HU Storage based on Weight attribute,
 		// then we shall not update the WeightNet attribute here again because we will double it. (08728)
-		final Boolean storageAdjustment = huContext.getProperty(IHUContext.PROPERTY_IsStorageAdjustmentFromWeightAttribute);
-		if (storageAdjustment != null && storageAdjustment)
+		final boolean storageAdjustment = huContext.isPropertyTrue(IHUContext.PROPERTY_IsStorageAdjustmentFromWeightAttribute);
+		if (storageAdjustment)
 		{
 			return;
 		}

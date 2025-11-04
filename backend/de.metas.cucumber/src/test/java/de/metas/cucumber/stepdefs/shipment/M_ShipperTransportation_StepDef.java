@@ -31,6 +31,8 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Package_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -67,11 +69,13 @@ public class M_ShipperTransportation_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 
+
 	private final M_InOut_StepDefData shipmentTable;
 	private final C_Order_StepDefData orderTable;
 
-	public final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	@And("validate M_ShipperTransportation:")
 	public void validateM_ShipperTransportation(@NonNull final DataTable dataTable)
@@ -159,6 +163,18 @@ public class M_ShipperTransportation_StepDef
 		deliveryInstructionTable.putOrReplace(row.getAsIdentifier(), shipperTransportationRecord);
 	}
 
+	@And("^metasfresh contains exactly (.*) M_ShippingPackages for transportation order: (.*)$")
+	public void validateShippingPackagesForTransportationOrder(final int expectedShippingPackages, @NonNull final String transportationOrderIdentifier)
+	{
+		final int shipperTransportationId = deliveryInstructionTable.get(transportationOrderIdentifier)
+				.getM_ShipperTransportation_ID();
+		final int actualShippingPackages = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.create()
+				.count();
+		assertThat(actualShippingPackages).as("Number of M_ShippingPackages for M_ShipperTransportation_ID" + shipperTransportationId).isEqualTo(expectedShippingPackages);
+	}
+
 	@And("metasfresh contains M_ShippingPackage")
 	public void add_M_ShippingPackage(@NonNull final DataTable dataTable)
 	{
@@ -239,4 +255,13 @@ public class M_ShipperTransportation_StepDef
 
 		deliveryInstructionTable.putOrReplace(tableRow.getAsIdentifier(), record);
 	}
+
+	@And("^the transport order identified by (.*) is completed$")
+	public void completeTransportOrder(@NonNull final String orderIdentifier)
+	{
+		final I_M_ShipperTransportation transportOrder = deliveryInstructionTable.get(orderIdentifier);
+		transportOrder.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(transportOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
 }

@@ -110,7 +110,8 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 				I_M_ShipmentSchedule.COLUMNNAME_AD_User_Override_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_DateOrdered,
-				I_M_ShipmentSchedule.COLUMNNAME_ExternalHeaderId);
+				I_M_ShipmentSchedule.COLUMNNAME_ExternalHeaderId,
+				I_M_ShipmentSchedule.COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override

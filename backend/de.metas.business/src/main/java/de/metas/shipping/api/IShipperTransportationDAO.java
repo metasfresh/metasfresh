@@ -1,10 +1,8 @@
-package de.metas.shipping.api;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package de.metas.shipping.api;
  * #L%
  */
 
+package de.metas.shipping.api;
+
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.order.OrderId;
@@ -36,12 +36,12 @@ import org.compiere.model.I_M_Package;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 public interface IShipperTransportationDAO extends ISingletonService
 {
 
-	I_M_ShipperTransportation getById(ShipperTransportationId shipperItransportationId);
+	@NonNull
+	I_M_ShipperTransportation getById(@NonNull ShipperTransportationId shipperItransportationId);
 
 	List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull ShipperTransportationId shipperTransportation);
 
@@ -60,9 +60,6 @@ public interface IShipperTransportationDAO extends ISingletonService
 
 	@NonNull
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
-
-	@NonNull
-	Optional<ShipperTransportationReference> getEarliestShipperTransportationByOrderId(final OrderId orderId);
 
 	ImmutableList<OrderId> retrieveOrderIds(@NonNull ShipperTransportationId shipperTransportationId);
 }

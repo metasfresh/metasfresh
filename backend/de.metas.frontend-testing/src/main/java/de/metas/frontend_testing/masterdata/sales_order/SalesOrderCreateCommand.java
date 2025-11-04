@@ -129,7 +129,7 @@ public class SalesOrderCreateCommand
 
 		final ImmutableSet<OrderLineId> orderLineIds = ImmutableSet.copyOf(jobSchedulesToCreateByOrderLineId.keySet());
 
-		Stopwatch stopwatch = Stopwatch.createStarted();
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		while (!jobSchedulesToCreateByOrderLineId.isEmpty())
 		{
 			final List<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByOrderLineIds(orderLineIds);
@@ -164,7 +164,7 @@ public class SalesOrderCreateCommand
 		{
 			Thread.sleep(duration.toMillis());
 		}
-		catch (InterruptedException e)
+		catch (final InterruptedException e)
 		{
 			throw new AdempiereException(e);
 		}

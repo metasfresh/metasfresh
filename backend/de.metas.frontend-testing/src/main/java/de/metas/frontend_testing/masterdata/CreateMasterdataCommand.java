@@ -141,7 +141,7 @@ public class CreateMasterdataCommand
 		return process(request.getBpartners(), this::createBPartner);
 	}
 
-	private JsonCreateBPartnerResponse createBPartner(String identifier, JsonCreateBPartnerRequest request)
+	private JsonCreateBPartnerResponse createBPartner(final String identifier, final JsonCreateBPartnerRequest request)
 	{
 		return CreateBPartnerCommand.builder()
 				.currencyRepository(services.currencyRepository)
@@ -157,7 +157,7 @@ public class CreateMasterdataCommand
 		return process(request.getProducts(), this::createProduct);
 	}
 
-	private JsonCreateProductResponse createProduct(String identifier, JsonCreateProductRequest request)
+	private JsonCreateProductResponse createProduct(final String identifier, final JsonCreateProductRequest request)
 	{
 		return CreateProductCommand.builder()
 				.productRepository(services.productRepository)
@@ -173,7 +173,7 @@ public class CreateMasterdataCommand
 		return process(request.getResources(), this::createResource);
 	}
 
-	private JsonCreateResourceResponse createResource(String identifier, JsonCreateResourceRequest request)
+	private JsonCreateResourceResponse createResource(final String identifier, final JsonCreateResourceRequest request)
 	{
 		return CreateResourceCommand.builder()
 				.context(context)
@@ -188,7 +188,7 @@ public class CreateMasterdataCommand
 		return process(request.getProductPlannings(), this::createProductPlanning);
 	}
 
-	private JsonCreateProductPlanningResponse createProductPlanning(String identifier, JsonCreateProductPlanningRequest request)
+	private JsonCreateProductPlanningResponse createProductPlanning(final String identifier, final JsonCreateProductPlanningRequest request)
 	{
 		return CreateProductPlanningCommand.builder()
 				.context(context)
@@ -203,7 +203,7 @@ public class CreateMasterdataCommand
 		return process(request.getPickingSlots(), this::createPickingSlot);
 	}
 
-	private JsonPickingSlotCreateResponse createPickingSlot(String identifier, JsonPickingSlotCreateRequest request)
+	private JsonPickingSlotCreateResponse createPickingSlot(final String identifier, final JsonPickingSlotCreateRequest request)
 	{
 		return PickingSlotCreateCommand.builder()
 				.context(context)
@@ -217,7 +217,7 @@ public class CreateMasterdataCommand
 		return process(request.getWarehouses(), this::createWarehouse);
 	}
 
-	private JsonWarehouseResponse createWarehouse(String identifier, JsonWarehouseRequest request)
+	private JsonWarehouseResponse createWarehouse(final String identifier, final JsonWarehouseRequest request)
 	{
 		return WarehouseCommand.builder()
 				.context(context)
@@ -244,7 +244,7 @@ public class CreateMasterdataCommand
 		return process(request.getPackingInstructions(), this::createPackingInstruction);
 	}
 
-	private JsonPackingInstructionsResponse createPackingInstruction(String identifier, JsonPackingInstructionsRequest request)
+	private JsonPackingInstructionsResponse createPackingInstruction(final String identifier, final JsonPackingInstructionsRequest request)
 	{
 		return CreatePackingInstructionsCommand.builder()
 				.context(context)
@@ -253,6 +253,7 @@ public class CreateMasterdataCommand
 				.build().execute();
 	}
 
+	@Nullable
 	private JsonMobileConfigResponse createMobileConfiguration()
 	{
 		if (request.getMobileConfig() == null)
@@ -310,7 +311,7 @@ public class CreateMasterdataCommand
 		return process(request.getSalesOrders(), this::createSalesOrder);
 	}
 
-	private JsonSalesOrderCreateResponse createSalesOrder(String identifier, JsonSalesOrderCreateRequest request)
+	private JsonSalesOrderCreateResponse createSalesOrder(final String identifier, final JsonSalesOrderCreateRequest request)
 	{
 		return SalesOrderCreateCommand.builder()
 				.pickingJobScheduleService(services.pickingJobScheduleService)
@@ -325,7 +326,7 @@ public class CreateMasterdataCommand
 		return process(request.getDistributionOrders(), this::createDistributionOrder);
 	}
 
-	private JsonDDOrderResponse createDistributionOrder(String identifier, JsonDDOrderRequest request)
+	private JsonDDOrderResponse createDistributionOrder(final String identifier, final JsonDDOrderRequest request)
 	{
 		return DDOrderCommand.builder()
 				.ddOrderService(services.ddOrderService)
@@ -341,7 +342,7 @@ public class CreateMasterdataCommand
 		return process(request.getManufacturingOrders(), this::createManufacturingOrder);
 	}
 
-	private JsonPPOrderResponse createManufacturingOrder(String identifier, JsonPPOrderRequest request)
+	private JsonPPOrderResponse createManufacturingOrder(final String identifier, final JsonPPOrderRequest request)
 	{
 		return PPOrderCommand.builder()
 				.context(context)
@@ -356,7 +357,7 @@ public class CreateMasterdataCommand
 		return process(request.getInventories(), this::createInventory);
 	}
 
-	private JsonInventoryResponse createInventory(String identifier, JsonInventoryRequest request)
+	private JsonInventoryResponse createInventory(final String identifier, final JsonInventoryRequest request)
 	{
 		return InventoryCreateCommand.builder()
 				.inventoryService(services.inventoryService)

@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -49,12 +50,20 @@ public class CarrierShipmentScheduleServiceRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	final CCache<String, CarrierService> carrierServicesByExternalId = CCache.newLRUCache(I_Carrier_Service.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
-	final CCache<String, CarrierService> carrierServicesById = CCache.newLRUCache(I_Carrier_Service.Table_Name + "#byId", 100, 0);
 
 	public Set<CarrierServiceId> getAssignedServiceIdsByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return ImmutableSet.copyOf(queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
 				.addEqualsFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.andCollect(I_M_ShipmentSchedule_Carrier_Service.COLUMN_Carrier_Service_ID)
+				.create()
+				.listIds(CarrierServiceId::ofRepoId));
+	}
+
+	public Set<CarrierServiceId> getAssignedServiceIdsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return ImmutableSet.copyOf(queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.andCollect(I_M_ShipmentSchedule_Carrier_Service.COLUMN_Carrier_Service_ID)
 				.create()
 				.listIds(CarrierServiceId::ofRepoId));

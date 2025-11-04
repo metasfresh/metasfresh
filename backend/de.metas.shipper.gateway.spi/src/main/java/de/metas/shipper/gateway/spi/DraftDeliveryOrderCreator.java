@@ -13,6 +13,7 @@ import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -98,6 +99,7 @@ public interface DraftDeliveryOrderCreator
 	}
 
 	@Value
+	@EqualsAndHashCode(exclude = "carrierServices")
 	class DeliveryOrderKey
 	{
 		@NonNull ShipperId shipperId;

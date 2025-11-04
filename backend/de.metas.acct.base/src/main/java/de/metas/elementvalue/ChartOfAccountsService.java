@@ -23,6 +23,7 @@
 package de.metas.elementvalue;
 
 import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -67,9 +68,9 @@ public class ChartOfAccountsService
 		return chartOfAccountsRepository.getByIds(chartOfAccountsIds);
 	}
 
-	public Optional<ChartOfAccounts> getByName(@NonNull final String chartOfAccountsName, @NonNull final ClientId clientId)
+	public Optional<ChartOfAccounts> getByName(@NonNull final String chartOfAccountsName, @NonNull final ClientId clientId,  @NonNull final OrgId orgId)
 	{
-		return chartOfAccountsRepository.getByName(chartOfAccountsName, clientId);
+		return chartOfAccountsRepository.getByName(chartOfAccountsName, clientId, orgId);
 	}
 
 	public Optional<ChartOfAccounts> getByTreeId(@NonNull final AdTreeId treeId)
@@ -79,17 +80,18 @@ public class ChartOfAccountsService
 
 	public ChartOfAccounts createChartOfAccounts(@NonNull final ChartOfAccountsCreateRequest request)
 	{
-		final AdTreeId chartOfAccountsTreeId = createChartOfAccountsTree(request.getName());
-		return chartOfAccountsRepository.createChartOfAccounts(request.getName(), request.getClientId(), chartOfAccountsTreeId);
+		final AdTreeId chartOfAccountsTreeId = createChartOfAccountsTree(request.getName(), request.getOrgId());
+		return chartOfAccountsRepository.createChartOfAccounts(request.getName(), request.getClientId(), request.getOrgId(), chartOfAccountsTreeId);
 	}
 
-	private AdTreeId createChartOfAccountsTree(@NonNull final String name)
+	private AdTreeId createChartOfAccountsTree(@NonNull final String name, @NonNull final OrgId orgId)
 	{
 		final I_AD_Tree tree = InterfaceWrapperHelper.newInstance(I_AD_Tree.class);
 		tree.setAD_Table_ID(adTreeDAO.retrieveTableId(I_C_ElementValue.Table_Name));
 		tree.setName(name);
 		tree.setTreeType(X_AD_Tree.TREETYPE_ElementValue);
 		tree.setIsAllNodes(true);
+		tree.setAD_Org_ID(orgId.getRepoId());
 		InterfaceWrapperHelper.save(tree);
 		return AdTreeId.ofRepoId(tree.getAD_Tree_ID());
 	}
