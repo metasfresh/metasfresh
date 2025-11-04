@@ -47,6 +47,7 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
@@ -59,6 +60,7 @@ import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -69,11 +71,14 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -164,15 +169,35 @@ public class CarrierAdviseCommand
 
 	private @NonNull JsonDeliveryAdvisorRequestItem getJsonDeliveryAdvisorRequestItem(final @NonNull ShipmentSchedule shipmentSchedule)
 	{
+		final I_M_Product product = productBL.getByIdInTrx(shipmentSchedule.getProductId());
+		final Quantity quantityToDeliver = shipmentSchedule.getQuantityToDeliver();
 		return JsonDeliveryAdvisorRequestItem.builder()
-				.numberOfItems(shipmentSchedule.getQuantityToDeliver().toBigDecimal().intValue())
+				.numberOfItems(quantityToDeliver.toBigDecimal().intValue())
 				.grossWeightKg(computeProductGrossWeight(shipmentSchedule))
-				.packageDimensions(JsonPackageDimensions.builder()
-						//TODO Adrian figure out from where we should retrieve this info
-						.heightInCM(30)
-						.widthInCM(40)
-						.lengthInCM(50)
-						.build())
+				.packageDimensions(computePackageDimensions(product, quantityToDeliver))
+				.build();
+	}
+
+	//TODO unify with de.metas.handlingunits.shipping.impl.HUPackageBL.createPackageDimensions
+	private JsonPackageDimensions computePackageDimensions(final I_M_Product product, final Quantity quantityToDeliver)
+	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		final UomId productUomId = UomId.ofRepoId(product.getC_UOM_ID());
+
+		final BigDecimal height = uomConversionBL.convertQty(productId, BigDecimal.valueOf(product.getHeightInCm()), productUomId, quantityToDeliver.getUomId());
+		final BigDecimal length = uomConversionBL.convertQty(productId, BigDecimal.valueOf(product.getLengthInCm()), productUomId, quantityToDeliver.getUomId());
+		final BigDecimal width = uomConversionBL.convertQty(productId, BigDecimal.valueOf(product.getHeightInCm()), productUomId, quantityToDeliver.getUomId());
+
+		final List<BigDecimal> dimensions = new ArrayList<>();
+		dimensions.add(length);
+		dimensions.add(width);
+		dimensions.add(height);
+		dimensions.sort(BigDecimal::compareTo);
+
+		return JsonPackageDimensions.builder()
+				.lengthInCM(dimensions.get(0).multiply(quantityToDeliver.toBigDecimal()).intValue())
+				.widthInCM(dimensions.get(2).intValue())
+				.heightInCM(dimensions.get(1).intValue())
 				.build();
 	}
 

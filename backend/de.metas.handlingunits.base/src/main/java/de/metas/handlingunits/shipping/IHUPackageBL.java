@@ -3,13 +3,16 @@ package de.metas.handlingunits.shipping;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+
 import java.util.List;
 import java.util.Set;
 
@@ -41,5 +44,7 @@ public interface IHUPackageBL extends ISingletonService
 	 * This is the counterpart method of {@link #assignShipmentToPackages(I_M_HU, I_M_InOut, String)}.
 	 */
 	void unassignShipmentFromPackages(I_M_InOut shipment);
+
+	PackageDimensions retrievePackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId);
 
 }

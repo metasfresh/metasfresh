@@ -101,9 +101,6 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	@NonNull
 	PackageDimensions retrievePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId);
 
-	@Nullable
-	PackageDimensions retrievePackageDimensionsOrNull(@NonNull final PackageId packageId, @NonNull final UomId toUomId);
-
 	List<HuPackingMaterial> retrieveBy(@NonNull final HuPackingMaterialQuery query);
 
 	Optional<HuPackingMaterial> getLUPIItemForHUPI(BPartnerId bpartnerId, @NonNull HuPackingInstructionsId luPIId);

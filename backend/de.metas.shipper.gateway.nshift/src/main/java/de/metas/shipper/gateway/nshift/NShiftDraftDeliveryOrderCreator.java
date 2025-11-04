@@ -7,7 +7,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
@@ -24,7 +24,6 @@ import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -44,7 +43,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -63,11 +61,9 @@ import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences
 @RequiredArgsConstructor
 public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private final @NonNull ShipmentOrderRepository shipmentOrderRepository;
 	private final @NonNull CarrierProductRepository carrierProductRepository;
 	private final @NonNull CarrierGoodsTypeRepository carrierGoodsTypeRepository;
 	private final @NonNull CarrierShipmentOrderServiceRepository carrierServiceRepository;
-	// @NonNull private final ExternalSystemMessageSender externalSystemMessageSender;
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -214,14 +210,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull
 	public static PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
 	{
-		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-		final PackageDimensions packageDimensions = packingMaterialDAO.retrievePackageDimensionsOrNull(packageId, toUomId);
-
-		if (packageDimensions == null)
-		{
-			throw new AdempiereException("Cannot determine dimensions of M_Package_ID=" + packageId.getRepoId() + ". Either use a packing material or ensure product dimensions are set.");
-		}
-
-		return packageDimensions;
+		final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
+		return huPackageBL.retrievePackageDimensions(packageId, toUomId);
 	}
 }

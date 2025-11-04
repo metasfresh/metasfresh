@@ -3,8 +3,11 @@ package de.metas.handlingunits.shipping.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
@@ -14,17 +17,26 @@ import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Product;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -65,6 +77,9 @@ public class HUPackageBL implements IHUPackageBL
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public void destroyHUPackage(final org.compiere.model.I_M_Package mpackage)
@@ -267,4 +282,59 @@ public class HUPackageBL implements IHUPackageBL
 
 		return Optional.of(inOutIds.iterator().next());
 	}
+
+	@Override
+	public PackageDimensions retrievePackageDimensions(final @NonNull PackageId packageId, final @NonNull UomId toUomId)
+	{
+		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(packageId);
+		if (packingMaterial != null)
+		{
+			return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
+		}
+		final Set<I_M_Product> productsInPackage = handlingUnitsDAO.getProductsInPackage(packageId);
+
+		if (productsInPackage.size() == 1)
+		{
+			final I_M_Product product = productsInPackage.iterator().next();
+			if (!product.isSelfPacked())
+			{
+				throw new AdempiereException("Cannot calculate package dimensions for package " + packageId + " because it contains a product which is not self-packed.");
+			}
+			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+			final Quantity totalQuantity = handlingUnitsDAO.getTotalQtyOfProductInPackage(packageId, productId);
+			Check.assumeEquals(totalQuantity.getUomId(), UomId.ofRepoId(product.getC_UOM_ID()), "totalQtyInProductUOM's UOM shall be the same as product's UOM");
+			return createPackageDimensions(product, totalQuantity);
+		}
+		else
+		{
+			throw new AdempiereException("Cannot calculate package dimensions for package " + packageId + " because it contains more than one product.");
+		}
+	}
+
+	/**
+	 * This method assumes the products don't have a dedicated packing material, and instead are stacked upon each other, on its smallest dimension (Like books in a library).
+	 * It is always sorting dimensions to try to maintain the size as small as possible.
+	 */
+	private PackageDimensions createPackageDimensions(final I_M_Product product, final Quantity quantityToDeliver)
+	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		final UomId productUomId = UomId.ofRepoId(product.getC_UOM_ID());
+
+		final BigDecimal height = uomConversionBL.convertQty(productId, BigDecimal.valueOf(product.getHeightInCm()), productUomId, quantityToDeliver.getUomId());
+		final BigDecimal length = uomConversionBL.convertQty(productId, BigDecimal.valueOf(product.getLengthInCm()), productUomId, quantityToDeliver.getUomId());
+		final BigDecimal width = uomConversionBL.convertQty(productId, BigDecimal.valueOf(product.getHeightInCm()), productUomId, quantityToDeliver.getUomId());
+
+		final List<BigDecimal> dimensions = new ArrayList<>();
+		dimensions.add(length);
+		dimensions.add(width);
+		dimensions.add(height);
+		dimensions.sort(BigDecimal::compareTo);
+
+		return PackageDimensions.builder()
+				.lengthInCM(dimensions.get(0).multiply(quantityToDeliver.toBigDecimal()).intValue())
+				.widthInCM(dimensions.get(2).intValue())
+				.heightInCM(dimensions.get(1).intValue())
+				.build();
+	}
+
 }
