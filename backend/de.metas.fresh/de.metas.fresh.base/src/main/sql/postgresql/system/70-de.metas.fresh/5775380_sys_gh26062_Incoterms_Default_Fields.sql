@@ -116,16 +116,6 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,755925,0,544583,546793,638534,'F',TO_TIMESTAMP('2025-10-31 15:21:35.231000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Standard Ort',30,0,0,TO_TIMESTAMP('2025-10-31 15:21:35.231000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- Column: C_Order.IncotermLocation
--- 2025-11-03T13:49:52.824Z
-UPDATE AD_Column SET DefaultValue='@SQL=SELECT DefaultLocation FROM C_Incoterms WHERE IsDefault=''Y'' AND AD_Org_ID=@#AD_Org_ID@',Updated=TO_TIMESTAMP('2025-11-03 13:49:52.824000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=501614
-;
-
--- Column: C_Order.C_Incoterms_ID
--- 2025-11-03T13:50:35.383Z
-UPDATE AD_Column SET DefaultValue='@SQL=SELECT C_Incoterms_ID FROM C_Incoterms WHERE IsDefault=''Y'' AND AD_Org_ID=@#AD_Org_ID@',Updated=TO_TIMESTAMP('2025-11-03 13:50:35.383000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=501613
-;
-
 -- Field: Bestellung(181,D) -> Bestellung(294,D) -> Incoterms
 -- Column: C_Order.C_Incoterms_ID
 -- 2025-11-03T13:53:55.739Z
