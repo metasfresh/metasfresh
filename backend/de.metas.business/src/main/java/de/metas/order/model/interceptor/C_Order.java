@@ -237,24 +237,7 @@ public class C_Order
 			return; // nothing to do yet
 		}
 
-		final int c_Incoterms;
-		final String incotermLocation;
-
-		if (order.isSOTrx())
-		{
-			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
-			incotermLocation = bpartner.getIncotermLocation();
-		}
-		else
-		{
-			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
-			incotermLocation = bpartner.getPO_IncotermLocation();
-		}
-		if (c_Incoterms > 0)
-		{
-			order.setC_Incoterms_ID(c_Incoterms);
-			order.setIncotermLocation(incotermLocation);
-		}
+		orderBL.setIncoterms(order);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })

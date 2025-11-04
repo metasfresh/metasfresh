@@ -1294,6 +1294,29 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public void setIncoterms(@NonNull final I_C_Order order)
+	{
+		final org.compiere.model.I_C_BPartner bpartner = getBPartner(order);
+		final int c_Incoterms;
+		final String incotermLocation;
+
+		if (order.isSOTrx())
+		{
+			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
+			incotermLocation = bpartner.getIncotermLocation();
+		}
+		else
+		{
+			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
+			incotermLocation = bpartner.getPO_IncotermLocation();
+		}
+		if (c_Incoterms > 0)
+		{
+			order.setC_Incoterms_ID(c_Incoterms);
+			order.setIncotermLocation(incotermLocation);
+		}
+	}
+	@Override
 	public void setWeightFromLines(@NonNull final I_C_Order order)
 	{
 		final List<I_C_OrderLine> lines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
