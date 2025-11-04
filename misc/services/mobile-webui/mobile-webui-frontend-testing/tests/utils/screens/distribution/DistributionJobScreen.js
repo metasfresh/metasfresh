@@ -1,8 +1,10 @@
 import { test } from "../../../../playwright.config";
-import { FAST_ACTION_TIMEOUT, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { DistributionLineScreen } from './DistributionLineScreen';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { DistributionJobsListScreen } from './DistributionJobsListScreen';
+import { DistributionDropAllToScreen } from './DistributionDropAllToScreen';
+import { expect } from '@playwright/test';
 
 const NAME = 'DistributionJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -14,8 +16,25 @@ export const DistributionJobScreen = {
     }),
 
     clickLineButton: async ({ index }) => await test.step(`${NAME} - Click line ${index}`, async () => {
-        await page.getByTestId(`line-${index}-button`).tap({ timeout: FAST_ACTION_TIMEOUT });
+        await lineButtonLocator({ index }).tap({ timeout: FAST_ACTION_TIMEOUT });
         await DistributionLineScreen.waitForScreen();
+    }),
+
+    expectLineButton: async ({ index, qtyToPick, qtyPicked, color }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
+        const lineButton = lineButtonLocator({ index });
+
+        if (qtyToPick !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtytarget', value: qtyToPick });
+        }
+        if (qtyPicked !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtycurrent', value: qtyPicked });
+        }
+        if (color !== undefined) {
+            await step(`${NAME} - Expect line button color='${color}'`, async () => {
+                const indicator = lineButton.locator(`[data-testid="line-${index}-button-Indicator"]`);
+                await expect(indicator).toHaveClass(`indicator-${color}`);
+            });
+        }
     }),
 
     complete: async () => await test.step(`${NAME} - Complete`, async () => {
@@ -24,8 +43,43 @@ export const DistributionJobScreen = {
         await YesNoDialog.clickYesButton();
         await DistributionJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
+
+    expectDropAllButton: async ({ enabled }) => await test.step(`${NAME} - Expect Drop All button`, async () => {
+        const dropAllButton = dropAllButtonLocator();
+
+        if (enabled != null) {
+            if (enabled) {
+                await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
+            } else {
+                await expect(dropAllButton).toBeDisabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
+            }
+        }
+    }),
+
+    dropAllTo: async ({ dropToLocatorQRCode }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
+        const dropAllButton = dropAllButtonLocator();
+        await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
+        await dropAllButton.tap();
+        await DistributionDropAllToScreen.waitForScreen();
+        await DistributionDropAllToScreen.typeQRCode(dropToLocatorQRCode);
+        await DistributionJobScreen.waitForScreen();
+    }),
+};
+
+const lineButtonLocator = ({ index }) => {
+    return page.getByTestId(`line-${index}-button`);
+};
+
+const expectLineButtonAttribute = async ({ lineButton, attribute, value }) => await step(`${NAME} - Expect line button attribute ${attribute}='${value}'`, async () => {
+    const lineButtonInfo = lineButton.locator('.picking-row-info');
+    await expect(lineButtonInfo).toHaveAttribute(attribute, value);
+});
+
+const dropAllButtonLocator = () => {
+    return page.getByTestId('scanDropToLocator-button');
 };
 
 const clickCompleteButton = async () => await test.step(`${NAME} - Click Complete button`, async () => {
     await page.locator('#last-confirm-button').tap();
 });
+
