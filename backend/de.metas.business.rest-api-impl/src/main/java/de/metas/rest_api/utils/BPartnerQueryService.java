@@ -1,20 +1,19 @@
 package de.metas.rest_api.utils;
 
-import static de.metas.util.Check.isEmpty;
-
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.BPartnerQuery.BPartnerQueryBuilder;
-import de.metas.organization.OrgId;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+
+import static de.metas.util.Check.isNotBlank;
 
 /*
  * #%L
@@ -51,7 +50,9 @@ public class BPartnerQueryService
 		return createBPartnerQuery(queryLookupKeys, onlyOrgId);
 	}
 
-	/** Creates a query that advises the repo to fail if no matching bpartner is found. */
+	/**
+	 * Creates a query that advises the repo to fail if no matching bpartner is found.
+	 */
 	public BPartnerQuery createQueryFailIfNotExists(@NonNull final BPartnerCompositeLookupKey queryLookupKey)
 	{
 		return createQueryFailIfNotExists(queryLookupKey, null/* orgId */);
@@ -101,9 +102,9 @@ public class BPartnerQueryService
 		}
 
 		final String value = bpartnerLookupKey.getCode();
-		if (!isEmpty(value, true))
+		if (isNotBlank(value))
 		{
-			queryBuilder.bpartnerValue(value);
+			queryBuilder.bpartnerValue(value.trim());
 		}
 
 		final GLN gln = bpartnerLookupKey.getGln();
@@ -112,11 +113,17 @@ public class BPartnerQueryService
 			queryBuilder.gln(gln);
 		}
 
+		final GlnWithLabel glnWithLabel = bpartnerLookupKey.getGlnWithLabel();
+		if (glnWithLabel != null)
+		{
+			queryBuilder.gln(glnWithLabel.getGln());
+			queryBuilder.glnLookupLabel(glnWithLabel.getLabel());
+		}
+
 		final MetasfreshId metasfreshId = bpartnerLookupKey.getMetasfreshId();
 		if (metasfreshId != null)
 		{
 			queryBuilder.bPartnerId(BPartnerId.ofRepoId(metasfreshId.getValue()));
 		}
 	}
-
 }

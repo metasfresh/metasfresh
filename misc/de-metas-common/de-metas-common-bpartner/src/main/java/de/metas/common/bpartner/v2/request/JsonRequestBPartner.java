@@ -64,6 +64,13 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
+	@ApiModelProperty(position = 35,  //
+			value = "This translates to `C_BPartner.Lookup_Label`.")
+	private @org.jetbrains.annotations.Nullable String lookupLabel;
+
+	@ApiModelProperty(hidden = true)
+	private boolean lookupLabelSet;
+	
 	@ApiModelProperty(position = 40,  //
 			value = "This translates to `C_BPartner.Name2`.")
 	private String name2;
@@ -229,6 +236,12 @@ public class JsonRequestBPartner
 		this.companyNameSet = true;
 	}
 
+	public void setLookupLabel(@Nullable final String lookupLabel)
+	{
+		this.lookupLabel = lookupLabel;
+		this.lookupLabelSet = true;
+	}
+		
 	public void setVendor(final Boolean vendor)
 	{
 		this.vendor = vendor;

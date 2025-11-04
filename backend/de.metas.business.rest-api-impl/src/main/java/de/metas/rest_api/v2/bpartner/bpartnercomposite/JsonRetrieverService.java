@@ -141,6 +141,7 @@ public class JsonRetrieverService
 			.put(BPartner.NAME, JsonResponseBPartner.NAME)
 			.put(BPartner.NAME_2, JsonResponseBPartner.NAME_2)
 			.put(BPartner.NAME_3, JsonResponseBPartner.NAME_3)
+			.put(BPartner.GLN_LOOKUP_LABEL, JsonResponseBPartner.GLN_LOOKUP_LABEL)
 			.put(BPartner.PARENT_ID, JsonResponseBPartner.PARENT_ID)
 			.put(BPartner.PHONE, JsonResponseBPartner.PHONE)
 			.put(BPartner.URL, JsonResponseBPartner.URL)
@@ -602,7 +603,7 @@ public class JsonRetrieverService
 		{
 			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofGlnWithLabel(orgId, bpartnerIdentifier.asGlnWithLabel());
 		}
-				else if (ExternalIdentifier.Type.METASFRESH_ID.equals(bpartnerIdentifier.getType()))
+		else if (ExternalIdentifier.Type.METASFRESH_ID.equals(bpartnerIdentifier.getType()))
 		{
 			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofMetasfreshId(orgId, bpartnerIdentifier.asMetasfreshId());
 		}
@@ -868,6 +869,8 @@ public class JsonRetrieverService
 						MetasfreshId.equals(metasfreshId.get(), MetasfreshId.of(jsonBPartnerLocation.getMetasfreshId()));
 			case GLN:
 				return GLN.equals(GLN.ofNullableString(jsonBPartnerLocation.getGln()), locationIdentifier.asGLN());
+			case GLN_WITH_LABEL:
+				return GLN.equals(GLN.ofNullableString(jsonBPartnerLocation.getGln()), locationIdentifier.asGlnWithLabel().getGln());
 			case METASFRESH_ID:
 				return MetasfreshId.equals(locationIdentifier.asMetasfreshId(), MetasfreshId.of(jsonBPartnerLocation.getMetasfreshId()));
 			default:

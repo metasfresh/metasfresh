@@ -100,6 +100,9 @@ public class JsonRequestConsolidateService
 			case GLN:
 				// GLN-identifierString is valid for bPartner-lookup, but we can't consolidate the given jsonBPartner with it
 				break;
+				case  GLN_WITH_LABEL:
+					final String lookupLabel = identifierString.asGlnWithLabel().getLabel();
+					jsonBPartner.setLookupLabel(lookupLabel);
 			default:
 				throw new AdempiereException("Unexpected IdentifierString.Type=" + identifierString.getType())
 						.appendParametersToMessage()

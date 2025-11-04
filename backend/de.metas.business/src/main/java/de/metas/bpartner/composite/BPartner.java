@@ -56,6 +56,7 @@ public class BPartner
 	public static final String NAME = "name";
 	public static final String NAME_2 = "name2";
 	public static final String NAME_3 = "name3";
+	public static final String GLN_LOOKUP_LABEL = "glnLookupLabel";
 	public static final String COMPANY_NAME = "companyName";
 	public static final String PARENT_ID = "parentId";
 	public static final String VALUE = "value";
@@ -83,8 +84,7 @@ public class BPartner
 	public static final String CAMPAIGN_ID = "campaignId";
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
-	public static final String LOOKUP_LABEL = "lookupLabel";
-
+	
 	/**
 	 * May be null if the bpartner was not yet saved.
 	 */
