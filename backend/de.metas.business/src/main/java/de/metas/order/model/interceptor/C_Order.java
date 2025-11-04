@@ -238,38 +238,22 @@ public class C_Order
 		}
 
 		final int c_Incoterms;
-		final String incotrmLocation;
+		final String incotermLocation;
 
 		if (order.isSOTrx())
 		{
-			if (bpartner.getC_Incoterms_Customer_ID() > 0)
-			{
 				c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
-				incotrmLocation = bpartner.getIncotermLocation();
-			}
-			else
-			{
-				c_Incoterms = bpartner.getC_BP_Group().getC_Incoterms_ID();
-				incotrmLocation = bpartner.getC_BP_Group().getIncotermLocation();
-			}
+				incotermLocation = bpartner.getIncotermLocation();
 		}
 		else
 		{
-			if (bpartner.getC_Incoterms_Vendor_ID() > 0)
-			{
 				c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
-				incotrmLocation = bpartner.getPO_IncotermLocation();
-			}
-			else
-			{
-				c_Incoterms = bpartner.getC_BP_Group().getPO_Incoterms_ID();
-				incotrmLocation = bpartner.getC_BP_Group().getPO_IncotermLocation();
-			}
+				incotermLocation = bpartner.getPO_IncotermLocation();
 		}
 		if(c_Incoterms > 0)
 		{
 			order.setC_Incoterms_ID(c_Incoterms);
-			order.setIncotermLocation(incotrmLocation);
+			order.setIncotermLocation(incotermLocation);
 		}
 	}
 
