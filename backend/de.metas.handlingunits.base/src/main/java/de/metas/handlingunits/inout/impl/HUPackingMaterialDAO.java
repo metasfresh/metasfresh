@@ -9,6 +9,7 @@ import de.metas.handlingunits.inout.HuPackingMaterialQuery;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -17,10 +18,13 @@ import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -30,9 +34,12 @@ import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -43,6 +50,7 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 {
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public List<I_M_HU_PackingMaterial> retrievePackingMaterials(@Nullable final I_M_HU_PI_Item_Product pip)
@@ -107,11 +115,78 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 	{
 		final UomId fromUomId = UomId.ofRepoId(packingMaterial.getC_UOM_Dimension_ID());
 
-		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
 		return PackageDimensions.builder()
 				.heightInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getHeight()).orElse(BigDecimal.ONE).intValue())
 				.lengthInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getLength()).orElse(BigDecimal.ONE).intValue())
 				.widthInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getWidth()).orElse(BigDecimal.ONE).intValue())
+				.build();
+	}
+
+	@Override
+	@Nullable
+	public PackageDimensions retrievePackageDimensionsOrNull(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
+	{
+		final I_M_HU_PackingMaterial packingMaterial = retrievePackingMaterialOrNull(packageId);
+		if (packingMaterial != null)
+		{
+			return retrievePackageDimensions(packingMaterial, toUomId);
+		}
+
+		return getPackageDimensionsIfSingleProduct(packageId, toUomId);
+	}
+
+	@Nullable
+	private PackageDimensions getPackageDimensionsIfSingleProduct(final @NonNull PackageId packageId, final @NonNull UomId toUomId)
+	{
+		final Set<I_M_Product> productsInPackage = queryBL.createQueryBuilder(I_M_Package_HU.class, packageId)
+				.andCollect(I_M_Package_HU.COLUMN_M_HU_ID, I_M_HU.class)
+				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
+				.andCollectChildren(I_M_HU_Item_Storage.COLUMN_M_HU_Item_ID)
+				.andCollect(I_M_HU_Item_Storage.COLUMNNAME_M_Product_ID, I_M_Product.class)
+				.create()
+				.stream()
+				.collect(Collectors.toSet());
+		if (productsInPackage.size() == 1)
+		{
+			final I_M_Product product = productsInPackage.iterator().next();
+			final Quantity totalQty = queryBL.createQueryBuilder(I_M_Package_HU.class, packageId)
+					.andCollect(I_M_Package_HU.COLUMN_M_HU_ID, I_M_HU.class)
+					.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
+					.andCollectChildren(I_M_HU_Item_Storage.COLUMN_M_HU_Item_ID)
+					.create()
+					.stream()
+					.map(hus -> Quantitys.of(hus.getQty(), UomId.ofRepoId(hus.getC_UOM_ID())))
+					.reduce(Quantitys.zero(ProductId.ofRepoId(product.getM_Product_ID())), Quantity::add);
+
+			return createPackageDimensionsFromProduct(product, totalQty);
+		}
+		else
+		{
+			throw new RuntimeException("Cannot calculate package dimensions for package " + packageId + " because it contains more than one product");
+		}
+	}
+
+	/**
+	 * This method assumes the products don't have a dedicated packing material, and instead are stacked upon each other, on its smallest dimension (Like books in a library).
+	 */
+	private PackageDimensions createPackageDimensionsFromProduct(@NonNull final I_M_Product product, @NonNull final Quantity totalQtyInProductUOM)
+	{
+		Check.assumeEquals(totalQtyInProductUOM.getUomId(), UomId.ofRepoId(product.getC_UOM_ID()), "totalQtyInProductUOM's UOM shall be the same as product's UOM");
+		//TODO extract from dedicated M_Product columns
+		final BigDecimal height = BigDecimal.TEN;
+		final BigDecimal length = BigDecimal.TEN;
+		final BigDecimal width = BigDecimal.ONE;
+
+		final List<BigDecimal> dimensions = new ArrayList<>();
+		dimensions.add(length);
+		dimensions.add(width);
+		dimensions.add(height);
+		dimensions.sort(BigDecimal::compareTo);
+
+		return PackageDimensions.builder()
+				.lengthInCM(dimensions.get(0).multiply(totalQtyInProductUOM.toBigDecimal()).intValueExact())
+				.widthInCM(dimensions.get(2).intValue())
+				.heightInCM(dimensions.get(1).intValue())
 				.build();
 	}
 

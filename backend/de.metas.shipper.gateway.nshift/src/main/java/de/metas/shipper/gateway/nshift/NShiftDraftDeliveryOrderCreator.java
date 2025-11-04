@@ -8,7 +8,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
@@ -136,13 +135,13 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 	private static Address toPickFromAddress(final I_C_BPartner pickupFromBPartner, final I_C_Location pickupFromLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation , pickupFromBPartner)
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner)
 				.build();
 	}
 
 	private static Address toDeliverToAddress(final I_C_BPartner deliverToBPartner, final I_C_Location deliverToLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation , deliverToBPartner)
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner)
 				.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
 				.build();
 	}
@@ -216,13 +215,13 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	public static PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
 	{
 		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(packageId);
+		final PackageDimensions packageDimensions = packingMaterialDAO.retrievePackageDimensionsOrNull(packageId, toUomId);
 
-		if (packingMaterial == null)
+		if (packageDimensions == null)
 		{
-			throw new AdempiereException("There is no packing material for M_Package_HU_ID=" + packageId.getRepoId() + ". Please create a packing material and set its correct dimensions.");
+			throw new AdempiereException("Cannot determine dimensions of M_Package_ID=" + packageId.getRepoId() + ". Either use a packing material or ensure product dimensions are set.");
 		}
 
-		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
+		return packageDimensions;
 	}
 }
