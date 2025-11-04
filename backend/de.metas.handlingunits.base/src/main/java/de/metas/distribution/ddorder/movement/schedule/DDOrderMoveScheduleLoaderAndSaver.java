@@ -205,7 +205,7 @@ class DDOrderMoveScheduleLoaderAndSaver
 				//
 				// Drop To
 				.dropToMovementId(MovementId.ofRepoIdOrNull(record.getDropTo_Movement_ID()))
-				.dropToLocatorId(LocatorId.ofRepoIdOrNull(record.getDropTo_Warehouse_ID(), record.getDropTo_Locator_ID()))
+				.dropToLocatorId(LocatorId.ofRepoId(record.getDropTo_Warehouse_ID(), record.getDropTo_Locator_ID()))
 				//
 				.build();
 	}
@@ -276,9 +276,9 @@ class DDOrderMoveScheduleLoaderAndSaver
 		// Drop To Status
 		{
 			record.setDropTo_Movement_ID(MovementId.toRepoId(from.getDropToMovementId()));
-			
+
 			final LocatorId dropToLocatorId = from.getDropToLocatorId();
-			record.setDropTo_Warehouse_ID(WarehouseId.toRepoId(dropToLocatorId != null ? dropToLocatorId.getWarehouseId() : null));
+			record.setDropTo_Warehouse_ID(WarehouseId.toRepoId(dropToLocatorId.getWarehouseId()));
 			record.setDropTo_Locator_ID(LocatorId.toRepoId(dropToLocatorId));
 		}
 	}
