@@ -242,15 +242,15 @@ public class C_Order
 
 		if (order.isSOTrx())
 		{
-				c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
-				incotermLocation = bpartner.getIncotermLocation();
+			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
+			incotermLocation = bpartner.getIncotermLocation();
 		}
 		else
 		{
-				c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
-				incotermLocation = bpartner.getPO_IncotermLocation();
+			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
+			incotermLocation = bpartner.getPO_IncotermLocation();
 		}
-		if(c_Incoterms > 0)
+		if (c_Incoterms > 0)
 		{
 			order.setC_Incoterms_ID(c_Incoterms);
 			order.setIncotermLocation(incotermLocation);
