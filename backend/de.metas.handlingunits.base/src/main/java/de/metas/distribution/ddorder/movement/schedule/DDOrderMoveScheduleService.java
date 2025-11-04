@@ -189,7 +189,7 @@ public class DDOrderMoveScheduleService
 				.execute();
 	}
 
-	public DDOrderMoveSchedule dropTo(@NonNull final DDOrderDropToRequest request)
+	public List<DDOrderMoveSchedule> dropTo(@NonNull final DDOrderDropToRequest request)
 	{
 		return DDOrderDropToCommand.builder()
 				.ppOrderSourceHUService(ppOrderSourceHUService)
