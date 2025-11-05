@@ -48,7 +48,7 @@ import java.util.stream.Stream;
 
 public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	@NonNull private static final AdMessageKey ONLY_ONE_SHIPPER_ALLOWED = AdMessageKey.of("OnlyOneShipperAllowed"); //TODO adMsg
+	@NonNull private static final AdMessageKey ONLY_ONE_SHIPPER_ALLOWED = AdMessageKey.of("MoreThanOneShipperSelected");
 
 	@NonNull private final CarrierAdviseProcessHelper helper = CarrierAdviseProcessHelper.newInstance();
 

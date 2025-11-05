@@ -129,8 +129,8 @@ class ShipmentScheduleRepositoryTest
 		final ShipmentScheduleQuery query = ShipmentScheduleQuery.builder()
 				.exportStatus(APIExportStatus.Pending)
 				.canBeExportedFrom(canBeExportedFrom.toInstant())
+				.includeInvalid(false)
 				.build();
-		assertThat(query.isIncludeInvalid()).isFalse(); // guard
 		final List<ShipmentSchedule> result = shipmentScheduleRepository.getBy(query);
 
 		// then
