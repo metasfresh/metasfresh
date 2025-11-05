@@ -42,7 +42,6 @@ Feature: create or update BPartner v2
                         "region":null,
                         "city":null,
                         "countryCode":"DE",
-                        "gln":null,
                         "postal":null,
                         "vatId": null
                      }
@@ -57,7 +56,6 @@ Feature: create or update BPartner v2
                         "region":"test_region",
                         "city":"test_city",
                         "countryCode":"DE",
-                        "gln":null,
                         "postal":null,
                         "vatId": "vatId_Location_l22"
                      }
