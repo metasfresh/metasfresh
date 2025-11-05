@@ -1306,33 +1306,33 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		int c_Incoterms;
+		int incotermsRecordId;
 		String incotermLocation;
 
 		if (order.isSOTrx())
 		{
-			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
+			incotermsRecordId = bpartner.getC_Incoterms_Customer_ID();
 			incotermLocation = bpartner.getIncotermLocation();
 		}
 		else
 		{
-			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
+			incotermsRecordId = bpartner.getC_Incoterms_Vendor_ID();
 			incotermLocation = bpartner.getPO_IncotermLocation();
 		}
 
-		if (c_Incoterms <= 0)
+		if (incotermsRecordId <= 0)
 		{
 			final I_C_Incoterms defaultIncoterms = incotermsDAO.getDefaultIncoterms(OrgId.ofRepoId(order.getAD_Org_ID()));
 			if (defaultIncoterms != null)
 			{
-				c_Incoterms = defaultIncoterms.getC_Incoterms_ID();
+				incotermsRecordId = defaultIncoterms.getC_Incoterms_ID();
 				incotermLocation = defaultIncoterms.getDefaultLocation();
 			}
 		}
 
-		if (c_Incoterms > 0)
+		if (incotermsRecordId > 0)
 		{
-			order.setC_Incoterms_ID(c_Incoterms);
+			order.setC_Incoterms_ID(incotermsRecordId);
 			order.setIncotermLocation(incotermLocation);
 		}
 	}
