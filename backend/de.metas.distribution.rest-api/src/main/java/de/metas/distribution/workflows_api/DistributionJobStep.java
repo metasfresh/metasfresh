@@ -1,5 +1,6 @@
 package de.metas.distribution.workflows_api;
 
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.quantity.Quantity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
@@ -64,4 +65,8 @@ public class DistributionJobStep
 			return WFActivityStatus.NOT_STARTED;
 		}
 	}
+
+	public DDOrderMoveScheduleId getScheduleId() {return getId().toScheduleId();}
+
+	public boolean isInTransit() {return isPickedFromLocator && !isDroppedToLocator;}
 }
