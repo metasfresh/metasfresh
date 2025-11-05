@@ -230,13 +230,13 @@ class PharmaPriceLimitRuleInstance
 	@lombok.Value
 	private static class PriceLimit
 	{
-		private BigDecimal valueAsBigDecimal;
+		BigDecimal valueAsBigDecimal;
 
-		private BigDecimal basePrice;
-		private BigDecimal priceAddAmt;
-		private BigDecimal discountPercentToSubtract;
-		private BigDecimal paymentTermDiscountPercentToAdd;
-		private CurrencyPrecision precision;
+		BigDecimal basePrice;
+		BigDecimal priceAddAmt;
+		BigDecimal discountPercentToSubtract;
+		BigDecimal paymentTermDiscountPercentToAdd;
+		CurrencyPrecision precision;
 
 		@lombok.Builder
 		private PriceLimit(

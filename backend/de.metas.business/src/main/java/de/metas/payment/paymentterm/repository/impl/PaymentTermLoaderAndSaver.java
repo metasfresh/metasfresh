@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Builder(access = AccessLevel.PACKAGE)
@@ -138,13 +137,6 @@ public class PaymentTermLoaderAndSaver
 		@NonNull final List<I_C_PaymentTerm_Break> breakRecords = getPaymentTermBreakRecords(paymentTermId);
 		@NonNull final List<I_C_PaySchedule> payScheduleRecords = getPayScheduleRecords(paymentTermId);
 		return PaymentTermConverter.fromRecord(record, breakRecords, payScheduleRecords);
-	}
-
-	public void updateRecordById(final PaymentTermId paymentTermId, final Consumer<I_C_PaymentTerm> updater)
-	{
-		final I_C_PaymentTerm record = getRecordById(paymentTermId);
-		updater.accept(record);
-		saveToDB(record);
 	}
 
 	private void saveToDB(final I_C_PaymentTerm record)

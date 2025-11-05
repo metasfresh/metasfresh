@@ -2,7 +2,6 @@ package de.metas.invoice.paymentschedule.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.paymentschedule.InvoicePayScheduleLineId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.paymentschedule.OrderAndPayScheduleId;

@@ -86,10 +86,4 @@ public class PayScheduleId implements RepoIdAware
 	{
 		return payScheduleId != null ? payScheduleId.getRepoId() : -1;
 	}
-
-	@Nullable
-	public static Integer toRepoIdOrNull(@Nullable final PayScheduleId payScheduleId)
-	{
-		return payScheduleId != null ? payScheduleId.getRepoId() : null;
-	}
 }
