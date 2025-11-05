@@ -95,6 +95,7 @@ public class JsonDistributionEvent
 	}
 
 	@NonNull
+	@JsonIgnore
 	public DropTo getDropToNonNull()
 	{
 		return Check.assumeNotNull(dropTo, "dropTo shall not be null: {}", this);
