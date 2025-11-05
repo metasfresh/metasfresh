@@ -428,8 +428,6 @@ public interface ICompositeQueryFilterProxy<T, RT>
 				.build());
 	}
 
-
-	
 	default <ST> RT addNotInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
