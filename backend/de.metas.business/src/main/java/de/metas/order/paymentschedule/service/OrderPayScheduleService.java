@@ -23,6 +23,7 @@
 package de.metas.order.paymentschedule.service;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -37,6 +38,7 @@ import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
@@ -44,6 +46,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -51,6 +54,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class OrderPayScheduleService
 {
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final OrderPayScheduleRepository orderPayScheduleRepository;
 	@NonNull private final PaymentTermService paymentTermService;
@@ -86,7 +90,16 @@ public class OrderPayScheduleService
 		orderPayScheduleRepository.updateById(context.getOrderId(), orderPaySchedule -> orderPaySchedule.updateStatusFromContext(context));
 	}
 
-	public void updatePayScheduleStatuses(@NonNull final Set<OrderId> orderIds)
+	public void updatePayScheduleStatusesBeforeCommit(@NonNull final OrderId orderId)
+	{
+		trxManager.accumulateAndProcessBeforeCommit(
+				"OrderPayScheduleService.updatePayScheduleStatusesBeforeCommit",
+				Collections.singleton(orderId),
+				orderIds -> updatePayScheduleStatusesNow(ImmutableSet.copyOf(orderIds))
+		);
+	}
+
+	private void updatePayScheduleStatusesNow(@NonNull final Set<OrderId> orderIds)
 	{
 		if (orderIds.isEmpty()) {return;}
 

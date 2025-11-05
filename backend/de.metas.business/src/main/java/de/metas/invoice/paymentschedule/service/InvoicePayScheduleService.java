@@ -23,6 +23,7 @@
 package de.metas.invoice.paymentschedule.service;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.paymentschedule.repository.InvoicePayScheduleRepository;
@@ -33,15 +34,18 @@ import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class InvoicePayScheduleService
 {
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final InvoicePayScheduleRepository invoicePayScheduleRepository;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
@@ -58,7 +62,16 @@ public class InvoicePayScheduleService
 				.execute();
 	}
 
-	public void validateInvoices(final Set<InvoiceId> invoiceIds)
+	public void validateInvoiceBeforeCommit(@NonNull final InvoiceId invoiceId)
+	{
+		trxManager.accumulateAndProcessBeforeCommit(
+				"InvoicePayScheduleService.validateInvoiceBeforeCommit",
+				Collections.singleton(invoiceId),
+				invoiceIds -> validateInvoicesNow(ImmutableSet.copyOf(invoiceIds))
+		);
+	}
+
+	private void validateInvoicesNow(final Set<InvoiceId> invoiceIds)
 	{
 		if (invoiceIds.isEmpty()) {return;}
 
@@ -71,11 +84,8 @@ public class InvoicePayScheduleService
 			final I_C_Invoice invoice = invoicesById.get(invoicePaySchedule.getInvoiceId());
 			final Money grandTotal = invoiceBL.extractGrandTotal(invoice).toMoney();
 			boolean isValid = invoicePaySchedule.validate(grandTotal);
-			if (invoice.isPayScheduleValid() != isValid)
-			{
-				invoice.setIsPayScheduleValid(isValid);
-				invoiceBL.save(invoice);
-			}
+			invoice.setIsPayScheduleValid(isValid);
+			invoiceBL.save(invoice);
 		});
 	}
 
