@@ -53,6 +53,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = { NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class })
 @TestPropertySource(properties = {
@@ -395,7 +396,8 @@ public class ShipmentServiceTest
 	void local_api_test()
 	{
 		final JsonDeliveryResponse response = nShiftShipmentService.createShipment(DELIVERY_REQUEST);
-		assertThat(response).isNotNull();
+		assertNotNull(response);
+		assertNotNull(response.getItems().get(0).getTrackingUrl());
 		assertFalse(response.isError());
 	}
 
