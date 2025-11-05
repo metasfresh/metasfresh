@@ -20,22 +20,29 @@
  * #L%
  */
 
-package de.metas.order.paymentschedule;
+package de.metas.invoice.paymentschedule.service;
 
-import de.metas.adempiere.model.I_C_Invoice;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentschedule.repository.InvoicePayScheduleRepository;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.Money;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.payment.paymentterm.PaymentTermService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class InvoicePayScheduleService
 {
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final InvoicePayScheduleRepository invoicePayScheduleRepository;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final PaymentTermService paymentTermService;
@@ -43,7 +50,7 @@ public class InvoicePayScheduleService
 	public void createInvoicePaySchedules(final I_C_Invoice invoice)
 	{
 		InvoicePayScheduleCreateCommand.builder()
-				.invoicePayScheduleService(this)
+				.invoicePayScheduleRepository(invoicePayScheduleRepository)
 				.orderPayScheduleService(orderPayScheduleService)
 				.paymentTermService(paymentTermService)
 				.invoiceRecord(invoice)
@@ -51,22 +58,25 @@ public class InvoicePayScheduleService
 				.execute();
 	}
 
-	public void deleteByInvoiceId(@NonNull final InvoiceId invoiceId) {invoicePayScheduleRepository.deleteByInvoiceId(invoiceId);}
-
-	public void create(@NonNull final InvoicePayScheduleCreateRequest request) {invoicePayScheduleRepository.create(request);}
-
-	public boolean validate(@NonNull final InvoiceId invoiceId, @NonNull final BigDecimal grandTotal)
+	public void validateInvoices(final Set<InvoiceId> invoiceIds)
 	{
-		final AtomicReference<Boolean> validationResult = new AtomicReference<>(false);
+		if (invoiceIds.isEmpty()) {return;}
 
-		invoicePayScheduleRepository.updateById(invoiceId, invoicePaySchedule -> {
-			final boolean result = invoicePaySchedule.validate(grandTotal);
+		final ImmutableMap<InvoiceId, I_C_Invoice> invoicesById = Maps.uniqueIndex(
+				invoiceBL.getByIds(invoiceIds),
+				invoice -> InvoiceId.ofRepoId(invoice.getC_Invoice_ID())
+		);
 
-			validationResult.set(result);
+		invoicePayScheduleRepository.updateByIds(invoicesById.keySet(), invoicePaySchedule -> {
+			final I_C_Invoice invoice = invoicesById.get(invoicePaySchedule.getInvoiceId());
+			final Money grandTotal = invoiceBL.extractGrandTotal(invoice).toMoney();
+			boolean isValid = invoicePaySchedule.validate(grandTotal);
+			if (invoice.isPayScheduleValid() != isValid)
+			{
+				invoice.setIsPayScheduleValid(isValid);
+				invoiceBL.save(invoice);
+			}
 		});
-
-		return validationResult.get();
-
 	}
 
 }

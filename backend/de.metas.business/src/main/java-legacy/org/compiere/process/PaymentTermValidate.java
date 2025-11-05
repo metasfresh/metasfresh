@@ -19,7 +19,6 @@ package org.compiere.process;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
@@ -27,28 +26,10 @@ public class PaymentTermValidate extends JavaProcess
 {
 	@NonNull final PaymentTermService paymentTermService = SpringContextHolder.instance.getBean(PaymentTermService.class);
 
-	protected void prepare()
+	protected String doIt()
 	{
-		final ProcessInfoParameter[] para = getParametersAsArray();
-		for (final ProcessInfoParameter processInfoParameter : para)
-		{
-			final String name = processInfoParameter.getParameterName();
-			if (processInfoParameter.getParameter() != null)
-			{
-				log.error("Unknown Parameter: {}", name);
-			}
-
-		}
-	}
-
-	protected String doIt() throws Exception
-	{
-		log.info("C_PaymentTerm_ID={}", getRecord_ID());
-
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(getRecord_ID());
-		final boolean isValid = paymentTermService.validate(paymentTermId);
-		//
-		return isValid ? "@OK@" : "@Invalid@ @C_PaymentTerm_ID@=" + paymentTermId;
+		paymentTermService.validateNow(paymentTermId);
+		return MSG_OK;
 	}
-
 }

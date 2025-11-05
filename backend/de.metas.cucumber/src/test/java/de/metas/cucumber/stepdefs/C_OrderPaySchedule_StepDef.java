@@ -28,7 +28,7 @@ import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
 import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.order.paymentschedule.OrderPayScheduleLine;
-import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import io.cucumber.datatable.DataTable;

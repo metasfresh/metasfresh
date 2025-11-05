@@ -20,8 +20,10 @@
  * #L%
  */
 
-package de.metas.order.paymentschedule;
+package de.metas.payment.paymentterm;
 
+import de.metas.currency.CurrencyPrecision;
+import de.metas.money.Money;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -29,19 +31,39 @@ import lombok.Value;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.DayOfWeek;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Value
 @Builder
 public class PaySchedule
 {
 	@NonNull PayScheduleId id;
-	@NonNull Percent discount;
 	@NonNull Percent percentage;
+	@NonNull Percent discount;
 
 	@Nullable DayOfWeek netDay;
-
-	boolean isValid;
-	int discountDays;
-	int graceDays;
 	int netDays;
+	int graceDays;
+	int discountDays;
+
+	public Money calculateDueAmt(@NonNull final Money grandTotal, @NonNull final CurrencyPrecision precision)
+	{
+		return grandTotal.multiply(percentage, precision);
+	}
+
+	public Instant calculateDueDate(@NonNull final Instant dateInvoiced)
+	{
+		return dateInvoiced.plus(netDays, ChronoUnit.DAYS);
+	}
+
+	public Money calculateDiscountAmt(@NonNull final Money dueAmt, @NonNull final CurrencyPrecision precision)
+	{
+		return dueAmt.multiply(percentage, precision);
+	}
+
+	public Instant calculateDiscountDate(@NonNull final Instant dateInvoiced)
+	{
+		return dateInvoiced.plus(discountDays, ChronoUnit.DAYS);
+	}
 }

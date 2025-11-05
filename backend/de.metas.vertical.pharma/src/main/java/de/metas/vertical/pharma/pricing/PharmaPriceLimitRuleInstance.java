@@ -14,7 +14,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -222,8 +222,8 @@ class PharmaPriceLimitRuleInstance
 			return BigDecimal.ZERO;
 		}
 
-		return paymentTermsRepo
-				.getPaymentTermDiscount(paymentTermId)
+		return paymentTermsRepo.getById(paymentTermId)
+				.getDiscount()
 				.toBigDecimal();
 	}
 

@@ -80,9 +80,9 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -846,7 +846,7 @@ public class C_Invoice_StepDef
 					.value(paymentTerm)
 					.build();
 
-			final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
+			final PaymentTermId paymentTermId = paymentTermRepo.firstIdOnly(query)
 					.orElse(null);
 
 			assertThat(paymentTermId).isNotNull();

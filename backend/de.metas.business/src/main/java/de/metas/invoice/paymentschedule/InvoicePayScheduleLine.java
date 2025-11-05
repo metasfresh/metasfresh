@@ -20,11 +20,12 @@
  * #L%
  */
 
-package de.metas.order.paymentschedule;
+package de.metas.invoice.paymentschedule;
 
 import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderAndPayScheduleId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -32,6 +33,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 @EqualsAndHashCode
@@ -40,13 +42,19 @@ import java.time.Instant;
 @Builder
 public class InvoicePayScheduleLine
 {
-	final @NonNull InvoicePayScheduleId id;
-	final @NonNull InvoiceId invoiceId;
-	final @NonNull OrderId orderId;
-	final @NonNull OrderPayScheduleId orderPayScheduleId;
+	@NonNull private final InvoicePayScheduleLineId id;
+	@NonNull private final InvoiceId invoiceId;
 
-	@Setter @NonNull Instant dueDate;
-	@Setter boolean isValid;
-	final @NonNull Money dueAmount;
+	@Setter private boolean isValid;
 
+	@NonNull @Setter private Instant dueDate;
+	@NonNull private final Money dueAmount;
+
+	@Nullable private final Instant discountDate;
+	@Nullable private final Money discountAmount;
+
+	@Nullable private final OrderAndPayScheduleId orderAndPayScheduleId;
+	@Nullable private final InvoicePayScheduleLineId invoicePayScheduleId;
+
+	public CurrencyId getCurrencyId() {return Money.getCommonCurrencyIdOfAll(dueAmount, discountAmount);}
 }

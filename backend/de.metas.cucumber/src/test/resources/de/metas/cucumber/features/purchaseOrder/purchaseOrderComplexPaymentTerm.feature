@@ -45,28 +45,29 @@ Feature: Purchase order with complex payment term
       | de_ch_tax  | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
       | ch_ch_tax  | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
     And metasfresh contains C_PaymentTerm
-      | Identifier | IsComplex |
-      | pt_PO      | Y         |
+      | Identifier |
+      | pt_PO      |
+      | pt_PO_2    |
+      | pt_PO_3    |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | PTB1       | pt_PO            | 25      | 1          | OD                | 10    |
       | PTB2       | pt_PO            | 75      | 0          | LC                | 20    |
-    And metasfresh contains C_PaymentTerm
-      | Identifier | IsComplex |
-      | pt_PO_2    | Y         |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | PTB21      | pt_PO_2          | 25      | 1          | OD                | 10    |
       | PTB22      | pt_PO_2          | 25      | 0          | LC                | 20    |
       | PTB23      | pt_PO_2          | 25      | 0          | BL                | 30    |
       | PTB24      | pt_PO_2          | 25      | 0          | ET                | 40    |
-    And metasfresh contains C_PaymentTerm
-      | Identifier | IsComplex |
-      | pt_PO_3    | Y         |
     And metasfresh contains C_PaymentTerm_Break
       | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
       | PTB31      | pt_PO_3          | 25      | 1          | OD                | 10    |
       | PTB32      | pt_PO_3          | 75      | 0          | IV                | 20    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO      | Y         | Y       |
+      | pt_PO_2    | Y         | Y       |
+      | pt_PO_3    | Y         | Y       |
 
 
   @from:cucumber

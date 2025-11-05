@@ -46,7 +46,7 @@ import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
-import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -640,7 +640,7 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_LC_Date, I_C_Order.COLUMNNAME_ETA, I_C_Order.COLUMNNAME_BLDate, I_C_Order.COLUMNNAME_InvoiceDate })
 	public void updateOrderPaySchedules(final I_C_Order order)
 	{
-		orderPayScheduleService.updatePayScheduleStatus(OrderId.ofRepoId(order.getC_Order_ID()));
+		orderPayScheduleService.updatePayScheduleStatus(order);
 	}
 
 }

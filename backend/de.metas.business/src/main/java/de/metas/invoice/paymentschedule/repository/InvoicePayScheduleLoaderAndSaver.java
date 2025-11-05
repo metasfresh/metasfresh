@@ -20,14 +20,14 @@
  * #L%
  */
 
-package de.metas.order.paymentschedule;
+package de.metas.invoice.paymentschedule.repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.invoice.InvoiceId;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.order.OrderId;
+import de.metas.invoice.paymentschedule.InvoicePaySchedule;
+import de.metas.invoice.paymentschedule.InvoicePayScheduleLine;
+import de.metas.invoice.paymentschedule.InvoicePayScheduleLineId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -37,8 +37,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoicePaySchedule;
-import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +47,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Builder
-public class InvoicePayScheduleLoaderAndSaver
+class InvoicePayScheduleLoaderAndSaver
 {
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final IQueryBL queryBL;
@@ -58,22 +56,19 @@ public class InvoicePayScheduleLoaderAndSaver
 
 	public Optional<InvoicePaySchedule> loadByInvoiceId(@NonNull final InvoiceId invoiceId)
 	{
-		final List<I_C_InvoicePaySchedule> records = getRecordsByInvoiceId(invoiceId);
-		if (records.isEmpty())
-		{
-			return Optional.empty();
-		}
+		return getRecordsByInvoiceId(invoiceId).stream()
+				.map(InvoicePayScheduleConverter::fromRecord)
+				.collect(InvoicePaySchedule.collect());
+	}
 
-		final ImmutableList<InvoicePayScheduleLine> lines = records.stream()
-				.map(InvoicePayScheduleLoaderAndSaver::fromRecord)
-				.collect(ImmutableList.toImmutableList());
-
-		return Optional.of(InvoicePaySchedule.ofList(invoiceId, lines));
+	private void warmUpByInvoiceIds(final Set<InvoiceId> invoiceIds)
+	{
+		CollectionUtils.getAllOrLoad(recordsByInvoiceId, invoiceIds, this::retrieveRecordsByInvoiceId);
 	}
 
 	private List<I_C_InvoicePaySchedule> getRecordsByInvoiceId(@NonNull final InvoiceId invoiceId)
 	{
-		return CollectionUtils.getOrLoadReturningMap(recordsByInvoiceId, invoiceId, this::retrieveRecordsByInvoiceId);
+		return CollectionUtils.getOrLoad(recordsByInvoiceId, invoiceId, this::retrieveRecordsByInvoiceId);
 	}
 
 	private Map<InvoiceId, ImmutableList<I_C_InvoicePaySchedule>> retrieveRecordsByInvoiceId(@NonNull final Set<InvoiceId> invoiceIds)
@@ -113,29 +108,12 @@ public class InvoicePayScheduleLoaderAndSaver
 		return InvoiceId.ofRepoId(record.getC_Invoice_ID());
 	}
 
-	@NonNull
-	private static InvoicePayScheduleLine fromRecord(@NonNull final I_C_InvoicePaySchedule record)
-	{
-		return InvoicePayScheduleLine.builder()
-				.id(InvoicePayScheduleId.ofRepoId(record.getC_InvoicePaySchedule_ID()))
-				.orderPayScheduleId(OrderPayScheduleId.ofRepoId(record.getC_OrderPaySchedule_ID()))
-				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
-				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
-				.dueDate(record.getDueDate().toInstant())
-				.build();
-	}
-
-	public void save(@NonNull final InvoicePaySchedule invoicePaySchedule)
-	{
-		trxManager.runInThreadInheritedTrx(() -> save0(invoicePaySchedule));
-	}
-
 	private void save0(@NonNull final InvoicePaySchedule invoicePaySchedule)
 	{
 		final InvoiceId invoiceId = invoicePaySchedule.getInvoiceId();
-		final HashMap<InvoicePayScheduleId, I_C_InvoicePaySchedule> records = getRecordsByInvoiceId(invoiceId)
+		final HashMap<InvoicePayScheduleLineId, I_C_InvoicePaySchedule> records = getRecordsByInvoiceId(invoiceId)
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(record -> InvoicePayScheduleId.ofRepoId(record.getC_InvoicePaySchedule_ID())));
+				.collect(GuavaCollectors.toHashMapByKey(record -> InvoicePayScheduleLineId.ofRepoId(record.getC_InvoicePaySchedule_ID())));
 
 		for (final InvoicePayScheduleLine line : invoicePaySchedule.getLines())
 		{
@@ -145,7 +123,7 @@ public class InvoicePayScheduleLoaderAndSaver
 				throw new AdempiereException("No record found by " + line.getId());
 			}
 
-			updateRecord(record, line);
+			InvoicePayScheduleConverter.updateRecord(record, line);
 			InterfaceWrapperHelper.save(record);
 		}
 
@@ -154,14 +132,14 @@ public class InvoicePayScheduleLoaderAndSaver
 		invalidateCache(invoiceId);
 	}
 
-	private static void updateRecord(final I_C_InvoicePaySchedule record, final @NotNull InvoicePayScheduleLine from)
+	public void updateByIds(@NonNull final Set<InvoiceId> invoiceIds, @NonNull final Consumer<InvoicePaySchedule> updater)
 	{
-		record.setC_Order_ID(from.getOrderId().getRepoId());
-		record.setC_OrderPaySchedule_ID(from.getOrderPayScheduleId().getRepoId());
-		record.setC_Invoice_ID(from.getInvoiceId().getRepoId());
-		record.setDueAmt(from.getDueAmount().toBigDecimal());
-		// record.setC_Currency_ID(from.getDueAmount().getCurrencyId().getRepoId()); TODO
-		record.setDueDate(TimeUtil.asTimestamp(from.getDueDate()));
+		if (invoiceIds.isEmpty()) {return;}
+
+		trxManager.runInThreadInheritedTrx(() -> {
+			warmUpByInvoiceIds(invoiceIds);
+			invoiceIds.forEach(invoiceId -> updateById0(invoiceId, updater));
+		});
 	}
 
 	public void updateById(@NonNull final InvoiceId invoiceId, @NonNull final Consumer<InvoicePaySchedule> updater)
@@ -178,6 +156,6 @@ public class InvoicePayScheduleLoaderAndSaver
 		}
 
 		updater.accept(paySchedules);
-		save(paySchedules);
+		save0(paySchedules);
 	}
 }

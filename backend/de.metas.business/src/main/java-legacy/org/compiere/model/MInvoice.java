@@ -46,6 +46,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.invoice.paymentschedule.service.InvoicePayScheduleService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -963,17 +964,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 	/**
 	 * (Re) Create Pay Schedule
-	 *
-	 * @return true if valid schedule
 	 */
-	private boolean createPaySchedule()
+	private void createPaySchedule()
 	{
-		if (getC_PaymentTerm_ID() <= 0)
-		{
-			return false;
-		}
-		final MPaymentTerm pt = new MPaymentTerm(getCtx(), getC_PaymentTerm_ID(), null);
-		return pt.apply(this);        // calls validate pay schedule
+		final InvoicePayScheduleService invoicePayScheduleService = SpringContextHolder.instance.getBean(InvoicePayScheduleService.class);
+		invoicePayScheduleService.createInvoicePaySchedules(this);
 	}    // createPaySchedule
 
 	@Override

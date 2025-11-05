@@ -20,13 +20,17 @@
  * #L%
  */
 
-package de.metas.order.paymentschedule;
+package de.metas.order.paymentschedule.repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPaySchedule;
+import de.metas.order.paymentschedule.OrderPayScheduleId;
+import de.metas.order.paymentschedule.OrderPayScheduleLine;
+import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.GuavaCollectors;
@@ -74,9 +78,14 @@ public class OrderPayScheduleLoaderAndSaver
 		return Optional.of(OrderPaySchedule.ofList(orderId, lines));
 	}
 
+	private void warmUpByOrderIds(final Set<OrderId> orderIds)
+	{
+		CollectionUtils.getAllOrLoad(recordsByOrderId, orderIds, this::retrieveRecordsByOrderId);
+	}
+
 	private List<I_C_OrderPaySchedule> getRecordsByOrderId(@NonNull final OrderId orderId)
 	{
-		return CollectionUtils.getOrLoadReturningMap(recordsByOrderId, orderId, this::retrieveRecordsByOrderId);
+		return CollectionUtils.getOrLoad(recordsByOrderId, orderId, this::retrieveRecordsByOrderId);
 	}
 
 	private Map<OrderId, ImmutableList<I_C_OrderPaySchedule>> retrieveRecordsByOrderId(@NonNull final Set<OrderId> orderIds)
@@ -183,6 +192,16 @@ public class OrderPayScheduleLoaderAndSaver
 		record.setReferenceDateType(from.getReferenceDateType().getCode());
 		record.setSeqNo(from.getSeqNo().toInt());
 		record.setStatus(OrderPayScheduleStatus.toCodeOrNull(from.getStatus()));
+	}
+
+	public void updateByIds(@NonNull final Set<OrderId> orderIds, @NonNull final Consumer<OrderPaySchedule> updater)
+	{
+		if (orderIds.isEmpty()) {return;}
+		
+		trxManager.runInThreadInheritedTrx(() -> {
+			warmUpByOrderIds(orderIds);
+			orderIds.forEach(orderId -> updateById0(orderId, updater));
+		});
 	}
 
 	public void updateById(@NonNull final OrderId orderId, @NonNull final Consumer<OrderPaySchedule> updater)

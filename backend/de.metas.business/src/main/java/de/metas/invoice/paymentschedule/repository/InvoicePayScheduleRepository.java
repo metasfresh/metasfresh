@@ -20,18 +20,20 @@
  * #L%
  */
 
-package de.metas.order.paymentschedule;
+package de.metas.invoice.paymentschedule.repository;
 
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentschedule.InvoicePaySchedule;
+import de.metas.invoice.paymentschedule.service.InvoicePayScheduleCreateRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_InvoicePaySchedule;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -53,19 +55,14 @@ public class InvoicePayScheduleRepository
 
 	public void create(@NonNull final InvoicePayScheduleCreateRequest request)
 	{
-		request.getLines()
-				.forEach(line -> createLine(line, request.getInvoiceId()));
+		request.getLines().forEach(line -> createLine(line, request.getInvoiceId()));
 	}
 
-	private static void createLine(@NonNull final InvoicePayScheduleCreateRequest.Line request, @NonNull final InvoiceId invoiceId)
+	private void createLine(@NonNull final InvoicePayScheduleCreateRequest.Line request, @NonNull final InvoiceId invoiceId)
 	{
 		final I_C_InvoicePaySchedule record = newInstance(I_C_InvoicePaySchedule.class);
 		record.setC_Invoice_ID(invoiceId.getRepoId());
-		record.setC_Order_ID(request.getOrderId().getRepoId());
-		record.setC_OrderPaySchedule_ID(request.getOrderPayScheduleId().getRepoId());
-		record.setDueAmt(request.getDueAmount().toBigDecimal());
-		record.setC_Currency_ID(request.getDueAmount().getCurrencyId().getRepoId());
-		record.setDueDate(TimeUtil.asTimestamp(request.getDueDate()));
+		InvoicePayScheduleConverter.updateRecord(record, request);
 		saveRecord(record);
 	}
 
@@ -77,11 +74,14 @@ public class InvoicePayScheduleRepository
 				.delete();
 	}
 
-	public void save(final InvoicePaySchedule invoicePaySchedule) {newLoaderAndSaver().save(invoicePaySchedule);}
-
 	public void updateById(@NonNull final InvoiceId invoiceId, @NonNull final Consumer<InvoicePaySchedule> updater)
 	{
 		newLoaderAndSaver().updateById(invoiceId, updater);
+	}
+
+	public void updateByIds(@NonNull final Set<InvoiceId> invoiceIds, @NonNull final Consumer<InvoicePaySchedule> updater)
+	{
+		newLoaderAndSaver().updateByIds(invoiceIds, updater);
 	}
 
 	public Optional<InvoicePaySchedule> getByInvoiceId(@NonNull final InvoiceId invoiceId)

@@ -11,9 +11,10 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.greeting.GreetingRepository;
+import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
-import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
@@ -59,7 +60,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class OrderTest
 {
-
 	public static final String PARTNER_NAME_1 = "PartnerName1";
 	public static final String ENGLISH = "en_US";
 
@@ -82,7 +82,6 @@ public class OrderTest
 	@Test
 	public void updateDescriptionFromDocType()
 	{
-
 		final String docTypeName1 = "DocType1";
 		final String descriptionDocType1 = "Description DocType1";
 		final String documentNoteDocType1 = "Document Note DocType1";
@@ -182,6 +181,7 @@ public class OrderTest
 		order.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
 		order.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		order.setDatePromised(SystemTime.asTimestamp());
+		order.setC_Currency_ID(CurrencyId.EUR.getRepoId());
 
 
 		save(order);

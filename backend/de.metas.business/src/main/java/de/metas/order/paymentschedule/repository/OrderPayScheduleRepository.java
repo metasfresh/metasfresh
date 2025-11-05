@@ -20,9 +20,12 @@
  * #L%
  */
 
-package de.metas.order.paymentschedule;
+package de.metas.order.paymentschedule.repository;
 
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPaySchedule;
+import de.metas.order.paymentschedule.service.OrderPayScheduleCreateRequest;
+import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import de.metas.util.lang.SeqNoProvider;
@@ -34,6 +37,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -97,4 +101,10 @@ public class OrderPayScheduleRepository
 	{
 		newLoaderAndSaver().updateById(orderId, updater);
 	}
+
+	public void updateByIds(@NonNull final Set<OrderId> orderIds, @NonNull final Consumer<OrderPaySchedule> updater)
+	{
+		newLoaderAndSaver().updateByIds(orderIds, updater);
+	}
+
 }

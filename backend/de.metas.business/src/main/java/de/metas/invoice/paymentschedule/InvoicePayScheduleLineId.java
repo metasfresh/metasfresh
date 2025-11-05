@@ -1,4 +1,4 @@
-package de.metas.order.paymentschedule;
+package de.metas.invoice.paymentschedule;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -11,28 +11,28 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Value
-public class InvoicePayScheduleId implements RepoIdAware
+public class InvoicePayScheduleLineId implements RepoIdAware
 {
 	@JsonCreator
-	public static InvoicePayScheduleId ofRepoId(final int repoId)
+	public static InvoicePayScheduleLineId ofRepoId(final int repoId)
 	{
-		return new InvoicePayScheduleId(repoId);
+		return new InvoicePayScheduleLineId(repoId);
 	}
 
 	@Nullable
-	public static InvoicePayScheduleId ofRepoIdOrNull(final int repoId)
+	public static InvoicePayScheduleLineId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static Optional<InvoicePayScheduleId> optionalOfRepoId(final int repoId)
+	public static Optional<InvoicePayScheduleLineId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	int repoId;
 
-	private InvoicePayScheduleId(final int repoId)
+	private InvoicePayScheduleLineId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_InvoicePaySchedule_ID");
 	}
@@ -44,12 +44,12 @@ public class InvoicePayScheduleId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(@Nullable final InvoicePayScheduleId id)
+	public static int toRepoId(@Nullable final InvoicePayScheduleLineId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
 
-	public static boolean equals(@Nullable final InvoicePayScheduleId id1, @Nullable final InvoicePayScheduleId id2)
+	public static boolean equals(@Nullable final InvoicePayScheduleLineId id1, @Nullable final InvoicePayScheduleLineId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

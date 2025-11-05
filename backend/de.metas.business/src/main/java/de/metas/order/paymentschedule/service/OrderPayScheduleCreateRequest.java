@@ -1,8 +1,9 @@
-package de.metas.order.paymentschedule;
+package de.metas.order.paymentschedule.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.Check;

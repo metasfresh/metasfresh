@@ -20,9 +20,8 @@
  * #L%
  */
 
-package de.metas.order.paymentschedule;
+package de.metas.payment.paymentterm;
 
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
@@ -38,7 +37,6 @@ public class PayScheduleId implements RepoIdAware
 {
 	@NonNull
 	PaymentTermId paymentTermId;
-
 	int repoId;
 
 	public static PayScheduleId ofRepoId(@NonNull final PaymentTermId paymentTermId, final int payScheduleId)
@@ -80,7 +78,7 @@ public class PayScheduleId implements RepoIdAware
 	@Builder
 	private PayScheduleId(@NonNull final PaymentTermId paymentTermId, final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "payScheduleId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_PaySchedule_ID");
 		this.paymentTermId = paymentTermId;
 	}
 

@@ -20,39 +20,40 @@
  * #L%
  */
 
-package de.metas.order.paymentschedule;
+package de.metas.order.paymentschedule.service;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.invoice.service.IInvoiceBL;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.paymentschedule.OrderPaySchedule;
+import de.metas.order.paymentschedule.OrderPayScheduleId;
+import de.metas.order.paymentschedule.OrderSchedulingContext;
+import de.metas.order.paymentschedule.repository.OrderPayScheduleRepository;
 import de.metas.payment.paymentterm.PaymentTerm;
-import de.metas.payment.paymentterm.PaymentTermConstants;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
-import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class OrderPayScheduleService
 {
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final OrderPayScheduleRepository orderPayScheduleRepository;
 	@NonNull private final PaymentTermService paymentTermService;
-	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public static OrderPayScheduleService newInstanceForUnitTesting()
 	{
@@ -74,15 +75,38 @@ public class OrderPayScheduleService
 				.execute();
 	}
 
-	public void updatePayScheduleStatus(@NonNull final OrderId orderId)
+	public void updatePayScheduleStatus(@NonNull final I_C_Order order)
 	{
-		final OrderSchedulingContext context = extractContext(orderBL.getById(orderId));
+		final OrderSchedulingContext context = extractContext(order);
 		if (context == null)
 		{
 			return;
 		}
 
-		orderPayScheduleRepository.updateById(orderId, orderPaySchedule -> orderPaySchedule.updateStatusFromContext(context));
+		orderPayScheduleRepository.updateById(context.getOrderId(), orderPaySchedule -> orderPaySchedule.updateStatusFromContext(context));
+	}
+
+	public void updatePayScheduleStatuses(@NonNull final Set<OrderId> orderIds)
+	{
+		if (orderIds.isEmpty()) {return;}
+
+		final ImmutableMap<OrderId, I_C_Order> ordersById = Maps.uniqueIndex(
+				orderBL.getByIds(orderIds),
+				order -> OrderId.ofRepoId(order.getC_Order_ID())
+		);
+
+		orderPayScheduleRepository.updateByIds(
+				ordersById.keySet(),
+				orderPaySchedule -> {
+					final I_C_Order order = ordersById.get(orderPaySchedule.getOrderId());
+					final OrderSchedulingContext context = extractContext(order);
+					if (context == null)
+					{
+						return;
+					}
+
+					orderPaySchedule.updateStatusFromContext(context);
+				});
 	}
 
 	public void markAsPaid(@NonNull final OrderId orderId, @NonNull final OrderPayScheduleId orderPayScheduleId)
@@ -97,21 +121,15 @@ public class OrderPayScheduleService
 
 	@Nullable OrderSchedulingContext extractContext(final @NotNull org.compiere.model.I_C_Order orderRecord)
 	{
-		final PaymentTermId paymentTermId = orderBL.getPaymentTermId(orderRecord);
-		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
-		if (!paymentTerm.isComplex())
+		final Money grandTotal = orderBL.getGrandTotal(orderRecord);
+		if (grandTotal.isZero())
 		{
 			return null;
 		}
-		if (paymentTermService.hasPaySchedule(paymentTermId))
-		{
-			throw new AdempiereException(PaymentTermConstants.MSG_ComplexTermConflict)
-					.appendParametersToMessage()
-					.setParameter("PaymentTerm", paymentTerm.getName());
-		}
 
-		final Money grandTotal = orderBL.getGrandTotal(orderRecord);
-		if (grandTotal.isZero())
+		final PaymentTermId paymentTermId = orderBL.getPaymentTermId(orderRecord);
+		final PaymentTerm paymentTerm = paymentTermService.getById(paymentTermId);
+		if (!paymentTerm.isComplex())
 		{
 			return null;
 		}

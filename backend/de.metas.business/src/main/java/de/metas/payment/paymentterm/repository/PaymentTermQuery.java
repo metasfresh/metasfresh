@@ -1,4 +1,4 @@
-package de.metas.payment.paymentterm.impl;
+package de.metas.payment.paymentterm.repository;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
@@ -38,11 +38,8 @@ import javax.annotation.Nullable;
 public class PaymentTermQuery
 {
 	OrgId orgId;
-
 	ExternalId externalId;
-
 	String value;
-
 	BPartnerId bPartnerId;
 
 	/**

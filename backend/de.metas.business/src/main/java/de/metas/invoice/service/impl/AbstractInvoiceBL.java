@@ -213,7 +213,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
+	public List<org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds);
 	}
@@ -592,7 +592,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return isOpenAmtChanged || isFullyPaidChanged || isPartiallyPaidChanged;
 	}
 
-	protected final InvoiceTotal extractGrandTotal(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	@Override
+	public final InvoiceTotal extractGrandTotal(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		final Money grandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 		final InvoiceAmtMultiplier multiplier = getInvoiceAmtMultiplier(invoice);
