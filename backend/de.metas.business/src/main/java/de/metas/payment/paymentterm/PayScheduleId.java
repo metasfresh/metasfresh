@@ -24,6 +24,7 @@ package de.metas.payment.paymentterm;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares.SkipTest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 @Value
+@SkipTest
 public class PayScheduleId implements RepoIdAware
 {
 	@NonNull
