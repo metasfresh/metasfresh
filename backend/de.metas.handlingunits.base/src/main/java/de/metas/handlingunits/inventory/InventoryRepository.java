@@ -1,4 +1,26 @@
 
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.inventory;
 
 import com.google.common.collect.ImmutableList;
@@ -42,11 +64,14 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
@@ -74,28 +99,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Repository
 public class InventoryRepository
 {
@@ -109,6 +112,8 @@ public class InventoryRepository
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	public static final ThreadLocal<Boolean> THREAD_LOCAL_ALLOW_NEGATIVE_QTYCOUNT = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
 	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
 	{
@@ -127,11 +132,12 @@ public class InventoryRepository
 				.stream()
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
 	private HashMap<InventoryLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@Nullable final Set<InventoryLineId> inventoryLineIds)
 	{
 		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(record -> extractInventoryLineId(record)));
+				.collect(GuavaCollectors.toHashMapByKey(InventoryRepository::extractInventoryLineId));
 	}
 
 	private static InventoryLineId extractInventoryLineId(@NonNull final I_M_InventoryLine record)
@@ -152,8 +158,7 @@ public class InventoryRepository
 
 	I_M_Inventory getRecordById(@NonNull final InventoryId inventoryId)
 	{
-		final I_M_Inventory inventoryRecord = inventoryDAO.getById(inventoryId);
-		return inventoryRecord;
+		return inventoryDAO.getById(inventoryId);
 	}
 
 	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
@@ -169,7 +174,7 @@ public class InventoryRepository
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final Collection<I_M_InventoryLine> inventoryLineRecords = retrieveLineRecords(inventoryId);
-		final ImmutableSet<InventoryLineId> inventoryLineIds = inventoryLineRecords.stream().map(r -> extractInventoryLineId(r)).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<InventoryLineId> inventoryLineIds = inventoryLineRecords.stream().map(InventoryRepository::extractInventoryLineId).collect(ImmutableSet.toImmutableSet());
 
 		final ListMultimap<InventoryLineId, I_M_InventoryLine_HU> inventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLineIds);
 
@@ -192,6 +197,7 @@ public class InventoryRepository
 				.build();
 	}
 
+	@Nullable
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(@Nullable final I_M_Inventory inventoryRecord)
 	{
 		if (inventoryRecord == null)
@@ -448,7 +454,7 @@ public class InventoryRepository
 		final AttributesKey storageAttributesKey = inventoryLine.getStorageAttributesKey();
 
 		final AttributeSetInstanceId asiId = coalesceSuppliers(
-				() -> inventoryLine.getAsiId(),
+				inventoryLine::getAsiId,
 				() -> AttributesKeys.createAttributeSetInstanceFromAttributesKey(storageAttributesKey));
 		lineRecord.setM_AttributeSetInstance_ID(asiId.getRepoId());
 
@@ -576,7 +582,7 @@ public class InventoryRepository
 	}
 
 	private static void updateInventoryLineHURecord(
-			@NonNull I_M_InventoryLine_HU record,
+			@NonNull final I_M_InventoryLine_HU record,
 			@NonNull final InventoryLineHU fromLineHU)
 	{
 		// record.setAD_Org_ID(orgId.getRepoId());
@@ -776,7 +782,7 @@ public class InventoryRepository
 				.filter(filter)
 				.create()
 				.stream()
-				.map(huAssignment -> TableRecordReference.ofReferenced(huAssignment))
+				.map(TableRecordReference::ofReferenced)
 				.sorted(Comparator.comparing(TableRecordReference::getRecord_ID))
 				.distinct()
 				.map(ref -> ref.getModel(ctxAware, I_M_InventoryLine.class))
@@ -790,6 +796,36 @@ public class InventoryRepository
 				.build();
 
 		return getInventoryLinesByIDs(inventoryLineIds);
+	}
+
+	public IAutoCloseable allowNegativeQtyCountInLocalThread()
+	{
+		THREAD_LOCAL_ALLOW_NEGATIVE_QTYCOUNT.set(true);
+		return () -> THREAD_LOCAL_ALLOW_NEGATIVE_QTYCOUNT.set(false);
+	}
+	
+	public boolean isAllowNegativeQtyCountInLocalThread()
+	{
+		return THREAD_LOCAL_ALLOW_NEGATIVE_QTYCOUNT.get();
+	}
+
+	public void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId)
+	{
+		// update M_InventoryLine
+		final ICompositeQueryUpdater<org.compiere.model.I_M_InventoryLine> updaterInventoryLine = queryBL.createCompositeQueryUpdater(org.compiere.model.I_M_InventoryLine.class)
+				.addSetColumnFromColumn(org.compiere.model.I_M_InventoryLine.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(org.compiere.model.I_M_InventoryLine.COLUMNNAME_QtyBook));
+
+		queryBL.createQueryBuilder(org.compiere.model.I_M_InventoryLine.class)
+				.addEqualsFilter(org.compiere.model.I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.create().update(updaterInventoryLine);
+
+		// update M_InventoryLine_HU
+		final ICompositeQueryUpdater<I_M_InventoryLine_HU> updaterInventoryLineHU = queryBL.createCompositeQueryUpdater(I_M_InventoryLine_HU.class)
+				.addSetColumnFromColumn(I_M_InventoryLine_HU.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(I_M_InventoryLine_HU.COLUMNNAME_QtyBook));
+
+		queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
+				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.create().update(updaterInventoryLineHU);
 	}
 }
 

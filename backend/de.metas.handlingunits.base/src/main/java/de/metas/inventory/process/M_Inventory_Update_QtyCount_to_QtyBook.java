@@ -22,22 +22,24 @@
 
 package de.metas.inventory.process;
 
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.i18n.AdMessageKey;
-import de.metas.handlingunits.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.SpringContextHolder;
 
 public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implements IProcessPrecondition
 {
-	@NonNull private final IInventoryDAO inventoryLineHUDAO = Services.get(IInventoryDAO.class);
 
 	@NonNull private static final AdMessageKey MSG_M_INVENTORY_UPDATE_QTYCOUNT_TO_QTYBOOK_ProcessedDoc = AdMessageKey.of("M_Inventory_Update_CountQty_to_BookQty_ProcessedDoc");
 
+	@NonNull final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
+	
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
@@ -63,8 +65,11 @@ public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implemen
 	protected String doIt() throws Exception
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
-		inventoryLineHUDAO.setQtyCountToQtyBookForInventory(inventoryId);
-
+		
+		try (final IAutoCloseable ignored = inventoryRepository.allowNegativeQtyCountInLocalThread())
+		{
+			inventoryRepository.setQtyCountToQtyBookForInventory(inventoryId);
+		}
 		return MSG_OK;
 	}
 
