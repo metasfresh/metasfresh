@@ -71,7 +71,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
@@ -113,8 +112,6 @@ public class InventoryRepository
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	public static final ThreadLocal<Boolean> THREAD_LOCAL_ALLOW_NEGATIVE_QTYCOUNT = ThreadLocal.withInitial(() -> Boolean.FALSE);
-
 	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
 	{
 		return load(inventoryLineId, I_M_InventoryLine.class);
@@ -145,6 +142,7 @@ public class InventoryRepository
 		return InventoryLineId.ofRepoId(record.getM_InventoryLine_ID());
 	}
 
+	@Nullable
 	private static InventoryLineId extractInventoryLineIdOrNull(@NonNull final I_M_InventoryLine record)
 	{
 		return InventoryLineId.ofRepoIdOrNull(record.getM_InventoryLine_ID());
@@ -531,7 +529,7 @@ public class InventoryRepository
 		{
 			final HashMap<InventoryLineHUId, I_M_InventoryLine_HU> existingInventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLine.getId())
 					.stream()
-					.collect(GuavaCollectors.toHashMapByKey(l -> extractInventoryLineHUId(l)));
+					.collect(GuavaCollectors.toHashMapByKey(InventoryRepository::extractInventoryLineHUId));
 
 			for (final InventoryLineHU lineHU : inventoryLine.getInventoryLineHUs())
 			{
@@ -796,17 +794,6 @@ public class InventoryRepository
 				.build();
 
 		return getInventoryLinesByIDs(inventoryLineIds);
-	}
-
-	public IAutoCloseable allowNegativeQtyCountInLocalThread()
-	{
-		THREAD_LOCAL_ALLOW_NEGATIVE_QTYCOUNT.set(true);
-		return () -> THREAD_LOCAL_ALLOW_NEGATIVE_QTYCOUNT.set(false);
-	}
-	
-	public boolean isAllowNegativeQtyCountInLocalThread()
-	{
-		return THREAD_LOCAL_ALLOW_NEGATIVE_QTYCOUNT.get();
 	}
 
 	public void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId)

@@ -121,7 +121,8 @@ public class M_InventoryLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void enforceQtyCountNotNegative(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		if (inventoryLineRepository.isAllowNegativeQtyCountInLocalThread())
+		// Tolerate negative qtyCount if qtyCount=QtyBooked. We sometimes have this in the area of costing adjustments.
+		if (inventoryLineRecord.getQtyCount().compareTo(inventoryLineRecord.getQtyBook()) == 0)
 		{
 			return;
 		}
