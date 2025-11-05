@@ -1,11 +1,19 @@
 ARG REFNAME=local
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
+FROM ${REGISTRY}metasfresh/metas-app:$REFNAME AS app
 
+<<<<<<< HEAD
 FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 FROM metasfresh/metas-app:$REFNAME as app
 
 # instead of: FROM ubuntu:16.04 & apt get install openjdk-8-jdk-headless
 
 FROM eclipse-temurin:8-jre-jammy AS runtime
+=======
+# instead of: FROM ubuntu:16.04 & apt get install openjdk-8-jdk-headless
+FROM eclipse-temurin:17-jdk-jammy AS runtime
+>>>>>>> b843c034a8 (Replace removed app, api and edi java image (#21599) (#21605))
 
 RUN apt-get -y update && apt-get -y install locales netcat postgresql-client && rm -rf /var/lib/apt/lists/*
 
