@@ -41,7 +41,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -115,23 +114,6 @@ public class M_InventoryLine
 	{
 		final InventoryLineId inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
 		inventoryLineRepository.deleteInventoryLineHUs(inventoryLineId);
-	}
-
-	// moved here from org.compiere.model.MInventoryLine.beforeSave
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void enforceQtyCountNotNegative(@NonNull final I_M_InventoryLine inventoryLineRecord)
-	{
-		// Tolerate negative qtyCount if qtyCount=QtyBooked. We sometimes have this in the area of costing adjustments.
-		if (inventoryLineRecord.getQtyCount().compareTo(inventoryLineRecord.getQtyBook()) == 0)
-		{
-			return;
-		}
-
-		// Enforce QtyCount >= 0 - teo_sarca BF [ 1722982 ]
-		if (inventoryLineRecord.getQtyCount().signum() < 0)
-		{
-			throw new AdempiereException("@Warning@ @" + I_M_InventoryLine.COLUMNNAME_QtyCount + "@ < 0");
-		}
 	}
 
 	@CalloutMethod(columnNames = { I_M_InventoryLine.COLUMNNAME_M_HU_ID, I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_InventoryLine.COLUMNNAME_C_UOM_ID })
