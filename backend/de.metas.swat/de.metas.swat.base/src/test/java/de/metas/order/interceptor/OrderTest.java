@@ -29,7 +29,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.util.Env;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,6 +63,8 @@ public class OrderTest
 
 	public static final String PARTNER_NAME_1 = "PartnerName1";
 	public static final String ENGLISH = "en_US";
+	private static final int TEST_ORG_ID = 0;
+	private I_C_Incoterms defaultIncoterm;
 
 	@BeforeEach
 	public void init()
@@ -79,6 +80,13 @@ public class OrderTest
 		final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
 		final OrderPayScheduleService orderPayScheduleService = OrderPayScheduleService.newInstanceForUnitTesting();
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPayScheduleService));
+
+		defaultIncoterm = newInstance(I_C_Incoterms.class);
+		defaultIncoterm.setName("System Default Incoterm");
+		defaultIncoterm.setIsDefault(true);
+		defaultIncoterm.setAD_Org_ID(TEST_ORG_ID);
+		defaultIncoterm.setDefaultLocation("Default City");
+		save(defaultIncoterm);
 	}
 
 	@Test
@@ -185,7 +193,6 @@ public class OrderTest
 		order.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		order.setDatePromised(SystemTime.asTimestamp());
 
-
 		save(order);
 
 		return order;
@@ -263,21 +270,14 @@ public class OrderTest
 		bpartner.setC_BP_Group(group);
 		save(bpartner);
 
-		final I_C_Incoterms defaultIncoterms = newInstance(I_C_Incoterms.class);
-		defaultIncoterms.setC_Incoterms_ID(200);
-		defaultIncoterms.setName("Default Incoterms");
-		defaultIncoterms.setDefaultLocation("Default City");
-		defaultIncoterms.setIsDefault(true);
-		defaultIncoterms.setAD_Org_ID(Env.getAD_Org_ID(Env.getCtx()));
-		save(defaultIncoterms);
-
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		order.setAD_Org_ID(TEST_ORG_ID);
 		order.setIsSOTrx(true);
 
 		save(order);
 
-		Assertions.assertEquals(200, order.getC_Incoterms_ID());
+		Assertions.assertEquals(defaultIncoterm.getC_Incoterms_ID(), order.getC_Incoterms_ID());
 		Assertions.assertEquals("Default City", order.getIncotermLocation());
 	}
 
@@ -294,21 +294,14 @@ public class OrderTest
 		bpartner.setC_BP_Group(group);
 		save(bpartner);
 
-		final I_C_Incoterms defaultIncoterms = newInstance(I_C_Incoterms.class);
-		defaultIncoterms.setC_Incoterms_ID(200);
-		defaultIncoterms.setName("Default Incoterms");
-		defaultIncoterms.setDefaultLocation("Default City");
-		defaultIncoterms.setIsDefault(true);
-		defaultIncoterms.setAD_Org_ID(Env.getAD_Org_ID(Env.getCtx()));
-		save(defaultIncoterms);
-
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		order.setAD_Org_ID(TEST_ORG_ID);
 		order.setIsSOTrx(false);
 
 		save(order);
 
-		Assertions.assertEquals(200, order.getC_Incoterms_ID());
+		Assertions.assertEquals(defaultIncoterm.getC_Incoterms_ID(), order.getC_Incoterms_ID());
 		Assertions.assertEquals("Default City", order.getIncotermLocation());
 	}
 

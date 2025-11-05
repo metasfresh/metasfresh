@@ -30,4 +30,6 @@ public interface IIncotermsDAO extends ISingletonService
 {
 	@NonNull
 	I_C_Incoterms getDefaultIncoterms(final int AD_Org_ID);
+
+	void save(I_C_Incoterms incoterms);
 }
