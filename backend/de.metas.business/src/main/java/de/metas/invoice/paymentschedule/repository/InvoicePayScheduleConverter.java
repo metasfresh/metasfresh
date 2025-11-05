@@ -35,7 +35,7 @@ class InvoicePayScheduleConverter
 				.discountAmount(Money.of(record.getDiscountAmt(), currencyId))
 				//
 				.orderAndPayScheduleId(OrderAndPayScheduleId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderPaySchedule_ID()))
-				.invoicePayScheduleId(InvoicePayScheduleLineId.ofRepoIdOrNull(record.getC_InvoicePaySchedule_ID()))
+				.paymentTermScheduleId(PayScheduleId.ofRepoIdOrNull(record.getC_PaySchedule_ID()))
 				//
 				.build();
 	}
@@ -54,7 +54,7 @@ class InvoicePayScheduleConverter
 
 		record.setC_Order_ID(OrderId.toRepoId(from.getOrderAndPayScheduleId() != null ? from.getOrderAndPayScheduleId().getOrderId() : null));
 		record.setC_OrderPaySchedule_ID(OrderPayScheduleId.toRepoId(from.getOrderAndPayScheduleId() != null ? from.getOrderAndPayScheduleId().getOrderPayScheduleId() : null));
-		record.setC_InvoicePaySchedule_ID(InvoicePayScheduleLineId.toRepoId(from.getInvoicePayScheduleId()));
+		record.setC_PaySchedule_ID(PayScheduleId.toRepoId(from.getPaymentTermScheduleId()));
 	}
 
 	public static void updateRecord(@NonNull final I_C_InvoicePaySchedule record, @NonNull final InvoicePayScheduleCreateRequest.Line from)

@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;

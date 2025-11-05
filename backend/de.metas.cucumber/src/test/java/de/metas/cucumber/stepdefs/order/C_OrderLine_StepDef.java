@@ -20,12 +20,21 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.order;
 
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
@@ -109,19 +118,19 @@ public class C_OrderLine_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-	private final @NonNull M_Product_StepDefData productTable;
-	private final @NonNull C_BPartner_StepDefData partnerTable;
-	private final @NonNull C_Order_StepDefData orderTable;
-	private final @NonNull C_OrderLine_StepDefData orderLineTable;
-	private final @NonNull M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final @NonNull C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
-	private final @NonNull C_Flatrate_Term_StepDefData contractTable;
-	private final @NonNull C_TaxCategory_StepDefData taxCategoryTable;
-	private final @NonNull M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final @NonNull M_Attribute_StepDefData attributeTable;
-	private final @NonNull C_Tax_StepDefData taxTable;
-	private final @NonNull M_Warehouse_StepDefData warehouseTable;
-	private final @NonNull IdentifierIds_StepDefData identifierIdsTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final C_BPartner_StepDefData partnerTable;
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull private final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
+	@NonNull private final C_Flatrate_Term_StepDefData contractTable;
+	@NonNull private final C_TaxCategory_StepDefData taxCategoryTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	@NonNull private final M_Attribute_StepDefData attributeTable;
+	@NonNull private final C_Tax_StepDefData taxTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
@@ -225,7 +234,8 @@ public class C_OrderLine_StepDef
 
 		saveRecord(orderLine);
 
-		orderLineTable.putOrReplace(tableRow.getAsIdentifier(), orderLine);
+		tableRow.getAsOptionalIdentifier()
+				.ifPresent(identifier -> orderLineTable.putOrReplace(identifier, orderLine));
 	}
 
 	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.paymentschedule.InvoicePaySchedule;
 import de.metas.invoice.paymentschedule.repository.InvoicePayScheduleRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
@@ -39,6 +40,7 @@ import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -50,6 +52,11 @@ public class InvoicePayScheduleService
 	@NonNull private final InvoicePayScheduleRepository invoicePayScheduleRepository;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final PaymentTermService paymentTermService;
+
+	public Optional<InvoicePaySchedule> getByInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		return invoicePayScheduleRepository.getByInvoiceId(invoiceId);
+	}
 
 	public void createInvoicePaySchedules(final I_C_Invoice invoice)
 	{

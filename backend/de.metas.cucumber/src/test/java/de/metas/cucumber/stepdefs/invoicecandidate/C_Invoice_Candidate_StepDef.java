@@ -30,8 +30,6 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -42,6 +40,8 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.DocTypeId;
@@ -105,6 +105,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -340,7 +341,6 @@ public class C_Invoice_Candidate_StepDef
 
 					row.getAsOptionalString(COLUMNNAME_InvoiceRule_Override)
 							.ifPresent(invoiceRule -> recompute.set(StringUtils.compare(invoiceRule, invoiceCandidate.getInvoiceRule_Override()) != 0));
-
 
 					if (recompute.get())
 					{
@@ -610,6 +610,9 @@ public class C_Invoice_Candidate_StepDef
 
 	public void generateInvoices(final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds)
 	{
+		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
+
+		waitUntilValid(invoiceCandidateIds, 120);
 		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
 		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
 	}
@@ -725,7 +728,7 @@ public class C_Invoice_Candidate_StepDef
 					invoicingParams.setSupplementMissingPaymentTermIds(true);
 					invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
 
-					final boolean completeInvoices = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + PARA_IsCompleteInvoices, true);
+					final boolean completeInvoices = row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 					invoicingParams.setCompleteInvoices(completeInvoices);
 
 					StepDefUtil.tryAndWait(timeoutSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
@@ -944,14 +947,29 @@ public class C_Invoice_Candidate_StepDef
 		waitUntilValid(invoiceCandidateId, timeoutSec);
 	}
 
-	public void waitUntilValid(final InvoiceCandidateId invoiceCandidateId, final int timeoutSec) throws InterruptedException
+	public void waitUntilValid(final Set<InvoiceCandidateId> invoiceCandidateIds, final int timeoutSec)
 	{
+		if (invoiceCandidateIds.isEmpty()) {return;}
+
 		final Supplier<Boolean> isInvoiceCandidateValidated = () -> queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addInArrayFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds)
 				.create()
 				.count() == 0;
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
+		try
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
+		}
+		catch (InterruptedException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.setParameter("invoiceCandidateIds", invoiceCandidateIds);
+		}
+	}
+
+	public void waitUntilValid(final InvoiceCandidateId invoiceCandidateId, final int timeoutSec)
+	{
+		waitUntilValid(ImmutableSet.of(invoiceCandidateId), timeoutSec);
 	}
 
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> retrieveInvoiceCandidate(final @NonNull IQuery<I_C_Invoice_Candidate> query)

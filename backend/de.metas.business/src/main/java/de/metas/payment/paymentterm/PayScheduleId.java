@@ -22,66 +22,47 @@
 
 package de.metas.payment.paymentterm;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares.SkipTest;
-import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
 @Value
-@SkipTest
 public class PayScheduleId implements RepoIdAware
 {
-	@NonNull
-	PaymentTermId paymentTermId;
 	int repoId;
 
-	public static PayScheduleId ofRepoId(@NonNull final PaymentTermId paymentTermId, final int payScheduleId)
-	{
-		return new PayScheduleId(paymentTermId, payScheduleId);
-	}
-
-	public static PayScheduleId ofRepoId(final int paymentTermId, final int payScheduleId)
-	{
-		return new PayScheduleId(PaymentTermId.ofRepoId(paymentTermId), payScheduleId);
-	}
-
-	@Nullable
-	public static PayScheduleId ofRepoIdOrNull(
-			@Nullable final Integer paymentTermId,
-			@Nullable final Integer payScheduleId)
-	{
-		return paymentTermId != null && paymentTermId > 0 && payScheduleId != null && payScheduleId > 0
-				? ofRepoId(paymentTermId, payScheduleId)
-				: null;
-	}
-
-	public static Optional<PayScheduleId> optionalOfRepoId(
-			@Nullable final Integer paymentTermId,
-			@Nullable final Integer payScheduleId)
-	{
-		return Optional.ofNullable(ofRepoIdOrNull(paymentTermId, payScheduleId));
-	}
-
-	@Nullable
-	public static PayScheduleId ofRepoIdOrNull(
-			@Nullable final PaymentTermId paymentTermId,
-			@Nullable final Integer payScheduleId)
-	{
-		return paymentTermId != null && payScheduleId != null && payScheduleId > 0 ? ofRepoId(paymentTermId, payScheduleId) : null;
-	}
-
-	@Jacksonized
-	@Builder
-	private PayScheduleId(@NonNull final PaymentTermId paymentTermId, final int repoId)
+	private PayScheduleId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_PaySchedule_ID");
-		this.paymentTermId = paymentTermId;
+	}
+
+	@JsonCreator
+	public static PayScheduleId ofRepoId(final int payScheduleId)
+	{
+		return new PayScheduleId(payScheduleId);
+	}
+
+	@Nullable
+	public static PayScheduleId ofRepoIdOrNull(@Nullable final Integer payScheduleId)
+	{
+		return payScheduleId != null && payScheduleId > 0 ? ofRepoId(payScheduleId) : null;
+	}
+
+	public static Optional<PayScheduleId> optionalOfRepoId(@Nullable final Integer payScheduleId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(payScheduleId));
+	}
+
+	@JsonValue
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
 	}
 
 	public static int toRepoId(@Nullable final PayScheduleId payScheduleId)

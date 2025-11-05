@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.order;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
@@ -29,6 +29,16 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
@@ -55,6 +65,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
 import de.metas.organization.IOrgDAO;
@@ -162,17 +173,39 @@ public class C_Order_StepDef
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
-	private final @NonNull C_BPartner_StepDefData bpartnerTable;
-	private final @NonNull C_Order_StepDefData orderTable;
-	private final @NonNull C_BPartner_Location_StepDefData bpartnerLocationTable;
-	private final @NonNull AD_User_StepDefData userTable;
-	private final @NonNull M_PricingSystem_StepDefData pricingSystemDataTable;
-	private final @NonNull M_Warehouse_StepDefData warehouseTable;
-	private final @NonNull AD_Org_StepDefData orgTable;
-	private final @NonNull AD_InputDataSource_StepDefData dataSourceTable;
-	private final @NonNull TestContext restTestContext;
-	private final @NonNull C_PaymentTerm_StepDef paymentTermStepDef;
-	private final @NonNull M_Shipper_StepDefData shipperTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_OrderLine_StepDef orderLineStepDef;
+	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final M_PricingSystem_StepDefData pricingSystemDataTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final AD_InputDataSource_StepDefData dataSourceTable;
+	@NonNull private final TestContext restTestContext;
+	@NonNull private final C_PaymentTerm_StepDef paymentTermStepDef;
+	@NonNull private final M_Shipper_StepDefData shipperTable;
+
+	@Given("simple completed order with one line")
+	public void createAndCompleteSimpleOrders(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(this::createAndCompleteSimpleOrder);
+	}
+
+	private void createAndCompleteSimpleOrder(final DataTableRow row)
+	{
+		row.setValueIfMissing(I_C_Order.COLUMNNAME_C_Order_ID, () -> StepDefDataIdentifier.nextUnnamed("C_Order_ID").getAsString());
+		row.setValueIfMissing(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, () -> StepDefDataIdentifier.nextUnnamed("C_OrderLine_ID").getAsString());
+
+		row.setAdditionalRowIdentifierColumnName(I_C_Order.COLUMNNAME_C_Order_ID);
+		final I_C_Order order = createOrder(row);
+
+		row.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
+		orderLineStepDef.createOrderLine(row);
+
+		completeOrder(order);
+	}
 
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
@@ -270,11 +303,8 @@ public class C_Order_StepDef
 			order.setDeliveryViaRule(deliveryViaRule);
 		}
 
-		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_InvoiceRule);
-		if (Check.isNotBlank(invoiceRule))
-		{
-			order.setInvoiceRule(invoiceRule);
-		}
+		tableRow.getAsOptionalEnum(I_C_Order.COLUMNNAME_InvoiceRule, InvoiceRule.class)
+				.ifPresent(invoiceRule -> order.setInvoiceRule(invoiceRule.getCode()));
 
 		final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
 		if (de.metas.util.Check.isNotBlank(paymentTermValue))
@@ -386,9 +416,10 @@ public class C_Order_StepDef
 
 		saveRecord(order);
 
-		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
-		restTestContext.setIntVariableFromRow(tableRow, order::getC_Order_ID);
+		tableRow.getAsOptionalIdentifier()
+				.ifPresent(identifier -> orderTable.putOrReplace(identifier, order));
 
+		restTestContext.setIntVariableFromRow(tableRow, order::getC_Order_ID);
 		tableRow.getAsOptionalIdentifier("REST.Context.DocumentNo")
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), order.getDocumentNo()));
 

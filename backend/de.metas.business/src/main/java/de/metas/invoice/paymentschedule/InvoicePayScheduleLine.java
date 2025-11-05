@@ -25,7 +25,10 @@ package de.metas.invoice.paymentschedule;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderAndPayScheduleId;
+import de.metas.order.paymentschedule.OrderPayScheduleId;
+import de.metas.payment.paymentterm.PayScheduleId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -54,7 +57,11 @@ public class InvoicePayScheduleLine
 	@Nullable private final Money discountAmount;
 
 	@Nullable private final OrderAndPayScheduleId orderAndPayScheduleId;
-	@Nullable private final InvoicePayScheduleLineId invoicePayScheduleId;
+	@Nullable private final PayScheduleId paymentTermScheduleId;
 
 	public CurrencyId getCurrencyId() {return Money.getCommonCurrencyIdOfAll(dueAmount, discountAmount);}
+
+	public OrderId getOrderId() {return orderAndPayScheduleId != null ? orderAndPayScheduleId.getOrderId() : null;}
+
+	public OrderPayScheduleId getOrderPayScheduleId() {return orderAndPayScheduleId != null ? orderAndPayScheduleId.getOrderPayScheduleId() : null;}
 }

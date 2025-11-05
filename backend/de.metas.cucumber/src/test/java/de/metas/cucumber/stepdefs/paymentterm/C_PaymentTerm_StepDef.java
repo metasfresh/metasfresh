@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.util.Optionals;
@@ -55,7 +56,7 @@ public class C_PaymentTerm_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
-	
+
 	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
 
@@ -123,10 +124,11 @@ public class C_PaymentTerm_StepDef
 		breakRecord.setSeqNo(seqNo);
 		row.getAsOptionalInt(I_C_PaymentTerm_Break.COLUMNNAME_Percent)
 				.ifPresent(breakRecord::setPercent);
-		row.getAsOptionalString(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType)
-				.ifPresent(breakRecord::setReferenceDateType);
+		row.getAsOptionalEnum(I_C_PaymentTerm_Break.COLUMNNAME_ReferenceDateType, ReferenceDateType.class)
+				.ifPresent(referenceDateType -> breakRecord.setReferenceDateType(referenceDateType.getCode()));
 		row.getAsOptionalInt(I_C_PaymentTerm_Break.COLUMNNAME_OffsetDays)
 				.ifPresent(breakRecord::setOffsetDays);
+		
 		saveRecord(breakRecord);
 
 		row.getAsOptionalIdentifier()

@@ -32,7 +32,7 @@ class PayScheduleConverter
 	@NonNull
 	public static PayScheduleId extractId(final @NonNull I_C_PaySchedule record)
 	{
-		return PayScheduleId.ofRepoId(extractPaymentTermId(record), record.getC_PaySchedule_ID());
+		return PayScheduleId.ofRepoId(record.getC_PaySchedule_ID());
 	}
 
 	@NonNull

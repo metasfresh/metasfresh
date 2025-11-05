@@ -20,42 +20,27 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.order;
 
-import de.metas.order.OrderLineId;
-import lombok.NonNull;
-import org.compiere.model.I_C_OrderLine;
-
-import javax.annotation.Nullable;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.order.OrderId;
+import org.compiere.model.I_C_Order;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_OrderLine_StepDefData extends StepDefData<I_C_OrderLine>
-		implements StepDefDataGetIdAware<OrderLineId, I_C_OrderLine>
+public class C_Order_StepDefData extends StepDefData<I_C_Order>
+		implements StepDefDataGetIdAware<OrderId, I_C_Order>
 {
-	public C_OrderLine_StepDefData()
+	public C_Order_StepDefData()
 	{
-		super(I_C_OrderLine.class);
+		super(I_C_Order.class);
 	}
 
 	@Override
-	public OrderLineId extractIdFromRecord(final I_C_OrderLine record)
+	public OrderId extractIdFromRecord(final I_C_Order record)
 	{
-		return OrderLineId.ofRepoId(record.getC_OrderLine_ID());
-	}
-
-	@Nullable
-	@Override
-	public OrderLineId getId(@NonNull final StepDefDataIdentifier identifier)
-	{
-		if (identifier.isNullPlaceholder())
-		{
-			return null;
-		}
-		else
-		{
-			return StepDefDataGetIdAware.super.getId(identifier);
-		}
+		return OrderId.ofRepoId(record.getC_Order_ID());
 	}
 }

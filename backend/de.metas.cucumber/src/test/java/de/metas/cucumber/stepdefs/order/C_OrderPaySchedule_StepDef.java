@@ -20,16 +20,19 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.order;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_Break_StepDefData;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.OrderPaySchedule;
 import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.order.paymentschedule.OrderPayScheduleLine;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.order.paymentschedule.OrderPayScheduleStatus;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -47,16 +50,17 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @RequiredArgsConstructor
 public class C_OrderPaySchedule_StepDef
 {
-	private final @NonNull C_Order_StepDefData orderTable;
-	private final @NonNull C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
-	private final @NonNull OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
+	@NonNull private final OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final C_OrderPaySchedule_StepDefData orderPayScheduleTable;
 
 	@And("^the order identified by (.*) has following pay schedules$")
 	public void verifyOrderPaySchedules(@NonNull final String orderIdentifier, @NonNull final DataTable dataTable)
 	{
 		final OrderId orderId = orderTable.getId(orderIdentifier);
 		final OrderPaySchedule paySchedule = orderPayScheduleService.getByOrderId(orderId).orElseThrow(() -> new AdempiereException("No pay schedule found for orderId: " + orderId));
-		
+
 		final HashSet<OrderPayScheduleId> expectedIds = new HashSet<>();
 
 		DataTableRows.of(dataTable)
@@ -73,6 +77,8 @@ public class C_OrderPaySchedule_StepDef
 
 	private void verifyOrderPaySchedule(@NonNull final DataTableRow row, @NonNull final OrderPayScheduleLine payScheduleLine)
 	{
+		SharedTestContext.put("payScheduleLine", payScheduleLine);
+
 		final SoftAssertions softly = new SoftAssertions();
 
 		row.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_DueAmt)
@@ -83,5 +89,8 @@ public class C_OrderPaySchedule_StepDef
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
 
 		softly.assertAll();
+
+		row.getAsOptionalIdentifier()
+				.ifPresent(identifier -> orderPayScheduleTable.put(identifier, payScheduleLine));
 	}
 }
