@@ -268,7 +268,8 @@ public class M_ReceiptSchedule_StepDef
 		 final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_C_OrderLine_ID, purchaseOrderLineId);
 
-		//prevent that we continue before updates are finished
+		// to prevent that we continue before updates are finished
+		// on order complete (also after reactivating), we update async, but without any invalidation we could check like on shipment schedules
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, COLUMNNAME_QtyOrdered);
 		if(qtyOrdered != null)
 		{
