@@ -25,7 +25,6 @@ package de.metas.incoterms.impl;
 import de.metas.incoterms.IIncotermsDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Incoterms;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +38,7 @@ public class IncotermsDAO implements IIncotermsDAO
 
 	@Override
 	@Nullable
-	public I_C_Incoterms getDefaultIncoterms(final OrgId orgId)
+	public I_C_Incoterms getDefaultIncoterms(final @NotNull OrgId orgId)
 	{
 		return queryBL.createQueryBuilder(I_C_Incoterms.class)
 				.addEqualsFilter(I_C_Incoterms.COLUMNNAME_IsDefault, true)
