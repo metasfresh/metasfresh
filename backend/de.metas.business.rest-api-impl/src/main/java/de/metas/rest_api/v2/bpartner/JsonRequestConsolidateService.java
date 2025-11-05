@@ -40,7 +40,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * If a request-item is coming with an identifier such as {@code ext-1234}, then this service makes sure that the item itself has the respective property such as {@code "externalId" : "1234"} set.
+ * If a request-item is coming with an identifier such as {@code ext-1234}, then this service makes sure that the item itself has the respective property such as {@code "externalId" : "1234"} set - <b>unless</b> the caller already set the respective property to the request-item "explicitly".
  */
 @Service
 public class JsonRequestConsolidateService
@@ -102,8 +102,11 @@ public class JsonRequestConsolidateService
 				// GLN-identifierString is valid for bPartner-lookup, but we can't consolidate the given jsonBPartner with it
 				break;
 			case GLN_WITH_LABEL:
-				final String lookupLabel = identifierString.asGlnWithLabel().getLabel();
-				jsonBPartner.setLookupLabel(lookupLabel);
+				if (!jsonBPartner.isLookupLabelSet())
+				{
+					final String lookupLabel = identifierString.asGlnWithLabel().getLabel();
+					jsonBPartner.setLookupLabel(lookupLabel);
+				}
 			default:
 				throw new AdempiereException("Unexpected IdentifierString.Type=" + identifierString.getType())
 						.appendParametersToMessage()
@@ -126,7 +129,7 @@ public class JsonRequestConsolidateService
 				// nothing to do
 				break;
 			case GLN:
-				if (jsonLocation.isGlnSet())
+				if (!jsonLocation.isGlnSet())
 				{
 					jsonLocation.setGln(externalIdentifier.asGLN().getCode());
 				}

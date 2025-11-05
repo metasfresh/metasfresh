@@ -32,9 +32,9 @@ import de.metas.common.bpartner.v1.request.JsonRequestContactUpsertItem;
 import de.metas.common.bpartner.v1.request.JsonRequestLocation;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsertItem;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -145,7 +145,7 @@ public class JsonRequestConsolidateService
 			case INTERNALNAME:
 				throw new InvalidIdentifierException(identifierString);
 			case GLN:
-				if (jsonLocation.isGlnSet())
+				if (!jsonLocation.isGlnSet())
 				{
 					jsonLocation.setGln(identifierString.asGLN().getCode());
 				}

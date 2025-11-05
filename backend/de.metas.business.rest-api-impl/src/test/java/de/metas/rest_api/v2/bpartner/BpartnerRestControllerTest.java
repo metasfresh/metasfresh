@@ -198,7 +198,7 @@ class BpartnerRestControllerTest
 		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
 
 		// invoke the method under test
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(null, bPartnerExternalIdentifier);
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(bPartnerExternalIdentifier);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
@@ -210,7 +210,7 @@ class BpartnerRestControllerTest
 	void retrieveBPartner_id()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(null, Integer.toString(C_BPARTNER_ID));
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(Integer.toString(C_BPARTNER_ID));
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
@@ -224,7 +224,7 @@ class BpartnerRestControllerTest
 		final String bPartnerExternalIdentifier = String.join("-", "gln", C_BPARTNER_LOCATION_GLN);
 
 		// invoke the method under test
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(null, bPartnerExternalIdentifier);
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(bPartnerExternalIdentifier);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
@@ -386,7 +386,7 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_update_builder()
 	{
-		JsonRequestBPartner partner = new JsonRequestBPartner();
+		final JsonRequestBPartner partner = new JsonRequestBPartner();
 		partner.setCompanyName("otherCompanyName");
 
 		partner.setCode("other12345");
@@ -412,7 +412,7 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_update_withExternalBusinessKey()
 	{
-		JsonRequestBPartner partner = new JsonRequestBPartner();
+		final JsonRequestBPartner partner = new JsonRequestBPartner();
 		partner.setCompanyName("otherCompanyName");
 
 		partner.setCode("ext-ALBERTA-esb");
@@ -482,7 +482,7 @@ class BpartnerRestControllerTest
 		assertThat(bpartnerRecord.getName()).isEqualTo("bpartnerRecord.name_updated");
 
 		// use the rest controller to get the json that we can then verify
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(null, "12345");
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("12345");
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -535,8 +535,7 @@ class BpartnerRestControllerTest
 	{
 		final InputStream stream = getClass().getClassLoader().getResourceAsStream("de/metas/rest_api/bpartner/impl/v2/" + jsonFileName);
 		assertThat(stream).isNotNull();
-		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).readValue(stream);
-		return bpartnerUpsertRequest;
+		return JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).readValue(stream);
 	}
 
 	private JsonMetasfreshId assertUpsertResultOK(

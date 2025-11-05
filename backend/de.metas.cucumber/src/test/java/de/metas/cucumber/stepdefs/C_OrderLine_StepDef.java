@@ -90,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.DataTableUtil.NULL_STRING;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -760,7 +761,7 @@ public class C_OrderLine_StepDef
 				final String expectedAttrValue = string.substring(separatorIdx + 1);
 				return of(attributeIdentifier, expectedAttrValue);
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				throw new AdempiereException("String not matching attributeIdentifier" + SEPARATOR + "value format: " + string, ex);
 			}
@@ -774,19 +775,22 @@ public class C_OrderLine_StepDef
 
 		public boolean isNullPlaceholder()
 		{
-			return value.isEmpty() || "null".equals(value);
+			return value.isEmpty() || NULL_STRING.equals(value);
 		}
 
+		@Nullable
 		public String getValueAsString()
 		{
 			return isNullPlaceholder() ? null : value;
 		}
 
+		@Nullable
 		public BigDecimal getValueAsBigDecimal()
 		{
 			return isNullPlaceholder() ? null : NumberUtils.asBigDecimal(value);
 		}
 
+		@Nullable
 		public LocalDate getValueAsLocalDate()
 		{
 			return isNullPlaceholder() ? null : LocalDate.parse(value);
