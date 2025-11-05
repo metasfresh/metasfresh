@@ -3,17 +3,21 @@ package de.metas.cucumber.stepdefs.shipper;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.shipper.client.nshift.NShiftShipAdvisorService;
 import de.metas.shipper.client.nshift.NShiftShipmentService;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
+
+import java.util.Base64;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -78,9 +82,21 @@ public class NShiftGateway_StepDef
 				.thenAnswer((Answer<JsonDeliveryResponse>)invocation -> {
 					final JsonDeliveryRequest actualRequest = invocation.getArgument(0);
 
-					return JsonDeliveryResponse.builder()
-							.requestId(actualRequest.getId())
-							.build();
+					final JsonDeliveryResponse.JsonDeliveryResponseBuilder builder = JsonDeliveryResponse.builder()
+							.requestId(actualRequest.getId());
+
+					for(final JsonDeliveryOrderParcel parcel : actualRequest.getDeliveryOrderParcels())
+					{
+						builder.item(JsonDeliveryResponseItem.builder()
+										.lineId(parcel.getId())
+										.awb("awb")
+										.trackingUrl("trackingUrl")
+										.labelPdfBase64(Base64.getDecoder().decode("JVBERi0xLjAKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0NvdW50IDAvS2lkc1tdPj5lbmRvYmoKeHJlZgowIDMKMDAwMDAwMDAwMCA2NTUzNSBmMDAwMDAwMDAxMCAwMDAwMCBuCjAwMDAwMDAwNTYgMDAwMDAgbgp0cmFpbGVyPDwvU2l6ZSAzL1Jvb3QgMSAwIFI+PgpzdGFydHhyZWYKMTAxCiUlRU9GCg=="))
+										.build()
+						);
+					}
+
+					return builder.build();
 				});
 	}
 
