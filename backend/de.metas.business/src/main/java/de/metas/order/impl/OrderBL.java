@@ -1323,8 +1323,11 @@ public class OrderBL implements IOrderBL
 		if (c_Incoterms <= 0)
 		{
 			final I_C_Incoterms defaultIncoterms = incotermsDAO.getDefaultIncoterms(order.getAD_Org_ID());
-			c_Incoterms = defaultIncoterms.getC_Incoterms_ID();
-			incotermLocation = defaultIncoterms.getDefaultLocation();
+			if (defaultIncoterms != null)
+			{
+				c_Incoterms = defaultIncoterms.getC_Incoterms_ID();
+				incotermLocation = defaultIncoterms.getDefaultLocation();
+			}
 		}
 
 		if (c_Incoterms > 0)

@@ -23,12 +23,12 @@
 package de.metas.incoterms;
 
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 import org.compiere.model.I_C_Incoterms;
+import org.jetbrains.annotations.Nullable;
 
 public interface IIncotermsDAO extends ISingletonService
 {
-	@NonNull
+	@Nullable
 	I_C_Incoterms getDefaultIncoterms(final int AD_Org_ID);
 
 	void save(I_C_Incoterms incoterms);

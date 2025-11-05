@@ -24,10 +24,9 @@ package de.metas.incoterms.impl;
 
 import de.metas.incoterms.IIncotermsDAO;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Incoterms;
+import org.jetbrains.annotations.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -36,21 +35,14 @@ public class IncotermsDAO implements IIncotermsDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	@NonNull
+	@Nullable
 	public I_C_Incoterms getDefaultIncoterms(final int adOrgId)
 	{
-		final I_C_Incoterms incoterm = queryBL.createQueryBuilder(I_C_Incoterms.class)
+		return queryBL.createQueryBuilder(I_C_Incoterms.class)
 				.addEqualsFilter(I_C_Incoterms.COLUMNNAME_IsDefault, true)
 				.addEqualsFilter(I_C_Incoterms.COLUMNNAME_AD_Org_ID, adOrgId)
 				.create()
-				.firstOnly(I_C_Incoterms.class);
-
-		if (incoterm != null)
-		{
-			return incoterm;
-		}
-
-		throw new AdempiereException("No default C_Incoterms found for AD_Org_ID=" + adOrgId);
+				.firstOnlyOrNull(I_C_Incoterms.class);
 	}
 
 	@Override
