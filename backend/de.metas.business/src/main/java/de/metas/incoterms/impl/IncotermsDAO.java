@@ -23,9 +23,12 @@
 package de.metas.incoterms.impl;
 
 import de.metas.incoterms.IIncotermsDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Incoterms;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -36,17 +39,17 @@ public class IncotermsDAO implements IIncotermsDAO
 
 	@Override
 	@Nullable
-	public I_C_Incoterms getDefaultIncoterms(final int adOrgId)
+	public I_C_Incoterms getDefaultIncoterms(final OrgId orgId)
 	{
 		return queryBL.createQueryBuilder(I_C_Incoterms.class)
 				.addEqualsFilter(I_C_Incoterms.COLUMNNAME_IsDefault, true)
-				.addEqualsFilter(I_C_Incoterms.COLUMNNAME_AD_Org_ID, adOrgId)
+				.addEqualsFilter(I_C_Incoterms.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
 				.create()
 				.firstOnlyOrNull(I_C_Incoterms.class);
 	}
 
 	@Override
-	public void save(final I_C_Incoterms incoterms)
+	public void save(final @NotNull I_C_Incoterms incoterms)
 	{
 		saveRecord(incoterms);
 	}
