@@ -90,6 +90,8 @@ public interface ICountryDAO extends ISingletonService
 
 	CountryId getCountryIdByCountryCode(String countryCode);
 
+	CountryId getCountryIdByCountryCode(@NonNull CountryCode countryCode);
+
 	CountryId getCountryIdByCountryCodeOrNull(String countryCode);
 
 	String retrieveCountryCode2ByCountryId(CountryId countryId);
