@@ -50,9 +50,6 @@ public interface ICountryDAO extends ISingletonService
 	/**
 	 * retrieve custom user info
 	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return
 	 */
 	CountryCustomInfo retriveCountryCustomInfo(Properties ctx, String trxName);
 
@@ -71,7 +68,7 @@ public interface ICountryDAO extends ISingletonService
 	}
 
 	@Deprecated
-	public I_C_Country get(Properties ctx, int C_Country_ID);
+	I_C_Country get(Properties ctx, int C_Country_ID);
 
 	/**
 	 * Return Countries as Array
@@ -80,7 +77,7 @@ public interface ICountryDAO extends ISingletonService
 	 *            context
 	 * @return countries
 	 */
-	public List<I_C_Country> getCountries(Properties ctx);
+	List<I_C_Country> getCountries(Properties ctx);
 
 	List<I_C_Region> retrieveRegions(Properties ctx, int countryId);
 

@@ -174,17 +174,15 @@ public class C_Commission_Instance_StepDef
 		queryBL.createQueryBuilder(I_C_Commission_Instance.class)
 				.create()
 				.stream(I_C_Commission_Instance.class)
-				.forEach(commissionInstanceRecord -> {
+				.forEach(commissionInstanceRecord -> message
+						.append(COLUMNNAME_C_Commission_Instance_ID).append(" : ").append(commissionInstanceRecord.getC_Commission_Instance_ID()).append(" ; ")
+						.append(COLUMNNAME_C_Order_ID).append(" : ").append(commissionInstanceRecord.getC_Order_ID()).append(" ; ")
+						.append(COLUMNNAME_PointsBase_Forecasted).append(" : ").append(commissionInstanceRecord.getPointsBase_Forecasted()).append(" ; ")
+						.append(COLUMNNAME_PointsBase_Invoiceable).append(" : ").append(commissionInstanceRecord.getPointsBase_Invoiceable()).append(" ; ")
+						.append(COLUMNNAME_PointsBase_Invoiced).append(" : ").append(commissionInstanceRecord.getPointsBase_Invoiced()).append(" ; ")
+						.append("\n"));
 
-					message.append(COLUMNNAME_C_Commission_Instance_ID).append(" : ").append(commissionInstanceRecord.getC_Commission_Instance_ID()).append(" ; ")
-							.append(COLUMNNAME_C_Order_ID).append(" : ").append(commissionInstanceRecord.getC_Order_ID()).append(" ; ")
-							.append(COLUMNNAME_PointsBase_Forecasted).append(" : ").append(commissionInstanceRecord.getPointsBase_Forecasted()).append(" ; ")
-							.append(COLUMNNAME_PointsBase_Invoiceable).append(" : ").append(commissionInstanceRecord.getPointsBase_Invoiceable()).append(" ; ")
-							.append(COLUMNNAME_PointsBase_Invoiced).append(" : ").append(commissionInstanceRecord.getPointsBase_Invoiced()).append(" ; ")
-							.append("\n");
-				});
-
-		logger.error("*** Error while looking for commission instance records, see current context: \n" + message.toString());
+		logger.error("*** Error while looking for commission instance records, see current context: \n{}", message);
 	}
 
 }

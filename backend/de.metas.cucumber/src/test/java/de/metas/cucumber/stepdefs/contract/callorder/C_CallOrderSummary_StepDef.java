@@ -75,7 +75,7 @@ public class C_CallOrderSummary_StepDef
 	}
 
 	@And("^validate (created|updated) C_CallOrderSummary:$")
-	public void validate_call_order_summary(@NonNull final String action_UNUSED, @NonNull final DataTable dataTable)
+	public void validate_call_order_summary(@NonNull final String ignoredAction, @NonNull final DataTable dataTable)
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 

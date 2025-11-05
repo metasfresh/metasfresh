@@ -160,7 +160,7 @@ public class MD_Cockpit_DocumentDetail_StepDef
 													identifier, qtyReserved, cockpitDocumentDetailRecord.getQtyReserved()));
 		}
 
-		if (errorCollector.size() > 0)
+		if (!errorCollector.isEmpty())
 		{
 			final String errorMessages = String.join(" && \n", errorCollector);
 			return ItemProvider.ProviderResult.resultWasNotFound(errorMessages);

@@ -146,7 +146,7 @@ public class M_PriceList_StepDef
 	{
 		I_M_PriceList priceList = null;
 
-		final I_M_PricingSystem pricingSystem = row.getAsIdentifier(COLUMNNAME_M_PricingSystem_ID).lookupIn(pricingSystemTable);
+		final I_M_PricingSystem pricingSystem = row.getAsIdentifier(COLUMNNAME_M_PricingSystem_ID).lookupNotNullIn(pricingSystemTable);
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
 		final I_C_Country country = extractOptionalCountry(row).orElse(null);
 		final SOTrx soTrx = SOTrx.ofBoolean(row.getAsBoolean("SOTrx"));

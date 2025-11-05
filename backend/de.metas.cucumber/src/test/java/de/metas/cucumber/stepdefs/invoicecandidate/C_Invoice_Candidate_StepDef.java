@@ -358,7 +358,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@Then("validate invoice candidate")
-	public void validate_invoice_candidate(@NonNull final DataTable dataTable) throws Throwable
+	public void validate_invoice_candidate(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
@@ -476,7 +476,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@And("validate C_Invoice_Candidate:")
-	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable) throws Throwable
+	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
@@ -670,7 +670,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@And("^after not more than (.*)s, C_Invoice_Candidates are not marked as 'to recompute'$")
-	public void check_not_marked_as_to_recompute(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void check_not_marked_as_to_recompute(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
@@ -1271,7 +1271,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@NonNull
-	private String getInvoiceCandidateExceptionDetails(
+	private static String getInvoiceCandidateExceptionDetails(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
 			@NonNull final ResultSet resultSet,
 			@NonNull final String invoiceCandIdentifier) throws SQLException
@@ -1285,42 +1285,5 @@ public class C_Invoice_Candidate_StepDef
 				+ ", "
 				+ COLUMNNAME_QtyWithIssues_Effective + ":" + "I_->" + invoiceCandidate.getQtyWithIssues_Effective() + " - ResultSet->" + resultSet.getBigDecimal(COLUMNNAME_QtyWithIssues_Effective)
 				+ "]";
-	}
-
-	public void manuallyRecomputeInvoiceCandidate(
-			@NonNull final Throwable throwable,
-			@NonNull final Map<String, String> row,
-			final int timeoutSec) throws Throwable
-	{
-		logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "
-				+ "Error message: {}", timeoutSec, throwable.getMessage());
-
-		final String invoiceCandIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = Optional
-				.ofNullable(invoiceCandIdentifier)
-				.flatMap(invoiceCandTable::getOptional);
-
-		if (!invoiceCandidate.isPresent())
-		{
-			logger.warn("*** C_Invoice_Candidate was not previously loaded => cannot invalidate!");
-			throw throwable;
-		}
-
-		final int noOfInvalidatedCandidates = invoiceCandDAO.invalidateCand(invoiceCandidate.get());
-
-		if (noOfInvalidatedCandidates != 1)
-		{
-			throw new AdempiereException("Invoice candidate has not been invalidated !")
-					.appendParametersToMessage()
-					.setParameter("InvoiceCandidateId", invoiceCandidate.get().getC_Invoice_Candidate_ID());
-		}
-
-		final Supplier<Boolean> isInvoiceCandidateValidated = () -> queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidate.get().getC_Invoice_Candidate_ID())
-				.create()
-				.count() == 0;
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
 	}
 }

@@ -114,7 +114,7 @@ public class AD_Column_StepDef
 	}
 
 	@When("^set custom columns for C_Order( expecting error:|:)$")
-	public void setCustomColumn_C_Order(@NonNull final String semantics, @NonNull final DataTable dataTable)
+	public void setCustomColumn_C_Order(@NonNull final String ignoredSemantics, @NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{

@@ -214,7 +214,7 @@ public class C_OLCand_StepDef
 		final String olCandIdentifiers = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final List<String> identifiers = StepDefUtil.splitIdentifiers(olCandIdentifiers);
-		assertThat(jsonOLCands.size()).isEqualTo(identifiers.size());
+		assertThat(jsonOLCands).hasSameSizeAs(identifiers);
 
 		for (int index = 0; index < identifiers.size(); index++)
 		{
@@ -545,7 +545,7 @@ public class C_OLCand_StepDef
 
 		if (Check.isBlank(orderIdentifier))
 		{
-			assertThat(compositeResponse.getOrderResponse()).isEqualTo(null);
+			assertThat(compositeResponse.getOrderResponse()).isNull();
 		}
 		else
 		{

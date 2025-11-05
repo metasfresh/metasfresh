@@ -494,8 +494,7 @@ public class C_Order_StepDef
 
 			processInfoBuilder
 					.buildAndPrepareExecution()
-					.executeSync()
-					.getResult();
+					.executeSync();
 		}
 
 	}
