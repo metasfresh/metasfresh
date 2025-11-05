@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 
 /**
- * If a request-item is coming with an identifier such as {@code ext-1234}, then this service makes sure that the item itself has the respective property such as {@code "externalId" : "1234"} set.
+ * If a request-item is coming with an identifier such as {@code ext-1234}, then this service makes sure that the item itself has the respective property such as {@code "externalId" : "1234"} set - <b>unless</b> the caller already set the respective property to the request-item "explicitly".
  */
 @Service
 public class JsonRequestConsolidateService
