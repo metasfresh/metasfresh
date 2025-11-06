@@ -218,12 +218,12 @@ INSERT INTO t_alter_column values('c_elementvalue','Name','VARCHAR(255)',null,nu
 
 -- Column: C_Period_Trl.Name
 -- 2025-10-23T13:07:56.889Z
-UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:07:56.888000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=554381
-;
+--UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:07:56.888000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=554381
+--;
 
 -- 2025-10-23T13:08:11.647Z
-INSERT INTO t_alter_column values('c_period_trl','Name','VARCHAR(60)',null,null)
-;
+--INSERT INTO t_alter_column values('c_period_trl','Name','VARCHAR(60)',null,null)
+--;
 
 -- Column: C_Tax.Name
 -- 2025-10-23T13:08:50.867Z
@@ -236,21 +236,21 @@ INSERT INTO t_alter_column values('c_tax','Name','VARCHAR(255)',null,null)
 
 -- Column: M_Additive.Name
 -- 2025-10-23T13:09:40.414Z
-UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:09:40.414000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=578767
-;
+--UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:09:40.414000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=578767
+--;
 
 -- 2025-10-23T13:09:56.904Z
-INSERT INTO t_alter_column values('m_additive','Name','VARCHAR(60)',null,null)
-;
+--INSERT INTO t_alter_column values('m_additive','Name','VARCHAR(60)',null,null)
+--;
 
 -- Column: M_Allergen.Name
 -- 2025-10-23T13:10:20.347Z
-UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:10:20.347000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=560689
-;
+--UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:10:20.347000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=560689
+--;
 
 -- 2025-10-23T13:10:36.114Z
-INSERT INTO t_alter_column values('m_allergen','Name','VARCHAR(60)',null,null)
-;
+--INSERT INTO t_alter_column values('m_allergen','Name','VARCHAR(60)',null,null)
+--;
 
 -- Column: M_Allergen_Trace.Description
 -- 2025-10-23T13:11:02.043Z
@@ -263,21 +263,21 @@ INSERT INTO t_alter_column values('m_allergen_trace','Description','VARCHAR(255)
 
 -- Column: M_Allergen_Trace.Name
 -- 2025-10-23T13:11:31.110Z
-UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:11:31.110000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=571058
-;
+--UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:11:31.110000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=571058
+--;
 
 -- 2025-10-23T13:11:48.933Z
-INSERT INTO t_alter_column values('m_allergen_trace','Name','VARCHAR(60)',null,null)
-;
+--INSERT INTO t_alter_column values('m_allergen_trace','Name','VARCHAR(60)',null,null)
+--;
 
 -- Column: M_FoodAdvice.Name
 -- 2025-10-23T13:12:10.414Z
-UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:12:10.414000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=583323
-;
+--UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2025-10-23 13:12:10.414000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=583323
+--;
 
 -- 2025-10-23T13:12:28.730Z
-INSERT INTO t_alter_column values('m_foodadvice','Name','VARCHAR(60)',null,null)
-;
+--INSERT INTO t_alter_column values('m_foodadvice','Name','VARCHAR(60)',null,null)
+--;
 
 -- Column: M_HazardSymbol_Trl.Name
 -- 2025-10-23T13:13:05.080Z
