@@ -513,9 +513,10 @@ public class DataTableUtil
 	@Nullable
 	public String extractValueOrNull(@Nullable final String value)
 	{
-		if (value == null || value.equals("null"))
+		if (value == null || value.equals(NULL_STRING))
+		{
 			return null;
-
+		}
 		return value;
 	}
 
