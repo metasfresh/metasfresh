@@ -82,20 +82,16 @@ final class CarrierAdviseProcessService
 
 	private void requestCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
 	{
-		trxManager.assertThreadInheritedTrxNotExists();
-		trxManager.runInThreadInheritedTrx(() -> advise(shipmentSchedule, isIncludeCarrierAdviseManual));
-	}
+		trxManager.runInThreadInheritedTrx(() -> {
+			if (shipmentScheduleService.isNotEligibleForManualCarrierAdvise(shipmentSchedule, isIncludeCarrierAdviseManual))
+			{
+				return;
+			}
 
-	private void advise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
-	{
-		if (shipmentScheduleService.isNotEligibleForManualCarrierAdvise(shipmentSchedule, isIncludeCarrierAdviseManual))
-		{
-			return;
-		}
-
-		shipmentSchedule.setCarrierAdvisingStatus(CarrierAdviseStatus.Requested);
-		shipmentSchedule.setCarrierProductId(null);
-		shipmentScheduleService.save(shipmentSchedule);
+			shipmentSchedule.setCarrierAdvisingStatus(CarrierAdviseStatus.Requested);
+			shipmentSchedule.setCarrierProductId(null);
+			shipmentScheduleService.save(shipmentSchedule);
+		});
 	}
 
 	public void updateEligibleShipmentSchedules(@NonNull final CarrierAdviseUpdateRequest request)
@@ -109,7 +105,7 @@ final class CarrierAdviseProcessService
 		{
 			return;
 		}
-		
+
 		schedule.setCarrierAdvisingStatus(CarrierAdviseStatus.Manual);
 		schedule.setCarrierProductId(request.getCarrierProductId());
 		schedule.setCarrierGoodsTypeId(request.getCarrierGoodsTypeId());
