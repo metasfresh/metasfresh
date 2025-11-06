@@ -102,8 +102,6 @@ public class ShipmentScheduleService
 				.forEach(this::save);
 	}
 
-
-
 	public void save(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		shipmentScheduleRepository.save(shipmentSchedule);

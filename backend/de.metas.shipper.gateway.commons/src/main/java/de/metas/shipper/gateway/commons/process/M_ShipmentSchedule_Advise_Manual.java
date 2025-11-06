@@ -56,7 +56,7 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 
 	@NonNull private final CarrierAdviseProcessService helper = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
-	private static final String PARAM_IsIncludeCarrierAdviseManual = "isIncludeCarrierAdviseManual";
+	private static final String PARAM_IsIncludeCarrierAdviseManual = "IsIncludeCarrierAdviseManual";
 	@Param(parameterName = PARAM_IsIncludeCarrierAdviseManual, mandatory = true)
 	private boolean p_IsIncludeCarrierAdviseManual;
 

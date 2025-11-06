@@ -43,8 +43,8 @@ Feature: Dhl Shipment
       | Identifier | M_Product_ID    | Length | Width | Height | C_UOM_Dimension_ID.Identifier |
       | pm         | packing_product | 30     | 20    | 10     | cm                            |
     And metasfresh contains M_Inventories:
-      | Identifier | MovementDate | M_Warehouse_ID |
-      | inv        | 2022-12-12   | wh             |
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv            | 2022-12-12   | wh             |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_InventoryLine_ID | M_Product_ID    | QtyBook | QtyCount | UOM.X12DE355 |
       | inv        | inv_l_1            | product         | 0       | 100      | PCE          |

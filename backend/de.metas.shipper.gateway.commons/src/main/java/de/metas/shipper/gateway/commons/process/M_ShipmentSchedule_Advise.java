@@ -39,7 +39,7 @@ public class M_ShipmentSchedule_Advise extends JavaProcess implements IProcessPr
 {
 	@NonNull private final CarrierAdviseProcessService helper = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
-	private static final String PARAM_IsIncludeCarrierAdviseManual = "isIncludeCarrierAdviseManual";
+	private static final String PARAM_IsIncludeCarrierAdviseManual = "IsIncludeCarrierAdviseManual";
 	@Param(parameterName = PARAM_IsIncludeCarrierAdviseManual, mandatory = true)
 	private boolean p_IsIncludeCarrierAdviseManual;
 
