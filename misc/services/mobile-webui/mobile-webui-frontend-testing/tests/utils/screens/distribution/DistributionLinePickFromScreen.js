@@ -11,8 +11,8 @@ export const DistributionLinePickFromScreen = {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {
-        await BarcodeScannerComponent.type(qrCode);
+    typeQRCode: async (qrCode, options = {}) => await test.step(`${NAME} - Type QR Code`, async () => {
+        await BarcodeScannerComponent.type(qrCode, options);
     }),
 
 };

@@ -55,7 +55,7 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> filter(@NonNull IQueryFilter<T> filter);
 
 	@Override
-	default IQueryBuilder<T> addFilter(@NonNull IQueryFilter<T> filter) {return filter(filter);}
+	default IQueryBuilder<T> addFilter(@NonNull final IQueryFilter<T> filter) {return filter(filter);}
 
 	@Override
 	String getModelTableName();

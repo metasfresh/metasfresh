@@ -312,6 +312,8 @@ public interface IOrderBL extends ISingletonService
 
 	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
 
+	void setIncoterms(@NonNull I_C_Order order);
+
 	void setWeightFromLines(@NonNull I_C_Order order);
 
 	@NonNull

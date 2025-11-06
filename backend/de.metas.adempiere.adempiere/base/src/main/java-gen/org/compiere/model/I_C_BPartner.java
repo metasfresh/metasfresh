@@ -3544,4 +3544,48 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_VendorCategory = new ModelColumn<>(I_C_BPartner.class, "VendorCategory", null);
 	String COLUMNNAME_VendorCategory = "VendorCategory";
+
+	/**
+	 * Set Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_C_BPartner.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
+	/**
+	 * Set PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_IncotermLocation (@Nullable java.lang.String PO_IncotermLocation);
+
+	/**
+	 * Get PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_IncotermLocation();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_IncotermLocation = new ModelColumn<>(I_C_BPartner.class, "PO_IncotermLocation", null);
+	String COLUMNNAME_PO_IncotermLocation = "PO_IncotermLocation";
 }

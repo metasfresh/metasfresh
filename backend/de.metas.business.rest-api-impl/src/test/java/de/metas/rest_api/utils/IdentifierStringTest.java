@@ -1,17 +1,15 @@
 package de.metas.rest_api.utils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.GLN;
+import de.metas.rest_api.utils.IdentifierString.Type;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.bpartner.GLN;
-import de.metas.util.web.exception.InvalidIdentifierException;
-import de.metas.rest_api.utils.IdentifierString.Type;
-import de.metas.util.lang.ExternalId;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -134,6 +132,7 @@ class IdentifierStringTest
 				.put(Type.EXTERNAL_ID, "ext-someExternalId")
 				.put(Type.VALUE, "val-someValue")
 				.put(Type.GLN, "gln-someGLN")
+				.put(Type.GLN_WITH_LABEL, "glnl-someGLN_someLabel")
 				.put(Type.DOC, "doc-someDoc")
 				.put(Type.INTERNALNAME, "int-someInternalName")
 				.build();

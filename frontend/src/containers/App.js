@@ -29,6 +29,8 @@ import NotificationHandler from '../components/notifications/NotificationHandler
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
 import { getDocSummaryDataFromState } from '../reducers/windowHandlerUtils';
+import { useNotificationsWebsocket } from '../hooks/useNotificationsWebsocket';
+import { useSessionWebsocket } from '../hooks/useSessionWebsocket';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
 
@@ -68,6 +70,8 @@ const App = () => {
   const dispatch = useDispatch();
   const store = useStore();
   const language = useSelector((state) => state.appHandler.me.language);
+  useNotificationsWebsocket({ isLoggedIn: !!auth.isLoggedIn });
+  useSessionWebsocket({ isLoggedIn: !!auth.isLoggedIn });
 
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);

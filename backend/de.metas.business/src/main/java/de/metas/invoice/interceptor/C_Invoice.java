@@ -19,7 +19,6 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.InvoicePayScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -59,7 +58,6 @@ import java.util.List;
 public class C_Invoice // 03771
 {
 	@NonNull private final PaymentReservationService paymentReservationService;
-	@NonNull private final InvoicePayScheduleService invoicePayScheduleService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -413,16 +411,6 @@ public class C_Invoice // 03771
 		if (orderId != null && invoice.getDateInvoiced() != null)
 		{
 			orderBL.syncDateInvoicedFromInvoice(orderId, invoice);
-		}
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createOrderPaySchedules(@NonNull final I_C_Invoice invoice)
-	{
-		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
-		if (orderId != null)
-		{
-			invoicePayScheduleService.createInvoicePaySchedules(invoice);
 		}
 	}
 }
