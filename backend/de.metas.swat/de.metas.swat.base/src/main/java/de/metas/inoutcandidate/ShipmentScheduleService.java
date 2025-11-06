@@ -35,15 +35,17 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
-import java.util.function.UnaryOperator;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
 public class ShipmentScheduleService
 {
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
@@ -84,22 +86,21 @@ public class ShipmentScheduleService
 		return shipmentSchedules.values().asList();
 	}
 
-	public void updateByIds(@NonNull final ImmutableSet<ShipmentScheduleId> ids, @NonNull final UnaryOperator<ShipmentSchedule> updater)
+	public void updateByQuery(@NonNull final ShipmentScheduleQuery query, @NonNull final Consumer<ShipmentSchedule> updater)
 	{
-		if (ids.isEmpty())
-		{
-			return;
-		}
+		trxManager.runInThreadInheritedTrx(() -> {
+			final ImmutableList<ShipmentSchedule> schedules = getBy(query);
+			if (schedules.isEmpty())
+			{
+				return;
+			}
 
-		final ImmutableList<ShipmentSchedule> schedules = getByIds(ids);
-		if (schedules.isEmpty())
-		{
-			return;
-		}
-
-		schedules.stream()
-				.map(updater)
-				.forEach(this::save);
+			for (final ShipmentSchedule schedule : schedules)
+			{
+				updater.accept(schedule);
+				save(schedule);
+			}
+		});
 	}
 
 	public void save(@NonNull final ShipmentSchedule shipmentSchedule)
@@ -132,7 +133,7 @@ public class ShipmentScheduleService
 				|| shipmentSchedule.isClosed()
 				|| !shipmentSchedule.isActive()
 				|| shipmentSchedule.getQuantityToDeliver().signum() <= 0
-		        || !isIncludeCarrierAdviseManual && shipmentSchedule.getCarrierAdvisingStatus().isManual()
+				|| !isIncludeCarrierAdviseManual && shipmentSchedule.getCarrierAdvisingStatus().isManual()
 				|| !shipmentSchedule.getCarrierAdvisingStatus().isEligibleForManualEnqueue())
 		{
 			return true;

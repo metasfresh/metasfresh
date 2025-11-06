@@ -24,7 +24,7 @@ package de.metas.cucumber.stepdefs.util;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.PaymentAllocationId;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;

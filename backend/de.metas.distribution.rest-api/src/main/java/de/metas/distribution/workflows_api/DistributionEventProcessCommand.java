@@ -1,8 +1,12 @@
 package de.metas.distribution.workflows_api;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderDropToRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
@@ -29,6 +33,9 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
+
+import java.util.List;
 
 class DistributionEventProcessCommand
 {
@@ -142,14 +149,34 @@ class DistributionEventProcessCommand
 
 	private DistributionJob processEvent_DropTo()
 	{
-		final DistributionJobStepId stepId = Check.assumeNotNull(event.getDistributionStepId(), "stepId must be set");
+		final DistributionJobStepId stepId = event.getDistributionStepId();
 
-		final DDOrderMoveSchedule schedule = ddOrderMoveScheduleService.dropTo(DDOrderDropToRequest.builder()
-				.scheduleId(stepId.toScheduleId())
-				.build());
+		final ImmutableSet<DDOrderMoveScheduleId> scheduleIds = stepId != null
+				? ImmutableSet.of(job.getStepById(stepId).getScheduleId())
+				: job.getInTransitScheduleIds();
+		if (scheduleIds.isEmpty())
+		{
+			throw new AdempiereException("Nothing to move");
+		}
 
-		final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(schedule, loadingSupportServices);
-		return job.withChangedStep(stepId, changedStep);
+		final JsonDistributionEvent.DropTo dropTo = event.getDropToNonNull();
+		final LocatorQRCode dropToQRCode = dropTo.getQrCode() != null ? LocatorQRCode.ofScannedCode(dropTo.getQrCode()) : null;
+
+		final List<DDOrderMoveSchedule> schedules = ddOrderMoveScheduleService.dropTo(
+				DDOrderDropToRequest.builder()
+						.scheduleIds(scheduleIds)
+						.dropToLocatorId(dropToQRCode != null ? dropToQRCode.getLocatorId() : null)
+						.build()
+		);
+
+		final ImmutableMap<DistributionJobStepId, DDOrderMoveSchedule> schedulesByStepId = Maps.uniqueIndex(schedules, schedule -> DistributionJobStepId.ofScheduleId(schedule.getId()));
+
+		return job.withChangedSteps(step -> {
+			final DDOrderMoveSchedule schedule = schedulesByStepId.get(step.getId());
+			return schedule != null
+					? DistributionJobLoader.toDistributionJobStep(schedule, loadingSupportServices)
+					: step;
+		});
 	}
 
 	private DistributionJobStepId getOrCreateStep()

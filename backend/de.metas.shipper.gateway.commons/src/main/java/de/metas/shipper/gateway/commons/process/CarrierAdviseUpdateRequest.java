@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
+import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,6 +36,8 @@ import lombok.Value;
 @Value
 public class CarrierAdviseUpdateRequest
 {
+	@NonNull ShipmentScheduleQuery query;
+	
 	boolean isIncludeCarrierAdviseManual;
 	@NonNull CarrierProductId carrierProductId;
 	@NonNull CarrierGoodsTypeId carrierGoodsTypeId;

@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -53,6 +54,7 @@ public class ShipmentScheduleQuery
 	@Nullable AttributesKey attributesKey;
 	@Nullable ProductId productId;
 	@Nullable WarehouseId warehouseId;
+	@Nullable ShipperId shipperId;
 	@Builder.Default boolean includeWithQtyToDeliverZero = true;
 	@Builder.Default boolean includeInvalid = true;
 	@Builder.Default boolean includeProcessed = true;

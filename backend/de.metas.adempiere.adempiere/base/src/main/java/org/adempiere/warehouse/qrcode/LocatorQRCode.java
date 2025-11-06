@@ -37,6 +37,9 @@ public class LocatorQRCode
 
 	public static LocatorQRCode ofGlobalQRCode(final GlobalQRCode globalQRCode) {return LocatorQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);}
 
+	@JsonCreator
+	public static LocatorQRCode ofScannedCode(final ScannedCode scannedCode) {return LocatorQRCodeJsonConverter.fromGlobalQRCodeJsonString(scannedCode.getAsString());}
+
 	public static LocatorQRCode ofLocator(@NonNull final I_M_Locator locator)
 	{
 		return builder()
