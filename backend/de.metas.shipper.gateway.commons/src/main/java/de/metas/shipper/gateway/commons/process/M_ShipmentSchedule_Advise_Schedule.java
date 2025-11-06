@@ -25,10 +25,11 @@ package de.metas.shipper.gateway.commons.process;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.process.JavaProcess;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
 public class M_ShipmentSchedule_Advise_Schedule extends JavaProcess
 {
-	@NonNull private final CarrierAdviseProcessHelper helper = CarrierAdviseProcessHelper.newInstance();
+	@NonNull private final CarrierAdviseProcessService helper = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
 	@Override
 	protected String doIt() throws Exception

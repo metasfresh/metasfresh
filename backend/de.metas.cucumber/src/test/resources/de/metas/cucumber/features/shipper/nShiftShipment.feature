@@ -25,8 +25,8 @@ Feature: Dhl Shipment
       | Identifier   | M_PriceList_ID |
       | plv          | pl             |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | pp         | plv                    | product      | 10.0     | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv                    | product      | 10.0     | PCE      |
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | N        | Y          | ps                 |
@@ -40,24 +40,24 @@ Feature: Dhl Shipment
       | Identifier      | OPT.M_Product_ID |
       | packing_product | 2003135          |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name   | OPT.Length | OPT.Width | OPT.Height | OPT.C_UOM_Dimension_ID.Identifier |
-      | pm                                 | packing_product             | Karton | 30         | 20        | 10         | cm                                |
+      | Identifier | M_Product_ID    | Length | Width | Height | C_UOM_Dimension_ID.Identifier |
+      | pm         | packing_product | 30     | 20    | 10     | cm                            |
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
-      | inv                       | 2022-12-12   | wh             |
+      | Identifier | MovementDate | M_Warehouse_ID |
+      | inv        | 2022-12-12   | wh             |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
-      | inv                       | inv_l_1                       | product                 | 0       | 100      | PCE          |
-      | inv                       | inv_l_2                       | packing_product         | 0       | 100      | PCE          |
+      | Identifier | M_InventoryLine_ID | M_Product_ID    | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv        | inv_l_1            | product         | 0       | 100      | PCE          |
+      | inv        | inv_l_2            | packing_product | 0       | 100      | PCE          |
     When the inventory identified by inv is completed
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | inv_l_1                       | hu_1               |
-      | inv_l_2                       | hu_2               |
+      | Identifier | M_HU_ID |
+      | inv_l_1    | hu_1    |
+      | inv_l_2    | hu_2    |
     And M_HU_Storage are validated
-      | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
-      | hu_s_1     | hu_1               | product                 | 100 |
-      | hu_s_2     | hu_2               | packing_product         | 100 |
+      | M_HU_ID | M_Product_ID    | Qty |
+      | hu_1    | product         | 100 |
+      | hu_2    | packing_product | 100 |
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID |
       | LU         |

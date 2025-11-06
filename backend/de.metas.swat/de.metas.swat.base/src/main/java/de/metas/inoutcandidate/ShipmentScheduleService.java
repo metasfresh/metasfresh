@@ -57,15 +57,15 @@ public class ShipmentScheduleService
 
 	public ImmutableList<ShipmentSchedule> getByIds(@NonNull final ImmutableSet<ShipmentScheduleId> ids)
 	{
-		return addCarrierServices(shipmentScheduleRepository.getByIds(ids));
+		return loadCarrierServices(shipmentScheduleRepository.getByIds(ids));
 	}
 
 	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
-		return addCarrierServices(shipmentScheduleRepository.getMapBy(query));
+		return loadCarrierServices(shipmentScheduleRepository.getMapBy(query));
 	}
 
-	private ImmutableList<ShipmentSchedule> addCarrierServices(@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> shipmentSchedules)
+	private ImmutableList<ShipmentSchedule> loadCarrierServices(@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> shipmentSchedules)
 	{
 		if (shipmentSchedules.isEmpty())
 		{
@@ -90,13 +90,13 @@ public class ShipmentScheduleService
 		carrierServiceRepository.assignServicesToShipmentSchedule(shipmentSchedule.getId(), shipmentSchedule.getCarrierServices());
 	}
 
-	public boolean isEligibleForCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	public boolean isEligibleForAutoCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final CarrierAdviseStatus carrierAdviseStatus = CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status());
-		if (shipmentSchedule.isProcessed()
+		if (ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID()) == null
+				|| shipmentSchedule.isProcessed()
 				|| shipmentSchedule.isClosed()
 				|| !shipmentSchedule.isActive()
-				|| ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID()) == null
 				|| shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule).signum() <= 0
 				|| (carrierAdviseStatus != null && !carrierAdviseStatus.isEligibleForAutoEnqueue()))
 		{
@@ -107,7 +107,7 @@ public class ShipmentScheduleService
 		return shipmentScheduleId == null || !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
 	}
 
-	public boolean isEligibleForCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
+	public boolean isEligibleForManualCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
 	{
 		if (shipmentSchedule.getShipperId() == null
 				|| shipmentSchedule.isProcessed()

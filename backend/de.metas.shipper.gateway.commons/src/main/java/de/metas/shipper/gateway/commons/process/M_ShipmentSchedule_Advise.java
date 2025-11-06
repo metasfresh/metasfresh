@@ -33,10 +33,11 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
 public class M_ShipmentSchedule_Advise extends JavaProcess implements IProcessPrecondition
 {
-	@NonNull private final CarrierAdviseProcessHelper helper = CarrierAdviseProcessHelper.newInstance();
+	@NonNull private final CarrierAdviseProcessService helper = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
 	private static final String PARAM_IsIncludeCarrierAdviseManual = "isIncludeCarrierAdviseManual";
 	@Param(parameterName = PARAM_IsIncludeCarrierAdviseManual, mandatory = true)

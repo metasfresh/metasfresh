@@ -270,11 +270,7 @@ public class M_ReceiptSchedule_StepDef
 
 		// to prevent that we continue before updates are finished
 		// on order complete (also after reactivating), we update async, but without any invalidation we could check like on shipment schedules
-		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, COLUMNNAME_QtyOrdered);
-		if(qtyOrdered != null)
-		{
-			queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_QtyOrdered, qtyOrdered);
-		}
+		row.getAsOptionalBigDecimal(COLUMNNAME_QtyOrdered).ifPresent(qtyOrdered -> queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_QtyOrdered, qtyOrdered));
 
 		final I_M_ReceiptSchedule receiptSchedule = queryBuilder.create().firstOnly(I_M_ReceiptSchedule.class);
 		if (receiptSchedule == null)

@@ -40,6 +40,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_ShipmentSchedule_Carrier_Service;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,7 +51,7 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 {
 	@NonNull private static final AdMessageKey ONLY_ONE_SHIPPER_ALLOWED = AdMessageKey.of("MoreThanOneShipperSelected");
 
-	@NonNull private final CarrierAdviseProcessHelper helper = CarrierAdviseProcessHelper.newInstance();
+	@NonNull private final CarrierAdviseProcessService helper = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
 	private static final String PARAM_IsIncludeCarrierAdviseManual = "isIncludeCarrierAdviseManual";
 	@Param(parameterName = PARAM_IsIncludeCarrierAdviseManual, mandatory = true)

@@ -31,35 +31,20 @@ import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.SpringContextHolder;
+import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
-final class CarrierAdviseProcessHelper
+@Service
+@RequiredArgsConstructor
+final class CarrierAdviseProcessService
 {
-	public static CarrierAdviseProcessHelper newInstance()
-	{
-		return CarrierAdviseProcessHelper.builder()
-				.shipmentScheduleService(SpringContextHolder.instance.getBean(ShipmentScheduleService.class))
-				.trxManager(Services.get(ITrxManager.class))
-				.build();
-	}
-
 	// Services
 	@NonNull private final ShipmentScheduleService shipmentScheduleService;
-	@NonNull private final ITrxManager trxManager;
-
-	@Builder
-	private CarrierAdviseProcessHelper(
-			@NonNull final ShipmentScheduleService shipmentScheduleService,
-			@NonNull final ITrxManager trxManager)
-	{
-		this.shipmentScheduleService = shipmentScheduleService;
-		this.trxManager = trxManager;
-	}
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public boolean isSingleShipper(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
 	{
@@ -94,7 +79,7 @@ final class CarrierAdviseProcessHelper
 
 	private void advise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
 	{
-		if (!shipmentScheduleService.isEligibleForCarrierAdvise(shipmentSchedule, isIncludeCarrierAdviseManual))
+		if (!shipmentScheduleService.isEligibleForManualCarrierAdvise(shipmentSchedule, isIncludeCarrierAdviseManual))
 		{
 			return;
 		}
@@ -122,5 +107,6 @@ final class CarrierAdviseProcessHelper
 		shipmentSchedule.setCarrierProductId(request.getCarrierProductId());
 		shipmentSchedule.setCarrierGoodsTypeId(request.getCarrierGoodsTypeId());
 		shipmentSchedule.setCarrierServices(request.getCarrierServiceIds());
+		shipmentScheduleService.save(shipmentSchedule);
 	}
 }

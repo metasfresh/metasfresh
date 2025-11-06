@@ -53,7 +53,7 @@ public class M_ShipmentSchedule
 			I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID })
 	public void markAsCarrierAdviceRequested(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (!shipmentScheduleService.isEligibleForCarrierAdvise(shipmentSchedule))
+		if (!shipmentScheduleService.isEligibleForAutoCarrierAdvise(shipmentSchedule))
 		{
 			return;
 		}
