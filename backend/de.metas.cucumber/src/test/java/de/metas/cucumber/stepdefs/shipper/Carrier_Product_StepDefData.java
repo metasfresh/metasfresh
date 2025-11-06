@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,38 +20,24 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
+package de.metas.cucumber.stepdefs.shipper;
 
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.inoutcandidate.CarrierProductId;
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import de.metas.shipper.gateway.commons.model.CarrierProduct;
 
-@Value
-@Builder
-@Jacksonized
-@RequiredArgsConstructor
-public class CarrierProduct implements ShipperProduct
+public class Carrier_Product_StepDefData extends StepDefData<CarrierProduct> implements StepDefDataGetIdAware<CarrierProductId, CarrierProduct>
 {
-	@NonNull CarrierProductId id;
 
-	@Getter
-	@NonNull String code;
-
-	@NonNull String name;
-
-	public static CarrierProduct ofCode(@NonNull final String code)
+	public Carrier_Product_StepDefData()
 	{
-		return ofCode(code, code);
+		super(CarrierProduct.class);
 	}
 
-	public static CarrierProduct ofCode(@NonNull final String code, @NonNull final String name)
+	@Override
+	public CarrierProductId extractIdFromRecord(final CarrierProduct record)
 	{
-		return new CarrierProduct(null, code, name);
+		return record.getId();
 	}
-
 }

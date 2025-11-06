@@ -22,6 +22,8 @@
 
 package de.metas.inoutcandidate;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.AttributesKey;
@@ -30,6 +32,7 @@ import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
@@ -48,6 +51,7 @@ public class ShipmentScheduleQuery
 	@NonNull QueryLimit limit = QueryLimit.NO_LIMIT;
 	@Nullable IQueryFilter<I_M_ShipmentSchedule> queryFilter;
 
+	@NonNull @Singular ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 	@Nullable Instant canBeExportedFrom;
 	@Nullable APIExportStatus exportStatus;
 	@Nullable OrgId orgId;

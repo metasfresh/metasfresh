@@ -137,6 +137,11 @@ public class ShipmentScheduleRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_AD_Client_ID, ClientId.METASFRESH);
 
+		if (!query.getShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(COLUMNNAME_M_ShipmentSchedule_ID, query.getShipmentScheduleIds());
+		}
+
 		if (query.getQueryFilter() != null)
 		{
 			queryBuilder.filter(query.getQueryFilter());

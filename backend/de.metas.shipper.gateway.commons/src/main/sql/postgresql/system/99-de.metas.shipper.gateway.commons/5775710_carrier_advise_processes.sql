@@ -2,7 +2,7 @@
 
 -- Value: MoreThanOneShipperSelected
 -- 2025-11-05T08:20:53.084Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545605,0,TO_TIMESTAMP('2025-11-05 08:20:52.814000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Mehr als ein Lieferweg ausgewählt','I',TO_TIMESTAMP('2025-11-05 08:20:52.814000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'MoreThanOneShipperSelected')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545605,0,TO_TIMESTAMP('2025-11-05 08:20:52.814000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Mehr als ein oder kein Lieferweg ausgewählt','I',TO_TIMESTAMP('2025-11-05 08:20:52.814000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'MoreThanOneOrNoShipperSelected')
 ;
 
 -- 2025-11-05T08:20:53.116Z
@@ -11,7 +11,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- Value: MoreThanOneShipperSelected
 -- 2025-11-05T08:21:29.629Z
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='More than one shipper selected',Updated=TO_TIMESTAMP('2025-11-05 08:21:29.629000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545605
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='More than one or no shipper selected',Updated=TO_TIMESTAMP('2025-11-05 08:21:29.629000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545605
 ;
 
 -- 2025-11-05T08:21:29.631Z
@@ -249,4 +249,39 @@ UPDATE AD_Process_Para SET AD_Reference_Value_ID=542018,Updated=TO_TIMESTAMP('20
 -- EntityType: de.metas.shipper.gateway.commons
 -- 2025-11-06T15:46:09.797Z
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585524,500221,541585,TO_TIMESTAMP('2025-11-06 15:46:09.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.shipper.gateway.commons','Y',TO_TIMESTAMP('2025-11-06 15:46:09.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N')
+;
+
+-- Process: M_ShipmentSchedule_Advise_Manual(de.metas.shipper.gateway.commons.webui.M_ShipmentSchedule_Advise_Manual)
+-- ParameterName: M_Shipper_ID
+-- 2025-11-06T16:25:18.410Z
+UPDATE AD_Process_Para SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2025-11-06 16:25:18.410000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543022
+;
+
+-- Process: M_ShipmentSchedule_Advise_Manual(de.metas.shipper.gateway.commons.webui.M_ShipmentSchedule_Advise_Manual)
+-- ParameterName: Carrier_Product_ID
+-- 2025-11-06T16:25:27.390Z
+UPDATE AD_Process_Para SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2025-11-06 16:25:27.390000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543023
+;
+
+-- Process: M_ShipmentSchedule_Advise_Manual(de.metas.shipper.gateway.commons.webui.M_ShipmentSchedule_Advise_Manual)
+-- ParameterName: M_Shipper_ID
+-- 2025-11-06T16:25:38.519Z
+UPDATE AD_Process_Para SET FieldLength=10,Updated=TO_TIMESTAMP('2025-11-06 16:25:38.519000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543022
+;
+
+-- Process: M_ShipmentSchedule_Advise_Manual(de.metas.shipper.gateway.commons.webui.M_ShipmentSchedule_Advise_Manual)
+-- ParameterName: Carrier_Goods_Type_ID
+-- 2025-11-06T16:26:01.567Z
+UPDATE AD_Process_Para SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2025-11-06 16:26:01.567000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543024
+;
+
+-- Process: M_ShipmentSchedule_Advise_Manual(de.metas.shipper.gateway.commons.webui.M_ShipmentSchedule_Advise_Manual)
+-- ParameterName: Carrier_Service_ID
+-- 2025-11-06T16:26:13.484Z
+UPDATE AD_Process_Para SET AD_Reference_ID=30, FieldLength=10,Updated=TO_TIMESTAMP('2025-11-06 16:26:13.484000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543025
+;
+
+-- Name: Carrier_Service_ID_for_M_Shipper_ID
+-- 2025-11-06T16:35:56.722Z
+UPDATE AD_Val_Rule SET Code='Carrier_Service_ID IN (SELECT cs.Carrier_Service_ID FROM Carrier_Service cs WHERE cs.M_Shipper_ID = @M_Shipper_ID/-1@)',Updated=TO_TIMESTAMP('2025-11-06 16:35:56.720000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540757
 ;

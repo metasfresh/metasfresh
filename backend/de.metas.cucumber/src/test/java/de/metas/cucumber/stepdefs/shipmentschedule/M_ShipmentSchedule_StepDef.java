@@ -53,6 +53,9 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.Carrier_Goods_Type_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.Carrier_Service_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
@@ -62,6 +65,9 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -74,6 +80,9 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
+import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
+import de.metas.shipper.gateway.commons.process.CarrierAdviseUpdateRequest;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -101,6 +110,9 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_Carrier_Goods_Type;
+import org.compiere.model.I_Carrier_Product;
+import org.compiere.model.I_Carrier_Service;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -116,8 +128,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID;
@@ -136,27 +150,31 @@ public class M_ShipmentSchedule_StepDef
 	private static final String SHIP_BPARTNER = "shipBPartner";
 	private static final String BILL_BPARTNER = "billBPartner";
 
-	private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
-	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
-	private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
-	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
-	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
+	@NonNull private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
+	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
-	private final AD_User_StepDefData userTable;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
-	private final C_Order_StepDefData orderTable;
-	private final C_OrderLine_StepDefData orderLineTable;
-	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
-	private final M_Shipper_StepDefData shipperTable;
-	private final M_Product_StepDefData productTable;
-	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final M_InOut_StepDefData shipmentTable;
-	private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	@NonNull private final M_Shipper_StepDefData shipperTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
+	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull private final M_InOut_StepDefData shipmentTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
+	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
+	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 
 	private final TestContext testContext;
 
@@ -251,7 +269,7 @@ public class M_ShipmentSchedule_StepDef
 		waitUntilValid(timeoutSec, ImmutableSet.of(shipmentScheduleId));
 	}
 
-	public void waitUntilValid(final int timeoutSec, final Collection<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	private void waitUntilValid(final int timeoutSec, final Collection<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
 	{
 		if (shipmentScheduleIds.isEmpty()) {return;}
 
@@ -535,6 +553,15 @@ public class M_ShipmentSchedule_StepDef
 				});
 		row.getAsOptionalBigDecimal(COLUMNNAME_QtyToDeliver)
 				.ifPresent(qtyToDeliver -> queryBuilder.addEqualsFilter(COLUMNNAME_QtyToDeliver, qtyToDeliver));
+
+		row.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Product_ID)
+				.ifPresent(identifier ->
+						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Product_ID, carrierProductTable.get(identifier).getId())
+				);
+		row.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID)
+				.ifPresent(identifier ->
+						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID, carrierGoodsTypeTable.get(identifier).getId())
+				);
 
 		final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
 
@@ -976,5 +1003,43 @@ public class M_ShipmentSchedule_StepDef
 						.append("\n"));
 
 		logger.error("*** Work package progress: \n" + message);
+	}
+
+	@And("Process M_ShipmentSchedule_Advise_Manual is run")
+	public void runM_ShipmentSchedule_Advise_Manual(@NonNull final DataTable dataTable)
+	{
+
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID));
+		final ShipperId shipperId = shipperTable.getId(row.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID));
+		final CarrierProductId carrierProductId = carrierProductTable.getId(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
+		final CarrierGoodsTypeId carrierGoodsTypeId = carrierGoodsTypeTable.getId(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID));
+		final CarrierServiceId carrierServiceId = carrierServiceTable.getId(row.getAsIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID));
+		final CarrierServiceId carrierServiceId2 = carrierServiceTable.getId(row.getAsIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID + "2"));
+		final ImmutableSet<CarrierServiceId> carrierServiceIds = Stream.of(carrierServiceId, carrierServiceId2)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+
+		carrierAdviseProcessService.updateEligibleShipmentSchedules(
+				CarrierAdviseUpdateRequest.builder()
+						.query(de.metas.inoutcandidate.ShipmentScheduleQuery.builder()
+								.shipperId(shipperId)
+								.shipmentScheduleId(shipmentScheduleId)
+								.build())
+						.isIncludeCarrierAdviseManual(false)
+						.carrierProductId(carrierProductId)
+						.carrierGoodsTypeId(carrierGoodsTypeId)
+						.carrierServiceIds(carrierServiceIds)
+						.build()
+		);
+	}
+
+	@And("Process M_ShipmentSchedule_Advise is run")
+	public void runM_ShipmentSchedule_Advise(@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID));
+		carrierAdviseProcessService.requestCarrierAdvises(ImmutableSet.of(shipmentScheduleId), false);
 	}
 }

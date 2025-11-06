@@ -95,9 +95,9 @@ public class M_ShipmentSchedule_Advise_Manual extends ViewBasedProcessTemplate i
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (helper.isSingleShipper(shipmentScheduleIds))
+		if (!helper.isSingleShipper(shipmentScheduleIds))
 		{
-			return ProcessPreconditionsResolution.reject(CarrierAdviseProcessService.ONLY_ONE_SHIPPER_ALLOWED);
+			return ProcessPreconditionsResolution.reject(CarrierAdviseProcessService.ONLY_EXACTLY_ONE_SHIPPER_ALLOWED);
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -127,7 +127,7 @@ public class M_ShipmentSchedule_Advise_Manual extends ViewBasedProcessTemplate i
 				CarrierAdviseUpdateRequest.builder()
 						.query(ShipmentScheduleQuery.builder()
 								.shipperId(p_ShipperId)
-								.queryFilter(getProcessInfo().getQueryFilterOrElseFalse())
+								.shipmentScheduleIds(getSelectedShipmentScheduleIds())
 								.build())
 						.isIncludeCarrierAdviseManual(p_IsIncludeCarrierAdviseManual)
 						.carrierProductId(p_CarrierProduct)

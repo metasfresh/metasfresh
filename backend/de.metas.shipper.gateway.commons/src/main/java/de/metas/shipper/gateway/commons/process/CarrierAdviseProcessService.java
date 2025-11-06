@@ -43,7 +43,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public final class CarrierAdviseProcessService
 {
-	@NonNull public static final AdMessageKey ONLY_ONE_SHIPPER_ALLOWED = AdMessageKey.of("MoreThanOneShipperSelected");
+	@NonNull public static final AdMessageKey ONLY_EXACTLY_ONE_SHIPPER_ALLOWED = AdMessageKey.of("MoreThanOneOrNoShipperSelected");
 
 	// Services
 	@NonNull private final ShipmentScheduleService shipmentScheduleService;
