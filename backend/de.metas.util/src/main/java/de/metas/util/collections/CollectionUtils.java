@@ -549,7 +549,7 @@ public final class CollectionUtils
 		}
 
 		//
-		// Fetch from cache what's available
+		// Fetch from the cache what's available
 		final List<V> values = new ArrayList<>(keys.size());
 		final Set<K> keysToLoad = new HashSet<>();
 		for (final K key : ImmutableSet.copyOf(keys))
@@ -579,7 +579,7 @@ public final class CollectionUtils
 	}
 
 	@NonNull
-	public static <K, V> V getOrLoadReturningMap(
+	public static <K, V> V getOrLoad(
 			@NonNull final Map<K, V> map,
 			@NonNull final K key,
 			@NonNull final Function<Set<K>, Map<K, V>> valuesLoader)

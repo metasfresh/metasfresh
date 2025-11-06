@@ -8,7 +8,7 @@ import de.metas.event.Topic;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.impl.OrderLineDetailRepository;
-import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;

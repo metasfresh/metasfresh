@@ -111,9 +111,9 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -766,7 +766,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()), SOTrx.ofBoolean(icRecord.isSOTrx()));
 
 		final PaymentTermId paymentTermIdToUse = paymentTermRepository
-				.retrievePaymentTermId(paymentTermQuery)
+				.firstIdOnly(paymentTermQuery)
 				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
 						.appendParametersToMessage()
 						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())

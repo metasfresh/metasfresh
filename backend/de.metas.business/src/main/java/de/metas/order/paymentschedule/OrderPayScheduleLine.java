@@ -57,6 +57,8 @@ public class OrderPayScheduleLine
 	@Setter @NonNull Instant dueDate;
 	final @NonNull Money dueAmount;
 
+	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, id);}
+
 	public void applyAndProcess(@NonNull final DueDateAndStatus dueDateAndStatus)
 	{
 		final OrderPayScheduleStatus nextStatus = dueDateAndStatus.getStatus();
