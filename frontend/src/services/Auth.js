@@ -3,20 +3,8 @@ import Stomp from 'stompjs/lib/stomp.min.js';
 
 class Auth {
   constructor() {
-    this.notificationClient = null;
     this.sessionClient = null;
   }
-
-  initNotificationClient = (topic, cb) => {
-    this.notificationClient = Stomp.Stomp.over(new SockJs(config.WS_URL));
-    this.notificationClient.debug = null;
-    this.notificationClient.connect({}, () => {
-      this.notificationClient.connected &&
-        this.notificationClient.subscribe(topic.data, (msg) => {
-          cb && cb(msg);
-        });
-    });
-  };
 
   initSessionClient = (topic, cb) => {
     this.sessionClient = Stomp.Stomp.over(new SockJs(config.WS_URL));
@@ -31,11 +19,10 @@ class Auth {
   };
 
   close = () => {
-    if (!this.notificationClient || !this.sessionClient) {
+    if (!this.sessionClient) {
       return;
     }
 
-    this.notificationClient.connected && this.notificationClient.disconnect();
     this.sessionClient.connected && this.sessionClient.disconnect();
   };
 }
