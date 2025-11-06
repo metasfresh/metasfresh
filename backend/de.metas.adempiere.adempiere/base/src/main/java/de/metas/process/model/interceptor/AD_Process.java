@@ -75,11 +75,10 @@ public class AD_Process
 		{
 			Util.validateJavaClassname(classname, PostgRESTProcessExecutor.class);
 		}
-		// FIXME prevents adding webui processes in swingUI
-		// else if (processType.equals(Java))
-		// {
-		// 	Util.validateJavaClassname(classname, JavaProcess.class);
-		// }
+		else if (processType.equals(Java))
+		{
+			Util.validateJavaClassname(classname, JavaProcess.class);
+		}
 		// for the other cases, the user can't edit the classname
 	}
 
