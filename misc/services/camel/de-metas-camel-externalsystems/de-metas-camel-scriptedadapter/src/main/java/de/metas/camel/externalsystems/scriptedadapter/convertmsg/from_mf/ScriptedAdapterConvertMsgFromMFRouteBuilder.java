@@ -31,6 +31,10 @@ import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
+import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthAccessToken;
+import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthAccessTokenRequest;
+import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthIdentity;
+import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthTokenManager;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.endpoint.JsonEndpointAuthType;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
@@ -219,18 +223,28 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
 		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.OAuth);
 
-		final String accessToken = oauthTokenManager.getAccessToken(endpointParameters.getEndpointUrl() + "/login",
-				endpointParameters.getClientId(),
-				endpointParameters.getClientSecret(),
-				endpointParameters.getUser(),
-				endpointParameters.getPassword());
+		final OAuthAccessToken accessToken = oauthTokenManager.getAccessToken(
+				OAuthAccessTokenRequest.builder()
+						.identity(extractOAuthIdentity(endpointParameters))
+						.clientSecret(endpointParameters.getClientSecret())
+						.password(endpointParameters.getPassword())
+						.build());
 
 		exchange.getIn().removeHeaders("CamelHttp*");
-		exchange.getIn().setHeader("Bearer", accessToken);
+		exchange.getIn().setHeader("Bearer", accessToken.getAccessToken());
 		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
 		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private static OAuthIdentity extractOAuthIdentity(final JsonExternalSystemOutboundEndpoint endpointParameters)
+	{
+		return OAuthIdentity.builder()
+				.tokenUrl(endpointParameters.getEndpointUrl() + "/login")
+				.clientId(endpointParameters.getClientId())
+				.username(endpointParameters.getUser())
+				.build();
 	}
 
 	private void forceRefreshOAuthToken(@NonNull final Exchange exchange)
@@ -240,11 +254,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
 
 		// Invalidate the cached token so the next request will get a fresh token
-		oauthTokenManager.invalidateToken(
-				endpointParameters.getEndpointUrl() + "/login",
-				endpointParameters.getClientId(),
-				endpointParameters.getUser()
-		);
+		oauthTokenManager.invalidateToken(extractOAuthIdentity(endpointParameters));
 
 		// Re-prepare request with fresh token
 		prepareHttpRequestForOAuth(exchange);

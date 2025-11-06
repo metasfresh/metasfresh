@@ -27,9 +27,12 @@ import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorException;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
+import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthAccessToken;
+import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthTokenManager;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -44,6 +47,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.time.temporal.ChronoUnit;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
@@ -89,7 +93,11 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new ScriptedAdapterConvertMsgFromMFRouteBuilder(Mockito.mock(OAuthTokenManager.class));
+		final OAuthTokenManager oauthTokenManager = Mockito.mock(OAuthTokenManager.class);
+		Mockito.when(oauthTokenManager.getAccessToken(Mockito.any()))
+				.thenReturn(OAuthAccessToken.of("dummy access token", SystemTime.asInstant().plus(24, ChronoUnit.HOURS)));
+
+		return new ScriptedAdapterConvertMsgFromMFRouteBuilder(oauthTokenManager);
 	}
 
 	@Test
