@@ -7,6 +7,7 @@ import { checkLoginRequest, loginWithToken, logoutRequest } from '../api/login';
 import history from '../services/History';
 import { loginSuccess as loginSuccessAction } from '../actions/AppActions';
 import useSynchronousState from './useSynchronousState';
+import * as types from '../constants/ActionTypes';
 
 const authContext = createContext();
 
@@ -126,8 +127,6 @@ function useProvideAuth() {
   const _loginSuccess = () => {
     localStorage.setItem('isLogged', true);
     setLoggedIn(true);
-
-    return Promise.resolve();
   };
 
   /**
@@ -151,6 +150,7 @@ function useProvideAuth() {
     setLoggedIn(false);
     localStorage.removeItem('isLogged');
     setAuthRequestPending(false);
+    dispatch({ type: types.LOGOUT_SUCCESS });
   };
 
   /**

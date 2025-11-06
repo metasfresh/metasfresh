@@ -63,10 +63,7 @@ export default function appHandler(state = initialState, action) {
       };
 
     case types.LOGOUT_SUCCESS:
-      return {
-        ...state,
-        isLogged: false,
-      };
+      return initialState;
 
     case types.ENABLE_TUTORIAL:
       return {
