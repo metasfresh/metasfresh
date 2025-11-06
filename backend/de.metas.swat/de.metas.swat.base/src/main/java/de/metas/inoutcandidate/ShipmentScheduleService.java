@@ -25,6 +25,7 @@ package de.metas.inoutcandidate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -36,7 +37,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.function.UnaryOperator;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +61,7 @@ public class ShipmentScheduleService
 		return loadCarrierServices(shipmentScheduleRepository.getByIds(ids));
 	}
 
-	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
+	public ImmutableList<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
 		return loadCarrierServices(shipmentScheduleRepository.getMapBy(query));
 	}
@@ -72,22 +73,41 @@ public class ShipmentScheduleService
 			return shipmentSchedules.values().asList();
 		}
 
-		final ImmutableMap<ShipmentScheduleId, ImmutableSet<CarrierServiceId>> carrierServicesByShipmentScheduleId = carrierServiceRepository.getAssignedServiceIdsMapByShipmentScheduleIds(shipmentSchedules.keySet());
+		final ImmutableSetMultimap<ShipmentScheduleId, CarrierServiceId> carrierServicesByShipmentScheduleId = carrierServiceRepository.getAssignedServiceIdsMapByShipmentScheduleIds(shipmentSchedules.keySet());
 
 		for (final ShipmentSchedule shipmentSchedule : shipmentSchedules.values())
 		{
-			final ImmutableSet<CarrierServiceId> carrierServices = carrierServicesByShipmentScheduleId.getOrDefault(shipmentSchedule.getId(), ImmutableSet.of());
+			final ImmutableSet<CarrierServiceId> carrierServices = carrierServicesByShipmentScheduleId.get(shipmentSchedule.getId());
 			shipmentSchedule.setCarrierServices(carrierServices);
 		}
 
 		return shipmentSchedules.values().asList();
 	}
 
+	public void updateByIds(@NonNull final ImmutableSet<ShipmentScheduleId> ids, @NonNull final UnaryOperator<ShipmentSchedule> updater)
+	{
+		if (ids.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<ShipmentSchedule> schedules = getByIds(ids);
+		if (schedules.isEmpty())
+		{
+			return;
+		}
+
+		schedules.stream()
+				.map(updater)
+				.forEach(this::save);
+	}
+
+
 
 	public void save(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		shipmentScheduleRepository.save(shipmentSchedule);
-		carrierServiceRepository.assignServicesToShipmentSchedule(shipmentSchedule.getId(), shipmentSchedule.getCarrierServices());
+		carrierServiceRepository.assignServicesToShipmentSchedule(shipmentSchedule.getId(), shipmentSchedule.getCarrierServicesIfLoaded());
 	}
 
 	public boolean isEligibleForAutoCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
@@ -107,7 +127,7 @@ public class ShipmentScheduleService
 		return shipmentScheduleId == null || !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
 	}
 
-	public boolean isEligibleForManualCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
+	public boolean isNotEligibleForManualCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
 	{
 		if (shipmentSchedule.getShipperId() == null
 				|| shipmentSchedule.isProcessed()
@@ -117,10 +137,10 @@ public class ShipmentScheduleService
 		        || !isIncludeCarrierAdviseManual && shipmentSchedule.getCarrierAdvisingStatus().isManual()
 				|| !shipmentSchedule.getCarrierAdvisingStatus().isEligibleForManualEnqueue())
 		{
-			return false;
+			return true;
 		}
 
-		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
+		return pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
 				.onlyShipmentScheduleId(shipmentSchedule.getId())
 				.build());
 	}

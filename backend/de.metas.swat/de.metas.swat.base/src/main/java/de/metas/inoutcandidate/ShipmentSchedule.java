@@ -33,10 +33,13 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -76,7 +79,19 @@ public class ShipmentSchedule
 	@Nullable private String carrierAdviseErrorMessage;
 	@Nullable private CarrierProductId carrierProductId;
 	@Nullable private CarrierGoodsTypeId carrierGoodsTypeId;
-	@NonNull @Singular private Set<CarrierServiceId> carrierServices;
+
+	@Getter(AccessLevel.NONE)
+	@Nullable private Set<CarrierServiceId> carrierServices;
+
+	@NonNull
+	public Set<CarrierServiceId> getCarrierServicesIfLoaded()
+	{
+		if (carrierServices == null)
+		{
+			throw new AdempiereException("Carrier services were not loaded for " + this);
+		}
+		return carrierServices;
+	}
 
 	public boolean hasAttributes(@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds, @NonNull final IAttributeSetInstanceBL asiBL)
 	{

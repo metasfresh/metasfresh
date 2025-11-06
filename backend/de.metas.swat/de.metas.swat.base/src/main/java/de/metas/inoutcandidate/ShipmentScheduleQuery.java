@@ -23,12 +23,14 @@
 package de.metas.inoutcandidate;
 
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -43,6 +45,7 @@ public class ShipmentScheduleQuery
 
 	@Builder.Default
 	@NonNull QueryLimit limit = QueryLimit.NO_LIMIT;
+	@Nullable IQueryFilter<I_M_ShipmentSchedule> queryFilter;
 
 	@Nullable Instant canBeExportedFrom;
 	@Nullable APIExportStatus exportStatus;

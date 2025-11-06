@@ -113,6 +113,21 @@ public class ShipmentScheduleRepository
 
 	public ImmutableMap<ShipmentScheduleId, ShipmentSchedule> getMapBy(@NonNull final ShipmentScheduleQuery query)
 	{
+		final List<I_M_ShipmentSchedule> records = toSqlQuery(query)
+				.create()
+				.list();
+
+		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentSchedule> result = ImmutableMap.builder();
+		for (final I_M_ShipmentSchedule record : records)
+		{
+			result.put(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()), ofRecord(record));
+		}
+		return result.build();
+	}
+
+	@NonNull
+	private IQueryBuilder<I_M_ShipmentSchedule> toSqlQuery(@NonNull final ShipmentScheduleQuery query)
+	{
 		if (query.isAny())
 		{
 			throw new AdempiereException("Any query is not allowed");
@@ -121,6 +136,11 @@ public class ShipmentScheduleRepository
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_AD_Client_ID, ClientId.METASFRESH);
+
+		if (query.getQueryFilter() != null)
+		{
+			queryBuilder.filter(query.getQueryFilter());
+		}
 
 		if (query.getProductId() != null)
 		{
@@ -250,16 +270,7 @@ public class ShipmentScheduleRepository
 					.orderBy(COLUMNNAME_M_ShipmentSchedule_ID);
 		}
 
-		final List<I_M_ShipmentSchedule> records = queryBuilder
-				.create()
-				.list();
-
-		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentSchedule> result = ImmutableMap.builder();
-		for (final I_M_ShipmentSchedule record : records)
-		{
-			result.put(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()), ofRecord(record));
-		}
-		return result.build();
+		return queryBuilder;
 	}
 
 	private ShipmentSchedule ofRecord(final I_M_ShipmentSchedule record)
@@ -299,8 +310,7 @@ public class ShipmentScheduleRepository
 				.isActive(record.isActive())
 				.carrierAdvisingStatus(CarrierAdviseStatus.ofCode(record.getCarrier_Advising_Status()))
 				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
-				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()))
-				.clearCarrierServices();//to make it obvious they are not loaded here
+				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()));
 
 		return shipmentScheduleBuilder.build();
 	}
@@ -456,6 +466,6 @@ public class ShipmentScheduleRepository
 
 	public ImmutableSet<ShipmentScheduleId> getIdsByQuery(@NonNull final ShipmentScheduleQuery query)
 	{
-		return getMapBy(query).keySet();
+		return toSqlQuery(query).create().idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
 }

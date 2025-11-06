@@ -22,12 +22,14 @@
 
 package de.metas.shipper.gateway.commons.process;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
+import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -39,6 +41,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.ShipperId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_ShipmentSchedule_Carrier_Service;
@@ -102,12 +105,18 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getSelectedIncludedRecordIds(I_M_ShipmentSchedule.class, ShipmentScheduleId::ofRepoId);
 		final ImmutableSet<CarrierServiceId> carrierServiceIds = Stream.of(p_CarrierProductService, p_CarrierProductService2, p_CarrierProductService3)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		helper.updateEligibleShipmentSchedules(shipmentScheduleIds, CarrierAdviseUpdateRequest.builder()
+		final ImmutableList<ShipmentSchedule> schedules = helper.getBy(getProcessInfo().getQueryFilterOrElseFalse());
+
+		if(!helper.isSingleShipper(schedules))
+		{
+			throw new AdempiereException(ONLY_ONE_SHIPPER_ALLOWED);
+		}
+
+		helper.updateEligibleShipmentSchedules(schedules, CarrierAdviseUpdateRequest.builder()
 						.isIncludeCarrierAdviseManual(p_IsIncludeCarrierAdviseManual)
 						.carrierProductId(p_CarrierProduct)
 						.carrierGoodsTypeId(p_GoodsType)

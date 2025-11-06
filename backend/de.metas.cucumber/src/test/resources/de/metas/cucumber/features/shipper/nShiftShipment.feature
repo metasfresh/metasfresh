@@ -36,9 +36,9 @@ Feature: Dhl Shipment
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
-    And load M_Product:
-      | Identifier      | OPT.M_Product_ID |
-      | packing_product | 2003135          |
+    And metasfresh contains M_Products:
+      | Identifier      | WeightNet | WeightGross |
+      | packing_product | 0.1 KGM   | 0.1 KGM     |
     And metasfresh contains M_HU_PackingMaterial:
       | Identifier | M_Product_ID    | Length | Width | Height | C_UOM_Dimension_ID.Identifier |
       | pm         | packing_product | 30     | 20    | 10     | cm                            |

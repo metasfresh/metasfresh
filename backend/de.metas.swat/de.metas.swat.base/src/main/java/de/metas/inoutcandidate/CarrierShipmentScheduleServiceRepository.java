@@ -24,6 +24,7 @@ package de.metas.inoutcandidate;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.cache.CCache;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.shipping.ShipperId;
@@ -76,22 +77,20 @@ public class CarrierShipmentScheduleServiceRepository
 				.listIds(CarrierServiceId::ofRepoId));
 	}
 
-	public ImmutableMap<ShipmentScheduleId, ImmutableSet<CarrierServiceId>> getAssignedServiceIdsMapByShipmentScheduleIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
+	public ImmutableSetMultimap<ShipmentScheduleId, CarrierServiceId> getAssignedServiceIdsMapByShipmentScheduleIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (shipmentScheduleIds.isEmpty())
 		{
-			return ImmutableMap.of();
+			return ImmutableSetMultimap.of();
 		}
 
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
 				.addInArrayFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
 				.stream()
-				.collect(Collectors.collectingAndThen(
-						Collectors.groupingBy(s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID()),
-								Collectors.mapping(s -> CarrierServiceId.ofRepoId(s.getCarrier_Service_ID()),
-										ImmutableSet.toImmutableSet())),
-						ImmutableMap::copyOf));
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID()),
+						s -> CarrierServiceId.ofRepoId(s.getCarrier_Service_ID())));
 	}
 
 	public void assignServicesToShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId, final @NonNull Set<CarrierServiceId> serviceIds)
