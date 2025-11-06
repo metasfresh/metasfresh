@@ -5,8 +5,7 @@ import PropTypes from 'prop-types';
 import { checkLoginRequest, loginWithToken, logoutRequest } from '../api/login';
 
 import history from '../services/History';
-import Auth from '../services/Auth';
-import { loginSuccess as loginAction } from '../actions/AppActions';
+import { loginSuccess as loginSuccessAction } from '../actions/AppActions';
 import useSynchronousState from './useSynchronousState';
 
 const authContext = createContext();
@@ -34,7 +33,6 @@ export const useAuth = () => {
 
 // Provider hook that creates auth object and handles state
 function useProvideAuth() {
-  const auth = new Auth();
   const dispatch = useDispatch();
   const store = useStore();
 
@@ -139,7 +137,7 @@ function useProvideAuth() {
    */
   const login = () => {
     if (!store.getState().appHandler.isLogged) {
-      return dispatch(loginAction(auth)).then(() => {
+      return dispatch(loginSuccessAction()).then(() => {
         _loginSuccess();
       });
     }
@@ -150,7 +148,6 @@ function useProvideAuth() {
    * @summary reset the authentication flags
    */
   const _logoutSuccess = () => {
-    auth.close();
     setLoggedIn(false);
     localStorage.removeItem('isLogged');
     setAuthRequestPending(false);
@@ -173,7 +170,6 @@ function useProvideAuth() {
   return {
     isLoggedIn,
     redirectRoute,
-    auth,
     login,
     logout,
     tokenLogin,
