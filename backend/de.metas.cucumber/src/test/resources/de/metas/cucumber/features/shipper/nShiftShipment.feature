@@ -51,9 +51,9 @@ Feature: nShift Shipment
       | inv_l_2    | inv            | packing_product | 0       | 100      | PCE          |
     When the inventory identified by inv is completed
     And after not more than 60s, there are added M_HUs for inventory
-      | Identifier | M_HU_ID |
-      | inv_l_1    | hu_1    |
-      | inv_l_2    | hu_2    |
+      | M_InventoryLine_ID | M_HU_ID |
+      | inv_l_1            | hu_1    |
+      | inv_l_2            | hu_2    |
     And M_HU_Storage are validated
       | M_HU_ID | M_Product_ID    | Qty |
       | hu_1    | product         | 100 |
