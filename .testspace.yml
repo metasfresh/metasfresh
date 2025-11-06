@@ -5,8 +5,6 @@
 release:
   - task_force_hotfix
   - task_force_release
-  - temporary_test202510_hotfix
-  - temporary_test202510_release
   - keen_hawk_hotfix
   - keen_hawk_release
   - game_time_hotfix

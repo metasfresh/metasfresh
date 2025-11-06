@@ -58,7 +58,6 @@ pull_request_rules:
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=task_force_hotfix
-              - base=temporary_test202510_hotfix
               - base=keen_hawk_hotfix
               - base=game_time_hotfix
               - base=ghost_rider_hotfix
@@ -80,7 +79,6 @@ pull_request_rules:
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=task_force_release
-              - base=temporary_test202510_release
               - base=keen_hawk_release
               - base=game_time_release
               - base=ghost_rider_release
