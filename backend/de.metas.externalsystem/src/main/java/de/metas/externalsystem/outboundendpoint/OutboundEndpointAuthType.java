@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.outboundendpoint;
 
+import de.metas.common.externalsystem.endpoint.JsonEndpointAuthType;
 import de.metas.externalsystem.model.X_ExternalSystem_Outbound_Endpoint;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -29,12 +30,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Make sure to keep in sync with {@link de.metas.common.externalsystem.endpoint.JsonEndpointAuthType}.
+ */
 @RequiredArgsConstructor
 @Getter
 public enum OutboundEndpointAuthType implements ReferenceListAwareEnum
 {
 	Token(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_Token),
-	Basic(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_Basic),
 	OAuth(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_OAuth),
 	;
 
@@ -43,4 +46,9 @@ public enum OutboundEndpointAuthType implements ReferenceListAwareEnum
 	@NonNull private final String code;
 
 	public static OutboundEndpointAuthType ofCode(@NonNull final String code) {return index.ofCode(code);}
+
+	public JsonEndpointAuthType toJson()
+	{
+		return JsonEndpointAuthType.valueOf(code);
+	}
 }

@@ -182,25 +182,25 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set eMail.
+	 * Set UserLogin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEMail (@Nullable String EMail);
+	void setUserLogin (@Nullable String UserLogin);
 
 	/**
-	 * Get eMail.
+	 * Get UserLogin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEMail();
+	@Nullable String getUserLogin();
 
-	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_EMail = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "EMail", null);
-	String COLUMNNAME_EMail = "EMail";
+	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_UserLogin = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "UserLogin", null);
+	String COLUMNNAME_UserLogin = "UserLogin";
 
 	/**
 	 * Set External System Outbound Endpoint.

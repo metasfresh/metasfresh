@@ -106,15 +106,15 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public void setEMail (final @Nullable String EMail)
+	public void setUserLogin (final @Nullable String UserLogin)
 	{
-		set_Value (COLUMNNAME_EMail, EMail);
+		set_Value (COLUMNNAME_UserLogin, UserLogin);
 	}
 
 	@Override
-	public String getEMail() 
+	public String getUserLogin() 
 	{
-		return get_ValueAsString(COLUMNNAME_EMail);
+		return get_ValueAsString(COLUMNNAME_UserLogin);
 	}
 
 	@Override

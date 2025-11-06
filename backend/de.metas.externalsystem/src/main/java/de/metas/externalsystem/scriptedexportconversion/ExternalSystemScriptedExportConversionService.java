@@ -59,7 +59,7 @@ import java.util.stream.Stream;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_DATA;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 
@@ -110,26 +110,31 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final Properties context,
 			@NonNull final String outboundDataProcessRecordId)
 	{
+
 		final ExternalSystemOutboundEndpoint endpoint = externalSystemOutboundEndpointRepository.getById(config.getExternalSystemOutboundEndpointId());
-		final String outboundEndpointData;
-		try
-		{
-			outboundEndpointData = objectMapper.writeValueAsString(endpoint);
-		}
-		catch (final JsonProcessingException exception)
-		{
-			throw new RuntimeException("Failed converting endpoint's properties to string: " + endpoint, exception);
-		}
+		final String outboundEndpointData = toJson(endpoint);
 
 		final Map<String, String> parameters = new HashMap<>();
 
 		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, getOutboundProcessResponse(config, context, outboundDataProcessRecordId));
 		parameters.put(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, config.getScriptIdentifier());
-		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_DATA, outboundEndpointData);
+		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, outboundEndpointData);
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, tableDAO.retrieveTableName(config.getAdTableId()));
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, outboundDataProcessRecordId);
 
 		return parameters;
+	}
+
+	private String toJson(@NonNull final ExternalSystemOutboundEndpoint endpoint)
+	{
+		try
+		{
+			return objectMapper.writeValueAsString(endpoint.toJson());
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new AdempiereException("Failed converting endpoint's properties to json-string: " + endpoint, e);
+		}
 	}
 
 	public boolean isConfigMatchingRecord(@NonNull final ExternalSystemScriptedExportConversionConfig config,

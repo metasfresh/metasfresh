@@ -22,23 +22,29 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.endpoint.JsonEndpointAuthType;
+import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.common.HttpMethods;
 import org.springframework.http.MediaType;
@@ -52,11 +58,9 @@ import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ATTACHMENT_FILE_NAME;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -68,6 +72,8 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 {
+	public static final String HEADER_AUTH_TYPE = "AuthType";
+
 	public static final String ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID = "ScriptedExportConversion-ConvertMsgFromMF";
 
 	public static final String PROPERTY_SCRIPTING_REPO_BASE_DIR = "metasfresh.scriptedadapter.repo.baseDir";
@@ -77,10 +83,12 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 	private JavaScriptRepo javaScriptRepo;
 
-	private final JavaScriptExecutorService javaScriptExecutorService = new JavaScriptExecutorService();
-
 	@NonNull
-	private final ProcessLogger processLogger;
+	private final OAuthTokenManager oauthTokenManager;
+
+	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+
+	private final JavaScriptExecutorService javaScriptExecutorService = new JavaScriptExecutorService();
 
 	@Override
 	public void configure()
@@ -95,17 +103,32 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 				.to(direct(MF_ERROR_ROUTE_ID));
 
 		from(direct(ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID))
-				.routeId(ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID)
-				.log("Route invoked!")
-				.process(this::buildAndSetContext)
-				.process(this::executeJavaScript)
-				.process(this::prepareHttpRequest)
-				//dev-note: the actual path is set in this.prepareHttpRequest()
-				.to("https://placeholder").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
-				.process(this::prepareJsonAttachmentRequest)
-				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to save attachment: ${body}")
-				.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID));
-			;
+			.routeId(ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID)
+			.log("Route invoked!")
+			.process(this::buildAndSetContext)
+			.process(this::executeJavaScript)
+			.process(this::extractAuthTypeToHeader)
+			.choice()
+				.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.Token))
+					.process(this::prepareHttpRequestForTokenAuth)
+				.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth))
+					.process(this::prepareHttpRequestForOAuth)
+				.otherwise()
+					.throwException(new RuntimeCamelException("Unsupported authentication type"))
+			.end()
+				
+			// Make the rest-call and handle the case of a stale OAuth token
+			.to("https://placeholder").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
+			.choice()
+				.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth'"))
+					.log(LoggingLevel.WARN, "Received 401, refreshing OAuth token and retrying once...")
+					.process(this::forceRefreshOAuthToken)
+					.to("https://placeholder").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_RETRY")
+			.end()
+				
+			.process(this::prepareJsonAttachmentRequest)
+			.log(LoggingLevel.DEBUG, "Calling metasfresh-api to save attachment: ${body}")
+			.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID));
 		//@formatter:on
 	}
 
@@ -114,13 +137,13 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 		final Map<String, String> parameters = request.getParameters();
 
+		final JsonExternalSystemOutboundEndpoint endpointParameters = deserializeEndpointParameters(parameters);
+
 		final MsgFromMfContext msgFromMfContext = MsgFromMfContext.builder()
 				.orgCode(request.getOrgCode())
 				.scriptingRequestBody(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT))
 				.scriptIdentifier(parameters.get(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER))
-				.outboundHttpEP(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP))
-				.outboundHttpToken(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN))
-				.outboundHttpMethod(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD))
+				.endpointParameters(endpointParameters)
 				.outboundRecordTableName(parameters.get(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME))
 				.outboundRecordId(parameters.get(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID))
 				.build();
@@ -128,11 +151,27 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		exchange.setProperty(ROUTE_MSG_FROM_MF_CONTEXT, msgFromMfContext);
 	}
 
+	private JsonExternalSystemOutboundEndpoint deserializeEndpointParameters(@NonNull final Map<String, String> parameters)
+	{
+		final String jsonString = parameters.get(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS);
+		if (Check.isBlank(jsonString))
+		{
+			throw new RuntimeCamelException("Missing parameter '" + PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS + "' in request!");
+		}
+
+		try
+		{
+			return mapper.readValue(jsonString, JsonExternalSystemOutboundEndpoint.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeCamelException("Unable to deserialize value of parameter '" + PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS + "' from request! Value=" + jsonString, e);
+		}
+	}
+
 	private void executeJavaScript(@NonNull final Exchange exchange)
 	{
-		final MsgFromMfContext msgFromMfContext = ProcessorHelper.getPropertyOrThrowError(exchange,
-				ROUTE_MSG_FROM_MF_CONTEXT,
-				MsgFromMfContext.class);
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
 
 		final String script = javaScriptRepo.get(msgFromMfContext.getScriptIdentifier());
 		msgFromMfContext.setScript(script);
@@ -145,25 +184,75 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		msgFromMfContext.setScriptReturnValue(javaScriptResult);
 	}
 
-	private void prepareHttpRequest(@NonNull final Exchange exchange)
+	private static MsgFromMfContext getMsgFromMfContext(@NonNull final Exchange exchange)
 	{
-		final MsgFromMfContext msgFromMfContext = ProcessorHelper.getPropertyOrThrowError(exchange,
+		return ProcessorHelper.getPropertyOrThrowError(exchange,
 				ROUTE_MSG_FROM_MF_CONTEXT,
 				MsgFromMfContext.class);
+	}
+
+	private void extractAuthTypeToHeader(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+		exchange.getIn().setHeader(HEADER_AUTH_TYPE, msgFromMfContext.getEndpointParameters().getAuthType());
+	}
+
+	private void prepareHttpRequestForTokenAuth(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.Token);
 
 		exchange.getIn().removeHeaders("CamelHttp*");
-		exchange.getIn().setHeader(AUTHORIZATION, msgFromMfContext.getOutboundHttpToken());
-		exchange.getIn().setHeader(Exchange.HTTP_URI, msgFromMfContext.getOutboundHttpEP());
+		exchange.getIn().setHeader(AUTHORIZATION, endpointParameters.getToken());
+		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
 		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(msgFromMfContext.getOutboundHttpMethod()));
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void prepareHttpRequestForOAuth(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.OAuth);
+
+		final String accessToken = oauthTokenManager.getAccessToken(endpointParameters.getEndpointUrl() + "/login",
+				endpointParameters.getClientId(),
+				endpointParameters.getClientSecret(),
+				endpointParameters.getUser(),
+				endpointParameters.getPassword());
+
+		exchange.getIn().removeHeaders("CamelHttp*");
+		exchange.getIn().setHeader("Bearer", accessToken);
+		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
+		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void forceRefreshOAuthToken(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+
+		// Invalidate the cached token so the next request will get a fresh token
+		oauthTokenManager.invalidateToken(
+				endpointParameters.getEndpointUrl() + "/login",
+				endpointParameters.getClientId(),
+				endpointParameters.getUser()
+		);
+
+		// Re-prepare request with fresh token
+		prepareHttpRequestForOAuth(exchange);
 	}
 
 	private void prepareJsonAttachmentRequest(@NonNull final Exchange exchange)
 	{
-		final MsgFromMfContext msgFromMfContext = ProcessorHelper.getPropertyOrThrowError(exchange,
-				ROUTE_MSG_FROM_MF_CONTEXT,
-				MsgFromMfContext.class);
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
 
 		final JsonAttachment attachment = JsonAttachment.builder()
 				.fileName(ATTACHMENT_FILE_NAME)
@@ -188,9 +277,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	@NonNull
 	private String buildBase64FileData(@NonNull final Exchange exchange)
 	{
-		final MsgFromMfContext msgFromMfContext = ProcessorHelper.getPropertyOrThrowError(exchange,
-				ROUTE_MSG_FROM_MF_CONTEXT,
-				MsgFromMfContext.class);
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
 
 		final String endpointResponse = exchange.getIn().getBody(String.class);
 
@@ -198,7 +285,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 				+ "Timestamp: " + LocalDateTime.now() + "\n"
 				+ "Script Name: " + msgFromMfContext.getScriptIdentifier() + "\n"
 				+ "Script Returned Value: " + msgFromMfContext.getScriptReturnValue() + "\n"
-				+ "HTTP Endpoint: " + msgFromMfContext.getOutboundHttpEP() + "\n"
+				+ "HTTP Endpoint: " + msgFromMfContext.getEndpointParameters().getEndpointUrl() + "\n"
 				+ "HTTP Response: " + endpointResponse + "\n";
 
 		return Base64.getEncoder().encodeToString(fileContent.getBytes());

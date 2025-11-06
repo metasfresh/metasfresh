@@ -22,6 +22,8 @@
 
 package de.metas.externalsystem.outboundendpoint;
 
+import de.metas.cache.CCache;
+import de.metas.common.util.Check;
 import de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -31,8 +33,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class ExternalSystemOutboundEndpointRepository
 {
+	CCache<ExternalSystemOutboundEndpointId, ExternalSystemOutboundEndpoint> endpointsCache = CCache.<ExternalSystemOutboundEndpointId, ExternalSystemOutboundEndpoint>builder().tableName(I_ExternalSystem_Outbound_Endpoint.Table_Name)
+			.build();
+
 	@NonNull
 	public ExternalSystemOutboundEndpoint getById(@NonNull final ExternalSystemOutboundEndpointId id)
+	{
+		return Check.assumeNotNull(
+				endpointsCache.getOrLoad(id, this::getById0), "Loader doesn't return null");
+	}
+
+	@NonNull
+	private ExternalSystemOutboundEndpoint getById0(@NonNull final ExternalSystemOutboundEndpointId id)
 	{
 		final I_ExternalSystem_Outbound_Endpoint endpointRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Outbound_Endpoint.class);
 		if (endpointRecord == null)
@@ -54,7 +66,7 @@ public class ExternalSystemOutboundEndpointRepository
 				.clientId(endpointRecord.getClientId())
 				.clientSecret(endpointRecord.getClientSecret())
 				.token(endpointRecord.getAuthToken())
-				.email(endpointRecord.getEMail())
+				.user(endpointRecord.getUserLogin())
 				.password(endpointRecord.getPassword())
 				.build();
 	}

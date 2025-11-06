@@ -24,7 +24,6 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
-import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorException;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
@@ -53,11 +52,9 @@ import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterCons
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -92,7 +89,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new ScriptedAdapterConvertMsgFromMFRouteBuilder(Mockito.mock(ProcessLogger.class));
+		return new ScriptedAdapterConvertMsgFromMFRouteBuilder(Mockito.mock(OAuthTokenManager.class));
 	}
 
 	@Test
@@ -106,7 +103,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 				function transform(messageFromMetasfresh) {
 					// Parse the JSON input
 					var inputData = JSON.parse(messageFromMetasfresh);
-					
+				
 					// Process the data
 					var result = {
 						processed: true,
@@ -115,7 +112,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 						location: inputData.city,
 						timestamp: new Date().toISOString().substring(0, 10)
 					};
-					
+				
 					// Return as JSON string
 					return JSON.stringify(result);
 				}
@@ -323,9 +320,20 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 						.externalSystemChildConfigValue("externalSystemChildConfigValue")
 						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, messageFromMetasfresh)
 						.parameter(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, "testScript")
-						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP, "http://localhost:8080/test")
-						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN, "API_TOKEN")
-						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD, "POST")
+
+						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, """
+								{
+								  "value" : "value",
+								  "endpointUrl" : "http://localhost:8080/test",
+								  "method" : "POST",
+								  "authType" : "OAuth",
+								  "clientId" : "clientId",
+								  "clientSecret" : "clientSecret",
+								  "token" : "API_TOKEN",
+								  "user" : "user",
+								  "password" : "password"
+								}""")
+
 						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, "TableName")
 						.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, "123")
 						.build());

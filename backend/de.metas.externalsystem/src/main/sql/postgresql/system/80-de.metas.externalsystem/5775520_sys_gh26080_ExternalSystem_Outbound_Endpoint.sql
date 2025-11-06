@@ -1229,7 +1229,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2025-11-03T17:33:44.500Z
-/* DDL */ SELECT public.db_alter_table('ExternalSystem_Outbound_Endpoint','ALTER TABLE public.ExternalSystem_Outbound_Endpoint ADD COLUMN EMail VARCHAR(60)')
+--- we are changing this to UserLogin in the following script
+---/* DDL */ SELECT public.db_alter_table('ExternalSystem_Outbound_Endpoint','ALTER TABLE public.ExternalSystem_Outbound_Endpoint ADD COLUMN EMail VARCHAR(60)')
 ;
 
 -- Column: ExternalSystem_Outbound_Endpoint.Password

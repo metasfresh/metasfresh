@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalsystem
+ * de-metas-common-externalsystem
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,52 +20,41 @@
  * #L%
  */
 
-package de.metas.externalsystem.outboundendpoint;
+package de.metas.common.externalsystem.endpoint;
 
-import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
+import lombok.extern.jackson.Jacksonized;
 
 @Builder
 @Value
-public class ExternalSystemOutboundEndpoint
+@Jacksonized
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class JsonExternalSystemOutboundEndpoint
 {
-	@NonNull ExternalSystemOutboundEndpointId id;
-
 	@NonNull String value;
 
 	@NonNull String endpointUrl;
 
 	@NonNull String method;
 
-	@NonNull OutboundEndpointAuthType authType;
+	@NonNull JsonEndpointAuthType authType;
 
-	@Nullable String clientId;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String clientId;
 
-	@Nullable String clientSecret;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String clientSecret;
 
-	@Nullable String token;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String token;
 
-	@Nullable String user;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String user;
 
-	@Nullable String password;
-
-	@NonNull
-	public JsonExternalSystemOutboundEndpoint toJson()
-	{
-		return JsonExternalSystemOutboundEndpoint.builder()
-				.value(value)
-				.endpointUrl(endpointUrl)
-				.method(method)
-				.authType(authType.toJson())
-				.clientId(clientId)
-				.clientSecret(clientSecret)
-				.token(token)
-				.user(user)
-				.password(password)
-				.build();
-	}
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String password;
 }
