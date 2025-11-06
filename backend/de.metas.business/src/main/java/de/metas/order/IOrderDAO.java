@@ -1,5 +1,6 @@
 package de.metas.order;
 
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -60,6 +61,8 @@ public interface IOrderDAO extends ISingletonService
 	{
 		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), modelType);
 	}
+
+	ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(Collection<OrderAndLineId> orderAndLineIds);
 
 	/**
 	 * @return order lines for given order

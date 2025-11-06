@@ -2,12 +2,6 @@ package de.metas.shipping.process;
 
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.SpringContextHolder;
-
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -16,7 +10,12 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
 
 /*
  * #%L

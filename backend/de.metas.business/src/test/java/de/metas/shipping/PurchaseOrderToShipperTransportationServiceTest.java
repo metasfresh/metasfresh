@@ -109,8 +109,8 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
+		final IQueryFilter<I_C_Order> queryFilter = Services.get(IQueryBL.class)
+				.createCompositeQueryFilter(I_C_Order.class)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order);
 
 		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
@@ -152,8 +152,8 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
+		final IQueryFilter<I_C_Order> queryFilter = Services.get(IQueryBL.class)
+				.createCompositeQueryFilter(I_C_Order.class)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order);
 
 		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
@@ -204,8 +204,8 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
+		final IQueryFilter<I_C_Order> queryFilter = Services.get(IQueryBL.class)
+				.createCompositeQueryFilter(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, order1, order2);
 
 		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
@@ -221,8 +221,8 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		// add a new order
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter2 = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
+		final IQueryFilter<I_C_Order> queryFilter2 = Services.get(IQueryBL.class)
+				.createCompositeQueryFilter(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, order1, order2, order3);
 
 		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter2);

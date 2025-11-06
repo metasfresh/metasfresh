@@ -354,15 +354,6 @@ public class C_Order
 		orderLinePricingConditions.failForMissingPricingConditions(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createMPackages(final I_C_Order order)
-	{
-		if (!order.isSOTrx())
-		{
-			purchaseOrderToShipperTransportationService.addPurchaseOrderToCurrentShipperTransportation(order);
-		}
-	}
-
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_PaymentRule)
 	public void checkPaymentRuleWithReservation(@NonNull final I_C_Order salesOrder, @NonNull final ICalloutField calloutField)
 	{
