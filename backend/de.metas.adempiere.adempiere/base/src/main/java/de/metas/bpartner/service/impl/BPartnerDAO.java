@@ -124,6 +124,7 @@ import java.util.stream.Stream;
 
 import static de.metas.util.Check.assumeNotNull;
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.Check.isNotBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -1511,13 +1512,13 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		// ..BPartner code (aka value)
-		if (!isEmpty(query.getBpartnerValue(), true))
+		if (isNotBlank(query.getBpartnerValue()))
 		{
 			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, query.getBpartnerValue());
 		}
 
 		// ..BPartner Name
-		if (!isEmpty(query.getBpartnerName(), true))
+		if (isNotBlank(query.getBpartnerName()))
 		{
 			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Name, query.getBpartnerName());
 		}
@@ -1555,7 +1556,6 @@ public class BPartnerDAO implements IBPartnerDAO
 			throw new AdempiereException("@NotFound@ @C_BPartner_ID@")
 					.setParameter("query", query);
 		}
-
 		return bpartnerIds;
 	}
 
@@ -1569,6 +1569,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return GLNQuery.builder()
 				.glns(query.getGlns())
+				.glnLookupLabel(query.getGlnLookupLabel())
 				.onlyOrgIds(query.getOnlyOrgIds())
 				.build();
 	}
