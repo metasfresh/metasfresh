@@ -30,13 +30,11 @@ import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.ShipmentScheduleService;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
@@ -57,11 +55,6 @@ final class CarrierAdviseProcessService
 		return getShipperIds(shipmentScheduleIds).size() == 1;
 	}
 
-	public boolean isSingleShipper(@NonNull final ImmutableList<ShipmentSchedule> shipmentSchedules)
-	{
-		return getShipperIds(shipmentSchedules).size() == 1;
-	}
-
 	public ImmutableSet<ShipperId> getShipperIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		return getShipperIds(shipmentScheduleService.getByIds(shipmentScheduleIds));
@@ -73,11 +66,6 @@ final class CarrierAdviseProcessService
 				.stream()
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	public ImmutableList<ShipmentSchedule> getBy(@NonNull final IQueryFilter<I_M_ShipmentSchedule> queryFilter)
-	{
-		return shipmentScheduleService.getBy(ShipmentScheduleQuery.builder().queryFilter(queryFilter).build());
 	}
 
 	public void requestCarrierAdvises(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds, final boolean isIncludeCarrierAdviseManual)

@@ -39,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
 import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 
 @Service
 @RequiredArgsConstructor
@@ -85,24 +84,6 @@ public class ShipmentScheduleService
 		}
 
 		return shipmentSchedules.values().asList();
-	}
-
-	public void updateByIds(@NonNull final ImmutableSet<ShipmentScheduleId> ids, @NonNull final UnaryOperator<ShipmentSchedule> updater)
-	{
-		if (ids.isEmpty())
-		{
-			return;
-		}
-
-		final ImmutableList<ShipmentSchedule> schedules = getByIds(ids);
-		if (schedules.isEmpty())
-		{
-			return;
-		}
-
-		schedules.stream()
-				.map(updater)
-				.forEach(this::save);
 	}
 
 	public void updateByQuery(@NonNull final ShipmentScheduleQuery query, @NonNull final Consumer<ShipmentSchedule> updater)
