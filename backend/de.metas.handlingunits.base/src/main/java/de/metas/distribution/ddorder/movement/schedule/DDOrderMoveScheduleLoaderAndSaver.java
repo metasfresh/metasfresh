@@ -72,7 +72,7 @@ class DDOrderMoveScheduleLoaderAndSaver
 	@NonNull
 	private I_DD_Order_MoveSchedule getRecordById(final @NotNull DDOrderMoveScheduleId id)
 	{
-		return CollectionUtils.getOrLoadReturningMap(recordsById, id, this::retrieveRecords);
+		return CollectionUtils.getOrLoad(recordsById, id, this::retrieveRecords);
 	}
 
 	private Collection<I_DD_Order_MoveSchedule> getRecordByIds(final @NotNull Set<DDOrderMoveScheduleId> ids)

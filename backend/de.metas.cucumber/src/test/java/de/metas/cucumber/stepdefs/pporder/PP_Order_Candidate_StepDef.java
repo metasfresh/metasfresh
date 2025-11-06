@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -37,6 +36,7 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
@@ -106,6 +106,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
 
@@ -474,7 +475,7 @@ public class PP_Order_Candidate_StepDef
 		{
 			InterfaceWrapperHelper.save(orderCandidateRecord);
 
-			assertThat(false).as("InterfaceWrapperHelper.save should throw error!").isTrue();
+			fail("InterfaceWrapperHelper.save should throw error!");
 		}
 		catch (final AdempiereException adempiereException)
 		{
@@ -506,7 +507,7 @@ public class PP_Order_Candidate_StepDef
 		{
 			InterfaceWrapperHelper.save(orderCandidateRecord);
 
-			assertThat(false).as("InterfaceWrapperHelper.save should throw error!").isTrue();
+			fail("InterfaceWrapperHelper.save should throw error!");
 		}
 		catch (final AdempiereException adempiereException)
 		{

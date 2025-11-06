@@ -35,7 +35,6 @@ import javax.annotation.Nullable;
 public class PaymentTermBreak
 {
 	@NonNull PaymentTermBreakId id;
-	@NonNull PaymentTermId paymentTermId;
 	@Nullable String description;
 	@NonNull ReferenceDateType referenceDateType;
 	@NonNull Percent percent;

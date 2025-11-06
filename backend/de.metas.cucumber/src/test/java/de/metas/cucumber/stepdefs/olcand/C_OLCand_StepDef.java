@@ -38,7 +38,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -220,7 +220,7 @@ public class C_OLCand_StepDef
 		final String olCandIdentifiers = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final List<String> identifiers = StepDefUtil.splitIdentifiers(olCandIdentifiers);
-		assertThat(jsonOLCands.size()).isEqualTo(identifiers.size());
+		assertThat(jsonOLCands).hasSameSizeAs(identifiers);
 
 		for (int index = 0; index < identifiers.size(); index++)
 		{
@@ -529,7 +529,7 @@ public class C_OLCand_StepDef
 
 		if (Check.isBlank(orderIdentifier))
 		{
-			assertThat(compositeResponse.getOrderResponse()).isEqualTo(null);
+			assertThat(compositeResponse.getOrderResponse()).isNull();
 		}
 		else
 		{

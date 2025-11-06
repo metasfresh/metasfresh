@@ -27,9 +27,9 @@ import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.invoice.paymentschedule.service.InvoicePayScheduleService;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
@@ -89,6 +89,7 @@ public class CalloutInvoice extends CalloutEngine
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
+	private final InvoicePayScheduleService invoicePayScheduleService = SpringContextHolder.instance.getBean(InvoicePayScheduleService.class);
 
 	/**
 	 * Invoice Header- BPartner.
@@ -292,14 +293,8 @@ public class CalloutInvoice extends CalloutEngine
 			// nothing to do
 			return NO_ERROR;
 		}
-
-		final I_C_PaymentTerm paymentTerm = Services.get(IPaymentTermRepository.class).getRecordById(paymentTermId);
-
-		// TODO: Fix in next step (refactoring: Move the apply method from MPaymentTerm to a BL)
-		final MPaymentTerm pt = InterfaceWrapperHelper.getPO(paymentTerm);
-
-		final boolean valid = pt.apply(invoice);
-		invoice.setIsPayScheduleValid(valid);
+		
+		invoicePayScheduleService.createInvoicePaySchedules(invoice);
 
 		return NO_ERROR;
 	}    // paymentTerm
