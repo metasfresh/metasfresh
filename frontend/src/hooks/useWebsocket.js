@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { connectWS, disconnectWS } from '../utils/websockets';
 
-export const useWebsocket = ({ topic, onMessage }) => {
+const WS_DEBUG = true;
+const log = WS_DEBUG ? console.debug : () => {};
+
+export const useWebsocket = ({ topic, traceName = '', onMessage }) => {
   useEffect(() => {
     if (!topic) {
       return () => {};
@@ -11,10 +14,12 @@ export const useWebsocket = ({ topic, onMessage }) => {
 
     if (topic) {
       connectWS.call(wsState, topic, (event) => {
-        console.debug(`[WS ${topic}] Received event`, { event });
+        log(`[WS ${topic} ${traceName}] Received event`, { event });
+
         onMessage({ topic, event });
       });
-      console.debug(`[WS ${topic}] Connected`, { wsState });
+
+      log(`[WS ${topic} ${traceName}] Connected`, { wsState });
     }
 
     return () => {
@@ -23,7 +28,7 @@ export const useWebsocket = ({ topic, onMessage }) => {
       }
 
       disconnectWS.call(wsState);
-      console.debug(`[WS ${topic}] Disconnected`, { wsState });
+      log(`[WS ${topic} ${traceName}] Disconnected`, { wsState });
     };
   }, [topic]);
 };

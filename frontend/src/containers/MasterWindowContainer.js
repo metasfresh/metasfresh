@@ -426,6 +426,7 @@ const getFieldFromLayout = (layout, fieldName) => {
 const DocumentWebsocketConnector = ({ topic, onMessage }) => {
   useWebsocket({
     topic,
+    traceName: 'Master',
     onMessage: ({ event }) => onMessage({ topic, event }),
   });
   return null;
