@@ -138,4 +138,6 @@ public interface IProcessPreconditionsContext
 	}
 
 	default OptionalBoolean isExistingDocument() { return OptionalBoolean.UNKNOWN; }
+
+	default OptionalBoolean isProcessedDocument() { return OptionalBoolean.UNKNOWN; };
 }
