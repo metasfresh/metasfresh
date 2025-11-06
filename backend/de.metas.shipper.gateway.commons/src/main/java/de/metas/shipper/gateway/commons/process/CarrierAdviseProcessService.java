@@ -22,7 +22,6 @@
 
 package de.metas.shipper.gateway.commons.process;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
@@ -42,7 +41,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-final class CarrierAdviseProcessService
+public final class CarrierAdviseProcessService
 {
 	@NonNull public static final AdMessageKey ONLY_ONE_SHIPPER_ALLOWED = AdMessageKey.of("MoreThanOneShipperSelected");
 
@@ -57,12 +56,7 @@ final class CarrierAdviseProcessService
 
 	public ImmutableSet<ShipperId> getShipperIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		return getShipperIds(shipmentScheduleService.getByIds(shipmentScheduleIds));
-	}
-
-	private ImmutableSet<ShipperId> getShipperIds(@NonNull final ImmutableList<ShipmentSchedule> shipmentSchedules)
-	{
-		return CollectionUtils.extractDistinctElements(shipmentSchedules, ShipmentSchedule::getShipperId)
+		return CollectionUtils.extractDistinctElements(shipmentScheduleService.getByIds(shipmentScheduleIds), ShipmentSchedule::getShipperId)
 				.stream()
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());

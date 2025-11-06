@@ -284,7 +284,7 @@ public final class DocumentIdsSelection
 		return toSet(idMapper.compose(DocumentId::toInt));
 	}
 
-	public <ID extends RepoIdAware> ImmutableSet<ID> toIds(@NonNull final IntFunction<ID> idMapper)
+	public <ID extends RepoIdAware> ImmutableSet<ID> toIdsFromInt(@NonNull final IntFunction<ID> idMapper)
 	{
 		return toSet(documentId -> idMapper.apply(documentId.toInt()));
 	}

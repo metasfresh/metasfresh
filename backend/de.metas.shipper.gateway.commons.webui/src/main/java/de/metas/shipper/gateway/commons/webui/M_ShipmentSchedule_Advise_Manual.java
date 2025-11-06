@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de.metas.shipper.gateway.commons.webui
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.process;
+package de.metas.shipper.gateway.commons.webui;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
@@ -32,8 +32,11 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
+import de.metas.shipper.gateway.commons.process.CarrierAdviseUpdateRequest;
 import de.metas.shipping.ShipperId;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.util.Services;
@@ -48,9 +51,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService.ONLY_ONE_SHIPPER_ALLOWED;
-
-// TODO move it to de.metas.shipper.gateway.commons.webui artifact
 public class M_ShipmentSchedule_Advise_Manual extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@NonNull private final CarrierAdviseProcessService helper = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
@@ -97,7 +97,7 @@ public class M_ShipmentSchedule_Advise_Manual extends ViewBasedProcessTemplate i
 
 		if (helper.isSingleShipper(shipmentScheduleIds))
 		{
-			return ProcessPreconditionsResolution.reject(ONLY_ONE_SHIPPER_ALLOWED);
+			return ProcessPreconditionsResolution.reject(CarrierAdviseProcessService.ONLY_ONE_SHIPPER_ALLOWED);
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -116,7 +116,7 @@ public class M_ShipmentSchedule_Advise_Manual extends ViewBasedProcessTemplate i
 		}
 		else
 		{
-			return DEFAULT_VALUE_NOTAVAILABLE;
+			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
 	}
 
@@ -136,7 +136,7 @@ public class M_ShipmentSchedule_Advise_Manual extends ViewBasedProcessTemplate i
 						.build()
 		);
 
-		return MSG_OK;
+		return JavaProcess.MSG_OK;
 	}
 
 	private ImmutableSet<ShipmentScheduleId> getSelectedShipmentScheduleIds()

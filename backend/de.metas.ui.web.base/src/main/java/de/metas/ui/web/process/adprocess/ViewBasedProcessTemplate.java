@@ -253,7 +253,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return viewRowIdsSelection.getRowIds();
 	}
 
-	protected final <ID extends RepoIdAware> ImmutableSet<ID> getSelectedIds(@NonNull final IntFunction<ID> idMapper, @NonNull QueryLimit limit)
+	protected final <ID extends RepoIdAware> ImmutableSet<ID> getSelectedIds(@NonNull final IntFunction<ID> idMapper, @NonNull final QueryLimit limit)
 	{
 		final DocumentIdsSelection selectedRowsIds = getSelectedRowIds();
 		if (selectedRowsIds.isAll())
@@ -265,7 +265,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		}
 		else
 		{
-			return selectedRowsIds.toIds(idMapper);
+			return selectedRowsIds.toIdsFromInt(idMapper);
 		}
 	}
 

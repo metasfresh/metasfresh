@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de.metas.shipper.gateway.commons.webui
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,33 +20,39 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.process;
+package de.metas.shipper.gateway.commons.webui;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 
-public class M_ShipmentSchedule_Advise extends JavaProcess implements IProcessPrecondition
+public class M_ShipmentSchedule_Advise extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@NonNull private final CarrierAdviseProcessService helper = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private final QueryLimit rowsLimit = QueryLimit.ofInt(sysConfigBL.getPositiveIntValue("M_ShipmentSchedule_Advise.rowsLimit", 1000));
 
 	private static final String PARAM_IsIncludeCarrierAdviseManual = "IsIncludeCarrierAdviseManual";
 	@Param(parameterName = PARAM_IsIncludeCarrierAdviseManual, mandatory = true)
 	private boolean p_IsIncludeCarrierAdviseManual;
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (context.isNoSelection())
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getSelectedShipmentScheduleIds();
+		if (shipmentScheduleIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
@@ -57,8 +63,13 @@ public class M_ShipmentSchedule_Advise extends JavaProcess implements IProcessPr
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getSelectedIncludedRecordIds(I_M_ShipmentSchedule.class, ShipmentScheduleId::ofRepoId);
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getSelectedShipmentScheduleIds();
 		helper.requestCarrierAdvises(shipmentScheduleIds, p_IsIncludeCarrierAdviseManual);
 		return MSG_OK;
+	}
+
+	private ImmutableSet<ShipmentScheduleId> getSelectedShipmentScheduleIds()
+	{
+		return getSelectedIds(ShipmentScheduleId::ofRepoId, rowsLimit);
 	}
 }
