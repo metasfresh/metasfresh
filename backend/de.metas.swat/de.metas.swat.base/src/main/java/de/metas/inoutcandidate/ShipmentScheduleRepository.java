@@ -150,6 +150,10 @@ public class ShipmentScheduleRepository
 		{
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
 		}
+		if(query.getShipperId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID, query.getShipperId());
+		}
 		if (query.getAttributesKey() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);

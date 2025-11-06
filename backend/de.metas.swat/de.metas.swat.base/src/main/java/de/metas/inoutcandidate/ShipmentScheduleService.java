@@ -35,15 +35,18 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 @Service
 @RequiredArgsConstructor
 public class ShipmentScheduleService
 {
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
@@ -102,7 +105,22 @@ public class ShipmentScheduleService
 				.forEach(this::save);
 	}
 
+	public void updateByQuery(@NonNull final ShipmentScheduleQuery query, @NonNull final Consumer<ShipmentSchedule> updater)
+	{
+		trxManager.runInThreadInheritedTrx(() -> {
+			final ImmutableList<ShipmentSchedule> schedules = getBy(query);
+			if (schedules.isEmpty())
+			{
+				return;
+			}
 
+			for (final ShipmentSchedule schedule : schedules)
+			{
+				updater.accept(schedule);
+				save(schedule);
+			}
+		});
+	}
 
 	public void save(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
@@ -134,7 +152,7 @@ public class ShipmentScheduleService
 				|| shipmentSchedule.isClosed()
 				|| !shipmentSchedule.isActive()
 				|| shipmentSchedule.getQuantityToDeliver().signum() <= 0
-		        || !isIncludeCarrierAdviseManual && shipmentSchedule.getCarrierAdvisingStatus().isManual()
+				|| !isIncludeCarrierAdviseManual && shipmentSchedule.getCarrierAdvisingStatus().isManual()
 				|| !shipmentSchedule.getCarrierAdvisingStatus().isEligibleForManualEnqueue())
 		{
 			return true;

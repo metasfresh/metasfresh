@@ -22,27 +22,25 @@
 
 package de.metas.shipper.gateway.commons.process;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
-import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.ShipperId;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_ShipmentSchedule_Carrier_Service;
 import org.jetbrains.annotations.Nullable;
@@ -50,11 +48,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
-{
-	@NonNull private static final AdMessageKey ONLY_ONE_SHIPPER_ALLOWED = AdMessageKey.of("MoreThanOneShipperSelected");
+import static de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService.ONLY_ONE_SHIPPER_ALLOWED;
 
+// TODO move it to de.metas.shipper.gateway.commons.webui artifact
+public class M_ShipmentSchedule_Advise_Manual extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
+{
 	@NonNull private final CarrierAdviseProcessService helper = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String PARAM_IsIncludeCarrierAdviseManual = "isIncludeCarrierAdviseManual";
 	@Param(parameterName = PARAM_IsIncludeCarrierAdviseManual, mandatory = true)
@@ -62,7 +62,7 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 
 	private static final String PARAM_Shipper = I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID;
 	@Param(parameterName = PARAM_Shipper, mandatory = true)
-	private ShipperId p_Shipper;
+	private ShipperId p_ShipperId;
 
 	private static final String PARAM_CarrierProduct = I_M_ShipmentSchedule.COLUMNNAME_Carrier_Product_ID;
 	@Param(parameterName = PARAM_CarrierProduct, mandatory = true)
@@ -84,16 +84,17 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 	@Param(parameterName = PARAM_CarrierProductService3)
 	private CarrierServiceId p_CarrierProductService3;
 
+	private final QueryLimit rowsLimit = QueryLimit.ofInt(sysConfigBL.getPositiveIntValue("M_ShipmentSchedule_Advise_Manual.rowsLimit", 1000));
+
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (context.isNoSelection())
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getSelectedShipmentScheduleIds();
+		if (shipmentScheduleIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = TableRecordReferenceSet.of(context.getSelectedIncludedRecords())
-				.streamIds(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+
 		if (helper.isSingleShipper(shipmentScheduleIds))
 		{
 			return ProcessPreconditionsResolution.reject(ONLY_ONE_SHIPPER_ALLOWED);
@@ -103,35 +104,11 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 	}
 
 	@Override
-	protected String doIt() throws Exception
-	{
-		final ImmutableSet<CarrierServiceId> carrierServiceIds = Stream.of(p_CarrierProductService, p_CarrierProductService2, p_CarrierProductService3)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final ImmutableList<ShipmentSchedule> schedules = helper.getBy(getProcessInfo().getQueryFilterOrElseFalse());
-
-		if(!helper.isSingleShipper(schedules))
-		{
-			throw new AdempiereException(ONLY_ONE_SHIPPER_ALLOWED);
-		}
-
-		helper.updateEligibleShipmentSchedules(schedules, CarrierAdviseUpdateRequest.builder()
-						.isIncludeCarrierAdviseManual(p_IsIncludeCarrierAdviseManual)
-						.carrierProductId(p_CarrierProduct)
-						.carrierGoodsTypeId(p_GoodsType)
-						.carrierServiceIds(carrierServiceIds)
-						.build());
-
-		return MSG_OK;
-	}
-
-	@Override
 	public @Nullable Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
 		if (Objects.equals(PARAM_Shipper, parameter.getColumnName()))
 		{
-			return CollectionUtils.singleElement(helper.getShipperIds(getSelectedIncludedRecordIds(I_M_ShipmentSchedule.class, ShipmentScheduleId::ofRepoId)));
+			return CollectionUtils.singleElement(helper.getShipperIds(getSelectedShipmentScheduleIds()));
 		}
 		else if (Objects.equals(PARAM_IsIncludeCarrierAdviseManual, parameter.getColumnName()))
 		{
@@ -141,5 +118,36 @@ public class M_ShipmentSchedule_Advise_Manual extends JavaProcess implements IPr
 		{
 			return DEFAULT_VALUE_NOTAVAILABLE;
 		}
+	}
+
+	@Override
+	protected String doIt()
+	{
+		helper.updateEligibleShipmentSchedules(
+				CarrierAdviseUpdateRequest.builder()
+						.query(ShipmentScheduleQuery.builder()
+								.shipperId(p_ShipperId)
+								.queryFilter(getProcessInfo().getQueryFilterOrElseFalse())
+								.build())
+						.isIncludeCarrierAdviseManual(p_IsIncludeCarrierAdviseManual)
+						.carrierProductId(p_CarrierProduct)
+						.carrierGoodsTypeId(p_GoodsType)
+						.carrierServiceIds(getCarrierServiceIds())
+						.build()
+		);
+
+		return MSG_OK;
+	}
+
+	private ImmutableSet<ShipmentScheduleId> getSelectedShipmentScheduleIds()
+	{
+		return getSelectedIds(ShipmentScheduleId::ofRepoId, rowsLimit);
+	}
+
+	private ImmutableSet<CarrierServiceId> getCarrierServiceIds()
+	{
+		return Stream.of(p_CarrierProductService, p_CarrierProductService2, p_CarrierProductService3)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
