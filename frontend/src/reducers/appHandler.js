@@ -159,13 +159,27 @@ export default function appHandler(state = initialState, action) {
     }
 
     case types.NEW_NOTIFICATION: {
+      const { notification: newNotification, unreadCount } = action;
+      let added = false;
+      const notifications = state.inbox.notifications.map((item) => {
+        if (item.id === newNotification.id) {
+          added = true;
+          return newNotification;
+        } else {
+          return item;
+        }
+      });
+      if (!added) {
+        notifications.unshift(newNotification);
+      }
+
       return update(state, {
         inbox: {
           notifications: {
-            $unshift: [action.notification],
+            $set: notifications,
           },
           unreadCount: {
-            $set: action.unreadCount,
+            $set: unreadCount,
           },
         },
       });
