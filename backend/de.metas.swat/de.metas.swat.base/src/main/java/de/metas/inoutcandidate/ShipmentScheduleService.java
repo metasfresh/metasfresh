@@ -33,11 +33,15 @@ import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.function.Consumer;
 
@@ -110,43 +114,88 @@ public class ShipmentScheduleService
 		carrierServiceRepository.assignServicesToShipmentSchedule(shipmentSchedule.getId(), shipmentSchedule.getCarrierServicesIfLoaded());
 	}
 
-	public boolean isEligibleForAutoCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		final CarrierAdviseStatus carrierAdviseStatus = CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status());
-		if (ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID()) == null
-				|| shipmentSchedule.isProcessed()
-				|| shipmentSchedule.isClosed()
-				|| !shipmentSchedule.isActive()
-				|| shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule).signum() <= 0
-				|| (carrierAdviseStatus != null && !carrierAdviseStatus.isEligibleForAutoEnqueue()))
-		{
-			return false;
-		}
-
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID());
-		return shipmentScheduleId == null || !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
-	}
-
-	public boolean isNotEligibleForManualCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
-	{
-		if (shipmentSchedule.getShipperId() == null
-				|| shipmentSchedule.isProcessed()
-				|| shipmentSchedule.isClosed()
-				|| !shipmentSchedule.isActive()
-				|| shipmentSchedule.getQuantityToDeliver().signum() <= 0
-				|| !isIncludeCarrierAdviseManual && shipmentSchedule.getCarrierAdvisingStatus().isManual()
-				|| !shipmentSchedule.getCarrierAdvisingStatus().isEligibleForManualEnqueue())
-		{
-			return true;
-		}
-
-		return pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
-				.onlyShipmentScheduleId(shipmentSchedule.getId())
-				.build());
-	}
-
 	public void removeAssignedServiceIdsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		carrierServiceRepository.removeAssignedServiceIdsByShipmentScheduleIds(shipmentScheduleIds);
 	}
+
+	@Value
+	@Builder
+	private static class EligibleCarrierAdviseRequest
+	{
+		@Nullable ShipmentScheduleId shipmentScheduleId;
+		@Nullable ShipperId shipperId;
+		boolean isProcessed;
+		boolean isClosed;
+		boolean isActive;
+		@NonNull BigDecimal quantityToDeliver;
+		@Nullable CarrierAdviseStatus carrierAdvisingStatus;
+
+		public static EligibleCarrierAdviseRequest of(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL)
+		{
+			return EligibleCarrierAdviseRequest.builder()
+					.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID()))
+					.shipperId(ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID()))
+					.isProcessed(shipmentSchedule.isProcessed())
+					.isClosed(shipmentSchedule.isClosed())
+					.isActive(shipmentSchedule.isActive())
+					.quantityToDeliver(shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule))
+					.carrierAdvisingStatus(CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status()))
+					.build();
+		}
+
+		public static EligibleCarrierAdviseRequest of(@NonNull final ShipmentSchedule shipmentSchedule)
+		{
+			return EligibleCarrierAdviseRequest.builder()
+					.shipmentScheduleId(shipmentSchedule.getId())
+					.shipperId(shipmentSchedule.getShipperId())
+					.isProcessed(shipmentSchedule.isProcessed())
+					.isClosed(shipmentSchedule.isClosed())
+					.isActive(shipmentSchedule.isActive())
+					.quantityToDeliver(shipmentSchedule.getQuantityToDeliver().toBigDecimal())
+					.carrierAdvisingStatus(shipmentSchedule.getCarrierAdvisingStatus())
+					.build();
+		}
+	}
+
+	public boolean isEligibleForAutoCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule, shipmentScheduleEffectiveBL);
+		return isEligibleForCarrierAdvise(request, true, false);
+	}
+
+	public boolean isNotEligibleForManualCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
+	{
+		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule);
+		return !isEligibleForCarrierAdvise(request, false, isIncludeCarrierAdviseManual);
+	}
+
+	private boolean isEligibleForCarrierAdvise(@NonNull final EligibleCarrierAdviseRequest request, final boolean isAuto, final boolean isIncludeCarrierAdviseManual)
+	{
+		if (request.getShipperId() == null
+				|| request.isProcessed()
+				|| request.isClosed()
+				|| !request.isActive()
+				|| request.getQuantityToDeliver().signum() <= 0)
+		{
+			return false;
+		}
+
+		final CarrierAdviseStatus carrierAdviseStatus = request.getCarrierAdvisingStatus();
+		if (isAuto)
+		{
+			if (carrierAdviseStatus != null && !carrierAdviseStatus.isEligibleForAutoEnqueue()) {return false;}
+		}
+		else
+		{ // Manual
+			if (carrierAdviseStatus == null || !carrierAdviseStatus.isEligibleForManualEnqueue()) {return false;}
+			if (!isIncludeCarrierAdviseManual && carrierAdviseStatus.isManual()) {return false;}
+		}
+
+		final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
+		if (shipmentScheduleId == null) {return true;}
+
+		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
+	}
+
 }
