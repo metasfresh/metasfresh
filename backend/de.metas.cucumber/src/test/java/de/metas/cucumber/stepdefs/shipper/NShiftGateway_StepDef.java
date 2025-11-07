@@ -36,8 +36,8 @@ import static org.mockito.Mockito.when;
 @RequiredArgsConstructor
 public class NShiftGateway_StepDef
 {
-	@NonNull private final NShiftShipAdvisorService shipAdvisorServiceMock = Mockito.mock(NShiftShipAdvisorService.class);
-	@NonNull private final NShiftShipmentService shipmentServiceMock = Mockito.mock(NShiftShipmentService.class);
+	@NonNull private final NShiftShipAdvisorService shipAdvisorServiceMock = SpringContextHolder.instance.getBean(NShiftShipAdvisorService.class);
+	@NonNull private final NShiftShipmentService shipmentServiceMock = SpringContextHolder.instance.getBean(NShiftShipmentService.class);
 	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
