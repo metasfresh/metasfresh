@@ -67,7 +67,7 @@ public class ShipmentScheduleQuery
 	boolean fromCompleteOrderOrNullOrder;
 	boolean orderByOrderId;
 	boolean onlyNonZeroReservedQty;
-	@Nullable LocalDateAndOrgId preparationDate;
+	@Nullable LocalDate preparationDate;
 
 	/**
 	 * Only export a shipment schedule if its order does not have any schedule which is not yet ready to be exported.
