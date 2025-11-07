@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor7
-@Ignore //FIXME Mock not working consistent
+@ignore #FIXME Mock not working consistent
 Feature: nShift Shipment
 
   Background:
