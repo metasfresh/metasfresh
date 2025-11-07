@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-scriptedadapter
+ * de.metas.externalsystem
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,26 +20,52 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
+package de.metas.externalsystem.outboundendpoint;
 
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-@Data
+import javax.annotation.Nullable;
+
 @Builder
-public class MsgFromMfContext
+@Value
+public class ExternalSystemOutboundEndpoint
 {
-	@NonNull private final String orgCode;
-	@NonNull private final String scriptingRequestBody;
-	@NonNull private final String scriptIdentifier;
+	@NonNull ExternalSystemOutboundEndpointId id;
 
-	private String script;
-	private String scriptReturnValue;
+	@NonNull String value;
 
-	@NonNull private final JsonExternalSystemOutboundEndpoint endpointParameters;
-	
-	@NonNull private final String outboundRecordTableName;
-	@NonNull private final String outboundRecordId;
+	@NonNull String endpointUrl;
+
+	@NonNull String method;
+
+	@NonNull OutboundEndpointAuthType authType;
+
+	@Nullable String clientId;
+
+	@Nullable String clientSecret;
+
+	@Nullable String token;
+
+	@Nullable String user;
+
+	@Nullable String password;
+
+	@NonNull
+	public JsonExternalSystemOutboundEndpoint toJson()
+	{
+		return JsonExternalSystemOutboundEndpoint.builder()
+				.value(value)
+				.endpointUrl(endpointUrl)
+				.method(method)
+				.authType(authType.toJson())
+				.clientId(clientId)
+				.clientSecret(clientSecret)
+				.token(token)
+				.user(user)
+				.password(password)
+				.build();
+	}
 }

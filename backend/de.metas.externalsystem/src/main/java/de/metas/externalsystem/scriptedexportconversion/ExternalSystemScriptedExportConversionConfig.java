@@ -25,6 +25,7 @@ package de.metas.externalsystem.scriptedexportconversion;
 import de.metas.document.DocBaseType;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointId;
 import de.metas.process.AdProcessId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
@@ -41,6 +42,7 @@ public class ExternalSystemScriptedExportConversionConfig implements IExternalSy
 {
 	@NonNull ExternalSystemScriptedExportConversionConfigId id;
 	@NonNull ExternalSystemParentConfigId parentId;
+	@NonNull ExternalSystemOutboundEndpointId externalSystemOutboundEndpointId;
 	@NonNull String value;
 	@Nullable String description;
 	@Nullable AdProcessId outboundDataProcessId;

@@ -25,6 +25,7 @@ package de.metas.externalsystem.scriptedexportconversion;
 import de.metas.document.DocBaseType;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
+import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointId;
 import de.metas.process.AdProcessId;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
@@ -87,13 +88,11 @@ public class ExternalSystemScriptedExportConversionRepository
 		return ExternalSystemScriptedExportConversionConfig.builder()
 				.id(ExternalSystemScriptedExportConversionConfigId.ofRepoId(config.getExternalSystem_Config_ScriptedExportConversion_ID()))
 				.parentId(parentConfigId)
+				.externalSystemOutboundEndpointId(ExternalSystemOutboundEndpointId.ofRepoId(config.getExternalSystem_Outbound_Endpoint_ID()))
 				.value(config.getExternalSystemValue())
 				.description(config.getDescription())
 				.outboundDataProcessId(AdProcessId.ofRepoIdOrNull(config.getAD_Process_OutboundData_ID()))
 				.scriptIdentifier(config.getScriptIdentifier())
-				.outboundHttpEndpoint(config.getOutboundHttpEP())
-				.outboundHttpToken(config.getOutboundHttpToken())
-				.outboundHttpMethod(config.getOutboundHttpMethod())
 				.adTableId(AdTableId.ofRepoId(config.getAD_Table_ID()))
 				.docBaseType(DocBaseType.ofNullableCode(config.getDocBaseType()))
 				.whereClause(config.getWhereClause())
