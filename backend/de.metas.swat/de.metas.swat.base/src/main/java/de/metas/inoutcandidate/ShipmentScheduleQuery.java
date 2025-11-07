@@ -27,7 +27,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
