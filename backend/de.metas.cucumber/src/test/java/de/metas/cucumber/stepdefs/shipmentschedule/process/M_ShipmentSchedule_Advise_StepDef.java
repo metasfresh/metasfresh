@@ -47,8 +47,7 @@ import org.compiere.model.I_Carrier_Goods_Type;
 import org.compiere.model.I_Carrier_Product;
 import org.compiere.model.I_Carrier_Service;
 
-import java.util.Objects;
-import java.util.stream.Stream;
+import java.util.Set;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
 
@@ -72,12 +71,12 @@ public class M_ShipmentSchedule_Advise_StepDef
 		final ShipperId shipperId = shipperTable.getId(row.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID));
 		final CarrierProductId carrierProductId = carrierProductTable.getId(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
 		final CarrierGoodsTypeId carrierGoodsTypeId = carrierGoodsTypeTable.getId(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID));
-		final CarrierServiceId carrierServiceId = carrierServiceTable.getId(row.getAsIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID));
-		final CarrierServiceId carrierServiceId2 = carrierServiceTable.getId(row.getAsIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID + "2"));
-		final ImmutableSet<CarrierServiceId> carrierServiceIds = Stream.of(carrierServiceId, carrierServiceId2)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
 
+		final Set<CarrierServiceId> carrierServiceIds = ImmutableSet.of();
+		row.getAsOptionalIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID)
+				.ifPresent(identifier -> carrierServiceIds.add(identifier.lookupNotNullIdIn(carrierServiceTable)));
+		row.getAsOptionalIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID + "2")
+				.ifPresent(identifier -> carrierServiceIds.add(identifier.lookupNotNullIdIn(carrierServiceTable)));
 
 		carrierAdviseProcessService.updateEligibleShipmentSchedules(
 				CarrierAdviseUpdateRequest.builder()
