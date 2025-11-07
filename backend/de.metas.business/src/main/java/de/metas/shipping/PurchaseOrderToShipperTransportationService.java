@@ -80,7 +80,7 @@ public class PurchaseOrderToShipperTransportationService
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
 	{
 		final ILUQtyProvider luQtyProvider = (o, ol) -> 1;
-		return new PurchaseOrderToShipperTransportationService(new PurchaseOrderToShipperTransportationRepository(), luQtyProvider);
+		return new PurchaseOrderToShipperTransportationService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), luQtyProvider);
 	}
 
 	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";

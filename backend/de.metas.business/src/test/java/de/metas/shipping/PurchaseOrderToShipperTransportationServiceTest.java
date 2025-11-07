@@ -19,8 +19,12 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.SSCC18;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.test.AdempiereTestHelper;
@@ -67,6 +71,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class PurchaseOrderToShipperTransportationServiceTest
 {
 	public static final int M_SHIPPER_ID = 1000000;
+
+	final SSCC18 constantSSCC18 = new SSCC18(0, "0718908 ", "562723189", 6);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private CurrencyId chf;
 
@@ -82,6 +88,14 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Services.registerService(ISSCC18CodeBL.class, new SSCC18CodeBL()
+		{
+			@Override
+			public SSCC18 generate(final @NonNull OrgId orgId)
+			{
+				return constantSSCC18;
+			}
+		});
 
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
