@@ -21,6 +21,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Carrier_Goods_Type;
 import org.compiere.model.I_Carrier_Product;
 import org.compiere.model.I_Carrier_Service;
@@ -49,7 +50,6 @@ public class NShiftGateway_StepDef
 		final CarrierGoodsType carrierGoodsType = carrierGoodsTypeTable.get(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID));
 		final CarrierService carrierService = carrierServiceTable.get(row.getAsIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID));
 		final CarrierService carrierService2 = carrierServiceTable.get(row.getAsIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID + "2"));
-
 
 		when(shipAdvisorServiceMock.advise(any(JsonDeliveryAdvisorRequest.class)))
 				.thenAnswer((Answer<JsonDeliveryAdvisorResponse>)invocation -> {

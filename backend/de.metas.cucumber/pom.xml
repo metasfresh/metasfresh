@@ -39,6 +39,7 @@
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
         <testcontainers.version>1.21.3</testcontainers.version>
+        <external.libs.path></external.libs.path>
     </properties>
 
     <dependencyManagement>
@@ -235,10 +236,25 @@
                         </configurationParameters>
                     </properties>
                     <additionalClasspathElements>
-                        <additionalClasspathElement>${project.basedir}/external-lib/*</additionalClasspathElement>
+                        <additionalClasspathElement>${external.libs.path}</additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>cli-build</id>
+            <activation>
+                <property>
+                    <name>!idea.version</name>
+                </property>
+            </activation>
+            <properties>
+                <external.libs.path>${project.basedir}/external-lib/*</external.libs.path>
+            </properties>
+        </profile>
+    </profiles>
+
+
 </project>

@@ -98,6 +98,7 @@ public class M_ShipmentSchedule_Advise_StepDef
 	{
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
 		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID));
-		carrierAdviseProcessService.requestCarrierAdvises(ImmutableSet.of(shipmentScheduleId), false);
+		final boolean isIncludeCarrierAdviseManual = row.getAsOptionalBoolean("IsIncludeCarrierAdviseManual").orElse(false);
+		carrierAdviseProcessService.requestCarrierAdvises(ImmutableSet.of(shipmentScheduleId), isIncludeCarrierAdviseManual);
 	}
 }
