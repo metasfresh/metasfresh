@@ -67,4 +67,8 @@ Feature: Purchase order to transportation order
     When the order identified by order_PO is reactivated
     And the order identified by order_PO is completed
 
+    Then metasfresh contains exactly 0 M_ShippingPackages for transportation order: transportationOrder
+
+    And C_Order_AddTo_M_ShipperTransportation is invoked for order order_PO and transportation order: transportationOrder
+
     Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: transportationOrder
