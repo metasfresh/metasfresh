@@ -40,6 +40,8 @@ import java.util.Collection;
 @Builder
 public class ShipperTransportationQuery
 {
+	private static final ShipperTransportationQuery ANY = builder().build();
+
 	@Nullable OrgId orgId;
 	@Nullable ShipperId shipperId;
 	@Nullable BPartnerLocationId shipperBPartnerAndLocationId;
@@ -47,13 +49,8 @@ public class ShipperTransportationQuery
 	@Nullable ShipperTransportationId shipperTransportationToExclude;
 	@NonNull @Singular Collection<OrderId> orderIds;
 
-	public boolean isEmpty()
+	public boolean isAny()
 	{
-		return orgId == null
-				&& shipperId == null
-				&& shipperBPartnerAndLocationId == null
-				&& shipDate == null
-				&& shipperTransportationToExclude == null
-				&& orderIds.isEmpty();
+		return this.equals(ANY);
 	}
 }

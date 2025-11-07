@@ -150,7 +150,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 	private IQuery<I_M_ShipperTransportation> toSqlQuery(final @NonNull ShipperTransportationQuery query)
 	{
-		if (query.isEmpty())
+		if (query.isAny())
 		{
 			return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
 					.filter(ConstantQueryFilter.of(false))
