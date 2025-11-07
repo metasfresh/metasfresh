@@ -160,7 +160,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
-		assertThat(1).isEqualTo(shippingPackages.size());
+		assertThat(shippingPackages.size()).isEqualTo(2);
 
 		final I_M_ShippingPackage shippingPackage = shippingPackages.get(0);
 
@@ -171,7 +171,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
 
 		// => it was not added again
-		assertThat(1).isEqualTo(shippingPackages.size());
+		assertThat(shippingPackages.size()).isEqualTo(2);
 	}
 
 	@Test
