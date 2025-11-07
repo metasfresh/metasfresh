@@ -9,6 +9,9 @@ Feature: nShift Shipment
     And load M_Shipper:
       | Identifier | Name    |
       | nShift     | nShift  |
+    And metasfresh contains Carrier_Configs:
+      | M_Shipper_ID |
+      | nShift       |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID |
       | wh             |
@@ -101,26 +104,26 @@ Feature: nShift Shipment
       | so1_l1     | so1        | product      | 10         |
     When the order identified by so1 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss1        | so1_l1         | N             | wh             | cp1                | cgt1                  |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss1        | so1_l1         | N             | cp1                | cgt1                  |
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
       | nShift       | ss1                   | cp2                | cgt2                  | cs3                | cs4                 |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss1        | so1_l1         | N             | wh             | cp2                | cgt2                  |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss1        | so1_l1         | N             | cp2                | cgt2                  |
     And Process M_ShipmentSchedule_Advise is run
       | M_ShipmentSchedule_ID |
       | ss1                   |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss1        | so1_l1         | N             | wh             | cp1                | cgt1                  |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss1        | so1_l1         | N             | cp1                | cgt1                  |
     And update shipment schedules
       | Identifier | M_Shipper_ID |
       | ss1        | null         |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss1        | so1_l1         | N             | wh             | null               | null                  |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss1        | so1_l1         | N             | null               | null                  |
     And M_ShipmentSchedule has no carrier services assigned
       | Identifier |
       | ss1        |

@@ -34,7 +34,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_Carrier_Goods_Type;
+import org.compiere.model.I_Carrier_Product;
 
 @RequiredArgsConstructor
 public class Carrier_Product_StepDef
@@ -53,7 +53,7 @@ public class Carrier_Product_StepDef
 	private void createCarrier_Product(@NonNull final DataTableRow row)
 	{
 		final ValueAndName valueAndName = row.suggestValueAndName();
-		final ShipperId shipperId = shipperTable.getId(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_M_Shipper_ID));
+		final ShipperId shipperId = shipperTable.getId(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_M_Shipper_ID));
 
 		final CarrierProduct carrierProduct = carrierProductRepository.getOrCreateCarrierProduct(shipperId, valueAndName.getValue(), valueAndName.getName());
 

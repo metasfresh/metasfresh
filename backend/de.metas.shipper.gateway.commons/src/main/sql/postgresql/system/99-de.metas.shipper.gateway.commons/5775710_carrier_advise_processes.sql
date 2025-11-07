@@ -305,3 +305,36 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 -- 2025-11-07T07:03:25.039Z
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=543028 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
+
+-- Value: M_ShipmentSchedule_Advise_Schedule
+-- Classname: de.metas.shipper.gateway.commons.process.M_ShipmentSchedule_Advise_Schedule
+-- 2025-11-07T08:09:39.703Z
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,585526,'Y','de.metas.shipper.gateway.commons.process.M_ShipmentSchedule_Advise_Schedule','N',TO_TIMESTAMP('2025-11-07 08:09:39.538000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','N','N','N','Y','N','N','N','N','Y','N','Y',0,'Lieferweg-Abfrage Bereitstellungsdatum','json','N','N','xls','Java',TO_TIMESTAMP('2025-11-07 08:09:39.538000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M_ShipmentSchedule_Advise_Schedule')
+;
+
+-- 2025-11-07T08:09:39.714Z
+INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_ID=585526 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+;
+
+-- Process: M_ShipmentSchedule_Advise_Schedule(de.metas.shipper.gateway.commons.process.M_ShipmentSchedule_Advise_Schedule)
+-- 2025-11-07T08:10:02.325Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Carrier Advise Preparation Date',Updated=TO_TIMESTAMP('2025-11-07 08:10:02.325000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585526
+;
+
+-- 2025-11-07T08:10:02.328Z
+UPDATE AD_Process base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Process: M_ShipmentSchedule_Advise_Schedule(de.metas.shipper.gateway.commons.process.M_ShipmentSchedule_Advise_Schedule)
+-- 2025-11-07T08:10:02.865Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-11-07 08:10:02.865000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585526
+;
+
+-- Process: M_ShipmentSchedule_Advise_Schedule(de.metas.shipper.gateway.commons.process.M_ShipmentSchedule_Advise_Schedule)
+-- 2025-11-07T08:10:03.654Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-11-07 08:10:03.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585526
+;
+
+-- 2025-11-07T08:17:20.575Z
+INSERT INTO AD_Scheduler (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,AD_Scheduler_ID,Created,CreatedBy,CronPattern,EntityType,Frequency,FrequencyType,IsActive,IsIgnoreProcessingTime,KeepLogDays,Name,Processing,SchedulerProcessType,ScheduleType,Status,Supervisor_ID,Updated,UpdatedBy) VALUES (1000000,1000000,585526,540024,550120,TO_TIMESTAMP('2025-11-07 08:17:20.514000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'0 6 * * *','de.metas.shipper.gateway.commons',0,'D','Y','N',7,'Daily Update of Carrier Shipment Advise for Preperation Date','N','P','C','NEW',100,TO_TIMESTAMP('2025-11-07 08:17:20.514000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
