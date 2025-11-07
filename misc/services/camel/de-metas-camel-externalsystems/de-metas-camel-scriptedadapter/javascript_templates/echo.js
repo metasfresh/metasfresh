@@ -20,26 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
-
-import de.metas.common.externalsystem.endpoint.JsonExternalSystemOutboundEndpoint;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-
-@Data
-@Builder
-public class MsgFromMfContext
-{
-	@NonNull private final String orgCode;
-	@NonNull private final String scriptingRequestBody;
-	@NonNull private final String scriptIdentifier;
-
-	private String script;
-	private String scriptReturnValue;
-
-	@NonNull private final JsonExternalSystemOutboundEndpoint endpointParameters;
-	
-	@NonNull private final String outboundRecordTableName;
-	@NonNull private final String outboundRecordId;
+function transform(messageFromMetasfresh) {
+    const inputData = JSON.parse(messageFromMetasfresh);
+    return JSON.stringify(inputData);
 }
