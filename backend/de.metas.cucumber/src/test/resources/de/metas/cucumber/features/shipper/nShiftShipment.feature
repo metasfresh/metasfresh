@@ -1,6 +1,5 @@
 @from:cucumber
 @ghActions:run_on_executor7
-@ignore #FIXME Mock not working consistent
 Feature: nShift Shipment
 
   Background:
@@ -133,5 +132,5 @@ Feature: nShift Shipment
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
       | ss1        | so1_l1         | N             | null               | null                  |
     And M_ShipmentSchedule has no carrier services assigned
-      | Identifier |
-      | ss1        |
+      | M_ShipmentSchedule_ID |
+      | ss1                   |

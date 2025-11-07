@@ -71,7 +71,6 @@ public class Carrier_Service_StepDef
 	public void m_shipmentSchedule_has_no_carrier_services(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID)
 				.forEach(row -> {
 			final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
 			assertThat(carrierShipmentScheduleServiceRepository.getAssignedServiceIdsByShipmentScheduleId(shipmentScheduleId)).isEmpty();
