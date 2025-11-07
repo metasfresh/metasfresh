@@ -38,13 +38,15 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class M_ReceiptSchedule_AddTo_M_ShipperTransportation extends JavaProcess implements IProcessPrecondition
 {
+	private static final int MAX_SELECTION_SIZE = 100;
+
 	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
-	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get( IReceiptScheduleDAO.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@Param(parameterName = I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
 	private ShipperTransportationId p_M_ShipperTransportation_ID;
@@ -56,6 +58,11 @@ public class M_ReceiptSchedule_AddTo_M_ShipperTransportation extends JavaProcess
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
+		if (context.isMoreThanAllowedSelected(MAX_SELECTION_SIZE))
+		{
+			return ProcessPreconditionsResolution.rejectBecauseTooManyRecordsSelected(MAX_SELECTION_SIZE);
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -67,14 +74,14 @@ public class M_ReceiptSchedule_AddTo_M_ShipperTransportation extends JavaProcess
 		return MSG_OK;
 	}
 
-	private List<OrderAndLineId> getOrderAndLineIds()
+	private Set<OrderAndLineId> getOrderAndLineIds()
 	{
 		final IQueryFilter<I_M_ReceiptSchedule> queryFilterOrElseFalse = getProcessInfo().getQueryFilterOrElseFalse();
 		return receiptScheduleDAO.createQueryForReceiptScheduleSelection(getCtx(), queryFilterOrElseFalse)
 				.create()
 				.stream()
 				.map(rs -> OrderAndLineId.ofRepoIds(rs.getC_Order_ID(), rs.getC_OrderLine_ID()))
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 	}
 
 }

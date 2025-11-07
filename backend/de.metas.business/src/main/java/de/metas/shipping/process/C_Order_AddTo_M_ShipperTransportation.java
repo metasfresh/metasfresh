@@ -2,6 +2,7 @@ package de.metas.shipping.process;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -19,6 +20,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -44,8 +46,9 @@ import java.util.List;
 
 public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implements IProcessPrecondition
 {
-	private final static AdMessageKey MSG_DocumentNotComplete = AdMessageKey.of("DocumentNotComplete");
-	private final static AdMessageKey MSG_OrderAssignedToDifferentTransportationOrder = AdMessageKey.of("OrderAssignedToDifferentTransportationOrder");
+	private static final int MAX_SELECTION_SIZE = 100;
+	private final static AdMessageKey MSG_DOCUMENT_NOT_COMPLETE = AdMessageKey.of("DocumentNotComplete");
+	private final static AdMessageKey MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER = AdMessageKey.of("OrderAssignedToDifferentTransportationOrder");
 
 	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -62,6 +65,10 @@ public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implement
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
+		if (context.isMoreThanAllowedSelected(MAX_SELECTION_SIZE))
+		{
+			return ProcessPreconditionsResolution.rejectBecauseTooManyRecordsSelected(MAX_SELECTION_SIZE);
+		}
 		final IQueryFilter<I_C_Order> queryFilter = context.getQueryFilter(I_C_Order.class);
 		final List<I_C_Order> selectedOrders = orderBL.getByQueryFilter(queryFilter);
 
@@ -71,11 +78,12 @@ public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implement
 		}
 		if (selectedOrders.stream().anyMatch(o -> !orderBL.isCompleted(o)))
 		{
-			return ProcessPreconditionsResolution.reject(MSG_DocumentNotComplete);
+			return ProcessPreconditionsResolution.reject(MSG_DOCUMENT_NOT_COMPLETE);
 		}
-		if (shipperTransportationBL.isOrderLineAssignedToDifferentTransportationOrder(p_M_ShipperTransportation_ID, queryFilter))
+		if (shipperTransportationBL.isAnyOrderAssignedToDifferentTransportationOrder(p_M_ShipperTransportation_ID, selectedOrders.stream()
+				.map(o -> OrderId.ofRepoId(o.getC_Order_ID())).collect(Collectors.toSet())))
 		{
-			return ProcessPreconditionsResolution.reject(MSG_OrderAssignedToDifferentTransportationOrder);
+			return ProcessPreconditionsResolution.reject(MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER);
 		}
 
 		return ProcessPreconditionsResolution.accept();

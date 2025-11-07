@@ -197,7 +197,6 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 		return huPIItemProductDAO.getById(piItemProductId).getName();
 	}
 
-
 	@Nullable
 	public I_M_HU_PI_Item_Product getDefaultForProduct(@NonNull final ProductId productId, @NonNull final ZonedDateTime dateTime)
 	{
@@ -207,10 +206,10 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	@NonNull
 	public I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
 	{
-		final I_M_HU_PI_Item_Product materialItemProduct;
-		if (orderLine.getM_HU_PI_Item_Product_ID() > 0)
+		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
+		if (hupiItemProductId != null)
 		{
-			materialItemProduct = orderLine.getM_HU_PI_Item_Product();
+			return huPIItemProductDAO.getRecordById(hupiItemProductId);
 		}
 		else
 		{
@@ -218,34 +217,30 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
-			materialItemProduct = huPIItemProductDAO.retrieveMaterialItemProduct(
+			return huPIItemProductDAO.retrieveMaterialItemProduct(
 					productId,
 					buyerBPartnerId,
 					TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone),
 					X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
 		}
-
-		return materialItemProduct;
 	}
 
 	@Override
-	public int getRequiredLUCount(final @NonNull StockQtyAndUOMQty qtyToAdd, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM)
+	public int getRequiredLUCount(final @NonNull StockQtyAndUOMQty qty, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM)
 	{
-		final int requiredLUCount;
 		if (lutuConfigurationInStockUOM.isInfiniteQtyTU() || lutuConfigurationInStockUOM.isInfiniteQtyCU())
 		{
-			requiredLUCount = 1;
+			return 1;
 		}
 		else
 		{
 			// Note need to use the StockQty because lutuConfigurationInStockUOM is also in stock-UOM.
 			// And in the case of catchweight, it's very important to *not* make metasfresh convert quantites using the UOM-conversion
-			requiredLUCount = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
+			return lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
 					lutuConfigurationInStockUOM,
-					qtyToAdd.getStockQty()
+					qty.getStockQty()
 			);
 		}
-		return requiredLUCount;
 	}
 
 }

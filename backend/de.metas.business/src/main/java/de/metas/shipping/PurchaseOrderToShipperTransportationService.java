@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -81,14 +82,6 @@ public class PurchaseOrderToShipperTransportationService
 
 	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
 
-	public void addMaterialReceiptCandidatesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)
-	{
-		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderAndLineIds);
-
-		orderToLinesMap.keySet()
-				.forEach(order -> addPurchaseOrderLines(shipperTransportationId, order, orderToLinesMap.get(order)));
-	}
-
 	public void addPurchaseOrdersToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final IQueryFilter<I_C_Order> queryFilter)
 	{
 		final ImmutableList<OrderId> validPurchaseOrdersIds = queryBL
@@ -113,6 +106,14 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
+	public void addMaterialReceiptCandidatesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderAndLineIds);
+
+		orderToLinesMap.keySet()
+				.forEach(order -> addPurchaseOrderLines(shipperTransportationDAO.getById(shipperTransportationId), order, orderToLinesMap.get(order)));
+	}
+
 	public void addPurchaseOrderToShipperTransportation(final @NonNull OrderId purchaseOrderId, final @NonNull ShipperTransportationId shipperTransportationId)
 	{
 		addPurchaseOrderToShipperTransportation(orderDAO.getById(purchaseOrderId), shipperTransportationId);
@@ -130,10 +131,10 @@ public class PurchaseOrderToShipperTransportationService
 		}
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
-		addPurchaseOrderLines(shipperTransportationId, order, orderLines);
+		addPurchaseOrderLines(shipperTransportationRecord, order, orderLines);
 	}
 
-	private void addPurchaseOrderLines(final @NonNull ShipperTransportationId shipperTransportationId, final org.compiere.model.@NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> orderLines)
+	private void addPurchaseOrderLines(final @NonNull I_M_ShipperTransportation shipperTransportation, final org.compiere.model.@NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> orderLines)
 	{
 		final List<I_C_OrderLine> orderLinesWithLUQty = orderLines.stream()
 				.filter(orderBL::isLUQtySet)
@@ -144,8 +145,6 @@ public class PurchaseOrderToShipperTransportationService
 				.collect(Collectors.toList()));
 		getUnassignedOrderLines(orderLinesWithoutLUQty);
 
-		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationId);
-
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
@@ -153,7 +152,7 @@ public class PurchaseOrderToShipperTransportationService
 		final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate = PurchaseShippingPackageCreateRequest.builder()
 				.orderId(orderId)
 				.datePromised(order.getDatePromised().toInstant())
-				.shipperTransportationId(shipperTransportationId)
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()))
 				.shiperId(ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID()))
 				.bPartnerLocationId(bPartnerLocationId)
 				.orgId(orgId);
@@ -172,9 +171,9 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	private List<I_C_OrderLine> getUnassignedOrderLines(final List<I_C_OrderLine> orderLinesWithoutLUQty)
+	private List<I_C_OrderLine> getUnassignedOrderLines(final List<I_C_OrderLine> orderLines)
 	{
-		final ImmutableMap<OrderAndLineId, I_C_OrderLine> orderAndLineIdToPoMap = orderLinesWithoutLUQty.stream()
+		final ImmutableMap<OrderAndLineId, I_C_OrderLine> orderAndLineIdToPoMap = orderLines.stream()
 				.collect(ImmutableMap.toImmutableMap(ol -> OrderAndLineId.ofRepoIds(ol.getC_Order_ID(), ol.getC_OrderLine_ID()), Function.identity()));
 
 		final Collection<OrderAndLineId> assignedOrderAndLineIds = repo.getAssignedOrderAndLineIds(orderAndLineIdToPoMap.keySet());
@@ -244,7 +243,9 @@ public class PurchaseOrderToShipperTransportationService
 
 	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
 	{
-		final Collection<I_M_ShipperTransportation> transportationOrders = shipperTransportationDAO.getTransportationOrdersAssignedToOrder(orderId);
+		final Collection<I_M_ShipperTransportation> transportationOrders = shipperTransportationDAO.getByQuery(ShipperTransportationQuery.builder()
+				.orderId(orderId)
+				.build());
 		return transportationOrders.stream().noneMatch(I_M_ShipperTransportation::isProcessed);
 		//TODO Adrian add delete logic
 	}

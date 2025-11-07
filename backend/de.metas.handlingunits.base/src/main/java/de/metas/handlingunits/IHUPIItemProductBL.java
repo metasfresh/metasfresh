@@ -114,24 +114,24 @@ public interface IHUPIItemProductBL extends ISingletonService
 
 	I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine);
 
-	int getRequiredLUCount(@NonNull StockQtyAndUOMQty qtyToAdd, I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM);
+	int getRequiredLUCount(@NonNull StockQtyAndUOMQty qty, I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM);
 
-	static StockQtyAndUOMQty getMaxQtyCUsPerLU(final @NonNull StockQtyAndUOMQty qtyToAdd, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM, final ProductId productId)
+	static StockQtyAndUOMQty getMaxQtyCUsPerLU(final @NonNull StockQtyAndUOMQty qty, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM, final ProductId productId)
 	{
 		final StockQtyAndUOMQty maxQtyCUsPerLU;
 		if (lutuConfigurationInStockUOM.isInfiniteQtyTU() || lutuConfigurationInStockUOM.isInfiniteQtyCU())
 		{
 			maxQtyCUsPerLU = StockQtyAndUOMQtys.createConvert(
-					qtyToAdd.getStockQty(),
+					qty.getStockQty(),
 					productId,
-					qtyToAdd.getUOMQtyNotNull().getUomId());
+					qty.getUOMQtyNotNull().getUomId());
 		}
 		else
 		{
 			maxQtyCUsPerLU = StockQtyAndUOMQtys.createConvert(
 					lutuConfigurationInStockUOM.getQtyCUsPerTU().multiply(lutuConfigurationInStockUOM.getQtyTU()),
 					productId,
-					qtyToAdd.getUOMQtyNotNull().getUomId());
+					qty.getUOMQtyNotNull().getUomId());
 		}
 		return maxQtyCUsPerLU;
 	}

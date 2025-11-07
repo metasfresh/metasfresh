@@ -23,10 +23,12 @@
 package de.metas.shipping.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -36,19 +38,19 @@ import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -66,7 +68,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	@Override
 	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId shipperItransportationId)
 	{
-		final I_M_ShipperTransportation shipperTransportation = load(shipperItransportationId.getRepoId(), I_M_ShipperTransportation.class);
+		final I_M_ShipperTransportation shipperTransportation = retrieve(shipperItransportationId);
 		if (shipperTransportation == null)
 		{
 			throw new AdempiereException("@NotFound@: " + shipperItransportationId);
@@ -148,13 +150,59 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 	private IQuery<I_M_ShipperTransportation> toSqlQuery(final @NonNull ShipperTransportationQuery query)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, query.getShipperId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, query.getShipperBPartnerAndLocationId().getBpartnerId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID, query.getShipperBPartnerAndLocationId().getRepoId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DateDoc, TimeUtil.asTimestamp(query.getShipDate()))
-				.create();
+		if (query.isEmpty())
+		{
+			return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+					.filter(ConstantQueryFilter.of(false))
+					.create();
+		}
+		final IQueryBuilder<I_M_ShipperTransportation> builder;
+
+		if (!query.getOrderIds().isEmpty())
+		{
+			builder = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+					.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, query.getOrderIds())
+					.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+					.addOnlyActiveRecordsFilter();
+		}
+		else
+		{
+			builder = queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+					.addOnlyActiveRecordsFilter();
+		}
+
+		final ShipperId shipperId = query.getShipperId();
+		if (shipperId != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, shipperId);
+		}
+
+		final BPartnerLocationId shipperBPartnerAndLocationId = query.getShipperBPartnerAndLocationId();
+		if (shipperBPartnerAndLocationId != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, shipperBPartnerAndLocationId.getBpartnerId())
+					.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID, shipperBPartnerAndLocationId.getRepoId());
+		}
+
+		final OrgId orgId = query.getOrgId();
+		if (orgId != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
+		final LocalDate shipDate = query.getShipDate();
+		if (shipDate != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DateDoc, TimeUtil.asTimestamp(shipDate));
+		}
+
+		final ShipperTransportationId shipperTransportationToExclude = query.getShipperTransportationToExclude();
+		if (shipperTransportationToExclude != null)
+		{
+			builder.addNotEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationToExclude);
+		}
+
+		return builder.create();
 	}
 
 	@Override
@@ -182,25 +230,19 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	}
 
 	@Override
-	public Collection<ShipperTransportationId> getTransportationOrderIdsAssignedToOrders(@NonNull final IQueryFilter<I_C_Order> orderQueryFilter)
+	public boolean isAnyOrderAssignedToDifferentTransportationOrder(final @NonNull ShipperTransportationId shipperTransportationId, final @NonNull Collection<OrderId> orderIds)
 	{
-		return queryBL.createQueryBuilder(I_C_Order.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(orderQueryFilter)
-				.andCollectChildren(I_M_ShippingPackage.COLUMN_C_Order_ID)
-				.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
-				.create()
-				.idsAsSet(ShipperTransportationId::ofRepoId);
+		return toSqlQuery(ShipperTransportationQuery.builder()
+				.shipperTransportationToExclude(shipperTransportationId)
+				.orderIds(orderIds)
+				.build())
+				.anyMatch();
 	}
 
 	@Override
-	public Collection<I_M_ShipperTransportation> getTransportationOrdersAssignedToOrder(@NonNull final OrderId orderId)
+	public Collection<I_M_ShipperTransportation> getByQuery(@NonNull final ShipperTransportationQuery query)
 	{
-		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShippingPackage.COLUMN_C_Order_ID, orderId)
-				.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
-				.create()
+		return toSqlQuery(query)
 				.list();
 	}
 }

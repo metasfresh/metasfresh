@@ -24,6 +24,7 @@ package de.metas.shipping.api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -31,8 +32,6 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Package;
 
 import javax.annotation.Nullable;
@@ -66,7 +65,7 @@ public interface IShipperTransportationDAO extends ISingletonService
 
 	ImmutableList<OrderId> retrieveOrderIds(@NonNull ShipperTransportationId shipperTransportationId);
 
-	Collection<ShipperTransportationId> getTransportationOrderIdsAssignedToOrders(@NonNull IQueryFilter<I_C_Order> orderQueryFilter);
+	boolean isAnyOrderAssignedToDifferentTransportationOrder(final @NonNull ShipperTransportationId shipperTransportationId, final @NonNull Collection<OrderId> orderIds);
 
-	Collection<I_M_ShipperTransportation> getTransportationOrdersAssignedToOrder(@NonNull OrderId orderId);
+	Collection<I_M_ShipperTransportation> getByQuery(@NonNull ShipperTransportationQuery query);
 }
