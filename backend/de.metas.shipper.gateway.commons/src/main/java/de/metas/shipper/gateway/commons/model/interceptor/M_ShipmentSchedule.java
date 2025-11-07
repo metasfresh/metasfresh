@@ -31,7 +31,6 @@ import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipper.gateway.commons.async.AdviseDeliveryOrderWorkpackageProcessor;
-import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -57,18 +56,21 @@ public class M_ShipmentSchedule
 			I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID })
 	public void markAsCarrierAdviceRequested(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (!shipmentScheduleService.isEligibleForAutoCarrierAdvise(shipmentSchedule))
+		if(InterfaceWrapperHelper.isValueChanged(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID))
 		{
-			final ShipperId oldShipperId = ShipperId.ofRepoIdOrNull(InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class).getM_Shipper_ID());
-			final ShipperId newShipperId = ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID());
+			shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
+			shipmentSchedule.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(null));
+			shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.NotRequested.getCode());
+
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID());
-			if (shipmentScheduleId != null && oldShipperId != null && !ShipperId.equals(oldShipperId, newShipperId))
+			if(shipmentScheduleId != null)
 			{
-				shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
-				shipmentSchedule.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(null));
-				shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.NotRequested.getCode());
 				shipmentScheduleService.removeAssignedServiceIdsByShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId));
 			}
+		}
+
+		if (!shipmentScheduleService.isEligibleForAutoCarrierAdvise(shipmentSchedule))
+		{
 			return;
 		}
 
