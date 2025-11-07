@@ -180,3 +180,65 @@ test('Pick multiple HUs and drop them all together in one step', async ({ page }
 
     await DistributionJobScreen.complete();
 });
+
+
+
+// noinspection JSUnusedLocalSymbols
+test('Pick multiple HUs (by HU code) and drop them all together in one step (using locator code)', async ({ page }) => {
+    const masterdata = await createMasterdata({ qtyToMove: 100 });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+
+    await test.step("Pick line 1", async () => {
+        await DistributionJobScreen.clickLineButton({ index: 1 });
+        await DistributionLineScreen.scanHUToMove({
+            huQRCode: masterdata.handlingUnits.HU1.huId,
+            qtyToMove: '100',
+            expectedQtyToMove: '100',
+            typeDelay: 1,
+        });
+        await DistributionLineScreen.goBack();
+    });
+    await test.step("Pick line 2", async () => {
+        await DistributionJobScreen.clickLineButton({ index: 2 });
+        await DistributionLineScreen.scanHUToMove({
+            huQRCode: masterdata.handlingUnits.HU2.huId,
+            qtyToMove: '100',
+            expectedQtyToMove: '100',
+            typeDelay: 1,
+        });
+        await DistributionLineScreen.goBack();
+    });
+    await test.step("Pick line 3", async () => {
+        await DistributionJobScreen.clickLineButton({ index: 3 });
+        await DistributionLineScreen.scanHUToMove({
+            huQRCode: masterdata.handlingUnits.HU3.huId,
+            qtyToMove: '100',
+            expectedQtyToMove: '100',
+            typeDelay: 1,
+        });
+        await DistributionLineScreen.goBack();
+    });
+
+    await test.step("Drop all to wh2 by scanning the locator code", async () => {
+        await DistributionJobScreen.dropAllTo({ dropToLocatorQRCode: masterdata.warehouses.wh2.locatorCode });
+        await Backend.expect({
+            hus: {
+                HU1: { huStatus: 'A', warehouse: 'wh2', storages: { P1: '100 PCE' } },
+                HU2: { huStatus: 'A', warehouse: 'wh2', storages: { P2: '100 PCE' } },
+                HU3: { huStatus: 'A', warehouse: 'wh2', storages: { P3: '100 PCE' } },
+            }
+        });
+        await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '100 Stk', color: 'green' });
+        await DistributionJobScreen.expectLineButton({ index: 2, qtyToPick: '100 Stk', qtyPicked: '100 Stk', color: 'green' });
+        await DistributionJobScreen.expectLineButton({ index: 3, qtyToPick: '100 Stk', qtyPicked: '100 Stk', color: 'green' });
+        await DistributionJobScreen.expectDropAllButton({ enabled: false });
+    });
+
+    await DistributionJobScreen.complete();
+});
