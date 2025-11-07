@@ -54,6 +54,8 @@ import org.apache.camel.http.common.HttpMethods;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Map;
@@ -122,12 +124,12 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 			.end()
 				
 			// Make the rest-call and handle the case of a stale OAuth token
-			.to("https://placeholder").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
+			.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
 			.choice()
 				.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth'"))
 					.log(LoggingLevel.WARN, "Received 401, refreshing OAuth token and retrying once...")
 					.process(this::forceRefreshOAuthToken)
-					.to("https://placeholder").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_RETRY")
+					.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_RETRY")
 			.end()
 				
 			.process(this::prepareJsonAttachmentRequest)
@@ -231,7 +233,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 						.build());
 
 		exchange.getIn().removeHeaders("CamelHttp*");
-		exchange.getIn().setHeader("Bearer", accessToken.getAccessToken());
+		exchange.getIn().setHeader(AUTHORIZATION, "Bearer " + accessToken.getAccessToken());
 		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
 		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
@@ -241,10 +243,32 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	private static OAuthIdentity extractOAuthIdentity(final JsonExternalSystemOutboundEndpoint endpointParameters)
 	{
 		return OAuthIdentity.builder()
-				.tokenUrl(endpointParameters.getEndpointUrl() + "/login")
+				.tokenUrl(extractBaseUrl(endpointParameters.getEndpointUrl()) + "/login")
 				.clientId(endpointParameters.getClientId())
 				.username(endpointParameters.getUser())
 				.build();
+	}
+
+	@NonNull
+	private static String extractBaseUrl(@NonNull final String endpointUrl)
+	{
+		final URL url;
+		try
+		{
+			url = new URL(endpointUrl);
+		}
+		catch (final MalformedURLException e)
+		{
+			throw new RuntimeCamelException("Failed to parse endpoint URL: " + endpointUrl, e);
+		}
+
+		final String protocol = url.getProtocol();
+		final String host = url.getHost();
+		final int port = url.getPort(); // returns -1 if not specified
+
+		return port == -1
+				? String.format("%s://%s", protocol, host)
+				: String.format("%s://%s:%d", protocol, host, port);
 	}
 
 	private void forceRefreshOAuthToken(@NonNull final Exchange exchange)

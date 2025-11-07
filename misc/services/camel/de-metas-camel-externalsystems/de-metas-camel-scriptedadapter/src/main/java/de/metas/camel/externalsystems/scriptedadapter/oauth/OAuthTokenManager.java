@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.common.util.Check;
 import de.metas.common.util.time.SystemTime;
@@ -40,13 +41,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Optains and caches temporary tokes for later REST-API calls.
@@ -95,22 +96,23 @@ public class OAuthTokenManager
 		accessTokensCache.cleanUp();
 	}
 
-	private OAuthAccessToken fetchNewAccessToken(@NonNull OAuthAccessTokenRequest request)
+	private OAuthAccessToken fetchNewAccessToken(@NonNull final OAuthAccessTokenRequest request)
 	{
 		try
 		{
 			final HttpHeaders httpHeaders = new HttpHeaders();
-			httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+			httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
+			httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-			final MultiValueMap<String, String> formData = createFormData(request);
+			final Map<String, String> formData = createFormData(request);
 
 			final ResponseEntity<String> response = restTemplate.postForEntity(
 					request.getIdentity().getTokenUrl(),
-					new HttpEntity<>(formData, httpHeaders),
+					new HttpEntity<>(jsonObjectMapper.writeValueAsString(formData), httpHeaders),
 					String.class);
 
 			final JsonNode jsonNode = jsonObjectMapper.readTree(response.getBody());
-			final String accessToken = jsonNode.get("access_token").asText();
+			final String accessToken = jsonNode.get("bearer").asText();
 			return OAuthAccessToken.of(accessToken, now().plus(EXPIRING_DURATION));
 		}
 		catch (final JsonProcessingException e)
@@ -120,25 +122,24 @@ public class OAuthTokenManager
 	}
 
 	@NonNull
-	private static MultiValueMap<String, String> createFormData(@NonNull OAuthAccessTokenRequest request)
+	private static Map<String, String> createFormData(@NonNull final OAuthAccessTokenRequest request)
 	{
-		final MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-		formData.add("grant_type", "password");
+		final Map<String, String> formData = new HashMap<>();
 		if (Check.isNotBlank(request.getIdentity().getClientId()))
 		{
-			formData.add("client_id", request.getIdentity().getClientId());
+			formData.put("client_id", request.getIdentity().getClientId());
 		}
 		if (Check.isNotBlank(request.getClientSecret()))
 		{
-			formData.add("client_secret", request.getClientSecret());
+			formData.put("client_secret", request.getClientSecret());
 		}
 		if (Check.isNotBlank(request.getIdentity().getUsername()))
 		{
-			formData.add("username", request.getIdentity().getUsername());
+			formData.put("email", request.getIdentity().getUsername());
 		}
 		if (Check.isNotBlank(request.getPassword()))
 		{
-			formData.add("password", request.getPassword());
+			formData.put("password", request.getPassword());
 		}
 		return formData;
 	}

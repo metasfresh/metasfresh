@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO implements I_ExternalSystem_Outbound_Endpoint, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -978420609L;
+	private static final long serialVersionUID = 539214733L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Outbound_Endpoint (final Properties ctx, final int ExternalSystem_Outbound_Endpoint_ID, @Nullable final String trxName)
@@ -48,7 +48,7 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 
 	/** 
 	 * AuthType AD_Reference_ID=542017
-	 * Reference name: AuthType
+	 * Reference name: ExternalSystem_Outbound_Endpoint_AuthType
 	 */
 	public static final int AUTHTYPE_AD_Reference_ID=542017;
 	/** Token = Token */
@@ -106,18 +106,6 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	}
 
 	@Override
-	public void setUserLogin (final @Nullable String UserLogin)
-	{
-		set_Value (COLUMNNAME_UserLogin, UserLogin);
-	}
-
-	@Override
-	public String getUserLogin() 
-	{
-		return get_ValueAsString(COLUMNNAME_UserLogin);
-	}
-
-	@Override
 	public void setExternalSystem_Outbound_Endpoint_ID (final int ExternalSystem_Outbound_Endpoint_ID)
 	{
 		if (ExternalSystem_Outbound_Endpoint_ID < 1) 
@@ -130,6 +118,18 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	public int getExternalSystem_Outbound_Endpoint_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID);
+	}
+
+	@Override
+	public void setLoginUsername (final @Nullable String LoginUsername)
+	{
+		set_Value (COLUMNNAME_LoginUsername, LoginUsername);
+	}
+
+	@Override
+	public String getLoginUsername() 
+	{
+		return get_ValueAsString(COLUMNNAME_LoginUsername);
 	}
 
 	@Override
@@ -170,7 +170,7 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 
 	/** 
 	 * Type AD_Reference_ID=542016
-	 * Reference name: EndpointType
+	 * Reference name: ExternalSystem_Outbound_Endpoint_EndpointType
 	 */
 	public static final int TYPE_AD_Reference_ID=542016;
 	/** HTTP = HTTP */

@@ -182,27 +182,6 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set UserLogin.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setUserLogin (@Nullable String UserLogin);
-
-	/**
-	 * Get UserLogin.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getUserLogin();
-
-	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_UserLogin = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "UserLogin", null);
-	String COLUMNNAME_UserLogin = "UserLogin";
-
-	/**
 	 * Set External System Outbound Endpoint.
 	 *
 	 * <br>Type: ID
@@ -245,6 +224,27 @@ public interface I_ExternalSystem_Outbound_Endpoint
 
 	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Login User Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoginUsername (@Nullable String LoginUsername);
+
+	/**
+	 * Get Login User Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getLoginUsername();
+
+	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_LoginUsername = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "LoginUsername", null);
+	String COLUMNNAME_LoginUsername = "LoginUsername";
 
 	/**
 	 * Set Outbound HTTP Endpoint.

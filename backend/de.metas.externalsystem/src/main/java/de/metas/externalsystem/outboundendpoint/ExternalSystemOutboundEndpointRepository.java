@@ -23,7 +23,6 @@
 package de.metas.externalsystem.outboundendpoint;
 
 import de.metas.cache.CCache;
-import de.metas.common.util.Check;
 import de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,12 +38,11 @@ public class ExternalSystemOutboundEndpointRepository
 	@NonNull
 	public ExternalSystemOutboundEndpoint getById(@NonNull final ExternalSystemOutboundEndpointId id)
 	{
-		return Check.assumeNotNull(
-				endpointsCache.getOrLoad(id, this::getById0), "Loader doesn't return null");
+		return endpointsCache.getOrLoad(id, this::retrieveById);
 	}
 
 	@NonNull
-	private ExternalSystemOutboundEndpoint getById0(@NonNull final ExternalSystemOutboundEndpointId id)
+	private ExternalSystemOutboundEndpoint retrieveById(@NonNull final ExternalSystemOutboundEndpointId id)
 	{
 		final I_ExternalSystem_Outbound_Endpoint endpointRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Outbound_Endpoint.class);
 		if (endpointRecord == null)
@@ -66,7 +64,7 @@ public class ExternalSystemOutboundEndpointRepository
 				.clientId(endpointRecord.getClientId())
 				.clientSecret(endpointRecord.getClientSecret())
 				.token(endpointRecord.getAuthToken())
-				.user(endpointRecord.getUserLogin())
+				.user(endpointRecord.getLoginUsername())
 				.password(endpointRecord.getPassword())
 				.build();
 	}

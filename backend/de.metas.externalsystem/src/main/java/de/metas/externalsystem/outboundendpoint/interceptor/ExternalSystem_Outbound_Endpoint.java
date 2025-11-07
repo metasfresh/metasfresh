@@ -39,7 +39,7 @@ public class ExternalSystem_Outbound_Endpoint
 	public void resetCredentials(@NonNull final I_ExternalSystem_Outbound_Endpoint endpoint)
 	{
 		endpoint.setAuthToken(null);
-		endpoint.setUserLogin(null);
+		endpoint.setLoginUsername(null);
 		endpoint.setPassword(null);
 		endpoint.setClientId(null);
 		endpoint.setClientSecret(null);
