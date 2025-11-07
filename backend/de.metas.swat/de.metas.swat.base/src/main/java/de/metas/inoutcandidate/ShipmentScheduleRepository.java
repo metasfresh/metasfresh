@@ -56,6 +56,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -154,7 +155,7 @@ public class ShipmentScheduleRepository
 		{
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
 		}
-		if(query.getShipperId() != null)
+		if (query.getShipperId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID, query.getShipperId());
 		}
@@ -246,7 +247,10 @@ public class ShipmentScheduleRepository
 
 		if (query.getPreparationDate() != null)
 		{
-			queryBuilder.addCoalesceEqualsFilter(query.getPreparationDate().toLocalDate(), COLUMNNAME_PreparationDate_Override, COLUMNNAME_PreparationDate);
+			queryBuilder.addCoalesceEqualsFilter(
+					query.getPreparationDate(),
+					DateTruncQueryFilterModifier.DAY,
+					COLUMNNAME_PreparationDate_Override, COLUMNNAME_PreparationDate);
 		}
 
 		if (query.isFromCompleteOrderOrNullOrder())
