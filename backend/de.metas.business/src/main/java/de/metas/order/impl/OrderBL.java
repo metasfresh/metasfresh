@@ -100,6 +100,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -1506,5 +1507,10 @@ public class OrderBL implements IOrderBL
 		final I_C_Order order = getById(orderId);
 		order.setInvoiceDate(invoice.getDateInvoiced());
 		save(order);
+	}
+
+	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
+	{
+		return orderDAO.getByQueryFilter(queryFilter);
 	}
 }

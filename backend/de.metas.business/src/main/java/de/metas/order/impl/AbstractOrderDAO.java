@@ -29,6 +29,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -538,5 +539,13 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return queryBuilder
 				.create()
 				.firstOnlyOptional();
+	}
+
+	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Order.class)
+				.filter(queryFilter)
+				.create()
+				.list();
 	}
 }

@@ -38,15 +38,18 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -176,5 +179,28 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.create()
 				.listDistinct(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, OrderId.class);
 
+	}
+
+	@Override
+	public Collection<ShipperTransportationId> getTransportationOrderIdsAssignedToOrders(@NonNull final IQueryFilter<I_C_Order> orderQueryFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(orderQueryFilter)
+				.andCollectChildren(I_M_ShippingPackage.COLUMN_C_Order_ID)
+				.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+				.create()
+				.idsAsSet(ShipperTransportationId::ofRepoId);
+	}
+
+	@Override
+	public Collection<I_M_ShipperTransportation> getTransportationOrdersAssignedToOrder(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShippingPackage.COLUMN_C_Order_ID, orderId)
+				.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+				.create()
+				.list();
 	}
 }

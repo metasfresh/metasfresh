@@ -216,7 +216,7 @@ public class PurchaseOrderToShipperTransportationService
 
 	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
 	{
-		return repo.hasPackageIdsByOrderId(orderId);
+		return repo.hasAssignedShippingPackageIdsByOrderId(orderId);
 	}
 
 	@Nullable
@@ -242,4 +242,10 @@ public class PurchaseOrderToShipperTransportationService
 		return result.getReportData();
 	}
 
+	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
+	{
+		final Collection<I_M_ShipperTransportation> transportationOrders = shipperTransportationDAO.getTransportationOrdersAssignedToOrder(orderId);
+		return transportationOrders.stream().noneMatch(I_M_ShipperTransportation::isProcessed);
+		//TODO Adrian add delete logic
+	}
 }

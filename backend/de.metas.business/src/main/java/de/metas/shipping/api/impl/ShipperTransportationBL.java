@@ -3,16 +3,21 @@ package de.metas.shipping.api.impl;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
+import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Package;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
 {
+	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+
 	@Override
 	public I_M_ShippingPackage createShippingPackage(final ShipperTransportationId shipperTransportationId, final I_M_Package mpackage)
 	{
@@ -60,5 +65,13 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 
 		shipperTransportation.setC_DocType_ID(docTypeId);
+	}
+
+	@Override
+	public boolean isOrderLineAssignedToDifferentTransportationOrder(final ShipperTransportationId shipperTransportationId, @NonNull final IQueryFilter<I_C_Order> queryFilter)
+	{
+		return shipperTransportationDAO.getTransportationOrderIdsAssignedToOrders(queryFilter)
+				.stream()
+				.anyMatch(transportationOrderId -> !transportationOrderId.equals(shipperTransportationId));
 	}
 }

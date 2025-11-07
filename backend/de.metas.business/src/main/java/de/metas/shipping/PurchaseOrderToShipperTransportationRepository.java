@@ -19,6 +19,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
@@ -81,7 +82,6 @@ public class PurchaseOrderToShipperTransportationRepository
 				.stream()
 				.map(sp -> OrderAndLineId.ofRepoIds(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
 				.collect(Collectors.toList());
-
 	}
 
 	public boolean purchaseOrderNotInShipperTransportation(@NonNull final OrderId purchaseOrderId)
@@ -143,7 +143,7 @@ public class PurchaseOrderToShipperTransportationRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
+	public boolean hasAssignedShippingPackageIdsByOrderId(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addOnlyActiveRecordsFilter()
@@ -202,5 +202,11 @@ public class PurchaseOrderToShipperTransportationRepository
 				.quantity(Quantitys.of(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
 				.orderAndLineId(OrderAndLineId.of(OrderId.ofRepoId(inOutLine.getC_Order_ID()), orderLineId))
 				.build();
+	}
+
+	public void deleteFromTranportationOrder(@NonNull final OrderId orderId)
+	{
+		final IQueryFilter<I_M_ShippingPackage> filter = queryBL.createCompositeQueryFilter(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_IsToBeFetched, true);
 	}
 }

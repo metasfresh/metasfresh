@@ -31,10 +31,13 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Package;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 public interface IShipperTransportationDAO extends ISingletonService
@@ -62,4 +65,8 @@ public interface IShipperTransportationDAO extends ISingletonService
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
 
 	ImmutableList<OrderId> retrieveOrderIds(@NonNull ShipperTransportationId shipperTransportationId);
+
+	Collection<ShipperTransportationId> getTransportationOrderIdsAssignedToOrders(@NonNull IQueryFilter<I_C_Order> orderQueryFilter);
+
+	Collection<I_M_ShipperTransportation> getTransportationOrdersAssignedToOrder(@NonNull OrderId orderId);
 }

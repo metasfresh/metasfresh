@@ -9,6 +9,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -150,4 +151,6 @@ public interface IOrderDAO extends ISingletonService
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
 	
 	boolean hasDeliveredItems(@NonNull OrderId orderId);
+
+	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
 }
