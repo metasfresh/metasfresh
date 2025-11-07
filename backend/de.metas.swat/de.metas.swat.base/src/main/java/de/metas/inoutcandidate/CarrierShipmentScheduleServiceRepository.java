@@ -23,6 +23,7 @@
 package de.metas.inoutcandidate;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.cache.CCache;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.shipping.ShipperId;
@@ -51,7 +52,7 @@ public class CarrierShipmentScheduleServiceRepository
 
 	final CCache<String, CarrierService> carrierServicesByExternalId = CCache.newLRUCache(I_Carrier_Service.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
 
-	public Set<CarrierServiceId> getAssignedServiceIdsByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public ImmutableSet<CarrierServiceId> getAssignedServiceIdsByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return ImmutableSet.copyOf(queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
 				.addEqualsFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
@@ -60,13 +61,42 @@ public class CarrierShipmentScheduleServiceRepository
 				.listIds(CarrierServiceId::ofRepoId));
 	}
 
-	public Set<CarrierServiceId> getAssignedServiceIdsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	public ImmutableSet<CarrierServiceId> getAssignedServiceIdsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
 		return ImmutableSet.copyOf(queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
 				.addInArrayFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.andCollect(I_M_ShipmentSchedule_Carrier_Service.COLUMN_Carrier_Service_ID)
 				.create()
 				.listIds(CarrierServiceId::ofRepoId));
+	}
+
+	public void removeAssignedServiceIdsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.delete();
+	}
+
+	public ImmutableSetMultimap<ShipmentScheduleId, CarrierServiceId> getAssignedServiceIdsMapByShipmentScheduleIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID()),
+						s -> CarrierServiceId.ofRepoId(s.getCarrier_Service_ID())));
 	}
 
 	public void assignServicesToShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId, final @NonNull Set<CarrierServiceId> serviceIds)
@@ -85,17 +115,6 @@ public class CarrierShipmentScheduleServiceRepository
 				.collect(ImmutableSet.toImmutableSet());
 
 		InterfaceWrapperHelper.saveAll(assignedCarrierServices);
-	}
-
-	@NonNull
-	public CarrierService getOrCreateService(@NonNull final ShipperId shipperId, @NonNull final CarrierService service)
-	{
-		final CarrierService cachedService = getCachedServiceByShipperExternalId(shipperId, service.getExternalId());
-		if (cachedService != null)
-		{
-			return cachedService;
-		}
-		return createShipperService(shipperId, service);
 	}
 
 	@Nullable
