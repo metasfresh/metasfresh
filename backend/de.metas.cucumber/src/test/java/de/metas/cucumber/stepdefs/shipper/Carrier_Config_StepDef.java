@@ -63,6 +63,7 @@ public class Carrier_Config_StepDef
 			config.setUserName("user");
 			config.setPassword("password");
 			config.setServiceLevel("serviceLevel");
+			InterfaceWrapperHelper.save(config);
 		}
 	}
 }
