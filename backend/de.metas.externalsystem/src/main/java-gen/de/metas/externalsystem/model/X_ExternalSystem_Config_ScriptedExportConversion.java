@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
@@ -34,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compiere.model.PO implements I_ExternalSystem_Config_ScriptedExportConversion, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2111617938L;
+	private static final long serialVersionUID = -1371891330L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_ScriptedExportConversion (final Properties ctx, final int ExternalSystem_Config_ScriptedExportConversion_ID, @Nullable final String trxName)
@@ -228,6 +206,21 @@ public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compie
 	}
 
 	@Override
+	public void setExternalSystem_Outbound_Endpoint_ID (final int ExternalSystem_Outbound_Endpoint_ID)
+	{
+		if (ExternalSystem_Outbound_Endpoint_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID, ExternalSystem_Outbound_Endpoint_ID);
+	}
+
+	@Override
+	public int getExternalSystem_Outbound_Endpoint_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID);
+	}
+
+	@Override
 	public void setExternalSystemValue (final String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
@@ -237,42 +230,6 @@ public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compie
 	public String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
-	}
-
-	@Override
-	public void setOutboundHttpEP (final @Nullable String OutboundHttpEP)
-	{
-		set_Value (COLUMNNAME_OutboundHttpEP, OutboundHttpEP);
-	}
-
-	@Override
-	public String getOutboundHttpEP() 
-	{
-		return get_ValueAsString(COLUMNNAME_OutboundHttpEP);
-	}
-
-	@Override
-	public void setOutboundHttpMethod (final @Nullable String OutboundHttpMethod)
-	{
-		set_Value (COLUMNNAME_OutboundHttpMethod, OutboundHttpMethod);
-	}
-
-	@Override
-	public String getOutboundHttpMethod() 
-	{
-		return get_ValueAsString(COLUMNNAME_OutboundHttpMethod);
-	}
-
-	@Override
-	public void setOutboundHttpToken (final @Nullable String OutboundHttpToken)
-	{
-		set_Value (COLUMNNAME_OutboundHttpToken, OutboundHttpToken);
-	}
-
-	@Override
-	public String getOutboundHttpToken() 
-	{
-		return get_ValueAsString(COLUMNNAME_OutboundHttpToken);
 	}
 
 	@Override
