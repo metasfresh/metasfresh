@@ -120,7 +120,7 @@ public class ShipmentScheduleService
 	}
 
 	@Value
-	@Builder
+	@Builder(toBuilder = true)
 	private static class EligibleCarrierAdviseRequest
 	{
 		@Nullable ShipmentScheduleId shipmentScheduleId;
@@ -130,6 +130,9 @@ public class ShipmentScheduleService
 		boolean isActive;
 		@NonNull BigDecimal quantityToDeliver;
 		@Nullable CarrierAdviseStatus carrierAdvisingStatus;
+
+		boolean isAuto;
+		boolean isIncludeCarrierAdviseManual;
 
 		public static EligibleCarrierAdviseRequest of(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL)
 		{
@@ -161,16 +164,16 @@ public class ShipmentScheduleService
 	public boolean isEligibleForAutoCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule, shipmentScheduleEffectiveBL);
-		return isEligibleForCarrierAdvise(request, true, false);
+		return isEligibleForCarrierAdvise(request.toBuilder().isAuto(true).build());
 	}
 
 	public boolean isNotEligibleForManualCarrierAdvise(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
 	{
 		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule);
-		return !isEligibleForCarrierAdvise(request, false, isIncludeCarrierAdviseManual);
+		return !isEligibleForCarrierAdvise(request.toBuilder().isIncludeCarrierAdviseManual(isIncludeCarrierAdviseManual).build());
 	}
 
-	private boolean isEligibleForCarrierAdvise(@NonNull final EligibleCarrierAdviseRequest request, final boolean isAuto, final boolean isIncludeCarrierAdviseManual)
+	private boolean isEligibleForCarrierAdvise(@NonNull final EligibleCarrierAdviseRequest request)
 	{
 		if (request.getShipperId() == null
 				|| request.isProcessed()
@@ -182,14 +185,14 @@ public class ShipmentScheduleService
 		}
 
 		final CarrierAdviseStatus carrierAdviseStatus = request.getCarrierAdvisingStatus();
-		if (isAuto)
+		if (request.isAuto)
 		{
 			if (carrierAdviseStatus != null && !carrierAdviseStatus.isEligibleForAutoEnqueue()) {return false;}
 		}
 		else
 		{ // Manual
 			if (carrierAdviseStatus == null || !carrierAdviseStatus.isEligibleForManualEnqueue()) {return false;}
-			if (!isIncludeCarrierAdviseManual && carrierAdviseStatus.isManual()) {return false;}
+			if (!request.isIncludeCarrierAdviseManual && carrierAdviseStatus.isManual()) {return false;}
 		}
 
 		final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
