@@ -267,7 +267,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-49" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" uuid="bc8dc6ad-5369-469a-846f-4c876c951772"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isItalic="true"/>
@@ -552,7 +552,7 @@
 	</pageFooter>
 	<lastPageFooter>
 		<band height="12" splitType="Stretch">
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" uuid="8f912d9b-3bbf-48b2-ac1f-6f4dea4f6bb0">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
@@ -561,7 +561,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="0901b4df-7230-48fc-b730-ae174c27ed1b">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
