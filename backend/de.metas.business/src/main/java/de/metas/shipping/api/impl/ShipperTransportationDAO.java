@@ -38,7 +38,6 @@ import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
@@ -152,9 +151,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	{
 		if (query.isAny())
 		{
-			return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
-					.filter(ConstantQueryFilter.of(false))
-					.create();
+			throw new AdempiereException("Any query is not allowed");
 		}
 		final IQueryBuilder<I_M_ShipperTransportation> builder;
 
