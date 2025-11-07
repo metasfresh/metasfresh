@@ -34,8 +34,8 @@ Feature: nShift Shipment
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | N        | Y          | ps                 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
-      | customerLocation | customer      | CH           | Y               | Y               |
+      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City | Address1 |
+      | customerLocation | customer      | CH           | Y               | Y               | 12345  | city | street 1 |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
