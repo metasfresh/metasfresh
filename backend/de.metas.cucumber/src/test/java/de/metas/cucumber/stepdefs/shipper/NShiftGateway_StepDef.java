@@ -25,7 +25,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Carrier_Goods_Type;
 import org.compiere.model.I_Carrier_Product;
 import org.compiere.model.I_Carrier_Service;
-import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
 import java.util.Base64;

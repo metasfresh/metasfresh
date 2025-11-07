@@ -47,7 +47,8 @@ import org.compiere.model.I_Carrier_Goods_Type;
 import org.compiere.model.I_Carrier_Product;
 import org.compiere.model.I_Carrier_Service;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
 
@@ -72,7 +73,7 @@ public class M_ShipmentSchedule_Advise_StepDef
 		final CarrierProductId carrierProductId = carrierProductTable.getId(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
 		final CarrierGoodsTypeId carrierGoodsTypeId = carrierGoodsTypeTable.getId(row.getAsIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID));
 
-		final Set<CarrierServiceId> carrierServiceIds = ImmutableSet.of();
+		final List<CarrierServiceId> carrierServiceIds = new ArrayList<>();
 		row.getAsOptionalIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID)
 				.ifPresent(identifier -> carrierServiceIds.add(identifier.lookupNotNullIdIn(carrierServiceTable)));
 		row.getAsOptionalIdentifier(I_Carrier_Service.COLUMNNAME_Carrier_Service_ID + "2")
