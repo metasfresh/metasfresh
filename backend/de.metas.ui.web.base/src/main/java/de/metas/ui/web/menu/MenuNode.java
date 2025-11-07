@@ -384,7 +384,7 @@ public final class MenuNode
 
 		public void setTypeGroup()
 		{
-			setType(MenuNodeType.Group, (DocumentId)null);
+			setType(MenuNodeType.Group, null);
 		}
 
 		public void addChildToFirstsList(@NonNull final MenuNode child)
