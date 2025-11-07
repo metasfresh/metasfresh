@@ -123,7 +123,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -306,11 +305,9 @@ public class M_ShipmentSchedule_StepDef
 	@And("update shipment schedules")
 	public void update_shipment_schedule(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			alterShipmentSchedule(tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.forEach(this::alterShipmentSchedule);
 	}
 
 	@And("^after not more than (.*)s, validate shipment schedules:$")
@@ -556,11 +553,11 @@ public class M_ShipmentSchedule_StepDef
 
 		row.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Product_ID)
 				.ifPresent(identifier ->
-						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Product_ID, carrierProductTable.get(identifier).getId())
+						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Product_ID, identifier.lookupIdIn(carrierProductTable))
 				);
 		row.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID)
 				.ifPresent(identifier ->
-						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID, carrierGoodsTypeTable.get(identifier).getId())
+						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID, identifier.lookupIdIn(carrierGoodsTypeTable))
 				);
 
 		final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
@@ -619,30 +616,15 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
-	private void alterShipmentSchedule(@NonNull final Map<String, String> tableRow)
+	private void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
 	{
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(tableRow.getAsIdentifier());
 
-		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
-
-		if (qtyToDeliverOverride != null)
-		{
-			shipmentScheduleRecord.setQtyToDeliver_Override(qtyToDeliverOverride);
-		}
-
-		final BigDecimal qtyToDeliverCatchOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override);
-
-		if (qtyToDeliverCatchOverride != null)
-		{
-			shipmentScheduleRecord.setQtyToDeliverCatch_Override(qtyToDeliverCatchOverride);
-		}
-
-		final Timestamp preparationDateOverride = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override);
-		if (preparationDateOverride != null)
-		{
-			shipmentScheduleRecord.setPreparationDate_Override(preparationDateOverride);
-		}
+		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliver_Override);
+		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliverCatch_Override);
+		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override).ifPresent(shipmentScheduleRecord::setPreparationDate_Override);
+		tableRow.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID)
+				.ifPresent(identifier -> shipmentScheduleRecord.setM_Shipper_ID(ShipperId.toRepoId(identifier.lookupIdIn(shipperTable))));
 
 		saveRecord(shipmentScheduleRecord);
 	}

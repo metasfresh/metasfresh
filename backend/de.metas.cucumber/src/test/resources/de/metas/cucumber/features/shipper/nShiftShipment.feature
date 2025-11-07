@@ -74,19 +74,19 @@ Feature: nShift Shipment
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
       | product_TU_10CU         | huPiItemTU      | product      | 10  | 2021-01-01 |
     And metasfresh contains Carrier_Products:
-      | Identifier |
-      | cp1        |
-      | cp2        |
+      | Identifier | M_Shipper_ID |
+      | cp1        | nShift       |
+      | cp2        | nShift       |
     And metasfresh contains Carrier_Goods_Types:
-      | Identifier |
-      | cgt1       |
-      | cgt2       |
+      | Identifier | M_Shipper_ID |
+      | cgt1       | nShift       |
+      | cgt2       | nShift       |
     And metasfresh contains Carrier_Services:
-      | Identifier |
-      | cs1        |
-      | cs2        |
-      | cs3        |
-      | cs4        |
+      | Identifier | M_Shipper_ID |
+      | cs1        | nShift       |
+      | cs2        | nShift       |
+      | cs3        | nShift       |
+      | cs4        | nShift       |
 
   @from:cucumber
   Scenario: nShift Carrier Advise
@@ -112,3 +112,15 @@ Feature: nShift Shipment
     And Process M_ShipmentSchedule_Advise is run
       | M_ShipmentSchedule_ID |
       | ss1                   |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss1        | so1_l1         | N             | wh             | cp1                | cgt1                  |
+    And update shipment schedules
+      | Identifier | M_Shipper_ID |
+      | ss1        | null         |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss1        | so1_l1         | N             | wh             | null               | null                  |
+    And M_ShipmentSchedule has no carrier services assigned
+      | Identifier |
+      | ss1        |

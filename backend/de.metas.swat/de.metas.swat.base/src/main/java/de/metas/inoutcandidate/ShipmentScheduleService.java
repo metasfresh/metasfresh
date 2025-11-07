@@ -38,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 @Service
@@ -142,5 +143,10 @@ public class ShipmentScheduleService
 		return pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder()
 				.onlyShipmentScheduleId(shipmentSchedule.getId())
 				.build());
+	}
+
+	public void removeAssignedServiceIdsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		carrierServiceRepository.removeAssignedServiceIdsByShipmentScheduleIds(shipmentScheduleIds);
 	}
 }

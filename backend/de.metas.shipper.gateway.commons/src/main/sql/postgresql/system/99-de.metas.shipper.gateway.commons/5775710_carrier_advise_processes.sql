@@ -285,3 +285,23 @@ UPDATE AD_Process_Para SET AD_Reference_ID=30, FieldLength=10,Updated=TO_TIMESTA
 -- 2025-11-06T16:35:56.722Z
 UPDATE AD_Val_Rule SET Code='Carrier_Service_ID IN (SELECT cs.Carrier_Service_ID FROM Carrier_Service cs WHERE cs.M_Shipper_ID = @M_Shipper_ID/-1@)',Updated=TO_TIMESTAMP('2025-11-06 16:35:56.720000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540757
 ;
+
+-- Process: M_ShipmentSchedule_Advise_Manual(de.metas.shipper.gateway.commons.webui.M_ShipmentSchedule_Advise_Manual)
+-- ParameterName: Carrier_Service_ID2
+-- 2025-11-07T07:03:07.342Z
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Val_Rule_ID,ColumnName,Created,CreatedBy,DisplayLogic,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,584113,0,585524,543027,30,542018,540757,'Carrier_Service_ID2',TO_TIMESTAMP('2025-11-07 07:03:07.224000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'@Carrier_Service_ID/-1@>0','U',10,'Y','N','Y','N','N','N','Lieferweg-Servicekatalog',60,TO_TIMESTAMP('2025-11-07 07:03:07.224000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-07T07:03:07.345Z
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=543027 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
+-- Process: M_ShipmentSchedule_Advise_Manual(de.metas.shipper.gateway.commons.webui.M_ShipmentSchedule_Advise_Manual)
+-- ParameterName: Carrier_Service_ID3
+-- 2025-11-07T07:03:25.029Z
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Val_Rule_ID,ColumnName,Created,CreatedBy,DisplayLogic,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,584113,0,585524,543028,30,542018,540757,'Carrier_Service_ID3',TO_TIMESTAMP('2025-11-07 07:03:24.919000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'@Carrier_Service_ID2/-1@>0','U',10,'Y','N','Y','N','N','N','Lieferweg-Servicekatalog',70,TO_TIMESTAMP('2025-11-07 07:03:24.919000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-07T07:03:25.039Z
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=543028 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;

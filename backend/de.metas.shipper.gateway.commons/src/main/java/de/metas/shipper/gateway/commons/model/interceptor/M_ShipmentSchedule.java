@@ -22,17 +22,21 @@
 
 package de.metas.shipper.gateway.commons.model.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipper.gateway.commons.async.AdviseDeliveryOrderWorkpackageProcessor;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -55,6 +59,14 @@ public class M_ShipmentSchedule
 	{
 		if (!shipmentScheduleService.isEligibleForAutoCarrierAdvise(shipmentSchedule))
 		{
+			final ShipperId shipperId = ShipperId.ofRepoIdOrNull(InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class).getM_Shipper_ID());
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID());
+			if (shipmentScheduleId != null && shipperId != null)
+			{
+				shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
+				shipmentSchedule.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(null));
+				shipmentScheduleService.removeAssignedServiceIdsByShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId));
+			}
 			return;
 		}
 

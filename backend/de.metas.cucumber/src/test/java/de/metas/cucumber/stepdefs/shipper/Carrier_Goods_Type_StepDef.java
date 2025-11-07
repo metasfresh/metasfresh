@@ -32,14 +32,16 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Carrier_Goods_Type;
 
 @RequiredArgsConstructor
 public class Carrier_Goods_Type_StepDef
 {
+	@NonNull private final CarrierGoodsTypeRepository carrierGoodsTypeRepository = SpringContextHolder.instance.getBean(CarrierGoodsTypeRepository.class);
+
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
 	@NonNull private final M_Shipper_StepDefData shipperTable;
-	@NonNull private final CarrierGoodsTypeRepository carrierGoodsTypeRepository;
 
 	@And("metasfresh contains Carrier_Goods_Types:")
 	public void add_Carrier_Goods_Types(@NonNull final DataTable dataTable)

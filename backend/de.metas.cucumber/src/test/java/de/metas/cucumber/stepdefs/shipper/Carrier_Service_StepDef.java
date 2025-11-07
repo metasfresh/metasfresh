@@ -25,21 +25,31 @@ package de.metas.cucumber.stepdefs.shipper;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierService;
+import de.metas.inoutcandidate.CarrierShipmentScheduleServiceRepository;
 import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
 import de.metas.shipping.ShipperId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Carrier_Service;
+import org.compiere.model.I_M_ShipmentSchedule_Carrier_Service;
+
+import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class Carrier_Service_StepDef
 {
+	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository = SpringContextHolder.instance.getBean(CarrierShipmentOrderServiceRepository.class);
+	@NonNull private final CarrierShipmentScheduleServiceRepository carrierShipmentScheduleServiceRepository = SpringContextHolder.instance.getBean(CarrierShipmentScheduleServiceRepository.class);
+
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 	@NonNull private final M_Shipper_StepDefData shipperTable;
-	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository;
+	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	@And("metasfresh contains Carrier_Services:")
 	public void add_Carrier_Services(@NonNull final DataTable dataTable)
@@ -55,5 +65,16 @@ public class Carrier_Service_StepDef
 		final CarrierService carrierService = carrierServiceRepository.getOrCreateService(shipperId, valueAndName.getValue(), valueAndName.getName());
 
 		carrierServiceTable.put(row.getAsIdentifier(), carrierService);
+	}
+
+	@And("M_ShipmentSchedule has no carrier services assigned")
+	public void m_shipmentSchedule_has_no_carrier_services(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID)
+				.forEach(row -> {
+			final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
+			assertThat(carrierShipmentScheduleServiceRepository.getAssignedServiceIdsByShipmentScheduleId(shipmentScheduleId)).isEmpty();
+		});
 	}
 }
