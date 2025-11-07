@@ -91,8 +91,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		product2 = createProduct("Product2", uom1);
 
-		final PurchaseOrderToShipperTransportationRepository repo = new PurchaseOrderToShipperTransportationRepository();
-		service = new PurchaseOrderToShipperTransportationService(repo);
+		service = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
 	}
 
 	@Test

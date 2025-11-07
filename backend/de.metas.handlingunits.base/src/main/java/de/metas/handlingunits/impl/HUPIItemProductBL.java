@@ -43,7 +43,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -226,7 +226,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	}
 
 	@Override
-	public int getRequiredLUCount(final @NonNull StockQtyAndUOMQty qty, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM)
+	public int getRequiredLUCount(final @NonNull Quantity qty, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM)
 	{
 		if (lutuConfigurationInStockUOM.isInfiniteQtyTU() || lutuConfigurationInStockUOM.isInfiniteQtyCU())
 		{
@@ -238,8 +238,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			// And in the case of catchweight, it's very important to *not* make metasfresh convert quantites using the UOM-conversion
 			return lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
 					lutuConfigurationInStockUOM,
-					qty.getStockQty()
-			);
+					qty);
 		}
 	}
 

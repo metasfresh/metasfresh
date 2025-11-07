@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.ILUQtyProvider;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
@@ -74,10 +75,12 @@ public class PurchaseOrderToShipperTransportationService
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ILUQtyProvider qtyProvider;
 
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
 	{
-		return new PurchaseOrderToShipperTransportationService(new PurchaseOrderToShipperTransportationRepository());
+		final ILUQtyProvider luQtyProvider = (o, ol) -> 1;
+		return new PurchaseOrderToShipperTransportationService(new PurchaseOrderToShipperTransportationRepository(), luQtyProvider);
 	}
 
 	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
@@ -159,11 +162,14 @@ public class PurchaseOrderToShipperTransportationService
 
 		for (final I_C_OrderLine ol : orderLinesWithoutLUQty)
 		{
-			//create a generic package for this order line
-			repo.addPurchaseOrderToShipperTransportation(requestTemplate
-					.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
-					// .sscc(sscc18CodeBL.generate(orgId)) //No requirements currently ask for this
-					.build());
+			final int requiredLUCount = qtyProvider.getRequiredLUCount(order, ol);
+			for (int i = 0; i < requiredLUCount; i++)
+			{
+				repo.addPurchaseOrderToShipperTransportation(requestTemplate
+						.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
+						.sscc(sscc18CodeBL.generate(orgId))
+						.build());
+			}
 		}
 		for (final I_C_OrderLine ol : orderLinesWithLUQty)
 		{
@@ -246,7 +252,12 @@ public class PurchaseOrderToShipperTransportationService
 		final Collection<I_M_ShipperTransportation> transportationOrders = shipperTransportationDAO.getByQuery(ShipperTransportationQuery.builder()
 				.orderId(orderId)
 				.build());
-		return transportationOrders.stream().noneMatch(I_M_ShipperTransportation::isProcessed);
-		//TODO Adrian add delete logic
+		final boolean isDeletePossible = transportationOrders.stream().noneMatch(I_M_ShipperTransportation::isProcessed);
+		if (isDeletePossible)
+		{
+			repo.deleteShippingPackagesForOrder(orderId);
+		}
+
+		return isDeletePossible;
 	}
 }

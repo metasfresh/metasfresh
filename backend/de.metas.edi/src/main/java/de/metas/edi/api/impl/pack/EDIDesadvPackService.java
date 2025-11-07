@@ -39,7 +39,6 @@ import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.generichumodel.HU;
 import de.metas.handlingunits.generichumodel.HURepository;
@@ -54,7 +53,6 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
@@ -112,8 +110,6 @@ public class EDIDesadvPackService
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
@@ -233,7 +229,7 @@ public class EDIDesadvPackService
 
 		final StockQtyAndUOMQty maxQtyCUsPerLU = IHUPIItemProductBL.getMaxQtyCUsPerLU(qtyToAdd, lutuConfigurationInStockUOM, productId);
 		final Quantity qtyCUsPerTUInStockUOM = IHUPIItemProductBL.getQtyCUsPerTUInStockUOM(orderLineRecord, qtyToAdd.getStockQty(), lutuConfigurationInStockUOM);
-		final int requiredLUCount = hupiItemProductBL.getRequiredLUCount(qtyToAdd, lutuConfigurationInStockUOM);
+		final int requiredLUCount = hupiItemProductBL.getRequiredLUCount(qtyToAdd.getStockQty(), lutuConfigurationInStockUOM);
 
 		StockQtyAndUOMQty remainingQty = qtyToAdd;
 

@@ -19,7 +19,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
@@ -204,9 +203,16 @@ public class PurchaseOrderToShipperTransportationRepository
 				.build();
 	}
 
-	public void deleteFromTranportationOrder(@NonNull final OrderId orderId)
+	public void deleteShippingPackagesForOrder(@NonNull final OrderId orderId)
 	{
-		final IQueryFilter<I_M_ShippingPackage> filter = queryBL.createCompositeQueryFilter(I_M_ShippingPackage.class)
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_IsToBeFetched, true);
+		queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.delete();
+		queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
+				.andCollect(I_M_ShippingPackage.COLUMN_M_Package_ID)
+				.create()
+				.delete();
 	}
 }
