@@ -22,7 +22,9 @@
 
 package de.metas.shipper.gateway.commons.process;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.JavaProcess;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -36,7 +38,7 @@ public class M_ShipmentSchedule_Advise_Schedule extends JavaProcess
 	{
 		helper.requestCarrierAdvises(ShipmentScheduleQuery.builder()
 						.fromCompleteOrderOrNullOrder(true)
-						.onlyPreparationDateToday(true)
+						.preparationDate(LocalDateAndOrgId.ofLocalDate(SystemTime.asLocalDate(), getOrgId()))
 						.includeWithQtyToDeliverZero(false)
 						.includeProcessed(false)
 						.orderByOrderId(true)

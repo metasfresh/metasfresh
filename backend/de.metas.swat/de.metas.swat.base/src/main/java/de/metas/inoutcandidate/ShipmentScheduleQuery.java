@@ -27,6 +27,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
@@ -40,6 +41,7 @@ import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -65,7 +67,7 @@ public class ShipmentScheduleQuery
 	boolean fromCompleteOrderOrNullOrder;
 	boolean orderByOrderId;
 	boolean onlyNonZeroReservedQty;
-	boolean onlyPreparationDateToday;
+	@Nullable LocalDateAndOrgId preparationDate;
 
 	/**
 	 * Only export a shipment schedule if its order does not have any schedule which is not yet ready to be exported.

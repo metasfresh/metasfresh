@@ -59,12 +59,14 @@ public class M_ShipmentSchedule
 	{
 		if (!shipmentScheduleService.isEligibleForAutoCarrierAdvise(shipmentSchedule))
 		{
-			final ShipperId shipperId = ShipperId.ofRepoIdOrNull(InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class).getM_Shipper_ID());
+			final ShipperId oldShipperId = ShipperId.ofRepoIdOrNull(InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class).getM_Shipper_ID());
+			final ShipperId newShipperId = ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID());
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID());
-			if (shipmentScheduleId != null && shipperId != null)
+			if (shipmentScheduleId != null && oldShipperId != null && !ShipperId.equals(oldShipperId, newShipperId))
 			{
 				shipmentSchedule.setCarrier_Product_ID(CarrierProductId.toRepoId(null));
 				shipmentSchedule.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(null));
+				shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.NotRequested.getCode());
 				shipmentScheduleService.removeAssignedServiceIdsByShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId));
 			}
 			return;

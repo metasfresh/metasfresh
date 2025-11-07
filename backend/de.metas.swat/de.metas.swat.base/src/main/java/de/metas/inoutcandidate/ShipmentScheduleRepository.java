@@ -72,7 +72,6 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -245,9 +244,9 @@ public class ShipmentScheduleRepository
 			queryBuilder.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyReserved, 0);
 		}
 
-		if (query.isOnlyPreparationDateToday())
+		if (query.getPreparationDate() != null)
 		{
-			queryBuilder.addCoalesceEqualsFilter(LocalDate.now(), COLUMNNAME_PreparationDate_Override, COLUMNNAME_PreparationDate);
+			queryBuilder.addCoalesceEqualsFilter(query.getPreparationDate().toLocalDate(), COLUMNNAME_PreparationDate_Override, COLUMNNAME_PreparationDate);
 		}
 
 		if (query.isFromCompleteOrderOrNullOrder())
