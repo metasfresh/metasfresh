@@ -205,24 +205,10 @@ export function setLanguages(data) {
   };
 }
 
-export function initKeymap(keymap) {
-  return {
-    type: types.INIT_KEYMAP,
-    payload: keymap,
-  };
-}
-
 export function updateKeymap(keymap) {
   return {
     type: types.UPDATE_KEYMAP,
     payload: keymap,
-  };
-}
-
-export function initHotkeys(hotkeys) {
-  return {
-    type: types.INIT_HOTKEYS,
-    payload: hotkeys,
   };
 }
 

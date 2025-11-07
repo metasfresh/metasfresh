@@ -1,6 +1,9 @@
 import update from 'immutability-helper';
 
 import * as types from '../constants/ActionTypes';
+import keymap from '../shortcuts/keymap';
+import blacklist from '../shortcuts/blacklist';
+import generateHotkeys from '../shortcuts/generateHotkeys';
 
 export const initialState = {
   connectionErrorType: '',
@@ -14,8 +17,8 @@ export const initialState = {
     unreadCount: 0,
     pending: false,
   },
-  keymap: {},
-  hotkeys: {},
+  keymap,
+  hotkeys: generateHotkeys({ keymap, blacklist }),
   lastBackPage: '',
 };
 
@@ -253,11 +256,6 @@ export default function appHandler(state = initialState, action) {
         processStatus: 'saved',
       };
 
-    case types.INIT_KEYMAP:
-      return {
-        ...state,
-        keymap: action.payload,
-      };
     case types.UPDATE_KEYMAP:
       return {
         ...state,
@@ -265,11 +263,6 @@ export default function appHandler(state = initialState, action) {
           ...state.keymap,
           ...action.payload,
         },
-      };
-    case types.INIT_HOTKEYS:
-      return {
-        ...state,
-        hotkeys: action.payload,
       };
     case types.UPDATE_HOTKEYS:
       return {

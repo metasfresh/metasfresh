@@ -101,22 +101,6 @@ class ShortcutProvider extends Component {
     window.removeEventListener('blur', this.handleBlur);
   }
 
-  // In case of different handlers using the same shortcut we can control which
-  // one will be fired by returning true/false from their execution. Handlers are
-  // added in reverse order, so this way we can only call the latest in the queue.
-  // Summarizing - if you want a handler to just pass through, return false before
-  // any other code in the function.
-  fireHandlers = (event, handlers) => {
-    for (let i = 0; i < handlers.length; i += 1) {
-      const handler = handlers[i];
-      const stopPropagation = handler(event);
-
-      if (stopPropagation) {
-        break;
-      }
-    }
-  };
-
   handleKeyDown = (event) => {
     const _key = codeToKey[event.keyCode];
     const key = _key && _key.toUpperCase();
@@ -176,7 +160,7 @@ class ShortcutProvider extends Component {
     });
 
     if (validHandlers.length) {
-      return this.fireHandlers(event, validHandlers);
+      return fireHandlers(event, validHandlers);
     }
   };
 
@@ -205,7 +189,7 @@ class ShortcutProvider extends Component {
   subscribe = (name, handler) => {
     const { hotkeys, keymap } = this.props;
 
-    if (!(name in this.props.keymap)) {
+    if (!(name in keymap)) {
       // eslint-disable-next-line no-console
       console.warn(`There are no hotkeys defined for "${name}".`);
 
@@ -273,3 +257,25 @@ function mapStateToProps({ appHandler }) {
 
 export default connect(mapStateToProps)(ShortcutProvider);
 export { ShortcutProvider };
+
+//
+//
+//
+//
+//
+
+// In case of different handlers using the same shortcut we can control which
+// one will be fired by returning true/false from their execution. Handlers are
+// added in reverse order, so this way we can only call the latest in the queue.
+// Summarizing - if you want a handler to just pass through, return false before
+// any other code in the function.
+const fireHandlers = (event, handlers) => {
+  for (let i = 0; i < handlers.length; i++) {
+    const handler = handlers[i];
+    const stopPropagation = handler(event);
+
+    if (stopPropagation) {
+      break;
+    }
+  }
+};

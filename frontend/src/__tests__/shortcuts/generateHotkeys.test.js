@@ -1,4 +1,4 @@
-import generateHotkeys from '../../../components/keyshortcuts/generateHotkeys';
+import generateHotkeys from '../../shortcuts/generateHotkeys';
 
 describe('generateHotkeys', () => {
   it('should return an object', () => {
