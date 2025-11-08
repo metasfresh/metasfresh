@@ -423,7 +423,7 @@ public class WindowRestController
 
 		final DocumentPath fromDocumentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
 
-		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath);
+		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath, userSession.getUserRolePermissions());
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions().showAdvancedFields(advanced).build();
 		return JSONDocument.ofDocument(documentCopy, jsonOpts);
 	}
