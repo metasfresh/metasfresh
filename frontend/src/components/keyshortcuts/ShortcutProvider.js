@@ -92,10 +92,15 @@ export const useShortcut = ({
 };
 
 export const ShortcutProvider = ({ children }) => {
-  const keymapRef = useRef({ ...defaultKeymap });
+  const keymapRef = useRef(null);
   const hotkeysRef = useRef({});
   const keySequenceRef = useRef([]);
   const firedRef = useRef({});
+
+  // Initialize keymap
+  if (keymapRef.current == null) {
+    keymapRef.current = { ...defaultKeymap };
+  }
 
   useWindowEventListener('blur', () => {
     keySequenceRef.current = [];
