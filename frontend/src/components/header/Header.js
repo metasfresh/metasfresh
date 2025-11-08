@@ -29,7 +29,7 @@ import NewLetter from '../letter/NewLetter';
 import Tooltips from '../tooltips/Tooltips';
 import Breadcrumb from './breadcrumb/Breadcrumb';
 import SideList from './SideList';
-import Subheader from './SubHeader';
+import Subheader, { getStandardActions } from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -576,7 +576,17 @@ class Header extends PureComponent {
   };
 
   handleAction = ({ action, payload }) => {
-    const { windowId, dataId } = this.props;
+    const { windowId, dataId, standardActionsAllowed } = this.props;
+    if (
+      DocumentAction.isStandardAction(action) &&
+      !standardActionsAllowed.includes(action)
+    ) {
+      console.log(`Action ${action} not allowed`, {
+        standardActionsAllowed,
+        payload,
+      });
+      return;
+    }
 
     switch (action) {
       case DocumentAction.BREADCRUMB_CLICK: {
@@ -676,6 +686,7 @@ class Header extends PureComponent {
       saveStatus,
       isShowComments,
       hasComments,
+      standardActionsAllowed,
     } = this.props;
 
     const {
@@ -950,6 +961,7 @@ class Header extends PureComponent {
           />
         )}
         <GlobalContextShortcuts
+          standardActionsAllowed={standardActionsAllowed}
           handleSidelistToggle={this.handleSidelistToggle}
           handleMenuOverlay={
             isMenuOverlayShow
@@ -959,7 +971,7 @@ class Header extends PureComponent {
           }
           handleInboxToggle={this.handleInboxToggle}
           handleUDToggle={this.handleUDToggle}
-          openModal={
+          handleOpenAdvancedEdit={
             dataId
               ? () =>
                   this.openModal(
@@ -982,7 +994,7 @@ class Header extends PureComponent {
           handleClone={
             dataId ? () => this.handleClone(windowId, dataId) : undefined
           }
-          redirect={
+          handleNewDocument={
             windowId
               ? () => this.redirect(`/window/${windowId}/new`)
               : undefined
@@ -1030,6 +1042,7 @@ Header.propTypes = {
   isShowComments: PropTypes.bool,
   hasComments: PropTypes.bool,
   selected: PropTypes.array,
+  standardActionsAllowed: PropTypes.array,
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -1057,6 +1070,12 @@ const mapStateToProps = (state, ownProps) => {
     indicator,
     saveStatus,
     selected,
+    standardActionsAllowed: getStandardActions({
+      state,
+      windowId,
+      documentId,
+      viewId,
+    }),
   };
 };
 

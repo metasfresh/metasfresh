@@ -15,4 +15,17 @@ export const DocumentAction = Object.freeze({
   OPEN_PRINT_RAPORT: 'print',
   DELETE_DOCUMENT: 'delete',
   OPEN_COMMENTS: 'comments',
+
+  isStandardAction: (action) => {
+    return (
+      action === DocumentAction.NEW_DOCUMENT ||
+      action === DocumentAction.OPEN_ADVANCED_EDIT ||
+      action === DocumentAction.CLONE_DOCUMENT ||
+      action === DocumentAction.OPEN_EMAIL ||
+      action === DocumentAction.OPEN_LETTER ||
+      action === DocumentAction.OPEN_PRINT_RAPORT ||
+      action === DocumentAction.DELETE_DOCUMENT ||
+      action === DocumentAction.OPEN_COMMENTS
+    );
+  },
 });

@@ -222,7 +222,7 @@ export default connect(mapStateToProps)(onClickOutside(SubHeader));
 //
 //
 
-const getStandardActions = ({ state, windowId, documentId, viewId }) => {
+export const getStandardActions = ({ state, windowId, documentId, viewId }) => {
   if (!windowId) {
     return [];
   }
