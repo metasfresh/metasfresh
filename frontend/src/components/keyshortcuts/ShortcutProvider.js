@@ -73,14 +73,22 @@ const useShortcutProvider = () => {
   return context;
 };
 
-export const useShortcut = ({ name, shortcut, handler, dependencies = [] }) => {
+export const useShortcut = ({
+  name,
+  shortcut,
+  handler,
+  enabled = true,
+  dependencies = [],
+}) => {
   const { subscribe } = useShortcutProvider();
 
   useEffect(() => {
+    if (!enabled) return;
+
     // noinspection UnnecessaryLocalVariableJS
     const unsubscribe = subscribe({ name, shortcut, handler });
     return unsubscribe;
-  }, [subscribe, name, shortcut, ...(dependencies ?? [])]);
+  }, [subscribe, name, shortcut, enabled, ...(dependencies ?? [])]);
 };
 
 export const ShortcutProvider = ({ children }) => {
