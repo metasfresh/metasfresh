@@ -95,6 +95,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -478,7 +479,6 @@ public class OrderBL implements IOrderBL
 		}
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
-
 
 		@Nullable
 		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
@@ -1021,6 +1021,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isSalesOrder(@NonNull final I_C_Order order)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		return soTrx.isSales();
+	}
+
+	@Override
 	public boolean isRequisition(@NonNull final I_C_Order order)
 	{
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
@@ -1242,11 +1249,7 @@ public class OrderBL implements IOrderBL
 		if (billBPLocationId != null)
 		{
 			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
-			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
-			if (billLocationEmail != null)
-			{
-				return billLocationEmail;
-			}
+			return  billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
 		}
 
 		//
@@ -1412,5 +1415,10 @@ public class OrderBL implements IOrderBL
 	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
 	{
 		return partnerDAO.getShipperId(partnerId);
+	}
+
+	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
+	{
+		return orderDAO.getByQueryFilter(queryFilter);
 	}
 }
