@@ -35,7 +35,8 @@ import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
-import de.metas.handlingunits.picking.job.model.PickingJobFacets;
+import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
@@ -86,7 +87,7 @@ public class PickingJobRestService
 	@NonNull
 	public PickingJobFacets getFacets(
 			@NonNull final PickingJobQuery query,
-			@NonNull final PickingJobFacets.CollectingParameters collectingParameters)
+			@NonNull final CollectingParameters collectingParameters)
 	{
 		return pickingJobService.streamPackageable(query)
 				.collect(PickingJobFacets.collectFromPackageables(collectingParameters));

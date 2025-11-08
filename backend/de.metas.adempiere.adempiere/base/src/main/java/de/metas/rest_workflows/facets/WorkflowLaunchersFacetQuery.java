@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.model.facets;
+package de.metas.rest_workflows.facets;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocumentNoFilter;

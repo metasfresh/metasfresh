@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.model.facets;
+package de.metas.rest_workflows.facets;
 
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;

@@ -25,7 +25,7 @@ package de.metas.handlingunits.picking.config.mobileui;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;

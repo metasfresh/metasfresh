@@ -8,12 +8,14 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
-import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
+import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetHandlers;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.i18n.AdMessageKey;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
@@ -21,6 +23,8 @@ import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.product.ScannedProductCodeResolver;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
@@ -28,8 +32,6 @@ import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
@@ -115,7 +117,7 @@ public class PickingWorkflowLaunchersProvider
 		//
 		// Already started launchers
 		final DisplayValueProvider displayValueProvider = displayValueProviderService.newDisplayValueProvider(profile);
-		final PickingJobQuery.Facets facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
+		final PickingJobQuery.Facets facets = PickingJobFacetHandlers.toPickingJobFacetsQuery(query.getFacetIds());
 		final PickingJobReferenceList existingPickingJobs;
 		if (workplace != null || !profile.isConsiderOnlyJobScheduledToWorkplace())
 		{
@@ -213,7 +215,7 @@ public class PickingWorkflowLaunchersProvider
 	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final WorkflowLaunchersFacetQuery query)
 	{
 		final UserId userId = query.getUserId();
-		final PickingJobQuery.Facets activeFacets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getActiveFacetIds());
+		final PickingJobQuery.Facets activeFacets = PickingJobFacetHandlers.toPickingJobFacetsQuery(query.getActiveFacetIds());
 
 		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
 		final ImmutableList<PickingJobFacetGroup> groups = profile.getFilterGroupsInOrder();
@@ -230,13 +232,13 @@ public class PickingWorkflowLaunchersProvider
 						.salesOrderDocumentNo(query.getFilterByDocumentNo())
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
 						.build(),
-				PickingJobFacets.CollectingParameters.builder()
+				CollectingParameters.builder()
 						.addressProvider(documentLocationBL.newRenderedAddressProvider())
 						.groupsInOrder(groups)
 						.activeFacets(activeFacets)
 						.build());
 
-		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets, profile);
+		return PickingJobFacetHandlers.toWorkflowLaunchersFacetGroupList(pickingFacets, profile);
 	}
 
 	public void invalidateCacheByUserId(@NonNull final UserId invokerId)
