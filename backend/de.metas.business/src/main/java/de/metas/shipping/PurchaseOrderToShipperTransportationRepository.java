@@ -29,6 +29,8 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -63,6 +65,22 @@ public class PurchaseOrderToShipperTransportationRepository
 	public static PurchaseOrderToShipperTransportationRepository newInstanceForUnitTesting()
 	{
 		return new PurchaseOrderToShipperTransportationRepository();
+	}
+
+	public Collection<OrderAndLineId> getAssignedOrderAndLineIds(@NonNull final Collection<OrderAndLineId> orderAndLineId)
+	{
+		final Set<OrderLineId> orderLineIds = orderAndLineId.stream()
+				.map(OrderAndLineId::getOrderLineId)
+				.collect(Collectors.toSet());
+
+		return queryBL
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.stream()
+				.map(sp -> OrderAndLineId.ofRepoIds(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
+				.collect(Collectors.toList());
 	}
 
 	public boolean purchaseOrderNotInShipperTransportation(@NonNull final OrderId purchaseOrderId)
@@ -124,7 +142,7 @@ public class PurchaseOrderToShipperTransportationRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
+	public boolean hasAssignedShippingPackageIdsByOrderId(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addOnlyActiveRecordsFilter()
@@ -185,15 +203,16 @@ public class PurchaseOrderToShipperTransportationRepository
 				.build();
 	}
 
-	public boolean isShippingPackageExistsForPurchaseOrderWithNoOrderLine(@NonNull final OrderId orderId)
+	public void deleteShippingPackagesForOrder(@NonNull final OrderId orderId)
 	{
-		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_IsToBeFetched, true)
+		queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
-				.addIsNull(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID)
 				.create()
-				.anyMatch();
+				.delete();
+		queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
+				.andCollect(I_M_ShippingPackage.COLUMN_M_Package_ID)
+				.create()
+				.delete();
 	}
-
 }
