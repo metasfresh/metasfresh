@@ -31,15 +31,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
 @Jacksonized
 @RequiredArgsConstructor
 public class CarrierProduct implements ShipperProduct
 {
-	@Nullable CarrierProductId id;
+	@NonNull CarrierProductId id;
 
 	@Getter
 	@NonNull String code;

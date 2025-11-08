@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for Carrier_Config
  *  @author metasfresh (generated) 
@@ -249,6 +248,27 @@ public interface I_Carrier_Config
 
 	ModelColumn<I_Carrier_Config, Object> COLUMN_Password = new ModelColumn<>(I_Carrier_Config.class, "Password", null);
 	String COLUMNNAME_Password = "Password";
+
+	/**
+	 * Set Service Level.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setServiceLevel (@Nullable java.lang.String ServiceLevel);
+
+	/**
+	 * Get Service Level.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getServiceLevel();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_ServiceLevel = new ModelColumn<>(I_Carrier_Config.class, "ServiceLevel", null);
+	String COLUMNNAME_ServiceLevel = "ServiceLevel";
 
 	/**
 	 * Get Updated.

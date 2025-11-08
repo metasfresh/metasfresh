@@ -149,6 +149,7 @@ public class C_BPartner_Location_StepDef
 			
 			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_City).ifPresent(locationRecord::setCity);
 			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Postal).ifPresent(locationRecord::setPostal);
+			tableRow.getAsOptionalString(I_C_Location.COLUMNNAME_Address1).ifPresent(locationRecord::setAddress1);
 			
 			saveRecord(locationRecord);
 
