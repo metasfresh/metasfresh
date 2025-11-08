@@ -151,14 +151,11 @@ public class NShiftShipAdvisorService
 						.code(String.valueOf(product.getProdConceptID()))
 						.build());
 
-		final JsonShipAdvisorResponseGoodsType productGoodsType = product.getProductGoodsType();
-		if (productGoodsType != null)
-		{
-			responseBuilder.goodsType(JsonGoodsType.builder()
-					.id(String.valueOf(productGoodsType.getGoodsTypeId()))
-					.name(productGoodsType.getGoodsTypeName())
-					.build());
-		}
+		final JsonShipAdvisorResponseGoodsType productGoodsType = Check.assumeNotNull(product.getProductGoodsType(), "response should contain a GoodsType, pls check defined shipment rules");
+		responseBuilder.goodsType(JsonGoodsType.builder()
+				.id(String.valueOf(productGoodsType.getGoodsTypeId()))
+				.name(productGoodsType.getGoodsTypeName())
+				.build());
 
 		responseBuilder.shipperProductServices(product.getServices()
 				.stream()
