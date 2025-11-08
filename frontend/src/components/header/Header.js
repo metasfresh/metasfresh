@@ -29,20 +29,7 @@ import NewLetter from '../letter/NewLetter';
 import Tooltips from '../tooltips/Tooltips';
 import Breadcrumb from './breadcrumb/Breadcrumb';
 import SideList from './SideList';
-import Subheader, {
-  ACTION_ABOUT_DOCUMENT,
-  ACTION_BREADCRUMB_CLICK,
-  ACTION_CLONE_DOCUMENT,
-  ACTION_DELETE_DOCUMENT,
-  ACTION_DOWNLOAD_SELECTED,
-  ACTION_NEW_DOCUMENT,
-  ACTION_OPEN_ADVANCED_EDIT,
-  ACTION_OPEN_COMMENTS,
-  ACTION_OPEN_EMAIL,
-  ACTION_OPEN_LETTER,
-  ACTION_OPEN_PRINT_RAPORT,
-  ACTION_TOGGLE_EDIT_MODE,
-} from './SubHeader';
+import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -56,6 +43,7 @@ import { getSelection, getTableId } from '../../reducers/tables';
 import RedirectHandler from './RedirectHandler';
 import { requestRedirect } from '../../reducers/redirect';
 import * as StaticModalType from '../../constants/StaticModalType';
+import { DocumentAction } from '../../constants/DocumentAction';
 
 const PROMPT_TYPE_CONFIRM_DELETE = 'confirmDelete';
 
@@ -591,30 +579,30 @@ class Header extends PureComponent {
     const { windowId, dataId } = this.props;
 
     switch (action) {
-      case ACTION_BREADCRUMB_CLICK: {
+      case DocumentAction.BREADCRUMB_CLICK: {
         this.handleUpdateBreadcrumb(payload);
         break;
       }
-      case ACTION_TOGGLE_EDIT_MODE: {
+      case DocumentAction.TOGGLE_EDIT_MODE: {
         const { handleEditModeToggle } = this.props;
         handleEditModeToggle();
         this.closeSubheader();
         break;
       }
-      case ACTION_ABOUT_DOCUMENT: {
+      case DocumentAction.ABOUT_DOCUMENT: {
         this.handleAboutButton();
         break;
       }
-      case ACTION_DOWNLOAD_SELECTED: {
+      case DocumentAction.DOWNLOAD_SELECTED: {
         this.handleDownloadSelected();
         break;
       }
-      case ACTION_NEW_DOCUMENT: {
+      case DocumentAction.NEW_DOCUMENT: {
         this.redirect('/window/' + windowId + '/new');
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_ADVANCED_EDIT: {
+      case DocumentAction.OPEN_ADVANCED_EDIT: {
         this.openModal(
           windowId,
           'window',
@@ -624,34 +612,34 @@ class Header extends PureComponent {
         this.closeSubheader();
         break;
       }
-      case ACTION_CLONE_DOCUMENT: {
+      case DocumentAction.CLONE_DOCUMENT: {
         this.handleClone(windowId, dataId);
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_EMAIL: {
+      case DocumentAction.OPEN_EMAIL: {
         this.handleEmail();
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_LETTER: {
+      case DocumentAction.OPEN_LETTER: {
         this.handleLetter();
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_PRINT_RAPORT: {
+      case DocumentAction.OPEN_PRINT_RAPORT: {
         const { docNoData } = this.props;
         const docNo = docNoData?.value;
         this.closeSubheader();
         return this.handlePrint(windowId, dataId, docNo);
         // break;
       }
-      case ACTION_DELETE_DOCUMENT: {
+      case DocumentAction.DELETE_DOCUMENT: {
         this.handleDelete();
         this.closeSubheader();
         break;
       }
-      case ACTION_OPEN_COMMENTS: {
+      case DocumentAction.OPEN_COMMENTS: {
         this.handleComments();
         this.closeSubheader();
         break;
