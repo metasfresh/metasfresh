@@ -21,7 +21,7 @@ import useConstructor from '../hooks/useConstructor';
 import history from '../services/History';
 import Routes from '../routes';
 import { NO_CONNECTION_ERROR } from '../constants/Constants';
-import { ShortcutProvider } from '../components/keyshortcuts';
+import { ShortcutProvider } from '../components/keyshortcuts/ShortcutProvider';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import { getDocSummaryDataFromState } from '../reducers/windowHandlerUtils';
