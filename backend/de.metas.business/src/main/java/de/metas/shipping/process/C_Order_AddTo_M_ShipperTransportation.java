@@ -14,12 +14,13 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /*
@@ -80,11 +81,6 @@ public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implement
 		{
 			return ProcessPreconditionsResolution.reject(MSG_DOCUMENT_NOT_COMPLETE);
 		}
-		if (shipperTransportationBL.isAnyOrderAssignedToDifferentTransportationOrder(p_M_ShipperTransportation_ID, selectedOrders.stream()
-				.map(o -> OrderId.ofRepoId(o.getC_Order_ID())).collect(Collectors.toSet())))
-		{
-			return ProcessPreconditionsResolution.reject(MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER);
-		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -92,11 +88,17 @@ public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implement
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IQueryFilter<I_C_Order> queryFilter = getProcessInfo()
-				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
+		final Set<OrderId> orderIds = orderBL.getByQueryFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.stream()
+				.map(o -> OrderId.ofRepoId(o.getC_Order_ID()))
+				.collect(Collectors.toSet());
 
-		orderToShipperTransportationService.addPurchaseOrdersToShipperTransportation(p_M_ShipperTransportation_ID, queryFilter);
+		if (shipperTransportationBL.isAnyOrderAssignedToDifferentTransportationOrder(p_M_ShipperTransportation_ID, orderIds))
+		{
+			throw new AdempiereException(MSG_ORDER_ASSIGNED_TO_DIFFERENT_TRANSPORTATION_ORDER);
+		}
 
+		orderToShipperTransportationService.addPurchaseOrdersToShipperTransportation(p_M_ShipperTransportation_ID, orderIds);
 		return MSG_OK;
 
 	}

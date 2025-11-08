@@ -69,7 +69,7 @@ public class M_ReceiptSchedule_AddTo_M_ShipperTransportation extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		orderToShipperTransportationService.addMaterialReceiptCandidatesToShipperTransportation(p_M_ShipperTransportation_ID, getOrderAndLineIds());
+		orderToShipperTransportationService.addOrderLinesToShipperTransportation(p_M_ShipperTransportation_ID, getOrderAndLineIds());
 
 		return MSG_OK;
 	}

@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -122,11 +123,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
@@ -138,7 +135,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(shippingPackage.isToBeFetched());
 
 		// try to add it again
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		// => it was not added again
 		assertThat(1).isEqualTo(shippingPackages.size());
@@ -165,11 +162,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
@@ -181,7 +174,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(shippingPackage.isToBeFetched());
 
 		// try to add it again
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		// => it was not added again
 		assertThat(shippingPackages.size()).isEqualTo(2);
@@ -217,11 +210,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(I_C_Order.class)
-				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, order1, order2);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order2));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
@@ -238,7 +227,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				.createCompositeQueryFilter(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, order1, order2, order3);
 
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter2);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order2));
 
 		final List<I_M_ShippingPackage> shippingPackages2 = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
