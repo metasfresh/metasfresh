@@ -1,5 +1,6 @@
 package de.metas.shipping;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyCode;
@@ -25,8 +26,6 @@ import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -210,7 +209,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order2));
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), ImmutableSet.of(order1,order2));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
@@ -223,11 +222,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		// add a new order
 
-		final IQueryFilter<I_C_Order> queryFilter2 = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(I_C_Order.class)
-				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, order1, order2, order3);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order2));
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), ImmutableSet.of(order1,order2,order3));
 
 		final List<I_M_ShippingPackage> shippingPackages2 = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
