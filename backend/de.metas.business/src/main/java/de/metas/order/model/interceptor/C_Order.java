@@ -108,6 +108,7 @@ public class C_Order
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
+	private static final AdMessageKey MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("OrderAssignedToProcessedTransportationOrder");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
@@ -357,12 +358,12 @@ public class C_Order
 		orderLinePricingConditions.failForMissingPricingConditions(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createMPackages(final I_C_Order order)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
+	public void deleteShippingPackageIfPossible(final I_C_Order order)
 	{
-		if (!order.isSOTrx())
+		if (!purchaseOrderToShipperTransportationService.deleteShippingPackagesForOrderIfPossible(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
-			purchaseOrderToShipperTransportationService.addPurchaseOrderToCurrentShipperTransportation(order);
+			throw new AdempiereException(MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
 		}
 	}
 

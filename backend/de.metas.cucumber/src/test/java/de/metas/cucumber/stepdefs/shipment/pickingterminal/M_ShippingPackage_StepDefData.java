@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,24 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.shipment;
+package de.metas.cucumber.stepdefs.shipment.pickingterminal;
 
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShippingPackageId;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class M_ShipperTransportation_StepDefData extends StepDefData<I_M_ShipperTransportation>
-		implements StepDefDataGetIdAware<ShipperTransportationId, I_M_ShipperTransportation>
+public class M_ShippingPackage_StepDefData extends StepDefData<I_M_ShippingPackage>
+		implements StepDefDataGetIdAware<ShippingPackageId, I_M_ShippingPackage>
 {
-	public M_ShipperTransportation_StepDefData()
+	public M_ShippingPackage_StepDefData()
 	{
-		super(I_M_ShipperTransportation.class);
+		super(I_M_ShippingPackage.class);
 	}
 
 	@Override
-	public ShipperTransportationId extractIdFromRecord(final I_M_ShipperTransportation record)
+	public ShippingPackageId extractIdFromRecord(final I_M_ShippingPackage record)
 	{
-		return ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
+		return ShippingPackageId.ofRepoId(record.getM_ShippingPackage_ID());
 	}
 }

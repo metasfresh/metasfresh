@@ -68,7 +68,7 @@ public interface IProcessPreconditionsContext
 	 */
 	@Deprecated
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
-	
+
 	@NonNull
 	<T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass);
 
@@ -103,6 +103,11 @@ public interface IProcessPreconditionsContext
 	default boolean isMoreThanOneSelected()
 	{
 		return getSelectionSize().isMoreThanOneSelected();
+	}
+
+	default boolean isMoreThanAllowedSelected(final int maxAllowedSelectionSize)
+	{
+		return getSelectionSize().getSize() > maxAllowedSelectionSize;
 	}
 
 	/**
