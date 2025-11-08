@@ -48,6 +48,7 @@ public class ShipperTransportationQuery
 	@Nullable LocalDate shipDate;
 	@Nullable ShipperTransportationId shipperTransportationToExclude;
 	@NonNull @Singular Collection<OrderId> orderIds;
+	@Nullable Boolean processed;
 
 	public boolean isAny()
 	{

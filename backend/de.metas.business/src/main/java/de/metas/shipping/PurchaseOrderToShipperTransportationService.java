@@ -249,10 +249,10 @@ public class PurchaseOrderToShipperTransportationService
 
 	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
 	{
-		final Collection<I_M_ShipperTransportation> transportationOrders = shipperTransportationDAO.getByQuery(ShipperTransportationQuery.builder()
+		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
 				.orderId(orderId)
+				.processed(true)
 				.build());
-		final boolean isDeletePossible = transportationOrders.stream().noneMatch(I_M_ShipperTransportation::isProcessed);
 		if (isDeletePossible)
 		{
 			repo.deleteShippingPackagesForOrder(orderId);

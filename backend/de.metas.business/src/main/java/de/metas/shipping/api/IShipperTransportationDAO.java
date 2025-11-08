@@ -68,4 +68,6 @@ public interface IShipperTransportationDAO extends ISingletonService
 	boolean isAnyOrderAssignedToDifferentTransportationOrder(final @NonNull ShipperTransportationId shipperTransportationId, final @NonNull Collection<OrderId> orderIds);
 
 	Collection<I_M_ShipperTransportation> getByQuery(@NonNull ShipperTransportationQuery query);
+
+	boolean anyMatch(@NonNull ShipperTransportationQuery query);
 }

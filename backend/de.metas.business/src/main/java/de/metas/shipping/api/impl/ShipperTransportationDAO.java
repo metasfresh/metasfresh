@@ -199,6 +199,12 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 			builder.addNotEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationToExclude);
 		}
 
+		final Boolean processed = query.getProcessed();
+		if (processed != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, processed);
+		}
+
 		return builder.create();
 	}
 
@@ -241,5 +247,12 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	{
 		return toSqlQuery(query)
 				.list();
+	}
+
+	@Override
+	public boolean anyMatch(@NonNull final ShipperTransportationQuery query)
+	{
+		return toSqlQuery(query)
+				.anyMatch();
 	}
 }
