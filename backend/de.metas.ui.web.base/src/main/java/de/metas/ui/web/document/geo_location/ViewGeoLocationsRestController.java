@@ -1,6 +1,5 @@
 package de.metas.ui.web.document.geo_location;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -39,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -122,7 +122,7 @@ public class ViewGeoLocationsRestController
 
 	private ImmutableSet<String> getViewFieldNames(final IView view)
 	{
-		final ViewLayout viewLayout = viewsRepo.getViewLayout(view.getViewId().getWindowId(), view.getViewType(), view.getProfileId());
+		final ViewLayout viewLayout = viewsRepo.getViewLayout(view.getViewId().getWindowId(), view.getViewType(), view.getProfileId(), userSession.getUserRolePermissionsKey());
 		final ImmutableSet<String> fieldNames = viewLayout.getElements()
 				.stream()
 				.flatMap(element -> element.getFields().stream())
