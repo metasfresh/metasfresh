@@ -2,6 +2,9 @@ package org.adempiere.util.reflect;
 
 import de.metas.util.Check;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 /*
  * #%L
  * de.metas.util
@@ -28,7 +31,6 @@ import de.metas.util.Check;
  * To be used when it comes to class loading. Can be extended/overridden for testing.
  * 
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ClassInstanceProvider implements IClassInstanceProvider
 {
@@ -46,17 +48,17 @@ public class ClassInstanceProvider implements IClassInstanceProvider
 		{
 			classLoader = ClassInstanceProvider.class.getClassLoader();
 		}
-		final Class<?> clazz = classLoader.loadClass(className);
-		return clazz;
+		return classLoader.loadClass(className);
 	}
 
 	@Override
-	public <T> T provideInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz) throws InstantiationException, IllegalAccessException
+	public <T> T provideInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException
 	{
 		Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz), "Class {} doesn't implement {}", instanceClazz, interfaceClazz);
 
-		return instanceClazz
-				.asSubclass(interfaceClazz)
-				.newInstance();
+		final Constructor<?> constructor = instanceClazz.getDeclaredConstructor();
+		constructor.setAccessible(true);
+		//noinspection unchecked
+		return (T)constructor.newInstance();
 	}
 }

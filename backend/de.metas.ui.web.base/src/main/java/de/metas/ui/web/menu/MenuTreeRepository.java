@@ -88,11 +88,9 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
-	public MenuTree getUserSessionMenuTree()
+	public MenuTree getMenuTree(@NonNull final UserRolePermissionsKey userRolePermissionsKey)
 	{
-		final UserRolePermissionsKey userRolePermissionsKey = userSession.getUserRolePermissionsKey();
-		final String adLanguage = userSession.getAD_Language();
-		return getMenuTree(userRolePermissionsKey, adLanguage);
+		return getMenuTree(userRolePermissionsKey, userSession.getAD_Language());
 	}
 
 	public MenuTree getMenuTree(final UserRolePermissionsKey userRolePermissionsKey, final String adLanguage)
