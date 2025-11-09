@@ -65,6 +65,7 @@ public interface Shopware6Constants
 
 	//default values
 	String DATA_SOURCE_INT_SHOPWARE = "int-Shopware";
+	String EXTERNAL_SYSTEM_SHOPWARE = "Shopware6";
 	String DEFAULT_DELIVERY_RULE = "A";
 	String DEFAULT_DELIVERY_VIA_RULE = "S";
 	BigDecimal DEFAULT_ORDER_LINE_DISCOUNT = BigDecimal.ZERO;

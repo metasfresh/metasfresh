@@ -31,16 +31,20 @@ import { APPLICATION_ID as APPLICATION_ID_scanAnything } from '../../scanAnythin
 import * as scanAnythingRoutes from '../../scanAnything/routes';
 import Spinner from '../../../components/Spinner';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { parseWorkplaceQRCodeString } from '../../../utils/qrCode/workplace';
 
 const AppScreen = () => {
-  const { history } = useScreenDefinition({ back: '/' });
+  const { history } = useScreenDefinition({
+    screenId: 'WorkplaceManagerScreen',
+    back: '/',
+  });
 
   const [loading, setLoading] = useState(true);
   const [workplace, setWorkplace] = useState();
 
   const queryParameters = new URLSearchParams(window.location.search);
   const qrCodeParam = queryParameters.get('qrCode');
-  const parentApplicationId = queryParameters.get('parent');
+  const callerApplicationId = queryParameters.get('callerApplicationId');
   useEffect(() => {
     if (qrCodeParam && !workplace) {
       setLoading(true);
@@ -52,11 +56,15 @@ const AppScreen = () => {
 
   const setWorkplaceAndUpdateUrl = (newWorkplace) => {
     setWorkplace(newWorkplace);
-    history.replace(appLocation({ qrCode: newWorkplace?.qrCode, parent: parentApplicationId }));
+    history.replace(appLocation({ qrCode: newWorkplace?.qrCode, callerApplicationId }));
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
-    return api.getWorkplaceByQRCode(scannedBarcode).then((workplaceInfo) => setWorkplaceAndUpdateUrl(workplaceInfo));
+    const { workplaceId } = parseWorkplaceQRCodeString(scannedBarcode);
+    return api
+      .assignWorkplace(workplaceId)
+      .then((workplaceInfo) => setWorkplaceAndUpdateUrl(workplaceInfo))
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   const onAssignClick = () => {
@@ -67,7 +75,7 @@ const AppScreen = () => {
   };
 
   const onScanAgainClick = () => {
-    if (parentApplicationId === APPLICATION_ID_scanAnything) {
+    if (callerApplicationId === APPLICATION_ID_scanAnything) {
       history.push(scanAnythingRoutes.appLocation());
     } else {
       setWorkplaceAndUpdateUrl(null);

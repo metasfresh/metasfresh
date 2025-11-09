@@ -54,6 +54,7 @@ public class ElementValue
 	int seqNo;
 	@Nullable String defaultAccountName;
 	@Nullable AccountConceptualName accountConceptualName;
+	boolean isOpenItem;
 
 	public String toShortString() {return value + "_" + name;}
 

@@ -61,7 +61,7 @@ Feature:bpartner get using metasfresh api
         "paymentRule": "OnCredit",
         "company": true,
         "vatId": null,
-        "metasfreshUrl": "http://localhost:3000/window/123/2156426",
+        "metasfreshUrl": "http://localhost:3000/window/123/@BPartner_1234_ID@",
         "changeInfo": {
           "createdMillis": 2461561200000,
           "createdBy": 100,

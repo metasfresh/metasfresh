@@ -1,6 +1,7 @@
 import { page, SLOW_ACTION_TIMEOUT, step } from '../../common';
 import { expect } from '@playwright/test';
 import { test } from '../../../../playwright.config';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'ScanHUConsolidationTargetScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -17,7 +18,6 @@ export const ScanHUConsolidationTargetScreen = {
     }),
 
     typeQRCode: async ({ qrCode }) => await step(`${NAME} - Scan QR code`, async () => {
-        console.log('Scanning HU QR code:\n' + qrCode);
-        await page.type('#input-text', qrCode);
+        await BarcodeScannerComponent.type(qrCode);
     }),
 };

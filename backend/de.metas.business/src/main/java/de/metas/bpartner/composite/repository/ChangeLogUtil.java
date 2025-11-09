@@ -74,6 +74,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_Name, BPartner.NAME)
 			.put(I_C_BPartner.COLUMNNAME_Name2, BPartner.NAME_2)
 			.put(I_C_BPartner.COLUMNNAME_Name3, BPartner.NAME_3)
+			.put(I_C_BPartner.COLUMNNAME_Lookup_Label, BPartner.GLN_LOOKUP_LABEL)
 			.put(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, BPartner.PARENT_ID)
 			.put(I_C_BPartner.COLUMNNAME_Phone2, BPartner.PHONE)
 			.put(I_C_BPartner.COLUMNNAME_URL, BPartner.URL)

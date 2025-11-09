@@ -19,6 +19,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -281,6 +282,11 @@ public final class DocumentIdsSelection
 	public <ID extends RepoIdAware> ImmutableSet<ID> toIds(@NonNull final Function<Integer, ID> idMapper)
 	{
 		return toSet(idMapper.compose(DocumentId::toInt));
+	}
+
+	public <ID extends RepoIdAware> ImmutableSet<ID> toIdsFromInt(@NonNull final IntFunction<ID> idMapper)
+	{
+		return toSet(documentId -> idMapper.apply(documentId.toInt()));
 	}
 
 	/**

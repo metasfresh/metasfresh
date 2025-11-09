@@ -10,6 +10,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.http.ResponseEntity;
 
 public class AssertExpectationsCommand
@@ -39,6 +40,7 @@ public class AssertExpectationsCommand
 			masterdata.getBpartners().forEach((identifierStr, bpartner) -> context.putIdentifier(Identifier.ofString(identifierStr), bpartner.getId()));
 			masterdata.getProducts().forEach((identifierStr, product) -> context.putIdentifier(Identifier.ofString(identifierStr), product.getId()));
 			masterdata.getHandlingUnits().forEach((identifierStr, handlingUnit) -> context.putIdentifier(Identifier.ofString(identifierStr), HuId.ofObject(handlingUnit.getHuId())));
+			masterdata.getWarehouses().forEach((identifierStr, warehouse) -> context.putIdentifier(Identifier.ofString(identifierStr), WarehouseId.ofRepoId(warehouse.getWarehouseId())));
 		}
 
 		context.putFromJson(expectations.getContext());

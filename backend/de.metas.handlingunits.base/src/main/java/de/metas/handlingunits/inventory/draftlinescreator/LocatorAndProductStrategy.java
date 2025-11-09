@@ -15,7 +15,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -58,7 +58,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	// services
 	IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-	IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull HuForInventoryLineFactory huForInventoryLineFactory;
 
 	@Nullable WarehouseId warehouseId;
@@ -131,7 +131,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 
 	private void appendAttributeFilters(final IHUQueryBuilder huQueryBuilder)
 	{
-		final ImmutableAttributeSet storageRelevantAttributes = attributeDAO.getImmutableAttributeSetById(asiId)
+		final ImmutableAttributeSet storageRelevantAttributes = asiBL.getImmutableAttributeSetById(asiId)
 				.filterOnlyStorageRelevantAttributes();
 		if (storageRelevantAttributes.isEmpty())
 		{

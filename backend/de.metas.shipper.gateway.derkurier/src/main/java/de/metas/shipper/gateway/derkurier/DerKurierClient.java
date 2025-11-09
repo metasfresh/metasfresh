@@ -2,6 +2,9 @@ package de.metas.shipper.gateway.derkurier;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.ProcessInfo;
 import de.metas.report.PrintCopies;
@@ -40,6 +43,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Properties;
+
+import static de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct.OVERNIGHT;
 
 /*
  * #%L
@@ -239,5 +244,16 @@ public class DerKurierClient implements ShipperGatewayClient
 	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		return ImmutableList.of();
+	}
+
+	@Override
+	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
+	{
+		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
+				.shipperProduct(JsonShipperProduct.builder()
+						.code(OVERNIGHT.getCode())
+						.build())
+				.build();
 	}
 }

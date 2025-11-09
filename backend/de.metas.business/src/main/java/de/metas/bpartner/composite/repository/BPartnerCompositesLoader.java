@@ -132,7 +132,6 @@ final class BPartnerCompositesLoader
 	{
 		final List<I_C_BPartner> bPartnerRecords = queryBL
 				.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyContextClient()
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds)
 				.create()
 				.list();
@@ -309,6 +308,7 @@ final class BPartnerCompositesLoader
 				.name(trimBlankToNull(bpartnerRecord.getName()))
 				.name2(trimBlankToNull(bpartnerRecord.getName2()))
 				.name3(trimBlankToNull(bpartnerRecord.getName3()))
+				.glnLookupLabel(bpartnerRecord.getLookup_Label())
 				.greetingId(GreetingId.ofRepoIdOrNull(bpartnerRecord.getC_Greeting_ID()))
 				.parentId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getBPartner_Parent_ID()))
 				.phone(trimBlankToNull(bpartnerRecord.getPhone2()))

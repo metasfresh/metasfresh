@@ -42,10 +42,14 @@ import com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.shipper.gateway.dpd.logger.DpdClientLogEvent;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
@@ -420,4 +424,14 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		return Loggables.withLogger(logger, Level.TRACE);
 	}
 
+	@Override
+	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
+	{
+		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
+				.shipperProduct(JsonShipperProduct.builder()
+						.code(DpdShipperProduct.DPD_CLASSIC.getCode())
+						.build())
+				.build();
+	}
 }

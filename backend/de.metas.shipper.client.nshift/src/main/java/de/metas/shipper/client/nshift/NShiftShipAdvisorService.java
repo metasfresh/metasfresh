@@ -23,10 +23,14 @@
 package de.metas.shipper.client.nshift;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
+import de.metas.common.delivery.v1.json.request.JsonGoodsType;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonLine;
@@ -54,7 +58,7 @@ public class NShiftShipAdvisorService
 
 	@NonNull private final NShiftRestClient restClient;
 
-	public JsonDeliveryAdvisorResponse getShipAdvises(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
+	public JsonDeliveryAdvisorResponse advise(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
 	{
 		try
 		{
@@ -88,9 +92,24 @@ public class NShiftShipAdvisorService
 				.attention(deliveryAdvisorRequest.getPickupAddress().getCompanyName1())
 				.build());
 
+		final de.metas.common.delivery.v1.json.JsonAddress deliveryAddress = deliveryAdvisorRequest.getDeliveryAddress();
+		final de.metas.common.delivery.v1.json.JsonContact deliveryContact = deliveryAdvisorRequest.getDeliveryContact();
 		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = NShiftUtil.buildNShiftReceiverAddress(
-				deliveryAdvisorRequest.getDeliveryAddress(),
-				deliveryAdvisorRequest.getDeliveryContact());
+				deliveryAddress,
+				deliveryContact);
+
+		if (deliveryContact != null)
+		{
+			receiverAddressBuilder.attention(deliveryContact.getName());
+		}
+		else
+		{
+			final String attention = CoalesceUtil.coalesceNotNull(
+					deliveryAddress.getAdditionalAddressInfo(),
+					deliveryAddress.getCompanyName2(),
+					deliveryAddress.getCompanyName1());
+			receiverAddressBuilder.attention(attention);
+		}
 		dataBuilder.address(receiverAddressBuilder.build());
 
 		dataBuilder.line(buildNShiftLine(deliveryAdvisorRequest.getItem()));
@@ -127,22 +146,31 @@ public class NShiftShipAdvisorService
 		final JsonShipAdvisorResponseProduct product = response.getProducts().get(0);
 		final JsonDeliveryAdvisorResponse.JsonDeliveryAdvisorResponseBuilder responseBuilder = JsonDeliveryAdvisorResponse.builder()
 				.requestId(requestId)
-				.shipperProduct(product.getProdName())
-				.responseItem(NShiftConstants.PROD_CONCEPT_ID, String.valueOf(product.getProdConceptID()));
+				.shipperProduct(JsonShipperProduct.builder()
+						.name(product.getProdName())
+						.code(String.valueOf(product.getProdConceptID()))
+						.build());
 
-		final JsonShipAdvisorResponseGoodsType productGoodsType = product.getProductGoodsType();
-		if (productGoodsType != null)
-		{
-			responseBuilder.responseItem(NShiftConstants.GOODS_TYPE_ID, String.valueOf(productGoodsType.getGoodsTypeId()));
-			responseBuilder.responseItem(NShiftConstants.GOODS_TYPE_NAME, productGoodsType.getGoodsTypeName());
-		}
+		final JsonShipAdvisorResponseGoodsType productGoodsType = Check.assumeNotNull(product.getProductGoodsType(), "response should contain a GoodsType, pls check defined shipment rules");
+		responseBuilder.goodsType(JsonGoodsType.builder()
+				.id(String.valueOf(productGoodsType.getGoodsTypeId()))
+				.name(productGoodsType.getGoodsTypeName())
+				.build());
 
-		responseBuilder.shipperProductServices(product.getServices().stream()
-				.map(JsonShipAdvisorResponseService::getServiceId)
-				.map(String::valueOf)
+		responseBuilder.shipperProductServices(product.getServices()
+				.stream()
+				.map(NShiftShipAdvisorService::toJsonCarrierService)
 				.collect(ImmutableList.toImmutableList())
 		);
 
 		return responseBuilder.build();
+	}
+
+	private static JsonCarrierService toJsonCarrierService(@NonNull final JsonShipAdvisorResponseService jsonShipAdvisorResponseService)
+	{
+		return JsonCarrierService.builder()
+				.name(jsonShipAdvisorResponseService.getName())
+				.id(String.valueOf(jsonShipAdvisorResponseService.getServiceId()))
+				.build();
 	}
 }

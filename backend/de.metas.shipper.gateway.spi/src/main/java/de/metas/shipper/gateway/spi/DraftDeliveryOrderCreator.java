@@ -2,6 +2,9 @@ package de.metas.shipper.gateway.spi;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
@@ -10,6 +13,7 @@ import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -90,21 +94,25 @@ public interface DraftDeliveryOrderCreator
 			@Nullable String description;
 			@Nullable BigDecimal weightInKg;
 
-			public BigDecimal getWeightInKgOr(BigDecimal minValue) {return weightInKg != null ? weightInKg.max(minValue) : minValue;}
+			public BigDecimal getWeightInKgOr(final BigDecimal minValue) {return weightInKg != null ? weightInKg.max(minValue) : minValue;}
 		}
 	}
 
 	@Value
+	@EqualsAndHashCode(exclude = "carrierServices")
 	class DeliveryOrderKey
 	{
-		ShipperId shipperId;
-		ShipperTransportationId shipperTransportationId;
+		@NonNull ShipperId shipperId;
+		@NonNull ShipperTransportationId shipperTransportationId;
 		int fromOrgId;
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
-		LocalDate pickupDate;
-		LocalTime timeFrom;
-		LocalTime timeTo;
+		@NonNull LocalDate pickupDate;
+		@NonNull LocalTime timeFrom;
+		@NonNull LocalTime timeTo;
+		@Nullable CarrierProductId carrierProductId;
+		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+		@Nullable Set<CarrierServiceId> carrierServices;
 		AsyncBatchId asyncBatchId;
 
 		@Builder
@@ -117,6 +125,9 @@ public interface DraftDeliveryOrderCreator
 				@NonNull final LocalDate pickupDate,
 				@NonNull final LocalTime timeFrom,
 				@NonNull final LocalTime timeTo,
+				@Nullable final CarrierProductId carrierProductId,
+				@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
+				@Nullable final Set<CarrierServiceId> carrierServices,
 				@Nullable final AsyncBatchId asyncBatchId)
 		{
 			Check.assume(fromOrgId > 0, "fromOrgId > 0");
@@ -131,6 +142,9 @@ public interface DraftDeliveryOrderCreator
 			this.pickupDate = pickupDate;
 			this.timeFrom = timeFrom;
 			this.timeTo = timeTo;
+			this.carrierProductId = carrierProductId;
+			this.carrierGoodsTypeId = carrierGoodsTypeId;
+			this.carrierServices = carrierServices;
 
 			this.asyncBatchId = asyncBatchId;
 		}

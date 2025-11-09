@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Attribute
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1893394617L;
+	private static final long serialVersionUID = -2129572549L;
 
     /** Standard Constructor */
     public X_M_Attribute (final Properties ctx, final int M_Attribute_ID, @Nullable final String trxName)
@@ -136,6 +136,18 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setDefaultValueSQL (final @Nullable java.lang.String DefaultValueSQL)
+	{
+		set_Value (COLUMNNAME_DefaultValueSQL, DefaultValueSQL);
+	}
+
+	@Override
+	public java.lang.String getDefaultValueSQL() 
+	{
+		return get_ValueAsString(COLUMNNAME_DefaultValueSQL);
 	}
 
 	@Override

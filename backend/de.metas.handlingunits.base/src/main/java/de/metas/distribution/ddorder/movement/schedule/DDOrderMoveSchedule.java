@@ -1,5 +1,6 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
+import de.metas.common.util.Check;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.HuId;
@@ -59,9 +60,20 @@ public class DDOrderMoveSchedule
 		if (isPickedFrom()) {throw new AdempiereException("Already Picked From");}
 	}
 
+	public void assertNotStarted()
+	{
+		Check.assume(status == DDOrderMoveScheduleStatus.NOT_STARTED, "Expected status NOT_STARTED but was {}", status);
+	}
+
 	public void assertPickedFrom()
 	{
 		if (!isPickedFrom()) {throw new AdempiereException("Pick from required first");}
+	}
+	
+	public void assertInTransit()
+	{
+		assertNotDroppedTo();
+		assertPickedFrom();
 	}
 
 	public void removePickedHUs()
@@ -115,12 +127,12 @@ public class DDOrderMoveSchedule
 		}
 	}
 
-	public void markAsDroppedTo(@NonNull final MovementId dropToMovementId)
+	public void markAsDroppedTo(@NonNull LocatorId dropToLocatorId, @NonNull final MovementId dropToMovementId)
 	{
-		assertPickedFrom();
-		assertNotDroppedTo();
+		assertInTransit();
 
-		Objects.requireNonNull(pickedHUs).setDropToMovementId(dropToMovementId);
+		final DDOrderMoveSchedulePickedHUs pickedHUs = Objects.requireNonNull(this.pickedHUs);
+		pickedHUs.setDroppedTo(dropToLocatorId, dropToMovementId);
 
 		updateStatus();
 	}

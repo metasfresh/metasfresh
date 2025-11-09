@@ -1,11 +1,10 @@
 package de.metas.banking.payment.callout;
 
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.compiere.model.I_C_PaySelectionLine;
-
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -33,13 +32,14 @@ import de.metas.util.Services;
 public class C_PaySelectionLine
 {
 	public static final C_PaySelectionLine instance = new C_PaySelectionLine();
+	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 
 	private C_PaySelectionLine()
 	{
 	}
 
 	/**
-	 * Invokes {@link IPaySelectionBL#updateFromInvoice(I_C_PaySelectionLine)}.
+	 * Invokes {@link IPaySelectionBL#updateFromDocument(I_C_PaySelectionLine)}.
 	 *
 	 * @param psl
 	 */
@@ -47,6 +47,12 @@ public class C_PaySelectionLine
 	@CalloutMethod(columnNames = I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID)
 	public void invoice(final I_C_PaySelectionLine psl)
 	{
-		Services.get(IPaySelectionBL.class).updateFromInvoice(psl);
+		paySelectionBL.updateFromDocument(psl);
+	}
+
+	@CalloutMethod(columnNames = I_C_PaySelectionLine.COLUMNNAME_C_Order_ID)
+	public void order(final I_C_PaySelectionLine psl)
+	{
+		paySelectionBL.updateFromDocument(psl);
 	}
 }

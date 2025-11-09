@@ -290,6 +290,33 @@ public interface I_C_Order
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
+	 * Set B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier.
+	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
+	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBLDate (@Nullable java.sql.Timestamp BLDate);
+
+	/**
+	 * Get B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier.
+	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
+	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getBLDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_BLDate = new ModelColumn<>(I_C_Order.class, "BLDate", null);
+	String COLUMNNAME_BLDate = "BLDate";
+
+	/**
 	 * Set Address.
 	 *
 	 * <br>Type: Text
@@ -877,7 +904,7 @@ public interface I_C_Order
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -887,7 +914,7 @@ public interface I_C_Order
 	 * Get Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1463,6 +1490,33 @@ public interface I_C_Order
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
+	 * Set ETA.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
+	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
+	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setETA (@Nullable java.sql.Timestamp ETA);
+
+	/**
+	 * Get ETA.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
+	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
+	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getETA();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ETA = new ModelColumn<>(I_C_Order.class, "ETA", null);
+	String COLUMNNAME_ETA = "ETA";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -1728,6 +1782,33 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_C_Order.class, "IncotermLocation", null);
 	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
+	/**
+	 * Set Invoice date.
+	 * Date when the supplier’s invoice was issued.
+	 * The Invoice Date is automatically synchronized from the Supplier Invoice to the Purchase Order when the invoice is received or posted in the system.
+	 * Manual changes of the Invoice Date in the Purchase Order are not allowed — it is always derived from the corresponding Supplier Invoice.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceDate (@Nullable java.sql.Timestamp InvoiceDate);
+
+	/**
+	 * Get Invoice date.
+	 * Date when the supplier’s invoice was issued.
+	 * The Invoice Date is automatically synchronized from the Supplier Invoice to the Purchase Order when the invoice is received or posted in the system.
+	 * Manual changes of the Invoice Date in the Purchase Order are not allowed — it is always derived from the corresponding Supplier Invoice.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getInvoiceDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_InvoiceDate = new ModelColumn<>(I_C_Order.class, "InvoiceDate", null);
+	String COLUMNNAME_InvoiceDate = "InvoiceDate";
 
 	/**
 	 * Set Invoice Rule.
@@ -3192,4 +3273,25 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_Weight = new ModelColumn<>(I_C_Order.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Order.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }

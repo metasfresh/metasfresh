@@ -14,7 +14,9 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.impl.AttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueHandler;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
@@ -28,6 +30,7 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.NamePair;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -51,7 +54,7 @@ class ASIDescriptorFactoryTest
 		AdempiereTestHelper.get().init();
 	}
 
-	private I_M_Attribute createAttribute(
+	private Attribute createAttribute(
 			@NonNull String name,
 			@NonNull AttributeValueType type,
 			@Nullable Class<? extends IAttributeValuesProvider> attributeValuesProviderClass)
@@ -63,7 +66,7 @@ class ASIDescriptorFactoryTest
 		attribute.setAD_JavaClass_ID(attributeValuesProviderClass != null ? createAD_JavaClass_ID(attributeValuesProviderClass) : -1);
 		InterfaceWrapperHelper.save(attribute);
 
-		return attribute;
+		return AttributeDAO.fromRecord(attribute);
 	}
 
 	private static int createAD_JavaClass_ID(final @NonNull Class<? extends IAttributeValuesProvider> attributeValuesProviderClass)
@@ -103,7 +106,7 @@ class ASIDescriptorFactoryTest
 		@Test
 		void string()
 		{
-			final I_M_Attribute attribute = createAttribute("StringAttr", AttributeValueType.STRING, null);
+			final Attribute attribute = createAttribute("StringAttr", AttributeValueType.STRING, null);
 			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
@@ -121,7 +124,7 @@ class ASIDescriptorFactoryTest
 		@Test
 		void number()
 		{
-			final I_M_Attribute attribute = createAttribute("NumberAttr", AttributeValueType.NUMBER, null);
+			final Attribute attribute = createAttribute("NumberAttr", AttributeValueType.NUMBER, null);
 			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
@@ -139,7 +142,7 @@ class ASIDescriptorFactoryTest
 		@Test
 		void date()
 		{
-			final I_M_Attribute attribute = createAttribute("DateAttr", AttributeValueType.DATE, null);
+			final Attribute attribute = createAttribute("DateAttr", AttributeValueType.DATE, null);
 			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
@@ -157,7 +160,7 @@ class ASIDescriptorFactoryTest
 		@Test
 		void list_With_String_key()
 		{
-			final I_M_Attribute attribute = createAttribute("StringAttr", AttributeValueType.LIST, StringProvider.class);
+			final Attribute attribute = createAttribute("StringAttr", AttributeValueType.LIST, StringProvider.class);
 			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
@@ -175,7 +178,7 @@ class ASIDescriptorFactoryTest
 		@Test
 		void list_With_Numeric_key()
 		{
-			final I_M_Attribute attribute = createAttribute("NumericAttr", AttributeValueType.LIST, NumberProvider.class);
+			final Attribute attribute = createAttribute("NumericAttr", AttributeValueType.LIST, NumberProvider.class);
 			final DocumentFieldDescriptor fieldDescriptor = new ASIDescriptorFactory().createDocumentFieldDescriptor(attribute).getOrBuild();
 
 			final ASIAttributeFieldBinding asiBinding = fieldDescriptor.getDataBindingNotNull(ASIAttributeFieldBinding.class);
@@ -214,7 +217,7 @@ class ASIDescriptorFactoryTest
 		MockedAttributeValueTypeProvider(@NonNull final AttributeValueType attributeValueType) {this.attributeValueType = attributeValueType;}
 
 		@Override
-		public IAttributeValuesProvider createAttributeValuesProvider(final I_M_Attribute attributeRecord)
+		public IAttributeValuesProvider createAttributeValuesProvider(final @NotNull Attribute attributeRecord)
 		{
 			return this;
 		}

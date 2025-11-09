@@ -90,10 +90,10 @@ Feature: import order candidate to metasfresh
     When send message to RabbitMQ queue defined by:impProcessor
   """
 <?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
       <AD_DataDestination_ID>
         <InternalName>DEST.de.metas.ordercandidate</InternalName>
       </AD_DataDestination_ID>
-      <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
       <AD_Org_ID>
       <GLN>2222222222220</GLN>
       </AD_Org_ID>
@@ -136,8 +136,8 @@ Feature: import order candidate to metasfresh
 """
 
     Then after not more than 120s, C_OLCand is found
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
-      | olCand_1               | product                 | 101                                    | bpartner1_1                  | 10         | impProcessor                    |
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | M_HU_PI_Item_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
+      | olCand_1               | Shopware6            | product      | 101                                    | bpartner1_1                  | 10         | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -180,10 +180,10 @@ Feature: import order candidate to metasfresh
     When send message to RabbitMQ queue defined by:impProcessor
   """
 <?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+    <ExternalSystem_ID>540007</ExternalSystem_ID>
     <AD_DataDestination_ID>
         <InternalName>DEST.de.metas.ordercandidate</InternalName>
     </AD_DataDestination_ID>
-    <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
     <AD_Org_ID>
         <GLN>2222222222221</GLN>
     </AD_Org_ID>
@@ -248,8 +248,8 @@ Feature: import order candidate to metasfresh
 """
 
     Then after not more than 120s, C_OLCand is found
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
-      | olCand_2               | product                 | huItemProduct_1_2                      | bpartner1_2                  | 2          | impProcessor                    |
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
+      | olCand_2               | Shopware6            | product      | huItemProduct_1_2                      | bpartner1_2                  | 2          | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |
@@ -258,10 +258,10 @@ Feature: import order candidate to metasfresh
     When send message to RabbitMQ queue defined by:impProcessor
   """
 <?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+    <ExternalSystem_ID>540007</ExternalSystem_ID>
     <AD_DataDestination_ID>
         <InternalName>DEST.de.metas.ordercandidate</InternalName>
     </AD_DataDestination_ID>
-    <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
     <AD_Org_ID>
         <GLN>2222222222221</GLN>
     </AD_Org_ID>
@@ -325,8 +325,8 @@ Feature: import order candidate to metasfresh
 """
 
     Then after not more than 120s, C_OLCand is found
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
-      | olCand_3               | product                 | huItemProduct_2_2                      | bpartner1_2                  | 2          | impProcessor                    |
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
+      | olCand_3               | Shopware6            | product      | huItemProduct_2_2                      | bpartner1_2                  | 2          | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |

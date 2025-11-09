@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -37,6 +38,11 @@ public class InventoryLineId implements RepoIdAware
 {
 	int repoId;
 
+	private InventoryLineId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_InventoryLine_ID");
+	}
+
 	public static InventoryLineId ofRepoId(final int repoId)
 	{
 		return new InventoryLineId(repoId);
@@ -54,10 +60,12 @@ public class InventoryLineId implements RepoIdAware
 		return RepoIdAwares.ofObjectOrNull(obj, InventoryLineId.class, InventoryLineId::ofRepoIdOrNull);
 	}
 
-	private InventoryLineId(final int repoId)
+	@NonNull
+	public static InventoryLineId ofObject(@NonNull final Object obj)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_InventoryLine_ID");
+		return RepoIdAwares.ofObject(obj, InventoryLineId.class, InventoryLineId::ofRepoId);
 	}
+
 
 	@Override
 	@JsonValue

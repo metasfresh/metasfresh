@@ -1,5 +1,3 @@
-import { trl } from '../translations';
-
 export const ATTR_barcodeType = 'barcodeType';
 export const ATTR_isUnique = 'isUnique';
 export const ATTR_productId = 'productId';
@@ -23,11 +21,15 @@ export const BARCODE_TYPE_CUSTOM = 'CUSTOM';
 export const QRCODE_SEPARATOR = '#';
 
 export const parseQRCodeType = (qrCodeString) => {
+  if (!qrCodeString) {
+    return null;
+  }
+
   const idx = qrCodeString.indexOf(QRCODE_SEPARATOR);
   if (idx <= 0) {
-    console.log('onResolvedResult: Cannot extract type from QRCode', { qrCodeString });
-    throw trl('error.qrCode.invalid');
+    return null;
   }
+
   return qrCodeString.substring(0, idx);
 };
 

@@ -2,6 +2,7 @@ import { test } from '../../../../playwright.config';
 import { page } from '../../common';
 import { HUManagerScreen } from './HUManagerScreen';
 import { expect } from '@playwright/test';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'HUMoveScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -18,7 +19,7 @@ export const HUMoveScreen = {
 
     move: async ({ qrCode }) => await test.step(`${NAME} - Move HU`, async () => {
         await HUMoveScreen.expectVisible();
-        await page.type('#input-text', qrCode);
+        await BarcodeScannerComponent.type(qrCode);
         await HUManagerScreen.waitForScreen();
         await HUManagerScreen.expectVisible();
     }),

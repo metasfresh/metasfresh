@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor4
 Feature: available for sales
 
   Background:
@@ -274,9 +275,9 @@ Feature: available for sales
   @from:cucumber
   Scenario: sync MD_Available_For_Sales and export it via API
     Given metasfresh contains M_Products:
-      | Identifier | REST.Context |
-      | p_1        | productId_1  |
-      | p_2        | productId_2  |
+      | Identifier | REST.Context | REST.Context.Value |
+      | p_1        | productId_1  | productValue_1     |
+      | p_2        | productId_2  | productValue_2     |
     And metasfresh contains S_ExternalReferences:
       | ExternalSystem.Code | ExternalReference            | ExternalReferenceType.Code | RecordId.Identifier |
       | GRSSignum           | availableForSales_09102025_1 | Product                    | p_1                 |
@@ -343,6 +344,7 @@ Feature: available for sales
     {
     "ProductExternalReference": "availableForSales_09102025_1",
     "Product_ID": @productId_1@,
+    "ProductValue": "@productValue_1@",
     "QtyOnHandStock": 10,
     "QtyToBeShipped": 8,
     "StorageAttributesKey": "-1002",
@@ -360,6 +362,7 @@ Feature: available for sales
     {
     "ProductExternalReference": "availableForSales_09102025_1",
     "Product_ID": @productId_1@,
+    "ProductValue": "@productValue_1@",
     "QtyOnHandStock": 10,
     "QtyToBeShipped": 8,
     "StorageAttributesKey": "-1002",
@@ -368,6 +371,7 @@ Feature: available for sales
     {
     "ProductExternalReference": "",
     "Product_ID": @productId_2@,
+    "ProductValue": "@productValue_2@",
     "QtyOnHandStock": 0,
     "QtyToBeShipped": 10,
     "StorageAttributesKey": "-1002",
@@ -443,10 +447,10 @@ Feature: available for sales
       | M_Warehouse_ID | REST.Context.Value |
       | wh             | warehouseValue     |
     And metasfresh contains M_Products:
-      | Identifier | REST.Context |
-      | p_1        | productId_1  |
-      | p_2        | productId_2  |
-      | p_3        | productId_3  |
+      | Identifier | REST.Context | REST.Context.Value |
+      | p_1        | productId_1  | productValue_1     |
+      | p_2        | productId_2  | productValue_2     |
+      | p_3        | productId_3  | productValue_3     |
     And metasfresh contains S_ExternalReferences:
       | ExternalSystem.Code | ExternalReference            | ExternalReferenceType.Code | RecordId.Identifier |
       | GRSSignum           | availableForSales_09292025_1 | Product                    | p_1                 |
@@ -522,6 +526,7 @@ Feature: available for sales
     {
     "ProductExternalReference": "availableForSales_09292025_1",
     "Product_ID": @productId_1@,
+    "ProductValue": "@productValue_1@",
     "QtyOnHandStock": 10,
     "QtyToBeShipped": 8,
     "StorageAttributesKey": "-1002",
@@ -531,6 +536,7 @@ Feature: available for sales
   {
     "ProductExternalReference": "availableForSales_09292025_2",
     "Product_ID": @productId_2@,
+    "ProductValue": "@productValue_2@",
     "QtyOnHandStock": 0,
     "QtyToBeShipped": 10,
     "StorageAttributesKey": "-1002",
@@ -540,6 +546,7 @@ Feature: available for sales
   {
     "ProductExternalReference": "availableForSales_09292025_3",
     "Product_ID": @productId_3@,
+    "ProductValue": "@productValue_3@",
     "QtyOnHandStock": 14,
     "QtyToBeShipped": 12,
     "StorageAttributesKey": "-1002",
@@ -566,6 +573,7 @@ Feature: available for sales
   {
     "ProductExternalReference": "availableForSales_09292025_3",
     "Product_ID": @productId_3@,
+    "ProductValue": "@productValue_3@",
     "QtyOnHandStock": 14,
     "QtyToBeShipped": 12,
     "StorageAttributesKey": "-1002",

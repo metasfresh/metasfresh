@@ -59,7 +59,7 @@ public class ShipAdvisorTest
 	@Test
 	void test()
 	{
-		final JsonDeliveryAdvisorResponse response = nShiftShipAdvisorService.getShipAdvises(JsonDeliveryAdvisorRequest.builder()
+		final JsonDeliveryAdvisorResponse response = nShiftShipAdvisorService.advise(JsonDeliveryAdvisorRequest.builder()
 				.pickupAddress(JsonAddress.builder()
 						.bpartnerId(123)
 						.companyName1("metas GmbH")

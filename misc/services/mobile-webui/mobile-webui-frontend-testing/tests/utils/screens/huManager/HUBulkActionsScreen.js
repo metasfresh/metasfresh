@@ -2,6 +2,7 @@ import { test } from '../../../../playwright.config';
 import { page } from '../../common';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'HUBulkActionsScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -18,7 +19,7 @@ export const HUBulkActionsScreen = {
 
     move: async ({ targetLocator }) => await test.step(`${NAME} - Move HU`, async () => {
         await page.getByTestId('toggle-target-scanner-button').tap();
-        await page.type('#input-text', targetLocator);
+        await BarcodeScannerComponent.type(targetLocator);
 
         await ApplicationsListScreen.waitForScreen();
     }),

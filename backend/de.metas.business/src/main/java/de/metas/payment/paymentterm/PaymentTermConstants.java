@@ -25,17 +25,10 @@ package de.metas.payment.paymentterm;
 import de.metas.i18n.AdMessageKey;
 import lombok.experimental.UtilityClass;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.ZoneOffset;
-
 @UtilityClass
 public class PaymentTermConstants
 {
-	public static final AdMessageKey MSG_ComplexTermConflict = AdMessageKey.of("C_PaymentTerm_ComplexTermConflict");
-	public static final AdMessageKey C_PAYMENTTERM_BREAK_TotalPercentTooHigh = AdMessageKey.of("C_PaymentTerm_Break_TotalPercentTooHigh");
-
-	public static final Instant PENDING_DATE = LocalDateTime.of(9999, Month.JANUARY, 1, 0, 0, 0).toInstant(ZoneOffset.UTC);
+	public static final AdMessageKey MSG_ComplexTermConflict = AdMessageKey.of("C_PaymentTerm_ComplexTermConflict"); // TODO DELETE ME
+	public static final AdMessageKey C_PAYMENTTERM_BREAK_TotalPercentTooHigh = AdMessageKey.of("C_PaymentTerm_Break_TotalPercentTooHigh"); // TODO DELETE ME
 }
 

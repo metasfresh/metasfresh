@@ -23,6 +23,9 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
@@ -31,10 +34,10 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery.PaymentTermQueryBuilder;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery.PaymentTermQueryBuilder;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.utils.IdentifierString;
@@ -99,6 +102,7 @@ public final class MasterdataProvider
 	private final ProductMasterDataProvider productMasterDataProvider;
 	private final JsonRetrieverService jsonRetrieverService;
 	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final ExternalSystemRepository externalSystemRepository;
 
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
@@ -107,12 +111,14 @@ public final class MasterdataProvider
 			@NonNull final PermissionService permissionService,
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final JsonRetrieverService jsonRetrieverService)
+			@NonNull final JsonRetrieverService jsonRetrieverService,
+			@NonNull final ExternalSystemRepository externalSystemRepository)
 	{
 		this.permissionService = permissionService;
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.externalReferenceService = externalReferenceRestControllerService;
+		this.externalSystemRepository = externalSystemRepository;
 
 		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
 		this.productMasterDataProvider = new ProductMasterDataProvider(productLookupService);
@@ -490,7 +496,7 @@ public final class MasterdataProvider
 				throw new InvalidIdentifierException(paymentTerm);
 		}
 
-		final Optional<PaymentTermId> paymentTermId = paymentTermRepo.retrievePaymentTermId(queryBuilder.build());
+		final Optional<PaymentTermId> paymentTermId = paymentTermRepo.firstIdOnly(queryBuilder.build());
 
 		return paymentTermId.orElseThrow(() -> MissingResourceException.builder()
 				.resourceName("PaymentTerm")
@@ -504,5 +510,11 @@ public final class MasterdataProvider
 	{
 		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
 		return BPartnerId.ofRepoIdOrNull(bPartner.getC_BPartner_SalesRep_ID());
+	}
+	
+	@NonNull
+	public ExternalSystemId getExternalSystemId(@NonNull final ExternalSystemType type)
+	{
+		return externalSystemRepository.getIdByType(type);
 	}
 }

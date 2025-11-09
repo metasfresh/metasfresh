@@ -25,17 +25,16 @@ package de.metas.common.delivery.v1.json.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
-import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.UUID;
 
@@ -50,6 +49,8 @@ public class JsonDeliveryRequest
 	int deliveryOrderId;
 	@NonNull JsonAddress pickupAddress;
 	@NonNull String pickupDate;
+	@NonNull String timeFrom;
+	@NonNull String timeTo;
 	@Nullable String pickupNote;
 	@NonNull JsonAddress deliveryAddress;
 	@Nullable JsonContact deliveryContact;
@@ -57,24 +58,65 @@ public class JsonDeliveryRequest
 	@Nullable String deliveryNote;
 	@Nullable String customerReference;
 	@NonNull @Singular ImmutableList<JsonDeliveryOrderParcel> deliveryOrderParcels;
-	@Nullable String shipperProduct;
-	@NonNull @Singular Set<String> shipperProductServices;
+	@Nullable JsonShipperProduct shipperProduct;
 	@Nullable String shipperEORI;
 	@Nullable String receiverEORI;
 	@NonNull JsonShipperConfig shipperConfig;
-	@NonNull @Singular Map<String, String> shipAdvises;
+	@NonNull @Builder.Default JsonMappingConfigList mappingConfigs = JsonMappingConfigList.EMPTY;
+	@Nullable JsonGoodsType goodsType;
+	@NonNull @Singular Set<JsonCarrierService> services;
+
 
 	@JsonIgnore
 	@NonNull
-	public String getShipAdviceNotNull(@NonNull final String key)
+	public String getPickupDateAndTimeStart()
 	{
-		return Check.assumeNotNull( getShipAdvice(key), "No ShipAdvice found for key '%s'. Available keys: %s", key, shipAdvises.keySet());
+		return pickupDate + "T" + timeFrom;
+	}
+
+	@JsonIgnore
+	@NonNull
+	public String getPickupDateAndTimeEnd()
+	{
+		return pickupDate + "T" + timeTo;
 	}
 
 	@JsonIgnore
 	@Nullable
-	public String getShipAdvice(@NonNull final String key)
+	public String getValue(@NonNull final String attributeValue)
 	{
-		return shipAdvises.get(key);
+		switch (attributeValue)
+		{
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_START:
+				return getPickupDateAndTimeStart();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_END:
+				return getPickupDateAndTimeEnd();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_DELIVERY_DATE:
+				return getDeliveryDate();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMER_REFERENCE:
+				return getCustomerReference();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COUNTRY_CODE:
+				return getDeliveryAddress().getCountry();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME:
+				return getDeliveryContact() != null ? getDeliveryContact().getName() : null;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT:
+				return getDeliveryAddress().getCompanyDepartment();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME:
+				return getDeliveryAddress().getCompanyName1();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME:
+				return getPickupAddress().getCompanyName1();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME_2:
+				return getPickupAddress().getCompanyName2();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_DEPARTMENT:
+				return getPickupAddress().getCompanyDepartment();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE:
+				return getPickupAddress().getCountry();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_PRODUCT_EXTERNAL_ID:
+				return getShipperProduct() != null ? getShipperProduct().getCode() : null;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_EORI:
+				return getShipperEORI();
+			default:
+				throw new IllegalArgumentException("Unknown attributeValue: " + attributeValue);
+		}
 	}
 }

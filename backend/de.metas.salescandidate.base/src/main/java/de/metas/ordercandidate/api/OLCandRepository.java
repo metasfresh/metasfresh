@@ -9,6 +9,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.location.LocationId;
@@ -26,6 +28,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -68,11 +71,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 @Repository
+@RequiredArgsConstructor
 public class OLCandRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
+    private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+
+	private final ExternalSystemRepository externalSystemRepository;
 
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
@@ -84,7 +91,7 @@ public class OLCandRepository
 		return trxManager.callInThreadInheritedTrx(
 				() -> {
 					final ImmutableList.Builder<OLCand> result = ImmutableList.builder();
-					for(final OLCandCreateRequest request: requests)
+					for (final OLCandCreateRequest request : requests)
 					{ // using for-loop because if one request fails, it's very hard to debug
 						final I_C_OLCand olCandRecord = createAndSaveOLCandRecord(request);
 						final OLCand olCand = olCandFactory.toOLCand(olCandRecord);
@@ -96,8 +103,6 @@ public class OLCandRepository
 
 	public OLCand create(@NonNull final OLCandCreateRequest request)
 	{
-		Check.assumeNotNull(request, "request is not null");
-
 		final OLCandFactory olCandFactory = new OLCandFactory();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -250,12 +255,13 @@ public class OLCandRepository
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM).getRepoId());
 
-		olCandPO.setAD_InputDataSource_ID(request.getDataSourceId().getRepoId());
+		olCandPO.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(request.getDataSourceId()));
 
 		olCandPO.setAD_DataDestination_ID(request.getDataDestId().getRepoId());
 
 		olCandPO.setExternalLineId(request.getExternalLineId());
 		olCandPO.setExternalHeaderId(request.getExternalHeaderId());
+		olCandPO.setExternalSystem_ID(request.getExternalSystemId().getRepoId());
 
 		final ShipperId shipperId = request.getShipperId();
 		if (shipperId != null)
@@ -361,9 +367,14 @@ public class OLCandRepository
 		{
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_ExternalHeaderId, olCandQuery.getExternalHeaderId());
 		}
-		if (olCandQuery.getInputDataSourceName() != null)
+		if (olCandQuery.getExternalSystemType() != null)
 		{
-			final InputDataSourceId inputDataSourceId = Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceIdByInternalName(olCandQuery.getInputDataSourceName());
+			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(olCandQuery.getExternalSystemType());
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_ExternalSystem_ID, externalSystemId);
+		}
+		if (Check.isNotBlank(olCandQuery.getInputDataSourceName()))
+		{
+			final InputDataSourceId inputDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(olCandQuery.getInputDataSourceName());
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_InputDataSource_ID, inputDataSourceId);
 		}
 		if (olCandQuery.getExternalLineId() != null)

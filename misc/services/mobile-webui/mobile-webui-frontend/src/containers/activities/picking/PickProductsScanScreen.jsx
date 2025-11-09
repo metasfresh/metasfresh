@@ -1,21 +1,35 @@
 import React from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
-import { getActivityById, getCustomQRCodeFormats } from '../../../reducers/wfProcesses';
+import { getCustomQRCodeFormats, useWFActivity } from '../../../reducers/wfProcesses';
 import { getNextEligibleLineToPick } from '../../../utils/picking';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import { convertScannedBarcodeToResolvedResult, NEXT_PickingJob } from './PickLineScanScreen';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const PickProductsScanScreen = () => {
-  const { applicationId, wfProcessId, activityId, history } = useScreenDefinition({
+  const { applicationId, wfProcessId, activityId } = useScreenDefinition({
     screenId: 'PickProductsScanScreen',
     captionKey: 'activities.picking.scanQRCode',
     back: getWFProcessScreenLocation,
   });
+  const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
 
-  const { activity } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId }), shallowEqual);
+  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;
+};
+
+export default PickProductsScanScreen;
+
+//
+//
+// ----------------------------------------------------------
+//
+//
+
+export const usePickProductsScan = ({ applicationId, wfProcessId, activityId }) => {
+  const history = useMobileNavigation();
+  const activity = useWFActivity({ wfProcessId, activityId });
   const customQRCodeFormats = getCustomQRCodeFormats({ activity });
 
   const onBarcodeScanned = async ({ scannedBarcode }) => {
@@ -45,12 +59,7 @@ const PickProductsScanScreen = () => {
     );
   };
 
-  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />;
+  return {
+    onBarcodeScanned,
+  };
 };
-
-const getPropsFromState = ({ state, wfProcessId, activityId }) => {
-  const activity = getActivityById(state, wfProcessId, activityId);
-  return { activity };
-};
-
-export default PickProductsScanScreen;

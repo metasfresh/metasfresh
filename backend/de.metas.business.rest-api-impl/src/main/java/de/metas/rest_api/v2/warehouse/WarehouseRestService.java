@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.warehouse;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.impl.GLNQuery;
@@ -39,6 +40,7 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouse;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouseUpsert;
 import de.metas.common.rest_api.v2.warehouse.JsonRequestWarehouseUpsertItem;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceValueAndSystem;
@@ -106,7 +108,7 @@ public class WarehouseRestService
 		final SyncAdvise syncAdvise = request.getSyncAdvise();
 
 		final ImmutableList<JsonResponseUpsertItem> responseList =
-				request.getRequestItems()
+				Check.assumeNotNull(request.getRequestItems(), "JsonRequestWarehouseUpsert={} has to have reQuestItems", request)
 						.stream()
 						.map(reqItem -> upsertWarehouseItem(reqItem, syncAdvise, orgCode))
 						.collect(ImmutableList.toImmutableList());
@@ -357,8 +359,15 @@ public class WarehouseRestService
 						.onlyOrgId(orgId)
 						.gln(bPartnerLocationExternalIdentifier.asGLN())
 						.build();
-
 				return bpartnersRepo.retrieveSingleBPartnerLocationIdBy(glnQuery);
+			case GLN_WITH_LABEL:
+				final GlnWithLabel glnWithLabel = bPartnerLocationExternalIdentifier.asGlnWithLabel();
+				final GLNQuery glnWithLabelQuery = GLNQuery.builder()
+						.onlyOrgId(orgId)
+						.gln(glnWithLabel.getGln())
+						.glnLookupLabel(glnWithLabel.getLabel())
+						.build();
+				return bpartnersRepo.retrieveSingleBPartnerLocationIdBy(glnWithLabelQuery);
 			default:
 				throw new InvalidIdentifierException("Given external identifier type is not supported!")
 						.setParameter("externalIdentifierType", bPartnerLocationExternalIdentifier.getType())

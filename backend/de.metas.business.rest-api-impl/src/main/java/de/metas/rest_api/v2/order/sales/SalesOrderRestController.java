@@ -37,6 +37,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderId;
@@ -101,6 +102,7 @@ public class SalesOrderRestController
 	private final BpartnerRestController bpartnerRestController;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final JsonRetrieverService jsonRetrieverService;
+	private final ExternalSystemRepository externalSystemRepository;
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
 
 	public SalesOrderRestController(
@@ -108,13 +110,15 @@ public class SalesOrderRestController
 			@NonNull final AttachmentEntryService attachmentEntryService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final BpartnerRestController bpartnerRestController,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final ExternalSystemRepository externalSystemRepository)
 	{
 		this.orderService = orderService;
 		this.attachmentEntryService = attachmentEntryService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.externalSystemRepository = externalSystemRepository;
 	}
 
 	@ApiOperation("Create new order payment")
@@ -225,6 +229,7 @@ public class SalesOrderRestController
 					.bpartnerRestController(bpartnerRestController)
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
+					.externalSystemRepository(externalSystemRepository)
 					.build();
 
 			return orderService.getOrderId(request, masterdataProvider)

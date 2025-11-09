@@ -11,6 +11,7 @@ import { expect } from '@playwright/test';
 import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { test } from '../../../../playwright.config';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -119,10 +120,15 @@ export const PickingJobScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
-    pickHU: async ({ qrCode, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
-        await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
-        await PickingJobScanHUScreen.waitForScreen();
-        await PickingJobScanHUScreen.typeQRCode(qrCode);
+    pickHU: async ({ qrCode, isScanDirectly, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
+        if(isScanDirectly) {
+            await BarcodeScannerComponent.type(qrCode);
+        }
+        else {
+            await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
+            await PickingJobScanHUScreen.waitForScreen();
+            await PickingJobScanHUScreen.typeQRCode(qrCode);
+        }
         await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason });
         await PickingJobScreen.waitForScreen();
     }),

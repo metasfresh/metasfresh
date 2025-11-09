@@ -549,7 +549,7 @@ public final class CollectionUtils
 		}
 
 		//
-		// Fetch from cache what's available
+		// Fetch from the cache what's available
 		final List<V> values = new ArrayList<>(keys.size());
 		final Set<K> keysToLoad = new HashSet<>();
 		for (final K key : ImmutableSet.copyOf(keys))
@@ -576,6 +576,21 @@ public final class CollectionUtils
 
 		//
 		return values;
+	}
+
+	@NonNull
+	public static <K, V> V getOrLoad(
+			@NonNull final Map<K, V> map,
+			@NonNull final K key,
+			@NonNull final Function<Set<K>, Map<K, V>> valuesLoader)
+	{
+		final V value = getAllOrLoadReturningMap(map, ImmutableSet.of(key), valuesLoader)
+				.get(key);
+		if (value == null)
+		{
+			throw Check.mkEx("No value found for key: " + key + " in " + map);
+		}
+		return value;
 	}
 
 	public static <K, V> Map<K, V> getAllOrLoadReturningMap(

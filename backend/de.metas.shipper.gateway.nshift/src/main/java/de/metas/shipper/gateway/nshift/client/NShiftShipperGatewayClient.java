@@ -25,11 +25,16 @@ package de.metas.shipper.gateway.nshift.client;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.logging.LogManager;
+import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
+import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogCreateRequest;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
@@ -42,7 +47,6 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
-import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipping.ShipperGatewayId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -69,6 +73,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	//TODO implement as provided by carrier
 	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};
 	@NonNull private final ShipperConfig shipperConfig;
+	@NonNull private final ShipperMappingConfigList mappingConfigs;
 
 	@Override
 	@NonNull
@@ -81,19 +86,17 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder);
+		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs
+		);
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		JsonDeliveryRequest deliveryRequestJsonWithAdvise;
 		JsonDeliveryResponse response;
 		try
 		{
-			deliveryRequestJsonWithAdvise = shipAdvisorService.advise(deliveryRequestJson);
-			response = shipmentService.createShipment(deliveryRequestJsonWithAdvise);
+			response = shipmentService.createShipment(deliveryRequestJson);
 			logger.debug("Received nShift response: {}", response);
 		}
 		catch (final AdempiereException ex)
 		{
-			deliveryRequestJsonWithAdvise = deliveryRequestJson;
 			response = JsonDeliveryResponse.builder()
 					.requestId(deliveryRequestJson.getId())
 					.errorMessage(ex.getLocalizedMessage())
@@ -101,11 +104,15 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		}
 
 		shipmentOrderLogRepository.save(ShipmentOrderLogCreateRequest.builder()
-				.request(deliveryRequestJsonWithAdvise)
+				.request(deliveryRequestJson)
 				.response(response)
 				.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
 				.build());
 
+		if (response.isError())
+		{
+			throw new ShipperGatewayException("nShift request failed pls check ShipmentOrderLog");
+		}
 		return updateDeliveryOrder(deliveryOrder, response);
 	}
 
@@ -151,6 +158,12 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.collect(Collectors.toList());
 	}
 
+	@Override
+	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
+	{
+		return shipAdvisorService.advise(request);
+	}
+
 	@NonNull
 	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, @NonNull final String deliveryOrderIdAsString)
 	{
@@ -164,6 +177,11 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 						.fileName(awb)
 						.build())
 				.build();
+	}
+
+	public JsonShipperConfig getJsonShipperConfig()
+	{
+		return jsonConverter.toJsonShipperConfig(shipperConfig);
 	}
 
 }

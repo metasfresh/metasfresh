@@ -297,7 +297,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -489,7 +489,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -678,7 +678,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -832,7 +832,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -1183,7 +1183,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "metasfreshBPartnerId": 20,
         "metasfreshId": 50
@@ -1283,7 +1283,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "metasfreshBPartnerId": 20,
         "metasfreshId": 50
@@ -1383,7 +1383,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "metasfreshBPartnerId": 20,
         "metasfreshId": 50
@@ -1504,7 +1504,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 20,
             "metasfreshId": 50
@@ -1600,7 +1600,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 21,
             "metasfreshId": 51
@@ -1709,7 +1709,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 22,
             "metasfreshId": 52
@@ -1805,7 +1805,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 23,
             "metasfreshId": 53
@@ -1914,7 +1914,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "metasfreshBPartnerId": 24,
             "metasfreshId": 54
