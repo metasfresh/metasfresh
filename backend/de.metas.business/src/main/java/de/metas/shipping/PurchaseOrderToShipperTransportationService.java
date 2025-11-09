@@ -25,6 +25,7 @@ package de.metas.shipping;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
@@ -59,6 +60,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -85,14 +87,21 @@ public class PurchaseOrderToShipperTransportationService
 
 	public void addPurchaseOrdersToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderId> orderIds)
 	{
-		final ImmutableList<OrderId> validPurchaseOrdersIds = queryBL
+		final ImmutableSet<OrderId> availableOrderIds = queryBL
 				.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
-				.idsAsSet(OrderId::ofRepoId)
+				.idsAsSet(OrderId::ofRepoId);
+		final Set<OrderId> alreadyAssignedOrderIds = repo.getBy(ShippingPackageQuery.builder()
+						.orderIds(availableOrderIds)
+						.build())
 				.stream()
-				.filter(this::isOrderNotOnShipperTransportation)
+				.map(sp -> OrderId.ofRepoId(sp.getC_Order_ID()))
+				.collect(Collectors.toSet());
+		final ImmutableList<OrderId> validPurchaseOrdersIds = availableOrderIds
+				.stream()
+				.filter(orderId -> !alreadyAssignedOrderIds.contains(orderId))
 				.collect(ImmutableList.toImmutableList());
 
 		if (validPurchaseOrdersIds.isEmpty())
@@ -185,7 +194,15 @@ public class PurchaseOrderToShipperTransportationService
 		final ImmutableMap<OrderAndLineId, I_C_OrderLine> orderAndLineIdToPoMap = orderLines.stream()
 				.collect(ImmutableMap.toImmutableMap(ol -> OrderAndLineId.ofRepoIds(ol.getC_Order_ID(), ol.getC_OrderLine_ID()), Function.identity()));
 
-		final Collection<OrderAndLineId> assignedOrderAndLineIds = repo.getAssignedOrderAndLineIds(orderAndLineIdToPoMap.keySet());
+		final Set<OrderLineId> orderLineIds = orderAndLineIdToPoMap.keySet()
+				.stream()
+				.map(OrderAndLineId::getOrderLineId)
+				.collect(Collectors.toSet());
+
+		final Collection<OrderAndLineId> assignedOrderAndLineIds = repo.getBy(ShippingPackageQuery.builder().orderLineIds(orderLineIds).build())
+				.stream()
+				.map(sp -> OrderAndLineId.ofRepoIds(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
+				.collect(Collectors.toSet());
 		return orderAndLineIdToPoMap.keySet()
 				.stream()
 				.filter(olId -> !assignedOrderAndLineIds.contains(olId))

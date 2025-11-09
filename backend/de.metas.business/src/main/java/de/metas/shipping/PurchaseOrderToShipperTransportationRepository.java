@@ -31,8 +31,6 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -67,22 +65,6 @@ public class PurchaseOrderToShipperTransportationRepository
 	public static PurchaseOrderToShipperTransportationRepository newInstanceForUnitTesting()
 	{
 		return new PurchaseOrderToShipperTransportationRepository();
-	}
-
-	public Collection<OrderAndLineId> getAssignedOrderAndLineIds(@NonNull final Collection<OrderAndLineId> orderAndLineId)
-	{
-		final Set<OrderLineId> orderLineIds = orderAndLineId.stream()
-				.map(OrderAndLineId::getOrderLineId)
-				.collect(Collectors.toSet());
-
-		return queryBL
-				.createQueryBuilder(I_M_ShippingPackage.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineIds)
-				.create()
-				.stream()
-				.map(sp -> OrderAndLineId.ofRepoIds(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
-				.collect(Collectors.toList());
 	}
 
 	public void addPurchaseOrderToShipperTransportation(@NonNull final PurchaseShippingPackageCreateRequest request)
@@ -188,7 +170,21 @@ public class PurchaseOrderToShipperTransportationRepository
 				.build();
 	}
 
+	public Collection<I_M_ShippingPackage> getBy(final @NonNull ShippingPackageQuery query)
+	{
+		return toShippingPackageQueryBuilder(query)
+				.create()
+				.list();
+	}
+
 	private IQuery<I_M_Package> toPackageSqlQuery(final @NonNull ShippingPackageQuery query)
+	{
+		final IQueryBuilder<I_M_ShippingPackage> builder = toShippingPackageQueryBuilder(query);
+		return builder.andCollect(I_M_ShippingPackage.COLUMN_M_Package_ID)
+				.create();
+	}
+
+	private IQueryBuilder<I_M_ShippingPackage> toShippingPackageQueryBuilder(final @NonNull ShippingPackageQuery query)
 	{
 		final IQueryBuilder<I_M_ShippingPackage> builder = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addOnlyActiveRecordsFilter();
@@ -204,8 +200,7 @@ public class PurchaseOrderToShipperTransportationRepository
 		{
 			builder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineIds);
 		}
-		return builder.andCollect(I_M_ShippingPackage.COLUMN_M_Package_ID)
-				.create();
+		return builder;
 	}
 
 	public void deleteBy(@NonNull final ShippingPackageQuery query)
