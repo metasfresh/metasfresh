@@ -15,6 +15,8 @@ DROP TABLE IF EXISTS report.saldobilanz_Report;
 
 CREATE TABLE report.saldobilanz_Report
 (
+    orgValue character varying(60),
+    orgName character varying(60),
 	parentname1 character varying(60),
 	parentvalue1 character varying(60),
 	parentname2 character varying(60),
@@ -50,9 +52,11 @@ WITH (
 	OIDS=FALSE
 );
 
-CREATE FUNCTION report.saldobilanz_Report(IN Date Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1) = 'N',  p_ExcludePostingTypeYearEnd char(1) = 'N') RETURNS SETOF report.saldobilanz_Report AS
+CREATE FUNCTION report.saldobilanz_Report(IN p_Date Date, IN p_defaultAcc character varying, IN p_showCurrencyExchange character varying, IN p_ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1) = 'N',  p_ExcludePostingTypeYearEnd char(1) = 'N') RETURNS SETOF report.saldobilanz_Report AS
 $BODY$
 SELECT
+    o.value as orgValue,
+    o.name as orgName,
 	parentname1,
 	parentvalue1,
 	parentname2,
@@ -61,8 +65,8 @@ SELECT
 	parentvalue3,
 	parentname4,
 	parentvalue4,
-	name,
-	value,
+	a.name,
+    a.value,
 	AccountType,
 
 	SameYearSum,
@@ -71,10 +75,10 @@ SELECT
 		then currencyConvert(a.SameYearSum
 			, a.C_Currency_ID -- p_curfrom_id
 			, (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR' AND isActive = 'Y') -- p_curto_id
-			, $1 -- p_convdate
+			, p_Date -- p_convdate
 			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P' AND isActive = 'Y') -- p_conversiontype_id
 			, a.AD_Client_ID
-			, $4 --ad_org_id
+			, p_ad_org_id --ad_org_id
 			)
 		else null
 	end) as L4_euroSaldo,
@@ -92,7 +96,7 @@ SELECT
 	C_Calendar_ID
 	, C_ElementValue_ID,
 
-	$4 as ad_org_id,
+    p_ad_org_id as ad_org_id,
 	a.iso_code
 FROM
 	(
@@ -109,8 +113,8 @@ FROM
 			, lvl.Value as Value
 			, ev.AccountType
 
-			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, $1::date, $4, $5, $6)).Balance * ev.Multiplicator as SameYearSum
-			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, period_LastYearEnd.EndDate::date, $4, $5, $6)).Balance * ev.Multiplicator as LastYearSum
+			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, p_Date::date, p_ad_org_id, p_IncludePostingTypeStatistical, p_ExcludePostingTypeYearEnd )).Balance * ev.Multiplicator as SameYearSum
+			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, period_LastYearEnd.EndDate::date, p_ad_org_id, p_IncludePostingTypeStatistical, p_ExcludePostingTypeYearEnd)).Balance * ev.Multiplicator as LastYearSum
 
 			-- Hardcoding replaced
 
@@ -119,7 +123,7 @@ FROM
 			-- AS IsConvertToEUR
 
 
-			, CASE WHEN $3='N' -- we don't need to check if the elementValue has a foreign currency
+			, CASE WHEN p_showCurrencyExchange='N' -- we don't need to check if the elementValue has a foreign currency
 			THEN false
 			ELSE -- check if the element value is set to show the Internation currency and if this currency is EURO. Convert to EURO in this case
 				(
@@ -156,19 +160,20 @@ FROM
 					WHERE ev.isActive = 'Y' and e.IsNaturalAccount='Y'
 				) ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID)
 				    -- make sure we show the standard accounts from metasfresh (org 0)
-					AND (case when lvl.lvl1_value != 'ZZ' then (ev.ad_org_id = $4) else (ev.ad_org_id = 0) end )
+					AND (case when lvl.lvl1_value != 'ZZ' then (ev.ad_org_id = p_ad_org_id) else (ev.ad_org_id = 0) end )
 				LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID=ev.AD_Client_ID) AND ci.isActive = 'Y'
 				LEFT OUTER JOIN C_AcctSchema acs ON (acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID) AND acs.isActive = 'Y'
 				LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID AND c.isActive = 'Y'
 		--
 		WHERE true
 			-- Period: determine it by DateAcct
-			AND p.C_Period_ID = report.Get_Period( ci.C_Calendar_ID, $1 )
+			AND p.C_Period_ID = report.Get_Period( ci.C_Calendar_ID, p_Date )
 			-- Shall we Show default accounts?
-			AND (CASE WHEN $2='Y' THEN true ELSE lvl1_value != 'ZZ' END)
+			AND (CASE WHEN p_defaultAcc ='Y' THEN true ELSE lvl1_value != 'ZZ' END)
 			AND p.isActive = 'Y'
 
-	) a
+	) a, ad_org o
+where o.ad_org_id = p_ad_org_id
 ORDER BY
 	parentValue1, parentValue2, parentValue3, parentValue4, value
 $BODY$
