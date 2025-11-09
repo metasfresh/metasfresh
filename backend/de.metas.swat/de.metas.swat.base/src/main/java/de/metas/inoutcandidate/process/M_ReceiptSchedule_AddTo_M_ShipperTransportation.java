@@ -22,9 +22,11 @@
 
 package de.metas.inoutcandidate.process;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -36,6 +38,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import java.util.Set;
@@ -44,6 +47,7 @@ import java.util.stream.Collectors;
 public class M_ReceiptSchedule_AddTo_M_ShipperTransportation extends JavaProcess implements IProcessPrecondition
 {
 	private static final int MAX_SELECTION_SIZE = 100;
+	private static final AdMessageKey MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("ReceiptScheduleAssignedToProcessedTransportationOrder");
 
 	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
@@ -69,7 +73,15 @@ public class M_ReceiptSchedule_AddTo_M_ShipperTransportation extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		orderToShipperTransportationService.addOrderLinesToShipperTransportation(p_M_ShipperTransportation_ID, getOrderAndLineIds());
+		final Set<OrderAndLineId> orderAndLineIds = getOrderAndLineIds();
+		final Set<OrderLineId> orderLineIds = orderAndLineIds.stream()
+				.map(OrderAndLineId::getOrderLineId)
+				.collect(Collectors.toSet());
+		if (orderToShipperTransportationService.deleteShippingPackagesForOrderLinesIfPossible(orderLineIds))
+		{
+			throw new AdempiereException(MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
+		}
+		orderToShipperTransportationService.addOrderLinesToShipperTransportation(p_M_ShipperTransportation_ID, orderAndLineIds);
 
 		return MSG_OK;
 	}

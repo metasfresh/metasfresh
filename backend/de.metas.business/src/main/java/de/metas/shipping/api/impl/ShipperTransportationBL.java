@@ -2,6 +2,7 @@ package de.metas.shipping.api.impl;
 
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.order.OrderId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
@@ -71,6 +72,9 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	@Override
 	public boolean isAnyOrderAssignedToDifferentTransportationOrder(final @NonNull ShipperTransportationId shipperTransportationId, final @NonNull Collection<OrderId> orderIds)
 	{
-		return shipperTransportationDAO.isAnyOrderAssignedToDifferentTransportationOrder(shipperTransportationId, orderIds);
+		return shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+				.shipperTransportationToExclude(shipperTransportationId)
+				.orderIds(orderIds)
+				.build());
 	}
 }

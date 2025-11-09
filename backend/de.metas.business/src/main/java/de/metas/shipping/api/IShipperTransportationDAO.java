@@ -1,3 +1,5 @@
+package de.metas.shipping.api;
+
 /*
  * #%L
  * de.metas.business
@@ -19,8 +21,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-package de.metas.shipping.api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
@@ -64,8 +64,6 @@ public interface IShipperTransportationDAO extends ISingletonService
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
 
 	ImmutableList<OrderId> retrieveOrderIds(@NonNull ShipperTransportationId shipperTransportationId);
-
-	boolean isAnyOrderAssignedToDifferentTransportationOrder(final @NonNull ShipperTransportationId shipperTransportationId, final @NonNull Collection<OrderId> orderIds);
 
 	Collection<I_M_ShipperTransportation> getByQuery(@NonNull ShipperTransportationQuery query);
 
