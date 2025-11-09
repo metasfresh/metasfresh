@@ -92,7 +92,7 @@ public class PurchaseOrderToShipperTransportationService
 				.create()
 				.idsAsSet(OrderId::ofRepoId)
 				.stream()
-				.filter(this::isPurchaseOrderOnShipperTransportation)
+				.filter(this::isOrderNotOnShipperTransportation)
 				.collect(ImmutableList.toImmutableList());
 
 		if (validPurchaseOrdersIds.isEmpty())
@@ -107,9 +107,9 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	private boolean isPurchaseOrderOnShipperTransportation(@NonNull final OrderId orderId)
+	private boolean isOrderNotOnShipperTransportation(@NonNull final OrderId orderId)
 	{
-		return repo.anyMatch(ShippingPackageQuery.builder().orderId(orderId).build());
+		return !repo.anyMatch(ShippingPackageQuery.builder().orderId(orderId).build());
 	}
 
 	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)

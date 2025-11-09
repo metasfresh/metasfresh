@@ -194,7 +194,7 @@ public class PurchaseOrderToShipperTransportationRepository
 				.addOnlyActiveRecordsFilter();
 
 		final Collection<OrderId> orderIds = query.getOrderIds();
-		if (orderIds.isEmpty())
+		if (!orderIds.isEmpty())
 		{
 			builder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderIds);
 		}
