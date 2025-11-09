@@ -1,16 +1,15 @@
 package org.adempiere.ad.window.api;
 
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.window.api.impl.ADWindowDAO;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -21,11 +20,9 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.lang.SOTrx;
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 public interface IADWindowDAO extends ISingletonService
 {
@@ -109,4 +106,6 @@ public interface IADWindowDAO extends ISingletonService
 	AdTabId copyTabToWindow(I_AD_Tab sourceTab, AdWindowId targetWindowId);
 
 	ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(AdTableId adTableId);
+
+	ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds();
 }

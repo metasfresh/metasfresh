@@ -1,8 +1,13 @@
-FROM node:14 as build
+FROM node:14 AS build
 
 RUN npm install -g webpack webpack-cli
 
-RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+# Temporarily override apt sources to use archive for EOL distribution
+RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian buster-updates main" >> /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
@@ -20,7 +25,7 @@ ENV PUBLIC_URL=/
 RUN yarn build
 
 
-FROM nginx:1.21.6 as runtime
+FROM nginx:1.21.6 AS runtime
 
 COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 
