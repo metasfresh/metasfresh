@@ -30,7 +30,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -86,6 +89,7 @@ public final class InventoryRepository
 	{
 	}
 
+	@Nullable
 	private InventoryLoaderAndSaver newLoaderAndSaver()
 	{
 		return InventoryLoaderAndSaver.builder()
@@ -115,6 +119,7 @@ public final class InventoryRepository
 		return newLoaderAndSaver().toInventory(inventoryRecord);
 	}
 
+	@Nullable
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(@Nullable final I_M_Inventory inventoryRecord)
 	{
 		return newLoaderAndSaver().extractDocBaseAndSubTypeOrNull(inventoryRecord);
@@ -312,6 +317,25 @@ public final class InventoryRepository
 	public Stream<InventoryReference> streamReferences(@NonNull final InventoryQuery query)
 	{
 		return newLoaderAndSaver().streamReferences(query);
+	}
+
+	public void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId)
+	{
+		// update M_InventoryLine
+		final ICompositeQueryUpdater<org.compiere.model.I_M_InventoryLine> updaterInventoryLine = queryBL.createCompositeQueryUpdater(org.compiere.model.I_M_InventoryLine.class)
+				.addSetColumnFromColumn(org.compiere.model.I_M_InventoryLine.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(org.compiere.model.I_M_InventoryLine.COLUMNNAME_QtyBook));
+
+		queryBL.createQueryBuilder(org.compiere.model.I_M_InventoryLine.class)
+				.addEqualsFilter(org.compiere.model.I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.create().update(updaterInventoryLine);
+
+		// update M_InventoryLine_HU
+		final ICompositeQueryUpdater<I_M_InventoryLine_HU> updaterInventoryLineHU = queryBL.createCompositeQueryUpdater(I_M_InventoryLine_HU.class)
+				.addSetColumnFromColumn(I_M_InventoryLine_HU.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(I_M_InventoryLine_HU.COLUMNNAME_QtyBook));
+
+		queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
+				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.create().update(updaterInventoryLineHU);
 	}
 }
 
