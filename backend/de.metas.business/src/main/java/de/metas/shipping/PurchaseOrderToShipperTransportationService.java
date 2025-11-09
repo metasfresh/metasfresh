@@ -58,7 +58,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -93,7 +92,7 @@ public class PurchaseOrderToShipperTransportationService
 				.create()
 				.idsAsSet(OrderId::ofRepoId)
 				.stream()
-				.filter(repo::purchaseOrderNotInShipperTransportation)
+				.filter(this::isPurchaseOrderOnShipperTransportation)
 				.collect(ImmutableList.toImmutableList());
 
 		if (validPurchaseOrdersIds.isEmpty())
@@ -106,6 +105,11 @@ public class PurchaseOrderToShipperTransportationService
 			Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", purchaseOrderId, shipperTransportationId);
 			addPurchaseOrderToShipperTransportation(purchaseOrderId, shipperTransportationId);
 		}
+	}
+
+	private boolean isPurchaseOrderOnShipperTransportation(@NonNull final OrderId orderId)
+	{
+		return repo.anyMatch(ShippingPackageQuery.builder().orderId(orderId).build());
 	}
 
 	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)
@@ -192,7 +196,7 @@ public class PurchaseOrderToShipperTransportationService
 	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate, @NonNull final I_C_OrderLine ol)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
-		final ImmutableList<Package> existingPackages = repo.getPackagesByOrderLineIds(Collections.singleton(orderLineId));
+		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
 		final int qtyLUs = ol.getQtyLU().intValueExact();
 
 		final int existingPackagesCount = existingPackages.size();
@@ -202,7 +206,7 @@ public class PurchaseOrderToShipperTransportationService
 					.stream()
 					.map(Package::getId)
 					.collect(ImmutableList.toImmutableList());
-			repo.removeFromShipperTransportation(packageIdsToRemove);
+			repo.deleteFromShipperTransportation(packageIdsToRemove);
 		}
 		else if (existingPackagesCount < qtyLUs)
 		{
@@ -218,9 +222,9 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
+	public boolean anyMatch(@NonNull final ShippingPackageQuery query)
 	{
-		return repo.hasAssignedShippingPackageIdsByOrderId(orderId);
+		return repo.anyMatch(query);
 	}
 
 	@Nullable
@@ -254,9 +258,22 @@ public class PurchaseOrderToShipperTransportationService
 				.build());
 		if (isDeletePossible)
 		{
-			repo.deleteShippingPackagesForOrder(orderId);
+			repo.deleteBy(ShippingPackageQuery.builder().orderId(orderId).build());
 		}
 
+		return isDeletePossible;
+	}
+
+	public boolean deleteShippingPackagesForOrderLinesIfPossible(@NonNull final Collection<OrderLineId> orderLineIds)
+	{
+		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+				.orderLineIds(orderLineIds)
+				.processed(true)
+				.build());
+		if (isDeletePossible)
+		{
+			repo.deleteBy(ShippingPackageQuery.builder().orderLineIds(orderLineIds).build());
+		}
 		return isDeletePossible;
 	}
 }
