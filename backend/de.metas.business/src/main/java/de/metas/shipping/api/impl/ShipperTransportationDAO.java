@@ -22,12 +22,12 @@
 
 package de.metas.shipping.api.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
@@ -155,10 +155,22 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		}
 		final IQueryBuilder<I_M_ShipperTransportation> builder;
 
-		if (!query.getOrderIds().isEmpty())
+		final Collection<OrderId> orderIds = query.getOrderIds();
+		final Collection<OrderLineId> orderLineIds = query.getOrderLineIds();
+		if (!orderIds.isEmpty() || !orderLineIds.isEmpty())
 		{
-			builder = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-					.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, query.getOrderIds())
+			final IQueryBuilder<I_M_ShippingPackage> shippingPackageBuilder = queryBL.createQueryBuilder(I_M_ShippingPackage.class);
+
+			if (!orderIds.isEmpty())
+			{
+				shippingPackageBuilder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderIds);
+			}
+			if (!orderLineIds.isEmpty())
+			{
+				shippingPackageBuilder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineIds);
+			}
+
+			builder = shippingPackageBuilder
 					.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
 					.addOnlyActiveRecordsFilter();
 		}
@@ -218,28 +230,6 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.orgId(request.getOrgId())
 				.build())
 				.orElseGet(() -> create(request));
-	}
-
-	@Override
-	public ImmutableList<OrderId> retrieveOrderIds(@NonNull final ShipperTransportationId shipperTransportationId)
-	{
-		return queryBL
-				.createQueryBuilder(I_M_ShippingPackage.class)
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.listDistinct(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, OrderId.class);
-
-	}
-
-	@Override
-	public boolean isAnyOrderAssignedToDifferentTransportationOrder(final @NonNull ShipperTransportationId shipperTransportationId, final @NonNull Collection<OrderId> orderIds)
-	{
-		return toSqlQuery(ShipperTransportationQuery.builder()
-				.shipperTransportationToExclude(shipperTransportationId)
-				.orderIds(orderIds)
-				.build())
-				.anyMatch();
 	}
 
 	@Override
