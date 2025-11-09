@@ -2,10 +2,8 @@ merge_protections:
   - name: default
     if:
       - check-success=testspace-analytics
-      - check-success=continuous-integration/jenkins/branch
     success_conditions:
       - check-success=testspace-analytics
-      - check-success=continuous-integration/jenkins/branch
 
 pull_request_rules:
 
@@ -99,7 +97,6 @@ pull_request_rules:
   - name: Automatic squash-merge successful PRs into the respective base-branch
     conditions:
       - check-success=testspace-analytics
-      - check-success=continuous-integration/jenkins/branch
       - label=ops:auto_squash_merge
       - or:
           - or: *ALL_BASE_BRANCHES
@@ -113,7 +110,6 @@ pull_request_rules:
   - name: Automatic merge commit (not squash) successful PRs
     conditions:
       - check-success=testspace-analytics
-      - check-success=continuous-integration/jenkins/branch
       - label=ops:auto_merge_commit
       - or:
           - or: *ALL_BASE_BRANCHES
