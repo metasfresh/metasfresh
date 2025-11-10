@@ -49,8 +49,10 @@ public class WarehouseCommand
 		context.putIdentifier(identifier, LocatorId.ofRecord(locator));
 
 		return JsonWarehouseResponse.builder()
+				.warehouseId(warehouseRecord.getM_Warehouse_ID())
 				.warehouseCode(warehouseRecord.getValue())
 				.warehouseName(warehouseRecord.getName())
+				.locatorId(locator.getM_Locator_ID())
 				.locatorCode(locator.getValue())
 				.locatorQRCode(locatorQRCode.toGlobalQRCodeJsonString())
 				.build();

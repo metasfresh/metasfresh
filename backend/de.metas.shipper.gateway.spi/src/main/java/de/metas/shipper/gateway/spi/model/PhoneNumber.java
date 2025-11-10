@@ -1,13 +1,14 @@
 package de.metas.shipper.gateway.spi.model;
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
-
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.List;
 
 /*
  * #%L
@@ -34,6 +35,7 @@ import lombok.Value;
 @Value
 public class PhoneNumber
 {
+	@JsonCreator
 	public static PhoneNumber fromString(@NonNull final String phoneNoAsStr)
 	{
 		final List<String> parts = Splitter.on("-").splitToList(phoneNoAsStr.trim());
@@ -58,9 +60,9 @@ public class PhoneNumber
 				.build();
 	}
 
-	String countryCode;
-	String areaCode;
-	String phoneNumber;
+	@NonNull String countryCode;
+	@NonNull String areaCode;
+	@NonNull String phoneNumber;
 
 	@Builder
 	private PhoneNumber(
@@ -77,6 +79,11 @@ public class PhoneNumber
 		this.phoneNumber = phoneNumber.trim();
 	}
 
+	@Override
+	@Deprecated
+	public String toString() {return getAsString();}
+
+	@JsonValue
 	public String getAsString()
 	{
 		return "+" + countryCode + "-" + areaCode + "-" + phoneNumber;

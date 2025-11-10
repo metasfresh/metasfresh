@@ -7,7 +7,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
-import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
@@ -55,7 +55,7 @@ public class PickingJobCreateRepoRequest
 		@NonNull Quantity qtyToPick;
 		@NonNull OrderAndLineId salesOrderAndLineId;
 		@NonNull BPartnerLocationId deliveryBPLocationId;
-		@Nullable ShipmentScheduleId shipmentScheduleId;
+		@Nullable ShipmentScheduleAndJobScheduleId scheduleId;
 		@Nullable UomId catchWeightUomId;
 		@Nullable PPOrderId pickFromManufacturingOrderId;
 		@Singular @NonNull ImmutableList<Step> steps;
@@ -76,7 +76,7 @@ public class PickingJobCreateRepoRequest
 	@Builder
 	public static class Step
 	{
-		@NonNull ShipmentScheduleId shipmentScheduleId;
+		@NonNull ShipmentScheduleAndJobScheduleId scheduleId;
 		@NonNull OrderAndLineId salesOrderLineId;
 		//
 		// What?

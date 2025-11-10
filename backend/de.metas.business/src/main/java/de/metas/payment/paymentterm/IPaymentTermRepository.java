@@ -1,5 +1,7 @@
 package de.metas.payment.paymentterm;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
@@ -33,12 +35,15 @@ import java.util.Optional;
 
 public interface IPaymentTermRepository extends ISingletonService
 {
+	void setIsComplexAndSave(@NonNull PaymentTermId paymentTermId, boolean isComplex);
+
 	@Nullable
 	Percent getPaymentTermDiscount(PaymentTermId paymentTermId);
 
 	@NonNull
 	Optional<PaymentTermId> getDefaultPaymentTermId();
 
+	@NonNull
 	PaymentTerm getById(PaymentTermId paymentTermId);
 
 	@NonNull
@@ -46,10 +51,25 @@ public interface IPaymentTermRepository extends ISingletonService
 
 	@Deprecated
 	I_C_PaymentTerm getRecordById(PaymentTermId paymentTermId);
-	
+
 	/**
 	 * Convenience method that thorws an exception if no term is found.
 	 */
 	@NonNull
 	PaymentTermId retrievePaymentTermIdNotNull(@NonNull PaymentTermQuery build);
+
+	@NonNull
+	ImmutableListMultimap<PaymentTermId, PaymentTermBreak> retrievePaymentTermBreaks(@NonNull final PaymentTermId paymentTermId);
+
+	@NonNull
+	default ImmutableList<PaymentTermBreak> retrievePaymentTermBreaksList(@NonNull final PaymentTermId paymentTermId)
+	{
+		return ImmutableList.copyOf(retrievePaymentTermBreaks(paymentTermId).get(paymentTermId));
+	}
+
+	PaymentTermBreak getPaymentTermBreakById(@NonNull PaymentTermBreakId id);
+
+	boolean hasPaySchedule(@NonNull PaymentTermId paymentTermId);
+
+	boolean hasPaymentTermBreaks(@NonNull PaymentTermId paymentTermId);
 }

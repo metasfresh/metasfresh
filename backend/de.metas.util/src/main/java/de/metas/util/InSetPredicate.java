@@ -26,6 +26,7 @@ public final class InSetPredicate<T> implements Predicate<T>
 
 	private static final InSetPredicate<Object> ANY = new InSetPredicate<>(Mode.ANY, ImmutableSet.of());
 	private static final InSetPredicate<Object> NONE = new InSetPredicate<>(Mode.NONE, ImmutableSet.of());
+	private static final InSetPredicate<Object> ONLY_NULL = new InSetPredicate<>(Mode.ONLY, Collections.singleton(null));
 
 	private InSetPredicate(
 			@NonNull final Mode mode,
@@ -50,6 +51,12 @@ public final class InSetPredicate<T> implements Predicate<T>
 	{
 		//noinspection unchecked
 		return (InSetPredicate<T>)NONE;
+	}
+
+	public static <T> InSetPredicate<T> onlyNull()
+	{
+		//noinspection unchecked
+		return (InSetPredicate<T>)ONLY_NULL;
 	}
 
 	public static <T> InSetPredicate<T> only(@NonNull final Set<T> onlyValues)

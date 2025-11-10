@@ -40,11 +40,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class PaymentTermService
 {
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+
 	private final CCache<ArrayKey, PaymentTermId> cache = CCache.newCache(I_C_PaymentTerm.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
 	/**
 	 * @param basePaymentTermId may be null
-	 * @param discount may be null
+	 * @param discount          may be null
 	 */
 	public PaymentTermId getOrCreateDerivedPaymentTerm(
 			@Nullable final PaymentTermId basePaymentTermId,
@@ -67,7 +69,6 @@ public class PaymentTermService
 			@NonNull final PaymentTermId basePaymentTermId,
 			@NonNull final Percent discount)
 	{
-		final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getRecordById(basePaymentTermId);
 
 		// see if the designed payment term already exists
@@ -107,4 +108,20 @@ public class PaymentTermService
 
 		return PaymentTermId.ofRepoId(newPaymentTerm.getC_PaymentTerm_ID());
 	}
+
+	public PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
+	{
+		return paymentTermRepository.getById(paymentTermId);
+	}
+
+	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
+	{
+		return paymentTermRepository.hasPaySchedule(paymentTermId);
+	}
+
+	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	{
+		return paymentTermRepository.getPaymentTermBreakById(id);
+	}
+
 }

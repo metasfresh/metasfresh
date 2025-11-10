@@ -12,7 +12,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -38,14 +38,12 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -116,7 +114,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchangeLine.setEMail_To(EMailAddress.toStringOrNull(to));
 		docExchangeLine.setEMail_Cc(EMailAddress.toStringOrNull(cc));
 		docExchangeLine.setEMail_Bcc(EMailAddress.toStringOrNull(bcc));
-		docExchangeLine.setStatus(status.toDisplayText(msgBL, Env.getADLanguageOrBaseLanguage()));
+		docExchangeLine.setStatus(status.getCode());
 		if (userMailConfig != null)
 		{
 			docExchangeLine.setAD_User_ID(UserId.toRepoId(userMailConfig.getUserId()));
@@ -130,10 +128,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	@Override
 	public void onPrintOut(final I_AD_Archive archive,
-			@Nullable final UserId userId,
-			final String printerName,
-			final int copies,
-			@NonNull final ArchivePrintOutStatus status)
+						   @Nullable final UserId userId,
+						   final String printerName,
+						   final int copies,
+						   @NonNull final ArchivePrintOutStatus status)
 	{
 		// task 05334: only assume existing archive if the status is "success"
 		if (status.isSuccess())
@@ -254,38 +252,46 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		docOutboundLogRecord.setDateDoc(TimeUtil.asTimestamp(documentDate)); // task 08905: Also set the the documentDate
 
-		setMailRecipient(docOutboundLogRecord);
-
+		setMailRecipients(docOutboundLogRecord);
 		save(docOutboundLogRecord);
 
 		shareDocumentAttachmentsWithDocoutBoundLog(archiveRecord, docOutboundLogRecord);
 
 		return docOutboundLogRecord;
 	}
-	
-	private void setMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
-	{
-		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.getRecipient(
-				DocOutboundLogMailRecipientRequest.builder()
-						.recordRef(TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID()))
-						.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
-						.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
-						.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
-						.build());
 
-		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
+	private void setMailRecipients(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final DocOutboundLogMailRecipientRequest recipientRequest = DocOutboundLogMailRecipientRequest.builder()
+				.recordRef(TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID()))
+				.clientId(ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()))
+				.docTypeId(DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID()))
+				.build();
+
+		docOutboundLogMailRecipientRegistry.getRecipient(recipientRequest)
+				.ifPresent(recipients -> updateRecordWithRecipient(docOutboundLogRecord, recipients));
 	}
 
 	private void updateRecordWithRecipient(
 			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
-			@NonNull final DocOutBoundRecipient recipient)
+			@NonNull final DocOutBoundRecipients recipients)
 	{
 		final String tableName = TableRecordReference.ofReferenced(docOutboundLogRecord).getTableName();
-		final boolean isInvoiceEmailEnabled = I_C_Invoice.Table_Name.equals(tableName) && recipient.isInvoiceAsEmail();
+		final boolean isInvoiceEmailEnabled = I_C_Invoice.Table_Name.equals(tableName) && recipients.isInvoiceAsEmail();
 		docOutboundLogRecord.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled);
 
-		docOutboundLogRecord.setCurrentEMailRecipient_ID(recipient.getId().getRepoId());
-		docOutboundLogRecord.setCurrentEMailAddress(recipient.getEmailAddress());
+		if (recipients.getTo() != null)
+		{
+			docOutboundLogRecord.setCurrentEMailRecipient_ID(recipients.getTo().getId().getRepoId());
+			docOutboundLogRecord.setCurrentEMailAddress(recipients.getTo().getEmailAddress());
+		}
+
+		if (recipients.getCc() != null)
+		{
+			docOutboundLogRecord.setCurrentEMailCCRecipient_ID(recipients.getCc().getId().getRepoId());
+			docOutboundLogRecord.setCurrentEMailAddressCC(recipients.getCc().getEmailAddress());
+		}
 	}
 
 	private void shareDocumentAttachmentsWithDocoutBoundLog(

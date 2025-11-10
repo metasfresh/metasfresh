@@ -357,7 +357,13 @@ class Modal extends Component {
     const { isNew, isNewDoc } = this.state;
 
     if (isNewDoc) {
-      processNewRecord('window', windowId, dataId).then((response) => {
+      processNewRecord({
+        windowId: windowId,
+        documentId: dataId,
+        triggeringWindowId: documentType,
+        triggeringDocumentId: parentDataId,
+        triggeringField: triggerField,
+      }).then((response) => {
         dispatch(
           patch(
             'window',

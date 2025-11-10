@@ -9,8 +9,10 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonWarehouseResponse
 {
+	int warehouseId;
 	String warehouseCode;
 	String warehouseName;
+	int locatorId;
 	String locatorCode;
 	String locatorQRCode;
 }

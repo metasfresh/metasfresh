@@ -32,10 +32,7 @@ import lombok.Value;
 @Builder
 public class NewRecordContext
 {
-	@NonNull
-	final OrgId loginOrgId;
-	@NonNull
-	final UserId loggedUserId;
-	@NonNull
-	final String loginLanguage;
+	@NonNull OrgId loginOrgId;
+	@NonNull UserId loggedUserId;
+	@NonNull String loginLanguage;
 }

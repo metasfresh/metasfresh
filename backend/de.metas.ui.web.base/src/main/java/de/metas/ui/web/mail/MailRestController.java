@@ -8,6 +8,7 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -226,8 +227,10 @@ public class MailRestController
 			throw new FillMandatoryException("To");
 		}
 
+		final Mailbox mailbox = mailService.findMailbox(mailboxQuery(webuiEmail.getFromUserId()));
+
 		mailService.sendEMail(EMailRequest.builder()
-				.mailboxQuery(mailboxQuery(webuiEmail.getFromUserId()))
+				.mailbox(mailbox)
 				.toList(toList)
 				.subject(webuiEmail.getSubject())
 				.message(webuiEmail.getMessage())

@@ -1,55 +1,7 @@
 package de.metas.inoutcandidate.spi;
 
-import java.util.Comparator;
-import java.util.Iterator;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -62,15 +14,38 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 /**
  * This abstract class declares the pluggable main component to create and handle {@link I_M_ShipmentSchedule} records for
  * other records from a specific source table (e.g. order lines or subscription lines).
- *
+ * <p>
  * Implementors are also related to {@link I_M_IolCandHandler} records.
- *
+ * <p>
  * Implementors can be registered by calling {@link IShipmentScheduleHandlerBL#registerHandler(ShipmentScheduleHandler)} .
- *
+ * <p>
  * Interface methods should only be called by the {@link IShipmentScheduleHandlerBL} implementation.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -83,7 +58,9 @@ public abstract class ShipmentScheduleHandler
 	{
 		int orgId;
 
-		/** mostly to help with debugging */
+		/**
+		 * mostly to help with debugging
+		 */
 		int attributeConfigId;
 
 		@Nullable
@@ -128,7 +105,7 @@ public abstract class ShipmentScheduleHandler
 
 	/**
 	 * Creates missing candidates for the given model.
-	 *
+	 * <p>
 	 * SPI-implementors can assume that this method is only called with objects that
 	 * <ul>
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and</li>
@@ -147,7 +124,7 @@ public abstract class ShipmentScheduleHandler
 
 	/**
 	 * Invalidates invoice candidates for the given model.
-	 *
+	 * <p>
 	 * SPI-implementors can assume that this method is only called with objects that
 	 * <ul>
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and</li>
@@ -216,8 +193,8 @@ public abstract class ShipmentScheduleHandler
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
 
-		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class)
-				.retrieveAttributeInstance(
+		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeSetInstanceBL.class)
+				.getAttributeInstance(
 						asiId,
 						attributeConfigToUse.getAttributeId());
 

@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BP_Group
  *  @author metasfresh (generated) 
@@ -53,7 +52,7 @@ public interface I_C_BP_Group
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Druck - Farbe.
+	 * Set Print Color.
 	 * Color used for printing and display
 	 *
 	 * <br>Type: TableDir
@@ -63,7 +62,7 @@ public interface I_C_BP_Group
 	void setAD_PrintColor_ID (int AD_PrintColor_ID);
 
 	/**
-	 * Get Druck - Farbe.
+	 * Get Print Color.
 	 * Color used for printing and display
 	 *
 	 * <br>Type: TableDir
@@ -80,24 +79,84 @@ public interface I_C_BP_Group
 	String COLUMNNAME_AD_PrintColor_ID = "AD_PrintColor_ID";
 
 	/**
+	 * Set Bill Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_BPartner_ID (int Bill_BPartner_ID);
+
+	/**
+	 * Get Bill Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_BPartner_ID();
+
+	String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
+
+	/**
+	 * Set Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_ID (int Bill_Location_ID);
+
+	/**
+	 * Get Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_ID();
+
+	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+
+	/**
+	 * Set Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_User_ID (int Bill_User_ID);
+
+	/**
+	 * Get Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_User_ID();
+
+	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
 	 * Set Individual business partner's name format.
 	 * Describes how the new business partner's name is initiated, based on the added contacts' names and forms of address.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setBPNameAndGreetingStrategy (@Nullable java.lang.String BPNameAndGreetingStrategy);
+	void setBPNameAndGreetingStrategy (java.lang.String BPNameAndGreetingStrategy);
 
 	/**
 	 * Get Individual business partner's name format.
 	 * Describes how the new business partner's name is initiated, based on the added contacts' names and forms of address.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getBPNameAndGreetingStrategy();
+	java.lang.String getBPNameAndGreetingStrategy();
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_BPNameAndGreetingStrategy = new ModelColumn<>(I_C_BP_Group.class, "BPNameAndGreetingStrategy", null);
 	String COLUMNNAME_BPNameAndGreetingStrategy = "BPNameAndGreetingStrategy";
@@ -126,7 +185,7 @@ public interface I_C_BP_Group
 	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
-	 * Set Mahnung.
+	 * Set Dunning.
 	 * Dunning Rules for overdue invoices
 	 *
 	 * <br>Type: TableDir
@@ -136,7 +195,7 @@ public interface I_C_BP_Group
 	void setC_Dunning_ID (int C_Dunning_ID);
 
 	/**
-	 * Get Mahnung.
+	 * Get Dunning.
 	 * Dunning Rules for overdue invoices
 	 *
 	 * <br>Type: TableDir
@@ -151,6 +210,28 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, org.compiere.model.I_C_Dunning> COLUMN_C_Dunning_ID = new ModelColumn<>(I_C_BP_Group.class, "C_Dunning_ID", org.compiere.model.I_C_Dunning.class);
 	String COLUMNNAME_C_Dunning_ID = "C_Dunning_ID";
+
+	/**
+	 * Set Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
+
+	/**
+	 * Get Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PaymentTerm_ID();
+
+	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
 	 * Get Created.
@@ -222,6 +303,29 @@ public interface I_C_BP_Group
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Freight Cost Rule.
+	 * Method for charging Freight
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFreightCostRule (@Nullable java.lang.String FreightCostRule);
+
+	/**
+	 * Get Freight Cost Rule.
+	 * Method for charging Freight
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFreightCostRule();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_FreightCostRule = new ModelColumn<>(I_C_BP_Group.class, "FreightCostRule", null);
+	String COLUMNNAME_FreightCostRule = "FreightCostRule";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -243,6 +347,27 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_IsActive = new ModelColumn<>(I_C_BP_Group.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Association.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAssociation (boolean IsAssociation);
+
+	/**
+	 * Get Association.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAssociation();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_IsAssociation = new ModelColumn<>(I_C_BP_Group.class, "IsAssociation", null);
+	String COLUMNNAME_IsAssociation = "IsAssociation";
 
 	/**
 	 * Set Confidential Info.
@@ -268,8 +393,8 @@ public interface I_C_BP_Group
 	String COLUMNNAME_IsConfidentialInfo = "IsConfidentialInfo";
 
 	/**
-	 * Set Kunde.
-	 * Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	 * Set Customer.
+	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -278,8 +403,8 @@ public interface I_C_BP_Group
 	void setIsCustomer (boolean IsCustomer);
 
 	/**
-	 * Get Kunde.
-	 * Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	 * Get Customer.
+	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -405,6 +530,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -414,6 +540,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -446,6 +573,31 @@ public interface I_C_BP_Group
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Parent Business Partner Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setParent_BP_Group_ID (int Parent_BP_Group_ID);
+
+	/**
+	 * Get Parent Business Partner Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getParent_BP_Group_ID();
+
+	@Nullable org.compiere.model.I_C_BP_Group getParent_BP_Group();
+
+	void setParent_BP_Group(@Nullable org.compiere.model.I_C_BP_Group Parent_BP_Group);
+
+	ModelColumn<I_C_BP_Group, org.compiere.model.I_C_BP_Group> COLUMN_Parent_BP_Group_ID = new ModelColumn<>(I_C_BP_Group.class, "Parent_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+	String COLUMNNAME_Parent_BP_Group_ID = "Parent_BP_Group_ID";
+
+	/**
 	 * Set Payment Rule.
 	 * How you pay the invoice
 	 *
@@ -467,6 +619,29 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_BP_Group.class, "PaymentRule", null);
 	String COLUMNNAME_PaymentRule = "PaymentRule";
+
+	/**
+	 * Set Payment Rule.
+	 * Purchase payment option
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRulePO (@Nullable java.lang.String PaymentRulePO);
+
+	/**
+	 * Get Payment Rule.
+	 * Purchase payment option
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRulePO();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_PaymentRulePO = new ModelColumn<>(I_C_BP_Group.class, "PaymentRulePO", null);
+	String COLUMNNAME_PaymentRulePO = "PaymentRulePO";
 
 	/**
 	 * Set PO Discount Schema.
@@ -496,7 +671,29 @@ public interface I_C_BP_Group
 	String COLUMNNAME_PO_DiscountSchema_ID = "PO_DiscountSchema_ID";
 
 	/**
-	 * Set Einkaufspreisliste.
+	 * Set PO Payment Term.
+	 * Payment rules for a purchase order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_PaymentTerm_ID (int PO_PaymentTerm_ID);
+
+	/**
+	 * Get PO Payment Term.
+	 * Payment rules for a purchase order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPO_PaymentTerm_ID();
+
+	String COLUMNNAME_PO_PaymentTerm_ID = "PO_PaymentTerm_ID";
+
+	/**
+	 * Set Purchase Pricelist.
 	 * Price List used by this Business Partner
 	 *
 	 * <br>Type: Table
@@ -506,7 +703,7 @@ public interface I_C_BP_Group
 	void setPO_PriceList_ID (int PO_PriceList_ID);
 
 	/**
-	 * Get Einkaufspreisliste.
+	 * Get Purchase Pricelist.
 	 * Price List used by this Business Partner
 	 *
 	 * <br>Type: Table
@@ -539,7 +736,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Set Price Match Tolerance.
-	 * Preis Abweichung Toleranz
+	 * PO-Invoice Match Price Tolerance in percent of the purchase price
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -549,7 +746,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Get Price Match Tolerance.
-	 * Preis Abweichung Toleranz
+	 * PO-Invoice Match Price Tolerance in percent of the purchase price
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -584,8 +781,30 @@ public interface I_C_BP_Group
 	String COLUMNNAME_PriorityBase = "PriorityBase";
 
 	/**
-	 * Set Kreditstatus.
-	 * Kreditstatus des Geschäftspartners
+	 * Set Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPurchaser_User_ID (int Purchaser_User_ID);
+
+	/**
+	 * Get Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPurchaser_User_ID();
+
+	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
+
+	/**
+	 * Set Credit Status.
+	 * Business Partner Credit Status
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -594,8 +813,8 @@ public interface I_C_BP_Group
 	void setSOCreditStatus (java.lang.String SOCreditStatus);
 
 	/**
-	 * Get Kreditstatus.
-	 * Kreditstatus des Geschäftspartners
+	 * Get Credit Status.
+	 * Business Partner Credit Status
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

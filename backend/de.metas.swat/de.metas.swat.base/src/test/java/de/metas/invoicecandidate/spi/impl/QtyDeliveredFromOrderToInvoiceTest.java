@@ -161,8 +161,6 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		Mockito.doReturn(activityId).when(productAcctDAO).retrieveActivityForAcct(clientId, orgId, productId);
 		Mockito.doReturn(docType).when(docTypeBL).getById(docTypeId);
 
-
-		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
 						order,
@@ -229,6 +227,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		order.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order.setC_Currency_ID(10);
 		order.setM_PricingSystem_ID(20);
+		order.setC_PaymentTerm_ID(30);
 		save(order);
 	}
 

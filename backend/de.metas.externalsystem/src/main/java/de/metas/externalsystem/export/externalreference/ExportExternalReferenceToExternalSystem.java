@@ -127,7 +127,7 @@ public abstract class ExportExternalReferenceToExternalSystem extends ExportToEx
 		final String orgCode = orgDAO.getById(externalReference.getOrgId()).getValue();
 
 		return Optional.of(JsonExternalSystemRequest.builder()
-								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
+								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getValue()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 								   .orgCode(orgCode)
 								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))

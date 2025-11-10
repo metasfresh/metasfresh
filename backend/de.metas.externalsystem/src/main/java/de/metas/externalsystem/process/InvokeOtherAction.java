@@ -63,7 +63,7 @@ public class InvokeOtherAction extends InvokeExternalSystemProcess
 	@Override
 	protected String getTabName()
 	{
-		return ExternalSystemType.Other.getName();
+		return ExternalSystemType.Other.getValue();
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class InvokeOtherAction extends InvokeExternalSystemProcess
 
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId());
 
-		if (!ExternalSystemType.Other.getCode().equals(externalSystemConfigDAO.getParentTypeById(parentConfigId)))
+		if (!ExternalSystemType.Other.getValue().equals(externalSystemConfigDAO.getParentTypeById(parentConfigId)))
 		{
 			return ProcessPreconditionsResolution.reject();
 		}

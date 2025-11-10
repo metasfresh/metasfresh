@@ -77,7 +77,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -110,7 +110,7 @@ public class EDIDesadvPackService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -399,7 +399,7 @@ public class EDIDesadvPackService
 	private Optional<Timestamp> extractBestBeforeDate(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(asiId);
 		if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 		{
 			final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
@@ -412,7 +412,7 @@ public class EDIDesadvPackService
 	private Optional<String> extractLotNumber(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(asiId);
 		if (attributeSet.hasAttribute(AttributeConstants.ATTR_LotNumber))
 		{
 			final String lotNumber = attributeSet.getValueAsString(AttributeConstants.ATTR_LotNumber);
@@ -451,7 +451,7 @@ public class EDIDesadvPackService
 					.setParameter("EDI_DesadvLine.EDI_Desadv_ID", desadvLineRecord.getEDI_Desadv_ID())
 					.setParameter("EDI_DesadvLine.Line", desadvLineRecord.getLine())
 					.setParameter("EDI_DesadvLine_ID", desadvLineRecord.getEDI_DesadvLine_ID());
-				// no need for a parameter with the InOutLine-ID, because the InOutLine is rolled back anyways
+			// no need for a parameter with the InOutLine-ID, because the InOutLine is rolled back anyways
 		}
 
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);

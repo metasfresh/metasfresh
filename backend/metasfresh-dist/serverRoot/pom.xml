@@ -130,6 +130,11 @@
             <version>${metasfresh.version}</version>
         </dependency>
         <dependency>
+            <groupId>de.metas.inventory</groupId>
+            <artifactId>de.metas.inventory.mobileui</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
             <groupId>de.metas.distribution</groupId>
             <artifactId>de.metas.distribution.rest-api</artifactId>
             <version>${metasfresh.version}</version>

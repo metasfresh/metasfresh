@@ -7,8 +7,8 @@ import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/Manufa
 import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
-const createMasterdata = async ({ finishedProductUOMConfigs } = {}) => {
-    const response = await Backend.createMasterdata({
+const createMasterdata = async () => {
+    return await Backend.createMasterdata({
         language: "en_US",
         request: {
             login: {
@@ -22,7 +22,6 @@ const createMasterdata = async ({ finishedProductUOMConfigs } = {}) => {
                 "COMP1": {},
                 "COMP2": {},
                 "BOM": {
-                    ...(finishedProductUOMConfigs ?? {}),
                     bom: {
                         lines: [
                             { product: 'COMP1', qty: 1 },
@@ -48,97 +47,49 @@ const createMasterdata = async ({ finishedProductUOMConfigs } = {}) => {
             },
         }
     })
-
-    return {
-        login: response.login.user,
-        // tuPIItemProductTestId: response.packingInstructions.PI.tuPIItemProductTestId,
-        luPIItemTestId: response.packingInstructions.PI.luPIItemTestId,
-        documentNo: response.manufacturingOrders.PP1.documentNo,
-        comp1_huQRCode: response.handlingUnits.HU_COMP1.qrCode,
-        comp2_huQRCode: response.handlingUnits.HU_COMP2.qrCode,
-    };
 }
 
 // noinspection JSUnusedLocalSymbols
 test('Simple manufacturing test', async ({ page }) => {
-    const {
-        login,
-        // tuPIItemProductTestId,
-        luPIItemTestId,
-        documentNo,
-        comp1_huQRCode,
-        comp2_huQRCode
-    } = await createMasterdata();
+    const masterdata = await createMasterdata();
 
-    await LoginScreen.login(login);
+    await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('mfg');
     await ManufacturingJobsListScreen.waitForScreen();
-    await ManufacturingJobsListScreen.startJob({ documentNo });
+    const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
     await ManufacturingJobScreen.clickIssueButton({ index: 1 });
-    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: comp1_huQRCode, expectQtyEntered: '5' });
+    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: masterdata.handlingUnits.HU_COMP1.qrCode, expectQtyEntered: '5' });
     await RawMaterialIssueLineScreen.goBack();
 
     await ManufacturingJobScreen.clickIssueButton({ index: 2 });
-    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: comp2_huQRCode, expectQtyEntered: '10' });
+    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: masterdata.handlingUnits.HU_COMP2.qrCode, expectQtyEntered: '10' });
     await RawMaterialIssueLineScreen.goBack();
 
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
-    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId })
+    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId })
     await MaterialReceiptLineScreen.receiveQty({
         expectQtyEntered: '5',
         qtyEntered: '1',
     })
 
     await ManufacturingJobScreen.complete();
+
+    await Backend.expect({
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [
+                    { lu: 'lu1', qty: '1 PCE' },
+                ]
+            }
+        },
+        hus: {
+            'lu1': {
+                huStatus: 'A',
+                storages: { 'BOM': '1 PCE' },
+            },
+        }
+    });
 });
 
-// noinspection JSUnusedLocalSymbols
-test('Receive with catch weight', async ({ page }) => {
-    const finishedProductUOMConfigs = {
-        uom: "PCE",
-        uomConversions: [
-            { from: "PCE", to: "KGM", multiplyRate: 4, isCatchUOMForProduct: true }
-        ],
-    };
-    const {
-        login,
-        luPIItemTestId,
-        documentNo,
-        comp1_huQRCode,
-        comp2_huQRCode
-    } = await createMasterdata({ finishedProductUOMConfigs });
-
-    await LoginScreen.login(login);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('mfg');
-    await ManufacturingJobsListScreen.waitForScreen();
-    await ManufacturingJobsListScreen.startJob({ documentNo });
-
-    await ManufacturingJobScreen.clickIssueButton({ index: 1 });
-    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: comp1_huQRCode, expectQtyEntered: '5' });
-    await RawMaterialIssueLineScreen.goBack();
-
-    await ManufacturingJobScreen.clickIssueButton({ index: 2 });
-    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: comp2_huQRCode, expectQtyEntered: '10' });
-    await RawMaterialIssueLineScreen.goBack();
-
-    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
-    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId });
-
-    await MaterialReceiptLineScreen.receiveQtyWithQRCode({
-        catchWeightQRCode: [
-            '019121234559370931030008321004481124',
-        ],
-    });
-    await MaterialReceiptLineScreen.expectVisible();
-    await MaterialReceiptLineScreen.receiveQtyWithQRCode({
-        catchWeightQRCode: [
-            '019121234559370931030008321004481124',
-        ],
-    });
-    await MaterialReceiptLineScreen.goBack();
-
-    await ManufacturingJobScreen.complete();
-});

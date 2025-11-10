@@ -1,6 +1,7 @@
 package de.metas.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
@@ -135,4 +136,6 @@ public interface IProcessPreconditionsContext
 			return ProcessPreconditionsResolution.accept();
 		}
 	}
+
+	default OptionalBoolean isExistingDocument() { return OptionalBoolean.UNKNOWN; }
 }

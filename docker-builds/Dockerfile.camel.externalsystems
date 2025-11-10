@@ -4,7 +4,9 @@ FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
 FROM eclipse-temurin:17.0.5_8-jdk
 
-RUN apt-get -y update && apt-get -y install curl
+RUN apt-get -y update && \
+    apt-get -y install curl && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

@@ -33,7 +33,6 @@ import de.metas.location.LocationId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTemplate
@@ -62,6 +61,12 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 	default void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from)
 	{
 		setBill_Location_Value_ID(LocationId.toRepoId(from.getCapturedLocationId()));
+		setRenderedAddress(from);
+	}
+
+	@Override
+	default void setRenderedAddress(@NonNull final RenderedAddressAndCapturedLocation from)
+	{
 		setBillToAddress(from.getRenderedAddress());
 	}
 

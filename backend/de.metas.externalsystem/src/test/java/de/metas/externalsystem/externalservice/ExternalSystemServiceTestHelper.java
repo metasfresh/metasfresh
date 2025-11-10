@@ -22,7 +22,11 @@
 
 package de.metas.externalsystem.externalservice;
 
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemTestHelper;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceId;
 import de.metas.externalsystem.externalservice.model.ExternalSystemServiceId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
@@ -42,9 +46,10 @@ public class ExternalSystemServiceTestHelper
 			@NonNull final String type,
 			@NonNull final String name)
 	{
+		final ExternalSystem externalSystem = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.ofValue(type));
 		final I_ExternalSystem_Config record = newInstance(I_ExternalSystem_Config.class);
 		record.setName(name);
-		record.setType(type);
+		record.setExternalSystem_ID(externalSystem.getId().getRepoId());
 		saveRecord(record);
 
 		return ExternalSystemParentConfigId.ofRepoId(record.getExternalSystem_Config_ID());
@@ -59,7 +64,7 @@ public class ExternalSystemServiceTestHelper
 	{
 		final I_ExternalSystem_Service record = newInstance(I_ExternalSystem_Service.class);
 		record.setName(name);
-		record.setType(type);
+		record.setExternalSystem_ID(ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.ofValue(type)).getId().getRepoId());
 		record.setValue(value);
 		record.setDescription("Description");
 		record.setDisableCommand("DisableCommand");

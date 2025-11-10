@@ -42,6 +42,7 @@ import de.metas.util.IProcessor;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -78,6 +79,7 @@ public class AggregationBL implements IAggregationBL
 		}
 	};
 
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
 
 	@Override
@@ -203,7 +205,7 @@ public class AggregationBL implements IAggregationBL
 		}
 
 		final Predicate<I_M_AttributeInstance> filter = ai -> {
-			final I_M_Attribute attribute = attributesDAO.getAttributeById(ai.getM_Attribute_ID());
+			final I_M_Attribute attribute = attributesDAO.getAttributeRecordById(ai.getM_Attribute_ID());
 			return attribute.isAttrDocumentRelevant();
 		};
 		return extractInvoiceLineAttributes(inOutLine.getM_AttributeSetInstance(), filter);
@@ -222,13 +224,12 @@ public class AggregationBL implements IAggregationBL
 		return extractInvoiceLineAttributes(icRecord.getM_AttributeSetInstance(), filter);
 	}
 
-
 	private ImmutableList<IInvoiceLineAttribute> extractInvoiceLineAttributes(
-			@NonNull final I_M_AttributeSetInstance attributeSetInstance, 
+			@NonNull final I_M_AttributeSetInstance attributeSetInstance,
 			@NonNull final Predicate<I_M_AttributeInstance> filter)
 	{
-		
-		final List<I_M_AttributeInstance> attributeInstances = attributesDAO.retrieveAttributeInstances(attributeSetInstance);
+
+		final List<I_M_AttributeInstance> attributeInstances = asiBL.getAttributeInstances(attributeSetInstance);
 
 		final ImmutableList.Builder<IInvoiceLineAttribute> result = ImmutableList.builder();
 		for (final I_M_AttributeInstance attributeInstance : attributeInstances)
@@ -243,7 +244,7 @@ public class AggregationBL implements IAggregationBL
 		}
 		return result.build();
 	}
-	
+
 	@Override
 	public void setHeaderAggregationKey(@NonNull final I_C_Invoice_Candidate ic)
 	{

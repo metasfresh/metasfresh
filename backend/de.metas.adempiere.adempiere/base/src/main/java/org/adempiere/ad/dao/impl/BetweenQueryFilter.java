@@ -22,15 +22,14 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
+
+import java.util.List;
+import java.util.Properties;
 
 public class BetweenQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
@@ -44,7 +43,7 @@ public class BetweenQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	public BetweenQueryFilter(final String tableName, final String columnName, final Object valueFrom, final Object valueTo, IQueryFilterModifier modifier)
 	{
 
-		filter = new CompositeQueryFilter<>(tableName);
+		filter = CompositeQueryFilter.newInstance(tableName);
 		filter.setJoinAnd();
 		filter.addCompareFilter(columnName, Operator.GREATER_OR_EQUAL, valueFrom, modifier);
 		filter.addCompareFilter(columnName, Operator.LESS_OR_EQUAL, valueTo, modifier);
@@ -59,7 +58,7 @@ public class BetweenQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	{
 		super();
 
-		filter = new CompositeQueryFilter<>(column.getModelClass());
+		filter = CompositeQueryFilter.newInstance(column.getModelClass());
 		filter.setJoinAnd();
 		filter.addCompareFilter(column, Operator.GREATER_OR_EQUAL, valueFrom, modifier);
 		filter.addCompareFilter(column, Operator.LESS_OR_EQUAL, valueTo, modifier);

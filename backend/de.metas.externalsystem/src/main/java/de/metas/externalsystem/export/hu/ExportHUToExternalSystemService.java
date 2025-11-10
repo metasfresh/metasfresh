@@ -123,7 +123,7 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 		final String orgCode = orgDAO.getById(hu.getAD_Org_ID()).getValue();
 
 		return Optional.of(JsonExternalSystemRequest.builder()
-								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
+								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getValue()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 								   .orgCode(orgCode)
 								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))

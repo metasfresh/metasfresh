@@ -98,11 +98,18 @@ public class JsonObjectMapperHolder
 		{
 			return null;
 		}
+
+		return fromJsonNonNull(json, valueType);
+	}
+
+	@NonNull
+	public static <T> T fromJsonNonNull(@NonNull final String json, @NonNull final Class<T> valueType)
+	{
 		try
 		{
 			return sharedJsonObjectMapper().readValue(json, valueType);
 		}
-		catch (JsonProcessingException e)
+		catch (final JsonProcessingException e)
 		{
 			throw Check.mkEx("Failed converting JSON to " + valueType.getSimpleName() + ": `" + json + "`", e);
 		}

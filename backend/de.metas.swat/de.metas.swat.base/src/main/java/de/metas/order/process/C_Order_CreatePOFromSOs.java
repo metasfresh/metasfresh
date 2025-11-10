@@ -49,7 +49,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
@@ -107,7 +107,7 @@ public class C_Order_CreatePOFromSOs
 
 	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
 
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 
@@ -200,7 +200,7 @@ public class C_Order_CreatePOFromSOs
 
 	private OrderLineCandidate toOrderLineCandidate(final I_C_OrderLine ol)
 	{
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(ol.getM_AttributeSetInstance_ID()));
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(ol.getM_AttributeSetInstance_ID()));
 
 		return OrderLineCandidate.builder()
 				.orderId(OrderId.ofRepoId(ol.getC_Order_ID()))

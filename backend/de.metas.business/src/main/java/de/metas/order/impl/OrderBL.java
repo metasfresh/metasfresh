@@ -57,6 +57,8 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
@@ -72,6 +74,7 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -83,6 +86,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.tax.api.Tax;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -106,6 +110,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -322,7 +327,7 @@ public class OrderBL implements IOrderBL
 		final CountryId countryId = partnerBL.getCountryId(shipToBPLocationId);
 
 		final IPriceListDAO priceListDAO = this.priceListDAO;
-		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx);
+		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx, null);
 	}
 
 	@Override
@@ -479,9 +484,7 @@ public class OrderBL implements IOrderBL
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
-
-		@Nullable
-		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+		@Nullable final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
 		if (copyDescriptionAndDocumentNote == null)
 		{
@@ -907,6 +910,17 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	@Nullable
+	public BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_C_Order orderRecord)
+	{
+		if (orderRecord.isDropShip() && orderRecord.getDropShip_BPartner_ID() > 0)
+		{
+			return BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID());
+		}
+		return BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
+	}
+
+	@Override
 	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
 	{
@@ -1007,6 +1021,13 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
 		return docTypeId != null && docTypeBL.isSalesProposalOrQuotation(docTypeId);
+	}
+
+	@Override
+	public boolean isSalesOrder(@NonNull final I_C_Order order)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		return soTrx.isSales();
 	}
 
 	@Override
@@ -1200,6 +1221,13 @@ public class OrderBL implements IOrderBL
 	public String getLocationEmail(@NonNull final OrderId orderId)
 	{
 		final I_C_Order order = orderDAO.getById(orderId);
+		return getLocationEmail(order);
+	}
+
+	@Nullable
+	@Override
+	public String getLocationEmail(@NonNull final I_C_Order order)
+	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 
 		//
@@ -1232,10 +1260,7 @@ public class OrderBL implements IOrderBL
 		{
 			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
 			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
-			if (billLocationEmail != null)
-			{
-				return billLocationEmail;
-			}
+			return billLocationEmail;
 		}
 
 		//
@@ -1401,5 +1426,41 @@ public class OrderBL implements IOrderBL
 	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
 	{
 		return partnerDAO.getShipperId(partnerId);
+	}
+
+	@Override
+	public PaymentTermId getPaymentTermId(@NonNull final I_C_Order orderRecord)
+	{
+		return  PaymentTermId.ofRepoId(orderRecord.getC_PaymentTerm_ID());
+	}
+
+	@Override
+	public Money getGrandTotal(@NonNull final I_C_Order order)
+	{
+		final BigDecimal grandTotal = order.getGrandTotal();
+		return Money.of(grandTotal, CurrencyId.ofRepoId(order.getC_Currency_ID()));
+	}
+
+	@Override
+	public void save(final I_C_Order order)
+	{
+		orderDAO.save(order);
+	}
+
+	@Override
+	public void syncDatesFromTransportOrder(@NonNull final OrderId orderId, @NonNull final I_M_ShipperTransportation transportOrder)
+	{
+		final I_C_Order order = getById(orderId);
+		order.setBLDate(transportOrder.getBLDate());
+		order.setETA(transportOrder.getETA());
+		save(order);
+	}
+
+	@Override
+	public void syncDateInvoicedFromInvoice(@NonNull final OrderId orderId, @NonNull final I_C_Invoice invoice)
+	{
+		final I_C_Order order = getById(orderId);
+		order.setInvoiceDate(invoice.getDateInvoiced());
+		save(order);
 	}
 }

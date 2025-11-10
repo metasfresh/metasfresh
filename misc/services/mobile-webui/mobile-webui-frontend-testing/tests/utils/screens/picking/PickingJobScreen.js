@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -9,6 +9,9 @@ import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
 import { PickFromHUScanScreen } from './PickFromHUScanScreen';
 import { expect } from '@playwright/test';
 import { PickLineScanScreen } from './PickLineScanScreen';
+import { PickingJobLineScreen } from './PickingJobLineScreen';
+import { test } from '../../../../playwright.config';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -55,7 +58,7 @@ export const PickingJobScreen = {
         await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    scanPickingSlot: async ({ qrCode, expectNextScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
+    scanPickingSlot: async ({ qrCode, expectNextScreen, gotoPickingJobScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
         await PickingJobScreen.clickPickingSlotButton();
         await PickingSlotScanScreen.typeQRCode(qrCode);
 
@@ -64,18 +67,33 @@ export const PickingJobScreen = {
             await PickingJobScreen.expectPickingSlotButtonGreen();
         } else if (expectNextScreen === 'PickLineScanScreen') {
             await PickLineScanScreen.waitForScreen();
+            if (gotoPickingJobScreen) {
+                await step('Go back from PickLineScanScreen to PickingJobScreen', async () => {
+                    await PickLineScanScreen.goBack();
+                    await PickingJobLineScreen.goBack();
+                });
+            }
         } else if (expectNextScreen === 'PickingSlotScanScreen') {
             await PickingSlotScanScreen.waitForScreen();
             await PickingSlotScanScreen.waitForInputFieldToGetEmpty();
+            if (gotoPickingJobScreen) {
+                throw new Error("GO back from PickingSlotScanScreen to PickingJobScreen is not implemented yet.");
+            }
         } else {
             throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
         }
+    }),
+
+    clickReopenLUButton: async () => await step(`${NAME} - Click Reopen LU button`, async () => {
+        await page.getByTestId('reopenLU-button').tap();
     }),
 
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {
         await page.getByTestId('targetLU-button').tap();
     }),
     setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
+        if (!lu) throw new Error("No LU specified.");
+
         await PickingJobScreen.clickLUTargetButton();
         await SelectPickTargetLUScreen.waitForScreen();
         await SelectPickTargetLUScreen.clickLUButton({ lu });
@@ -102,11 +120,16 @@ export const PickingJobScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
-    pickHU: async ({ qrCode, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
-        await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
-        await PickingJobScanHUScreen.waitForScreen();
-        await PickingJobScanHUScreen.typeQRCode(qrCode);
-        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason });
+    pickHU: async ({ qrCode, isScanDirectly, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
+        if(isScanDirectly) {
+            await BarcodeScannerComponent.type(qrCode);
+        }
+        else {
+            await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
+            await PickingJobScanHUScreen.waitForScreen();
+            await PickingJobScanHUScreen.typeQRCode(qrCode);
+        }
+        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason });
         await PickingJobScreen.waitForScreen();
     }),
 
@@ -147,6 +170,12 @@ export const PickingJobScreen = {
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
         await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await PickingJobScreen.waitForScreen();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await PickingJobsListScreen.waitForScreen();
     }),
 };
 

@@ -13,9 +13,9 @@ Feature: Export PP_Order to LeichMehl config
       | M_Product_Category_ID.Identifier | Name     | Value    |
       | standard_category                | Standard | Standard |
     And metasfresh contains M_Products:
-      | Identifier                   | Name                         | OPT.M_Product_Category_ID.Identifier |
-      | manufacturedProduct_27062022 | manufacturedProduct_27062022 | standard_category                    |
-      | componentProduct_27062022    | componentProduct_27062022    |                                      |
+      | Identifier                   | M_Product_Category_ID |
+      | manufacturedProduct_27062022 | standard_category     |
+      | componentProduct_27062022    |                       |
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier      | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
       | bom_1      | manufacturedProduct_27062022 | 2022-05-09 | bomVersions_1                        |
@@ -62,9 +62,9 @@ Feature: Export PP_Order to LeichMehl config
       | M_Product_Category_ID.Identifier | Name     | Value    |
       | standard_category                | Standard | Standard |
     And metasfresh contains M_Products:
-      | Identifier                   | Name                         | OPT.M_Product_Category_ID.Identifier |
-      | manufacturedProduct_11292024 | manufacturedProduct_11292024 | standard_category                    |
-      | componentProduct_11292024    | componentProduct_11292024    |                                      |
+      | Identifier                   | M_Product_Category_ID |
+      | manufacturedProduct_11292024 | standard_category     |
+      | componentProduct_11292024    |                       |
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier      | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
       | bom_1      | manufacturedProduct_11292024 | 2022-05-09 | bomVersions_1                        |

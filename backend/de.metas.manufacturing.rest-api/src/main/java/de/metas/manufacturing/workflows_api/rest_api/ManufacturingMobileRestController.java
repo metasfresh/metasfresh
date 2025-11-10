@@ -7,6 +7,7 @@ import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceive
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,8 @@ public class ManufacturingMobileRestController
 
 	private void assertApplicationAccess()
 	{
-		mobileApplicationService.assertAccess(manufacturingMobileApplication.getApplicationId(), Env.getUserRolePermissions());
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+		mobileApplicationService.assertAccess(manufacturingMobileApplication.getApplicationId(), permissions);
 	}
 
 	@PostMapping("/event")

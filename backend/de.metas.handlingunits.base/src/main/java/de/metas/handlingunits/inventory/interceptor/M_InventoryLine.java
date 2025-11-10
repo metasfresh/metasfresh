@@ -1,29 +1,21 @@
 package de.metas.handlingunits.inventory.interceptor;
 
-import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.inventory.HUAggregationType;
-import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.product.IProductBL;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -50,17 +42,11 @@ import javax.annotation.Nullable;
 @Interceptor(I_M_InventoryLine.class)
 @Callout(I_M_InventoryLine.class)
 @Component
+@RequiredArgsConstructor
 public class M_InventoryLine
 {
-	private final InventoryRepository inventoryLineRepository;
-	private final InventoryService inventoryLineRecordService;
-	private final IProductBL productBL = Services.get(IProductBL.class);
-
-	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository, final InventoryService inventoryLineRecordService)
-	{
-		this.inventoryLineRepository = inventoryLineRepository;
-		this.inventoryLineRecordService = inventoryLineRecordService;
-	}
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final InventoryService inventoryService;
 
 	@Init
 	public void registerCallout()
@@ -69,7 +55,7 @@ public class M_InventoryLine
 	}
 
 	@CalloutMethod(columnNames = org.compiere.model.I_M_InventoryLine.COLUMNNAME_M_Product_ID)
-	public void setUOM(@NonNull final org.compiere.model.I_M_InventoryLine inventoryLine)
+	public void setUOM(@NonNull final I_M_InventoryLine inventoryLine)
 	{
 		final UomId stockUOMId = inventoryLine.getM_Product_ID() > 0 ? productBL.getStockUOMId(inventoryLine.getM_Product_ID()) : null;
 		inventoryLine.setC_UOM_ID(UomId.toRepoId(stockUOMId));
@@ -78,49 +64,19 @@ public class M_InventoryLine
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_InventoryLine.COLUMNNAME_QtyCount)
 	public void distributeQuantityToHUs(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		final HUAggregationType huAggregationType = extractHUAggregationType(inventoryLineRecord);
-		if (HUAggregationType.SINGLE_HU.equals(huAggregationType))
-		{
-			return; // nothing to do
-		}
-		else
-		{
-			final Quantity qtyCount = extractQtyCount(inventoryLineRecord);
-
-			final InventoryLine inventoryLine = inventoryLineRepository
-					.toInventoryLine(inventoryLineRecord)
-					.distributeQtyCountToHUs(qtyCount);
-
-			final InventoryId inventoryId = InventoryId.ofRepoId(inventoryLineRecord.getM_Inventory_ID());
-
-			inventoryLineRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
-		}
-	}
-
-	private Quantity extractQtyCount(final I_M_InventoryLine inventoryLineRecord)
-	{
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uom = uomsRepo.getById(inventoryLineRecord.getC_UOM_ID());
-		return Quantity.of(inventoryLineRecord.getQtyCount(), uom);
-	}
-
-	@Nullable
-	private static HUAggregationType extractHUAggregationType(final I_M_InventoryLine inventoryLineRecord)
-	{
-		return HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
+		inventoryService.distributeQuantityToHUs(inventoryLineRecord);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteInventoryLineHURecords(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
 		final InventoryLineId inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
-		inventoryLineRepository.deleteInventoryLineHUs(inventoryLineId);
+		inventoryService.deleteInventoryLineHUs(inventoryLineId);
 	}
 
 	@CalloutMethod(columnNames = { I_M_InventoryLine.COLUMNNAME_M_HU_ID, I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_InventoryLine.COLUMNNAME_C_UOM_ID })
 	public void setQtyBookedFromHU(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		inventoryLineRecordService.setQtyBookedFromStorage(inventoryLineRecord);
+		inventoryService.updateQtyBookedFromHUStorage(inventoryLineRecord);
 	}
 }

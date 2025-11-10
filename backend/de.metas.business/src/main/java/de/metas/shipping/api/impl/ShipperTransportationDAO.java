@@ -1,8 +1,32 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.shipping.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.lang.SOTrx;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -35,6 +59,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@NonNull
 	@Override
 	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId shipperItransportationId)
 	{
@@ -139,5 +164,17 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.orgId(request.getOrgId())
 				.build())
 				.orElseGet(() -> create(request));
+	}
+
+	@Override
+	public ImmutableList<OrderId> retrieveOrderIds(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, OrderId.class);
+
 	}
 }

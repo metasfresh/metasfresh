@@ -64,6 +64,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
+import de.metas.ui.web.window.datatypes.json.JSONProcessNewRecordRequest;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.datatypes.json.JsonWindowsHealthResponse;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
@@ -72,6 +73,7 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.NewRecordDescriptor.ProcessNewRecordDocumentRequest;
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
@@ -912,14 +914,11 @@ public class WindowRestController
 	/**
 	 * task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
-	@GetMapping("/{windowId}/{documentId}/processNewRecord")
-	public int processRecord(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-	)
+	@PostMapping("/{windowId}/{documentId}/processNewRecord")
+	public int processNewRecord(
+			@PathVariable("windowId") @NonNull final String windowIdStr,
+			@PathVariable("documentId") @NonNull final String documentIdStr,
+			@RequestBody @NonNull JSONProcessNewRecordRequest request)
 	{
 		userSession.assertLoggedIn();
 
@@ -934,16 +933,16 @@ public class WindowRestController
 				throw new AdempiereException("Not saved");
 			}
 
-			final NewRecordContext newRecordContext = NewRecordContext.builder()
-					.loginOrgId(userSession.getOrgId())
-					.loggedUserId(userSession.getLoggedUserId())
-					.loginLanguage(userSession.getAD_Language())
-					.build();
-
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
-					.processNewRecordDocument(document,
-							newRecordContext);
+					.processNewRecordDocument(ProcessNewRecordDocumentRequest.builder()
+							.document(document)
+							.loginOrgId(userSession.getOrgId())
+							.loggedUserId(userSession.getLoggedUserId())
+							.loginLanguage(userSession.getAD_Language())
+							.triggeringDocumentPath(request.getTriggeringDocumentPath())
+							.triggeringField(request.getTriggeringField())
+							.build());
 		}));
 	}
 

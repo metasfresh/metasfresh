@@ -45,6 +45,7 @@ import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
@@ -87,7 +88,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -123,6 +124,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 		return dhlDeliveryOrderRepository.save(deliveryOrder);
 	}
 
+	@NonNull
 	private DhlCustomDeliveryData getDhlCustomDeliveryData(@NonNull final DeliveryOrderId deliveryOrderRepoId)
 	{
 		final List<I_DHL_ShipmentOrder> ordersPo = getAllShipmentOrdersForRequest(deliveryOrderRepoId);

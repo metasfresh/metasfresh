@@ -23,10 +23,8 @@
 package de.metas.material.cockpit.availableforsales;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.adempiere.mm.attributes.keys.AttributesKeyMatcher;
-import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
-import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
+import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.AccessLevel;
@@ -34,6 +32,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.keys.AttributesKeyMatcher;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -54,6 +56,10 @@ final class AvailableForSaleResultBucket
 
 	@Getter(AccessLevel.PACKAGE)
 	@VisibleForTesting
+	private final WarehouseClassifier warehouse;
+
+	@Getter(AccessLevel.PACKAGE)
+	@VisibleForTesting
 	private final AttributesKeyMatcher storageAttributesKeyMatcher;
 
 	private final ArrayList<AvailableForSaleResultGroupBuilder> groups = new ArrayList<>();
@@ -61,9 +67,11 @@ final class AvailableForSaleResultBucket
 	@Builder
 	private AvailableForSaleResultBucket(
 			@Nullable final ProductClassifier product,
+			@Nullable final WarehouseClassifier warehouse,
 			@Nullable final AttributesKeyMatcher storageAttributesKeyMatcher)
 	{
 		this.product = product != null ? product : ProductClassifier.any();
+		this.warehouse = warehouse != null ? warehouse : WarehouseClassifier.any();
 		this.storageAttributesKeyMatcher = storageAttributesKeyMatcher != null
 				? storageAttributesKeyMatcher
 				: AttributesKeyPatternsUtil.matchingAll();
@@ -83,6 +91,11 @@ final class AvailableForSaleResultBucket
 			return false;
 		}
 
+		if (!Objects.equals(group.getWarehouseId(), request.getWarehouseId()))
+		{
+			return false;
+		}
+		
 		return isGroupAttributesKeyMatching(group, request.getStorageAttributesKey()) && isExactGroupMatch(group, request);
 	}
 
@@ -97,6 +110,11 @@ final class AvailableForSaleResultBucket
 	boolean isMatching(final AddToResultGroupRequest request)
 	{
 		if (!product.isMatching(request.getProductId().getRepoId()))
+		{
+			return false;
+		}
+
+		if (!warehouse.isMatching(request.getWarehouseId()))
 		{
 			return false;
 		}
@@ -169,6 +187,7 @@ final class AvailableForSaleResultBucket
 		final AvailableForSaleResultGroupBuilder group = AvailableForSaleResultGroupBuilder.builder()
 				.productId(request.getProductId())
 				.storageAttributesKey(storageAttributesKey)
+				.warehouseId(request.getWarehouseId())
 				.build();
 
 		groups.add(group);
@@ -189,9 +208,16 @@ final class AvailableForSaleResultBucket
 			return;
 		}
 
+		final WarehouseId warehouseId = warehouse.getWarehouseId();
+		if (warehouseId == null)
+		{
+			return;
+		}
+		
 		final AvailableForSaleResultGroupBuilder group = AvailableForSaleResultGroupBuilder.builder()
 				.productId(ProductId.ofRepoId(product.getProductId()))
 				.storageAttributesKey(defaultAttributesKey)
+				.warehouseId(warehouseId)
 				.build();
 
 		groups.add(group);

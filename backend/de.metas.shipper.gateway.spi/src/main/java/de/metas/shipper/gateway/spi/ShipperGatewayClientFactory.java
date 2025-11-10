@@ -22,12 +22,13 @@ package de.metas.shipper.gateway.spi;
  * #L%
  */
 
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 
 public interface ShipperGatewayClientFactory
 {
-	String getShipperGatewayId();
+	ShipperGatewayId getShipperGatewayId();
 
 	ShipperGatewayClient newClientForShipperId(@NonNull ShipperId shipperId);
 }

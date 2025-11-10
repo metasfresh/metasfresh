@@ -3,10 +3,12 @@ package de.metas.user.api.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.ClientMailTemplates;
@@ -182,8 +184,10 @@ public class UserBL implements IUserBL
 				.customType(MAILCONFIG_CUSTOMTYPE_UserPasswordReset)
 				.build();
 
+		final Mailbox mailbox = mailService().findMailbox(mailboxQuery);
+
 		mailService().sendEMail(EMailRequest.builder()
-				.mailboxQuery(mailboxQuery)
+				.mailbox(mailbox)
 				.to(emailTo)
 				.mailText(mailText)
 				.forceRealEmailRecipients(true)
@@ -290,6 +294,7 @@ public class UserBL implements IUserBL
 
 		final String newPasswordEncrypted = HashableString.ofPlainValue(newPassword).hash().getValue();
 		user.setPassword(newPasswordEncrypted);
+		user.setPasswordChangeDate(SystemTime.asTimestamp());
 
 		InterfaceWrapperHelper.save(user);
 	}
@@ -302,8 +307,18 @@ public class UserBL implements IUserBL
 			return true;
 		}
 
-		// If logged in as Administrator, there is no need to enter the old password
-		return !userRolePermissionsDAO.isAdministrator(request.getContextClientId(), request.getContextUserId(), request.getContextDate());// old password is required
+		if(request.getContextRoleId() == null)
+		{
+			return true;
+		}
+
+		if(userRolePermissionsDAO.isAdministrator(request.getContextClientId(), request.getContextUserId(), request.getContextDate()))
+		{
+			return false;
+		}
+
+		// If the role permits it, there is no need to enter the old password
+		return !userRolePermissionsDAO.isAllowPasswordChangeForOthers(request.getContextRoleId(), request.getContextClientId(), request.getContextUserId(), request.getContextDate());// old password is required
 	}
 
 	private void assertValidPassword(@Nullable final String passwordPlain)

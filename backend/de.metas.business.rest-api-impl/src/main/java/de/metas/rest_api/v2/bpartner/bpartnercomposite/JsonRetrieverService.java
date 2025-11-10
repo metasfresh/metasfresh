@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -94,6 +94,7 @@ import de.metas.tax.api.VATIdentifier;
 import de.metas.title.Title;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
@@ -300,7 +301,8 @@ public class JsonRetrieverService
 		final QueryResultPage<BPartnerComposite> page;
 		if (nextPageQuery == null)
 		{
-			page = bpartnerCompositeRepository.getSince(sinceRequest);
+			final SinceQuery sinceQueryNotNull = Check.assumeNotNull(sinceRequest, "sinceRequest is not null as nextPageQuery is already null");
+			page = bpartnerCompositeRepository.getSince(sinceQueryNotNull);
 		}
 		else
 		{

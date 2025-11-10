@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.product.impexp;
 
 import de.metas.impexp.processing.ImportRecordsSelection;
@@ -18,28 +40,6 @@ import java.util.Properties;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 import static org.compiere.model.I_M_Product.COLUMNNAME_C_UOM_ID;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  * A helper class for {@link ProductImportProcess} that performs the "dirty" but efficient SQL updates on the {@link I_I_Product} table.
@@ -121,8 +121,8 @@ public class MProductImportTableSqlUpdater
 
 	public void updateIPharmaProduct()
 	{
-		dbUpdateProductsByValue(selection);
 		dbUpdateProductsByExternalId(selection);
+		dbUpdateProductsByValue(selection);
 		dbUpdateProductCategoryForIFAProduct(selection);
 
 		dbUpdatePackageUOM(selection);
@@ -154,12 +154,12 @@ public class MProductImportTableSqlUpdater
 
 	private void dbUpdateManufacturers(@NonNull final ImportRecordsSelection selection)
 	{
-		StringBuilder sql;
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(targetTableName).append(" i ")
 				.append(" SET Manufacturer_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
-				.append(" WHERE i.ProductManufacturer ilike '%'||p.companyname||'%' AND i.AD_Client_ID=p.AD_Client_ID LIMIT 1) ")
-				.append("WHERE Manufacturer_ID IS NULL")
+				// we can't allow any prefix, because that doesn't perform with larger numbers of bpartners.  
+				.append(" WHERE i.ProductManufacturer ilike p.companyname||'%' AND i.AD_Client_ID=p.AD_Client_ID ORDER BY LENGTH(companyname) LIMIT 1) ")
+				.append("WHERE Manufacturer_ID IS NULL AND i.ProductManufacturer IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -179,14 +179,14 @@ public class MProductImportTableSqlUpdater
 
 	private void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
 	{
-		final StringBuilder sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
-				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID AND i.UPC IS NOT NULL) ")
-				.append("WHERE M_Product_ID IS NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
-				.append(selection.toSqlWhereClause("i"));
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final String sql = "UPDATE "
+				+ targetTableName + " i "
+				+ " SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p"
+				+ " WHERE i.UPC=p.UPC AND i.AD_Client_ID=p.AD_Client_ID AND i.UPC IS NOT NULL) "
+				+ "WHERE M_Product_ID IS NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'"
+				+ selection.toSqlWhereClause("i");
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		logger.info("Product Existing UPC={}", no);
 
 		dbUpdateProductsByValue(selection);
@@ -199,7 +199,8 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i.").append(valueColumnName).append("=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append(" WHERE i.").append(valueColumnName).append("=p.Value AND i.AD_Client_ID=p.AD_Client_ID AND p.AD_Org_ID IN (0, i.AD_Org_ID) ")
+				.append(" ORDER BY p.AD_Org_ID DESC LIMIT 1) ")
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
@@ -212,8 +213,9 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i." + I_I_Product.COLUMNNAME_ExternalId + "=p.ExternalId AND i.AD_Client_ID=p.AD_Client_ID) ")
-				.append("WHERE M_Product_ID IS NULL")
+				.append(" WHERE i." + I_I_Product.COLUMNNAME_ExternalId + "=p.ExternalId AND i.AD_Client_ID=p.AD_Client_ID AND p.AD_Org_ID IN (0, i.AD_Org_ID) ")
+				.append(" ORDER BY p.AD_Org_ID DESC LIMIT 1) ")
+				.append("WHERE M_Product_ID IS NULL AND " + I_I_Product.COLUMNNAME_ExternalId + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);

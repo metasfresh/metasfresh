@@ -123,4 +123,6 @@ public interface IPPOrderBL extends ISingletonService
 	Set<ProductId> getProductIdsToIssue(@NonNull PPOrderId ppOrderId);
 
 	String getResourceName(@NonNull ResourceId resourceId);
+
+	void updateDraftedOrdersMatchingBOM(@NonNull ProductBOMVersionsId bomVersionsId, @NonNull ProductBOMId newVersionId);
 }

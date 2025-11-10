@@ -32,6 +32,8 @@ public interface RecordBasedLocationAdapter<SELF extends RecordBasedLocationAdap
 
 	void setRenderedAddressAndCapturedLocation(RenderedAddressAndCapturedLocation from);
 
+	void setRenderedAddress(RenderedAddressAndCapturedLocation from);
+
 	Optional<DocumentLocation> toPlainDocumentLocation(IDocumentLocationBL documentLocationBL);
 
 	SELF toOldValues();

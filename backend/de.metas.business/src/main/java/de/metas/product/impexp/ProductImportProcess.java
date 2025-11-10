@@ -264,6 +264,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		pp.setM_Product_ID(productId.getRepoId()); // FK
 		pp.setC_TaxCategory_ID(taxCategoryId);
 		pp.setC_UOM_ID(uomId);
+		pp.setAD_Org_ID(plv.getAD_Org_ID());
 
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(imp.getInvoicableQtyBasedOn());
 		pp.setInvoicableQtyBasedOn(invoicableQtyBasedOn.getCode());

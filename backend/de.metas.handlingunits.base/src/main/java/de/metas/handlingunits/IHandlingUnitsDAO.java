@@ -89,6 +89,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU getById(HuId huId);
 
+	boolean existsById(@NonNull HuId huId);
+
 	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
 
 	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
@@ -117,6 +119,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI retrieveVirtualPI(Properties ctx);
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
+
+	List<I_M_HU_PI_Item> getPackingInstructionItemsByIds(@NonNull Set<HuPackingInstructionsItemId> piItemIds);
 
 	/**
 	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.

@@ -3,7 +3,9 @@ import * as CompleteStatus from '../constants/CompleteStatus';
 
 export const isUserEditable = ({ activity }) => activity?.dataStored?.isUserEditable ?? false;
 
-export const isLineLevelPickTarget = ({ activity }) => activity?.dataStored?.isLineLevelPickTarget;
+export const isLineLevelPickTarget = ({ activity }) => {
+  return activity?.dataStored?.isLineLevelPickTarget;
+};
 
 export const getCurrentPickFromHUQRCode = ({ activity }) => activity.dataStored?.pickFromHU?.code;
 

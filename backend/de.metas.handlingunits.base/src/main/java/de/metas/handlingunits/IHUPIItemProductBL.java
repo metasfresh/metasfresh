@@ -35,6 +35,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -83,8 +84,15 @@ public interface IHUPIItemProductBL extends ISingletonService
 
 	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_PI_Item_Product itemProduct)
 	{
-		final UomId uomId = UomId.ofRepoIdOrNull(itemProduct.getC_UOM_ID());
-		return uomId != null ? Services.get(IUOMDAO.class).getById(uomId) : null;
+		final UomId uomId = extractUomIdOrNull(itemProduct);
+		
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		return uomId != null ? uomDAO.getById(uomId) : null;
+	}
+
+	static @Nullable UomId extractUomIdOrNull(final @NotNull I_M_HU_PI_Item_Product itemProduct)
+	{
+		return UomId.ofRepoIdOrNull(itemProduct.getC_UOM_ID());
 	}
 
 	static I_C_UOM extractUOM(@NonNull final I_M_HU_PI_Item_Product itemProduct)

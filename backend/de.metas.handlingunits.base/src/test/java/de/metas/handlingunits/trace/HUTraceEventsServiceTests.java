@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -51,12 +51,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,8 +69,6 @@ public class HUTraceEventsServiceTests
 
 	private HUAccessService huAccessService;
 
-	private InventoryRepository inventoryRepository;
-
 	private I_C_UOM uom;
 
 	@BeforeEach
@@ -79,8 +77,11 @@ public class HUTraceEventsServiceTests
 		AdempiereTestHelper.get().init();
 
 		huAccessService = Mockito.spy(new HUAccessService());
-		inventoryRepository = Mockito.spy(new InventoryRepository());
-		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepository);
+		huTraceEventsService = new HUTraceEventsService(
+				new HUTraceRepository(),
+				huAccessService,
+				InventoryService.newInstanceForUnitTesting()
+		);
 
 		LogManager.setLoggerLevel(HUTraceRepository.class, Level.INFO);
 

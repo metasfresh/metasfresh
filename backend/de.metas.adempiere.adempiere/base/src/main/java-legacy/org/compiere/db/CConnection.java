@@ -1,44 +1,45 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.db;
 
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBNoConnectionException;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.DB;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.sql.DataSource;
+import javax.swing.*;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.annotation.Nullable;
-import javax.sql.DataSource;
-import javax.swing.JOptionPane;
-
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBNoConnectionException;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import org.springframework.core.env.Environment;
 
 /**
  * Adempiere Connection Descriptor
@@ -618,9 +619,7 @@ public final class CConnection implements Serializable, Cloneable
 			final DatabaseMetaData dbmd = conn.getMetaData();
 
 			// NOTE: keep this text short because it will be stored as a short reference in places like AD_Issue.DatabaseInfo
-			StringBuilder sb = new StringBuilder();
-			sb.append(dbmd.getDatabaseProductVersion()).append(";").append(dbmd.getDriverVersion());
-			return sb.toString();
+			return dbmd.getDatabaseProductVersion() + ";" + dbmd.getDriverVersion();
 		}
 		finally
 		{
@@ -755,7 +754,7 @@ public final class CConnection implements Serializable, Cloneable
 			_database = Database.newAdempiereDatabase(getType());
 			_database.getDataSource(this);
 		}
-		catch (NoClassDefFoundError ee)
+		catch (final NoClassDefFoundError ee)
 		{
 			System.err.println("Environment Error - Check Adempiere.properties - " + ee);
 			ee.printStackTrace();
@@ -837,13 +836,13 @@ public final class CConnection implements Serializable, Cloneable
 			connOk = true;
 			return conn;
 		}
-		catch (UnsatisfiedLinkError ule)
+		catch (final UnsatisfiedLinkError ule)
 		{
 			_okDB = false;
-			final String msg = "" + ule.getLocalizedMessage() + " -> Did you set the LD_LIBRARY_PATH ? - " + getConnectionURL();
+			final String msg = ule.getLocalizedMessage() + " -> Did you set the LD_LIBRARY_PATH ? - " + getConnectionURL();
 			throw new DBNoConnectionException(msg, ule);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			_okDB = false;
 			throw DBNoConnectionException.wrapIfNeeded(ex);
@@ -860,7 +859,6 @@ public final class CConnection implements Serializable, Cloneable
 	/**
 	 * Get Transaction Isolation Info
 	 *
-	 * @param transactionIsolation
 	 * @return transaction isolation name
 	 */
 	@SuppressWarnings("unused")

@@ -57,7 +57,7 @@ public class M_Inventory_CreateLines_ForLocatorAndProduct extends DraftInventory
 		final LocatorAndProductStrategy.LocatorAndProductStrategyBuilder builder = HUsForInventoryStrategies.locatorAndProduct()
 				.warehouseId(warehouseId)
 				.locatorId(LocatorId.ofRepoIdOrNull(warehouseId, locatorId))
-				.productId(ProductId.ofRepoIdOrNull(productId))
+				.onlyProductId(ProductId.ofRepoIdOrNull(productId))
 				.huForInventoryLineFactory(huForInventoryLineFactory);
 		switch (ProductStockFilter.of(stockFilterOption))
 		{

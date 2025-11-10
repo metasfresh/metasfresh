@@ -133,8 +133,20 @@ export const openPickingJobLine = ({ wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+export const hasClosedLUs = ({ wfProcessId, lineId }) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/has-closed-lu`, { lineId }))
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const getClosedLUs = ({ wfProcessId, lineId }) => {
   return axios
     .get(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/closed-lu`, { lineId }))
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getScannedHUQRCodeInfo = ({ qrCode }) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode }))
     .then((response) => unboxAxiosResponse(response));
 };

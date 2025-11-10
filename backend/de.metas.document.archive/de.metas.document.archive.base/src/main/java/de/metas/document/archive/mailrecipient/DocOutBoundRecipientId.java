@@ -2,10 +2,12 @@ package de.metas.document.archive.mailrecipient;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -49,6 +51,16 @@ public class DocOutBoundRecipientId implements RepoIdAware
 		return new DocOutBoundRecipientId(repoId);
 	}
 
+	public static DocOutBoundRecipientId ofUserId(@NonNull UserId userId)
+	{
+		if (!userId.isRegularUser())
+		{
+			throw new AdempiereException("Only regular users are allowed as recipients");
+		}
+
+		return ofRepoId(userId.getRepoId());
+	}
+
 	private DocOutBoundRecipientId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
@@ -60,4 +72,6 @@ public class DocOutBoundRecipientId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public UserId toUserId() {return UserId.ofRepoId(repoId);}
 }

@@ -232,6 +232,7 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c33   | test_name_c33_created | test_email_created | fax_created | c22  | true                    |
 
   @Id:S0285_700
+  @Id:S0479_010
   Scenario: Create BPartner Account record,
   using all supported external identifier formats:
   - external reference
@@ -325,6 +326,35 @@ Feature: create or update BPartner v2
   ]
 }
     """
+
+    And get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath /api/v2/audit/requests/@apiRequest@/response and store that path in context
+
+    And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '201' status code
+
+    Then the metasfresh REST-API responds with
+    """
+    {
+  "responseItems": [
+    {
+      "responseBankAccountItems": [
+        {
+          "identifier": "DE15500105171114521777",
+          "syncOutcome": "CREATED"
+        },
+        {
+          "identifier": "DE54500105178721351673",
+          "syncOutcome": "CREATED"
+        },
+        {
+          "identifier": "DE26500105174427157327",
+          "syncOutcome": "CREATED"
+        }
+      ]
+    }
+  ]
+}
+    """
+
     And verify that bPartner was updated for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | Name              |
       | bpartner                 | ext-ALBERTA-001    | test_name_updated |
@@ -411,10 +441,10 @@ Feature: create or update BPartner v2
 }
     """
     And validate C_BP_BankAccount:
-      | C_BP_BankAccount_ID           | C_BPartner_ID | IBAN                   | ISO_Code | IsActive | A_Name                     | A_Street                     | A_Zip                | A_City                     | A_Country                     |
-      | BPA_Via_ExternalRef_S0285_700 | bpartner      | DE15500105171114521777 | EUR      | false    | test-accountName_1_updated | test-accountStreet_1_updated | test-accountZip_1_up | test-accountCity_1_updated | DE							 |
-      | BPA_Via_IBAN_S0285_700        | bpartner      | DE54500105178721351673 | EUR      | false    | test-accountName_2_updated | test-accountStreet_2_updated | test-accountZip_2_up | test-accountCity_2         | null                          |
-      | BPA_Via_QR_IBAN_S0285_700     | bpartner      | DE26500105174427157327 | EUR      | true     | null                       | null                         | test-accountZip_3    | test-accountCity_3_updated | DE							 |
+      | C_BP_BankAccount_ID           | C_BPartner_ID | IBAN                   | ISO_Code | IsActive | A_Name                     | A_Street                     | A_Zip                | A_City                     | A_Country |
+      | BPA_Via_ExternalRef_S0285_700 | bpartner      | DE15500105171114521777 | EUR      | false    | test-accountName_1_updated | test-accountStreet_1_updated | test-accountZip_1_up | test-accountCity_1_updated | DE        |
+      | BPA_Via_IBAN_S0285_700        | bpartner      | DE54500105178721351673 | EUR      | false    | test-accountName_2_updated | test-accountStreet_2_updated | test-accountZip_2_up | test-accountCity_2         | null      |
+      | BPA_Via_QR_IBAN_S0285_700     | bpartner      | DE26500105174427157327 | EUR      | true     | null                       | null                         | test-accountZip_3    | test-accountCity_3_updated | DE        |
 
 
     When the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-001' receives a 'GET' request with the headers from context, expecting status='200'
@@ -476,3 +506,98 @@ Feature: create or update BPartner v2
   }
 }
 """
+
+  @from:cucumber
+  Scenario: create a BPartner record
+    When metasfresh contains External System
+      | Name        | Value       |
+      | Test System | Test_System |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
+    """
+{
+   "requestItems":[
+      {
+         "bpartnerIdentifier":"ext-Test_System-001",
+         "externalReferenceUrl":"www.ExternalReferenceURL.com",
+         "bpartnerComposite":{
+            "bpartner":{
+               "code":"test_code_test_system",
+               "name":"test_name_test_system",
+               "companyName":"test_company_test_system",
+               "parentId":null,
+               "phone":null,
+               "language":"de",
+               "url":null,
+               "group":"test-group",
+                "vatId": "vatId_BPartner001_test_system"
+            },
+            "locations":{
+               "requestItems":[
+                  {
+                     "locationIdentifier":"ext-Test_System-001-1",
+                     "location":{
+                        "address1":"test_address1_test_system",
+                        "address2":"test_address2_test_system",
+                        "poBox":null,
+                        "district":null,
+                        "region":null,
+                        "city":null,
+                        "countryCode":"DE",
+                        "gln":null,
+                        "postal":null,
+                        "vatId": null
+                     }
+                  },
+                  {
+                     "locationIdentifier":"ext-Test_System-001-2",
+                     "location":{
+                        "address1":null,
+                        "address2":"test_address2_test_system_2",
+                        "poBox":"test_poBox_test_system",
+                        "district":null,
+                        "region":"test_region_test_system",
+                        "city":"test_city_test_system",
+                        "countryCode":"DE",
+                        "gln":null,
+                        "postal":null,
+                        "vatId": "vatId_Location_test_system"
+                     }
+                  }
+               ]
+            },
+            "contacts":{
+               "requestItems":[
+                  {
+                     "contactIdentifier":"ext-Test_System-001-1",
+                     "contact":{
+                        "code":"code_test_system_1",
+                        "name":"test_name_test_system_1",
+                        "email":"test_email_test_system_1",
+                        "fax":"fax_test_system_1",
+                        "invoiceEmailEnabled" : false
+                     }
+                  },
+                  {
+                     "contactIdentifier":"ext-Test_System-001-2",
+                     "contact":{
+                        "code":"code_test_system_2",
+                        "name":"test_name_code_test_system_2",
+                        "email":null,
+                        "fax":"fax_test_system_2",
+                        "invoiceEmailEnabled" : true
+                     }
+                  }
+               ]
+            }
+         }
+      }
+   ],
+   "syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"UPDATE_MERGE"
+   }
+}
+"""
+    Then verify that bPartner was created for externalIdentifier
+      | C_BPartner_ID.Identifier | externalIdentifier  | Name                  |
+      | created_bpartner         | ext-Test_System-001 | test_name_test_system |

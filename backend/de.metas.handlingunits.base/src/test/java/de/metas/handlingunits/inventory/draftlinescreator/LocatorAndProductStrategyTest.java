@@ -1,30 +1,6 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
@@ -41,6 +17,27 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -153,13 +150,12 @@ public class LocatorAndProductStrategyTest
 	@Test
 	public void searchWithLotAndBestBeforeDate_but_onlyOneHUWithoutAttributesExist()
 	{
-		@SuppressWarnings("unused")
-		final HuId huWithoutAttributes = hu().locatorId(locatorId).build();
+		@SuppressWarnings("unused") final HuId huWithoutAttributes = hu().locatorId(locatorId).build();
 
 		final ImmutableList<HuForInventoryLine> result = LocatorAndProductStrategy.builder()
 				.huForInventoryLineFactory(new HuForInventoryLineFactory())
 				.locatorId(locatorId)
-				.productId(productId)
+				.onlyProductId(productId)
 				.asiId(asi()
 						.lotNumber("lot1")
 						.bestBeforeDate(LocalDate.parse("2020-10-10"))
@@ -183,7 +179,7 @@ public class LocatorAndProductStrategyTest
 		final ImmutableList<HuForInventoryLine> result = LocatorAndProductStrategy.builder()
 				.huForInventoryLineFactory(new HuForInventoryLineFactory())
 				.locatorId(locatorId)
-				.productId(productId)
+				.onlyProductId(productId)
 				.asiId(asi()
 						.lotNumber("lot1")
 						.bestBeforeDate(LocalDate.parse("2020-10-10"))

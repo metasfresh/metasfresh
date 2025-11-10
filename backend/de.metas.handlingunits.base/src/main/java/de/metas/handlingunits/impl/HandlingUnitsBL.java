@@ -33,6 +33,7 @@ import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -42,7 +43,6 @@ import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHUIterator;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -75,11 +75,13 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
@@ -88,13 +90,17 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -120,6 +126,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -128,6 +135,8 @@ import java.util.function.Predicate;
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
 	private static final Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
+
+	private static final AdMessageKey ERR_HUHasPackages = AdMessageKey.of("de.metas.handlingunits.impl.HUHasPackages");
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
@@ -141,6 +150,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -177,6 +187,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean existsById(@NonNull final HuId huId) {return handlingUnitsRepo.existsById(huId);}
+
+	@Override
 	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
 	{
 		return handlingUnitsRepo.getBySelectionId(selectionId);
@@ -186,6 +199,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
 	{
 		return handlingUnitsRepo.getHuIdsBySelectionId(selectionId);
+	}
+
+	@Override
+	public void saveHU(final I_M_HU hu)
+	{
+		handlingUnitsRepo.saveHU(hu);
 	}
 
 	@Override
@@ -329,10 +348,21 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void markDestroyed(@NonNull final IHUContext huContext, final I_M_HU hu)
 	{
-		if (huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		if (huContext.isDontDestroyHu(huId))
 		{
 			logger.info("markDestroyed - the given M_HU_ID={} is temporarily protected from destruction; -> nothing to do", hu.getM_HU_ID());
 			return;
+		}
+		final boolean isReceiptReversal = huContext.isPropertyTrue(IHUContext.PROPERTY_IsReceiptReversal);
+		if(!isReceiptReversal)
+		{
+			final List<PackageId> packageIds = huPackageBL.retrievePackageIds(huId);
+			if(!packageIds.isEmpty())
+			{
+				throw new HUException(ERR_HUHasPackages, huId.getRepoId(), packageIds.stream().map(PackageId::getRepoId).collect(ImmutableList.toImmutableList()))
+						.markAsUserValidationError();
+			}
 		}
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
@@ -389,9 +419,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public IHUDisplayNameBuilder buildDisplayName(final I_M_HU hu)
+	public HUDisplayNameBuilder buildDisplayName(@Nullable final I_M_HU hu)
 	{
-		return new HUDisplayNameBuilder(hu);
+		return HUDisplayNameBuilder.builder()
+				.handlingUnitsBL(this)
+				.hu(hu)
+				.build();
 	}
 
 	@Override
@@ -941,9 +974,27 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI_Item getPIItem(@NonNull final I_M_HU_Item huItem)
 	{
 		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
-		return piItemId != null
-				? handlingUnitsRepo.getPackingInstructionItemById(piItemId)
-				: null;
+		return piItemId != null ? getPIItem(piItemId) : null;
+	}
+
+	@Override
+	public @NonNull I_M_HU_PI_Item getPIItem(@NonNull final HuPackingInstructionsItemId piItemId)
+	{
+		return handlingUnitsRepo.getPackingInstructionItemById(piItemId);
+	}
+
+	@NonNull
+	@Override
+	public List<I_M_HU_PI_Item> getPIItems(@NonNull final Collection<I_M_HU_Item> huItems)
+	{
+		final ImmutableSet<HuPackingInstructionsItemId> piItemIds = huItems.stream()
+				.map(huItem -> HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return !piItemIds.isEmpty()
+				? handlingUnitsRepo.getPackingInstructionItemsByIds(piItemIds)
+				: ImmutableList.of();
 	}
 
 	@Override
@@ -1052,6 +1103,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getEffectivePI(@NonNull final HuId huId)
 	{
 		return getEffectivePI(getById(huId));
+	}
+
+	@Override
+	public HUPIItemProduct getPIItemProduct(final HUPIItemProductId piItemProductId)
+	{
+		return huPIItemProductDAO.getById(piItemProductId);
 	}
 
 	@Override
@@ -1436,6 +1493,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU huId)
+	{
+		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<LocatorId> getLocatorIds(@NonNull final Collection<HuId> huIds)
 	{
@@ -1448,5 +1511,29 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.collect(ImmutableSet.toImmutableSet());
 
 		return warehouseBL.getLocatorIdsByRepoId(locatorIds);
+	}
+
+	@Override
+	public Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull final ScannedCode scannedCode)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getHUIdByValue(scannedCode.getAsString()),
+				() -> getByExternalBarcode(scannedCode)
+		);
+	}
+
+	private Optional<HuId> getHUIdByValue(final String value)
+	{
+		final HuId huId = HuId.ofHUValueOrNull(value);
+		return huId != null && existsById(huId) ? Optional.of(huId) : Optional.empty();
+	}
+
+	private Optional<HuId> getByExternalBarcode(@NonNull final ScannedCode scannedCode)
+	{
+		return handlingUnitsRepo.createHUQueryBuilder()
+				.setOnlyActiveHUs(true)
+				.setOnlyTopLevelHUs()
+				.addOnlyWithAttribute(AttributeConstants.ATTR_ExternalBarcode, scannedCode.getAsString())
+				.firstIdOnly();
 	}
 }

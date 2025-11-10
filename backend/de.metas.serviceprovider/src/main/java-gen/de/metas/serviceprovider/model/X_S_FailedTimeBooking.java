@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_S_FailedTimeBooking extends org.compiere.model.PO implements I_S_FailedTimeBooking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1027400139L;
+	private static final long serialVersionUID = 1002982304L;
 
     /** Standard Constructor */
     public X_S_FailedTimeBooking (final Properties ctx, final int S_FailedTimeBooking_ID, @Nullable final String trxName)
@@ -46,31 +46,19 @@ public class X_S_FailedTimeBooking extends org.compiere.model.PO implements I_S_
 		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
-	/** 
-	 * ExternalSystem AD_Reference_ID=541117
-	 * Reference name: ExternalSystem
-	 */
-	public static final int EXTERNALSYSTEM_AD_Reference_ID=541117;
-	/** Github = Github */
-	public static final String EXTERNALSYSTEM_Github = "Github";
-	/** Everhour = Everhour */
-	public static final String EXTERNALSYSTEM_Everhour = "Everhour";
-	/** ALBERTA = ALBERTA */
-	public static final String EXTERNALSYSTEM_ALBERTA = "ALBERTA";
-	/** Shopware6 = Shopware6 */
-	public static final String EXTERNALSYSTEM_Shopware6 = "Shopware6";
-	/** Other = Other */
-	public static final String EXTERNALSYSTEM_Other = "Other";
 	@Override
-	public void setExternalSystem (final @Nullable java.lang.String ExternalSystem)
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
 	{
-		set_Value (COLUMNNAME_ExternalSystem, ExternalSystem);
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
 	}
 
 	@Override
-	public java.lang.String getExternalSystem() 
+	public int getExternalSystem_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_ExternalSystem);
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override

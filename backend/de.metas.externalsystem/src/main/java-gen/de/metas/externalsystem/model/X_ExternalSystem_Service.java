@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Service
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Service extends org.compiere.model.PO implements I_ExternalSystem_Service, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1308494502L;
+	private static final long serialVersionUID = 473874422L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Service (final Properties ctx, final int ExternalSystem_Service_ID, @Nullable final String trxName)
@@ -35,39 +35,66 @@ public class X_ExternalSystem_Service extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public void setDescription (final @Nullable String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public String getDescription()
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setDisableCommand (final @Nullable String DisableCommand)
+	public void setDisableCommand (final @Nullable java.lang.String DisableCommand)
 	{
 		set_Value (COLUMNNAME_DisableCommand, DisableCommand);
 	}
 
 	@Override
-	public String getDisableCommand()
+	public java.lang.String getDisableCommand() 
 	{
 		return get_ValueAsString(COLUMNNAME_DisableCommand);
 	}
 
 	@Override
-	public void setEnableCommand (final @Nullable String EnableCommand)
+	public void setEnableCommand (final @Nullable java.lang.String EnableCommand)
 	{
 		set_Value (COLUMNNAME_EnableCommand, EnableCommand);
 	}
 
 	@Override
-	public String getEnableCommand()
+	public java.lang.String getEnableCommand() 
 	{
 		return get_ValueAsString(COLUMNNAME_EnableCommand);
+	}
+
+	@Override
+	public de.metas.externalsystem.model.I_ExternalSystem getExternalSystem()
+	{
+		return get_ValueAsPO(COLUMNNAME_ExternalSystem_ID, de.metas.externalsystem.model.I_ExternalSystem.class);
+	}
+
+	@Override
+	public void setExternalSystem(final de.metas.externalsystem.model.I_ExternalSystem ExternalSystem)
+	{
+		set_ValueFromPO(COLUMNNAME_ExternalSystem_ID, de.metas.externalsystem.model.I_ExternalSystem.class, ExternalSystem);
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override
@@ -86,54 +113,25 @@ public class X_ExternalSystem_Service extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public void setName (final String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public String getName()
+	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** 
-	 * Type AD_Reference_ID=541255
-	 * Reference name: Type
-	 */
-	public static final int TYPE_AD_Reference_ID=541255;
-	/** Alberta = A */
-	public static final String TYPE_Alberta = "A";
-	/** Shopware6 = S6 */
-	public static final String TYPE_Shopware6 = "S6";
-	/** Other = Other */
-	public static final String TYPE_Other = "Other";
-	/** WooCommerce = WOO */
-	public static final String TYPE_WooCommerce = "WOO";
-	/** RabbitMQ REST API = RabbitMQ */
-	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
-	/** GRSSignum = GRS */
-	public static final String TYPE_GRSSignum = "GRS";
 	@Override
-	public void setType (final String Type)
-	{
-		set_Value (COLUMNNAME_Type, Type);
-	}
-
-	@Override
-	public String getType()
-	{
-		return get_ValueAsString(COLUMNNAME_Type);
-	}
-
-	@Override
-	public void setValue (final String Value)
+	public void setValue (final java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
 	@Override
-	public String getValue()
+	public java.lang.String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}

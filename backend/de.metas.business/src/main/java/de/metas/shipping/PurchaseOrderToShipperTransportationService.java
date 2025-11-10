@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.shipping;
 
 import com.google.common.collect.ImmutableList;
@@ -23,6 +45,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -36,28 +59,6 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Service
 @RequiredArgsConstructor
@@ -89,8 +90,14 @@ public class PurchaseOrderToShipperTransportationService
 				.filter(repo::purchaseOrderNotInShipperTransportation)
 				.collect(ImmutableList.toImmutableList());
 
+		if (validPurchaseOrdersIds.isEmpty())
+		{
+			Loggables.addLog("No purchase orders found for shipper transportation with ID: {}", shipperTransportationId);
+		}
+
 		for (final OrderId purchaseOrderId : validPurchaseOrdersIds)
 		{
+			Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", purchaseOrderId, shipperTransportationId);
 			addPurchaseOrderToShipperTransportation(purchaseOrderId, shipperTransportationId);
 		}
 	}
@@ -100,6 +107,8 @@ public class PurchaseOrderToShipperTransportationService
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(purchaseOrder.getM_Shipper_ID());
 		if (shipperId == null)
 		{
+			Loggables.addLog("Skipping purchase order with ID: {}, because no Shipper is set on it",
+					purchaseOrder.getC_Order_ID());
 			return;
 		}
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
@@ -118,13 +127,29 @@ public class PurchaseOrderToShipperTransportationService
 		addPurchaseOrderToShipperTransportation(orderDAO.getById(purchaseOrderId), shipperTransportationId);
 	}
 
-	private void addPurchaseOrderToShipperTransportation(final @NonNull org.compiere.model.I_C_Order order, final @Nullable ShipperTransportationId shipperTransportationId)
+	private void addPurchaseOrderToShipperTransportation(@NonNull final org.compiere.model.I_C_Order order,
+														 @Nullable final ShipperTransportationId shipperTransportationId)
 	{
-		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
+		final ShipperId shipperId;
+		if (shipperTransportationId != null)
+		{
+			final I_M_ShipperTransportation shipperTransportationRecord = shipperTransportationDAO.getById(shipperTransportationId);
+			shipperId = ShipperId.ofRepoId(shipperTransportationRecord.getM_Shipper_ID());
+		}
+		else
+		{
+			shipperId = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
+		}
 		if (shipperId == null)
 		{
+			Loggables.addLog("Skipping purchase order with ID: {}, because no Shipper is set on it", order.getC_Order_ID());
 			return;
 		}
+		if (order.getM_Shipper_ID() > 0 && shipperId.getRepoId() != order.getM_Shipper_ID())
+		{
+			Loggables.addLog("Ignoring C_Order.M_Shipper_ID={} of C_Order_ID={}, because M_ShipperTransportation_ID={} takes precedence", order.getM_Shipper_ID(), order.getM_Shipper_ID(), ShipperTransportationId.toRepoId(shipperTransportationId));
+		}
+
 		final ShipperTransportationId shipperTransportationIdToUse = shipperTransportationId != null
 				? shipperTransportationId
 				: shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
@@ -148,22 +173,26 @@ public class PurchaseOrderToShipperTransportationService
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate = PurchaseShippingPackageCreateRequest.builder()
-				.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
+				.orderId(orderId)
 				.datePromised(order.getDatePromised().toInstant())
 				.shipperTransportationId(shipperTransportationIdToUse)
 				.shiperId(ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID()))
 				.bPartnerLocationId(bPartnerLocationId)
 				.orgId(orgId);
-		if (isOrderLinesWithoutLUQtyExist)
+
+		if (isOrderLinesWithoutLUQtyExist && !repo.isShippingPackageExistsForPurchaseOrderWithNoOrderLine(orderId))
 		{
 			//create a generic package for all order lines without LUQty set on them
 			repo.addPurchaseOrderToShipperTransportation(requestTemplate
 					// .sscc(sscc18CodeBL.generate(orgId)) //No requirements currently ask for this
 					.build());
 		}
-		orderLinesWithLUQty
-				.forEach(ol -> addPurchaseOrderLineToShipperTransportationId(requestTemplate, ol));
+		for (final I_C_OrderLine ol : orderLinesWithLUQty)
+		{
+			addPurchaseOrderLineToShipperTransportationId(requestTemplate, ol);
+		}
 	}
 
 	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate, @NonNull final I_C_OrderLine ol)

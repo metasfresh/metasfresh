@@ -61,6 +61,7 @@ public final class NullVendorGatewayInvoker implements VendorGatewayInvoker
 		return purchaseCandidate.createOrderItem()
 				.remotePurchaseOrderId(NO_REMOTE_PURCHASE_ID)
 				.datePromised(purchaseCandidate.getPurchaseDatePromised())
+				.dateOrdered(purchaseCandidate.getPurchaseDateOrdered())
 				.purchasedQty(purchaseCandidate.getQtyToPurchase())
 				.dimension(purchaseCandidate.getDimension())
 				.buildAndAddToParent();

@@ -8,6 +8,7 @@ import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -58,7 +59,7 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 	}
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DerKurierConstants.SHIPPER_GATEWAY_ID;
 	}
