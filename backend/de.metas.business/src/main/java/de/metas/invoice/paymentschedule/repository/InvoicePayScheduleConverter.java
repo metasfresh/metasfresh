@@ -28,10 +28,10 @@ class InvoicePayScheduleConverter
 				.invoiceId(InvoiceId.ofRepoId(record.getC_Invoice_ID()))
 				.isValid(record.isValid())
 				//
-				.dueDate(record.getDueDate().toInstant())
+				.dueDate(record.getDueDate().toLocalDateTime().toLocalDate())
 				.dueAmount(Money.of(record.getDueAmt(), currencyId))
 				//
-				.discountDate(TimeUtil.asInstant(record.getDiscountDate()))
+				.discountDate(TimeUtil.asLocalDate(record.getDiscountDate()))
 				.discountAmount(Money.of(record.getDiscountAmt(), currencyId))
 				//
 				.orderAndPayScheduleId(OrderAndPayScheduleId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderPaySchedule_ID()))

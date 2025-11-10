@@ -44,35 +44,22 @@ Feature: Purchase order with complex payment term
       | Identifier | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | de_ch_tax  | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
       | ch_ch_tax  | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
-    And metasfresh contains C_PaymentTerm
-      | Identifier |
-      | pt_PO      |
-      | pt_PO_2    |
-      | pt_PO_3    |
-    And metasfresh contains C_PaymentTerm_Break
-      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
-      | PTB1       | pt_PO            | 25      | 1          | OD                | 10    |
-      | PTB2       | pt_PO            | 75      | 0          | LC                | 20    |
-    And metasfresh contains C_PaymentTerm_Break
-      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
-      | PTB21      | pt_PO_2          | 25      | 1          | OD                | 10    |
-      | PTB22      | pt_PO_2          | 25      | 0          | LC                | 20    |
-      | PTB23      | pt_PO_2          | 25      | 0          | BL                | 30    |
-      | PTB24      | pt_PO_2          | 25      | 0          | ET                | 40    |
-    And metasfresh contains C_PaymentTerm_Break
-      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
-      | PTB31      | pt_PO_3          | 25      | 1          | OD                | 10    |
-      | PTB32      | pt_PO_3          | 75      | 0          | IV                | 20    |
-    And validate C_PaymentTerm:
-      | Identifier | IsComplex | IsValid |
-      | pt_PO      | Y         | Y       |
-      | pt_PO_2    | Y         | Y       |
-      | pt_PO_3    | Y         | Y       |
 
 
   @from:cucumber
   Scenario: Purchase Order with complex Payment Term has order pay schedules after completion
-    When metasfresh contains C_Orders:
+    When metasfresh contains C_PaymentTerm
+      | Identifier |
+      | pt_PO      |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB1       | pt_PO            | 25      | 1          | OD                | 10    |
+      | PTB2       | pt_PO            | 75      | 0          | LC                | 20    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO      | Y         | Y       |
+
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
       | po1        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO            |
     And metasfresh contains C_OrderLines:
@@ -85,10 +72,49 @@ Feature: Purchase order with complex payment term
       | PTB1                   | 2025-10-10 | 25.58  | WP     |
       | PTB2                   | 9999-01-01 | 76.72  | PR     |
 
+    
+  @from:cucumber
+  Scenario: Purchase Order with complex Payment Term has order pay schedules after completion (due date after day light saving change)
+    When metasfresh contains C_PaymentTerm
+      | Identifier |
+      | pt_PO      |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB1       | pt_PO            | 25      | 7          | OD                | 10    |
+      | PTB2       | pt_PO            | 75      | 0          | LC                | 20    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO      | Y         | Y       |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po1        | N       | vendor        | 2025-10-20  | POO         | wh             | pt_PO            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po1_l1     | po1        | product      | 10         |
+    And the order identified by po1 is completed
+    Then the order identified by po1 has following pay schedules
+    # In the last line, dueamt is computed as total - previous due amounts, to avoid rounding issues
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB1                   | 2025-10-27 | 25.58  | WP     |
+      | PTB2                   | 9999-01-01 | 76.72  | PR     |
+
 
   @from:cucumber
   Scenario: Order pay schedules are updated when LC date, BL date, ETA date are changed
-    When metasfresh contains C_Orders:
+    When metasfresh contains C_PaymentTerm
+      | Identifier |
+      | pt_PO_2    |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB21      | pt_PO_2          | 25      | 1          | OD                | 10    |
+      | PTB22      | pt_PO_2          | 25      | 0          | LC                | 20    |
+      | PTB23      | pt_PO_2          | 25      | 0          | BL                | 30    |
+      | PTB24      | pt_PO_2          | 25      | 0          | ET                | 40    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO_2    | Y         | Y       |
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
       | po2        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO_2          |
     And metasfresh contains C_OrderLines:
@@ -177,7 +203,18 @@ Feature: Purchase order with complex payment term
 
   @from:cucumber
   Scenario: Order pay schedules are updated when Invoice Date is changed
-    When metasfresh contains C_Orders:
+    When metasfresh contains C_PaymentTerm
+      | Identifier |
+      | pt_PO_3    |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB31      | pt_PO_3          | 25      | 1          | OD                | 10    |
+      | PTB32      | pt_PO_3          | 75      | 0          | IV                | 20    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO_3    | Y         | Y       |
+
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
       | po3        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO_3          |
     And metasfresh contains C_OrderLines:

@@ -31,8 +31,7 @@ import lombok.Value;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -52,9 +51,9 @@ public class PaySchedule
 		return grandTotal.multiply(percentage, precision);
 	}
 
-	public Instant calculateDueDate(@NonNull final Instant dateInvoiced)
+	public LocalDate calculateDueDate(@NonNull final LocalDate dateInvoiced)
 	{
-		return dateInvoiced.plus(netDays, ChronoUnit.DAYS);
+		return dateInvoiced.plusDays(netDays);
 	}
 
 	public Money calculateDiscountAmt(@NonNull final Money dueAmt, @NonNull final CurrencyPrecision precision)
@@ -62,8 +61,8 @@ public class PaySchedule
 		return dueAmt.multiply(percentage, precision);
 	}
 
-	public Instant calculateDiscountDate(@NonNull final Instant dateInvoiced)
+	public LocalDate calculateDiscountDate(@NonNull final LocalDate dateInvoiced)
 	{
-		return dateInvoiced.plus(discountDays, ChronoUnit.DAYS);
+		return dateInvoiced.plusDays(discountDays);
 	}
 }
