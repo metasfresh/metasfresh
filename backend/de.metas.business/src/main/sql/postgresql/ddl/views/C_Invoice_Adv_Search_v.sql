@@ -33,6 +33,7 @@ SELECT i.c_invoice_id,
        wh.name                                                                                                 AS WarehouseName,
        cal.name                                                                                                AS CalendarName,
        year.fiscalyear                                                                                         AS FiscalYear,
+       i.DateInvoiced,
        i.description,
        i.descriptionbottom,
        i.ad_client_id,
@@ -52,8 +53,8 @@ SELECT i.c_invoice_id,
            || '-' || COALESCE(dt.c_doctype_id::varchar, 'X')
            || '-' || COALESCE(wh.m_warehouse_id::varchar, 'X')
            || '-' || COALESCE(cal.c_calendar_id::varchar, 'X')
-           || '-' || COALESCE(year.c_year_id::varchar, 'X')                                                    AS es_documentid,
-       i.DateInvoiced
+           || '-' || COALESCE(year.c_year_id::varchar, 'X')                                                    AS es_documentid
+
 FROM C_Invoice i
          INNER JOIN C_BPartner bp ON i.c_bpartner_id = bp.c_bpartner_id
          INNER JOIN C_BPartner_location bpl ON i.c_bpartner_location_id = bpl.c_bpartner_location_id

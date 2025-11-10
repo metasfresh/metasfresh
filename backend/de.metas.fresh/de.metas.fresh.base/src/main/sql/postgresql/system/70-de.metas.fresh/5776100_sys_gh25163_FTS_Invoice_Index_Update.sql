@@ -243,13 +243,13 @@ SET ES_QueryCommand='{
 WHERE ES_FTS_Config_ID=540003;
 
 -- 2025-11-10T10:13:48.020Z
-UPDATE ES_FTS_Config SET Description='!! Columns in used in this config need to be present in the table C_Invoice_Adv_Search and C_Invoice_Adv_Search_V view !!',Updated=TO_TIMESTAMP('2025-11-10 11:13:48.02','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ES_FTS_Config_ID=540003
+UPDATE ES_FTS_Config SET Description='!! Columns used in this config need to be present in the table C_Invoice_Adv_Search and C_Invoice_Adv_Search_V view !!',Updated=TO_TIMESTAMP('2025-11-10 11:13:48.02','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ES_FTS_Config_ID=540003
 ;
 
 -- 2025-11-10T10:14:23.729Z
-UPDATE ES_FTS_Config SET Description='!! Columns in used in this config need to be present in the table C_BPartner_Adv_Search and C_BPartner_Adv_Search_V view !!',Updated=TO_TIMESTAMP('2025-11-10 11:14:23.729','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ES_FTS_Config_ID=540000
+UPDATE ES_FTS_Config SET Description='!! Columns used in this config need to be present in the table C_BPartner_Adv_Search and C_BPartner_Adv_Search_V view !!',Updated=TO_TIMESTAMP('2025-11-10 11:14:23.729','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ES_FTS_Config_ID=540000
 ;
 
 -- 2025-11-10T10:17:49.945Z
-UPDATE ES_FTS_Config SET Description='!! Columns in used in this config need to be present in the table M_Product !!',Updated=TO_TIMESTAMP('2025-11-10 11:17:49.945','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ES_FTS_Config_ID=540001
+UPDATE ES_FTS_Config SET Description='!! Columns used in this config need to be present in the table M_Product !!',Updated=TO_TIMESTAMP('2025-11-10 11:17:49.945','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ES_FTS_Config_ID=540001
 ;
