@@ -5,27 +5,37 @@ import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
 import { act } from 'react-dom/test-utils';
 
-import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import {
+  ShortcutProvider
+} from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
+import {
+  initialState as windowHandlerState
+} from '../../../reducers/windowHandler';
 
 import Filters from '../../../components/filters/Filters';
 import filtersFixtures from '../../../../test_setup/fixtures/filters.json';
-import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../../test_setup/fixtures/keymap.json';
-import filterData from '../../../../test_setup/fixtures/filters/filterData.json';
-import filtersActive from '../../../../test_setup/fixtures/filters/filtersActive.json';
-import filtersStoreOne from '../../../../test_setup/fixtures/filters/filtersStoreOne.json';
-import filtersStoreTwo from '../../../../test_setup/fixtures/filters/filtersStoreTwo.json';
-import filtersStoreThree from '../../../../test_setup/fixtures/filters/filtersStoreThree.json';
-import filtersStoreFour from '../../../../test_setup/fixtures/filters/filtersStoreFour.json';
-import filtersStoreFacet from '../../../../test_setup/fixtures/filters/filtersStoreFacet.json';
-import filtersStoreInline from '../../../../test_setup/fixtures/filters/filtersStoreInline.json';
+import filterData
+  from '../../../../test_setup/fixtures/filters/filterData.json';
+import filtersActive
+  from '../../../../test_setup/fixtures/filters/filtersActive.json';
+import filtersStoreOne
+  from '../../../../test_setup/fixtures/filters/filtersStoreOne.json';
+import filtersStoreTwo
+  from '../../../../test_setup/fixtures/filters/filtersStoreTwo.json';
+import filtersStoreThree
+  from '../../../../test_setup/fixtures/filters/filtersStoreThree.json';
+import filtersStoreFour
+  from '../../../../test_setup/fixtures/filters/filtersStoreFour.json';
+import filtersStoreFacet
+  from '../../../../test_setup/fixtures/filters/filtersStoreFacet.json';
+import filtersStoreInline
+  from '../../../../test_setup/fixtures/filters/filtersStoreInline.json';
 
 const mockStore = configureStore([]);
 
 const createStore = function (state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -35,8 +45,6 @@ const createStore = function (state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 const createInitialProps = function (
@@ -126,7 +134,6 @@ describe('Filters tests', () => {
   });
 
   it('renders active filters caption for inline filters', () => {
-    const updateDocListListener = jest.fn();
     const dummyProps = createInitialProps(undefined);
     const initialState = createStore({
       windowHandler: {
@@ -186,7 +193,7 @@ describe('Filters tests', () => {
     });
     const store = mockStore(initialState);
     const wrapper = mount(
-      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+      <ShortcutProvider>
         <Provider store={store}>
           <div className="document-lists-wrapper">
             <Filters {...dummyProps} />
@@ -225,7 +232,7 @@ describe('Filters tests', () => {
       });
       const store = mockStore(initialState);
       const wrapper = mount(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Provider store={store}>
             <div className="document-lists-wrapper">
               <Filters {...dummyProps} />
@@ -270,7 +277,7 @@ describe('Filters tests', () => {
 
       const store = mockStore(initialState);
       const wrapper = mount(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Provider store={store}>
             <div className="document-lists-wrapper">
               <Filters {...dummyProps} />
@@ -350,7 +357,7 @@ describe('Filters tests', () => {
       });
       const store = mockStore(initialState);
       const wrapper = mount(
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Provider store={store}>
             <div className="document-lists-wrapper">
               <Filters {...dummyProps} />

@@ -205,34 +205,6 @@ export function setLanguages(data) {
   };
 }
 
-export function initKeymap(keymap) {
-  return {
-    type: types.INIT_KEYMAP,
-    payload: keymap,
-  };
-}
-
-export function updateKeymap(keymap) {
-  return {
-    type: types.UPDATE_KEYMAP,
-    payload: keymap,
-  };
-}
-
-export function initHotkeys(hotkeys) {
-  return {
-    type: types.INIT_HOTKEYS,
-    payload: hotkeys,
-  };
-}
-
-export function updateHotkeys(hotkeys) {
-  return {
-    type: types.UPDATE_HOTKEYS,
-    payload: hotkeys,
-  };
-}
-
 export function getNotifications() {
   return (dispatch, getState) => {
     const state = getState();

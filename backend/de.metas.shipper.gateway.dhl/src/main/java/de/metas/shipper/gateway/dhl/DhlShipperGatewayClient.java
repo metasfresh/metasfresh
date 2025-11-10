@@ -417,6 +417,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final DhlShipperProduct codeToUse = isDomesticShipping ? DhlShipperProduct.Dhl_Paket : DhlShipperProduct.Dhl_PaketInternational;
 
 		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
 				.shipperProduct(JsonShipperProduct.builder()
 						.code(codeToUse.getCode())
 						.build())

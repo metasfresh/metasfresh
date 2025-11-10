@@ -32,14 +32,14 @@ Feature: Dhl Shipment
       | Identifier          | Name                | IsStocked | WeightGross |
       | test_product_dhl_01 | test_product_dhl_01 | true      | 0.250 KGM   |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name           | Value          |
-      | ps_dhl_1   | pricing_system | pricing_system |
+      | Identifier |
+      | ps_dhl_1   |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | SOTrx |
-      | pl_dhl_so  | ps_dhl_1           | DE                        | EUR                 | price_list_dhl_so | true  |
+      | Identifier | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_dhl_so  | ps_dhl_1           | DE                        | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name       | ValidFrom  |
-      | plv_dhl_so | pl_dhl_so                 | plv_dhl_so | 2022-01-20 |
+      | Identifier | M_PriceList_ID.Identifier | ValidFrom  |
+      | plv_dhl_so | pl_dhl_so                 | 2022-01-20 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
       | plv_dhl_so             | test_product_dhl_01 | 10.0     | Normal                        | PCE               |

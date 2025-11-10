@@ -26,6 +26,7 @@ import de.metas.handlingunits.trace.HUAccessService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -33,7 +34,8 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.warehouse.qrcode.LocatorQRCode;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 
 import java.util.List;
 
@@ -50,6 +52,7 @@ class DistributionEventProcessCommand
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 	@NonNull private final HUAccessService huAccessService;
+	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	// Params
 	@NonNull private final DistributionJob job;
@@ -70,6 +73,8 @@ class DistributionEventProcessCommand
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull final IHUPIItemProductBL hupiItemProductBL,
 			@NonNull final HUAccessService huAccessService,
+			@NonNull final LocatorScannedCodeResolverService locatorScannedCodeResolver,
+			//
 			@NonNull final DistributionJob job,
 			@NonNull final JsonDistributionEvent event)
 	{
@@ -79,6 +84,7 @@ class DistributionEventProcessCommand
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
 		this.huAccessService = huAccessService;
+		this.locatorScannedCodeResolver = locatorScannedCodeResolver;
 		this.packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(hupiItemProductBL)
@@ -160,12 +166,12 @@ class DistributionEventProcessCommand
 		}
 
 		final JsonDistributionEvent.DropTo dropTo = event.getDropToNonNull();
-		final LocatorQRCode dropToQRCode = dropTo.getQrCode() != null ? LocatorQRCode.ofScannedCode(dropTo.getQrCode()) : null;
+		final LocatorId dropToLocatorId = dropTo.getQrCode() != null ? resolveLocatorId(dropTo.getQrCode()) : null;
 
 		final List<DDOrderMoveSchedule> schedules = ddOrderMoveScheduleService.dropTo(
 				DDOrderDropToRequest.builder()
 						.scheduleIds(scheduleIds)
-						.dropToLocatorId(dropToQRCode != null ? dropToQRCode.getLocatorId() : null)
+						.dropToLocatorId(dropToLocatorId)
 						.build()
 		);
 
@@ -177,6 +183,11 @@ class DistributionEventProcessCommand
 					? DistributionJobLoader.toDistributionJobStep(schedule, loadingSupportServices)
 					: step;
 		});
+	}
+
+	private LocatorId resolveLocatorId(@NonNull final ScannedCode scannedCode)
+	{
+		return locatorScannedCodeResolver.resolve(scannedCode).getLocatorId();
 	}
 
 	private DistributionJobStepId getOrCreateStep()

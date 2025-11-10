@@ -25,6 +25,7 @@ import {
   UPDATE_VIEW_DATA_ERROR,
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
+import { DocumentAction } from '../constants/DocumentAction';
 
 export const viewState = {
   layout: {
@@ -70,16 +71,16 @@ export const initialState = {
   },
 };
 
-const selectView = (state, id, isModal) => {
+const selectView = (state, windowId, isModal) => {
   return isModal
-    ? get(state, ['viewHandler', 'modals', id], viewState)
-    : get(state, ['viewHandler', 'views', id], viewState);
+    ? get(state, ['viewHandler', 'modals', windowId], viewState)
+    : get(state, ['viewHandler', 'views', windowId], viewState);
 };
 
-const selectLocalView = (state, id, isModal) => {
+const selectLocalView = (state, windowId, isModal) => {
   return isModal
-    ? get(state, ['modals', id], viewState)
-    : get(state, ['views', id], viewState);
+    ? get(state, ['modals', windowId], viewState)
+    : get(state, ['views', windowId], viewState);
 };
 
 export const getView = createSelector([selectView], (view) => view);
@@ -87,6 +88,29 @@ export const getView = createSelector([selectView], (view) => view);
 const getLocalView = createSelector([selectLocalView], (view) => view);
 
 const getViewType = (isModal) => (isModal ? 'modals' : 'views');
+
+export const isMasterView = ({ state, windowId, viewId }) => {
+  if (!windowId || !viewId) {
+    return false;
+  }
+
+  const view = selectView(state, windowId, false);
+  return view.viewId === viewId;
+};
+
+export const getMasterViewStandardActions = ({ state, windowId, viewId }) => {
+  if (!windowId || !viewId) {
+    return [];
+  }
+
+  const viewStandardActions = [];
+  const view = getView(state, windowId, /*isModal*/ false);
+  if (view?.layout?.supportNewRecord) {
+    viewStandardActions.push(DocumentAction.NEW_DOCUMENT);
+  }
+
+  return viewStandardActions;
+};
 
 /**
  * @method findViewByViewId
