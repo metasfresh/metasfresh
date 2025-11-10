@@ -63,6 +63,7 @@ import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActiv
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickFromHUWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
+import de.metas.picking.workflow.lauchers.PickingWorkflowLaunchersProvider;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;

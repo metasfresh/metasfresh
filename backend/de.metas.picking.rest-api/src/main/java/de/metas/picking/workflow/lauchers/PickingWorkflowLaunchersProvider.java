@@ -1,4 +1,4 @@
-package de.metas.picking.workflow.handlers;
+package de.metas.picking.workflow.lauchers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
@@ -104,8 +104,7 @@ public class PickingWorkflowLaunchersProvider
 		ResolvedScannedProductCodes scannedProductCodes = null;
 		if (!returnNoResult && query.getFilterByQRCode() != null)
 		{
-			scannedProductCodes = scannedProductCodeResolver.resolve(query.getFilterByQRCode())
-					.orElse(null);
+			scannedProductCodes = scannedProductCodeResolver.resolve(query.getFilterByQRCode()).orElse(null);
 			if (scannedProductCodes == null)
 			{
 				returnNoResult = true;
