@@ -1686,7 +1686,7 @@ public final class Document
 		return fieldCalloutExecutor;
 	}
 
-	/* package */ boolean isProcessed()
+	public boolean isProcessed()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processed);
 		return isActiveField != null && isActiveField.getValueAsBoolean(); // not processed if field missing
