@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -884,5 +885,49 @@ public final class CollectionUtils
 		}
 
 		return result == null ? map : result;
+	}
+
+	public <K, V> ImmutableMap<K, V> merge(@NonNull final ImmutableMap<K, V> map, K key, V value, BinaryOperator<V> remappingFunction)
+	{
+		if (map.isEmpty())
+		{
+			return ImmutableMap.of(key, value);
+		}
+
+		final ImmutableMap.Builder<K, V> mapBuilder = ImmutableMap.builder();
+		boolean added = false;
+		boolean changed = false;
+		for (Map.Entry<K, V> entry : map.entrySet())
+		{
+			if (!added && Objects.equals(key, entry.getKey()))
+			{
+				final V valueOld = entry.getValue();
+				final V valueNew = remappingFunction.apply(valueOld, value);
+				mapBuilder.put(key, valueNew);
+				added = true;
+
+				if (!Objects.equals(valueOld, valueNew))
+				{
+					changed = true;
+				}
+			}
+			else
+			{
+				mapBuilder.put(entry.getKey(), entry.getValue());
+			}
+		}
+
+		if (!added)
+		{
+			mapBuilder.put(key, value);
+			changed = true;
+		}
+
+		if (!changed)
+		{
+			return map;
+		}
+
+		return mapBuilder.build();
 	}
 }

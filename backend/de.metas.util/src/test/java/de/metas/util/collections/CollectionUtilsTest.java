@@ -202,7 +202,55 @@ class CollectionUtilsTest
 							ImmutableMapEntry::getKey)
 			).isSameAs(map);
 		}
+	}
 
+	@Nested
+	class merge_map
+	{
+		@Test
+		void addNewElementToEmptyMap()
+		{
+			assertThat(CollectionUtils.merge(
+					ImmutableMap.of(),
+					"K1",
+					"V1",
+					String::concat
+			)).isEqualTo(ImmutableMap.of("K1", "V1"));
+		}
+
+		@Test
+		void addNewElement()
+		{
+			assertThat(CollectionUtils.merge(
+					ImmutableMap.of("K1", "V1", "K2", "V2"),
+					"K3",
+					"V3",
+					String::concat
+			)).isEqualTo(ImmutableMap.of("K1", "V1", "K2", "V2", "K3", "V3"));
+		}
+
+		@Test
+		void mergeExistingElement()
+		{
+			assertThat(CollectionUtils.merge(
+					ImmutableMap.of("K1", "V11", "K2", "V2"),
+					"K1",
+					"V12",
+					String::concat
+			)).isEqualTo(ImmutableMap.of("K1", "V11V12", "K2", "V2"));
+		}
+
+		@Test
+		void mergeExistingElementProducingNoChange()
+		{
+			final ImmutableMap<String, String> map = ImmutableMap.of("K1", "V1", "K2", "V2");
+			assertThat(CollectionUtils.merge(
+					map,
+					"K1",
+					"",
+					String::concat
+			)).isSameAs(map);
+		}
 	}
 
 	@Nested
