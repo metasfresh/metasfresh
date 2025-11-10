@@ -98,20 +98,6 @@ export const isMasterView = ({ state, windowId, viewId }) => {
   return view.viewId === viewId;
 };
 
-export const getMasterViewStandardActions = ({ state, windowId, viewId }) => {
-  if (!windowId || !viewId) {
-    return [];
-  }
-
-  const viewStandardActions = [];
-  const view = getView(state, windowId, /*isModal*/ false);
-  if (view?.layout?.supportNewRecord) {
-    viewStandardActions.push(DocumentAction.NEW_DOCUMENT);
-  }
-
-  return viewStandardActions;
-};
-
 /**
  * @method findViewByViewId
  * @summary searches for a specific view with viewId
