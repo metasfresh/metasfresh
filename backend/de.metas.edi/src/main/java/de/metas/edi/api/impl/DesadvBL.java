@@ -25,6 +25,7 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -109,6 +110,7 @@ public class DesadvBL implements IDesadvBL
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 
 	private final transient EDIDesadvPackService ediDesadvPackService;
 	private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
@@ -256,7 +258,7 @@ public class DesadvBL implements IDesadvBL
 
 		//
 		// set infos from M_HU_PI_Item_Product
-		final I_M_HU_PI_Item_Product materialItemProduct = ediDesadvPackService.extractHUPIItemProduct(orderRecord, orderLineRecord);
+		final I_M_HU_PI_Item_Product materialItemProduct = hupiItemProductBL.extractHUPIItemProduct(orderRecord, orderLineRecord);
 		newDesadvLine.setGTIN_TU(materialItemProduct.getGTIN());
 			newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
 			newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
