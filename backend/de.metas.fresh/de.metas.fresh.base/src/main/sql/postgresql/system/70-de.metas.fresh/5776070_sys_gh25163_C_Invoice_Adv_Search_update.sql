@@ -39,7 +39,7 @@ BEGIN
     -- Insert new rows
     WITH inserted_rows AS (
         INSERT INTO c_invoice_adv_search (ad_client_id, address1, ad_org_id, bpname, calendarname, c_bpartner_id, city, companyname, created, createdby, description, descriptionbottom, doctypename, documentno, es_documentid, externalid, firstname, fiscalyear, isactive, iscompany, lastname, poreference, postal, updated, updatedby, warehousename, ad_user_id, c_bpartner_location_id, c_calendar_id,
-                                          c_doctype_id, c_invoice_id, c_year_id, m_warehouse_id, bpartnervalue, ispaid, ispartiallypaid, DateInvoiced)
+                                          c_doctype_id, c_invoice_id, c_year_id, m_warehouse_id, bpartnervalue, ispaid, ispartiallypaid,DateInvoiced)
             SELECT v.ad_client_id,
                    v.address1,
                    v.ad_org_id,
