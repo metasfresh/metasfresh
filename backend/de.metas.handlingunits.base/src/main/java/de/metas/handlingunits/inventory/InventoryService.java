@@ -368,4 +368,9 @@ public class InventoryService
 				.execute();
 	}
 
+	public void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId)
+	{
+		inventoryRepository.setQtyCountToQtyBookForInventory(inventoryId);
+	}
+
 }

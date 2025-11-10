@@ -30,7 +30,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
@@ -39,7 +38,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -74,7 +72,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-@Repository
 public final class InventoryRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
