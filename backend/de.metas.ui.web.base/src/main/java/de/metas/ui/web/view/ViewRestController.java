@@ -50,6 +50,7 @@ import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.view.json.JSONViewProfilesList;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -60,6 +61,8 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
@@ -121,6 +124,7 @@ public class ViewRestController
 	@NonNull private final UserSession userSession;
 	@NonNull private final IViewsRepository viewsRepo;
 	@NonNull private final ProcessRestController processRestController;
+	@NonNull private final DocumentDescriptorFactory documentDescriptorFactory;
 	@NonNull private final WindowRestController windowRestController;
 	@NonNull private final CommentsService commentsService;
 	@NonNull private final DocumentZoomIntoService documentZoomIntoService;
@@ -272,7 +276,15 @@ public class ViewRestController
 		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
 		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
 
-		return JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
+		final JSONViewResult json = JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
+		json.setAllowNew(isNewDocumentAllowed(viewId.getWindowId()));
+		return json;
+	}
+
+	private boolean isNewDocumentAllowed(final WindowId windowId)
+	{
+		final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId).getEntityDescriptor();
+		return DocumentPermissionsHelper.isNewDocumentAllowed(documentEntityDescriptor, userSession);
 	}
 
 	@GetMapping("/layout")
