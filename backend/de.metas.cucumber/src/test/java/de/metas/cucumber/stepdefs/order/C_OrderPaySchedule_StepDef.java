@@ -83,7 +83,7 @@ public class C_OrderPaySchedule_StepDef
 
 		row.getAsOptionalBigDecimal(I_C_OrderPaySchedule.COLUMNNAME_DueAmt)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueAmount().toBigDecimal()).as("DueAmt").isEqualByComparingTo(expected));
-		row.getAsOptionalInstant(I_C_OrderPaySchedule.COLUMNNAME_DueDate)
+		row.getAsOptionalLocalDate(I_C_OrderPaySchedule.COLUMNNAME_DueDate)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
 		row.getAsOptionalEnum(I_C_OrderPaySchedule.COLUMNNAME_Status, OrderPayScheduleStatus.class)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getStatus()).as("Status").isEqualTo(expected));
