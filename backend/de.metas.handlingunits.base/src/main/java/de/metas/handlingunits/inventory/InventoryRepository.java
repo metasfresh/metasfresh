@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -73,6 +74,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+@Repository
 public final class InventoryRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
