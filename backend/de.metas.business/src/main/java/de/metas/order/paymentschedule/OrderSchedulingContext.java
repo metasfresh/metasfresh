@@ -33,29 +33,28 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
 
 @Builder
 @Getter
 public class OrderSchedulingContext
 {
 	@NonNull OrderId orderId;
-	@Nullable Instant orderDate;
-	@Nullable Instant letterOfCreditDate;
-	@Nullable Instant billOfLadingDate;
-	@Nullable Instant ETADate;
-	@Nullable Instant invoiceDate;
+	@Nullable LocalDate orderDate;
+	@Nullable LocalDate letterOfCreditDate;
+	@Nullable LocalDate billOfLadingDate;
+	@Nullable LocalDate ETADate;
+	@Nullable LocalDate invoiceDate;
 	@NonNull Money grandTotal;
 	@NonNull CurrencyPrecision precision;
 	@NonNull PaymentTerm paymentTerm;
 
 	public DueDateAndStatus computeDueDate(@NonNull final PaymentTermBreak termBreak)
 	{
-		final Instant referenceDate = getAvailableReferenceDate(termBreak.getReferenceDateType());
+		final LocalDate referenceDate = getAvailableReferenceDate(termBreak.getReferenceDateType());
 		if (referenceDate != null)
 		{
-			final Instant dueDate = referenceDate.plus(termBreak.getOffsetDays(), ChronoUnit.DAYS);
+			final LocalDate dueDate = referenceDate.plusDays(termBreak.getOffsetDays());
 			return DueDateAndStatus.awaitingPayment(dueDate);
 		}
 		else
@@ -65,7 +64,7 @@ public class OrderSchedulingContext
 	}
 
 	@Nullable
-	private Instant getAvailableReferenceDate(@NonNull final ReferenceDateType referenceDateType)
+	private LocalDate getAvailableReferenceDate(@NonNull final ReferenceDateType referenceDateType)
 	{
 		switch (referenceDateType)
 		{
