@@ -52,7 +52,8 @@ SELECT i.c_invoice_id,
            || '-' || COALESCE(dt.c_doctype_id::varchar, 'X')
            || '-' || COALESCE(wh.m_warehouse_id::varchar, 'X')
            || '-' || COALESCE(cal.c_calendar_id::varchar, 'X')
-           || '-' || COALESCE(year.c_year_id::varchar, 'X')                                                    AS es_documentid
+           || '-' || COALESCE(year.c_year_id::varchar, 'X')                                                    AS es_documentid,
+       i.DateInvoiced
 FROM C_Invoice i
          INNER JOIN C_BPartner bp ON i.c_bpartner_id = bp.c_bpartner_id
          INNER JOIN C_BPartner_location bpl ON i.c_bpartner_location_id = bpl.c_bpartner_location_id
