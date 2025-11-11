@@ -2,10 +2,11 @@ package de.metas.dunning;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
+import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 /*
  * #%L
@@ -60,4 +61,6 @@ public class DunningDocId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public TableRecordReference toRecordRef() {return TableRecordReference.of(I_C_DunningDoc.Table_Name, repoId);}
 }
