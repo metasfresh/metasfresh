@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,27 +19,31 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-package de.metas.handlingunits.impl;
 
-import de.metas.inout.InOutId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
-import de.metas.shipping.ShipperId;
+package de.metas.product;
+
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
-@Value
 @Builder
-public class CreatePackagesRequest
+@Value
+public class DimensionsInCM
 {
-	@NonNull InOutId inOutId;
-	@NonNull ShipperId shipperId;
-	boolean processed;
-	@Nullable String trackingCode;
-	@Nullable String trackingURL;
-	@Nullable BigDecimal weightInKg;
-	@NonNull PackageDimensions packageDimensions;
+	private static final int UNSPECIFIED_DIMENSION = 0;
+
+	@Builder.Default
+	int lengthInCM = UNSPECIFIED_DIMENSION;
+
+	@Builder.Default
+	int widthInCM = UNSPECIFIED_DIMENSION;
+
+	@Builder.Default
+	int heightInCM = UNSPECIFIED_DIMENSION;
+
+	public boolean isSpecified()
+	{
+		return lengthInCM > UNSPECIFIED_DIMENSION
+				&& widthInCM > UNSPECIFIED_DIMENSION
+				&& heightInCM > UNSPECIFIED_DIMENSION;
+	}
 }

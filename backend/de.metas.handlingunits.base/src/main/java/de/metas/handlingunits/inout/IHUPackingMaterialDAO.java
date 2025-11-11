@@ -26,6 +26,7 @@ package de.metas.handlingunits.inout;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -90,10 +91,13 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	I_M_HU_PackingMaterial retrievePackingMaterialOrNull(@NonNull final PackageId packageId);
 
 	@Nullable
+	I_M_HU_PackingMaterial retrievePackingMaterialOrNull(@NonNull HuId huId);
+
+	@Nullable
 	I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull I_M_HU_Item huItem);
 
 	/**
-	 * Return the dimensions of the packing material, or a default with all dimensions set to 1
+	 * Return the dimensionsInCM of the packing material, or a default with all dimensionsInCM set to 1
 	 * <p>
 	 * This method should not be here, it should belong to de.metas.shipper.gateway.commons.DeliveryOrderUtil.
 	 * However it is here, as adding it there will create a circular dependency between de.metas.handlingunits.base and de.metas.shipper.gateway.commons, because I_M_HU_PackingMaterial must be imported.

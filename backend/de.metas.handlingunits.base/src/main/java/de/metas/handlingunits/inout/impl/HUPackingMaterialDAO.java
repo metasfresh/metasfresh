@@ -2,6 +2,7 @@ package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingMaterial;
 import de.metas.handlingunits.HuPackingMaterialId;
@@ -89,7 +90,22 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
 				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
 				.create()
-				// first only used here because we wanna see (read: blow up) if there are cases with 2 packing materials for a single package. I don't think this could happen, but wht if it does?
+				// first only used here because we wanna see (read: blow up) if there are cases with 2 packing materials for a single package. I don't think this could happen, but what if it does?
+				.firstOnly(I_M_HU_PackingMaterial.class);
+	}
+
+	@Nullable
+	@Override
+	public I_M_HU_PackingMaterial retrievePackingMaterialOrNull(@NonNull final HuId huId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_HU.class)
+				.addEqualsFilter(I_M_HU.COLUMNNAME_M_HU_ID, huId)
+
+				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
+				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
+				.create()
+				// first only used here because we wanna see (read: blow up) if there are cases with 2 packing materials for a single package. I don't think this could happen, but what if it does?
 				.firstOnly(I_M_HU_PackingMaterial.class);
 	}
 

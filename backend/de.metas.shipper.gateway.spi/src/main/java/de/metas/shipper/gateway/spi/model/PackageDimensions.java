@@ -29,12 +29,14 @@ import lombok.extern.jackson.Jacksonized;
 @Value
 public class PackageDimensions
 {
+	private static final int UNSPECIFIED_DIMENSION = -1;
+
 	int lengthInCM;
 	int widthInCM;
 	int heightInCM;
 
 	/**
-	 * Note: dimensions may be <= 0 which can stand for "not specified".
+	 * Note: dimensionsInCM may be <= 0 which can stand for "not specified".
 	 */
 	@Builder
 	@Jacksonized
@@ -43,6 +45,11 @@ public class PackageDimensions
 		this.lengthInCM = lengthInCM;
 		this.widthInCM = widthInCM;
 		this.heightInCM = heightInCM;
+	}
+
+	public static PackageDimensions unspecified()
+	{
+		return new PackageDimensions(UNSPECIFIED_DIMENSION, UNSPECIFIED_DIMENSION, UNSPECIFIED_DIMENSION);
 	}
 
 }

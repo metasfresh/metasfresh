@@ -3,6 +3,7 @@ package de.metas.handlingunits.shipping;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -92,4 +93,7 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	I_M_ShipperTransportation getById(ShipperTransportationId shipperTransportationId);
 
 	void processShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId);
+
+	@NonNull
+	PackageDimensions getPackageDimensions(@NonNull I_M_HU hu);
 }

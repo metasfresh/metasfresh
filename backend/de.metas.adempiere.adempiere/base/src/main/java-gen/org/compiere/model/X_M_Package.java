@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Package extends org.compiere.model.PO implements I_M_Package, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 457239898L;
+	private static final long serialVersionUID = -238746487L;
 
     /** Standard Constructor */
     public X_M_Package (final Properties ctx, final int M_Package_ID, @Nullable final String trxName)
@@ -102,13 +102,25 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	}
 
 	@Override
-	public void setIPA_SSCC18(final @Nullable java.lang.String IPA_SSCC18)
+	public void setHeightInCm (final int HeightInCm)
 	{
-		set_Value(COLUMNNAME_IPA_SSCC18, IPA_SSCC18);
+		set_Value (COLUMNNAME_HeightInCm, HeightInCm);
 	}
 
 	@Override
-	public java.lang.String getIPA_SSCC18()
+	public int getHeightInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HeightInCm);
+	}
+
+	@Override
+	public void setIPA_SSCC18 (final @Nullable java.lang.String IPA_SSCC18)
+	{
+		set_Value (COLUMNNAME_IPA_SSCC18, IPA_SSCC18);
+	}
+
+	@Override
+	public java.lang.String getIPA_SSCC18() 
 	{
 		return get_ValueAsString(COLUMNNAME_IPA_SSCC18);
 	}
@@ -123,6 +135,18 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	public boolean isClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	@Override
+	public void setLengthInCm (final int LengthInCm)
+	{
+		set_Value (COLUMNNAME_LengthInCm, LengthInCm);
+	}
+
+	@Override
+	public int getLengthInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LengthInCm);
 	}
 
 	@Override
@@ -332,5 +356,17 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	public java.lang.String getTrackingURL() 
 	{
 		return get_ValueAsString(COLUMNNAME_TrackingURL);
+	}
+
+	@Override
+	public void setWidthInCm (final int WidthInCm)
+	{
+		set_Value (COLUMNNAME_WidthInCm, WidthInCm);
+	}
+
+	@Override
+	public int getWidthInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WidthInCm);
 	}
 }

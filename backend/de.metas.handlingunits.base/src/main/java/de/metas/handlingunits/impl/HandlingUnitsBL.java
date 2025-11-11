@@ -218,6 +218,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public IHUProductStorage getSingleHUProductStorage(final HuId huId) {return getSingleHUProductStorage(getById(huId));}
 
 	@Override
+	@NonNull
 	public IHUProductStorage getSingleHUProductStorage(final I_M_HU hu) {return getStorageFactory().getSingleHUProductStorage(hu);}
 
 	@Override
@@ -1473,7 +1474,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	@NonNull
-	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
 	{
 		return handlingUnitsRepo.retrievePIInfo(piItemIds);
 	}

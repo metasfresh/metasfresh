@@ -128,6 +128,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	IHUProductStorage getSingleHUProductStorage(HuId huId);
 
+	@NonNull
 	IHUProductStorage getSingleHUProductStorage(I_M_HU hu);
 
 	IMutableHUContext createMutableHUContext();

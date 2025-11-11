@@ -14,6 +14,7 @@ import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.organization.OrgId;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -123,6 +124,11 @@ public class HUPackageBL implements IHUPackageBL
 		{
 			mpackage.setPackageWeight(request.getWeightInKg());
 		}
+
+		final PackageDimensions packageDimensions = huShipperTransportationBL.getPackageDimensions(hu);
+		mpackage.setLengthInCm(packageDimensions.getLengthInCM());
+		mpackage.setWidthInCm(packageDimensions.getWidthInCM());
+		mpackage.setHeightInCm(packageDimensions.getHeightInCM());
 
 		save(mpackage);
 
@@ -267,4 +273,5 @@ public class HUPackageBL implements IHUPackageBL
 
 		return Optional.of(inOutIds.iterator().next());
 	}
+
 }

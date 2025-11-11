@@ -7,8 +7,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
@@ -25,19 +23,16 @@ import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -45,7 +40,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -64,7 +58,6 @@ import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences
 @RequiredArgsConstructor
 public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private final @NonNull ShipmentOrderRepository shipmentOrderRepository;
 	private final @NonNull CarrierProductRepository carrierProductRepository;
 	private final @NonNull CarrierGoodsTypeRepository carrierGoodsTypeRepository;
 	private final @NonNull CarrierShipmentOrderServiceRepository carrierServiceRepository;
@@ -169,7 +162,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 							.map(this::createDeliveryOrderItems)
 							.collect(ImmutableList.toImmutableList());
 					return DeliveryOrderParcel.builder()
-							.packageDimensions(getPackageDimensions(packageInfo.getPackageId(), HARDCODE_CM_UOM_ID))
+							.packageDimensions(packageInfo.getPackageDimension())
 							.packageId(packageInfo.getPackageId())
 							.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
 							.content(packageInfo.getDescription())
@@ -212,17 +205,4 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.map(Quantity::getAsBigDecimal);
 	}
 
-	@NonNull
-	public static PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
-	{
-		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(packageId);
-
-		if (packingMaterial == null)
-		{
-			throw new AdempiereException("There is no packing material for M_Package_HU_ID=" + packageId.getRepoId() + ". Please create a packing material and set its correct dimensions.");
-		}
-
-		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
-	}
 }

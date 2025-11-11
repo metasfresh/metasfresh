@@ -382,6 +382,18 @@ public class ProductRepository
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
 				.procurementStatus(productRecord.getProcurementStatus())
+				.selfPacked(productRecord.isSelfPacked())
+				.dimensionsInCM(getProductDimensions(productRecord))
+				.build();
+	}
+
+	@NonNull
+	private DimensionsInCM getProductDimensions(final @NonNull I_M_Product productRecord)
+	{
+		return DimensionsInCM.builder()
+				.lengthInCM(productRecord.getLengthInCm())
+				.widthInCM(productRecord.getWidthInCm())
+				.heightInCM(productRecord.getHeightInCm())
 				.build();
 	}
 

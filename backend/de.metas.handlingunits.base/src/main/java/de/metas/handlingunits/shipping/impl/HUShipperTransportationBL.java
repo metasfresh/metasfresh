@@ -5,13 +5,17 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import de.metas.handlingunits.shipping.AddTrackingInfosForInOutWithoutHUReq;
@@ -22,16 +26,25 @@ import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
+import de.metas.product.DimensionsInCM;
+import de.metas.product.Product;
+import de.metas.product.ProductRepository;
+import de.metas.quantity.Quantity;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,11 +60,13 @@ import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -84,6 +99,11 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 
 	@VisibleForTesting
 	public static final String SYSCONFIG_WeightSourceTypes = "de.metas.shipping.WeightSourceTypes";
@@ -421,16 +441,18 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	{
 		if (Check.isEmpty(request.getPackageInfos()))
 		{
-			final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
-					.inOutId(request.getShipmentId())
-					.shipperId(shipperId)
-					.processed(request.isProcessed())
-					.weightInKg(weightCalculator.calculateWeightInKilograms(request.getShipment())
-							.map(weight -> weight.toBigDecimal())
-							.orElse(null))
-					.build();
-
-			return ImmutableList.of(createPackagesRequest);
+			return huInOutDAO.retrieveShippedHandlingUnits(request.getShipment())
+					.stream()
+					.map(hu -> CreatePackagesRequest.builder()
+							.inOutId(request.getShipmentId())
+							.shipperId(shipperId)
+							.processed(request.isProcessed())
+							.weightInKg(weightCalculator.calculateWeightInKg(hu)
+									.map(weight -> weight.toBigDecimal())
+									.orElse(null))
+							.packageDimensions(getPackageDimensions(hu))
+							.build())
+					.collect(Collectors.toList());
 		}
 		else
 		{
@@ -444,6 +466,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 							.trackingCode(packageInfo.getTrackingNumber())
 							.trackingURL(packageInfo.getTrackingUrl())
 							.weightInKg(packageInfo.getWeight())
+							.packageDimensions(PackageDimensions.unspecified())
 							.build()
 					)
 					.collect(ImmutableList.toImmutableList());
@@ -467,5 +490,43 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private ShippingWeightSourceTypes getWeightsSourceTypes()
 	{
 		return ShippingWeightSourceTypes.ofCommaSeparatedString(sysConfigBL.getValue(SYSCONFIG_WeightSourceTypes)).orElse(ShippingWeightSourceTypes.DEFAULT);
+	}
+
+	@Override
+	public @NonNull PackageDimensions getPackageDimensions(@NonNull final I_M_HU hu)
+	{
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(huId);
+
+		if (packingMaterial == null)
+		{
+			final IHUProductStorage singleHUProductStorage = handlingUnitsBL.getSingleHUProductStorage(hu);
+			final Product product = productRepository.getById(singleHUProductStorage.getProductId());
+			final DimensionsInCM productDimensionsInCM = product.getDimensionsInCM();
+			if (!product.isSelfPacked())
+			{
+				throw new AdempiereException("There is no packing material for M_HU_ID=" + huId.getRepoId() + ". Please create a packing material and set its correct dimensions");
+			}
+			if (!productDimensionsInCM.isSpecified())
+			{
+				throw new AdempiereException("The product  " + product.getValue() + " is marked as self packed, but not all sizes have been defined for it.");
+			}
+			final Quantity qtyInStockingUOM = singleHUProductStorage.getQtyInStockingUOM();
+			final List<Integer> dimensions = new ArrayList<>();
+			dimensions.add(productDimensionsInCM.getHeightInCM());
+			dimensions.add(productDimensionsInCM.getWidthInCM());
+			dimensions.add(productDimensionsInCM.getLengthInCM());
+			dimensions.sort(null);
+
+			final int qtyRoundedUpInStockUOM = qtyInStockingUOM.toBigDecimal().setScale(0, RoundingMode.CEILING).intValue();
+			return PackageDimensions.builder()
+					.lengthInCM(dimensions.get(0) * qtyRoundedUpInStockUOM)
+					.heightInCM(dimensions.get(1))
+					.widthInCM(dimensions.get(2))
+					.build();
+		}
+
+		final UomId toUomId = uomDAO.getUomIdByX12DE355(X12DE355.CENTIMETRE);
+		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
 	}
 }

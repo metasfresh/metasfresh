@@ -354,6 +354,7 @@ class DhlTestHelper
 		final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo = CreateDraftDeliveryOrderRequest.PackageInfo.builder()
 				.packageId(firstDeliveryOrderParcel.getPackageId())
 				.weightInKg(firstDeliveryOrderParcel.getGrossWeightKg())
+				.packageDimension(firstDeliveryOrderParcel.getPackageDimensions())
 				.build();
 
 		//
@@ -396,4 +397,5 @@ class DhlTestHelper
 				packageDimensions,
 				customDeliveryData);
 	}
+
 }

@@ -17,6 +17,7 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
@@ -207,6 +208,7 @@ public class ShipperGatewayFacade
 						.poReference(mpackage.getPOReference())
 						.description(StringUtils.trimBlankToNull(mpackage.getDescription()))
 						.weightInKg(extractWeightInKg(mpackage).orElse(null))
+						.packageDimension(extractPackageDimensions(mpackage))
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -221,6 +223,15 @@ public class ShipperGatewayFacade
 
 		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
 		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
+	}
+
+	private PackageDimensions extractPackageDimensions(@NonNull final I_M_Package mpackage)
+	{
+		return PackageDimensions.builder()
+				.lengthInCM(mpackage.getLengthInCm())
+				.widthInCM(mpackage.getWidthInCm())
+				.heightInCM(mpackage.getHeightInCm())
+				.build();
 	}
 
 	private ShipperGatewayId getShipperGatewayId(final ShipperId shipperId)
