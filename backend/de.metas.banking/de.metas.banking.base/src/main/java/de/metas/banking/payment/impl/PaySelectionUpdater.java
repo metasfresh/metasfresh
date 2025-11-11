@@ -436,20 +436,20 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		//
-		// Exclude orders from existing pay selections if we were not explicitelly asked to just update a couple of pay selection lines
+		// Exclude orders from existing pay selections if we were not explicitly asked to just update a couple of pay selection lines
 		// or, Include only the pay selection lines that we were advised to include.
 		if (paySelectionLineIdsToUpdate.isEmpty())
 		{
-			sql += " AND NOT EXISTS (" //
-					+ "         SELECT 1 FROM C_PaySelectionLine psl " //
-					+ "         WHERE psl.C_Order_ID=o.C_Order_ID AND psl.IsActive='Y' " //
+			sql += " AND NOT EXISTS ("
+					+ " SELECT 1 FROM C_PaySelectionLine psl "
+					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID AND psl.IsActive='Y' "
 					+ " )";
 		}
 		else
 		{
-			sql += " AND EXISTS (" //
+			sql += " AND EXISTS ("
 					+ " SELECT 1 FROM C_PaySelectionLine psl "
-					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.IsActive='Y' "
+					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID and psl.IsActive='Y' "
 					+ " AND " + DB.buildSqlList("psl.C_PaySelectionLine_ID", paySelectionLineIdsToUpdate, sqlParams)
 					+ " )";
 		}
