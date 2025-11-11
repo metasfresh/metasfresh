@@ -207,8 +207,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		return buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection)
-				+ " UNION "
-				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, paySelection);
+				+ "\nUNION\n"
+				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
 	}
 
 	private @NonNull String buildInvoiceSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
@@ -383,7 +383,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
-	private @NonNull String buildOrderSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final I_C_PaySelection paySelection)
+	private @NonNull String buildOrderSql(
+			@NonNull final List<Object> sqlParams,
+			@NonNull final CurrencyId C_CurrencyTo_ID,
+			@NonNull final Timestamp payDate,
+			@NonNull final I_C_PaySelection paySelection)
 	{
 		String sql = "SELECT "
 				+ " -1 as C_Invoice_ID," // 1
@@ -465,10 +469,10 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		// DateTrx
-		if (getPayDate() != null)
+		if (isOnlyDue())
 		{
-			sql += " AND o.DateAcct=?";
-			sqlParams.add(getPayDate());
+			sql += " AND ops.DueDate <= ?";
+			sqlParams.add(payDate);
 		}
 
 		// Match Requirement
