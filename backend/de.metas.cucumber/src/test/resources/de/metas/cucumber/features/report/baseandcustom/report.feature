@@ -112,7 +112,16 @@ Feature: Jasper Report Tests
 
   @S0471_200
   @from:cucumber
-  Scenario: Sales Report Test
+  Scenario: Sales Report and Dunning Report Test
+    And metasfresh contains C_Dunning:
+      | Identifier        |
+      | dunning_S0471_200 |
+    And metasfresh contains C_DunningLevel:
+      | Identifier             | C_Dunning_ID      | DaysAfterDue |
+      | dunningLevel_S0471_200 | dunning_S0471_200 | 0            |
+    And update C_BPartner:
+      | Identifier | C_Dunning_ID      |
+      | customer   | dunning_S0471_200 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | so1        | true    | customer      | 2025-04-01  | wh             |
@@ -150,6 +159,23 @@ Feature: Jasper Report Tests
     And The jasper process is run
       | Value             | Record_ID     |
       | Rechnung (Jasper) | salesInvoice1 |
+    # dev-note: update dateInvoiced to be set in the past in order to generate dunning
+    And update C_Invoice:
+      | Identifier    | OPT.DateInvoiced |
+      | salesInvoice1 | 2021-04-08       |
+
+    And invoke "C_Dunning_Candidate_Create" process:
+      | C_DunningLevel_ID      | DunningDate |
+      | dunningLevel_S0471_200 | 2022-09-29  |
+    And locate C_Dunning_Candidate:
+      | Identifier           | TableName | Record_ID     |
+      | dunningCandInvoice_1 | C_Invoice | salesInvoice1 |
+    And invoke "C_Dunning_Candidate_Process" process:
+      | Identifier   | C_Dunning_Candidate_ID | AutoProcess |
+      | dunningDoc_1 | dunningCandInvoice_1   | false       |
+    And The jasper process is run
+      | Value        | Record_ID    |
+      | C_DunningDoc | dunningDoc_1 |
 
   @from:cucumber
   Scenario: Deactivate StoreArchiveOnFileSystem

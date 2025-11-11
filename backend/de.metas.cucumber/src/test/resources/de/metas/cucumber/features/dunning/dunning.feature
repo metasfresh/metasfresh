@@ -5,6 +5,7 @@ Feature: Dunning Report Test
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier |
@@ -30,9 +31,6 @@ Feature: Dunning Report Test
 
   @from:cucumber
   Scenario: Dunning Report Test
-    And metasfresh contains C_Doc_Outbound_Config:
-      | Identifier                         | TableName    | PrintFormat.Name               |
-      | DunningDocOutboundConfig_S0471_200 | C_DunningDoc | Mahnbrief mit Rechnungsbelegen |
     And metasfresh contains C_Dunning:
       | Identifier        |
       | dunning_S0471_200 |
