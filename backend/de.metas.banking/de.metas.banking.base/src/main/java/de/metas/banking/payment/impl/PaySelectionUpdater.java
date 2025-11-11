@@ -464,12 +464,12 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sqlParams.add(getC_BP_Group_ID());
 		}
 
-		// DateTrx
-		if (payDate != null)
+		if (isOnlyDue() && payDate != null)
 		{
 			sql += " AND ops.DueDate <= ?";
 			sqlParams.add(payDate);
 		}
+
 
 		// Match Requirement
 		final PaySelectionMatchingMode matchRequirement = getMatchRequirement().orElse(null);
