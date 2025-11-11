@@ -145,3 +145,20 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,755963,0,223,540672,638580,'F',TO_TIMESTAMP('2025-11-11 08:49:22.002000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Ensorgernummer',330,0,0,TO_TIMESTAMP('2025-11-11 08:49:22.002000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+-- UI Element: Geschäftspartner_OLD(123,D) -> Kunde(223,D) -> main -> 10 -> payment conditions.Sektion
+-- Column: C_BPartner.AD_Org_ID
+-- 2025-11-11T09:05:56.936Z
+UPDATE AD_UI_Element SET SeqNo=340,Updated=TO_TIMESTAMP('2025-11-11 09:05:56.936000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=545731
+;
+
+-- UI Element: Geschäftspartner_OLD(123,D) -> Kunde(223,D) -> main -> 10 -> payment conditions.Mandant
+-- Column: C_BPartner.AD_Client_ID
+-- 2025-11-11T09:06:08.021Z
+UPDATE AD_UI_Element SET SeqNo=350,Updated=TO_TIMESTAMP('2025-11-11 09:06:08.021000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=545732
+;
+
+-- UI Element: Geschäftspartner_OLD(123,D) -> Lieferant(224,D) -> main -> 10 -> default.Erzeugernummer
+-- Column: C_BPartner.WasteProducerNo
+-- 2025-11-11T09:07:56.872Z
+UPDATE AD_UI_Element SET SeqNo=149,Updated=TO_TIMESTAMP('2025-11-11 09:07:56.872000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=638579
+;
