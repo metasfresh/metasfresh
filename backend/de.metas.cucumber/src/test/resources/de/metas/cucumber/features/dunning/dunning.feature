@@ -51,7 +51,7 @@ Feature: Invoice Dunning Test
     And invoke "C_Dunning_Candidate_Create" process:
       | C_DunningLevel_ID      | DunningDate |
       | dunningLevel_S0471_200 | 2022-09-29  |
-    And locate C_Dunning_Candidate:
+    And after not more than 60s, locate C_Dunning_Candidate:
       | Identifier           | TableName | Record_ID     |
       | dunningCandInvoice_1 | C_Invoice | salesInvoice1 |
     And invoke "C_Dunning_Candidate_Process" process:

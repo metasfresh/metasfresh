@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.dunning;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
@@ -41,7 +42,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
@@ -58,7 +58,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class C_Dunning_Candidate_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 	private final IDunningBL dunningBL = Services.get(IDunningBL.class);
@@ -75,11 +74,11 @@ public class C_Dunning_Candidate_StepDef
 				.forEach(this::createDunningCandidate);
 	}
 
-	@And("locate C_Dunning_Candidate:")
-	public void locateC_Dunning_Candidate(@NonNull final DataTable dataTable)
+	@And("^after not more than (.*)s, locate C_Dunning_Candidate:$")
+	public void locateC_Dunning_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.forEach(this::locateDunningCandidate);
+				.forEach(row -> locateDunningCandidate(timeoutSec, row));
 	}
 
 	@And("invoke \"C_Dunning_Candidate_Process\" process:")
@@ -160,20 +159,16 @@ public class C_Dunning_Candidate_StepDef
 		final Date dunningDate = TimeUtil.asDate(row.getAsLocalDate(I_C_DunningDoc.COLUMNNAME_DunningDate));
 		assertThat(dunningDate).isNotNull();
 
-		trxManager.runInNewTrx(() ->
-		{
-			final IDunningContext context = dunningBL.createDunningContext(Env.getCtx(), dunningLevelRecord, dunningDate, ITrx.TRXNAME_None);
+		final IDunningContext context = dunningBL.createDunningContext(Env.getCtx(), dunningLevelRecord, dunningDate, ITrx.TRXNAME_None);
 
-			dunningDAO.deleteNotProcessedCandidates(context, dunningLevelRecord);
+		dunningDAO.deleteNotProcessedCandidates(context, dunningLevelRecord);
 
-			dunningBL.createDunningCandidates(context);
-		});
+		dunningBL.createDunningCandidates(context);
 	}
 
-	private void locateDunningCandidate(@NonNull final DataTableRow row)
+	private void locateDunningCandidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
-		final I_C_Dunning_Candidate dunningCandidate = buildQuery(row)
-				.firstOnlyNotNull(I_C_Dunning_Candidate.class);
+		final I_C_Dunning_Candidate dunningCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, buildQuery(row));
 
 		row.getAsIdentifier().putOrReplace(dunningCandidateTable, dunningCandidate);
 	}
