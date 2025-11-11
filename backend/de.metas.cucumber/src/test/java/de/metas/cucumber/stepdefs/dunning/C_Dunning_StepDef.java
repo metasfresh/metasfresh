@@ -54,8 +54,7 @@ public class C_Dunning_StepDef
 
 	private void createC_Dunning(@NonNull final DataTableRow tableRow)
 	{
-		final String name = tableRow.getAsOptionalName(I_C_Dunning.COLUMNNAME_Name)
-				.orElse(tableRow.suggestValueAndName().getName());
+		final String name = tableRow.suggestValueAndName().getName();
 
 		final I_C_Dunning record = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_Dunning.class)

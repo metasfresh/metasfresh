@@ -62,8 +62,7 @@ public class C_DunningLevel_StepDef
 				.lookupIn(dunningTable);
 		assertThat(dunningRecord).isNotNull();
 
-		final String name = tableRow.getAsOptionalName(I_C_DunningLevel.COLUMNNAME_Name)
-				.orElse(tableRow.suggestValueAndName().getName());
+		final String name = tableRow.suggestValueAndName().getName();
 
 		final I_C_DunningLevel record = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_DunningLevel.class)
