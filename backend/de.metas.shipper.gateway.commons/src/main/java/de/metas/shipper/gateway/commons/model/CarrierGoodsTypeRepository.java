@@ -44,7 +44,7 @@ public class CarrierGoodsTypeRepository
 	final CCache<String, CarrierGoodsType> carrierGoodsTypesByExternalId = CCache.newLRUCache(I_Carrier_Goods_Type.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
 	final CCache<String, CarrierGoodsType> carrierGoodsTypesById = CCache.newLRUCache(I_Carrier_Goods_Type.Table_Name + "#byId", 100, 0);
 
-	@Nullable
+	@NonNull
 	public CarrierGoodsType getOrCreateGoodsType(@NonNull final ShipperId shipperId, @NonNull final String externalId, @NonNull final String name)
 	{
 		final CarrierGoodsType cachedGoodsTypeByExternalId = getCachedGoodsTypeByShipperExternalId(shipperId, externalId);

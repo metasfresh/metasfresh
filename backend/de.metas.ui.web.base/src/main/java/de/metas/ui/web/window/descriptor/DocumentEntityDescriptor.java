@@ -268,7 +268,9 @@ public class DocumentEntityDescriptor
 	 */
 	public WindowId getWindowId()
 	{
-		Check.assume(documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, documentType);
+		Check.assume(documentType == DocumentType.Window || documentType == DocumentType.QuickInput,
+				"expected document type to be Window or QuickInput but it was {}", documentType
+		);
 		return WindowId.of(documentTypeId);
 	}
 

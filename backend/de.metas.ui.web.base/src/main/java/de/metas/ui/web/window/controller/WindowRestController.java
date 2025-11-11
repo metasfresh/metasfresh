@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefTable;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
-import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
@@ -425,7 +424,7 @@ public class WindowRestController
 
 		final DocumentPath fromDocumentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
 
-		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath);
+		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath, userSession.getUserRolePermissions());
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions().showAdvancedFields(advanced).build();
 		return JSONDocument.ofDocument(documentCopy, jsonOpts);
 	}

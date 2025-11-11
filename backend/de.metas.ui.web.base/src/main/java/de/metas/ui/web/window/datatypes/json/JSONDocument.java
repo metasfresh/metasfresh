@@ -124,7 +124,7 @@ public final class JSONDocument extends JSONDocumentBase
 
 		//
 		// Available standard actions
-		jsonDocument.setStandardActions(document.getStandardActions());
+		jsonDocument.setStandardActions(options.getDocumentPermissions().getStandardActions(document));
 
 		//
 		// Set debugging info

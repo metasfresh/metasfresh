@@ -69,7 +69,7 @@ public interface IProcessPreconditionsContext
 	 */
 	@Deprecated
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
-	
+
 	@NonNull
 	<T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass);
 
@@ -106,6 +106,11 @@ public interface IProcessPreconditionsContext
 		return getSelectionSize().isMoreThanOneSelected();
 	}
 
+	default boolean isMoreThanAllowedSelected(final int maxAllowedSelectionSize)
+	{
+		return getSelectionSize().getSize() > maxAllowedSelectionSize;
+	}
+
 	/**
 	 * @return selected included rows of current single selected document
 	 */
@@ -137,5 +142,7 @@ public interface IProcessPreconditionsContext
 		}
 	}
 
-	default OptionalBoolean isExistingDocument() { return OptionalBoolean.UNKNOWN; }
+	default OptionalBoolean isExistingDocument() {return OptionalBoolean.UNKNOWN;}
+
+	default OptionalBoolean isProcessedDocument() { return OptionalBoolean.UNKNOWN; };
 }

@@ -115,7 +115,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
 	private static final AdMessageKey ERR_NoCurrentVersionFound = AdMessageKey.of("de.metas.handlingunits.HUPI.NoCurrentVersionFound");
-	
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
@@ -1253,6 +1253,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.stream()
 				.filter(warehouse -> !huWarehouseIds.contains(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID())))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Set<LocatorId> getLocatorIds(final List<I_M_HU> hus)
+	{
+		final Set<Integer> locatorRepoIds = hus.stream()
+				.map(I_M_HU::getM_Locator_ID)
+				.filter(locatorRepoId -> locatorRepoId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
 	}
 
 	@Override
