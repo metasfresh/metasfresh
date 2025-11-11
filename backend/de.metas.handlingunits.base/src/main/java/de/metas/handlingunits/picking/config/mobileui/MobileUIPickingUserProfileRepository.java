@@ -102,6 +102,7 @@ public class MobileUIPickingUserProfileRepository
 				.isFilterByBarcode(profileRecord.isFilterByBarcode())
 				.isActiveWorkplaceRequired(profileRecord.isActiveWorkplaceRequired())
 				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
+				.isConsiderOnlyIfQtyAvailableAtPickingLocator(false) // TODO introduce column
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))

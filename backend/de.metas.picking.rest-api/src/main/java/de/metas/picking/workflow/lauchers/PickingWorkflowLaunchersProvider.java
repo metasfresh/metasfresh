@@ -147,16 +147,19 @@ public class PickingWorkflowLaunchersProvider
 		if (!returnNoResult
 				&& !limit.isLimitHitOrExceeded(currentResult))
 		{
-			final ImmutableList<PickingJobCandidate> newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
-							.userId(userId)
-							.excludeScheduleIds(existingPickingJobs.getScheduleIds())
-							.facets(facets)
-							.onlyCustomerIds(profile.getPickOnlyCustomerIds())
-							.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() ? workplace.getId() : null)
-							.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
-							.salesOrderDocumentNo(query.getFilterByDocumentNo())
-							.scannedProductCodes(scannedProductCodes)
-							.build())
+			final ImmutableList<PickingJobCandidate> newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(
+							PickingJobQuery.builder()
+									.userId(userId)
+									.excludeScheduleIds(existingPickingJobs.getScheduleIds())
+									.facets(facets)
+									.onlyCustomerIds(profile.getPickOnlyCustomerIds())
+									.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() ? workplace.getId() : null)
+									.onlyIfQtyAvailableAtPickingLocator(profile.isConsiderOnlyIfQtyAvailableAtPickingLocator())
+									.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
+									.salesOrderDocumentNo(query.getFilterByDocumentNo())
+									.scannedProductCodes(scannedProductCodes)
+									.build()
+					)
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.collect(ImmutableList.toImmutableList());
 

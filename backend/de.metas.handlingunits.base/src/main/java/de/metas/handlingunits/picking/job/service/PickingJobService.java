@@ -224,8 +224,10 @@ public class PickingJobService implements PickingSlotListener
 	{
 		return PickingJobCandidateRetrieveCommand.builder()
 				.packagingDAO(packagingDAO)
+				.handlingUnitsBL(handlingUnitsBL)
 				.configRepository(mobileUIPickingUserProfileRepository)
 				.pickingJobScheduleService(pickingJobScheduleService)
+				.workplaceService(workplaceService)
 				//
 				.query(query)
 				//

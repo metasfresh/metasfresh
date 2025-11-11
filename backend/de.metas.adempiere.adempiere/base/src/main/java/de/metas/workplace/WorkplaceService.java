@@ -23,9 +23,12 @@
 package de.metas.workplace;
 
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -36,10 +39,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class WorkplaceService
 {
-	@NonNull
-	private final WorkplaceRepository workplaceRepository;
-	@NonNull
-	private final WorkplaceUserAssignRepository workplaceUserAssignRepository;
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final WorkplaceRepository workplaceRepository;
+	@NonNull private final WorkplaceUserAssignRepository workplaceUserAssignRepository;
 
 	public Workplace create(@NonNull final WorkplaceCreateRequest request) {return workplaceRepository.create(request);}
 
@@ -88,5 +90,11 @@ public class WorkplaceService
 	public boolean isAnyWorkplaceActive()
 	{
 		return workplaceRepository.isAnyWorkplaceActive();
+	}
+
+	public LocatorId getLocatorId(@NonNull final WorkplaceId workplaceId)
+	{
+		final Workplace workplace = getById(workplaceId);
+		return warehouseBL.getOrCreateDefaultLocatorId(workplace.getWarehouseId());
 	}
 }

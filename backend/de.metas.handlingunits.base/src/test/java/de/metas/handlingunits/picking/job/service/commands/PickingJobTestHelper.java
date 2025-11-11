@@ -17,7 +17,6 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -59,7 +58,9 @@ import de.metas.handlingunits.util.HUTracerInstance;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.location.impl.DummyDocumentLocationBL;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
@@ -86,6 +87,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -107,6 +109,7 @@ public class PickingJobTestHelper
 
 	//
 	// Services
+	private final IOrderBL orderBL;
 	private final HUTestHelper huTestHelper;
 	public final HUReservationService huReservationService;
 	public final HUQRCodesRepository huQRCodesRepository;
@@ -122,6 +125,7 @@ public class PickingJobTestHelper
 	public final I_C_UOM uomEach;
 	public final LocatorId shipFromLocatorId;
 	public final BPartnerLocationId shipToBPLocationId;
+	public final String customerName = "BPartner1";
 	public final PickingSlotId pickingSlotId;
 
 	public PickingJobTestHelper()
@@ -134,6 +138,8 @@ public class PickingJobTestHelper
 		// User one record ID sequence for each table
 		// because most of the tests are using snapshot testing.
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
+		
+		orderBL = Services.get(IOrderBL.class);
 
 		productBL = Services.get(IProductBL.class);
 		huReservationService = new HUReservationService(new HUReservationRepository());
@@ -199,7 +205,7 @@ public class PickingJobTestHelper
 		// Master data
 		orgId = AdempiereTestHelper.createOrgWithTimeZone(MockedPickingJobLoaderSupportingServices.ZONE_ID);
 		uomEach = huTestHelper.uomEach;
-		shipToBPLocationId = createBPartnerAndLocationId("BPartner1");
+		shipToBPLocationId = createBPartnerAndLocationId(customerName);
 		shipFromLocatorId = createLocatorId(createWarehouseId("warehouse"), "wh_loc");
 		createPickingConfigV2(true);
 		this.pickingSlotId = createPickingSlot();
@@ -296,6 +302,8 @@ public class PickingJobTestHelper
 
 	private void createPackageableFromShipmentSchedule(final I_M_ShipmentSchedule sched)
 	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(sched.getC_Order_ID()));
+
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 		final UomId uomId = productBL.getStockUOMId(productId);
 
@@ -307,6 +315,7 @@ public class PickingJobTestHelper
 		item.setQtyToDeliver(sched.getQtyToDeliver());
 		item.setC_BPartner_Customer_ID(sched.getC_BPartner_ID());
 		item.setC_BPartner_Location_ID(sched.getC_BPartner_Location_ID());
+		item.setBPartnerName(customerName);
 		item.setHandOver_Partner_ID(sched.getC_BPartner_ID());
 		item.setHandOver_Location_ID(sched.getC_BPartner_Location_ID());
 		item.setBPartnerAddress_Override("deliveryRenderedAddress");
@@ -318,6 +327,7 @@ public class PickingJobTestHelper
 				sched.getM_HU_PI_Item_Product_ID()));
 		item.setC_OrderSO_ID(sched.getC_Order_ID());
 		item.setC_OrderLineSO_ID(sched.getC_OrderLine_ID());
+		item.setOrderDocumentNo(order.getDocumentNo());
 		item.setDeliveryDate(sched.getDeliveryDate());
 		item.setPreparationDate(sched.getPreparationDate());
 		save(item);

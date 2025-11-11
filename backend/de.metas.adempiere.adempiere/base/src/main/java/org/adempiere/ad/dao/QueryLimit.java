@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.MutableInt;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -152,7 +153,17 @@ public final class QueryLimit
 
 	public boolean isLimitHitOrExceeded(@NonNull final Collection<?> collection)
 	{
-		return isLimited() && value <= collection.size();
+		return isLimitHitOrExceeded(collection.size());
+	}
+
+	public boolean isLimitHitOrExceeded(@NonNull final MutableInt countHolder)
+	{
+		return isLimitHitOrExceeded(countHolder.getValue());
+	}
+
+	public boolean isLimitHitOrExceeded(final int count)
+	{
+		return isLimited() && value <= count;
 	}
 
 	public boolean isBelowLimit(@NonNull final Collection<?> collection)

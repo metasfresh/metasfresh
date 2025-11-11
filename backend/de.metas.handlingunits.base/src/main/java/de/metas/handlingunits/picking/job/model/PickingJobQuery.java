@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocumentNoFilter;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacet;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
@@ -52,8 +53,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-import static de.metas.common.util.time.SystemTime.asZonedDateTime;
-
 @Value
 @Builder
 public class PickingJobQuery
@@ -63,10 +62,11 @@ public class PickingJobQuery
 	@Nullable Facets facets;
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyCustomerIds = ImmutableSet.of();
 	@Nullable WorkplaceId scheduledForWorkplaceId;
+	boolean onlyIfQtyAvailableAtPickingLocator;
 	@Nullable WarehouseId warehouseId;
 	@Nullable DocumentNoFilter salesOrderDocumentNo;
 	@Nullable ResolvedScannedProductCodes scannedProductCodes;
-	ZonedDateTime currentTime = asZonedDateTime();
+	@NonNull ZonedDateTime currentTime = SystemTime.asZonedDateTime();
 
 	@NonNull
 	public Set<BPartnerId> getOnlyCustomerIdsEffective()
@@ -115,7 +115,6 @@ public class PickingJobQuery
 				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(excludeScheduleIds.getShipmentScheduleIdsWithoutJobSchedules())
 				.scannedProductCodes(this.getScannedProductCodes())
-				.maximumFixedPreparationDate(currentTime)
 				.maximumFixedPreparationDate(currentTime)
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,
