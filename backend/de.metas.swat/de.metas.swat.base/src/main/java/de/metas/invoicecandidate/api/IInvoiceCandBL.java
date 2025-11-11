@@ -2,7 +2,7 @@
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -410,6 +410,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 
 	int createSelectionForInvoiceCandidates(@NonNull InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
+
+	void createSelectionByQuery(@NonNull InvoiceCandidateQuery query, @NonNull PInstanceId pInstanceId);
 
 	List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(InvoiceCandidateId invoiceCandidateId);
 

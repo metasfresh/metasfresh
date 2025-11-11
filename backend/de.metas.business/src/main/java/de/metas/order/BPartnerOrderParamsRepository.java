@@ -1,32 +1,8 @@
-package de.metas.order;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.cache.CCache;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.freighcost.FreightCostRule;
-import de.metas.lang.SOTrx;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.shipping.ShipperId;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_C_BPartner;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -44,17 +20,46 @@ import java.util.Optional;
  * #L%
  */
 
+package de.metas.order;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.lang.SOTrx;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.X_C_BPartner;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
 @Repository
+@RequiredArgsConstructor
 public class BPartnerOrderParamsRepository
 {
-	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	@NonNull private final BPartnerEffectiveBL bPartnerEffectiveBL;
 
 	private final CCache<BPartnerOrderParamsQuery, BPartnerOrderParams> cache = CCache
 			.<BPartnerOrderParamsQuery, BPartnerOrderParams>builder()
 			.cacheName(this.getClass().getSimpleName())
 			.tableName(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
-			.additionalTableNameToResetFor(I_AD_OrgInfo.Table_Name) // procingSysteId might be coming from here
+			.additionalTableNameToResetFor(I_AD_OrgInfo.Table_Name) // pricingSystemId might be coming from here
 			.build();
 
 	public BPartnerOrderParams getBy(@NonNull final BPartnerOrderParamsQuery query)
@@ -88,6 +93,8 @@ public class BPartnerOrderParamsRepository
 			@NonNull final I_C_BPartner shipBPartnerRecord,
 			@NonNull final SOTrx soTrx)
 	{
+		final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getByRecord(billBPartnerRecord);
+		final BPartnerEffective shipBPartnerEffective = bPartnerEffectiveBL.getByRecord(shipBPartnerRecord);
 		return BPartnerOrderParams.builder()
 				.deliveryRule(getDeliveryRuleOrNull(shipBPartnerRecord, soTrx))
 				.deliveryViaRule(getDeliveryViaRuleOrNull(shipBPartnerRecord, soTrx))
@@ -97,6 +104,7 @@ public class BPartnerOrderParamsRepository
 				.paymentTermId(getPaymentTermId(billBPartnerRecord, soTrx))
 				.pricingSystemId(getPricingSystemId(billBPartnerRecord, soTrx))
 				.shipperId(getShipperId(shipBPartnerRecord))
+				.isAutoInvoice(billBPartnerEffective.isAutoInvoice(soTrx))
 				.build();
 	}
 
