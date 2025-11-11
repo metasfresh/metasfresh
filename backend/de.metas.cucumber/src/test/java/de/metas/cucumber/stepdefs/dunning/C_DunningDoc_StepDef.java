@@ -22,17 +22,16 @@
 
 package de.metas.cucumber.stepdefs.dunning;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.dunning.model.I_C_DunningDoc;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DunningLevel;
+import org.assertj.core.api.SoftAssertions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,17 +56,24 @@ public class C_DunningDoc_StepDef
 				.lookupIn(dunningDocTable);
 		assertThat(dunningDoc).isNotNull();
 
-		final I_C_DunningLevel dunningLevel = row.getAsIdentifier(I_C_DunningDoc.COLUMNNAME_C_DunningLevel_ID)
-				.lookupIn(dunningLevelTable);
-		assertThat(dunningLevel).isNotNull();
-		assertThat(dunningDoc.getC_DunningLevel_ID()).isEqualTo(dunningLevel.getC_DunningLevel_ID());
+		final SoftAssertions softly = new SoftAssertions();
+		
+		row.getAsOptionalIdentifier(I_C_DunningDoc.COLUMNNAME_C_DunningLevel_ID)
+				.map(dunningLevelTable::get)
+				.ifPresent(dunningLevel -> softly.assertThat(dunningDoc.getC_DunningLevel_ID())
+						.as(I_C_DunningDoc.COLUMNNAME_C_DunningLevel_ID)
+						.isEqualTo(dunningLevel.getC_DunningLevel_ID()));
 
-		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, I_C_DunningDoc.COLUMNNAME_Processed, false);
-		assertThat(dunningDoc.isProcessed()).isEqualTo(processed);
+		row.getAsOptionalBoolean(I_C_DunningDoc.COLUMNNAME_Processed)
+				.ifPresent(processed -> softly.assertThat(dunningDoc.isProcessed())
+						.isEqualTo(processed));
 
-		final I_C_BPartner bPartner = row.getAsIdentifier(I_C_DunningDoc.COLUMNNAME_C_BPartner_ID)
-				.lookupIn(bpartnerTable);
-		assertThat(bPartner).isNotNull();
-		assertThat(dunningDoc.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
+		row.getAsOptionalIdentifier(I_C_DunningDoc.COLUMNNAME_C_BPartner_ID)
+				.map(bpartnerTable::getId)
+				.ifPresent(bPartnerId -> softly.assertThat(BPartnerId.ofRepoIdOrNull(dunningDoc.getC_BPartner_ID()))
+						.as(I_C_DunningDoc.COLUMNNAME_C_BPartner_ID)
+						.isEqualTo(bPartnerId));
+		
+		softly.assertAll();
 	}
 }

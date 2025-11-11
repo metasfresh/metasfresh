@@ -462,7 +462,7 @@ public class C_BPartner_StepDef
 			bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
 		}
 
-		final String dunningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Dunning_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String dunningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_Dunning_ID);
 		if (EmptyUtil.isNotBlank(dunningIdentifier))
 		{
 			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);

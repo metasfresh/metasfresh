@@ -62,7 +62,8 @@ public class C_DunningLevel_StepDef
 				.lookupIn(dunningTable);
 		assertThat(dunningRecord).isNotNull();
 
-		final String name = tableRow.getAsString(I_C_DunningLevel.COLUMNNAME_Name);
+		final String name = tableRow.getAsOptionalName(I_C_DunningLevel.COLUMNNAME_Name)
+				.orElse(tableRow.suggestValueAndName().getName());
 
 		final I_C_DunningLevel record = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_DunningLevel.class)
@@ -74,7 +75,8 @@ public class C_DunningLevel_StepDef
 
 		assertThat(record).isNotNull();
 
-		final String printName = tableRow.getAsString(I_C_DunningLevel.COLUMNNAME_PrintName);
+		final String printName = tableRow.getAsOptionalString(I_C_DunningLevel.COLUMNNAME_PrintName)
+				.orElse(name);
 		final BigDecimal daysAfterDue = tableRow.getAsOptionalBigDecimal(I_C_DunningLevel.COLUMNNAME_DaysAfterDue)
 				.orElse(BigDecimal.ZERO);
 		final int daysBetweenDunning = tableRow.getAsOptionalInt(I_C_DunningLevel.COLUMNNAME_DaysBetweenDunning)

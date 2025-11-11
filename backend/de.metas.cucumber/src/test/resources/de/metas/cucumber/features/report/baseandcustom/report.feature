@@ -117,14 +117,14 @@ Feature: Jasper Report Tests
       | Identifier                         | TableName    | PrintFormat.Name               |
       | DunningDocOutboundConfig_S0471_200 | C_DunningDoc | Mahnbrief mit Rechnungsbelegen |
     And metasfresh contains C_Dunning:
-      | Identifier        | Name    |
-      | dunning_S0471_200 | Level 1 |
+      | Identifier        |
+      | dunning_S0471_200 |
     And metasfresh contains C_DunningLevel:
-      | Identifier             | C_Dunning_ID      | Name        | PrintName | DaysAfterDue |
-      | dunningLevel_S0471_200 | dunning_S0471_200 | First level | printName | 0            |
+      | Identifier             | C_Dunning_ID      | DaysAfterDue |
+      | dunningLevel_S0471_200 | dunning_S0471_200 | 0            |
     And update C_BPartner:
-      | Identifier | OPT.C_Dunning_ID.Identifier |
-      | customer   | dunning_S0471_200           |
+      | Identifier | C_Dunning_ID      |
+      | customer   | dunning_S0471_200 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | so1        | true    | customer      | 2025-04-01  | wh             |
