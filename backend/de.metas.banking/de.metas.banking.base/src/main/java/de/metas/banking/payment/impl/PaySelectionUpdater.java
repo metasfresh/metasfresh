@@ -438,14 +438,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		{
 			sql += " AND NOT EXISTS (" //
 					+ "         SELECT 1 FROM C_PaySelectionLine psl " //
-					+ "         WHERE psl.C_Order_ID=o.C_Order_ID AND psl.IsActive='Y' " //
+					+ "         WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID AND psl.IsActive='Y' " //
 					+ " )";
 		}
 		else
 		{
 			sql += " AND EXISTS (" //
 					+ " SELECT 1 FROM C_PaySelectionLine psl "
-					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.IsActive='Y' "
+					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID and psl.IsActive='Y' "
 					+ " AND " + DB.buildSqlList("psl.C_PaySelectionLine_ID", paySelectionLineIdsToUpdate, sqlParams)
 					+ " )";
 		}
@@ -467,7 +467,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		// DateTrx
 		if (getPayDate() != null)
 		{
-			sql += " AND o.DateAcct=?";
+			sql += " AND ops.DueDate <= ?";
 			sqlParams.add(getPayDate());
 		}
 
