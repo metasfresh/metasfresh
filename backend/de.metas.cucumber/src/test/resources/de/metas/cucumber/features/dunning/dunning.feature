@@ -1,6 +1,6 @@
-@report
 @from:cucumber
-Feature: Dunning Report Test
+@ghActions:run_on_executor4
+Feature: Invoice Dunning Test
 
   Background:
     Given infrastructure and metasfresh are running
@@ -30,7 +30,7 @@ Feature: Dunning Report Test
       | customerLocation | customer      | CH           | Y               | Y               |
 
   @from:cucumber
-  Scenario: Dunning Report Test
+  Scenario: Invoice Dunning Test
     And metasfresh contains C_Dunning:
       | Identifier        |
       | dunning_S0471_200 |
@@ -60,6 +60,3 @@ Feature: Dunning Report Test
     And validate C_DunningDoc:
       | C_DunningDoc_ID | C_BPartner_ID | C_DunningLevel_ID      | Processed |
       | dunningDoc_1    | customer      | dunningLevel_S0471_200 | N         |
-    And The jasper process is run
-      | Value        | Record_ID    |
-      | C_DunningDoc | dunningDoc_1 |

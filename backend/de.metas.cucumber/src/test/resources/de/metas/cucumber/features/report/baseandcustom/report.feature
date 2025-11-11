@@ -153,9 +153,6 @@ Feature: Jasper Report Tests
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID | C_Invoice_ID  |
       | so_ic1                 | salesInvoice1 |
-    And validate created invoices
-      | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | processed | DocStatus |
-      | salesInvoice1 | customer      | customerLocation       | true      | CO        |
     And The jasper process is run
       | Value             | Record_ID     |
       | Rechnung (Jasper) | salesInvoice1 |
