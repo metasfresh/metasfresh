@@ -72,7 +72,7 @@ Feature: Purchase order with complex payment term
       | PTB1                   | 2025-10-10 | 25.58  | WP     |
       | PTB2                   | 9999-01-01 | 76.72  | PR     |
 
-    
+
   @from:cucumber
   Scenario: Purchase Order with complex Payment Term has order pay schedules after completion (due date after day light saving change)
     When metasfresh contains C_PaymentTerm
@@ -150,25 +150,32 @@ Feature: Purchase order with complex payment term
       | shipperTransp_1            | 2025-10-19 | 2025-10-25 |
     And the transport order identified by shipperTransp_1 is completed
     Then the order identified by po2 has following pay schedules
-      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
-      | PTB21                  | 2025-10-10 | 25.58  | WP     |
-      | PTB22                  | 2025-10-15 | 25.58  | WP     |
-      | PTB23                  | 2025-10-25 | 25.58  | WP     |
-      | PTB24                  | 2025-10-19 | 25.56  | WP     |
+      | Identifier | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | OPS1       | PTB21                  | 2025-10-10 | 25.58  | WP     |
+      | OPS2       | PTB22                  | 2025-10-15 | 25.58  | WP     |
+      | OPS3       | PTB23                  | 2025-10-25 | 25.58  | WP     |
+      | OPS4       | PTB24                  | 2025-10-19 | 25.56  | WP     |
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID |
       | org_CHF_account | CHF           |
     And metasfresh contains Pay Selection
       | Identifier | C_BP_BankAccount_ID | PaySelectionTrxType | PayDate    |
       | paySel_1   | org_CHF_account     | CT                  | 2025-10-20 |
-    And "Create from..." is invoked with parameters:
-      | C_BPartner_ID | MatchRequirement | C_PaySelection_ID |
-      | vendor        | OUT              | paySel_1          |
+    And "Create from..." is invoked for pay selection paySel_1, using following parameters:
+      | MatchRequirement | C_BPartner_ID | OnlyDue |
+      | OUT              | vendor        | Y       |
+    And the Pay selection identified by paySel_1 has exactly the following lines
+      | C_Order_ID | C_OrderPaySchedule_ID | PayAmt | C_Payment_ID |
+      | po2        | OPS1                  | 25.58  | -            |
+      | po2        | OPS2                  | 25.58  | -            |
+      | po2        | OPS4                  | 25.56  | -            |
     And the pay selection identified by paySel_1 is completed
-    Then "Create Payments" is invoked
-      | C_PaySelection_ID |
-      | paySel_1          |
-    And the Pay selection identified by paySel_1 has pay selection lines with payments
+    Then "Create Payments" is invoked for pay selection paySel_1
+    And the Pay selection identified by paySel_1 has exactly the following lines
+      | C_Order_ID | C_OrderPaySchedule_ID | PayAmt | C_Payment_ID |
+      | po2        | OPS1                  | 25.58  | payment1     |
+      | po2        | OPS2                  | 25.58  | payment2     |
+      | po2        | OPS4                  | 25.56  | payment3     |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
@@ -198,8 +205,8 @@ Feature: Purchase order with complex payment term
       | C_Invoice_ID | C_Invoice_Candidate_ID |
       | invoice_1    | invoice_candidate_1    |
     And validate created invoices
-      | C_Invoice_ID | IsPaid |
-      | invoice_1    | Y      |
+      | C_Invoice_ID | GrandTotal | IsPaid | IsPartiallyPaid | OpenAmt |
+      | invoice_1    | 102.30 CHF | N      | Y               | 25.58   |
 
   @from:cucumber
   Scenario: Order pay schedules are updated when Invoice Date is changed
