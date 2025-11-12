@@ -84,6 +84,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	{
 		return queryPaySelectionLines(paySelection)
 				.orderBy(I_C_PaySelectionLine.COLUMNNAME_Line)
+				.orderBy(I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID)
 				.create()
 				.list();
 	}
@@ -93,6 +94,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	{
 		return queryPaySelectionLines(paySelectionId)
 				.orderBy(I_C_PaySelectionLine.COLUMNNAME_Line)
+				.orderBy(I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID)
 				.create()
 				.list();
 	}
