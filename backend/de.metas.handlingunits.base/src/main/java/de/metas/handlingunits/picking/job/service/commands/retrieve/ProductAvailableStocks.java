@@ -77,6 +77,7 @@ class ProductAvailableStocks
 	private Stream<IHUProductStorage> streamHUProductStorages(final Set<ProductId> productIds)
 	{
 		final List<I_M_HU> hus = handlingUnitsBL.createHUQueryBuilder()
+				.onlyContextClient(false) // fails when running from non-context threads like websockets value producers
 				.addOnlyWithProductIds(productIds)
 				.addOnlyInLocatorId(pickFromLocatorId)
 				.setOnlyActiveHUs(true)
