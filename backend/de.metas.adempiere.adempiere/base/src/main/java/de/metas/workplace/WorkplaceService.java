@@ -92,9 +92,16 @@ public class WorkplaceService
 		return workplaceRepository.isAnyWorkplaceActive();
 	}
 
-	public LocatorId getLocatorId(@NonNull final WorkplaceId workplaceId)
+	public LocatorId getPickFromLocatorId(@NonNull final WorkplaceId workplaceId)
 	{
 		final Workplace workplace = getById(workplaceId);
-		return warehouseBL.getOrCreateDefaultLocatorId(workplace.getWarehouseId());
+		if (workplace.getPickFromLocatorId() != null)
+		{
+			return workplace.getPickFromLocatorId();
+		}
+		else
+		{
+			return warehouseBL.getOrCreateDefaultLocatorId(workplace.getWarehouseId());
+		}
 	}
 }

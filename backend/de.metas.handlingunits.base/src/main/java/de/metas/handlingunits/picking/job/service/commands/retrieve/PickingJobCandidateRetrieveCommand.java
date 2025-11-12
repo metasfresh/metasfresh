@@ -222,7 +222,7 @@ public class PickingJobCandidateRetrieveCommand
 		final WorkplaceId scheduledForWorkplaceId = query.getScheduledForWorkplaceId();
 		if (query.getScheduledForWorkplaceId() != null)
 		{
-			return workplaceService.getLocatorId(scheduledForWorkplaceId);
+			return workplaceService.getPickFromLocatorId(scheduledForWorkplaceId);
 		}
 		else
 		{
