@@ -39,6 +39,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -61,6 +62,12 @@ public class BPartnerOrderParamsRepository
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
 			.additionalTableNameToResetFor(I_AD_OrgInfo.Table_Name) // pricingSystemId might be coming from here
 			.build();
+
+	public static BPartnerOrderParamsRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new BPartnerOrderParamsRepository(BPartnerEffectiveBL.newInstanceForUnitTesting());
+	}
 
 	public BPartnerOrderParams getBy(@NonNull final BPartnerOrderParamsQuery query)
 	{
@@ -94,7 +101,6 @@ public class BPartnerOrderParamsRepository
 			@NonNull final SOTrx soTrx)
 	{
 		final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getByRecord(billBPartnerRecord);
-		final BPartnerEffective shipBPartnerEffective = bPartnerEffectiveBL.getByRecord(shipBPartnerRecord);
 		return BPartnerOrderParams.builder()
 				.deliveryRule(getDeliveryRuleOrNull(shipBPartnerRecord, soTrx))
 				.deliveryViaRule(getDeliveryViaRuleOrNull(shipBPartnerRecord, soTrx))

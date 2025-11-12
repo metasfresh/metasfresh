@@ -36,12 +36,14 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Service
 public class BPartnerEffectiveBL
@@ -50,6 +52,12 @@ public class BPartnerEffectiveBL
 	@NonNull private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+
+	public static BPartnerEffectiveBL newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new BPartnerEffectiveBL();
+	}
 
 	public BPartnerEffective getById(@NonNull final BPartnerId bPartnerId)
 	{
@@ -69,7 +77,15 @@ public class BPartnerEffectiveBL
 				I_C_BPartner::getC_PaymentTerm_ID,
 				I_C_BP_Group::getC_PaymentTerm_ID,
 				PaymentTermId::ofRepoIdOrNull,
-				paymentTermRepository.getDefaultPaymentTermId().orElse(null))
+				() -> paymentTermRepository.getDefaultPaymentTermId().orElse(null))
+		);
+
+		bPartnerBuilder.poPaymentTermId(getEffectiveId(
+				bPartnerRecord, bpGroup, bpParentGroup,
+				I_C_BPartner::getPO_PaymentTerm_ID,
+				I_C_BP_Group::getPO_PaymentTerm_ID,
+				PaymentTermId::ofRepoIdOrNull,
+				() -> paymentTermRepository.getDefaultPaymentTermId().orElse(null))
 		);
 
 		bPartnerBuilder.pricingSystemId(getEffectiveId(
@@ -77,7 +93,7 @@ public class BPartnerEffectiveBL
 				I_C_BPartner::getM_PricingSystem_ID,
 				I_C_BP_Group::getM_PricingSystem_ID,
 				PricingSystemId::ofRepoIdOrNull,
-				getDefaultSalesPricingSystemId(OrgId.ofRepoId(bPartnerRecord.getAD_Org_ID())))
+				() -> getDefaultSalesPricingSystemId(OrgId.ofRepoId(bPartnerRecord.getAD_Org_ID())))
 		);
 
 		bPartnerBuilder.poPricingSystemId(getEffectiveId(
@@ -85,13 +101,14 @@ public class BPartnerEffectiveBL
 				I_C_BPartner::getPO_PricingSystem_ID,
 				I_C_BP_Group::getPO_PricingSystem_ID,
 				PricingSystemId::ofRepoIdOrNull,
-				null)
+				() -> null)
 		);
 
 		bPartnerBuilder.isAutoInvoice(getEffectiveBoolean(
 				bPartnerRecord, bpGroup, bpParentGroup,
 				I_C_BPartner::getIsAutoInvoice,
-				I_C_BP_Group::getIsAutoInvoice)
+				I_C_BP_Group::getIsAutoInvoice,
+				() -> false)
 		);
 
 		return bPartnerBuilder.build();
@@ -116,13 +133,13 @@ public class BPartnerEffectiveBL
 			@NonNull final Function<I_C_BPartner, Integer> bPartnerIdExtractor,
 			@NonNull final Function<I_C_BP_Group, Integer> bpGroupIdExtractor,
 			@NonNull final Function<Integer, T> idMapper,
-			@Nullable final T defaultValue)
+			@NonNull final Supplier<T> defaultValueSupplier)
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> idMapper.apply(bPartnerIdExtractor.apply(bPartner)),
 				() -> idMapper.apply(bpGroupIdExtractor.apply(bpGroup)),
 				() -> bpParentGroup != null ? idMapper.apply(bpGroupIdExtractor.apply(bpParentGroup)) : null,
-				() -> defaultValue
+				defaultValueSupplier
 		);
 	}
 
@@ -131,12 +148,14 @@ public class BPartnerEffectiveBL
 			@Nullable final I_C_BP_Group bpGroup,
 			@Nullable final I_C_BP_Group bpParentGroup,
 			@NonNull final Function<I_C_BPartner, String> bPartnerBooleanExtractor,
-			@NonNull final Function<I_C_BP_Group, String> bpGroupBooleanExtractor)
+			@NonNull final Function<I_C_BP_Group, String> bpGroupBooleanExtractor,
+			@NonNull final Supplier<Boolean> defaultValueSupplier)
 	{
 		final Boolean effectiveValue = CoalesceUtil.coalesceSuppliers(
 				() -> StringUtils.toBoolean(bPartnerBooleanExtractor.apply(bPartner), null),
 				() -> StringUtils.toBoolean(bpGroupBooleanExtractor.apply(bpGroup), null),
-				() -> bpParentGroup != null ?  StringUtils.toBoolean(bpGroupBooleanExtractor.apply(bpParentGroup),null) : null
+				() -> bpParentGroup != null ?  StringUtils.toBoolean(bpGroupBooleanExtractor.apply(bpParentGroup),null) : null,
+				defaultValueSupplier
 		);
 
 		return Boolean.TRUE.equals(effectiveValue);
