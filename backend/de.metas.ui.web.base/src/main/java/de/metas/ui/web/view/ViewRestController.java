@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
@@ -73,6 +74,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
+import org.slf4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -121,6 +123,7 @@ public class ViewRestController
 	//
 	private static final String PARAM_FilterId = "filterId";
 
+	@NonNull private static final Logger logger = LogManager.getLogger(ViewRestController.class);
 	@NonNull private final UserSession userSession;
 	@NonNull private final IViewsRepository viewsRepo;
 	@NonNull private final ProcessRestController processRestController;
@@ -281,10 +284,23 @@ public class ViewRestController
 		return json;
 	}
 
-	private boolean isNewDocumentAllowed(final WindowId windowId)
+	private boolean isNewDocumentAllowed(@NonNull final WindowId windowId)
 	{
-		final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId).getEntityDescriptor();
-		return DocumentPermissionsHelper.isNewDocumentAllowed(documentEntityDescriptor, userSession);
+		if (windowId.toAdWindowIdOrNull() == null)
+		{
+			return false;
+		}
+
+		try
+		{
+			final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId).getEntityDescriptor();
+			return DocumentPermissionsHelper.isNewDocumentAllowed(documentEntityDescriptor, userSession);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed checking if new document is allowed for windowId={}. Returning false.", windowId, ex);
+			return false;
+		}
 	}
 
 	@GetMapping("/layout")
