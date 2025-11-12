@@ -11,8 +11,9 @@ import java.util.HashSet;
 
 public class OrderBasedAggregation
 {
-	private final @NonNull OrderBasedAggregationKey key;
+	@NonNull private final OrderBasedAggregationKey key;
 	private boolean partiallyPickedBefore = false;
+	@NonNull private final ProductsCollector productsCollector = new ProductsCollector();
 	@NonNull private final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIds = new HashSet<>();
 
 	public OrderBasedAggregation(@NonNull final OrderBasedAggregationKey key)
@@ -27,6 +28,7 @@ public class OrderBasedAggregation
 			partiallyPickedBefore = true;
 		}
 
+		productsCollector.collect(item);
 		scheduleIds.add(item.getId());
 	}
 
@@ -41,6 +43,7 @@ public class OrderBasedAggregation
 				.deliveryBPLocationId(key.getDeliveryBPLocationId())
 				.warehouseTypeId(key.getWarehouseTypeId())
 				.partiallyPickedBefore(partiallyPickedBefore)
+				.products(productsCollector.toProducts())
 				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofCollection(scheduleIds))
 				.build();
 

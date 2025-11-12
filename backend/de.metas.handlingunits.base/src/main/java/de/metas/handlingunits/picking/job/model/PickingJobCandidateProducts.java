@@ -5,22 +5,25 @@ import com.google.common.collect.Maps;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collector;
 
 @EqualsAndHashCode
 @ToString(of = "byProductId")
 public class PickingJobCandidateProducts implements Iterable<PickingJobCandidateProduct>
 {
-	private final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductId;
-	private final PickingJobCandidateProduct singleProduct;
+	@NonNull private final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductId;
+	@Nullable private final PickingJobCandidateProduct singleProduct;
 
 	private PickingJobCandidateProducts(final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductId)
 	{
@@ -43,6 +46,11 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 		return new PickingJobCandidateProducts(ImmutableMap.of(product.getProductId(), product));
 	}
 
+	public static Collector<PickingJobCandidateProduct, ?, PickingJobCandidateProducts> collect()
+	{
+		return GuavaCollectors.collectUsingListAccumulator(PickingJobCandidateProducts::ofList);
+	}
+
 	public Set<ProductId> getProductIds() {return byProductId.keySet();}
 
 	@Override
@@ -54,14 +62,21 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 		return byProductId.values().stream().anyMatch(PickingJobCandidateProduct::hasQtyAvailableToPick);
 	}
 
-	public void setQtyAvailableToPick(final @NonNull ProductId productId, final @NonNull Quantity qtyAvailableToPick)
+	public PickingJobCandidateProducts updatingEachProduct(@NonNull UnaryOperator<PickingJobCandidateProduct> updater)
 	{
-		final PickingJobCandidateProduct product = byProductId.get(productId);
-		if (product == null)
+		if (byProductId.isEmpty())
 		{
-			throw new AdempiereException("No product found for " + productId + ". Available products are: " + byProductId.keySet());
+			return this;
 		}
-		product.setQtyAvailableToPick(qtyAvailableToPick);
+
+		final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductIdNew = byProductId.values()
+				.stream()
+				.map(updater)
+				.collect(ImmutableMap.toImmutableMap(PickingJobCandidateProduct::getProductId, product -> product));
+
+		return Objects.equals(this.byProductId, byProductIdNew)
+				? this
+				: new PickingJobCandidateProducts(byProductIdNew);
 	}
 
 	@Nullable

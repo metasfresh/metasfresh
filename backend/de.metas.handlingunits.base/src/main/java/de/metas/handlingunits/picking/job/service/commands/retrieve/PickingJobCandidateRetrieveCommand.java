@@ -86,10 +86,10 @@ public class PickingJobCandidateRetrieveCommand
 		final ArrayList<PickingJobCandidate> result = new ArrayList<>();
 		for (final PickingJobCandidate job : jobs)
 		{
-			productAvailableStocks.allocate(job);
-			if (job.hasQtyAvailableToPick())
+			final PickingJobCandidate jobAllocated = productAvailableStocks.allocate(job);
+			if (jobAllocated.hasQtyAvailableToPick())
 			{
-				result.add(job);
+				result.add(jobAllocated);
 			}
 		}
 

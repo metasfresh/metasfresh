@@ -57,11 +57,6 @@ public class PickingJobCandidate
 
 	public Set<ProductId> getProductIds() {return products.getProductIds();}
 
-	public void setQtyAvailableToPick(@NonNull final ProductId productId, @NonNull final Quantity qtyAvailableToPick)
-	{
-		products.setQtyAvailableToPick(productId, qtyAvailableToPick);
-	}
-
 	public boolean hasQtyAvailableToPick()
 	{
 		return products.hasQtyAvailableToPick();

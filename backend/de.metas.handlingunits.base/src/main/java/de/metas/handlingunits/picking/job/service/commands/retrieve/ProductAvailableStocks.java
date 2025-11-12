@@ -4,6 +4,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidateProduct;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateProducts;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
@@ -31,15 +32,20 @@ class ProductAvailableStocks
 	// State
 	@NonNull private final HashMap<ProductId, ProductAvailableStock> map = new HashMap<>();
 
-	public void allocate(PickingJobCandidate job)
+	public PickingJobCandidate allocate(PickingJobCandidate job)
 	{
-		for (final PickingJobCandidateProduct product : job.getProducts())
-		{
-			final ProductId productId = product.getProductId();
-			final Quantity qtyToDeliver = product.getQtyToDeliver();
-			final Quantity qtyAvailableToPick = allocateQty(productId, qtyToDeliver).toZeroIfNegative();
-			job.setQtyAvailableToPick(productId, qtyAvailableToPick);
-		}
+		final PickingJobCandidateProducts products = job.getProducts()
+				.updatingEachProduct(this::allocate);
+
+		return job.withProducts(products);
+	}
+
+	private PickingJobCandidateProduct allocate(final PickingJobCandidateProduct product)
+	{
+		final ProductId productId = product.getProductId();
+		final Quantity qtyToDeliver = product.getQtyToDeliver();
+		final Quantity qtyAvailableToPick = allocateQty(productId, qtyToDeliver).toZeroIfNegative();
+		return product.withQtyAvailableToPick(qtyAvailableToPick);
 	}
 
 	public Quantity allocateQty(final ProductId productId, final Quantity qty)

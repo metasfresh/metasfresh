@@ -55,7 +55,7 @@ public final class MixedQuantity
 		{
 			return "0";
 		}
-		
+
 		return map.values()
 				.stream()
 				.map(Quantity::toShortString)

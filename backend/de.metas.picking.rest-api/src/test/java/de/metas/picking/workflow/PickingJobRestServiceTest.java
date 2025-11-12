@@ -14,6 +14,7 @@ import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -50,17 +51,21 @@ class PickingJobRestServiceTest
 		{
 			userId = Env.getLoggedUserId();
 
-			helper.updateMobileProfile((profile) -> profile.toBuilder()
-					.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
-							.aggregationType(PickingJobAggregationType.PRODUCT)
-							.build())
-					.isConsiderOnlyJobScheduledToWorkplace(true)
-					.build());
-
 			helper.assignCurrentUserToWorkplace();
 
 			this.p1_id = BusinessTestHelper.createProductId("P1", helper.uomEach);
 			this.nextPackageableIndex.set(1);
+		}
+
+		@Builder(builderMethodName = "mobileProfile", buildMethodName = "setup", builderClassName = "$SetupMobileProfileBuilder")
+		private void setupMobileProfile(PickingJobAggregationType aggregationType)
+		{
+			helper.updateMobileProfile((profile) -> profile.toBuilder()
+					.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+							.aggregationType(aggregationType)
+							.build())
+					.isConsiderOnlyJobScheduledToWorkplace(true)
+					.build());
 		}
 
 		@SuppressWarnings("SameParameterValue")
@@ -87,8 +92,9 @@ class PickingJobRestServiceTest
 		}
 
 		@Test
-		void standardCase()
+		void salesOrderAggregation_standardCase()
 		{
+			mobileProfile().aggregationType(PickingJobAggregationType.SALES_ORDER).setup();
 			createQtyOnHand("130");
 
 			final Packageable item1 = packageable().qtyToDeliver("50").build();
@@ -108,17 +114,51 @@ class PickingJobRestServiceTest
 
 			assertThat(jobs).hasSize(3);
 
-			assertThat(jobs.get(0).getSalesOrderId()).isEqualTo(item1.getSalesOrderId());
-			assertThat(jobs.get(0).getQtyToDeliver()).isEqualTo(helper.qty("50", p1_id));
-			assertThat(jobs.get(0).getQtyAvailableToPick()).isEqualTo(helper.qty("50", p1_id));
+			final SoftAssertions softly = new SoftAssertions();
+			softly.assertThat(jobs.get(0).getSalesOrderId()).as("job0 - salesOrderId").isEqualTo(item1.getSalesOrderId());
+			softly.assertThat(jobs.get(0).getQtyToDeliver()).as("job0 - qtyToDeliver").isEqualTo(helper.qty("50", p1_id));
+			softly.assertThat(jobs.get(0).getQtyAvailableToPick()).as("job0 - qtyAvailableToPick").isEqualTo(helper.qty("50", p1_id));
 
-			assertThat(jobs.get(1).getSalesOrderId()).isEqualTo(item2.getSalesOrderId());
-			assertThat(jobs.get(1).getQtyToDeliver()).isEqualTo(helper.qty("50", p1_id));
-			assertThat(jobs.get(1).getQtyAvailableToPick()).isEqualTo(helper.qty("50", p1_id));
+			softly.assertThat(jobs.get(1).getSalesOrderId()).as("job1 - salesOrderId").isEqualTo(item2.getSalesOrderId());
+			softly.assertThat(jobs.get(1).getQtyToDeliver()).as("job1 - qtyToDeliver").isEqualTo(helper.qty("50", p1_id));
+			softly.assertThat(jobs.get(1).getQtyAvailableToPick()).as("job1 - qtyAvailableToPick").isEqualTo(helper.qty("50", p1_id));
 
-			assertThat(jobs.get(2).getSalesOrderId()).isEqualTo(item3.getSalesOrderId());
-			assertThat(jobs.get(2).getQtyToDeliver()).isEqualTo(helper.qty("30", p1_id));
-			assertThat(jobs.get(2).getQtyAvailableToPick()).isEqualTo(helper.qty("30", p1_id));
+			softly.assertThat(jobs.get(2).getSalesOrderId()).as("job2 - salesOrderId").isEqualTo(item3.getSalesOrderId());
+			softly.assertThat(jobs.get(2).getQtyToDeliver()).as("job2 - qtyToDeliver").isEqualTo(helper.qty("50", p1_id));
+			softly.assertThat(jobs.get(2).getQtyAvailableToPick()).as("job2 - qtyAvailableToPick").isEqualTo(helper.qty("30", p1_id));
+
+			softly.assertAll();
+		}
+
+		@Test
+		void productAggregation_standardCase()
+		{
+			mobileProfile().aggregationType(PickingJobAggregationType.PRODUCT).setup();
+			createQtyOnHand("130");
+
+			packageable().qtyToDeliver("50").build();
+			packageable().qtyToDeliver("50").build();
+			packageable().qtyToDeliver("50").build();
+			packageable().qtyToDeliver("50").build();
+
+			final ImmutableList<PickingJobCandidate> jobs = pickingJobRestService.streamPickingJobCandidates(
+							PickingJobQuery.builder()
+									.userId(userId) // lockedBy
+									.scheduledForWorkplaceId(helper.workplace.getId())
+									.onlyIfQtyAvailableAtPickingLocator(true)
+									.warehouseId(helper.workplace.getWarehouseId())
+									.build()
+					)
+					.collect(ImmutableList.toImmutableList());
+
+			assertThat(jobs).hasSize(1);
+
+			final SoftAssertions softly = new SoftAssertions();
+			softly.assertThat(jobs.get(0).getSalesOrderId()).as("job0 - salesOrderId").isNull();
+			softly.assertThat(jobs.get(0).getQtyToDeliver()).as("job0 - qtyToDeliver").isEqualTo(helper.qty("200", p1_id));
+			softly.assertThat(jobs.get(0).getQtyAvailableToPick()).as("job0 - qtyAvailableToPick").isEqualTo(helper.qty("130", p1_id));
+
+			softly.assertAll();
 		}
 	}
 

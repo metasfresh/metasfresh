@@ -4,20 +4,28 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
-@Data
-@Builder
+@Value
+@Builder(toBuilder = true)
 public class PickingJobCandidateProduct
 {
-	@NonNull private final ProductId productId;
-	@NonNull private final ITranslatableString productName;
-	@NonNull private final Quantity qtyToDeliver;
-	@Nullable private Quantity qtyAvailableToPick;
+	@NonNull ProductId productId;
+	@NonNull ITranslatableString productName;
+	@Nullable Quantity qtyToDeliver;
+	@Nullable Quantity qtyAvailableToPick;
 
 	public boolean hasQtyAvailableToPick() {return qtyAvailableToPick != null && qtyAvailableToPick.isPositive();}
+
+	public PickingJobCandidateProduct withQtyAvailableToPick(@Nullable Quantity qtyAvailableToPick)
+	{
+		return Objects.equals(this.qtyAvailableToPick, qtyAvailableToPick)
+				? this
+				: toBuilder().qtyAvailableToPick(qtyAvailableToPick).build();
+	}
 }
 
