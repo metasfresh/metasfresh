@@ -29,6 +29,7 @@ import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
@@ -97,6 +98,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
+	private final static AdMessageKey MSG_NoPackingMaterialForHU = AdMessageKey.of("NoPackingMaterialForHU");
+	private final static AdMessageKey MSG_SelfPackedProductWithNoDefinedSizes = AdMessageKey.of("SelfPackedProductWithNoDefinedSizes");
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -522,11 +525,11 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			final DimensionsInCM productDimensionsInCM = product.getDimensionsInCM();
 			if (!product.isSelfPacked())
 			{
-				throw new AdempiereException("There is no packing material for M_HU_ID=" + huId.getRepoId() + ". Please create a packing material and set its correct dimensions");
+				throw new AdempiereException(MSG_NoPackingMaterialForHU, huId.getRepoId());
 			}
 			if (!productDimensionsInCM.isSpecified())
 			{
-				throw new AdempiereException("The product  " + product.getValue() + " is marked as self packed, but not all sizes have been defined for it.");
+				throw new AdempiereException(MSG_SelfPackedProductWithNoDefinedSizes, product.getValue());
 			}
 			final Quantity qtyInStockingUOM = singleHUProductStorage.getQtyInStockingUOM();
 			return PackageDimensions.ofProductDimensionsAndQty(productDimensionsInCM, qtyInStockingUOM);
