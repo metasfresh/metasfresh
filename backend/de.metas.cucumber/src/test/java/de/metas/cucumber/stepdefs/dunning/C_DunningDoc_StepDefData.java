@@ -20,24 +20,24 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.payment;
+package de.metas.cucumber.stepdefs.dunning;
 
-import de.metas.banking.PaySelectionId;
-import de.metas.banking.PaySelectionLineId;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
-import org.compiere.model.I_C_PaySelectionLine;
+import de.metas.dunning.DunningDocId;
+import de.metas.dunning.model.I_C_DunningDoc;
 
-public class C_PaySelectionLine_StepDefData extends StepDefData<I_C_PaySelectionLine> implements StepDefDataGetIdAware<PaySelectionLineId, I_C_PaySelectionLine>
+public class C_DunningDoc_StepDefData extends StepDefData<I_C_DunningDoc>
+		implements StepDefDataGetIdAware<DunningDocId, I_C_DunningDoc>
 {
-	public C_PaySelectionLine_StepDefData()
+	public C_DunningDoc_StepDefData()
 	{
-		super(I_C_PaySelectionLine.class);
+		super(I_C_DunningDoc.class);
 	}
 
 	@Override
-	public PaySelectionLineId extractIdFromRecord(final I_C_PaySelectionLine record)
+	public DunningDocId extractIdFromRecord(final I_C_DunningDoc record)
 	{
-		return PaySelectionLineId.ofRepoId(PaySelectionId.ofRepoId(record.getC_PaySelection_ID()), record.getC_PaySelectionLine_ID());
+		return DunningDocId.ofRepoId(record.getC_DunningDoc_ID());
 	}
 }
