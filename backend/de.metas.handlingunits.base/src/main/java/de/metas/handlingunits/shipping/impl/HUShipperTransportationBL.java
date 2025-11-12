@@ -82,7 +82,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
-	private final static AdMessageKey MSG_NO_PACKING_MATERIAL_FOR_HU = AdMessageKey.of("NoPackingMaterialForHU");
+	private final static AdMessageKey MSG_CANNOT_DETERMINE_HU_PACKAGE_DIMENSIONS = AdMessageKey.of("CannotDetermineHUPackageDimensions");
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -445,7 +445,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final PackageDimensions packageDimensions = huPackageBL.getPackageDimensions(hu);
 		if (PackageDimensions.isUnspecified(packageDimensions))
 		{
-			throw new AdempiereException(MSG_NO_PACKING_MATERIAL_FOR_HU, hu.getM_HU_ID());
+			throw new AdempiereException(MSG_CANNOT_DETERMINE_HU_PACKAGE_DIMENSIONS, hu.getM_HU_ID());
 		}
 		return packageDimensions;
 	}
