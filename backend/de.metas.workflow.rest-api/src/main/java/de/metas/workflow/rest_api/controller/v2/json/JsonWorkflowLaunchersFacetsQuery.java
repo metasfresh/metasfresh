@@ -39,5 +39,6 @@ public class JsonWorkflowLaunchersFacetsQuery
 {
 	@NonNull MobileApplicationId applicationId;
 	@Nullable String filterByDocumentNo;
+	boolean filterByQtyAvailableAtPickFromLocator;
 	@Nullable List<WorkflowLaunchersFacetId> activeFacetIds;
 }

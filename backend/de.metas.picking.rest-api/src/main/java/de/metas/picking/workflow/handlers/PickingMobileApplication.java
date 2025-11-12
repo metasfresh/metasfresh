@@ -64,6 +64,8 @@ import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFAct
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickFromHUWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.picking.workflow.lauchers.PickingWorkflowLaunchersProvider;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
@@ -76,8 +78,6 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -139,6 +139,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.showFilterByDocumentNo(true)
 				.showFilters(true)
 				.showFilterByQRCode(profile.isFilterByBarcode())
+				.showFilterByQtyAvailableAtPickFromLocator(true)
 				.build();
 	}
 

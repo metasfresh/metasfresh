@@ -160,7 +160,7 @@ public class WorkflowRestController
 				.userId(Env.getLoggedUserId())
 				.filterByQRCode(query.getFilterByQRCode())
 				.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
-				.onlyIfQtyAvailableAtPickingLocator(query.isOnlyIfQtyAvailableAtPickingLocator())
+				.filterByQtyAvailableAtPickFromLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 				.facetIds(CollectionUtils.toImmutableSetOrNullIfEmpty(query.getFacetIds()))
 				.limit(query.isCountOnly() ? QueryLimit.NO_LIMIT : null)
 				.build();
@@ -176,6 +176,7 @@ public class WorkflowRestController
 						.applicationId(query.getApplicationId())
 						.userId(Env.getLoggedUserId())
 						.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+						.filterByQtyAvailableAtPickFromLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 						.activeFacetIds(CollectionUtils.toImmutableSetOrEmpty(query.getActiveFacetIds()))
 						.build()
 		);

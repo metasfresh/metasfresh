@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useWhyDidYouUpdate } from './useWhyDidYouUpdate';
 
 let nextQueryId = 1;
 
@@ -50,6 +51,7 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess }) 
       if (doLog) console.log(`useQuery(${queryId}) - stopped`, { queryKey, queryFn });
     };
   }, [enabled, ...queryKey]);
+  useWhyDidYouUpdate('useQuery', queryKey);
 
   //
   // fire onSuccess

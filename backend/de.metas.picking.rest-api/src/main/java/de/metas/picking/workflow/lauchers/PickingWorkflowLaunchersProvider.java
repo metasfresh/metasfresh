@@ -156,7 +156,7 @@ public class PickingWorkflowLaunchersProvider
 									.facets(facets)
 									.onlyCustomerIds(profile.getPickOnlyCustomerIds())
 									.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() ? workplace.getId() : null)
-									.onlyIfQtyAvailableAtPickingLocator(query.isOnlyIfQtyAvailableAtPickingLocator())
+									.onlyIfQtyAvailableAtPickingLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 									.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
 									.salesOrderDocumentNo(query.getFilterByDocumentNo())
 									.scannedProductCodes(scannedProductCodes)
@@ -260,6 +260,7 @@ public class PickingWorkflowLaunchersProvider
 						.onlyCustomerIds(profile.getPickOnlyCustomerIds())
 						.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
 						.salesOrderDocumentNo(query.getFilterByDocumentNo())
+						.onlyIfQtyAvailableAtPickingLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
 						.build(),
 				CollectingParameters.builder()

@@ -48,7 +48,7 @@ public class WorkflowLaunchersQuery
 	@NonNull UserId userId;
 	@Nullable ScannedCode filterByQRCode;
 	@Nullable DocumentNoFilter filterByDocumentNo;
-	boolean onlyIfQtyAvailableAtPickingLocator;
+	boolean filterByQtyAvailableAtPickFromLocator;
 	@Nullable ImmutableSet<WorkflowLaunchersFacetId> facetIds;
 
 	@Nullable @With QueryLimit limit;

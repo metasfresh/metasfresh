@@ -23,8 +23,8 @@
 package de.metas.workflow.rest_api.controller.v2.json;
 
 import de.metas.mobile.application.MobileApplicationId;
-import de.metas.scannable_code.ScannedCode;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,7 +41,7 @@ public class JsonLaunchersQuery
 	@NonNull MobileApplicationId applicationId;
 	@Nullable ScannedCode filterByQRCode;
 	@Nullable String filterByDocumentNo;
-	boolean onlyIfQtyAvailableAtPickingLocator;
+	boolean filterByQtyAvailableAtPickFromLocator;
 	@Nullable Set<WorkflowLaunchersFacetId> facetIds;
 
 	boolean countOnly;

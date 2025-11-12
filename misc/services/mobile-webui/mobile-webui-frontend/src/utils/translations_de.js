@@ -45,6 +45,7 @@ const translations = {
     Back: 'Zurück',
     Home: 'Home',
     filter: {
+      filterByQtyAvailableAtPickFromLocator: 'Nur mit Bestand',
       showResults: 'Ergebnisse anzeigen (%(count)s)',
       clearFilters: 'Filter löschen',
     },

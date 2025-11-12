@@ -20,11 +20,11 @@
  * #L%
  */
 
-import { trl } from '../../utils/translations';
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import Dialog from '../../components/dialogs/Dialog';
-import DialogButton from '../../components/dialogs/DialogButton';
+import { trl } from '../../../utils/translations';
+import Dialog from '../../../components/dialogs/Dialog';
+import DialogButton from '../../../components/dialogs/DialogButton';
 
 const computeIsValid = ({ documentNo }) => !!documentNo;
 
