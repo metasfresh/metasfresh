@@ -12,6 +12,7 @@ import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
 const TEST_PROPS = [
+  'salesOrderId',
   'qtyToDeliver',
   'productId',
   'customerId',

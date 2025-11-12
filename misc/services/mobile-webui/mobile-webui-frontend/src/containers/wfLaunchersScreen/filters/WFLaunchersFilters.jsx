@@ -96,6 +96,7 @@ const WFLaunchersFilters = ({ applicationId, onDone }) => {
       )}
       {showFilterByQtyAvailableAtPickFromLocator && (
         <ButtonWithIndicator
+          id="filterByQtyAvailableAtPickFromLocator-button"
           caption={trl('general.filter.filterByQtyAvailableAtPickFromLocator')}
           typeFASIconName={filters?.filterByQtyAvailableAtPickFromLocator ? 'fa-check' : null}
           onClick={() => onFilterByQtyAvailableAtPickFromLocatorClicked()}

@@ -56,6 +56,7 @@ const ButtonWithIndicator = ({
     <button
       id={id}
       data-testid={testId}
+      data-left-icon={typeFASIconName}
       {...extractTestDataProps(otherProps)}
       className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger }, additionalCssClass)}
       disabled={!!disabled}

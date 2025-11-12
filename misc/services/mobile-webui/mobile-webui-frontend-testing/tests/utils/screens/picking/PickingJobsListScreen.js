@@ -20,9 +20,12 @@ export const PickingJobsListScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
-    filterByDocumentNo: async (documentNo) => await test.step(`${NAME} - Filter by documentNo ${documentNo}`, async () => {
+    clickFilterButton: async () => await test.step(`${NAME} - Click filter button`, async () => {
         await page.locator('#filter-button').tap();
         await PickingJobsListFiltersScreen.waitForScreen();
+    }),
+    filterByDocumentNo: async (documentNo) => await test.step(`${NAME} - Filter by documentNo ${documentNo}`, async () => {
+        await PickingJobsListScreen.clickFilterButton();
         await PickingJobsListFiltersScreen.filterByDocumentNo(documentNo);
         await PickingJobsListScreen.waitForScreen();
     }),
@@ -94,8 +97,11 @@ export const PickingJobsListScreen = {
 
 };
 
-const locateJobButtons = ({ documentNo, index, qtyToDeliver, productId, customerLocationId } = {}) => {
+const locateJobButtons = ({ documentNo, index, salesOrderId, qtyToDeliver, productId, customerLocationId } = {}) => {
     let selector = '.wflauncher-button';
+    if(salesOrderId != null) {
+        selector += `[data-salesorderid="${salesOrderId}"]`;
+    }
     if (qtyToDeliver != null) {
         selector += `[data-qtytodeliver="${qtyToDeliver}"]`;
     }
