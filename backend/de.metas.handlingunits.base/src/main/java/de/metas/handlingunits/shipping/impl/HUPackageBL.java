@@ -79,7 +79,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class HUPackageBL implements IHUPackageBL
 {
-	private final static AdMessageKey MSG_NO_PACKING_MATERIAL_FOR_HU = AdMessageKey.of("NoPackingMaterialForHU");
 	private final static AdMessageKey MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES = AdMessageKey.of("SelfPackedProductWithNoDefinedSizes");
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -344,7 +343,7 @@ public class HUPackageBL implements IHUPackageBL
 			final DimensionsInCM productDimensionsInCM = product.getDimensionsInCM();
 			if (!product.isSelfPacked())
 			{
-				throw new AdempiereException(MSG_NO_PACKING_MATERIAL_FOR_HU, huId.getRepoId());
+				return PackageDimensions.UNSPECIFIED;
 			}
 			if (!productDimensionsInCM.isSpecified())
 			{

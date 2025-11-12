@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,11 @@ public class PackageDimensions
 		this.lengthInCM = lengthInCM;
 		this.widthInCM = widthInCM;
 		this.heightInCM = heightInCM;
+	}
+
+	public static boolean isUnspecified(@Nullable final PackageDimensions packageDimensions)
+	{
+		return UNSPECIFIED.equals(packageDimensions);
 	}
 
 	public static PackageDimensions ofProductDimensionsAndQty(final DimensionsInCM productDimensionsInCM, final Quantity qtyInStockingUOM)

@@ -22,6 +22,7 @@ import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
@@ -81,6 +82,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
+	private final static AdMessageKey MSG_NO_PACKING_MATERIAL_FOR_HU = AdMessageKey.of("NoPackingMaterialForHU");
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -415,7 +417,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 							.weightInKg(weightCalculator.calculateWeightInKg(hu)
 									.map(weight -> weight.toBigDecimal())
 									.orElse(null))
-							.packageDimensions(huPackageBL.getPackageDimensions(hu))
+							.packageDimensions(extractPackageDimensions(hu))
 							.build())
 					.collect(Collectors.toList());
 		}
@@ -436,6 +438,16 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 					)
 					.collect(ImmutableList.toImmutableList());
 		}
+	}
+
+	private PackageDimensions extractPackageDimensions(final I_M_HU hu)
+	{
+		final PackageDimensions packageDimensions = huPackageBL.getPackageDimensions(hu);
+		if (PackageDimensions.isUnspecified(packageDimensions))
+		{
+			throw new AdempiereException(MSG_NO_PACKING_MATERIAL_FOR_HU, hu.getM_HU_ID());
+		}
+		return packageDimensions;
 	}
 
 	private void linkTransportationToShipment(@NonNull final I_M_InOut shipment, @NonNull final ShipperTransportationId shipperTransportationId)
