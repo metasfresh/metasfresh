@@ -26,9 +26,9 @@ package de.metas.handlingunits.inout;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingMaterial;
+import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
@@ -91,7 +91,7 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	I_M_HU_PackingMaterial retrievePackingMaterialOrNull(@NonNull final PackageId packageId);
 
 	@Nullable
-	I_M_HU_PackingMaterial retrievePackingMaterialOrNull(@NonNull HuId huId);
+	I_M_HU_PackingMaterial getById(@NonNull HuPackingMaterialId packingMaterialId);
 
 	@Nullable
 	I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull I_M_HU_Item huItem);

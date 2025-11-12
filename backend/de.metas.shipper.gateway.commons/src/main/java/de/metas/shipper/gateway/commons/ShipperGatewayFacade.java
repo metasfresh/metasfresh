@@ -225,7 +225,7 @@ public class ShipperGatewayFacade
 		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
 	}
 
-	private PackageDimensions extractPackageDimensions(@NonNull final I_M_Package mpackage)
+	private static PackageDimensions extractPackageDimensions(@NonNull final I_M_Package mpackage)
 	{
 		return PackageDimensions.builder()
 				.lengthInCM(mpackage.getLengthInCm())

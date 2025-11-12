@@ -1,8 +1,14 @@
 package de.metas.shipper.gateway.spi.model;
 
+import de.metas.product.DimensionsInCM;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -30,6 +36,7 @@ import lombok.extern.jackson.Jacksonized;
 public class PackageDimensions
 {
 	private static final int UNSPECIFIED_DIMENSION = -1;
+	public static final PackageDimensions UNSPECIFIED = new PackageDimensions(UNSPECIFIED_DIMENSION, UNSPECIFIED_DIMENSION, UNSPECIFIED_DIMENSION);
 
 	int lengthInCM;
 	int widthInCM;
@@ -47,9 +54,19 @@ public class PackageDimensions
 		this.heightInCM = heightInCM;
 	}
 
-	public static PackageDimensions unspecified()
+	public static PackageDimensions ofProductDimensionsAndQty(final DimensionsInCM productDimensionsInCM, final Quantity qtyInStockingUOM)
 	{
-		return new PackageDimensions(UNSPECIFIED_DIMENSION, UNSPECIFIED_DIMENSION, UNSPECIFIED_DIMENSION);
-	}
+		final List<Integer> dimensions = new ArrayList<>();
+		dimensions.add(productDimensionsInCM.getHeightInCM());
+		dimensions.add(productDimensionsInCM.getWidthInCM());
+		dimensions.add(productDimensionsInCM.getLengthInCM());
+		dimensions.sort(null);
 
+		final int qtyRoundedUpInStockUOM = qtyInStockingUOM.toBigDecimal().setScale(0, RoundingMode.CEILING).intValue();
+		return PackageDimensions.builder()
+				.lengthInCM(dimensions.get(0) * qtyRoundedUpInStockUOM)
+				.heightInCM(dimensions.get(1))
+				.widthInCM(dimensions.get(2))
+				.build();
+	}
 }
