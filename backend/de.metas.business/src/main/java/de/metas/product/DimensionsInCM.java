@@ -30,6 +30,7 @@ import lombok.Value;
 public class DimensionsInCM
 {
 	private static final int UNSPECIFIED_DIMENSION = 0;
+	public static final DimensionsInCM UNSPECIFIED = builder().build();
 
 	@Builder.Default
 	int lengthInCM = UNSPECIFIED_DIMENSION;

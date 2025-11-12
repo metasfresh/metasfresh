@@ -338,7 +338,13 @@ public class HUPackageBL implements IHUPackageBL
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 			final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 
-			final IHUProductStorage singleHUProductStorage = handlingUnitsBL.getSingleHUProductStorage(hu);
+			final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory().getProductStorages(hu);
+			if (productStorages.size() > 1)
+			{
+				//Multiple products stored in HU, there's no chance we can infer the dimensions of the package.
+				return PackageDimensions.UNSPECIFIED;
+			}
+			final IHUProductStorage singleHUProductStorage = productStorages.iterator().next();
 			final Product product = productRepository.getById(singleHUProductStorage.getProductId());
 			final DimensionsInCM productDimensionsInCM = product.getDimensionsInCM();
 			if (!product.isSelfPacked())
