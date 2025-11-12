@@ -35,7 +35,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1437243840L;
+	private static final long serialVersionUID = -1818204438L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1869,10 +1869,10 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
-	/** Rückerstattung = E */
-	public static final String PAYMENTRULE_Rueckerstattung = "E";
-	/** Verrechnung = F */
-	public static final String PAYMENTRULE_Verrechnung = "F";
+	/** Reimbursement = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Settlement = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{

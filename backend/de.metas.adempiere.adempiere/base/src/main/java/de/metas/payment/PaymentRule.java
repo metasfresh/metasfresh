@@ -47,8 +47,8 @@ public enum PaymentRule implements ReferenceListAwareEnum
 	PayPalExtern(X_C_Order.PAYMENTRULE_PayPalExtern), // V
 	CreditCardExtern(X_C_Order.PAYMENTRULE_KreditkarteExtern), // U
 	InstantBankTransfer(X_C_Order.PAYMENTRULE_Sofortueberweisung), // R
-	Reimbursement(X_C_Order.PAYMENTRULE_Rueckerstattung), // E
-	Settlement(X_C_Order.PAYMENTRULE_Verrechnung) // F
+	Reimbursement(X_C_Order.PAYMENTRULE_Reimbursement), // E
+	Settlement(X_C_Order.PAYMENTRULE_Settlement) // F
 	;
 
 	@Getter
