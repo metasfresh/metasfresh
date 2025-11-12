@@ -453,9 +453,32 @@ public final class CollectionUtils
 			@NonNull final K key,
 			@NonNull final UnaryOperator<V> mappingFunction)
 	{
-		return mapValues(
-				map,
-				(currentKey, currentValue) -> currentKey.equals(key) ? mappingFunction.apply(currentValue) : currentValue);
+		if (!map.containsKey(key))
+		{
+			throw Check.mkEx("key '" + key + "' does not exist in map. Available keys are: " + map.keySet());
+		}
+
+		final V value = map.get(key);
+		final V valueChanged = mappingFunction.apply(value);
+		if (Objects.equals(value, valueChanged))
+		{
+			return map;
+		}
+
+		final ImmutableMap.Builder<K, V> resultBuilder = ImmutableMap.builder();
+
+		map.forEach((k, v) -> {
+			if (Objects.equals(k, key))
+			{
+				resultBuilder.put(k, valueChanged);
+			}
+			else
+			{
+				resultBuilder.put(k, v);
+			}
+		});
+		
+		return resultBuilder.build();
 	}
 
 	public static <K, V, W> ImmutableMap<K, W> mapValues(

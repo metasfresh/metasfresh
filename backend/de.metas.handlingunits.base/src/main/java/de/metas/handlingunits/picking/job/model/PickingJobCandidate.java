@@ -30,7 +30,6 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,6 +37,7 @@ import lombok.With;
 import org.adempiere.warehouse.WarehouseTypeId;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 @Value
 @Builder
@@ -52,12 +52,41 @@ public class PickingJobCandidate
 	@Nullable WarehouseTypeId warehouseTypeId;
 	boolean partiallyPickedBefore;
 	@Nullable BPartnerLocationId handoverLocationId;
-	@Nullable ProductId productId;
-	@Nullable ITranslatableString productName;
-	@Nullable Quantity qtyToDeliver;
-	@Nullable @With Quantity qtyAvailableToPick;
+	@NonNull @With PickingJobCandidateProducts products;
 	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
 
+	public Set<ProductId> getProductIds() {return products.getProductIds();}
+
+	public void setQtyAvailableToPick(@NonNull final ProductId productId, @NonNull final Quantity qtyAvailableToPick)
+	{
+		products.setQtyAvailableToPick(productId, qtyAvailableToPick);
+	}
+
+	public boolean hasQtyAvailableToPick()
+	{
+		return products.hasQtyAvailableToPick();
+	}
+
 	@Nullable
-	public UomId getUomId() {return qtyToDeliver != null ? qtyToDeliver.getUomId() : null;}
+	public ProductId getProductId()
+	{
+		return products.getSingleProductIdOrNull();
+	}
+
+	public ITranslatableString getProductName()
+	{
+		return products.getSingleProductNameOrNull();
+	}
+
+	@Nullable
+	public Quantity getQtyToDeliver()
+	{
+		return products.getSingleQtyToDeliverOrNull();
+	}
+
+	@Nullable
+	public Quantity getQtyAvailableToPick()
+	{
+		return products.getSingleQtyAvailableToPickOrNull();
+	}
 }

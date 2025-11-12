@@ -83,23 +83,23 @@ public class MobileConfigCommand
 			return null;
 		}
 
-		final MobileUIPickingUserProfile profile = mobilePickingConfigRepository.getProfile();
-		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
-				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
-				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
-				.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode())
-				.isActiveWorkplaceRequired(picking.getActiveWorkplaceRequired() != null ? picking.getActiveWorkplaceRequired() : false)
-				.isConsiderOnlyJobScheduledToWorkplace(picking.getConsiderOnlyJobScheduledToWorkplace() != null ? picking.getConsiderOnlyJobScheduledToWorkplace() : false);
+		mobilePickingConfigRepository.update((profile) -> {
+			final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
+					.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
+					.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
+					.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode())
+					.isActiveWorkplaceRequired(picking.getActiveWorkplaceRequired() != null ? picking.getActiveWorkplaceRequired() : false)
+					.isConsiderOnlyJobScheduledToWorkplace(picking.getConsiderOnlyJobScheduledToWorkplace() != null ? picking.getConsiderOnlyJobScheduledToWorkplace() : false);
 
-		if (picking.getAllowPickingAnyCustomer() != null)
-		{
-			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
-		}
+			if (picking.getAllowPickingAnyCustomer() != null)
+			{
+				newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
+			}
 
-		MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
-		mobilePickingConfigRepository.save(newProfile);
+			return newProfileBuilder.build();
+		});
 
-		newProfile = mobilePickingConfigRepository.getProfile(); // reload to make sure we are returning exactly what's in DB
+		final MobileUIPickingUserProfile newProfile = mobilePickingConfigRepository.getProfile(); // reload to make sure we are returning exactly what's in DB
 
 		// guard against common config errors
 		if (newProfile.getDefaultPickingJobOptions().getAllowedPickToStructures().toAllowedSet().isEmpty())

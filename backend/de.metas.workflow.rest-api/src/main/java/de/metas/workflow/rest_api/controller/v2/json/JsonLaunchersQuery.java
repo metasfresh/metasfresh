@@ -41,6 +41,7 @@ public class JsonLaunchersQuery
 	@NonNull MobileApplicationId applicationId;
 	@Nullable ScannedCode filterByQRCode;
 	@Nullable String filterByDocumentNo;
+	boolean onlyIfQtyAvailableAtPickingLocator;
 	@Nullable Set<WorkflowLaunchersFacetId> facetIds;
 
 	boolean countOnly;

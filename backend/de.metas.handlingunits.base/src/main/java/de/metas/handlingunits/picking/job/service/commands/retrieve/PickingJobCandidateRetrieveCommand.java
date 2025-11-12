@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.service.commands.retrieve;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
@@ -15,20 +16,21 @@ import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
-import de.metas.quantity.Quantity;
+import de.metas.product.ProductId;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Builder
@@ -67,32 +69,39 @@ public class PickingJobCandidateRetrieveCommand
 		return jobCandidates;
 	}
 
-	private ImmutableList<PickingJobCandidate> applyOnlyIfQtyAvailableAtPickingLocatorFilter(final ImmutableList<PickingJobCandidate> jobCandidates)
+	private ImmutableList<PickingJobCandidate> applyOnlyIfQtyAvailableAtPickingLocatorFilter(final ImmutableList<PickingJobCandidate> jobs)
 	{
-		if (jobCandidates.isEmpty())
+		if (jobs.isEmpty())
 		{
-			return jobCandidates;
+			return jobs;
 		}
-
 		if (!query.isOnlyIfQtyAvailableAtPickingLocator())
 		{
-			return jobCandidates;
+			return jobs;
 		}
 
 		final ProductAvailableStocks productAvailableStocks = getProductAvailableStocks();
-		productAvailableStocks.warmUpByProductIds(jobCandidates.stream().map(PickingJobCandidate::getProductId).collect(Collectors.toSet()));
+		productAvailableStocks.warmUpByProductIds(extractProductIds(jobs));
 
 		final ArrayList<PickingJobCandidate> result = new ArrayList<>();
-		for (final PickingJobCandidate jobCandidate : jobCandidates)
+		for (final PickingJobCandidate job : jobs)
 		{
-			final Quantity qtyAvailableToPick = productAvailableStocks.allocateQty(jobCandidate.getProductId(), jobCandidate.getQtyToDeliver());
-			if (qtyAvailableToPick.isPositive())
+			productAvailableStocks.allocate(job);
+			if (job.hasQtyAvailableToPick())
 			{
-				result.add(jobCandidate.withQtyAvailableToPick(qtyAvailableToPick));
+				result.add(job);
 			}
 		}
 
 		return ImmutableList.copyOf(result);
+	}
+
+	@NotNull
+	private static Set<ProductId> extractProductIds(final ImmutableList<PickingJobCandidate> jobs)
+	{
+		return jobs.stream()
+				.flatMap(job -> job.getProductIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private Stream<Packageable> streamPackageables()

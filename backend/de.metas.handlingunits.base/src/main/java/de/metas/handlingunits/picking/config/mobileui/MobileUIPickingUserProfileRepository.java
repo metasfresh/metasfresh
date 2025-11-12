@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Repository
@@ -102,7 +103,6 @@ public class MobileUIPickingUserProfileRepository
 				.isFilterByBarcode(profileRecord.isFilterByBarcode())
 				.isActiveWorkplaceRequired(profileRecord.isActiveWorkplaceRequired())
 				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
-				.isConsiderOnlyIfQtyAvailableAtPickingLocator(false) // TODO introduce column
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -192,7 +192,14 @@ public class MobileUIPickingUserProfileRepository
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
 
-	public void save(@NonNull final MobileUIPickingUserProfile profile)
+	public void update(@NonNull UnaryOperator<MobileUIPickingUserProfile> updater)
+	{
+		final MobileUIPickingUserProfile profile = getProfile();
+		final MobileUIPickingUserProfile profileChanged = updater.apply(profile);
+		save(profileChanged);
+	}
+
+	private void save(@NonNull final MobileUIPickingUserProfile profile)
 	{
 		//
 		// Header record

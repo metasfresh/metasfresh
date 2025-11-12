@@ -1,12 +1,14 @@
 package de.metas.handlingunits.picking.job.service.commands.retrieve;
 
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateProducts;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -19,6 +21,7 @@ class ProductBasedAggregation
 	@Nullable private ITranslatableString productName;
 	@NonNull private Quantity qtyToDeliver;
 	private boolean partiallyPickedBefore = false;
+	// private final PickingJobCandidateProducts products;
 	@NonNull private final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIds = new HashSet<>();
 
 	public ProductBasedAggregation(@NonNull final ProductBasedAggregationKey key)
@@ -50,9 +53,13 @@ class ProductBasedAggregation
 				.aggregationType(PickingJobAggregationType.PRODUCT)
 				.warehouseTypeId(key.getWarehouseTypeId())
 				.partiallyPickedBefore(partiallyPickedBefore)
-				.productId(key.getProductId())
-				.productName(productName)
-				.qtyToDeliver(qtyToDeliver)
+				// .products(PickingJobCandidate.Products.of(
+				// 		PickingJobCandidate.Product.builder()
+				// 				.productId(key.getProductId())
+				// 				.productName(TranslatableStrings.nullToEmpty(productName))
+				// 				.qtyToDeliver(qtyToDeliver)
+				// 				.build()
+				// ))
 				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofCollection(scheduleIds))
 				.build();
 	}

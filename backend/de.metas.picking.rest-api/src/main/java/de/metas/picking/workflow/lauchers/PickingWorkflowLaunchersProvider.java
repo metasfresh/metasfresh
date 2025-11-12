@@ -23,6 +23,7 @@ import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.product.ScannedProductCodeResolver;
+import de.metas.quantity.Quantity;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
@@ -30,6 +31,7 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
+import de.metas.workflow.rest_api.model.WorkflowLauncherIndicator;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workplace.Workplace;
@@ -154,7 +156,7 @@ public class PickingWorkflowLaunchersProvider
 									.facets(facets)
 									.onlyCustomerIds(profile.getPickOnlyCustomerIds())
 									.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() ? workplace.getId() : null)
-									.onlyIfQtyAvailableAtPickingLocator(profile.isConsiderOnlyIfQtyAvailableAtPickingLocator())
+									.onlyIfQtyAvailableAtPickingLocator(query.isOnlyIfQtyAvailableAtPickingLocator())
 									.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
 									.salesOrderDocumentNo(query.getFilterByDocumentNo())
 									.scannedProductCodes(scannedProductCodes)
@@ -195,8 +197,34 @@ public class PickingWorkflowLaunchersProvider
 				.caption(displayValueProvider.computeLauncherCaption(pickingJobCandidate))
 				.startedWFProcessId(null)
 				.wfParameters(PickingWFProcessStartParams.of(pickingJobCandidate).toParams())
+				.indicator(computeWorkflowLauncherIndicator(pickingJobCandidate))
 				.partiallyHandledBefore(pickingJobCandidate.isPartiallyPickedBefore())
 				.build();
+	}
+
+	@Nullable
+	private static WorkflowLauncherIndicator computeWorkflowLauncherIndicator(final PickingJobCandidate jobCandidate)
+	{
+		final Quantity qtyToDeliver = jobCandidate.getQtyToDeliver();
+		final Quantity qtyAvailableToPick = jobCandidate.getQtyAvailableToPick();
+		if (qtyToDeliver == null || qtyAvailableToPick == null)
+		{
+			return null;
+		}
+
+		if (qtyAvailableToPick.signum() <= 0)
+		{
+			// NOTE: shall not happen because usually those lines with nothing available to pick are filtered out at this point
+			return WorkflowLauncherIndicator.RED;
+		}
+		else if (qtyToDeliver.subtract(qtyAvailableToPick).signum() > 0)
+		{
+			return WorkflowLauncherIndicator.YELLOW;
+		}
+		else
+		{
+			return WorkflowLauncherIndicator.GREEN;
+		}
 	}
 
 	@NonNull

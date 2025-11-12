@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocumentNoFilter;
 import de.metas.mobile.application.MobileApplicationId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.security.UserAuthToken;
 import de.metas.util.StringUtils;
@@ -13,7 +14,6 @@ import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.websocket.producers.WebSocketProducerFactory;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +38,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 	private static final String TOPIC_PARAM_facetIds = "facetIds";
 	private static final String TOPIC_PARAM_qrCode = "qrCode";
 	private static final String TOPIC_PARAM_documentNo = "documentNo";
+	private static final String TOPIC_PARAM_onlyIfQtyAvailableAtPickingLocator = "onlyIfQtyAvailableAtPickingLocator";
 
 	@Override
 	public String getTopicNamePrefix() {return TOPIC_PREFIX;}
@@ -69,6 +70,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 					.orElseThrow(() -> new AdempiereException("Parameter " + TOPIC_PARAM_applicationId + " is mandatory"));
 			final ScannedCode filterByQRCode = ScannedCode.ofNullableString(queryParams.getFirst(TOPIC_PARAM_qrCode));
 			final DocumentNoFilter filterByDocumentNo = DocumentNoFilter.ofNullableString(queryParams.getFirst(TOPIC_PARAM_documentNo));
+			final boolean onlyIfQtyAvailableAtPickingLocator = StringUtils.toOptionalBoolean(queryParams.getFirst(TOPIC_PARAM_onlyIfQtyAvailableAtPickingLocator)).orElseFalse();
 			final ImmutableSet<WorkflowLaunchersFacetId> facetIds = extractFacetIdsFromQueryParams(queryParams);
 
 			return WorkflowLaunchersQuery.builder()
@@ -76,6 +78,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 					.userId(token.getUserId())
 					.filterByQRCode(filterByQRCode)
 					.filterByDocumentNo(filterByDocumentNo)
+					.onlyIfQtyAvailableAtPickingLocator(onlyIfQtyAvailableAtPickingLocator)
 					.facetIds(facetIds)
 					.build();
 		}

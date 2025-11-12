@@ -51,6 +51,11 @@ public final class MixedQuantity
 	@Override
 	public String toString()
 	{
+		if (map.isEmpty())
+		{
+			return "0";
+		}
+		
 		return map.values()
 				.stream()
 				.map(Quantity::toShortString)

@@ -379,4 +379,33 @@ class CollectionUtilsTest
 					.isSameAs(map);
 		}
 	}
+
+	@Nested
+	class mapValue
+	{
+		@Test
+		void changeExistingValue()
+		{
+			final ImmutableMap<String, String> map = ImmutableMap.of("k1", "v1", "k2", "v2");
+			assertThat(CollectionUtils.mapValue(map, "k2", v -> v + "_changed"))
+					.isEqualTo(ImmutableMap.of("k1", "v1", "k2", "v2_changed"));
+		}
+
+		@Test
+		void changeExistingValueToSameValue()
+		{
+			final ImmutableMap<String, String> map = ImmutableMap.of("k1", "v1", "k2", "v2");
+			assertThat(CollectionUtils.mapValue(map, "k2", v -> v))
+					.isSameAs(map);
+		}
+
+		@Test
+		void changeMissingKey()
+		{
+			final ImmutableMap<String, String> map = ImmutableMap.of("k1", "v1", "k2", "v2");
+			assertThatThrownBy(() -> CollectionUtils.mapValue(map, "k3", v -> v))
+					.hasMessageStartingWith("key 'k3' does not exist");
+		}
+
+	}
 }
