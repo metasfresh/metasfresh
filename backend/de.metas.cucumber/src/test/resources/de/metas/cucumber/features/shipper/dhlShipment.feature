@@ -181,8 +181,8 @@ Feature: Dhl Shipment
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | shipTransp_1                          | shipper_DHL             | orgBP                          | orgBPLocation                  | DR            |
     And validate M_Packages for shipment shipment_1
-      | M_Shipper_ID | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID |
-      | shipper_DHL  | dhl_customer  | dhl_location           | 0.250         | package1     |
+      | M_Shipper_ID | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.250         | package1     | 30         | 20        | 10         |
     And validate DHL_ShipmentOrder:
       | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
       | package1     | dhl_customer  | 30             | 20            | 10             | 1              |
