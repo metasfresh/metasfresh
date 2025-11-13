@@ -40,7 +40,7 @@ export const PickingJobScreen = {
         await PickFromHUScanScreen.waitForScreen();
         await PickFromHUScanScreen.typeQRCode(qrCode);
         await PickingJobScreen.waitForScreen();
-        await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+        await button.locator('.indicator-color-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
     clickPickingSlotButton: async () => await step(`${NAME} - Click Picking Slot button`, async () => {
@@ -55,7 +55,7 @@ export const PickingJobScreen = {
     expectPickingSlotButtonGreen: async () => await step(`${NAME} - Expect Picking Slot button to be green`, async () => {
         const button = pickingSlotButton();
         await button.waitFor();
-        await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+        await button.locator('.indicator-color-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
     scanPickingSlot: async ({ qrCode, expectNextScreen, gotoPickingJobScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
@@ -153,7 +153,8 @@ export const PickingJobScreen = {
         if (color !== undefined) {
             await step(`${NAME} - Expect line button color='${color}'`, async () => {
                 const indicator = lineButton.locator(`[data-testid="line-0-${index - 1}-button-Indicator"]`);
-                await expect(indicator).toHaveClass(`indicator-${color}`);
+                const classes = await indicator.getAttribute('class');
+                expect(classes).toContain(`indicator-color-${color}`);
             });
         }
     }),

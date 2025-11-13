@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Workplace
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplace, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 541219646L;
+	private static final long serialVersionUID = 921285538L;
 
     /** Standard Constructor */
     public X_C_Workplace (final Properties ctx, final int C_Workplace_ID, @Nullable final String trxName)
@@ -101,5 +101,20 @@ public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplac
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setPickFrom_Locator_ID (final int PickFrom_Locator_ID)
+	{
+		if (PickFrom_Locator_ID < 1) 
+			set_Value (COLUMNNAME_PickFrom_Locator_ID, null);
+		else 
+			set_Value (COLUMNNAME_PickFrom_Locator_ID, PickFrom_Locator_ID);
+	}
+
+	@Override
+	public int getPickFrom_Locator_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PickFrom_Locator_ID);
 	}
 }

@@ -316,7 +316,7 @@ public class PackagingDAO implements IPackagingDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private Packageable toPackageable(@NonNull final I_M_Packageable_V record)
+	public Packageable toPackageable(@NonNull final I_M_Packageable_V record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
