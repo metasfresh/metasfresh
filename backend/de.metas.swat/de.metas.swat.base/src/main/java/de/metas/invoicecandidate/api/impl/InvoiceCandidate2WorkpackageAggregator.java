@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.api.impl;
 
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.async.api.IAsyncBatchBL;
@@ -227,7 +227,6 @@ import java.util.Properties;
 	 */
 	public final int getQueueSize()
 	{
-		final int countUnprocessedWorkPackages = getWorkPackageQueue().size();
-		return countUnprocessedWorkPackages;
+		return getWorkPackageQueue().size();
 	}
 }

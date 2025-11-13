@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -526,7 +526,7 @@ public class M_ShipmentSchedule_StepDef
 		return queries.build();
 	}
 
-	private ShipmentScheduleQuery createShipmentScheduleQuery(final DataTableRow row)
+	private ShipmentScheduleQuery createShipmentScheduleQuery(@NonNull final DataTableRow row)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class);
 
