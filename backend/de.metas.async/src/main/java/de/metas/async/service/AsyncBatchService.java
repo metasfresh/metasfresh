@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -104,22 +104,23 @@ public class AsyncBatchService
 	}
 
 	/**
-	 * Invokes the given {@code supplier} to enqueue workpackages and then and waits for them to finish (successfully or exceptionally).
-	 * It's mandatory for the given {@code supplier} to assign those workpackages to the given async batch.
-	 * If the supplier enqueues zero workpackages, that's OK and nothing is done.
+	 * Invokes the given {@code workPackageEnqueuer} to enqueue workpackages and then and waits for them to finish (successfully or exceptionally).
+	 * It's mandatory for the given {@code workPackageEnqueuer} to assign those workpackages to the given async batch.
+	 * If the workPackageEnqueuer enqueues zero workpackages, that's OK and nothing is done.
 	 * <br/>
-	 * @return the enqueuing result as returned by the supplier.
+	 * @param workPackageEnqueuer a workPackageEnqueuer that enqueues workpackages.
+	 * @return the enqueuing result as returned by the workPackageEnqueuer.
 	 *
 	 * @see C_Queue_WorkPackage#processBatchFromWP(de.metas.async.model.I_C_Queue_WorkPackage)
 	 */
-	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> workPackageEnqueuer, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final T result;
 		try
 		{
 			asyncBatchObserver.observeOn(asyncBatchId);
 
-			result = trxManager.callInNewTrx(supplier::get); // let the supplier enqueue its workpackages
+			result = trxManager.callInNewTrx(workPackageEnqueuer::get); // let the workPackageEnqueuer enqueue its workpackages
 
 			if (result.getWorkpackageEnqueuedCount() > 0)
 			{
