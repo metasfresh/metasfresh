@@ -5,6 +5,7 @@ import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { DistributionJobsListScreen } from './DistributionJobsListScreen';
 import { DistributionDropAllToScreen } from './DistributionDropAllToScreen';
 import { expect } from '@playwright/test';
+import { expectClasses } from '../../expectations';
 
 const NAME = 'DistributionJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -30,9 +31,9 @@ export const DistributionJobScreen = {
             await expectLineButtonAttribute({ lineButton, attribute: 'data-qtycurrent', value: qtyPicked });
         }
         if (color !== undefined) {
-            await step(`${NAME} - Expect line button color='${color}'`, async () => {
-                const indicator = lineButton.locator(`[data-testid="line-${index}-button-Indicator"]`);
-                 await expect(indicator).toHaveClass(`indicator-color-${color}`);
+            await expectClasses({
+                locator: lineButton.locator(`[data-testid="line-${index}-button-Indicator"]`),
+                expectedClasses: `indicator-color-${color}`
             });
         }
     }),
