@@ -584,4 +584,11 @@ public class PaySelectionBL implements IPaySelectionBL
 	{
 		return paySelectionDAO.retrievePaySelectionLines(paySelection);
 	}
+
+	@Override
+	public List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull final PaySelectionId paySelectionId)
+	{
+		return paySelectionDAO.retrievePaySelectionLines(paySelectionId);
+	}
+
 }

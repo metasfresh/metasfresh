@@ -12,7 +12,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Value
 public class OrderPayScheduleCreateRequest
@@ -26,7 +26,7 @@ public class OrderPayScheduleCreateRequest
 			@NonNull final ImmutableList<Line> lines)
 	{
 		Check.assumeNotEmpty(lines, "lines shall not empty");
-		
+
 		this.orderId = orderId;
 		this.lines = lines;
 	}
@@ -46,7 +46,7 @@ public class OrderPayScheduleCreateRequest
 		@NonNull Percent percent;
 
 		@NonNull OrderPayScheduleStatus orderPayScheduleStatus;
-		@NonNull Instant dueDate;
+		@NonNull LocalDate dueDate;
 		@NonNull Money dueAmount;
 
 		int offsetDays;

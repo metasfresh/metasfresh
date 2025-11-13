@@ -24,13 +24,15 @@ package de.metas.cucumber.stepdefs.util;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.PaymentAllocationId;
-import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
+import de.metas.cucumber.stepdefs.dunning.C_DunningDoc_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.dunning.DunningDocId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.matchinv.MatchInvId;
@@ -63,6 +65,7 @@ public class IdentifiersResolver
 	@NonNull private final M_MatchInv_StepDefData matchInvTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_DunningDoc_StepDefData dunningDocTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -105,6 +108,9 @@ public class IdentifiersResolver
 				.ifPresent(result::add);
 		orderTable.getIdOptional(identifier)
 				.map(OrderId::toRecordRef)
+				.ifPresent(result::add);
+		dunningDocTable.getIdOptional(identifier)
+				.map(DunningDocId::toRecordRef)
 				.ifPresent(result::add);
 
 		if (result.isEmpty())

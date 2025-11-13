@@ -185,6 +185,7 @@ export function createTableData(rawData) {
     expandedDepth: rawData.expandedDepth,
     collapsible: rawData.collapsible,
     indentSupported: rawData.supportTree,
+    allowNew: rawData.allowNew ?? true,
   };
 
   // we're removing any keys without a value ta make merging with the existing data

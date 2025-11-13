@@ -49,6 +49,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -340,6 +341,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
 	 */
 	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
+
+	Set<LocatorId> getLocatorIds(List<I_M_HU> hus);
 
 	// TODO: replace it by getByIds
 	@Deprecated

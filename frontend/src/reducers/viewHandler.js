@@ -1,11 +1,11 @@
-import { get, find } from 'lodash';
+import { find, get } from 'lodash';
 import { createSelector } from 'reselect';
 
 import {
   ADD_VIEW_LOCATION_DATA,
   CREATE_VIEW,
-  CREATE_VIEW_SUCCESS,
   CREATE_VIEW_ERROR,
+  CREATE_VIEW_SUCCESS,
   DELETE_VIEW,
   FETCH_DOCUMENT_ERROR,
   FETCH_DOCUMENT_PENDING,
@@ -15,9 +15,9 @@ import {
   FETCH_LAYOUT_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   FETCH_LOCATION_CONFIG_SUCCESS,
+  FILTER_VIEW_ERROR,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
-  FILTER_VIEW_ERROR,
   RESET_VIEW,
   SET_INCLUDED_VIEW,
   TOGGLE_INCLUDED_VIEW,
@@ -25,7 +25,6 @@ import {
   UPDATE_VIEW_DATA_ERROR,
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
-import { DocumentAction } from '../constants/DocumentAction';
 
 export const viewState = {
   layout: {
@@ -96,20 +95,6 @@ export const isMasterView = ({ state, windowId, viewId }) => {
 
   const view = selectView(state, windowId, false);
   return view.viewId === viewId;
-};
-
-export const getMasterViewStandardActions = ({ state, windowId, viewId }) => {
-  if (!windowId || !viewId) {
-    return [];
-  }
-
-  const viewStandardActions = [];
-  const view = getView(state, windowId, /*isModal*/ false);
-  if (view?.layout?.supportNewRecord) {
-    viewStandardActions.push(DocumentAction.NEW_DOCUMENT);
-  }
-
-  return viewStandardActions;
 };
 
 /**

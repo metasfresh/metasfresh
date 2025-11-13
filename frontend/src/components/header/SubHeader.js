@@ -5,12 +5,15 @@ import onClickOutside from 'react-onclickoutside';
 import { connect, useSelector } from 'react-redux';
 
 import { elementPathRequest } from '../../api';
-import { getSelection, getTableId } from '../../reducers/tables';
+import {
+  getMasterViewStandardActions,
+  getSelection,
+  getTableId,
+} from '../../reducers/tables';
 import keymap from '../../shortcuts/keymap';
 
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
-import { getMasterViewStandardActions } from '../../reducers/viewHandler';
 import { DocumentAction } from '../../constants/DocumentAction';
 import { getMasterDocumentStandardActions } from '../../reducers/windowHandler';
 
