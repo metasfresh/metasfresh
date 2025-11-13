@@ -73,6 +73,8 @@ import static org.compiere.util.Env.getCtx;
 public class AsyncBatchBL implements IAsyncBatchBL
 {
 	private static final String DYN_ATTR_TEMPORARY_BATCH_ID = "TemporaryBatchId";
+	
+	private static final String SYSCONFIG_PROCESSED_OFFSET_MILLIS = "de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMillis";
 
 	// services
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
@@ -99,15 +101,15 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@Override
-	public int increaseEnqueued(final I_C_Queue_WorkPackage workPackage)
+	public int increaseEnqueued(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
 		return setAsyncBatchCountEnqueued(workPackage, +1);
 	}
 
 	@Override
-	public int decreaseEnqueued(final I_C_Queue_WorkPackage workPackage)
+	public void decreaseEnqueued(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
-		return setAsyncBatchCountEnqueued(workPackage, -1);
+		setAsyncBatchCountEnqueued(workPackage, -1);
 	}
 
 	@Override

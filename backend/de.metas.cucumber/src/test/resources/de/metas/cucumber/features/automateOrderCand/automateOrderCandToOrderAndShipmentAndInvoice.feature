@@ -289,16 +289,22 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     Then process metasfresh response
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
-      | order_1               | null                  | null                    |
+      | order_S0150_130       | null                  | null                    |
 
     And validate the created orders
       | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
-      | order_1               | 444            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               | Shopware6            |
+      | order_S0150_130       | 444            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               | Shopware6            |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | order_1               | 2021-07-20      | product_1               | 0            | 10         | 0           | 5     | 0        | EUR          | true      |
+      | ol_S0150_130              | order_S0150_130       | 2021-07-20      | product_1               | 0            | 10         | 0           | 5     | 0        | EUR          | true      |
 
+    # For the next API-call, we need to wait for the shipment schedules
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier                    | C_OrderLine_ID.Identifier |
+      | shipmentSchedule_ol_S0150_130 | ol_S0150_130              |
+    And validate that there are no M_ShipmentSchedule_Recompute records after no more than 30 seconds for order 'order_S0150_130'
+    
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/shipments/process' and fulfills with '200' status code
 """
 {
@@ -423,7 +429,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | shipmentLine_1            | shipment_1            | product_1               | 8           | true      |
 
     And validate that there are no M_ShipmentSchedule_Recompute records after no more than 10 seconds for order 'order_1'
-
+        
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/shipments/process' and fulfills with '200' status code
 """
 {
@@ -684,7 +690,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 {
     "orgCode": "001",
     "externalLineId": "333",
-    "externalHeaderId": "444",
+    "externalHeaderId": "S0150_135",
     "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
@@ -710,7 +716,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "444",
+    "externalHeaderId": "S0150_135",
     "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
@@ -720,16 +726,22 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     Then process metasfresh response
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
-      | order_1               | null                  | null                    |
+      | order_S0150_135       | null                  | null                    |
 
     And validate the created orders
       | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
-      | order_1               | 444            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               | Shopware6            |
+      | order_S0150_135       | S0150_135      | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               | Shopware6            |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | order_1               | 2021-07-20      | product_1               | 0            | 10         | 0           | 5     | 0        | EUR          | true      |
+      | ol_S0150_135              | order_S0150_135       | 2021-07-20      | product_1               | 0            | 10         | 0           | 5     | 0        | EUR          | true      |
 
+    # For the next API-call, we need to wait for the shipment schedules
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier                    | C_OrderLine_ID.Identifier |
+      | shipmentSchedule_ol_S0150_135 | ol_S0150_135              |
+    And validate that there are no M_ShipmentSchedule_Recompute records after no more than 30 seconds for order 'order_S0150_135'
+    
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/shipments/process' and fulfills with '200' status code
 """
 {
@@ -737,7 +749,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
         "shipmentList": [
             {
                 "shipmentScheduleIdentifier ": {
-                    "externalHeaderId": "444",
+                    "externalHeaderId": "S0150_135",
                     "externalLineId": "333"
                 },
                 "movementDate": "2017-01-13T17:09:42.411",
@@ -784,7 +796,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 {
   "invoiceCandidates": [
     {
-      "externalHeaderId":"444"
+      "externalHeaderId":"S0150_135"
     }
   ],
   "completeInvoices": true

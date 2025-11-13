@@ -67,14 +67,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	private IWorkpackagePrioStrategy _priority = SizeBasedWorkpackagePrio.INSTANCE;
 	private AsyncBatchId asyncBatchId = null;
 	private boolean asyncBatchSet = false;
-	private UserId userInChargeId;
+	@Nullable private UserId userInChargeId;
 	private WorkPackageParamsBuilder _parametersBuilder;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _trxNameBound = false;
 	private final LinkedHashSet<TableRecordReference> elements = new LinkedHashSet<>();
-	/**
-	 * Locker used to lock enqueued elements
-	 */
+	/** Locker used to lock enqueued elements */
 	private ILockCommand _elementsLocker = null;
 
 	// Status
