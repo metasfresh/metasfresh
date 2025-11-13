@@ -65,7 +65,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-11-10 09:5
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
