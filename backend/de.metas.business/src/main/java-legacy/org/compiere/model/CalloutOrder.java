@@ -117,7 +117,7 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
-	public static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
+	public static final String SYSCONFIG_DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
 
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
@@ -598,7 +598,7 @@ public class CalloutOrder extends CalloutEngine
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		final String invoiceRule = sysConfigBL.getValue(DEFAULT_INVOICE_RULE, X_C_Order.INVOICERULE_AfterDelivery);
+		final String invoiceRule = sysConfigBL.getValue(SYSCONFIG_DEFAULT_INVOICE_RULE, X_C_Order.INVOICERULE_AfterDelivery);
 		if (!invoiceRule.trim().isEmpty())
 		{
 			return invoiceRule;

@@ -606,6 +606,7 @@ public class FreightCostTest
 		final I_C_BPartner partner1 = createPartner("Partner1", bpGroup.getC_BP_Group_ID());
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		partner1.setPaymentRule(PaymentRule.OnCredit.getCode());
+		partner1.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		save(partner1);
 
 		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
@@ -903,6 +904,7 @@ public class FreightCostTest
 		partner.setName(partnerName);
 		partner.setC_BP_Group_ID(bpGroupId);
 		partner.setPaymentRule(PaymentRule.OnCredit.getCode());
+		partner.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 
 		save(partner);
 

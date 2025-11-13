@@ -35,7 +35,6 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.PricingSystemId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -50,7 +49,7 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.compiere.model.CalloutOrder.DEFAULT_INVOICE_RULE;
+import static org.compiere.model.CalloutOrder.SYSCONFIG_DEFAULT_INVOICE_RULE;
 
 @Service
 public class BPartnerEffectiveBL
@@ -59,6 +58,7 @@ public class BPartnerEffectiveBL
 	@NonNull private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public static BPartnerEffectiveBL newInstanceForUnitTesting()
 	{
@@ -230,13 +230,9 @@ public class BPartnerEffectiveBL
 	@NonNull
 	private InvoiceRule getDefaultInvoiceRule()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-		final String invoiceRule = sysConfigBL.getValue(DEFAULT_INVOICE_RULE, X_C_Order.INVOICERULE_AfterDelivery);
-		if (Check.isNotBlank(invoiceRule))
-		{
-			return InvoiceRule.ofCode(invoiceRule);
-		}
-		return InvoiceRule.AfterDelivery;
+		final String invoiceRule = sysConfigBL.getValue(SYSCONFIG_DEFAULT_INVOICE_RULE, X_C_Order.INVOICERULE_AfterDelivery);
+		return StringUtils.trimBlankToOptional(invoiceRule)
+				.map(InvoiceRule::ofCode)
+				.orElse(InvoiceRule.AfterDelivery);
 	}
 }

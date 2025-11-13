@@ -171,7 +171,9 @@ class OLCandOrderFactoryTest
 
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 		bpartner.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
+		bpartner.setPO_InvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
 		bpartner.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
+		bpartner.setPaymentRulePO(X_C_BPartner.PAYMENTRULE_Cash);
 		bpartner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 		InterfaceWrapperHelper.saveRecord(bpartner);
 
