@@ -123,10 +123,7 @@ public class ShipmentService implements IShipmentService
 		{
 			// The thread will wait until the schedules are processed, because the next call might contain the same shipment schedules as the current one.
 			return asyncBatchService.executeBatch(
-					() -> {
-						validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
-						return enqueueShipmentSchedules(request);
-					},
+					() -> enqueueShipmentSchedules(request),
 					request.getAsyncBatchId());
 		}
 		else
@@ -158,10 +155,7 @@ public class ShipmentService implements IShipmentService
 				.isShipDateToday(request.getIsShipDateToday())
 				.isCompleteShipment(request.getIsCompleteShipment())
 				.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
-				.waitForShipments(request.isWaitForShipments())
-				// .asyncBatchId()
-				// .scheduleIds()
-				;
+				.waitForShipments(request.isWaitForShipments());
 
 		groupSchedulesByAsyncBatch(allScheduleIds)
 				.forEach((asyncBatchId, scheduleIds) -> generateShipments(
@@ -274,7 +268,7 @@ public class ShipmentService implements IShipmentService
 				.map(asyncBatchId -> {
 					final ImmutableSet<OLCandId> olCandIdImmutableSet = ImmutableSet.copyOf(asyncBatchId2OLCandIds.get(asyncBatchId));
 
-					return generateShipmentForBatch(olCandIdImmutableSet, asyncBatchId);
+					return generateShipmentOlCands(olCandIdImmutableSet, asyncBatchId);
 				})
 				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
@@ -413,7 +407,7 @@ public class ShipmentService implements IShipmentService
 	}
 
 	@NonNull
-	private Set<InOutId> generateShipmentForBatch(@NonNull final Set<OLCandId> olCandIds, @NonNull final AsyncBatchId olCandsAsyncBatchId)
+	private Set<InOutId> generateShipmentOlCands(@NonNull final Set<OLCandId> olCandIds, @NonNull final AsyncBatchId olCandsAsyncBatchId)
 	{
 		if (olCandIds.isEmpty())
 		{
@@ -427,9 +421,12 @@ public class ShipmentService implements IShipmentService
 			return ImmutableSet.of();
 		}
 
+		// create a new async-batch for this. the C_Async_Batch record of olCandsAsyncBatchId is already "spend" 
+		final AsyncBatchId newAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
+
 		//dev-note: if we came this far, we know all shipment schedules are assigned to the async batch identified by the input param:"asyncBatchId"
 		final GenerateShipmentsRequest generateShipmentsRequest = GenerateShipmentsRequest.builder()
-				.asyncBatchId(olCandsAsyncBatchId)
+				.asyncBatchId(newAsyncBatchId)
 				.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(qtyToDeliverMap.getShipmentScheduleIds()))
 				.scheduleToExternalInfo(ImmutableMap.of())
 				.scheduleToQuantityToDeliverOverride(qtyToDeliverMap)

@@ -46,8 +46,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,7 +71,7 @@ public class AutoProcessingOLCandService
 	public AutoProcessingOLCandService(
 			@NonNull final OrderService orderService,
 			@NonNull final ShipmentService shipmentService,
-			@NonNull final InvoiceService invoiceService, 
+			@NonNull final InvoiceService invoiceService,
 			@NonNull final ShipperDeliveryService shipperDeliveryService)
 	{
 		this.orderService = orderService;
@@ -82,10 +80,7 @@ public class AutoProcessingOLCandService
 		this.shipperDeliveryService = shipperDeliveryService;
 	}
 
-	/**
-	 * @return {@code true} if any workpackage was enqueued at all.
-	 */
-	public boolean processOLCands(@NonNull final ProcessOLCandsRequest request)
+	public void processOLCands(@NonNull final ProcessOLCandsRequest request)
 	{
 		final Set<OLCandId> olCandIds = queryBL.createQueryBuilder(I_C_OLCand.class)
 				.setOnlySelection(request.getPInstanceId())
@@ -98,19 +93,21 @@ public class AutoProcessingOLCandService
 		if (olCandIds.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No OlCandIds selection found for PInstanceId: {}. Maybe you created them in another transaction that's not yet committed?", request.getPInstanceId());
-			return false;
+			return;
 		}
 
 		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = trxManager.callInNewTrx(() -> orderService.getAsyncBatchId2OLCandIds(olCandIds));
 
+		// Propagating them means that the WPs which create the shipment-scheds and invoice-candidates also belong to this async-batch.
+		// So, when the async-batch is finally done, we will have those scheds&ICs
 		final boolean propagateAsyncIdsToShipmentSchduleWPs = request.isShip() || request.isInvoice();
-		
+
 		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds, propagateAsyncIdsToShipmentSchduleWPs);
 
 		if (request.isShip())
-		{
+		{   // now we need a new async-batch! The one we create the Orders with is processed and its observer unregistered
 			final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
-
+			Loggables.withLogger(logger, Level.INFO).addLog("Created {} M_InOuts", generatedInOutIds.size());
 			for (final InOutId inOutId : generatedInOutIds)
 			{
 				shipperDeliveryService.createTransportationAndPackagesForShipment(inOutId);
@@ -119,30 +116,17 @@ public class AutoProcessingOLCandService
 
 		if (request.isInvoice())
 		{
-			final HashMap<AsyncBatchId, ArrayList<I_M_InOutLine>> asyncBatchId2Shipmentline = new HashMap<>();
 			final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveShipmentLinesForOrderId(orderIds);
+			Loggables.withLogger(logger, Level.INFO).addLog("Retrieved {} M_InOutLines for {} C_Order_IDs", shipmentLines.size(), orderIds.size());
 
-			for (final I_M_InOutLine shipmentLine : shipmentLines)
-			{
-				final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOr(
-						shipmentLine.getM_InOut().getC_Async_Batch_ID(),
-						() -> asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing));
-
-				final ArrayList<I_M_InOutLine> iolsForAsyncBatchId = asyncBatchId2Shipmentline.computeIfAbsent(
-						asyncBatchId, key -> new ArrayList<>());
-				iolsForAsyncBatchId.add(shipmentLine);
-			}
-
-			for (final Map.Entry<AsyncBatchId, ArrayList<I_M_InOutLine>> entry : asyncBatchId2Shipmentline.entrySet())
-			{
-				invoiceService.generateInvoicesFromShipmentLines(entry.getValue(), entry.getKey());
-			}
+			// again, now we need a new async-batch
+			final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
+			invoiceService.generateInvoicesFromShipmentLines(shipmentLines, asyncBatchId);
 		}
 
 		if (request.isCloseOrder())
 		{
 			orderIds.forEach(orderBL::closeOrder);
 		}
-		return true;
 	}
 }
