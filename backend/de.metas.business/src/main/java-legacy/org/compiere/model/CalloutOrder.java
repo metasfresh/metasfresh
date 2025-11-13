@@ -255,7 +255,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		//
-		Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
+		orderBL.updateDescriptionFromDocTypeTargetId(order);
 
 		//
 		return NO_ERROR;
@@ -288,8 +288,6 @@ public class CalloutOrder extends CalloutEngine
 			return NO_ERROR; // nothing to do
 		}
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
-
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 		if (order.getC_BPartner_Location_ID() <= 0)
 		{

@@ -529,9 +529,7 @@ public class OrderBL implements IOrderBL
 	public Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
 	{
 		final BPartnerId shipBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
-		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
-				orderRecord.getBill_BPartner_ID(),
-				orderRecord.getC_BPartner_ID()));
+		final BPartnerId billBPartnerId = coalesce(BPartnerId.ofRepoIdOrNull(orderRecord.getBill_BPartner_ID()), shipBPartnerId);
 		if (shipBPartnerId == null || billBPartnerId == null)
 		{
 			return Optional.empty(); // orderRecord is not yet ready
