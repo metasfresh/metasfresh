@@ -80,11 +80,6 @@ public class ShipperDeliveryService
 	@NonNull private final InOutToTransportationOrderService inOutToTransportationOrderService;
 	@NonNull private final ShipperGatewayFacade shipperGatewayFacade;
 
-	public void addToDailyTransportationOrder(@NonNull final InOutId inOutId)
-	{
-		createTransportationAndPackagesForShipment(inOutId, true);
-	}
-
 	public void createTransportationAndPackagesForShipment(@NonNull final InOutId inOutId)
 	{
 		createTransportationAndPackagesForShipment(inOutId, false);
