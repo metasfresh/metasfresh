@@ -29,6 +29,7 @@ public class JsonMobileApplication
 	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
+	boolean showFilterByQtyAvailableAtPickFromLocator;
 	boolean showInMainMenu;
 	int sortNo;
 	@Nullable ImmutableMap<String, Object> applicationParameters;
@@ -51,6 +52,7 @@ public class JsonMobileApplication
 				.showFilterByQRCode(appInfo.isShowFilterByQRCode())
 				.showFilters(appInfo.isShowFilters())
 				.showFilterByDocumentNo(appInfo.isShowFilterByDocumentNo())
+				.showFilterByQtyAvailableAtPickFromLocator(appInfo.isShowFilterByQtyAvailableAtPickFromLocator())
 				.showInMainMenu(appInfo.isShowInMainMenu())
 				.sortNo(appInfo.getSortNo())
 				.applicationParameters(toJsonApplicationParameters(appInfo.getApplicationParameters()))

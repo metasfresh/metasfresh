@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.picking.rest-api
+ * de.metas.workflow.rest-api
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,22 +20,25 @@
  * #L%
  */
 
-package de.metas.picking.workflow;
+package de.metas.rest_workflows.facets;
 
-import de.metas.bpartner.BPartnerLocationId;
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocumentNoFilter;
+import de.metas.user.UserId;
+import de.metas.mobile.application.MobileApplicationId;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import javax.annotation.Nullable;
 
-public class BPLocationIndex<T>
+@Value
+@Builder
+public class WorkflowLaunchersFacetQuery
 {
-	private final Map<BPartnerLocationId, T> locationId2IndexedData = new HashMap<>();
-
-	@NonNull
-	public T getOrCompute(@NonNull final BPartnerLocationId locationId, @NonNull final Function<BPartnerLocationId, T> computeFunction)
-	{
-		return locationId2IndexedData.computeIfAbsent(locationId, computeFunction);
-	}
+	@NonNull MobileApplicationId applicationId;
+	@NonNull UserId userId;
+	@Nullable DocumentNoFilter filterByDocumentNo;
+	boolean filterByQtyAvailableAtPickFromLocator;
+	@Nullable ImmutableSet<WorkflowLaunchersFacetId> activeFacetIds;
 }

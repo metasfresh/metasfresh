@@ -85,7 +85,6 @@ test('Pick multiple HUs and drop them all together in one step', async ({ page }
             huQRCode: masterdata.handlingUnits.HU1.qrCode,
             qtyToMove: '100',
             expectedQtyToMove: '100',
-            typeDelay: 1,
         });
         await DistributionLineScreen.goBack();
 
@@ -108,7 +107,6 @@ test('Pick multiple HUs and drop them all together in one step', async ({ page }
             huQRCode: masterdata.handlingUnits.HU2.qrCode,
             qtyToMove: '100',
             expectedQtyToMove: '100',
-            typeDelay: 1,
         });
         await DistributionLineScreen.goBack();
 
@@ -146,7 +144,6 @@ test('Pick multiple HUs and drop them all together in one step', async ({ page }
             huQRCode: masterdata.handlingUnits.HU3.qrCode,
             qtyToMove: '100',
             expectedQtyToMove: '100',
-            typeDelay: 1,
         });
         await DistributionLineScreen.goBack();
 
@@ -181,8 +178,6 @@ test('Pick multiple HUs and drop them all together in one step', async ({ page }
     await DistributionJobScreen.complete();
 });
 
-
-
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs (by HU code) and drop them all together in one step (using locator code)', async ({ page }) => {
     const masterdata = await createMasterdata({ qtyToMove: 100 });
@@ -200,7 +195,6 @@ test('Pick multiple HUs (by HU code) and drop them all together in one step (usi
             huQRCode: masterdata.handlingUnits.HU1.huId,
             qtyToMove: '100',
             expectedQtyToMove: '100',
-            typeDelay: 1,
         });
         await DistributionLineScreen.goBack();
     });
@@ -210,7 +204,6 @@ test('Pick multiple HUs (by HU code) and drop them all together in one step (usi
             huQRCode: masterdata.handlingUnits.HU2.huId,
             qtyToMove: '100',
             expectedQtyToMove: '100',
-            typeDelay: 1,
         });
         await DistributionLineScreen.goBack();
     });
@@ -220,7 +213,6 @@ test('Pick multiple HUs (by HU code) and drop them all together in one step (usi
             huQRCode: masterdata.handlingUnits.HU3.huId,
             qtyToMove: '100',
             expectedQtyToMove: '100',
-            typeDelay: 1,
         });
         await DistributionLineScreen.goBack();
     });

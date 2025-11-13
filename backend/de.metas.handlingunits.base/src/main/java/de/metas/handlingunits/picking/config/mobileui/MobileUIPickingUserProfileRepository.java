@@ -25,7 +25,7 @@ package de.metas.handlingunits.picking.config.mobileui;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Repository
@@ -191,7 +192,14 @@ public class MobileUIPickingUserProfileRepository
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
 
-	public void save(@NonNull final MobileUIPickingUserProfile profile)
+	public void update(@NonNull UnaryOperator<MobileUIPickingUserProfile> updater)
+	{
+		final MobileUIPickingUserProfile profile = getProfile();
+		final MobileUIPickingUserProfile profileChanged = updater.apply(profile);
+		save(profileChanged);
+	}
+
+	private void save(@NonNull final MobileUIPickingUserProfile profile)
 	{
 		//
 		// Header record

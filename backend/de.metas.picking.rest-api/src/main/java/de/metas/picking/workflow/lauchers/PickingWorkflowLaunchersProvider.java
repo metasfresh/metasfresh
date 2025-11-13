@@ -1,19 +1,25 @@
-package de.metas.picking.workflow.handlers;
+package de.metas.picking.workflow.lauchers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
-import de.metas.handlingunits.picking.job.model.PickingJobFacets;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateProducts;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
+import de.metas.handlingunits.picking.job.model.QtyAvailableStatus;
+import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetHandlers;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.i18n.AdMessageKey;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
@@ -21,15 +27,17 @@ import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.product.ScannedProductCodeResolver;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
+import de.metas.workflow.rest_api.model.WorkflowLauncherIndicator;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
@@ -38,6 +46,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -46,6 +55,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
 
@@ -55,6 +65,7 @@ public class PickingWorkflowLaunchersProvider
 {
 	private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final PickingJobRestService pickingJobRestService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 	@NonNull private final WorkplaceService workplaceService;
@@ -102,21 +113,22 @@ public class PickingWorkflowLaunchersProvider
 		ResolvedScannedProductCodes scannedProductCodes = null;
 		if (!returnNoResult && query.getFilterByQRCode() != null)
 		{
-			scannedProductCodes = scannedProductCodeResolver.resolve(query.getFilterByQRCode())
-					.orElse(null);
+			scannedProductCodes = scannedProductCodeResolver.resolve(query.getFilterByQRCode()).orElse(null);
 			if (scannedProductCodes == null)
 			{
 				returnNoResult = true;
 			}
 		}
 
+		final ProductAvailableStocks productsAvailableStocks = workplace != null ? createProductsAvailableStocksOrNull(workplace) : null;
+
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
 		//
 		// Already started launchers
 		final DisplayValueProvider displayValueProvider = displayValueProviderService.newDisplayValueProvider(profile);
-		final PickingJobQuery.Facets facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
-		final PickingJobReferenceList existingPickingJobs;
+		final PickingJobQuery.Facets facets = PickingJobFacetHandlers.toPickingJobFacetsQuery(query.getFacetIds());
+		PickingJobReferenceList existingPickingJobs;
 		if (workplace != null || !profile.isConsiderOnlyJobScheduledToWorkplace())
 		{
 			final WarehouseId warehouseId = workplace != null ? workplace.getWarehouseId() : null;
@@ -128,10 +140,17 @@ public class PickingWorkflowLaunchersProvider
 									.salesOrderDocumentNo(query.getFilterByDocumentNo())
 									.build())
 					.filter(facets::isMatching)
+					.filter(pickingJobReference -> !pickingJobReference.isShipmentSchedulesLocked())
 					.collect(PickingJobReferenceList.collect());
 
+			if (productsAvailableStocks != null)
+			{
+				productsAvailableStocks.warmUpByProductIds(existingPickingJobs.getProductIds());
+				existingPickingJobs = existingPickingJobs.updateEach(productsAvailableStocks::allocate);
+			}
+
 			displayValueProvider.cacheWarmUpForPickingJobReferences(existingPickingJobs);
-			existingPickingJobs.streamNotInProcessing()
+			existingPickingJobs.stream()
 					.map(pickingJobReference -> toExistingWorkflowLauncher(pickingJobReference, displayValueProvider))
 					.forEach(currentResult::add);
 		}
@@ -143,21 +162,33 @@ public class PickingWorkflowLaunchersProvider
 		//
 		// New launchers
 		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
-		if (!returnNoResult
-				&& !limit.isLimitHitOrExceeded(currentResult))
+		if (!returnNoResult)
 		{
-			final ImmutableList<PickingJobCandidate> newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
-							.userId(userId)
-							.excludeScheduleIds(existingPickingJobs.getScheduleIds())
-							.facets(facets)
-							.onlyCustomerIds(profile.getPickOnlyCustomerIds())
-							.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() ? workplace.getId() : null)
-							.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
-							.salesOrderDocumentNo(query.getFilterByDocumentNo())
-							.scannedProductCodes(scannedProductCodes)
-							.build())
-					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
-					.collect(ImmutableList.toImmutableList());
+			PickingJobCandidateList newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(
+							PickingJobQuery.builder()
+									.userId(userId)
+									.excludeScheduleIds(existingPickingJobs.getScheduleIds())
+									.facets(facets)
+									.onlyCustomerIds(profile.getPickOnlyCustomerIds())
+									.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() ? workplace.getId() : null)
+									.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
+									.salesOrderDocumentNo(query.getFilterByDocumentNo())
+									.scannedProductCodes(scannedProductCodes)
+									.build()
+					)
+					.limit(limit.toIntOrInfinit())
+					.collect(PickingJobCandidateList.collect());
+
+			if (productsAvailableStocks != null)
+			{
+				productsAvailableStocks.warmUpByProductIds(newPickingJobCandidates.getProductIds());
+				newPickingJobCandidates = newPickingJobCandidates.updateEach(productsAvailableStocks::allocate);
+
+				if (query.isFilterByQtyAvailableAtPickFromLocator())
+				{
+					newPickingJobCandidates = newPickingJobCandidates.removeIf(job -> job.hasQtyAvailableToPick().isFalse());
+				}
+			}
 
 			displayValueProvider.cacheWarmUpForPickingJobCandidates(newPickingJobCandidates);
 			newPickingJobCandidates.stream()
@@ -166,6 +197,21 @@ public class PickingWorkflowLaunchersProvider
 		}
 
 		return toComputedWorkflowLaunchers(query, currentResult);
+	}
+
+	@Nullable
+	private ProductAvailableStocks createProductsAvailableStocksOrNull(@NonNull final Workplace workplace)
+	{
+		final Set<LocatorId> pickFromLocatorIds = workplaceService.getPickFromLocatorIds(workplace);
+		if (pickFromLocatorIds.isEmpty())
+		{
+			return null;
+		}
+
+		return ProductAvailableStocks.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.pickFromLocatorIds(pickFromLocatorIds)
+				.build();
 	}
 
 	@NotNull
@@ -191,8 +237,28 @@ public class PickingWorkflowLaunchersProvider
 				.caption(displayValueProvider.computeLauncherCaption(pickingJobCandidate))
 				.startedWFProcessId(null)
 				.wfParameters(PickingWFProcessStartParams.of(pickingJobCandidate).toParams())
+				.indicator(computeQtyAvailableIndicator(pickingJobCandidate.getProducts()))
 				.partiallyHandledBefore(pickingJobCandidate.isPartiallyPickedBefore())
 				.build();
+	}
+
+	@Nullable
+	private static WorkflowLauncherIndicator computeQtyAvailableIndicator(@NonNull final PickingJobCandidateProducts products)
+	{
+		final QtyAvailableStatus qtyAvailableStatus = products.getQtyAvailableStatus().orElse(null);
+		if (qtyAvailableStatus == null) {return null;}
+
+		switch (qtyAvailableStatus)
+		{
+			case NOT_AVAILABLE:
+				return WorkflowLauncherIndicator.STOCK_NOT_AVAILABLE;
+			case PARTIALLY_AVAILABLE:
+				return WorkflowLauncherIndicator.STOCK_PARTIALLY_AVAILABLE;
+			case FULLY_AVAILABLE:
+				return WorkflowLauncherIndicator.STOCK_FULLY_AVAILABLE;
+			default:
+				return null; // not handled status; shall not happen
+		}
 	}
 
 	@NonNull
@@ -207,13 +273,14 @@ public class PickingWorkflowLaunchersProvider
 				.caption(caption)
 				.startedWFProcessId(WFProcessId.ofIdPart(APPLICATION_ID, pickingJobReference.getPickingJobId()))
 				.wfParameters(PickingWFProcessStartParams.of(pickingJobReference).toParams())
+				.indicator(computeQtyAvailableIndicator(pickingJobReference.getProducts()))
 				.build();
 	}
 
 	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final WorkflowLaunchersFacetQuery query)
 	{
 		final UserId userId = query.getUserId();
-		final PickingJobQuery.Facets activeFacets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getActiveFacetIds());
+		final PickingJobQuery.Facets activeFacets = PickingJobFacetHandlers.toPickingJobFacetsQuery(query.getActiveFacetIds());
 
 		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
 		final ImmutableList<PickingJobFacetGroup> groups = profile.getFilterGroupsInOrder();
@@ -230,13 +297,13 @@ public class PickingWorkflowLaunchersProvider
 						.salesOrderDocumentNo(query.getFilterByDocumentNo())
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
 						.build(),
-				PickingJobFacets.CollectingParameters.builder()
+				CollectingParameters.builder()
 						.addressProvider(documentLocationBL.newRenderedAddressProvider())
 						.groupsInOrder(groups)
 						.activeFacets(activeFacets)
 						.build());
 
-		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets, profile);
+		return PickingJobFacetHandlers.toWorkflowLaunchersFacetGroupList(pickingFacets, profile);
 	}
 
 	public void invalidateCacheByUserId(@NonNull final UserId invokerId)

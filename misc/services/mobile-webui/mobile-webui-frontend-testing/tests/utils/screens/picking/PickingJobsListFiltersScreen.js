@@ -1,6 +1,7 @@
 import { test } from "../../../../playwright.config";
 import { page } from "../../common";
 import { GetDocumentNoDialog } from "../../dialogs/GetDocumentNoDialog";
+import { PickingJobsListScreen as PickingJobListScreen } from './PickingJobsListScreen';
 
 const NAME = 'PickingJobsListFiltersScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -18,4 +19,12 @@ export const PickingJobsListFiltersScreen = {
         await GetDocumentNoDialog.clickOKButton();
     }),
 
+    clickOnlyQtyAvailableButton: async () => await test.step(`${NAME} - Filter by qty available`, async () => {
+        await page.locator('#filterByQtyAvailableAtPickFromLocator-button').tap();
+    }),
+    
+    clickShowResults: async () => await test.step(`${NAME} - Click Show results`, async () => {
+       await page.locator('#showResults').tap();
+       await PickingJobListScreen.waitForScreen();
+    }),
 };

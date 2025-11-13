@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Workplace
  *  @author metasfresh (generated) 
@@ -52,27 +51,6 @@ public interface I_C_Workplace
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Workplace.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Workplace_ID (int C_Workplace_ID);
-
-	/**
-	 * Get Workplace.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Workplace_ID();
-
-	ModelColumn<I_C_Workplace, Object> COLUMN_C_Workplace_ID = new ModelColumn<>(I_C_Workplace.class, "C_Workplace_ID", null);
-	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -96,6 +74,29 @@ public interface I_C_Workplace
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Workplace.
+	 * The assignment applies to all users assigned to this workstation
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 * The assignment applies to all users assigned to this workstation
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_C_Workplace_ID = new ModelColumn<>(I_C_Workplace.class, "C_Workplace_ID", null);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
 
 	/**
 	 * Set Description.
@@ -204,6 +205,26 @@ public interface I_C_Workplace
 
 	ModelColumn<I_C_Workplace, Object> COLUMN_Name = new ModelColumn<>(I_C_Workplace.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_Locator_ID (int PickFrom_Locator_ID);
+
+	/**
+	 * Get Pick From Locator.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_Locator_ID();
+
+	String COLUMNNAME_PickFrom_Locator_ID = "PickFrom_Locator_ID";
 
 	/**
 	 * Get Updated.
