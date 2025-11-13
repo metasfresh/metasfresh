@@ -10,23 +10,25 @@ import de.metas.util.OptionalBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.jetbrains.annotations.NotNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
 
-@EqualsAndHashCode
+@EqualsAndHashCode(doNotUseGetters = true)
 @ToString(of = "byProductId")
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class PickingJobCandidateProducts implements Iterable<PickingJobCandidateProduct>
 {
 	@NonNull private final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductId;
 	@Nullable private final PickingJobCandidateProduct singleProduct;
-	@Nullable private OptionalBoolean _hasQtyAvailableToPick = null; // lazy
+	@Nullable private Optional<QtyAvailableStatus> _qtyAvailableStatus = null; // lazy
 
 	private PickingJobCandidateProducts(@NonNull final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductId)
 	{
@@ -34,7 +36,6 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 		this.singleProduct = byProductId.size() == 1
 				? byProductId.values().iterator().next()
 				: null;
-
 	}
 
 	public static PickingJobCandidateProducts newInstance() {return new PickingJobCandidateProducts(ImmutableMap.of());}
@@ -62,48 +63,65 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 
 	public OptionalBoolean hasQtyAvailableToPick()
 	{
-		OptionalBoolean hasQtyAvailableToPick = this._hasQtyAvailableToPick;
-		if (_hasQtyAvailableToPick == null)
-		{
-			hasQtyAvailableToPick = this._hasQtyAvailableToPick = computeHasQtyAvailableToPick();
-		}
-		return hasQtyAvailableToPick;
+		final QtyAvailableStatus qtyAvailableStatus = getQtyAvailableStatus().orElse(null);
+		return qtyAvailableStatus == null
+				? OptionalBoolean.UNKNOWN
+				: OptionalBoolean.ofBoolean(qtyAvailableStatus.isPartialOrFullyAvailable());
 	}
 
-	private @NotNull OptionalBoolean computeHasQtyAvailableToPick()
+	public Optional<QtyAvailableStatus> getQtyAvailableStatus()
+	{
+		Optional<QtyAvailableStatus> qtyAvailableStatus = this._qtyAvailableStatus;
+		//noinspection OptionalAssignedToNull
+		if (qtyAvailableStatus == null)
+		{
+			qtyAvailableStatus = this._qtyAvailableStatus = computeQtyAvailableStatus();
+		}
+		return qtyAvailableStatus;
+	}
+
+	private Optional<QtyAvailableStatus> computeQtyAvailableStatus()
 	{
 		if (byProductId.isEmpty())
 		{
-			return OptionalBoolean.UNKNOWN;
+			return Optional.empty();
 		}
 
-		boolean hasFalse = false;
-		boolean hasUnknown = false;
+		boolean hasNotAvailableProducts = false;
+		boolean hasFullyAvailableProducts = false;
 
-		for (PickingJobCandidateProduct product : byProductId.values())
+		for (final PickingJobCandidateProduct product : byProductId.values())
 		{
-			final OptionalBoolean result = product.hasQtyAvailableToPick();
-			switch (result)
+			final QtyAvailableStatus productStatus = product.getQtyAvailableStatus().orElse(null);
+			if (productStatus == null)
 			{
-				case TRUE:
-					return OptionalBoolean.TRUE;
-				case FALSE:
-					hasFalse = true;
+				return Optional.empty();
+			}
+
+			switch (productStatus)
+			{
+				case NOT_AVAILABLE:
+					hasNotAvailableProducts = true;
 					break;
-				case UNKNOWN:
-					hasUnknown = true;
+				case PARTIALLY_AVAILABLE:
+					return Optional.of(QtyAvailableStatus.PARTIALLY_AVAILABLE);
+				case FULLY_AVAILABLE:
+					hasFullyAvailableProducts = true;
 					break;
+				default:
+					throw new AdempiereException("Unknown QtyAvailableStatus: " + productStatus);
 			}
 		}
 
-		// If we only have FALSE values, return FALSE
-		if (hasFalse && !hasUnknown)
+		if (hasFullyAvailableProducts)
 		{
-			return OptionalBoolean.FALSE;
+			return hasNotAvailableProducts ? Optional.of(QtyAvailableStatus.PARTIALLY_AVAILABLE) : Optional.of(QtyAvailableStatus.FULLY_AVAILABLE);
+		}
+		else
+		{
+			return Optional.of(QtyAvailableStatus.NOT_AVAILABLE);
 		}
 
-		// Otherwise, return UNKNOWN
-		return OptionalBoolean.UNKNOWN;
 	}
 
 	public PickingJobCandidateProducts updatingEachProduct(@NonNull UnaryOperator<PickingJobCandidateProduct> updater)
@@ -121,6 +139,12 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 		return Objects.equals(this.byProductId, byProductIdNew)
 				? this
 				: new PickingJobCandidateProducts(byProductIdNew);
+	}
+
+	@Nullable
+	public PickingJobCandidateProduct getSingleProductOrNull()
+	{
+		return singleProduct;
 	}
 
 	@Nullable

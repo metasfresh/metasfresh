@@ -8,6 +8,7 @@ import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
+import { WorkflowLauncherIndicator } from '../../constants/WorkflowLauncherIndicator';
 
 const TEST_PROPS = [
   'salesOrderId',
@@ -50,8 +51,8 @@ const WFLauncherButton = ({
       additionalCssClass="wflauncher-button"
       caption={caption}
       showWarningSign={showWarningSign}
-      indicator2={indicator}
-      indicator1={startedWFProcessId ? 'lock' : null}
+      indicator1={indicator}
+      indicator2={startedWFProcessId ? WorkflowLauncherIndicator.JOB_ALREADY_STARTED : null}
       disabled={false}
       onClick={handleClick}
     />

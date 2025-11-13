@@ -2,6 +2,9 @@ package de.metas.workflow.rest_api.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +15,13 @@ import javax.annotation.Nullable;
 @RequiredArgsConstructor
 public enum WorkflowLauncherIndicator
 {
-	RED("red"),
-	YELLOW("yellow"),
-	GREEN("green"),
+	// note to dev: keep in sync with WorkflowLauncherIndicator.js
+	STOCK_NOT_AVAILABLE("STOCK_NOT_AVAILABLE"),
+	STOCK_PARTIALLY_AVAILABLE("STOCK_PARTIALLY_AVAILABLE"),
+	STOCK_FULLY_AVAILABLE("STOCK_FULLY_AVAILABLE"),
 	;
+
+	private static final ImmutableMap<String, WorkflowLauncherIndicator> typesByJson = Maps.uniqueIndex(ImmutableList.copyOf(values()), WorkflowLauncherIndicator::toJson);
 
 	@NonNull private final String json;
 
@@ -30,20 +36,12 @@ public enum WorkflowLauncherIndicator
 	@NonNull
 	public static WorkflowLauncherIndicator fromJson(@NonNull final String json)
 	{
-		if (RED.json.equals(json))
+		final WorkflowLauncherIndicator type = typesByJson.get(json);
+		if (type == null)
 		{
-			return RED;
+			throw new AdempiereException("Unknown: " + json);
 		}
-		else if (YELLOW.json.equals(json))
-		{
-			return YELLOW;
-		}
-		else if (GREEN.json.equals(json))
-		{
-			return GREEN;
-		}
-		else
-			throw new AdempiereException("Unknown WorkflowLauncherIndicator: " + json);
+		return type;
 	}
 
 	@JsonValue

@@ -10,10 +10,12 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateProducts;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
+import de.metas.handlingunits.picking.job.model.QtyAvailableStatus;
 import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetHandlers;
@@ -25,7 +27,6 @@ import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.product.ScannedProductCodeResolver;
-import de.metas.quantity.Quantity;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
@@ -236,33 +237,27 @@ public class PickingWorkflowLaunchersProvider
 				.caption(displayValueProvider.computeLauncherCaption(pickingJobCandidate))
 				.startedWFProcessId(null)
 				.wfParameters(PickingWFProcessStartParams.of(pickingJobCandidate).toParams())
-				.indicator(computeWorkflowLauncherIndicator(pickingJobCandidate))
+				.indicator(computeQtyAvailableIndicator(pickingJobCandidate.getProducts()))
 				.partiallyHandledBefore(pickingJobCandidate.isPartiallyPickedBefore())
 				.build();
 	}
 
 	@Nullable
-	private static WorkflowLauncherIndicator computeWorkflowLauncherIndicator(final PickingJobCandidate jobCandidate)
+	private static WorkflowLauncherIndicator computeQtyAvailableIndicator(@NonNull final PickingJobCandidateProducts products)
 	{
-		final Quantity qtyToDeliver = jobCandidate.getQtyToDeliver();
-		final Quantity qtyAvailableToPick = jobCandidate.getQtyAvailableToPick();
-		if (qtyToDeliver == null || qtyAvailableToPick == null)
-		{
-			return null;
-		}
+		final QtyAvailableStatus qtyAvailableStatus = products.getQtyAvailableStatus().orElse(null);
+		if (qtyAvailableStatus == null) {return null;}
 
-		if (qtyAvailableToPick.signum() <= 0)
+		switch (qtyAvailableStatus)
 		{
-			// NOTE: shall not happen because usually those lines with nothing available to pick are filtered out at this point
-			return WorkflowLauncherIndicator.RED;
-		}
-		else if (qtyToDeliver.subtract(qtyAvailableToPick).signum() > 0)
-		{
-			return WorkflowLauncherIndicator.YELLOW;
-		}
-		else
-		{
-			return WorkflowLauncherIndicator.GREEN;
+			case NOT_AVAILABLE:
+				return WorkflowLauncherIndicator.STOCK_NOT_AVAILABLE;
+			case PARTIALLY_AVAILABLE:
+				return WorkflowLauncherIndicator.STOCK_PARTIALLY_AVAILABLE;
+			case FULLY_AVAILABLE:
+				return WorkflowLauncherIndicator.STOCK_FULLY_AVAILABLE;
+			default:
+				return null; // not handled status; shall not happen
 		}
 	}
 
@@ -278,6 +273,7 @@ public class PickingWorkflowLaunchersProvider
 				.caption(caption)
 				.startedWFProcessId(WFProcessId.ofIdPart(APPLICATION_ID, pickingJobReference.getPickingJobId()))
 				.wfParameters(PickingWFProcessStartParams.of(pickingJobReference).toParams())
+				.indicator(computeQtyAvailableIndicator(pickingJobReference.getProducts()))
 				.build();
 	}
 
