@@ -22,6 +22,7 @@
 
 package de.metas.workplace;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -92,16 +94,16 @@ public class WorkplaceService
 		return workplaceRepository.isAnyWorkplaceActive();
 	}
 
-	public LocatorId getPickFromLocatorId(@NonNull final WorkplaceId workplaceId)
+	public Set<LocatorId> getPickFromLocatorIds(@NonNull final WorkplaceId workplaceId)
 	{
 		final Workplace workplace = getById(workplaceId);
 		if (workplace.getPickFromLocatorId() != null)
 		{
-			return workplace.getPickFromLocatorId();
+			return ImmutableSet.of(workplace.getPickFromLocatorId());
 		}
 		else
 		{
-			return warehouseBL.getOrCreateDefaultLocatorId(workplace.getWarehouseId());
+			return warehouseBL.getLocatorIdsByWarehouseId(workplace.getWarehouseId());
 		}
 	}
 }

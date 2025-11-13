@@ -30,6 +30,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -57,7 +58,7 @@ public class PickingJobCandidate
 
 	public Set<ProductId> getProductIds() {return products.getProductIds();}
 
-	public boolean hasQtyAvailableToPick()
+	public OptionalBoolean hasQtyAvailableToPick()
 	{
 		return products.hasQtyAvailableToPick();
 	}

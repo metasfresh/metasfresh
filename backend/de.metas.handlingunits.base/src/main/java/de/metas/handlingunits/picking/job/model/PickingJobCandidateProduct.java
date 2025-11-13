@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.model;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -19,7 +20,10 @@ public class PickingJobCandidateProduct
 	@Nullable Quantity qtyToDeliver;
 	@Nullable Quantity qtyAvailableToPick;
 
-	public boolean hasQtyAvailableToPick() {return qtyAvailableToPick != null && qtyAvailableToPick.isPositive();}
+	public OptionalBoolean hasQtyAvailableToPick()
+	{
+		return qtyAvailableToPick == null ? OptionalBoolean.UNKNOWN : OptionalBoolean.ofBoolean(qtyAvailableToPick.isPositive());
+	}
 
 	public PickingJobCandidateProduct withQtyAvailableToPick(@Nullable Quantity qtyAvailableToPick)
 	{

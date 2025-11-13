@@ -6,9 +6,11 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.OptionalBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -24,8 +26,9 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 {
 	@NonNull private final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductId;
 	@Nullable private final PickingJobCandidateProduct singleProduct;
+	@Nullable private OptionalBoolean _hasQtyAvailableToPick = null; // lazy
 
-	private PickingJobCandidateProducts(final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductId)
+	private PickingJobCandidateProducts(@NonNull final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductId)
 	{
 		this.byProductId = byProductId;
 		this.singleProduct = byProductId.size() == 1
@@ -57,9 +60,50 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 	@NonNull
 	public Iterator<PickingJobCandidateProduct> iterator() {return byProductId.values().iterator();}
 
-	public boolean hasQtyAvailableToPick()
+	public OptionalBoolean hasQtyAvailableToPick()
 	{
-		return byProductId.values().stream().anyMatch(PickingJobCandidateProduct::hasQtyAvailableToPick);
+		OptionalBoolean hasQtyAvailableToPick = this._hasQtyAvailableToPick;
+		if (_hasQtyAvailableToPick == null)
+		{
+			hasQtyAvailableToPick = this._hasQtyAvailableToPick = computeHasQtyAvailableToPick();
+		}
+		return hasQtyAvailableToPick;
+	}
+
+	private @NotNull OptionalBoolean computeHasQtyAvailableToPick()
+	{
+		if (byProductId.isEmpty())
+		{
+			return OptionalBoolean.UNKNOWN;
+		}
+
+		boolean hasFalse = false;
+		boolean hasUnknown = false;
+
+		for (PickingJobCandidateProduct product : byProductId.values())
+		{
+			final OptionalBoolean result = product.hasQtyAvailableToPick();
+			switch (result)
+			{
+				case TRUE:
+					return OptionalBoolean.TRUE;
+				case FALSE:
+					hasFalse = true;
+					break;
+				case UNKNOWN:
+					hasUnknown = true;
+					break;
+			}
+		}
+
+		// If we only have FALSE values, return FALSE
+		if (hasFalse && !hasUnknown)
+		{
+			return OptionalBoolean.FALSE;
+		}
+
+		// Otherwise, return UNKNOWN
+		return OptionalBoolean.UNKNOWN;
 	}
 
 	public PickingJobCandidateProducts updatingEachProduct(@NonNull UnaryOperator<PickingJobCandidateProduct> updater)

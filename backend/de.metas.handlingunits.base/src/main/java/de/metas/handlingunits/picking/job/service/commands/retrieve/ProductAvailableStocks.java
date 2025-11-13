@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands.retrieve;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -9,6 +10,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,17 +22,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-@Builder
 class ProductAvailableStocks
 {
 	// Services
 	@NonNull final IHandlingUnitsBL handlingUnitsBL;
 
 	// Params
-	@NonNull final LocatorId pickFromLocatorId;
+	@NonNull final ImmutableSet<LocatorId> pickFromLocatorIds;
 
 	// State
 	@NonNull private final HashMap<ProductId, ProductAvailableStock> map = new HashMap<>();
+
+	@Builder
+	private ProductAvailableStocks(
+			@NonNull final IHandlingUnitsBL handlingUnitsBL,
+			@NonNull final Set<LocatorId> pickFromLocatorIds)
+	{
+		Check.assumeNotEmpty(pickFromLocatorIds, "pickFromLocatorIds shall not be empty");
+
+		this.handlingUnitsBL = handlingUnitsBL;
+		this.pickFromLocatorIds = ImmutableSet.copyOf(pickFromLocatorIds);
+	}
 
 	public PickingJobCandidate allocate(PickingJobCandidate job)
 	{
@@ -79,7 +91,7 @@ class ProductAvailableStocks
 		final List<I_M_HU> hus = handlingUnitsBL.createHUQueryBuilder()
 				.onlyContextClient(false) // fails when running from non-context threads like websockets value producers
 				.addOnlyWithProductIds(productIds)
-				.addOnlyInLocatorId(pickFromLocatorId)
+				.addOnlyInLocatorIds(pickFromLocatorIds)
 				.setOnlyActiveHUs(true)
 				.list();
 

@@ -23,6 +23,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -40,6 +42,7 @@ public class PickingJobCandidateRetrieveCommand
 	// Services
 	@NonNull private final IPackagingDAO packagingDAO;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+	@NonNull private final IWarehouseBL warehouseBL;
 	@NonNull private final MobileUIPickingUserProfileRepository configRepository;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final WorkplaceService workplaceService;
@@ -51,7 +54,6 @@ public class PickingJobCandidateRetrieveCommand
 	//
 	// State
 	@Nullable ImmutableMap<ShipmentScheduleId, PickingJobSchedule> _onlyPickingJobSchedules; // lazy
-	@Nullable ProductAvailableStocks _productAvailableStocks; // lazy
 	@NonNull private final LinkedHashMap<OrderBasedAggregationKey, OrderBasedAggregation> orderBasedAggregates = new LinkedHashMap<>();
 	@NonNull private final LinkedHashMap<ProductBasedAggregationKey, ProductBasedAggregation> productBasedAggregates = new LinkedHashMap<>();
 	@NonNull private final LinkedHashMap<DeliveryLocationBasedAggregationKey, DeliveryLocationBasedAggregation> deliveryLocationBasedAggregates = new LinkedHashMap<>();
@@ -64,33 +66,35 @@ public class PickingJobCandidateRetrieveCommand
 				.forEach(this::add);
 
 		ImmutableList<PickingJobCandidate> jobCandidates = aggregate();
-		jobCandidates = applyOnlyIfQtyAvailableAtPickingLocatorFilter(jobCandidates);
+		jobCandidates = allocateQtyAvailableAndFilter(jobCandidates);
 
 		return jobCandidates;
 	}
 
-	private ImmutableList<PickingJobCandidate> applyOnlyIfQtyAvailableAtPickingLocatorFilter(final ImmutableList<PickingJobCandidate> jobs)
+	private ImmutableList<PickingJobCandidate> allocateQtyAvailableAndFilter(final ImmutableList<PickingJobCandidate> jobs)
 	{
 		if (jobs.isEmpty())
 		{
 			return jobs;
 		}
-		if (!query.isOnlyIfQtyAvailableAtPickingLocator())
+
+		final ProductAvailableStocks productAvailableStocks = createProductsAvailableStocksOrNull();
+		if (productAvailableStocks == null)
 		{
 			return jobs;
 		}
-
-		final ProductAvailableStocks productAvailableStocks = getProductAvailableStocks();
 		productAvailableStocks.warmUpByProductIds(extractProductIds(jobs));
 
 		final ArrayList<PickingJobCandidate> result = new ArrayList<>();
 		for (final PickingJobCandidate job : jobs)
 		{
 			final PickingJobCandidate jobAllocated = productAvailableStocks.allocate(job);
-			if (jobAllocated.hasQtyAvailableToPick())
+			if (query.isOnlyIfQtyAvailableAtPickingLocator() && jobAllocated.hasQtyAvailableToPick().isFalse())
 			{
-				result.add(jobAllocated);
+				continue;
 			}
+
+			result.add(jobAllocated);
 		}
 
 		return ImmutableList.copyOf(result);
@@ -204,30 +208,35 @@ public class PickingJobCandidateRetrieveCommand
 		}
 	}
 
-	private ProductAvailableStocks getProductAvailableStocks()
+	@Nullable
+	private ProductAvailableStocks createProductsAvailableStocksOrNull()
 	{
-		if (this._productAvailableStocks == null)
+		final Set<LocatorId> pickFromLocatorIds = getPickFromLocatorIds();
+		if (pickFromLocatorIds.isEmpty())
 		{
-			this._productAvailableStocks = ProductAvailableStocks.builder()
-					.handlingUnitsBL(handlingUnitsBL)
-					.pickFromLocatorId(getPickFromLocatorId())
-					.build();
+			return null;
 		}
 
-		return this._productAvailableStocks;
+		return ProductAvailableStocks.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.pickFromLocatorIds(pickFromLocatorIds)
+				.build();
 	}
 
-	private LocatorId getPickFromLocatorId()
+	private Set<LocatorId> getPickFromLocatorIds()
 	{
 		final WorkplaceId scheduledForWorkplaceId = query.getScheduledForWorkplaceId();
 		if (query.getScheduledForWorkplaceId() != null)
 		{
-			return workplaceService.getPickFromLocatorId(scheduledForWorkplaceId);
+			return workplaceService.getPickFromLocatorIds(scheduledForWorkplaceId);
 		}
-		else
+
+		final WarehouseId warehouseId = query.getWarehouseId();
+		if (warehouseId != null)
 		{
-			throw new AdempiereException("Cannot determine the pick from locator")
-					.setParameter("query", query);
+			return warehouseBL.getLocatorIdsByWarehouseId(warehouseId);
 		}
+
+		return ImmutableSet.of();
 	}
 }
