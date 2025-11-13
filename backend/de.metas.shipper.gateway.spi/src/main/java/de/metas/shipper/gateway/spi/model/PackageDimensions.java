@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.spi.model;
 import de.metas.product.DimensionsInCM;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -60,7 +61,7 @@ public class PackageDimensions
 		return UNSPECIFIED.equals(packageDimensions);
 	}
 
-	public static PackageDimensions ofProductDimensionsAndQty(final DimensionsInCM productDimensionsInCM, final Quantity qtyInStockingUOM)
+	public static PackageDimensions ofProductDimensionsAndQty(@NonNull final DimensionsInCM productDimensionsInCM, @NonNull final Quantity qtyInStockingUOM)
 	{
 		final List<Integer> dimensions = new ArrayList<>();
 		dimensions.add(productDimensionsInCM.getHeightInCM());
@@ -73,6 +74,15 @@ public class PackageDimensions
 				.lengthInCM(dimensions.get(0) * qtyRoundedUpInStockUOM)
 				.heightInCM(dimensions.get(1))
 				.widthInCM(dimensions.get(2))
+				.build();
+	}
+
+	public static PackageDimensions ofDimensionsInCM(@NonNull final DimensionsInCM productDimensionsInCM)
+	{
+		return PackageDimensions.builder()
+				.lengthInCM(productDimensionsInCM.getLengthInCM())
+				.heightInCM(productDimensionsInCM.getHeightInCM())
+				.widthInCM(productDimensionsInCM.getWidthInCM())
 				.build();
 	}
 }

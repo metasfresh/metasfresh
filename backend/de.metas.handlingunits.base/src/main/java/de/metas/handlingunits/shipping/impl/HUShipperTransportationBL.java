@@ -433,7 +433,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 							.trackingCode(packageInfo.getTrackingNumber())
 							.trackingURL(packageInfo.getTrackingUrl())
 							.weightInKg(packageInfo.getWeight())
-							.packageDimensions(PackageDimensions.UNSPECIFIED)
+							.packageDimensions(PackageDimensions.ofDimensionsInCM(packageInfo.getDimensionsInCM()))
 							.build()
 					)
 					.collect(ImmutableList.toImmutableList());

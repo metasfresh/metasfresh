@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-shipping
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,29 +31,25 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonPackage.JsonPackageBuilder.class)
-public class JsonPackage
+@JsonDeserialize(builder = JsonDimensions.JsonDimensionsBuilder.class)
+public class JsonDimensions
 {
-	@JsonProperty("trackingCode")
+	@JsonProperty("length")
 	@NonNull
-	String trackingCode;
+	Integer length;
 
-	@JsonProperty("weight")
-	BigDecimal weight;
+	@JsonProperty("width")
+	Integer width;
 
-	@JsonProperty("dimensions")
-	@Nullable
-	JsonDimensions dimensions;
+	@JsonProperty("height")
+	Integer height;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static class JsonPackageBuilder
+	public static class JsonDimensionsBuilder
 	{
 	}
 }
