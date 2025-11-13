@@ -264,11 +264,6 @@ public class HU
 				}
 				else if (newWeightNet != null && retainedChild.getWeightNet() != null)
 				{
-					// correction of roundings
-					if(weightNet!= null && newWeightNet.isGreaterThan(weightNet))
-					{
-						newWeightNet = weightNet;
-					}
 					newWeightNet = Quantitys.add(null, newWeightNet, retainedChild.getWeightNet());
 				}
 			}
@@ -277,7 +272,13 @@ public class HU
 		{
 			return null; // no product-qty in here. nothing to return.
 		}
-		
+
+		// correction of roundings
+		if(weightNet!= null && newWeightNet != null && newWeightNet.isGreaterThan(weightNet))
+		{
+			newWeightNet = weightNet;
+		}
+
 		result
 				.productQtyInStockUOM(productId, newProductQtyInStockUOM)
 				.referencingModels(newReferencingModels)
