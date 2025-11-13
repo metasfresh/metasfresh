@@ -1,9 +1,9 @@
 package de.metas.quantity;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 public final class MixedQuantity
@@ -28,7 +29,7 @@ public final class MixedQuantity
 
 	public static Collector<Quantity, ?, MixedQuantity> collectAndSum()
 	{
-		return GuavaCollectors.collectUsingListAccumulator(MixedQuantity::sumOf);
+		return GuavaCollectors.collectUsingListAccumulator(de.metas.quantity.MixedQuantity::sumOf);
 	}
 
 	public static MixedQuantity sumOf(@NonNull final Collection<Quantity> collection)
@@ -47,11 +48,18 @@ public final class MixedQuantity
 		return new MixedQuantity(map);
 	}
 
+	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(map.values())
-				.toString();
+		if (map.isEmpty())
+		{
+			return "0";
+		}
+
+		return map.values()
+				.stream()
+				.map(Quantity::toShortString)
+				.collect(Collectors.joining("+"));
 	}
 
 	public Optional<Quantity> toNoneOrSingleValue()
@@ -68,5 +76,23 @@ public final class MixedQuantity
 		{
 			throw new AdempiereException("Expected none or single value but got many: " + map.values());
 		}
+	}
+
+	public MixedQuantity add(@NonNull final Quantity qtyToAdd)
+	{
+		if (qtyToAdd.isZero())
+		{
+			return this;
+		}
+
+		return new MixedQuantity(
+				CollectionUtils.merge(map, qtyToAdd.getUomId(), qtyToAdd, Quantity::add)
+		);
+	}
+
+	public Quantity getByUOM(@NonNull final UomId uomId)
+	{
+		final Quantity qty = map.get(uomId);
+		return qty != null ? qty : Quantitys.zero(uomId);
 	}
 }

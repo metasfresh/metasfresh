@@ -2,7 +2,7 @@
  * #%L
  * de.metas.workflow.rest-api
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +20,22 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.model.facets;
+package de.metas.rest_workflows.facets;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocumentNoFilter;
-import de.metas.user.UserId;
-import de.metas.mobile.application.MobileApplicationId;
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class WorkflowLaunchersFacetQuery
+public class WorkflowLaunchersFacetGroup
 {
-	@NonNull MobileApplicationId applicationId;
-	@NonNull UserId userId;
-	@Nullable DocumentNoFilter filterByDocumentNo;
-	@Nullable ImmutableSet<WorkflowLaunchersFacetId> activeFacetIds;
+	@NonNull WorkflowLaunchersFacetGroupId id;
+	@NonNull ITranslatableString caption;
+	@NonNull @Singular ImmutableList<WorkflowLaunchersFacet> facets;
+
+	public boolean isEmpty() {return facets.isEmpty();}
 }

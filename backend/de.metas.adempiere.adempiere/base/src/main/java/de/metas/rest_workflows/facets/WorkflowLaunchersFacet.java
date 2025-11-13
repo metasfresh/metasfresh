@@ -20,22 +20,25 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.model.facets;
+package de.metas.rest_workflows.facets;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
+import lombok.With;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class WorkflowLaunchersFacetGroup
+public class WorkflowLaunchersFacet
 {
-	@NonNull WorkflowLaunchersFacetGroupId id;
+	@NonNull WorkflowLaunchersFacetId facetId;
 	@NonNull ITranslatableString caption;
-	@NonNull @Singular ImmutableList<WorkflowLaunchersFacet> facets;
+	@Builder.Default long sortNo = 0;
+	@With boolean isActive;
+	@Nullable Integer hitCount;
 
-	public boolean isEmpty() {return facets.isEmpty();}
+	public WorkflowLaunchersFacetGroupId getGroupId() {return facetId.getGroupId();}
 }

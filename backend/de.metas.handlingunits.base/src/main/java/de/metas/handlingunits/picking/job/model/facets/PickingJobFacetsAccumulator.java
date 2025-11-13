@@ -20,23 +20,23 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.job.model;
+package de.metas.handlingunits.picking.job.model.facets;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.time.SystemTime;
-import de.metas.document.location.RenderedAddressProvider;
-import de.metas.organization.InstantAndOrgId;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
+import de.metas.handlingunits.picking.job.model.facets.customer.CustomerFacet;
+import de.metas.handlingunits.picking.job.model.facets.delivery_day.DeliveryDayFacet;
+import de.metas.handlingunits.picking.job.model.facets.handover_location.HandoverLocationFacet;
 import de.metas.picking.api.Packageable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -45,20 +45,20 @@ import java.util.stream.Collector;
 
 class PickingJobFacetsAccumulator
 {
-	@NonNull private final RenderedAddressProvider renderedAddressProvider;
+	@NonNull private final CollectingParameters parameters;
 	@NonNull private final ImmutableList<PickingJobFacetGroup> groupsInOrder;
 	@NonNull private final PickingJobQuery.Facets activeFacets;
 
 	@NonNull private final HashSet<FacetAwareItem> items = new HashSet<>();
 
-	public PickingJobFacetsAccumulator(@NonNull final PickingJobFacets.CollectingParameters parameters)
+	public PickingJobFacetsAccumulator(@NonNull final CollectingParameters parameters)
 	{
-		this.renderedAddressProvider = parameters.getAddressProvider();
+		this.parameters = parameters;
 		this.groupsInOrder = parameters.getGroupsInOrder();
 		this.activeFacets = parameters.getActiveFacets();
 	}
 
-	public static Collector<Packageable, ?, PickingJobFacets> collect(@NonNull final PickingJobFacets.CollectingParameters parameters)
+	public static Collector<Packageable, ?, PickingJobFacets> collect(@NonNull final CollectingParameters parameters)
 	{
 		return Collector.of(
 				() -> new PickingJobFacetsAccumulator(parameters),
@@ -87,7 +87,7 @@ class PickingJobFacetsAccumulator
 
 	PickingJobFacets toPickingJobFacets()
 	{
-		@NonNull final HashSet<PickingJobFacets.PickingJobFacet> collectedFacets = new HashSet<>();
+		@NonNull final HashSet<PickingJobFacet> collectedFacets = new HashSet<>();
 
 		//
 		// Iterate groups in order and collect facets from each group
@@ -99,7 +99,7 @@ class PickingJobFacetsAccumulator
 
 			//
 			// Iterate items and collect facets from them
-			@NonNull final HashSet<PickingJobFacets.PickingJobFacet> collectedGroupFacets = new HashSet<>();
+			@NonNull final HashSet<PickingJobFacet> collectedGroupFacets = new HashSet<>();
 			for (final FacetAwareItem item : items)
 			{
 				if (!item.isMatching(activeFacetsOfPreviousGroups))
@@ -107,8 +107,8 @@ class PickingJobFacetsAccumulator
 					continue;
 				}
 
-				final ImmutableSet<PickingJobFacets.PickingJobFacet> itemFacets = item.getFacets(group);
-				for (final PickingJobFacets.PickingJobFacet facet : itemFacets)
+				final ImmutableSet<PickingJobFacet> itemFacets = item.getFacets(group);
+				for (final PickingJobFacet facet : itemFacets)
 				{
 					boolean isActive = false;
 					for (PickingJobQuery.Facets activeFacetOfThisGroupPart : activeFacetsOfThisGroup)
@@ -143,7 +143,7 @@ class PickingJobFacetsAccumulator
 			//
 			// If user didn't activate any facet on this group, stop collecting facets here.
 			// Let him/her active some facets on this group, and then we can continue collecting for next groups
-			if (collectedGroupFacets.stream().noneMatch(PickingJobFacets.PickingJobFacet::isActive))
+			if (collectedGroupFacets.stream().noneMatch(PickingJobFacet::isActive))
 			{
 				break;
 			}
@@ -156,31 +156,7 @@ class PickingJobFacetsAccumulator
 
 	private FacetAwareItem extractFacetAwareItem(@NonNull final Packageable packageable)
 	{
-		final ImmutableSet.Builder<PickingJobFacets.PickingJobFacet> facets = ImmutableSet.builder();
-
-		if (groupsInOrder.contains(PickingJobFacetGroup.CUSTOMER))
-		{
-			facets.add(PickingJobFacets.CustomerFacet.of(
-					false,
-					packageable.getCustomerId(),
-					packageable.getCustomerBPValue(),
-					packageable.getCustomerName()));
-		}
-		if (groupsInOrder.contains(PickingJobFacetGroup.DELIVERY_DATE))
-		{
-			final InstantAndOrgId deliveryDate = packageable.getDeliveryDate();
-			//final ZoneId timeZone = orgDAO.getTimeZone(deliveryDate.getOrgId());
-			final ZoneId timeZone = SystemTime.zoneId();
-			final LocalDate deliveryDay = deliveryDate.toZonedDateTime(timeZone).toLocalDate();
-			facets.add(PickingJobFacets.DeliveryDayFacet.of(false, deliveryDay, timeZone));
-		}
-		if (groupsInOrder.contains(PickingJobFacetGroup.HANDOVER_LOCATION))
-		{
-			final String renderedAddress = renderedAddressProvider.getAddress(packageable.getHandoverLocationId());
-			facets.add(PickingJobFacets.HandoverLocationFacet.of(false, packageable.getHandoverLocationId(), renderedAddress));
-		}
-
-		return FacetAwareItem.ofList(facets.build());
+		return FacetAwareItem.ofList(PickingJobFacetHandlers.extractFacets(packageable, parameters));
 	}
 
 	//
@@ -193,20 +169,20 @@ class PickingJobFacetsAccumulator
 	{
 		private static final FacetAwareItem EMPTY = new FacetAwareItem(ImmutableSet.of());
 
-		private final ImmutableSetMultimap<PickingJobFacetGroup, PickingJobFacets.PickingJobFacet> facetsByGroup;
+		private final ImmutableSetMultimap<PickingJobFacetGroup, PickingJobFacet> facetsByGroup;
 		private final ImmutableSet<BPartnerId> customerIds;
 		private final ImmutableSet<LocalDate> deliveryDays;
 		private final ImmutableSet<BPartnerLocationId> handoverLocationIds;
 
-		private FacetAwareItem(@NonNull final Set<PickingJobFacets.PickingJobFacet> facets)
+		private FacetAwareItem(@NonNull final Set<PickingJobFacet> facets)
 		{
-			this.facetsByGroup = facets.stream().collect(ImmutableSetMultimap.toImmutableSetMultimap(PickingJobFacets.PickingJobFacet::getGroup, facet -> facet));
-			this.customerIds = extract(facets, PickingJobFacets.CustomerFacet.class, PickingJobFacets.CustomerFacet::getBpartnerId);
-			this.deliveryDays = extract(facets, PickingJobFacets.DeliveryDayFacet.class, PickingJobFacets.DeliveryDayFacet::getDeliveryDate);
-			this.handoverLocationIds = extract(facets, PickingJobFacets.HandoverLocationFacet.class, PickingJobFacets.HandoverLocationFacet::getBPartnerLocationId);
+			this.facetsByGroup = facets.stream().collect(ImmutableSetMultimap.toImmutableSetMultimap(PickingJobFacet::getGroup, facet -> facet));
+			this.customerIds = extract(facets, CustomerFacet.class, CustomerFacet::getBpartnerId);
+			this.deliveryDays = extract(facets, DeliveryDayFacet.class, DeliveryDayFacet::getDeliveryDate);
+			this.handoverLocationIds = extract(facets, HandoverLocationFacet.class, HandoverLocationFacet::getBPartnerLocationId);
 		}
 
-		private static <T extends PickingJobFacets.PickingJobFacet, R> ImmutableSet<R> extract(Set<PickingJobFacets.PickingJobFacet> facets, Class<T> type, Function<T, R> mapper)
+		private static <T extends PickingJobFacet, R> ImmutableSet<R> extract(Set<PickingJobFacet> facets, Class<T> type, Function<T, R> mapper)
 		{
 			if (facets.isEmpty())
 			{
@@ -220,7 +196,7 @@ class PickingJobFacetsAccumulator
 					.collect(ImmutableSet.toImmutableSet());
 		}
 
-		public static FacetAwareItem ofList(final Set<PickingJobFacets.PickingJobFacet> facets)
+		public static FacetAwareItem ofList(final Set<PickingJobFacet> facets)
 		{
 			if (facets.isEmpty())
 			{
@@ -248,7 +224,7 @@ class PickingJobFacetsAccumulator
 			return values.stream().anyMatch(requiredValues::contains);
 		}
 
-		public ImmutableSet<PickingJobFacets.PickingJobFacet> getFacets(@NonNull final PickingJobFacetGroup group)
+		public ImmutableSet<PickingJobFacet> getFacets(@NonNull final PickingJobFacetGroup group)
 		{
 			return facetsByGroup.get(group);
 		}

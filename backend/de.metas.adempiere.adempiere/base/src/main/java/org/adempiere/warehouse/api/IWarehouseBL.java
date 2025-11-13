@@ -91,6 +91,8 @@ public interface IWarehouseBL extends ISingletonService
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
 
+	ImmutableSet<LocatorId> getLocatorIdsByWarehouseId(@NonNull WarehouseId warehouseId);
+
 	I_M_Locator getLocatorByRepoId(int locatorRepoId);
 
 	WarehouseId getInTransitWarehouseId(OrgId adOrgId);

@@ -28,14 +28,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobField;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
-import de.metas.document.location.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
@@ -91,7 +92,7 @@ public class DisplayValueProvider
 		cacheWarmUpForContexts(contexts);
 	}
 
-	public void cacheWarmUpForPickingJobCandidates(final ImmutableList<PickingJobCandidate> pickingJobCandidates)
+	public void cacheWarmUpForPickingJobCandidates(final PickingJobCandidateList pickingJobCandidates)
 	{
 		if (pickingJobCandidates.isEmpty())
 		{
@@ -130,12 +131,6 @@ public class DisplayValueProvider
 	private static ImmutableSet<BPartnerLocationId> extractDeliveryLocationIds(final @NonNull ImmutableList<Context> contexts)
 	{
 		return contexts.stream().map(Context::getDeliveryLocationId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
-	}
-
-	@NonNull
-	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJob pickingJob)
-	{
-		return computeLauncherCaption(toContext(pickingJob));
 	}
 
 	@NonNull

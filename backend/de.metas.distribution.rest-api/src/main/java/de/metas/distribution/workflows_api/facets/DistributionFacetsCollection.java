@@ -2,12 +2,12 @@ package de.metas.distribution.workflows_api.facets;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacet;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroup;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroup.WorkflowLaunchersFacetGroupBuilder;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupId;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacet;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroup;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroup.WorkflowLaunchersFacetGroupBuilder;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

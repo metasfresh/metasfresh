@@ -20,12 +20,12 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.job.model;
+package de.metas.handlingunits.picking.job.model.facets;
 
 import de.metas.ad_reference.ReferenceId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupId;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -37,7 +37,6 @@ import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_Customer
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_DeliveryDate;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_HandoverLocation;
 
-@AllArgsConstructor
 @Getter
 public enum PickingJobFacetGroup implements ReferenceListAwareEnum
 {
@@ -49,12 +48,25 @@ public enum PickingJobFacetGroup implements ReferenceListAwareEnum
 	public static final ReferenceId PICKING_JOB_FILTER_OPTION_REFERENCE_ID = ReferenceId.ofRepoId(FILTERTYPE_AD_Reference_ID);
 	private static final ReferenceListAwareEnums.ValuesIndex<PickingJobFacetGroup> index = ReferenceListAwareEnums.index(values());
 
-	private final String code;
+	@NonNull private final String code;
+	@NonNull private final WorkflowLaunchersFacetGroupId workflowGroupFacetId;
+
+	PickingJobFacetGroup(@NonNull final String code)
+	{
+		this.code = code;
+		this.workflowGroupFacetId = WorkflowLaunchersFacetGroupId.ofString(code);
+	}
 
 	@NonNull
 	public static PickingJobFacetGroup ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
+	}
+
+	@NonNull
+	public static PickingJobFacetGroup of(@NonNull final WorkflowLaunchersFacetGroupId workflowGroupFacetId)
+	{
+		return ofCode(workflowGroupFacetId.getAsString());
 	}
 
 	public static boolean equals(@Nullable PickingJobFacetGroup group1, @Nullable PickingJobFacetGroup group2) {return Objects.equals(group1, group2);}
