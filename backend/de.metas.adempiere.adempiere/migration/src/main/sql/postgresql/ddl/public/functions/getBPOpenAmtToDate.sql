@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION getBPOpenAmtToDate(p_AD_Client_ID numeric,
                                               p_C_BPartner_id numeric,
                                               p_C_Currency_ID numeric,
                                               p_UseDateAcct text = 'Y',
-                                              p_IsSOTrx text = NULL)
+                                              p_IsSOTrx text = 'Y')
     RETURNS numeric
 AS
 $$
@@ -31,7 +31,7 @@ BEGIN
                                            AND ips.isvalid = 'Y'
                                            AND ips.isActive = 'Y'
               WHERE TRUE
-                AND i.issotrx = COALESCE(p_isSoTrx, i.issotrx)
+                AND i.IsSOTrx = p_IsSOTrx
                 AND (CASE
                          WHEN p_UseDateAcct = 'Y' THEN i.dateacct
                                                   ELSE i.dateinvoiced
@@ -49,9 +49,9 @@ BEGIN
                                        p_DateType := v_dateType,
                                        p_Date := p_Date,
                                        p_Result_Currency_ID := p_C_Currency_ID
-                                    )
+                                   )
                               )
-                      )
+                          )
 
 
     FROM t;
