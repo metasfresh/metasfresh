@@ -67,7 +67,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Dunning;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -311,14 +310,9 @@ public class C_BPartner_StepDef
 					.build()).getRepoId());
 		}
 
-		final StepDefDataIdentifier paymentTermIdentifier = row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID).orElse(null);
-		if (paymentTermIdentifier != null)
-		{
-			final I_C_PaymentTerm paymentTerm = paymentTermTable.get(paymentTermIdentifier);
-			assertThat(paymentTerm).as("Missing Payment Term record for identifier=" + paymentTermIdentifier).isNotNull();
-
-			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
-		}
+		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID)
+				.map(paymentTermTable::getId)
+				.ifPresent(paymentTermId -> bPartnerRecord.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRulePO, PaymentRule.class).ifPresent(paymentRulePO -> bPartnerRecord.setPaymentRulePO(paymentRulePO.getCode()));
