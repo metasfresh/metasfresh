@@ -100,6 +100,7 @@ public interface I_M_Product
 
 	/**
 	 * Set AVV.
+	 * Waste code number - serves to uniquely identify waste types according to the Waste Catalogue Ordinance (AVV)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -109,6 +110,7 @@ public interface I_M_Product
 
 	/**
 	 * Get AVV.
+	 * Waste code number - serves to uniquely identify waste types according to the Waste Catalogue Ordinance (AVV)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1277,7 +1279,7 @@ public interface I_M_Product
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setisSelfPacked (boolean isSelfPacked);
+	void setIsSelfPacked (boolean IsSelfPacked);
 
 	/**
 	 * Get Self Packed.
@@ -1288,8 +1290,8 @@ public interface I_M_Product
 	 */
 	boolean isSelfPacked();
 
-	ModelColumn<I_M_Product, Object> COLUMN_isSelfPacked = new ModelColumn<>(I_M_Product.class, "isSelfPacked", null);
-	String COLUMNNAME_isSelfPacked = "isSelfPacked";
+	ModelColumn<I_M_Product, Object> COLUMN_IsSelfPacked = new ModelColumn<>(I_M_Product.class, "IsSelfPacked", null);
+	String COLUMNNAME_IsSelfPacked = "IsSelfPacked";
 
 	/**
 	 * Set Self-Service.

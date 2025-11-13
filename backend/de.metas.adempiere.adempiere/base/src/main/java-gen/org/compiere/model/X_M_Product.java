@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1864128628L;
+	private static final long serialVersionUID = -369998932L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -805,15 +805,15 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setisSelfPacked (final boolean isSelfPacked)
+	public void setIsSelfPacked (final boolean IsSelfPacked)
 	{
-		set_Value (COLUMNNAME_isSelfPacked, isSelfPacked);
+		set_Value (COLUMNNAME_IsSelfPacked, IsSelfPacked);
 	}
 
 	@Override
 	public boolean isSelfPacked() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_isSelfPacked);
+		return get_ValueAsBoolean(COLUMNNAME_IsSelfPacked);
 	}
 
 	@Override
