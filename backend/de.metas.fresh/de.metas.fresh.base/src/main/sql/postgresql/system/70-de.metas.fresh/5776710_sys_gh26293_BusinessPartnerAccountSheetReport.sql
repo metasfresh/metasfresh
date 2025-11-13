@@ -43,7 +43,8 @@ BEGIN
         targetCurrencyCode     text,
         rowid                  NUMERIC,
         ad_org_id              NUMERIC,
-        doctype                text
+        doctype                text,
+        issotrx                text
     );
     v_time := logDebug('created empty temporary table', v_time);
 
