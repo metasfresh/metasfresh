@@ -98,3 +98,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(584200)
 ;
 
+-- 2025-11-12T15:33:44.651Z
+/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN IsAutoInvoice CHAR(1) DEFAULT ''N'' CHECK (IsAutoInvoice IN (''Y'',''N'')) NOT NULL')
+;

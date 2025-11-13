@@ -41,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_BPartner;
@@ -61,6 +62,7 @@ public class BPartnerOrderParamsRepository
 			.tableName(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
 			.additionalTableNameToResetFor(I_AD_OrgInfo.Table_Name) // pricingSystemId might be coming from here
+			.additionalTableNameToResetFor(I_AD_SysConfig.Table_Name)
 			.build();
 
 	public static BPartnerOrderParamsRepository newInstanceForUnitTesting()
@@ -69,9 +71,10 @@ public class BPartnerOrderParamsRepository
 		return new BPartnerOrderParamsRepository(BPartnerEffectiveBL.newInstanceForUnitTesting());
 	}
 
+	@NonNull
 	public BPartnerOrderParams getBy(@NonNull final BPartnerOrderParamsQuery query)
 	{
-		return cache.getOrLoad(query, this::getBy0);
+		return cache.getOrLoadNonNull(query, this::getBy0);
 	}
 
 	@Value
@@ -88,6 +91,7 @@ public class BPartnerOrderParamsRepository
 		SOTrx soTrx;
 	}
 
+	@NonNull
 	private BPartnerOrderParams getBy0(@NonNull final BPartnerOrderParamsQuery query)
 	{
 		final I_C_BPartner billBPartnerRecord = bpartnersRepo.getById(query.getBillBPartnerId());

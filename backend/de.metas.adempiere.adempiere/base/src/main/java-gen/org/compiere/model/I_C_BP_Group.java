@@ -397,6 +397,29 @@ public interface I_C_BP_Group
 	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
+	 * Set Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceRule (@Nullable java.lang.String InvoiceRule);
+
+	/**
+	 * Get Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceRule();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_BP_Group.class, "InvoiceRule", null);
+	String COLUMNNAME_InvoiceRule = "InvoiceRule";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

@@ -1,19 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import de.metas.bpartner.BPartnerContactId;
@@ -112,7 +117,7 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
-	private static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
+	public static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
 
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
@@ -174,7 +179,7 @@ public class CalloutOrder extends CalloutEngine
 		// }
 		// }
 
-		// Invoice Rule
+		// Invoice Rule //TODO figure out why we have this and if it can be dropped
 		if (MOrder.DocSubType_POS.equals(docSubType)
 				|| MOrder.DocSubType_Prepay.equals(docSubType)
 				|| MOrder.DocSubType_OnCredit.equals(docSubType))
@@ -253,6 +258,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// InvoiceRule
 				{
+					//TODO check why invoiceRule here again and why not consider bill partner
 					final InvoiceRule invoiceRule = isSOTrx ?
 							InvoiceRule.ofNullableCode(bpartner.getInvoiceRule()) :
 							InvoiceRule.ofNullableCode(bpartner.getPO_InvoiceRule());
@@ -272,6 +278,7 @@ public class CalloutOrder extends CalloutEngine
 					}
 				}
 
+				//FIXME not in sync with bpartner callout
 				// FreightCostRule
 				{
 					final String freightCostRule = bpartner.getFreightCostRule();
@@ -368,7 +375,7 @@ public class CalloutOrder extends CalloutEngine
 
 		// task FRESH-152: Joining with the BPartner Stats.
 		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
-
+        //
 		final String sql = "SELECT p.AD_Language,"
 				+ " COALESCE(p.C_PaymentTerm_ID, g.C_PaymentTerm_ID, pg.C_PaymentTerm_ID) AS C_PaymentTerm_ID,"
 				+ " COALESCE(p.PO_PaymentTerm_ID, g.PO_PaymentTerm_ID, pg.PO_PaymentTerm_ID) AS PO_PaymentTerm_ID,"

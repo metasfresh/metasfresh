@@ -196,6 +196,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Invoice Rule(s)
 		icRecord.setInvoiceRule(order.getInvoiceRule());
+		icRecord.setIsAutoInvoice(order.isAutoInvoice());
 
 		// If we are dealing with a non-receivable service set the InvoiceRule_Override to Immediate
 		// because we want to invoice those right away (08408)
