@@ -22,7 +22,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -265,6 +264,11 @@ public class HU
 				}
 				else if (newWeightNet != null && retainedChild.getWeightNet() != null)
 				{
+					// correction of roundings
+					if(weightNet!= null && newWeightNet.isGreaterThan(weightNet))
+					{
+						newWeightNet = weightNet;
+					}
 					newWeightNet = Quantitys.add(null, newWeightNet, retainedChild.getWeightNet());
 				}
 			}
