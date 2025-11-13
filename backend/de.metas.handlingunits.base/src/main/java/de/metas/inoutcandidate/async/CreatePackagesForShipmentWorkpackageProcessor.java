@@ -27,7 +27,6 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
 import de.metas.util.Check;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import static de.metas.inoutcandidate.async.CreatePackagesForShipmentEnqueuer.WP_PARAM_CREATE_AND_ADD_TO_TRANSPORTATION_Order;
@@ -45,14 +44,7 @@ public class CreatePackagesForShipmentWorkpackageProcessor extends WorkpackagePr
 		Check.assumeNotNull(inOutId, "InOutId not null");
 		final boolean addToTransportationOrder = Boolean.TRUE.equals(getParameters().getParameterAsBoolean(WP_PARAM_CREATE_AND_ADD_TO_TRANSPORTATION_Order, false));
 
-		try
-		{
-			shipperDeliveryService.createTransportationAndPackagesForShipment(inOutId, addToTransportationOrder);
-		}
-		catch (final Exception ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
+		shipperDeliveryService.createTransportationAndPackagesForShipment(inOutId, addToTransportationOrder);
 
 		return Result.SUCCESS;
 	}
