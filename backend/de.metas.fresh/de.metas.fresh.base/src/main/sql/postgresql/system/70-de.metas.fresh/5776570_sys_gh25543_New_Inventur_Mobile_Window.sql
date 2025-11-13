@@ -2830,3 +2830,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Field SET DefaultValue='Y',Updated=TO_TIMESTAMP('2025-11-12 20:14:11.810000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=756085
 ;
 
+-- Field: Inventur Mobile(541969,D) -> Bestandszählung(548510,D) -> Belegart
+-- Column: M_Inventory.C_DocType_ID
+-- 2025-11-13T12:54:39.407Z
+UPDATE AD_Field SET DefaultValue='540971',Updated=TO_TIMESTAMP('2025-11-13 12:54:39.407000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=756059
+;
