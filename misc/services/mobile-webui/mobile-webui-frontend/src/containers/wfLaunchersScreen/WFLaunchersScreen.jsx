@@ -137,6 +137,7 @@ const WFLaunchersScreen = () => {
               startedWFProcessId={launcher.startedWFProcessId}
               wfParameters={launcher.wfParameters}
               showWarningSign={launcher.showWarningSign}
+              indicator={launcher.indicator}
               testId={launcher.testId}
             />
           );

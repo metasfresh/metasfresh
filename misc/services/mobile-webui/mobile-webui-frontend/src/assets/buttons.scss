@@ -134,6 +134,12 @@
   box-shadow: 0 0 4px 1px $indicator-yellow;
 }
 
+.indicator-lock {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+}
+
 .warning-sign {
   color: $indicator-yellow;
 }

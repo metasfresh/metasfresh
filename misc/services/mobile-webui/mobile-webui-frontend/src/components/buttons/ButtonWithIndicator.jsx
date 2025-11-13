@@ -21,6 +21,8 @@ const ButtonWithIndicator = ({
   hazardSymbols = null,
   allergens = null,
   isDanger,
+  indicator1,
+  indicator2,
   completeStatus,
   disabled,
   onClick,
@@ -31,7 +33,9 @@ const ButtonWithIndicator = ({
   const testId = computeTestId({ testIdParam, captionKey });
   const id = computeId({ idParam, testIdParam, captionKey });
   const caption = computeCaption({ caption: captionParam, captionKey });
-  const indicatorClassName = getIndicatorClassName(completeStatus);
+  const indicatorClassName1 = computeIndicatorClassName({ indicator: indicator1, completeStatus });
+  const indicatorClassName2 = computeIndicatorClassName({ indicator: indicator2 });
+  const hasIndicators = indicatorClassName1 || indicatorClassName2;
 
   const allergensWithColor = allergens != null && allergens.filter((allergen) => allergen.color != null);
   const displayAllergens = allergensWithColor && allergensWithColor.length > 0;
@@ -105,9 +109,10 @@ const ButtonWithIndicator = ({
             {children}
           </div>
         </div>
-        {indicatorClassName && (
+        {hasIndicators && (
           <div className="right-btn-side">
-            <span data-testid={`${testId}-Indicator`} className={indicatorClassName} />
+            <span data-testid={`${testId}-Indicator2`} className={indicatorClassName2} />
+            <span data-testid={`${testId}-Indicator`} className={indicatorClassName1} />
           </div>
         )}
       </div>
@@ -115,16 +120,26 @@ const ButtonWithIndicator = ({
   );
 };
 
-const getIndicatorClassName = (completeStatus) => {
-  switch (completeStatus) {
-    case CompleteStatus.NOT_STARTED:
-      return 'indicator-red';
-    case CompleteStatus.COMPLETED:
-      return 'indicator-green';
-    case CompleteStatus.IN_PROGRESS:
-      return 'indicator-yellow';
-    default:
-      return '';
+const computeIndicatorClassName = ({ indicator, completeStatus }) => {
+  if (indicator) {
+    let className = `indicator-${indicator}`;
+    if (indicator === 'lock') {
+      className += ' fas fa-lock';
+    }
+    return className;
+  } else if (completeStatus) {
+    switch (completeStatus) {
+      case CompleteStatus.NOT_STARTED:
+        return 'indicator-red';
+      case CompleteStatus.COMPLETED:
+        return 'indicator-green';
+      case CompleteStatus.IN_PROGRESS:
+        return 'indicator-yellow';
+      default:
+        return '';
+    }
+  } else {
+    return null;
   }
 };
 
@@ -138,6 +153,8 @@ ButtonWithIndicator.propTypes = {
   hazardSymbols: PropTypes.array,
   allergens: PropTypes.array,
   isDanger: PropTypes.bool,
+  indicator1: PropTypes.string,
+  indicator2: PropTypes.string,
   completeStatus: PropTypes.string,
   disabled: PropTypes.bool,
   children: PropTypes.node,
