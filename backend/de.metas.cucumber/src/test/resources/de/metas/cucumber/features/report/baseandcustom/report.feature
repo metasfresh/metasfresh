@@ -37,12 +37,12 @@ Feature: Jasper Report Tests
       | pp_2       | plv_sales              | product      | 10.0     | PCE      |
         # dev-note: make sure that the correct payment term is used, regardless of the branch
     And metasfresh contains C_PaymentTerm
-      | Identifier            |
-      | paymentTerm_S0471_200 |
+      | Identifier          |
+      | customerPaymentTerm |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | C_PaymentTerm_ID      |
-      | vendor     | Y        | N          | ps_1               |                       |
-      | customer   | N        | Y          | ps_1               | paymentTerm_S0471_200 |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | C_PaymentTerm_ID    |
+      | vendor     | Y        | N          | ps_1               |                     |
+      | customer   | N        | Y          | ps_1               | customerPaymentTerm |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation   | vendor        | CH           | Y               | Y               |
