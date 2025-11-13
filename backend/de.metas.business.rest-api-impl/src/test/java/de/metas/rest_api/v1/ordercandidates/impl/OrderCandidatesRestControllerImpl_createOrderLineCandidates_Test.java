@@ -122,7 +122,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -316,7 +315,6 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	}
 
 	@Test
-	@Disabled("Deprecated and fails because of column default value not set on Test, also not part of request to set it there")
 	void single_customer_address()
 	{
 		// Given
@@ -724,7 +722,6 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	}
 
 	@Test
-	@Disabled("Deprecated and fails because of column default value not set on Test, also not part of request to set it there")
 	void sameBPartner_DifferentLocations()
 	{
 		// Masterdata
@@ -1075,7 +1072,6 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	 * Uses a production-based JSON to make sure that billTo and shipTo flags end up the in C_BPartner_Location the ways they should.
 	 */
 	@Test
-	@Disabled("Deprecated and fails because of column default value not set on Test, also not part of request to set it there")
 	void billToDefault_newBPartner()
 	{
 		// given

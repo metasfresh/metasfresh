@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.api;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -411,7 +412,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	int createSelectionForInvoiceCandidates(@NonNull InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
 
-	void createSelectionByQuery(@NonNull InvoiceCandidateQuery query, @NonNull PInstanceId pInstanceId);
+	ImmutableSet<InvoiceCandidateId> getIdsByQuery(@NonNull InvoiceCandidateQuery query);
 
 	List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(InvoiceCandidateId invoiceCandidateId);
 

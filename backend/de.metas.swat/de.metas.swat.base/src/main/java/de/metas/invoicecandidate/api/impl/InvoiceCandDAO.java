@@ -1896,12 +1896,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public void createSelectionByQuery(@NonNull final InvoiceCandidateQuery query, @NonNull final PInstanceId pInstanceId)
+	public ImmutableSet<InvoiceCandidateId> getIdsByQuery(@NonNull final InvoiceCandidateQuery query)
 	{
-		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.filter(toFilter(query))
 				.create()
-				.createSelection(pInstanceId);
+				.idsAsSet(InvoiceCandidateId::ofRepoId);
 	}
 
 	private ICompositeQueryFilter<I_C_Invoice_Candidate> toFilter(@NonNull final InvoiceCandidateQuery query)

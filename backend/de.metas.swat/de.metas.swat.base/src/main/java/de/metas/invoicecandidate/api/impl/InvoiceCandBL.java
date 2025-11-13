@@ -2537,9 +2537,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void createSelectionByQuery(@NonNull final InvoiceCandidateQuery query, @NonNull final PInstanceId pInstanceId)
+	public ImmutableSet<InvoiceCandidateId> getIdsByQuery(@NonNull final InvoiceCandidateQuery query)
 	{
-		invoiceCandDAO.createSelectionByQuery(query, pInstanceId);
+		return invoiceCandDAO.getIdsByQuery(query);
 	}
 
 	@Override

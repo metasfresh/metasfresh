@@ -408,7 +408,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(OrderId orderId);
 
-	void createSelectionByQuery(@NonNull InvoiceCandidateQuery query, @NonNull final PInstanceId pInstanceId);
+	ImmutableSet<InvoiceCandidateId> getIdsByQuery(@NonNull InvoiceCandidateQuery query);
 
 	@Value
 	class InvoiceableInvoiceCandIdResult

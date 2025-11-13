@@ -22,7 +22,9 @@
 
 package de.metas.invoicecandidate.process;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
@@ -38,17 +40,22 @@ public class C_Invoice_Candidate_Enqueue_AutoInvoice_Schedule extends JavaProces
 	@Override
 	protected String doIt() throws Exception
 	{
-		invoiceCandBL.createSelectionByQuery(InvoiceCandidateQuery.builder()
+		final ImmutableSet<InvoiceCandidateId> candidateIds = invoiceCandBL.getIdsByQuery(InvoiceCandidateQuery.builder()
 						.autoInvoice(true)
 						.processed(false)
 						.soTrx(SOTrx.ofBoolean(true))
 						.dateToInvoice(SystemTime.asLocalDate())
 						.orgId(getOrgId())
-						.build(),
-				getPinstanceId());
+						.build()
+		);
+
+		if (candidateIds.isEmpty()) { return MSG_OK; }
+
 		invoiceCandBL.enqueueForInvoicing()
 				.setInvoicingParams(new InvoicingParams(getParameterAsIParams()))
-				.prepareAndEnqueueSelection(getPinstanceId());
+				.setFailIfNothingEnqueued(true)
+				.enqueueInvoiceCandidateIds(candidateIds);
+
 		return MSG_OK;
 	}
 }
