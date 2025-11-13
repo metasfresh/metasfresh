@@ -1,10 +1,8 @@
-package de.metas.handlingunits.shipmentschedule.api;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.handlingunits.shipmentschedule.api;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.shipmentschedule.api;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
@@ -148,7 +148,7 @@ public class ShipmentScheduleEnqueuer
 			}
 		});
 
-		return result.getValue();
+		return result.getValueNotNull();
 	}
 
 	@NonNull

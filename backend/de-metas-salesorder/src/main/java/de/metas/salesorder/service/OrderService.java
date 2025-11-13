@@ -2,7 +2,7 @@
  * #%L
  * de-metas-salesorder
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -103,6 +103,10 @@ public class OrderService
 		return olCandDAO.getOrderIdsByOLCandIds(olCandIds);
 	}
 
+	/**
+	 * Create a map of AsyncBatchId to OLCandIds by loading the respective {@link I_C_OLCand#COLUMNNAME_C_Async_Batch_ID}s.
+	 * For those C_OLCands that have no async-batch-id, we will create one and assign it on the fly.
+	 */
 	@NonNull
 	public ImmutableMap<AsyncBatchId, List<OLCandId>> getAsyncBatchId2OLCandIds(@NonNull final Set<OLCandId> olCandIds)
 	{
@@ -115,21 +119,21 @@ public class OrderService
 
 		final HashMap<AsyncBatchId, ArrayList<OLCandId>> asyncBatchId2OLCands = new HashMap<>();
 
-		olCandsById.values()
-				.forEach(olCand -> {
-					final AsyncBatchId currentAsyncBatchId = AsyncBatchId.ofRepoIdOrNone(olCand.getC_Async_Batch_ID());
+		for (final I_C_OLCand olCand : olCandsById.values())
+		{
+			final AsyncBatchId currentAsyncBatchId = AsyncBatchId.ofRepoIdOrNone(olCand.getC_Async_Batch_ID());
 
-					final ArrayList<OLCandId> currentOLCands = new ArrayList<>();
-					currentOLCands.add(OLCandId.ofRepoId(olCand.getC_OLCand_ID()));
+			final ArrayList<OLCandId> currentOLCands = new ArrayList<>();
+			currentOLCands.add(OLCandId.ofRepoId(olCand.getC_OLCand_ID()));
 
-					asyncBatchId2OLCands.merge(currentAsyncBatchId, currentOLCands, CollectionUtils::mergeLists);
-				});
+			asyncBatchId2OLCands.merge(currentAsyncBatchId, currentOLCands, CollectionUtils::mergeLists);
+		}
 
 		Optional.ofNullable(asyncBatchId2OLCands.get(AsyncBatchId.NONE_ASYNC_BATCH_ID))
 				.ifPresent(noAsyncBatchOLCands -> {
 
-					// the asyncBatchId will be propagated through C_OLCand, M_ShipmentSchedule and C_Invoice_candidate.
-					// If will be used when we create workpackages (and wait for them!) that in turn create actual the actual orders, shipments and invoices
+					// The asyncBatchId will be propagated through C_OLCand, M_ShipmentSchedule and C_Invoice_candidate.
+					// It will be used when we create workpackages (and wait for them!) that in turn create actual the actual orders, shipments and invoices
 					final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
 
 					olCandDAO.assignAsyncBatchId(olCandIds, asyncBatchId);

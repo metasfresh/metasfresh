@@ -2,7 +2,7 @@
  * #%L
  * de-metas-salesorder
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -71,10 +71,10 @@ public class AutoProcessingOLCandService
 	private final ShipperDeliveryService shipperDeliveryService;
 
 	public AutoProcessingOLCandService(
-			final @NonNull OrderService orderService,
-			final @NonNull ShipmentService shipmentService,
-			final @NonNull InvoiceService invoiceService, 
-			final @NonNull ShipperDeliveryService shipperDeliveryService)
+			@NonNull final OrderService orderService,
+			@NonNull final ShipmentService shipmentService,
+			@NonNull final InvoiceService invoiceService, 
+			@NonNull final ShipperDeliveryService shipperDeliveryService)
 	{
 		this.orderService = orderService;
 		this.shipmentService = shipmentService;
@@ -82,7 +82,10 @@ public class AutoProcessingOLCandService
 		this.shipperDeliveryService = shipperDeliveryService;
 	}
 
-	public void processOLCands(final @NonNull ProcessOLCandsRequest request)
+	/**
+	 * @return {@code true} if any workpackage was enqueued at all.
+	 */
+	public boolean processOLCands(@NonNull final ProcessOLCandsRequest request)
 	{
 		final Set<OLCandId> olCandIds = queryBL.createQueryBuilder(I_C_OLCand.class)
 				.setOnlySelection(request.getPInstanceId())
@@ -95,7 +98,7 @@ public class AutoProcessingOLCandService
 		if (olCandIds.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Returning! No OlCandIds selection found for PInstanceId: {}. Maybe you created them in another transaction that's not yet committed?", request.getPInstanceId());
-			return;
+			return false;
 		}
 
 		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = trxManager.callInNewTrx(() -> orderService.getAsyncBatchId2OLCandIds(olCandIds));
@@ -138,5 +141,6 @@ public class AutoProcessingOLCandService
 		{
 			orderIds.forEach(orderBL::closeOrder);
 		}
+		return true;
 	}
 }
