@@ -2,12 +2,12 @@ package de.metas.handlingunits.picking.job.service.commands.retrieve;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
@@ -16,23 +16,15 @@ import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
-import de.metas.product.ProductId;
-import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 
 @Builder
@@ -58,54 +50,14 @@ public class PickingJobCandidateRetrieveCommand
 	@NonNull private final LinkedHashMap<ProductBasedAggregationKey, ProductBasedAggregation> productBasedAggregates = new LinkedHashMap<>();
 	@NonNull private final LinkedHashMap<DeliveryLocationBasedAggregationKey, DeliveryLocationBasedAggregation> deliveryLocationBasedAggregates = new LinkedHashMap<>();
 
-	public List<PickingJobCandidate> execute()
+	public PickingJobCandidateList execute()
 	{
 		streamPackageables()
 				.map(this::toScheduledPackageable)
 				.filter(Objects::nonNull)
 				.forEach(this::add);
 
-		ImmutableList<PickingJobCandidate> jobCandidates = aggregate();
-		jobCandidates = allocateQtyAvailableAndFilter(jobCandidates);
-
-		return jobCandidates;
-	}
-
-	private ImmutableList<PickingJobCandidate> allocateQtyAvailableAndFilter(final ImmutableList<PickingJobCandidate> jobs)
-	{
-		if (jobs.isEmpty())
-		{
-			return jobs;
-		}
-
-		final ProductAvailableStocks productAvailableStocks = createProductsAvailableStocksOrNull();
-		if (productAvailableStocks == null)
-		{
-			return jobs;
-		}
-		productAvailableStocks.warmUpByProductIds(extractProductIds(jobs));
-
-		final ArrayList<PickingJobCandidate> result = new ArrayList<>();
-		for (final PickingJobCandidate job : jobs)
-		{
-			final PickingJobCandidate jobAllocated = productAvailableStocks.allocate(job);
-			if (query.isOnlyIfQtyAvailableAtPickingLocator() && jobAllocated.hasQtyAvailableToPick().isFalse())
-			{
-				continue;
-			}
-
-			result.add(jobAllocated);
-		}
-
-		return ImmutableList.copyOf(result);
-	}
-
-	@NotNull
-	private static Set<ProductId> extractProductIds(final ImmutableList<PickingJobCandidate> jobs)
-	{
-		return jobs.stream()
-				.flatMap(job -> job.getProductIds().stream())
-				.collect(ImmutableSet.toImmutableSet());
+		return aggregate();
 	}
 
 	private Stream<Packageable> streamPackageables()
@@ -171,14 +123,14 @@ public class PickingJobCandidateRetrieveCommand
 		return query.getScheduledForWorkplaceId() != null;
 	}
 
-	private ImmutableList<PickingJobCandidate> aggregate()
+	private PickingJobCandidateList aggregate()
 	{
 		final ImmutableList.Builder<PickingJobCandidate> result = ImmutableList.builder();
 		orderBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate()));
 		productBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate()));
 		deliveryLocationBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate()));
 
-		return result.build();
+		return PickingJobCandidateList.ofList(result.build());
 	}
 
 	private void add(@NonNull final ScheduledPackageable item)
@@ -206,37 +158,5 @@ public class PickingJobCandidateRetrieveCommand
 				throw new AdempiereException("Unknown aggregation type: " + aggregationType);
 			}
 		}
-	}
-
-	@Nullable
-	private ProductAvailableStocks createProductsAvailableStocksOrNull()
-	{
-		final Set<LocatorId> pickFromLocatorIds = getPickFromLocatorIds();
-		if (pickFromLocatorIds.isEmpty())
-		{
-			return null;
-		}
-
-		return ProductAvailableStocks.builder()
-				.handlingUnitsBL(handlingUnitsBL)
-				.pickFromLocatorIds(pickFromLocatorIds)
-				.build();
-	}
-
-	private Set<LocatorId> getPickFromLocatorIds()
-	{
-		final WorkplaceId scheduledForWorkplaceId = query.getScheduledForWorkplaceId();
-		if (query.getScheduledForWorkplaceId() != null)
-		{
-			return workplaceService.getPickFromLocatorIds(scheduledForWorkplaceId);
-		}
-
-		final WarehouseId warehouseId = query.getWarehouseId();
-		if (warehouseId != null)
-		{
-			return warehouseBL.getLocatorIdsByWarehouseId(warehouseId);
-		}
-
-		return ImmutableSet.of();
 	}
 }

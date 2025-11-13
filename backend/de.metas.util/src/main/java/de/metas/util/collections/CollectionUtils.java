@@ -477,7 +477,7 @@ public final class CollectionUtils
 				resultBuilder.put(k, v);
 			}
 		});
-		
+
 		return resultBuilder.build();
 	}
 
@@ -953,4 +953,16 @@ public final class CollectionUtils
 
 		return mapBuilder.build();
 	}
+
+	public static <T> ImmutableList<T> removeIf(@NonNull ImmutableList<T> list, @NonNull Predicate<T> predicate)
+	{
+		if (list.isEmpty()) {return list;}
+
+		final ImmutableList<T> result = list.stream()
+				.filter(item -> !predicate.test(item))
+				.collect(ImmutableList.toImmutableList());
+
+		return list.size() == result.size() ? list : result;
+	}
+
 }

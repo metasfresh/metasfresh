@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service.commands.retrieve;
+package de.metas.picking.workflow.lauchers;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -6,6 +6,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidateProduct;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidateProducts;
+import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
@@ -45,6 +46,14 @@ class ProductAvailableStocks
 	}
 
 	public PickingJobCandidate allocate(PickingJobCandidate job)
+	{
+		final PickingJobCandidateProducts products = job.getProducts()
+				.updatingEachProduct(this::allocate);
+
+		return job.withProducts(products);
+	}
+
+	public PickingJobReference allocate(PickingJobReference job)
 	{
 		final PickingJobCandidateProducts products = job.getProducts()
 				.updatingEachProduct(this::allocate);

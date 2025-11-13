@@ -23,14 +23,20 @@
 package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
@@ -60,9 +66,16 @@ public class PickingJobReferenceList
 
 	public Stream<PickingJobReference> stream() {return list.stream();}
 
-	public Stream<PickingJobReference> streamNotInProcessing()
+	public PickingJobReferenceList removeIf(@NonNull Predicate<PickingJobReference> predicate)
 	{
-		return stream().filter(existingPickingJob -> !existingPickingJob.isShipmentSchedulesLocked());
+		final ImmutableList<PickingJobReference> changedList = CollectionUtils.removeIf(list, predicate);
+		return list.size() == changedList.size() ? this : ofList(changedList);
+	}
+
+	public PickingJobReferenceList updateEach(@NonNull UnaryOperator<PickingJobReference> updater)
+	{
+		final ImmutableList<PickingJobReference> changedList = CollectionUtils.map(list, updater);
+		return Objects.equals(list, changedList) ? this : ofList(changedList);
 	}
 
 	public ShipmentScheduleAndJobScheduleIdSet getScheduleIds()
@@ -72,5 +85,12 @@ public class PickingJobReferenceList
 				.filter(Objects::nonNull)
 				.flatMap(ShipmentScheduleAndJobScheduleIdSet::stream)
 				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
+	}
+
+	public Set<ProductId> getProductIds()
+	{
+		return list.stream()
+				.flatMap(job -> job.getProductIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

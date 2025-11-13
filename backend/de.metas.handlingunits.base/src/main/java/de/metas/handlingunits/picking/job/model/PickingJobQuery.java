@@ -62,7 +62,6 @@ public class PickingJobQuery
 	@Nullable Facets facets;
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyCustomerIds = ImmutableSet.of();
 	@Nullable WorkplaceId scheduledForWorkplaceId;
-	boolean onlyIfQtyAvailableAtPickingLocator;
 	@Nullable WarehouseId warehouseId;
 	@Nullable DocumentNoFilter salesOrderDocumentNo;
 	@Nullable ResolvedScannedProductCodes scannedProductCodes;

@@ -116,6 +116,11 @@ public final class QueryLimit
 		return value;
 	}
 
+	public int toIntOrInfinit()
+	{
+		return toIntOr(Integer.MAX_VALUE);
+	}
+
 	public int toIntOr(final int noLimitValue)
 	{
 		return isNoLimit() ? noLimitValue : value;
@@ -141,6 +146,7 @@ public final class QueryLimit
 		return isNoLimit() ? ofInt(limit) : this;
 	}
 
+	@SuppressWarnings("unused")
 	public QueryLimit ifNoLimitUse(@NonNull final QueryLimit limit)
 	{
 		return isNoLimit() ? limit : this;

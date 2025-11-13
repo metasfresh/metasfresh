@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service.commands.retrieve;
+package de.metas.picking.workflow.lauchers;
 
 import de.metas.quantity.MixedQuantity;
 import de.metas.quantity.Quantity;

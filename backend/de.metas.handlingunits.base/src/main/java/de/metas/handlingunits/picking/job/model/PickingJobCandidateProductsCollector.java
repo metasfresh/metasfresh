@@ -1,8 +1,5 @@
-package de.metas.handlingunits.picking.job.service.commands.retrieve;
+package de.metas.handlingunits.picking.job.model;
 
-import de.metas.handlingunits.picking.job.model.PickingJobCandidateProduct;
-import de.metas.handlingunits.picking.job.model.PickingJobCandidateProducts;
-import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
@@ -10,27 +7,32 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
+import java.util.function.Supplier;
 
-class ProductsCollector
+public class PickingJobCandidateProductsCollector
 {
 	private final LinkedHashMap<ProductId, ProductCollector> productsById = new LinkedHashMap<>();
 
 	public void collect(@NonNull final ScheduledPackageable item)
 	{
-		productsById.computeIfAbsent(item.getProductId(), k -> newProductCollector(item))
-				.addQtyToDeliver(item.getQtyToDeliver());
+		collect(item.getProductId(),
+				() -> TranslatableStrings.anyLanguage(item.getProductName()),
+				item.getQtyToDeliver());
 	}
 
-	private static ProductCollector newProductCollector(final @NotNull ScheduledPackageable item)
+	public void collect(
+			@NonNull final ProductId productId,
+			@NonNull final Supplier<ITranslatableString> productName,
+			@NonNull final Quantity qtyToDeliver)
 	{
-		return ProductCollector.builder()
-				.productId(item.getProductId())
-				.productName(TranslatableStrings.anyLanguage(item.getProductName()))
-				.build();
+		productsById.computeIfAbsent(productId, k -> ProductCollector.builder()
+						.productId(productId)
+						.productName(productName.get())
+						.build())
+				.addQtyToDeliver(qtyToDeliver);
 	}
 
 	public PickingJobCandidateProducts toProducts()

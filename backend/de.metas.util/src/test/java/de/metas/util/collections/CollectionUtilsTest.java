@@ -406,6 +406,30 @@ class CollectionUtilsTest
 			assertThatThrownBy(() -> CollectionUtils.mapValue(map, "k3", v -> v))
 					.hasMessageStartingWith("key 'k3' does not exist");
 		}
+	}
+
+	@Nested
+	public class removeIf
+	{
+		@Test
+		void empty()
+		{
+			final ImmutableList<Integer> list = ImmutableList.of();
+			assertThat(CollectionUtils.removeIf(list, item -> true)).isSameAs(list);
+		}
+
+		@Test
+		void nothingRemoved()
+		{
+			final ImmutableList<Integer> list = ImmutableList.of(1, 2, 3, 4);
+			assertThat(CollectionUtils.removeIf(list, item -> false)).isSameAs(list);
+		}
+
+		@Test
+		void removeSome()
+		{
+			assertThat(CollectionUtils.removeIf(ImmutableList.of(1, 2, 3, 4), item -> item % 2 == 0)).isEqualTo(ImmutableList.of(1, 3));
+		}
 
 	}
 }

@@ -97,6 +97,11 @@ public class WorkplaceService
 	public Set<LocatorId> getPickFromLocatorIds(@NonNull final WorkplaceId workplaceId)
 	{
 		final Workplace workplace = getById(workplaceId);
+		return getPickFromLocatorIds(workplace);
+	}
+
+	public Set<LocatorId> getPickFromLocatorIds(final Workplace workplace)
+	{
 		if (workplace.getPickFromLocatorId() != null)
 		{
 			return ImmutableSet.of(workplace.getPickFromLocatorId());
