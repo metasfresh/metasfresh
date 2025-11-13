@@ -2,7 +2,7 @@
  * #%L
  * de-metas-salesorder
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -111,6 +111,7 @@ public class AutoProcessingOrderService
 				// But here it is different: we want that whatever HUs are picked, exactly those HUs shall be boxed and send to the customer.
 				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(true)
+				.waitForShipments(true) // just to be clear here..
 				.build();
 
 		final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForScheduleIds(request);
