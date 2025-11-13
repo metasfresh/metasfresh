@@ -22,6 +22,7 @@
 
 package de.metas.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,6 +37,7 @@ import java.util.List;
 @Value
 public class PackageDimensions
 {
+
 	private static final int UNSPECIFIED_DIMENSION = -1;
 	public static final PackageDimensions UNSPECIFIED = new PackageDimensions(UNSPECIFIED_DIMENSION, UNSPECIFIED_DIMENSION, UNSPECIFIED_DIMENSION);
 
@@ -55,6 +57,7 @@ public class PackageDimensions
 		this.heightInCM = heightInCM;
 	}
 
+	@JsonIgnore
 	public boolean isUnspecified()
 	{
 		return UNSPECIFIED.equals(this);
