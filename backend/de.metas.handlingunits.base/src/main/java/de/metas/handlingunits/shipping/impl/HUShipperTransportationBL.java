@@ -27,7 +27,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.product.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
@@ -443,7 +443,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private PackageDimensions extractPackageDimensions(final I_M_HU hu)
 	{
 		final PackageDimensions packageDimensions = huPackageBL.getPackageDimensions(hu);
-		if (PackageDimensions.isUnspecified(packageDimensions))
+		if (packageDimensions.isUnspecified())
 		{
 			throw new AdempiereException(MSG_CANNOT_DETERMINE_HU_PACKAGE_DIMENSIONS, hu.getM_HU_ID());
 		}

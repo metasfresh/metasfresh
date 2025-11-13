@@ -25,7 +25,7 @@ package de.metas.handlingunits.shipping;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.inout.IInOutDAO;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.product.PackageDimensions;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;

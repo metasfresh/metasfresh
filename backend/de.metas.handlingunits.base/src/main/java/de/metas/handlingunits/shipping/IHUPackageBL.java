@@ -3,7 +3,7 @@ package de.metas.handlingunits.shipping;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.product.PackageDimensions;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;

@@ -1,22 +1,8 @@
-package de.metas.shipper.gateway.spi.model;
-
-import de.metas.product.DimensionsInCM;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-
-import javax.annotation.Nullable;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-
 /*
  * #%L
- * de.metas.shipper.gateway.api
+ * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,6 +20,19 @@ import java.util.List;
  * #L%
  */
 
+package de.metas.product;
+
+import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+
+@Builder
 @Value
 public class PackageDimensions
 {
@@ -56,12 +55,12 @@ public class PackageDimensions
 		this.heightInCM = heightInCM;
 	}
 
-	public static boolean isUnspecified(@Nullable final PackageDimensions packageDimensions)
+	public boolean isUnspecified()
 	{
-		return UNSPECIFIED.equals(packageDimensions);
+		return UNSPECIFIED.equals(this);
 	}
 
-	public static PackageDimensions ofProductDimensionsAndQty(@NonNull final DimensionsInCM productDimensionsInCM, @NonNull final Quantity qtyInStockingUOM)
+	public static PackageDimensions ofProductDimensionsAndQty(@NonNull final PackageDimensions productDimensionsInCM, @NonNull final Quantity qtyInStockingUOM)
 	{
 		final List<Integer> dimensions = new ArrayList<>();
 		dimensions.add(productDimensionsInCM.getHeightInCM());

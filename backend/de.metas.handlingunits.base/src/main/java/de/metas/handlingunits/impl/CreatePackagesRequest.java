@@ -22,7 +22,7 @@
 package de.metas.handlingunits.impl;
 
 import de.metas.inout.InOutId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.product.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;

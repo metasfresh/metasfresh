@@ -63,6 +63,6 @@ public class Product
 	@Nullable CommodityNumberId commodityNumberId;
 	@Nullable String procurementStatus;
 	boolean selfPacked;
-	@NonNull DimensionsInCM dimensionsInCM;
+	@NonNull PackageDimensions packageDimensions;
 
 }

@@ -20,11 +20,10 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.organization.OrgId;
-import de.metas.product.DimensionsInCM;
+import de.metas.product.PackageDimensions;
 import de.metas.product.Product;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -346,17 +345,17 @@ public class HUPackageBL implements IHUPackageBL
 			}
 			final IHUProductStorage singleHUProductStorage = productStorages.iterator().next();
 			final Product product = productRepository.getById(singleHUProductStorage.getProductId());
-			final DimensionsInCM productDimensionsInCM = product.getDimensionsInCM();
+			final PackageDimensions dimensions = product.getPackageDimensions();
 			if (!product.isSelfPacked())
 			{
 				return PackageDimensions.UNSPECIFIED;
 			}
-			if (!productDimensionsInCM.isSpecified())
+			if (dimensions.isUnspecified())
 			{
 				throw new AdempiereException(MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES, product.getValue());
 			}
 			final Quantity qtyInStockingUOM = singleHUProductStorage.getQtyInStockingUOM();
-			return PackageDimensions.ofProductDimensionsAndQty(productDimensionsInCM, qtyInStockingUOM);
+			return PackageDimensions.ofProductDimensionsAndQty(dimensions, qtyInStockingUOM);
 		}
 	}
 }

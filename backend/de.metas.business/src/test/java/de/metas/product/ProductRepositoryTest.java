@@ -209,7 +209,7 @@ class ProductRepositoryTest
 				.manufacturerId(manufacturerId)
 				.packageSize(packageSize)
 				.weightNetInKg(weight)
-				.dimensionsInCM(DimensionsInCM.UNSPECIFIED)
+				.packageDimensions(PackageDimensions.UNSPECIFIED)
 				.build();
 
 		productRepository.updateProduct(product);

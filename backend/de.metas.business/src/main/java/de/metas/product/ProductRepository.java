@@ -383,14 +383,14 @@ public class ProductRepository
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
 				.procurementStatus(productRecord.getProcurementStatus())
 				.selfPacked(productRecord.isSelfPacked())
-				.dimensionsInCM(extractProductDimensions(productRecord))
+				.packageDimensions(extractProductDimensions(productRecord))
 				.build();
 	}
 
 	@NonNull
-	private static DimensionsInCM extractProductDimensions(final @NonNull I_M_Product productRecord)
+	private static PackageDimensions extractProductDimensions(final @NonNull I_M_Product productRecord)
 	{
-		return DimensionsInCM.builder()
+		return PackageDimensions.builder()
 				.lengthInCM(productRecord.getLengthInCm())
 				.widthInCM(productRecord.getWidthInCm())
 				.heightInCM(productRecord.getHeightInCm())
