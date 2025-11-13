@@ -154,7 +154,7 @@ const Indicators = ({ parentTestId, completeStatus, indicator1, indicator2 }) =>
   return (
     <div className={cx('right-btn-side', { 'is-justify-content-center': isJustifyContentInCenter })}>
       <Indicator
-        data-testid={parentTestId ? `${parentTestId}-Indicator` : null}
+        testId={parentTestId ? `${parentTestId}-Indicator` : null}
         indicator={indicator1}
         completeStatus={completeStatus}
       />
@@ -207,6 +207,7 @@ const Indicator = ({ testId, indicator, completeStatus }) => {
   }
 
   if (!className) return null;
+  console.log('Indicator', { className, testId });
   return <i data-testid={testId} className={className} />;
 };
 Indicator.propTypes = {

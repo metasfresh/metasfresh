@@ -32,7 +32,7 @@ export const DistributionJobScreen = {
         if (color !== undefined) {
             await step(`${NAME} - Expect line button color='${color}'`, async () => {
                 const indicator = lineButton.locator(`[data-testid="line-${index}-button-Indicator"]`);
-                await expect(indicator).toHaveClass(`indicator-${color}`);
+                 await expect(indicator).toHaveClass(`indicator-color-${color}`);
             });
         }
     }),
