@@ -90,7 +90,7 @@ public class ShipperDeliveryService
 		createTransportationAndPackagesForShipment(inOutId, false);
 	}
 
-	private void createTransportationAndPackagesForShipment(
+	public void createTransportationAndPackagesForShipment(
 			@NonNull final InOutId inOutId,
 			final boolean createOneTransportationOrderPerDay)
 	{

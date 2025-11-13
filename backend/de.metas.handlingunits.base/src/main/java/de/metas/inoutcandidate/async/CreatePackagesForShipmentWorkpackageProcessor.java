@@ -1,0 +1,66 @@
+/*
+ * #%L
+ * de-metas-salesorder
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.inoutcandidate.async;
+
+import ch.qos.logback.classic.Level;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.inout.InOutId;
+import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+
+import static de.metas.inoutcandidate.async.CreatePackagesForShipmentEnqueuer.WP_PARAM_CREATE_AND_ADD_TO_TRANSPORTATION_Order;
+import static de.metas.inoutcandidate.async.CreatePackagesForShipmentEnqueuer.WP_PARAM_M_InOut_ID;
+
+public class CreatePackagesForShipmentWorkpackageProcessor extends WorkpackageProcessorAdapter
+{
+	private final static Logger logger = LogManager.getLogger(CreatePackagesForShipmentWorkpackageProcessor.class);
+
+	private final ShipperDeliveryService shipperDeliveryService = SpringContextHolder.instance.getBean(ShipperDeliveryService.class);
+
+	@Override
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
+	{
+		final InOutId inOutId = getParameters().getParameterAsId(WP_PARAM_M_InOut_ID, InOutId.class);
+		Check.assumeNotNull(inOutId, "InOutId not null");
+		final boolean addToTransportationOrder = Boolean.TRUE.equals(getParameters().getParameterAsBoolean(WP_PARAM_CREATE_AND_ADD_TO_TRANSPORTATION_Order, false));
+
+		try
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("Complete ship and invoice for inOutId: {}", inOutId);
+			shipperDeliveryService.createTransportationAndPackagesForShipment(inOutId, addToTransportationOrder);
+		}
+		catch (final Exception ex)
+		{
+			Loggables.withLogger(logger, Level.ERROR).addLog("@Error@: " + ex.getLocalizedMessage());
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+
+		return Result.SUCCESS;
+	}
+}

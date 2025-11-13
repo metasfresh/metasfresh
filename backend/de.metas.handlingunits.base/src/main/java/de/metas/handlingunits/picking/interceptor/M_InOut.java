@@ -25,7 +25,7 @@ package de.metas.handlingunits.picking.interceptor;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
+import de.metas.inoutcandidate.async.CreatePackagesForShipmentEnqueuer;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -45,9 +45,9 @@ public class M_InOut
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final CreatePackagesForShipmentEnqueuer packagesForShipmentEnqueuer = CreatePackagesForShipmentEnqueuer.instance;
 
 	private final PickingJobService pickingJobService;
-	private final ShipperDeliveryService shipperDeliveryService;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_M_InOut shipment)
@@ -65,7 +65,7 @@ public class M_InOut
 
 		if (automaticallyAddToDailyShipperTransportationOrder)
 		{
-			shipperDeliveryService.addToDailyTransportationOrder(InOutId.ofRepoId(shipment.getM_InOut_ID()));
+			packagesForShipmentEnqueuer.enqueue(InOutId.ofRepoId(shipment.getM_InOut_ID()), true);
 		}
 	}
 }
