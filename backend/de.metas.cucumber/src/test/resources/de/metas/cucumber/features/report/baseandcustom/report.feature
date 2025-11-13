@@ -35,10 +35,14 @@ Feature: Jasper Report Tests
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | pp_1       | plv_purchase           | product      | 8.0      | PCE      |
       | pp_2       | plv_sales              | product      | 10.0     | PCE      |
+        # dev-note: make sure that the correct payment term is used, regardless of the branch
+    And metasfresh contains C_PaymentTerm
+      | Identifier            |
+      | paymentTerm_S0471_200 |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | vendor     | Y        | N          | ps_1               |
-      | customer   | N        | Y          | ps_1               |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | C_PaymentTerm_ID      |
+      | vendor     | Y        | N          | ps_1               |                       |
+      | customer   | N        | Y          | ps_1               | paymentTerm_S0471_200 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation   | vendor        | CH           | Y               | Y               |
@@ -119,13 +123,9 @@ Feature: Jasper Report Tests
     And metasfresh contains C_DunningLevel:
       | Identifier             | C_Dunning_ID      | DaysAfterDue |
       | dunningLevel_S0471_200 | dunning_S0471_200 | 0            |
-    # dev-note: make sure that the correct payment term is used, regardless of the branch
-    And metasfresh contains C_PaymentTerm
-      | Identifier            |
-      | paymentTerm_S0471_200 |
     And update C_BPartner:
-      | Identifier | C_Dunning_ID      | C_PaymentTerm_ID      |
-      | customer   | dunning_S0471_200 | paymentTerm_S0471_200 |
+      | Identifier | C_Dunning_ID      |
+      | customer   | dunning_S0471_200 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | so1        | true    | customer      | 2025-04-01  | wh             |

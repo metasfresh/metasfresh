@@ -311,6 +311,15 @@ public class C_BPartner_StepDef
 					.build()).getRepoId());
 		}
 
+		final StepDefDataIdentifier paymentTermIdentifier = row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID).orElse(null);
+		if (paymentTermIdentifier != null)
+		{
+			final I_C_PaymentTerm paymentTerm = paymentTermTable.get(paymentTermIdentifier);
+			assertThat(paymentTerm).as("Missing Payment Term record for identifier=" + paymentTermIdentifier).isNotNull();
+
+			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		}
+
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRulePO, PaymentRule.class).ifPresent(paymentRulePO -> bPartnerRecord.setPaymentRulePO(paymentRulePO.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PO_InvoiceRule, InvoiceRule.class).ifPresent(poInvoiceRule -> bPartnerRecord.setPO_InvoiceRule(poInvoiceRule.getCode()));
@@ -470,13 +479,6 @@ public class C_BPartner_StepDef
 		{
 			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);
 			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
-		}
-
-		final String paymentTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID);
-		if (EmptyUtil.isNotBlank(paymentTermIdentifier))
-		{
-			final I_C_PaymentTerm paymentTerm = paymentTermTable.get(paymentTermIdentifier);
-			bPartner.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		}
 
 		InterfaceWrapperHelper.save(bPartner);
