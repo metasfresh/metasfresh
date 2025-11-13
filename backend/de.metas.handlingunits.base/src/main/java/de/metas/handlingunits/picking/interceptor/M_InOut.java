@@ -45,7 +45,6 @@ public class M_InOut
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final CreatePackagesForShipmentEnqueuer packagesForShipmentEnqueuer = CreatePackagesForShipmentEnqueuer.instance;
 
 	private final PickingJobService pickingJobService;
 
@@ -65,7 +64,7 @@ public class M_InOut
 
 		if (automaticallyAddToDailyShipperTransportationOrder)
 		{
-			packagesForShipmentEnqueuer.enqueue(InOutId.ofRepoId(shipment.getM_InOut_ID()), true);
+			CreatePackagesForShipmentEnqueuer.newInstance().enqueue(InOutId.ofRepoId(shipment.getM_InOut_ID()), true);
 		}
 	}
 }

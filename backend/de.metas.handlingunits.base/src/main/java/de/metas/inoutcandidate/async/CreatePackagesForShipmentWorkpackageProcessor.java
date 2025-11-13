@@ -22,24 +22,19 @@
 
 package de.metas.inoutcandidate.async;
 
-import ch.qos.logback.classic.Level;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
 
 import static de.metas.inoutcandidate.async.CreatePackagesForShipmentEnqueuer.WP_PARAM_CREATE_AND_ADD_TO_TRANSPORTATION_Order;
 import static de.metas.inoutcandidate.async.CreatePackagesForShipmentEnqueuer.WP_PARAM_M_InOut_ID;
 
 public class CreatePackagesForShipmentWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
-	private final static Logger logger = LogManager.getLogger(CreatePackagesForShipmentWorkpackageProcessor.class);
 
 	private final ShipperDeliveryService shipperDeliveryService = SpringContextHolder.instance.getBean(ShipperDeliveryService.class);
 
@@ -52,12 +47,10 @@ public class CreatePackagesForShipmentWorkpackageProcessor extends WorkpackagePr
 
 		try
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Complete ship and invoice for inOutId: {}", inOutId);
 			shipperDeliveryService.createTransportationAndPackagesForShipment(inOutId, addToTransportationOrder);
 		}
 		catch (final Exception ex)
 		{
-			Loggables.withLogger(logger, Level.ERROR).addLog("@Error@: " + ex.getLocalizedMessage());
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
 

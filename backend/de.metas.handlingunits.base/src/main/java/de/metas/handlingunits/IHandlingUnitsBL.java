@@ -682,4 +682,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIds(@NonNull Collection<HuId> huIds);
+
+	Set<HuPackingMaterialId> getHUPackingMaterialIds(HuId huId);
 }

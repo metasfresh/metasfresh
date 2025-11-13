@@ -63,12 +63,12 @@ public class PackageDimensions
 		return UNSPECIFIED.equals(this);
 	}
 
-	public static PackageDimensions ofProductDimensionsAndQty(@NonNull final PackageDimensions productDimensionsInCM, @NonNull final Quantity qtyInStockingUOM)
+	public static PackageDimensions ofProductDimensionsAndQty(@NonNull final PackageDimensions packageDimensions, @NonNull final Quantity qtyInStockingUOM)
 	{
 		final List<Integer> dimensions = new ArrayList<>();
-		dimensions.add(productDimensionsInCM.getHeightInCM());
-		dimensions.add(productDimensionsInCM.getWidthInCM());
-		dimensions.add(productDimensionsInCM.getLengthInCM());
+		dimensions.add(packageDimensions.getHeightInCM());
+		dimensions.add(packageDimensions.getWidthInCM());
+		dimensions.add(packageDimensions.getLengthInCM());
 		dimensions.sort(null);
 
 		final int qtyRoundedUpInStockUOM = qtyInStockingUOM.toBigDecimal().setScale(0, RoundingMode.CEILING).intValue();

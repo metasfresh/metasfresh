@@ -40,6 +40,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -131,6 +132,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -150,7 +152,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -358,6 +359,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final boolean isReceiptReversal = huContext.isPropertyTrue(IHUContext.PROPERTY_IsReceiptReversal);
 		if(!isReceiptReversal)
 		{
+			//Loaded here to prevent recursion
+			final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 			final List<PackageId> packageIds = huPackageBL.retrievePackageIds(huId);
 			if(!packageIds.isEmpty())
 			{
@@ -1536,5 +1539,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.setOnlyTopLevelHUs()
 				.addOnlyWithAttribute(AttributeConstants.ATTR_ExternalBarcode, scannedCode.getAsString())
 				.firstIdOnly();
+	}
+
+	@Override
+	public Set<HuPackingMaterialId> getHUPackingMaterialIds(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrieveAllItemsNoCache(Collections.singleton(huId))
+				.stream()
+				.map(item -> HuPackingMaterialId.ofRepoIdOrNull(item.getM_HU_PackingMaterial_ID()))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
 	}
 }

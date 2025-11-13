@@ -26,7 +26,6 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.inout.InOutId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Service;
 
@@ -37,9 +36,13 @@ public class CreatePackagesForShipmentEnqueuer
 {
 	public static final String WP_PARAM_M_InOut_ID = I_M_InOut.COLUMNNAME_M_InOut_ID;
 	public static final String WP_PARAM_CREATE_AND_ADD_TO_TRANSPORTATION_Order = "addToTransportationOrder";
-	public static final CreatePackagesForShipmentEnqueuer instance = new CreatePackagesForShipmentEnqueuer();
 
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+
+	public static CreatePackagesForShipmentEnqueuer newInstance()
+	{
+		return new CreatePackagesForShipmentEnqueuer();
+	}
 
 	private CreatePackagesForShipmentEnqueuer()
 	{
@@ -47,14 +50,8 @@ public class CreatePackagesForShipmentEnqueuer
 
 	public void enqueue(@NonNull final InOutId inOutId, final boolean addToTransportationOrder)
 	{
-		enqueue(inOutId, addToTransportationOrder, null);
-	}
-
-	public void enqueue(@NonNull final InOutId inOutId, final boolean addToTransportationOrder, @Nullable final String trxName)
-	{
 		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), CreatePackagesForShipmentWorkpackageProcessor.class)
 				.newWorkPackage()
-				.bindToTrxName(trxName)
 				.parameter(WP_PARAM_M_InOut_ID, inOutId)
 				.parameter(WP_PARAM_CREATE_AND_ADD_TO_TRANSPORTATION_Order, addToTransportationOrder)
 				.buildAndEnqueue();

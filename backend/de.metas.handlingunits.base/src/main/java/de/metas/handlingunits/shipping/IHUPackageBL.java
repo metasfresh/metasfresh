@@ -12,7 +12,6 @@ import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
@@ -50,7 +49,7 @@ public interface IHUPackageBL extends ISingletonService
 	 *
 	 * @return true if HU is eligible for adding to shipper transportation.
 	 */
-	boolean isEligibleForAddingToShipperTransportation(@Nullable I_M_HU hu);
+	boolean isEligibleForAddingToShipperTransportation(@NonNull I_M_HU hu);
 
 	@NonNull
 	PackageDimensions getPackageDimensions(@NonNull I_M_HU hu);

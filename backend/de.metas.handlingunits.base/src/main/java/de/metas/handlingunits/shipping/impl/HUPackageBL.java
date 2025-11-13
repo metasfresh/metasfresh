@@ -41,14 +41,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
-import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -87,6 +84,7 @@ public class HUPackageBL implements IHUPackageBL
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@Override
 	public void destroyHUPackage(final org.compiere.model.I_M_Package mpackage)
@@ -296,15 +294,8 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	@Override
-	public boolean isEligibleForAddingToShipperTransportation(@Nullable final I_M_HU hu)
+	public boolean isEligibleForAddingToShipperTransportation(@NonNull final I_M_HU hu)
 	{
-		// guard against null
-		if (hu == null)
-		{
-			return false;
-		}
-		//Loaded here to avoid recursion
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		//
 		// Only Top Level HUs can be added to shipper transportation
 		//
@@ -318,11 +309,7 @@ public class HUPackageBL implements IHUPackageBL
 	{
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
-		final Set<HuPackingMaterialId> packingMaterialIds = handlingUnitsDAO.retrieveAllItemsNoCache(Collections.singleton(huId))
-				.stream()
-				.map(item -> HuPackingMaterialId.ofRepoIdOrNull(item.getM_HU_PackingMaterial_ID()))
-				.filter(Objects::nonNull)
-				.collect(Collectors.toSet());
+		final Set<HuPackingMaterialId> packingMaterialIds = handlingUnitsBL.getHUPackingMaterialIds(huId);
 
 		if (!packingMaterialIds.isEmpty())
 		{
@@ -334,7 +321,6 @@ public class HUPackageBL implements IHUPackageBL
 		else
 		{
 			//Loaded here to avoid recursion
-			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 			final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 
 			final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory().getProductStorages(hu);
