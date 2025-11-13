@@ -1,12 +1,8 @@
-package de.metas.async.api.impl;
-
-
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +19,10 @@ package de.metas.async.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.async.api.impl;
+
+
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
@@ -198,13 +198,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return true;
 		}
 
-		final Duration millisUntilReadyForChecking = getTimeUntilProcessedRecheck(asyncBatchRecord);
-
-		if (millisUntilReadyForChecking.toMillis() > 0)
-		{
-			return false;
-		}
-
 		updateProcessedFlag(asyncBatchRecord);
 
 		queueDAO.save(asyncBatchRecord);
@@ -241,7 +234,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return Duration.ofMillis(processedTimeOffsetMillis);
 		}
 
-		// Case: when did not pass enough time between fist enqueue time and now.
+		// Case: when did not pass enough time between first enqueue time and now.
 		final Timestamp now = computeNowTimestamp();
 
 		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMillis(firstEnqueued, processedTimeOffsetMillis);
@@ -271,7 +264,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	 * When running some unit-tests, we need to use {@link SystemTime}.
 	 * But otherwise, don't use our de.metas.common.util.time.SystemTime, because it might be set to a fixed value when cucumber-testing which might lead to inter-overflows
 	 */
-	@Nullable
+	@NonNull
 	private Timestamp computeNowTimestamp()
 	{
 		if (useMetasfreshSystemTime)
@@ -301,7 +294,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		}
 
 		final Timestamp lastUpdated = asyncBatchRecord.getUpdated();
-		final Timestamp today = de.metas.common.util.time.SystemTime.asTimestamp();
+		final Timestamp today = SystemTime.asTimestamp();
 
 		final long diffHours = TimeUtil.getHoursBetween(lastUpdated, today);
 
@@ -529,7 +522,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 	private int getProcessedTimeOffsetMillis()
 	{
-		return Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMillis", 1);
+		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_PROCESSED_OFFSET_MILLIS, 1);
 	}
 
 	private void save(final I_C_Async_Batch asyncBatch)
@@ -537,7 +530,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		Services.get(IQueueDAO.class).save(asyncBatch);
 	}
 
-	private int setAsyncBatchCountEnqueued(final I_C_Queue_WorkPackage workPackage, final int offset)
+	private int setAsyncBatchCountEnqueued(@NonNull final I_C_Queue_WorkPackage workPackage, final int offset)
 	{
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
 		if (asyncBatchId == null)
@@ -549,7 +542,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		try
 		{
 			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
-			final Timestamp enqueued = de.metas.common.util.time.SystemTime.asTimestamp();
+			final Timestamp enqueued = SystemTime.asTimestamp();
 			if (asyncBatch.getFirstEnqueued() == null)
 			{
 				asyncBatch.setFirstEnqueued(enqueued);
