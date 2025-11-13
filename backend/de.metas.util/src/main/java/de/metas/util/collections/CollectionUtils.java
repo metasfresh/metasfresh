@@ -436,6 +436,7 @@ public final class CollectionUtils
 		return result.build();
 	}
 
+	@SuppressWarnings("unused")
 	public static <T> ImmutableSet<T> removeElement(
 			@NonNull final ImmutableSet<T> set,
 			@Nullable final T elementToRemove)
@@ -554,6 +555,7 @@ public final class CollectionUtils
 	 *
 	 * @return the removed first element
 	 */
+	@SuppressWarnings("unused")
 	public static <T> T removeFirst(@NonNull final Set<T> set)
 	{
 		final Iterator<T> it = set.iterator();
@@ -776,6 +778,7 @@ public final class CollectionUtils
 		return ImmutableMap.copyOf(newMap);
 	}
 
+	@SuppressWarnings("unused")
 	public static <K, V> ImmutableMap<K, V> mergeMaps(
 			@NonNull final ImmutableMap<K, V> map1,
 			@NonNull final ImmutableMap<K, V> map2)
@@ -794,26 +797,6 @@ public final class CollectionUtils
 			result.putAll(map2);
 			return ImmutableMap.copyOf(result);
 		}
-	}
-
-	@NonNull
-	public <K, V> Map<K, List<V>> groupMultiValueByKey(
-			@NonNull final Collection<V> values,
-			@NonNull final Function<V, K> mappingFunction)
-	{
-
-		final HashMap<K, ArrayList<V>> key2Values = new HashMap<>();
-
-		values.forEach(value -> {
-			final K currentKey = mappingFunction.apply(value);
-
-			final ArrayList<V> currentValues = new ArrayList<>();
-			currentValues.add(value);
-
-			key2Values.merge(currentKey, currentValues, CollectionUtils::mergeLists);
-		});
-
-		return ImmutableMap.copyOf(key2Values);
 	}
 
 	public static boolean hasDuplicatesForValue(@NonNull final Collection<String> collection, @NonNull final String value)

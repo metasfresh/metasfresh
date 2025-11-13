@@ -35,7 +35,6 @@ import lombok.ToString;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
@@ -65,12 +64,6 @@ public class PickingJobReferenceList
 	public boolean isEmpty() {return list.isEmpty();}
 
 	public Stream<PickingJobReference> stream() {return list.stream();}
-
-	public PickingJobReferenceList removeIf(@NonNull Predicate<PickingJobReference> predicate)
-	{
-		final ImmutableList<PickingJobReference> changedList = CollectionUtils.removeIf(list, predicate);
-		return list.size() == changedList.size() ? this : ofList(changedList);
-	}
 
 	public PickingJobReferenceList updateEach(@NonNull UnaryOperator<PickingJobReference> updater)
 	{
