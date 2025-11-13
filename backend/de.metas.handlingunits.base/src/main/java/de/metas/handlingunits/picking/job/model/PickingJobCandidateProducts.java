@@ -23,7 +23,7 @@ import java.util.stream.Collector;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString(of = "byProductId")
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public class PickingJobCandidateProducts implements Iterable<PickingJobCandidateProduct>
 {
 	@NonNull private final ImmutableMap<ProductId, PickingJobCandidateProduct> byProductId;
@@ -139,12 +139,6 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 		return Objects.equals(this.byProductId, byProductIdNew)
 				? this
 				: new PickingJobCandidateProducts(byProductIdNew);
-	}
-
-	@Nullable
-	public PickingJobCandidateProduct getSingleProductOrNull()
-	{
-		return singleProduct;
 	}
 
 	@Nullable
