@@ -35,9 +35,9 @@ import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.shipping.PackageInfo;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.product.DimensionsInCM;
 import de.metas.rest_api.v1.shipping.ShipmentService;
 import de.metas.rest_api.v1.shipping.ShippedCandidateKey;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
@@ -184,7 +184,7 @@ public class ShippingPackageService
 					.trackingUrl(trackingURLWithTrackingNumber)
 					.trackingNumber(jsonPackage.getTrackingCode())
 					.weight(jsonPackage.getWeight())
-					.dimensionsInCM(DimensionsInCM.UNSPECIFIED)//not supported in this version
+					.packageDimensions(PackageDimensions.UNSPECIFIED)//not supported in this version
 					.build());
 		}
 		return result;

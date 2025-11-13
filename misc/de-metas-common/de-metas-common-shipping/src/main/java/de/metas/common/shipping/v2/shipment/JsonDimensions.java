@@ -22,34 +22,16 @@
 
 package de.metas.common.shipping.v2.shipment;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonDimensions.JsonDimensionsBuilder.class)
+@Jacksonized
 public class JsonDimensions
 {
-	@JsonProperty("length")
-	@NonNull
-	Integer length;
-
-	@JsonProperty("width")
-	Integer width;
-
-	@JsonProperty("height")
-	Integer height;
-
-	@JsonPOJOBuilder(withPrefix = "")
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static class JsonDimensionsBuilder
-	{
-	}
+	int length;
+	int width;
+	int height;
 }

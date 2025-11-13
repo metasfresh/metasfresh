@@ -76,13 +76,4 @@ public class PackageDimensions
 				.widthInCM(dimensions.get(2))
 				.build();
 	}
-
-	public static PackageDimensions ofDimensionsInCM(@NonNull final DimensionsInCM productDimensionsInCM)
-	{
-		return PackageDimensions.builder()
-				.lengthInCM(productDimensionsInCM.getLengthInCM())
-				.heightInCM(productDimensionsInCM.getHeightInCM())
-				.widthInCM(productDimensionsInCM.getWidthInCM())
-				.build();
-	}
 }

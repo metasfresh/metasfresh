@@ -22,7 +22,7 @@
 
 package de.metas.handlingunits.shipping;
 
-import de.metas.product.DimensionsInCM;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,5 +37,5 @@ public class PackageInfo
 	@Nullable String trackingNumber;
 	@Nullable String trackingUrl;
 	@Nullable BigDecimal weight;
-	@NonNull @Builder.Default DimensionsInCM dimensionsInCM = DimensionsInCM.UNSPECIFIED;
+	@NonNull @Builder.Default PackageDimensions packageDimensions = PackageDimensions.UNSPECIFIED;
 }
