@@ -1,10 +1,8 @@
-package de.metas.async.api.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.async.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.async.api.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
@@ -399,7 +399,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 		catch (final Throwable e)
 		{
-			asyncBatchBL.decreaseEnqueued(workPackage);
+			asyncBatchBL.decreaseEnqueued(workPackage); // if the save didn't work, we need to decrease the enqueued count
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
