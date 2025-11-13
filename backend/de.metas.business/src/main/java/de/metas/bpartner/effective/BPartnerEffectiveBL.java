@@ -141,7 +141,7 @@ public class BPartnerEffectiveBL
 				bPartnerRecord,
 				I_C_BPartner::getPaymentRule,
 				PaymentRule::ofCode,
-				() -> PaymentRule.OnCredit) // same as bPartnerRecord column default
+				() -> PaymentRule.OnCredit) // same as bPartnerRecord mandatory column default
 		);
 
 		//noinspection DataFlowIssue
@@ -149,7 +149,7 @@ public class BPartnerEffectiveBL
 				bPartnerRecord,
 				I_C_BPartner::getPaymentRulePO,
 				PaymentRule::ofCode,
-				() -> PaymentRule.OnCredit) // same as bPartnerRecord column default
+				() -> PaymentRule.OnCredit) // same as bPartnerRecord mandatory column default
 		);
 
 		return bPartnerBuilder.build();

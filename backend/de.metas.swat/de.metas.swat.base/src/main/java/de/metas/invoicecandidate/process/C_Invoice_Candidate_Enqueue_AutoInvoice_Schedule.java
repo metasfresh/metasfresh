@@ -43,7 +43,7 @@ public class C_Invoice_Candidate_Enqueue_AutoInvoice_Schedule extends JavaProces
 		final ImmutableSet<InvoiceCandidateId> candidateIds = invoiceCandBL.getIdsByQuery(InvoiceCandidateQuery.builder()
 						.autoInvoice(true)
 						.processed(false)
-						.soTrx(SOTrx.ofBoolean(true))
+						.soTrx(SOTrx.SALES)
 						.dateToInvoice(SystemTime.asLocalDate())
 						.orgId(getOrgId())
 						.build()
