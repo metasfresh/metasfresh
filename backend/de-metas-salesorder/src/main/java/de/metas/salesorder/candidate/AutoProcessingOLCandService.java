@@ -103,7 +103,9 @@ public class AutoProcessingOLCandService
 
 		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = trxManager.callInNewTrx(() -> orderService.getAsyncBatchId2OLCandIds(olCandIds));
 
-		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds);
+		final boolean propagateAsyncIdsToShipmentSchduleWPs = request.isShip() || request.isInvoice();
+		
+		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds, propagateAsyncIdsToShipmentSchduleWPs);
 
 		if (request.isShip())
 		{

@@ -83,7 +83,9 @@ public class OrderService
 	}
 
 	@NonNull
-	public Set<OrderId> generateOrderSync(@NonNull final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds)
+	public Set<OrderId> generateOrderSync(
+			@NonNull final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds,
+			final boolean propagateAsyncIdsToShipmentSchduleWPs)
 	{
 		if (asyncBatchId2OLCandIds.isEmpty())
 		{
@@ -92,7 +94,7 @@ public class OrderService
 
 		for (final AsyncBatchId asyncBatchId : asyncBatchId2OLCandIds.keySet())
 		{
-			generateOrdersForBatch(asyncBatchId);
+			generateOrdersForBatch(asyncBatchId, propagateAsyncIdsToShipmentSchduleWPs);
 		}
 
 		final ImmutableSet<OLCandId> olCandIds = asyncBatchId2OLCandIds.values()
@@ -160,9 +162,11 @@ public class OrderService
 		return shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);
 	}
 
-	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
+	private void generateOrdersForBatch(
+			@NonNull final AsyncBatchId asyncBatchId,
+			final boolean propagateAsyncIdsToShipmentSchduleWPs)
 	{
-		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueueBatch(asyncBatchId);
+		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueueBatch(asyncBatchId, propagateAsyncIdsToShipmentSchduleWPs);
 
 		asyncBatchService.executeBatch(action, asyncBatchId);
 	}
