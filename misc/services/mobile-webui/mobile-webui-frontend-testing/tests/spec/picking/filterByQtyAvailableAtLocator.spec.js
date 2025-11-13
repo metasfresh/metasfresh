@@ -71,7 +71,7 @@ const createMasterdata = async ({ qtyOnHand }) => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Test', async ({ page }) => {
+test('Filter by Qty Available flag', async ({ page }) => {
     const masterdata = await createMasterdata({ qtyOnHand: 130 });
 
     await LoginScreen.login(masterdata.login.user);
@@ -81,10 +81,10 @@ test('Test', async ({ page }) => {
     await PickingJobsListScreen.waitForScreen();
 
     await PickingJobsListScreen.expectJobButtons([
-        { salesOrderId: masterdata.salesOrders.SO1.id, qtyToDeliver: 50 },
-        { salesOrderId: masterdata.salesOrders.SO2.id, qtyToDeliver: 50 },
-        { salesOrderId: masterdata.salesOrders.SO3.id, qtyToDeliver: 50 },
-        { salesOrderId: masterdata.salesOrders.SO4.id, qtyToDeliver: 50 },
+        { salesOrderId: masterdata.salesOrders.SO1.id, qtyToDeliver: 50, indicator: 'indicator-color-green' },
+        { salesOrderId: masterdata.salesOrders.SO2.id, qtyToDeliver: 50, indicator: 'indicator-color-green' },
+        { salesOrderId: masterdata.salesOrders.SO3.id, qtyToDeliver: 50, indicator: 'indicator-color-yellow' },
+        { salesOrderId: masterdata.salesOrders.SO4.id, qtyToDeliver: 50, indicator: 'indicator-color-red' },
     ]);
 
     await PickingJobsListScreen.clickFilterButton();
@@ -92,9 +92,9 @@ test('Test', async ({ page }) => {
     await PickingJobsListFiltersScreen.clickShowResults();
 
     await PickingJobsListScreen.expectJobButtons([
-        { salesOrderId: masterdata.salesOrders.SO1.id, qtyToDeliver: 50 },
-        { salesOrderId: masterdata.salesOrders.SO2.id, qtyToDeliver: 50 },
-        { salesOrderId: masterdata.salesOrders.SO3.id, qtyToDeliver: 50 },
+        { salesOrderId: masterdata.salesOrders.SO1.id, qtyToDeliver: 50, indicator: 'indicator-color-green' },
+        { salesOrderId: masterdata.salesOrders.SO2.id, qtyToDeliver: 50, indicator: 'indicator-color-green' },
+        { salesOrderId: masterdata.salesOrders.SO3.id, qtyToDeliver: 50, indicator: 'indicator-color-yellow' },
     ]);
 
 });

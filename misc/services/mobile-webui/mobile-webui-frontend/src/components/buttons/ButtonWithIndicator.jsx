@@ -154,11 +154,11 @@ const Indicators = ({ parentTestId, completeStatus, indicator1, indicator2 }) =>
   return (
     <div className={cx('right-btn-side', { 'is-justify-content-center': isJustifyContentInCenter })}>
       <Indicator
-        testId={parentTestId ? `${parentTestId}-Indicator` : null}
+        testId={parentTestId ? `${parentTestId}-Indicator` : 'indicator'}
         indicator={indicator1}
         completeStatus={completeStatus}
       />
-      <Indicator data-testid={parentTestId ? `${parentTestId}-Indicator2` : null} indicator={indicator2} />
+      <Indicator testId={parentTestId ? `${parentTestId}-Indicator2` : 'indicator2'} indicator={indicator2} />
     </div>
   );
 };
@@ -207,7 +207,7 @@ const Indicator = ({ testId, indicator, completeStatus }) => {
   }
 
   if (!className) return null;
-  console.log('Indicator', { className, testId });
+
   return <i data-testid={testId} className={className} />;
 };
 Indicator.propTypes = {
