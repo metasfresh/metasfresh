@@ -254,7 +254,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=755968
 -- Field: Produkt(140,D) -> Produkt(180,D) ->  Länge (cm)
 -- Column: M_Product.LengthInCm
 -- 2025-11-11T18:26:54.660Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591496,755969,0,180,0,TO_TIMESTAMP('2025-11-11 18:26:54.457000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'@IsSelfPacked/N@=''Y''','D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,' Länge (cm)',0,0,650,0,1,1,TO_TIMESTAMP('2025-11-11 18:26:54.457000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591496,755969,0,180,0,TO_TIMESTAMP('2025-11-11 18:26:54.457000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'@isSelfPacked/N@=''Y''','D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,' Länge (cm)',0,0,650,0,1,1,TO_TIMESTAMP('2025-11-11 18:26:54.457000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-11-11T18:26:54.662Z
@@ -276,7 +276,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=755969
 -- Field: Produkt(140,D) -> Produkt(180,D) -> Höhe (cm)
 -- Column: M_Product.HeightInCm
 -- 2025-11-11T18:27:01.517Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591497,755970,0,180,0,TO_TIMESTAMP('2025-11-11 18:27:01.287000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'@IsSelfPacked/N@=''Y''','U',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Höhe (cm)',0,0,660,0,1,1,TO_TIMESTAMP('2025-11-11 18:27:01.287000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591497,755970,0,180,0,TO_TIMESTAMP('2025-11-11 18:27:01.287000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'@isSelfPacked/N@=''Y''','U',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Höhe (cm)',0,0,660,0,1,1,TO_TIMESTAMP('2025-11-11 18:27:01.287000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-11-11T18:27:01.519Z
@@ -298,7 +298,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=755970
 -- Field: Produkt(140,D) -> Produkt(180,D) -> Breite (cm)
 -- Column: M_Product.WidthInCm
 -- 2025-11-11T18:27:11.662Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591498,755971,0,180,0,TO_TIMESTAMP('2025-11-11 18:27:11.463000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'@IsSelfPacked/N@=''Y''','D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Breite (cm)',0,0,670,0,1,1,TO_TIMESTAMP('2025-11-11 18:27:11.463000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591498,755971,0,180,0,TO_TIMESTAMP('2025-11-11 18:27:11.463000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'@isSelfPacked/N@=''Y''','D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Breite (cm)',0,0,670,0,1,1,TO_TIMESTAMP('2025-11-11 18:27:11.463000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-11-11T18:27:11.664Z
@@ -351,23 +351,5 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- Column: M_Product.WidthInCm
 -- 2025-11-11T18:28:45.747Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,755971,0,180,553747,638587,'F',TO_TIMESTAMP('2025-11-11 18:28:45.553000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Breite (cm)',40,0,0,TO_TIMESTAMP('2025-11-11 18:28:45.553000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- Field: Produkt(140,D) -> Produkt(180,D) ->  Länge (cm)
--- Column: M_Product.LengthInCm
--- 2025-11-11T18:31:26.898Z
-UPDATE AD_Field SET DisplayLogic='',Updated=TO_TIMESTAMP('2025-11-11 18:31:26.898000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=755969
-;
-
--- Field: Produkt(140,D) -> Produkt(180,D) -> Höhe (cm)
--- Column: M_Product.HeightInCm
--- 2025-11-11T18:31:29.524Z
-UPDATE AD_Field SET DisplayLogic='',Updated=TO_TIMESTAMP('2025-11-11 18:31:29.524000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=755970
-;
-
--- Field: Produkt(140,D) -> Produkt(180,D) -> Breite (cm)
--- Column: M_Product.WidthInCm
--- 2025-11-11T18:31:32.083Z
-UPDATE AD_Field SET DisplayLogic='',Updated=TO_TIMESTAMP('2025-11-11 18:31:32.083000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=755971
 ;
 
