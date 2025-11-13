@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
@@ -66,6 +67,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Dunning;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -118,6 +120,7 @@ public class C_BPartner_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
 	@NonNull private final C_Dunning_StepDefData dunningTable;
+	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 	@NonNull private final TestContext restTestContext;
@@ -230,7 +233,7 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setName(valueAndName.getName());
 		bPartnerRecord.setValue(valueAndName.getValue());
 		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
-		
+
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
 		bPartnerRecord.setIsCustomer(row.getAsOptionalBoolean(COLUMNNAME_IsCustomer).orElseFalse());
@@ -340,7 +343,7 @@ public class C_BPartner_StepDef
 			}
 
 			InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
-			
+
 			// if a location was cretaed "on-they-fly", add it to bPartnerLocationTable.
 			// if no C_BPartner_Location_ID-identifer was given, use the C_BPartner_ID identifier
 			final StepDefDataIdentifier locationIdentifier =
@@ -363,7 +366,7 @@ public class C_BPartner_StepDef
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getName()));
 		row.getAsOptionalIdentifier("REST.Context.C_BPartner_ID")
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getC_BPartner_ID()));
-		
+
 	}
 
 	private void changeBPartner(@NonNull final DataTableRow row)
@@ -467,6 +470,13 @@ public class C_BPartner_StepDef
 		{
 			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);
 			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
+		}
+
+		final String paymentTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID);
+		if (EmptyUtil.isNotBlank(paymentTermIdentifier))
+		{
+			final I_C_PaymentTerm paymentTerm = paymentTermTable.get(paymentTermIdentifier);
+			bPartner.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		}
 
 		InterfaceWrapperHelper.save(bPartner);

@@ -119,9 +119,13 @@ Feature: Jasper Report Tests
     And metasfresh contains C_DunningLevel:
       | Identifier             | C_Dunning_ID      | DaysAfterDue |
       | dunningLevel_S0471_200 | dunning_S0471_200 | 0            |
+    # dev-note: make sure that the correct payment term is used, regardless of the branch
+    And metasfresh contains C_PaymentTerm
+      | Identifier            |
+      | paymentTerm_S0471_200 |
     And update C_BPartner:
-      | Identifier | C_Dunning_ID      |
-      | customer   | dunning_S0471_200 |
+      | Identifier | C_Dunning_ID      | C_PaymentTerm_ID      |
+      | customer   | dunning_S0471_200 | paymentTerm_S0471_200 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | so1        | true    | customer      | 2025-04-01  | wh             |
