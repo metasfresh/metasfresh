@@ -44,10 +44,10 @@ import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
+import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
@@ -122,6 +122,7 @@ public class CalloutOrder extends CalloutEngine
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -179,18 +180,6 @@ public class CalloutOrder extends CalloutEngine
 		// }
 		// }
 
-		// Invoice Rule //TODO figure out why we have this and if it can be dropped
-		if (MOrder.DocSubType_POS.equals(docSubType)
-				|| MOrder.DocSubType_Prepay.equals(docSubType)
-				|| MOrder.DocSubType_OnCredit.equals(docSubType))
-		{
-			order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-		}
-		else
-		{
-			order.setInvoiceRule(getDefaultInvoiceRule());
-		}
-
 		// Payment Rule - POS Order
 		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
@@ -210,16 +199,10 @@ public class CalloutOrder extends CalloutEngine
 			order.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
 
-		//
-		// When BPartner is changed, the Rules are not set if
-		// it is a POS or Credit Order (i.e. defaults from Standard
-		// BPartner)
-		// This re-reads the Rules and applies them.
-		if (MOrder.DocSubType_POS.equals(docSubType)
-				|| MOrder.DocSubType_Prepay.equals(docSubType))  // not
+		order.setInvoiceRule(getDefaultInvoiceRule());
+		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
-			// for POS/PrePay
-
+			order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
 		}
 		else
 		{
@@ -227,47 +210,19 @@ public class CalloutOrder extends CalloutEngine
 			if (bpartnerId != null)
 			{
 				final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
-				final boolean isSOTrx = documentNoInfo.isSOTrx();
 
-				// PaymentRule
+				final BPartnerOrderParams bPartnerOrderParams = Check.assumePresent(orderBL.retrieveBPartnerParams(order), "BPartnerOrderParams should be present");
+
+				order.setPaymentRule(bPartnerOrderParams.getPaymentRule().getCode());
+
+				final PaymentTermId paymentTermId = bPartnerOrderParams.getPaymentTermId();
+				if (paymentTermId != null)
 				{
-					PaymentRule paymentRule = isSOTrx
-							? PaymentRule.ofCode(bpartner.getPaymentRule())
-							: PaymentRule.ofCode(bpartner.getPaymentRulePO());
-
-					if (isSOTrx && paymentRule.isCashOrCheck()) // No Cash/Check/Transfer:
-					{
-						// for SO_Trx
-						paymentRule = PaymentRule.OnCredit; // Payment Term
-					}
-					if (!isSOTrx && paymentRule.isCash())  // No Cash for PO_Trx
-					{
-						paymentRule = PaymentRule.OnCredit; // Payment Term
-					}
-					order.setPaymentRule(paymentRule.getCode());
+					order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 				}
 
-				// Payment Term
-				{
-					final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(isSOTrx ? bpartner.getC_PaymentTerm_ID() : bpartner.getPO_PaymentTerm_ID());
-					if (paymentTermId != null)
-					{
-						order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
-					}
-				}
-
-				// InvoiceRule
-				{
-					//TODO check why invoiceRule here again and why not consider bill partner
-					final InvoiceRule invoiceRule = isSOTrx ?
-							InvoiceRule.ofNullableCode(bpartner.getInvoiceRule()) :
-							InvoiceRule.ofNullableCode(bpartner.getPO_InvoiceRule());
-
-					if (invoiceRule != null)
-					{
-						order.setInvoiceRule(invoiceRule.getCode());
-					}
-				}
+				order.setInvoiceRule(bPartnerOrderParams.getInvoiceRule().getCode());
+				order.setIsAutoInvoice(bPartnerOrderParams.isAutoInvoice());
 
 				// DeliveryRule
 				{
@@ -278,7 +233,7 @@ public class CalloutOrder extends CalloutEngine
 					}
 				}
 
-				//FIXME not in sync with bpartner callout
+				// FIXME not in sync with bpartner callout
 				// FreightCostRule
 				{
 					final String freightCostRule = bpartner.getFreightCostRule();
@@ -373,6 +328,8 @@ public class CalloutOrder extends CalloutEngine
 
 		final String defaultUserFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
+		final BPartnerOrderParams bPartnerOrderParams = Check.assumePresent(orderBL.retrieveBPartnerParams(order), "BPartnerOrderParams should be present");
+
 		// task FRESH-152: Joining with the BPartner Stats.
 		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
         //
@@ -385,10 +342,8 @@ public class CalloutOrder extends CalloutEngine
 				+ " p.POReference,"
 				+ " p.SO_Description,"
 				+ " p.IsDiscountPrinted,"
-				+ " p.InvoiceRule,"
-				+ " p." + I_C_BPartner.COLUMNNAME_PO_InvoiceRule + ", "
 				+ " p.DeliveryRule,"
-				+ " COALESCE(p.FreightCostRule, p.FreightCostRule, pg.FreightCostRule) as FreightCostRule,"
+				+ " COALESCE(p.FreightCostRule, g.FreightCostRule, pg.FreightCostRule) as FreightCostRule,"
 				+ " DeliveryViaRule,"
 				+ " lship.C_BPartner_Location_ID,"
 				+ " c.AD_User_ID,"
@@ -560,15 +515,9 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(getDefaultInvoiceRule());
 				// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
-				if (MOrder.DocSubType_Prepay.equals(OrderType))
-				{
-					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-					// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
-				}
-				else if (MOrder.DocSubType_POS.equals(OrderType))  // for POS
+				if (MOrder.DocSubType_POS.equals(OrderType))  // for POS
 				{
 					order.setPaymentRule(PaymentRule.Cash.getCode());
 				}
@@ -597,14 +546,8 @@ public class CalloutOrder extends CalloutEngine
 						order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 					}
 
-					// InvoiceRule
-					final String invoiceRule = IsSOTrx ? rs.getString(I_C_BPartner.COLUMNNAME_InvoiceRule) :
-							rs.getString(I_C_BPartner.COLUMNNAME_PO_InvoiceRule);
-
-					if (!Check.isEmpty(invoiceRule, true))
-					{
-						order.setInvoiceRule(invoiceRule);
-					}
+					order.setIsAutoInvoice(bPartnerOrderParams.isAutoInvoice());
+					order.setInvoiceRule(bPartnerOrderParams.getInvoiceRule().getCode());
 
 					// DeliveryRule
 					final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(rs.getString("DeliveryRule"));
@@ -746,10 +689,11 @@ public class CalloutOrder extends CalloutEngine
 
 		final String defaultUserFlag = isSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
+		final BPartnerOrderParams bPartnerOrderParams = Check.assumePresent(orderBL.retrieveBPartnerParams(order), "BPartnerOrderParams should be present");
+
 		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
 				+ "p.SO_Description,p.IsDiscountPrinted,"
-				+ "p.InvoiceRule,"
 				+ "p." + I_C_BPartner.COLUMNNAME_PO_InvoiceRule + ","
 				+ "p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
 				+ "stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
@@ -880,11 +824,7 @@ public class CalloutOrder extends CalloutEngine
 				final String OrderType = order.getOrderType();
 				order.setInvoiceRule(getDefaultInvoiceRule());
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
-				if (MOrder.DocSubType_Prepay.equals(OrderType))
-				{
-					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-				}
-				else if (MOrder.DocSubType_POS.equals(OrderType))
+				if (MOrder.DocSubType_POS.equals(OrderType))
 				{
 					order.setPaymentRule(PaymentRule.Cash.getCode());
 				}
@@ -911,14 +851,8 @@ public class CalloutOrder extends CalloutEngine
 						order.setC_PaymentTerm_ID(paymentTermId);
 					}
 
-					// InvoiceRule
-					final String invoiceRule = IsSOTrx ? rs.getString(I_C_BPartner.COLUMNNAME_InvoiceRule) :
-							rs.getString(I_C_BPartner.COLUMNNAME_PO_InvoiceRule);
-
-					if (!Check.isEmpty(invoiceRule, true))
-					{
-						order.setInvoiceRule(invoiceRule);
-					}
+					order.setIsAutoInvoice(bPartnerOrderParams.isAutoInvoice());
+					order.setInvoiceRule(bPartnerOrderParams.getInvoiceRule().getCode());
 				}
 			}
 		}

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -525,7 +525,8 @@ public class OrderBL implements IOrderBL
 		return params.flatMap(BPartnerOrderParams::getDeliveryViaRule);
 	}
 
-	private Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
+	@Override
+	public Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
 	{
 		final BPartnerId shipBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(

@@ -25,6 +25,7 @@ package de.metas.bpartner.effective;
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import lombok.Builder;
@@ -41,8 +42,10 @@ public class BPartnerEffective
 	@Nullable PaymentTermId poPaymentTermId;
 	@Nullable PricingSystemId pricingSystemId;
 	@Nullable PricingSystemId poPricingSystemId;
-	@Nullable InvoiceRule invoiceRule;
-	@Nullable InvoiceRule poInvoiceRule;
+	@NonNull InvoiceRule invoiceRule;
+	@NonNull InvoiceRule poInvoiceRule;
+	@NonNull PaymentRule paymentRule;
+	@NonNull PaymentRule poPaymentRule;
 	boolean isAutoInvoice;
 
 	@Nullable
@@ -52,6 +55,18 @@ public class BPartnerEffective
 	}
 
 	@Nullable
+	public PricingSystemId getPricingSystemId(@NonNull final SOTrx soTrx)
+	{
+		return soTrx.isSales() ? pricingSystemId : poPricingSystemId;
+	}
+
+	@NonNull
+	public PaymentRule getPaymentRule(@NonNull final SOTrx soTrx)
+	{
+		return soTrx.isSales() ? paymentRule : poPaymentRule;
+	}
+
+	@NonNull
 	public InvoiceRule getInvoiceRule(@NonNull final SOTrx soTrx)
 	{
 		return soTrx.isSales() ? invoiceRule : poInvoiceRule;

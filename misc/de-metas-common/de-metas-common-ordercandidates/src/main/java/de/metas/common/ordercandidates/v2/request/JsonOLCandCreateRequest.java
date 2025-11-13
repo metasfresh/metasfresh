@@ -298,6 +298,10 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	Boolean isAutoInvoice;
 
+	@ApiModelProperty(position = 480)
+	@JsonInclude(Include.NON_NULL)
+	String invoiceRule;
+
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -349,7 +353,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
 			@JsonProperty("email") final @Nullable String email,
 			@JsonProperty("phone") final @Nullable String phone,
-			@JsonProperty("isAutoInvoice") final @Nullable Boolean isAutoInvoice)
+			@JsonProperty("isAutoInvoice") final @Nullable Boolean isAutoInvoice,
+			@JsonProperty("invoiceRule") final @Nullable String invoiceRule)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -401,6 +406,7 @@ public class JsonOLCandCreateRequest
 		this.qtyItemCapacity = qtyItemCapacity;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
 		this.isAutoInvoice = isAutoInvoice;
+		this.invoiceRule = invoiceRule;
 	}
 
 	/**

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -136,9 +158,9 @@ public class OLCandBL implements IOLCandBL
 			return PricingSystemId.ofRepoId(olCand.getM_PricingSystem_ID());
 		}
 
-		if (bPartnerOrderParams != null && bPartnerOrderParams.getPricingSystemId().isPresent())
+		if (bPartnerOrderParams != null && bPartnerOrderParams.getPricingSystemId() != null)
 		{
-			return bPartnerOrderParams.getPricingSystemId().get();
+			return bPartnerOrderParams.getPricingSystemId();
 		}
 
 		if (orderDefaults != null && orderDefaults.getPricingSystemId() != null)
@@ -211,6 +233,7 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
+	@Nullable
 	public InvoiceRule getInvoiceRule(
 			@NonNull final I_C_OLCand olCandRecord,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
@@ -222,9 +245,9 @@ public class OLCandBL implements IOLCandBL
 			return olCandInvoiceRule;
 		}
 
-		if (bPartnerOrderParams != null && bPartnerOrderParams.getInvoiceRule().isPresent())
+		if (bPartnerOrderParams != null)
 		{
-			return bPartnerOrderParams.getInvoiceRule().get();
+			return bPartnerOrderParams.getInvoiceRule();
 		}
 		if (orderDefaults != null)
 		{
@@ -259,7 +282,7 @@ public class OLCandBL implements IOLCandBL
 				: PaymentTermId.ofRepoIdOrNull(orderCandidateRecord.getC_PaymentTerm_ID());
 
 		final PaymentTermId bpartnerOrderParamsPaymentTermId = bPartnerOrderParams == null ? null
-				: bPartnerOrderParams.getPaymentTermId().orElse(null);
+				: bPartnerOrderParams.getPaymentTermId();
 
 		final PaymentTermId orderDefaultsPaymentTermId = orderDefaults == null ? null
 				: orderDefaults.getPaymentTermId();

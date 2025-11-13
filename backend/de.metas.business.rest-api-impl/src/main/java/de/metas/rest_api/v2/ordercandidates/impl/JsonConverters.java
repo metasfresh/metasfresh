@@ -51,6 +51,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.impl.DocTypeService;
 import de.metas.ordercandidate.api.AssignSalesRepRule;
@@ -261,6 +262,7 @@ public class JsonConverters
 				.shipperId(shipperId)
 
 				.isAutoInvoice(isAutoInvoice)
+				.invoiceRule(InvoiceRule.ofNullableCode(request.getInvoiceRule()))
 				.paymentRule(paymentRule)
 
 				.salesRepId(salesRepId)

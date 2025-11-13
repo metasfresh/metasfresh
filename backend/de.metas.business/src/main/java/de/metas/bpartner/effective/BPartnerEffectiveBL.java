@@ -31,6 +31,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.PricingSystemId;
@@ -118,12 +119,37 @@ public class BPartnerEffectiveBL
 				() -> false))
 		);
 
+		//noinspection DataFlowIssue
 		bPartnerBuilder.invoiceRule(getEffectiveValue(
 				bPartnerRecord, bpGroup, bpParentGroup,
 				I_C_BPartner::getInvoiceRule,
 				I_C_BP_Group::getInvoiceRule,
 				InvoiceRule::ofNullableCode,
 				this::getDefaultInvoiceRule)
+		);
+
+		//noinspection DataFlowIssue
+		bPartnerBuilder.poInvoiceRule(getEffectiveValue(
+				bPartnerRecord,
+				I_C_BPartner::getPO_InvoiceRule,
+				InvoiceRule::ofNullableCode,
+				this::getDefaultInvoiceRule)
+		);
+
+		//noinspection DataFlowIssue
+		bPartnerBuilder.paymentRule(getEffectiveValue(
+				bPartnerRecord,
+				I_C_BPartner::getPaymentRule,
+				PaymentRule::ofCode,
+				() -> null)
+		);
+
+		//noinspection DataFlowIssue
+		bPartnerBuilder.poPaymentRule(getEffectiveValue(
+				bPartnerRecord,
+				I_C_BPartner::getPaymentRulePO,
+				PaymentRule::ofCode,
+				() -> null)
 		);
 
 		return bPartnerBuilder.build();
@@ -139,6 +165,8 @@ public class BPartnerEffectiveBL
 		final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
 		return parentGroupId != null ? bpGroupDAO.getById(parentGroupId) : null;
 	}
+
+
 
 	@Nullable
 	private <T, V> T getEffectiveValue(
@@ -165,6 +193,22 @@ public class BPartnerEffectiveBL
 						return null;
 					}
 					final V value = bpGroupValueExtractor.apply(bpParentGroup);
+					return value != null ? valueMapper.apply(value) : null;
+				},
+				defaultValueSupplier
+		);
+	}
+
+	@Nullable
+	private <T, V> T getEffectiveValue(
+			@NonNull final I_C_BPartner bPartner,
+			@NonNull final Function<I_C_BPartner, V> bPartnerValueExtractor,
+			@NonNull final Function<V, T> valueMapper,
+			@NonNull final Supplier<T> defaultValueSupplier)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> {
+					final V value = bPartnerValueExtractor.apply(bPartner);
 					return value != null ? valueMapper.apply(value) : null;
 				},
 				defaultValueSupplier

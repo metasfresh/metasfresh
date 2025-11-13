@@ -31,6 +31,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -41,29 +42,14 @@ import java.util.Optional;
 @Builder
 public class BPartnerOrderParams
 {
-	@NonNull
-	Optional<DeliveryRule> deliveryRule;
-
-	@NonNull
-	Optional<DeliveryViaRule> deliveryViaRule;
-
-	@NonNull
-	Optional<FreightCostRule> freightCostRule;
-
-	@NonNull
-	Optional<InvoiceRule> invoiceRule;
-
-	@NonNull
-	PaymentRule paymentRule;
-
-	@NonNull
-	Optional<PaymentTermId> paymentTermId;
-
-	@NonNull
-	Optional<PricingSystemId> pricingSystemId;
-
-	@NonNull
-	Optional<ShipperId> shipperId;
+	@NonNull Optional<DeliveryRule> deliveryRule;
+	@NonNull Optional<DeliveryViaRule> deliveryViaRule;
+	@NonNull Optional<FreightCostRule> freightCostRule;
+	@NonNull InvoiceRule invoiceRule;
+	@NonNull PaymentRule paymentRule;
+	@Nullable PaymentTermId paymentTermId;
+	@Nullable PricingSystemId pricingSystemId;
+	@NonNull Optional<ShipperId> shipperId;
 
 	boolean isAutoInvoice;
 }
