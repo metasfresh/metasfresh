@@ -1,73 +1,15 @@
 -- Run mode: SWING_CLIENT
 
--- Name: Yes_No_Empty
--- 2025-11-13T13:44:59.031Z
-INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,542020,TO_TIMESTAMP('2025-11-13 14:44:58.328','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','N','Yes_No_Empty',TO_TIMESTAMP('2025-11-13 14:44:58.328','YYYY-MM-DD HH24:MI:SS.US'),100,'L')
-;
-
--- 2025-11-13T13:44:59.104Z
-INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Reference_ID=542020 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
-;
-
--- Reference: Yes_No_Empty
--- Value: Ja
--- ValueName: Ja
--- 2025-11-13T13:45:26.981Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,542020,544061,TO_TIMESTAMP('2025-11-13 14:45:26.186','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Ja',TO_TIMESTAMP('2025-11-13 14:45:26.186','YYYY-MM-DD HH24:MI:SS.US'),100,'Ja','Ja')
-;
-
--- 2025-11-13T13:45:27.060Z
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=544061 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
-;
-
--- Reference Item: Yes_No_Empty -> Ja_Ja
--- 2025-11-13T13:45:42.782Z
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Yes',Updated=TO_TIMESTAMP('2025-11-13 14:45:42.782','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=544061
-;
-
--- Reference: Yes_No_Empty
--- Value: Y
--- ValueName: Ja
--- 2025-11-13T13:45:54.468Z
-UPDATE AD_Ref_List SET Value='Y',Updated=TO_TIMESTAMP('2025-11-13 14:45:54.468','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Ref_List_ID=544061
-;
-
--- Reference: Yes_No_Empty
--- Value: N
--- ValueName: Nein
--- 2025-11-13T13:46:04.790Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,542020,544062,TO_TIMESTAMP('2025-11-13 14:46:04.015','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Nein',TO_TIMESTAMP('2025-11-13 14:46:04.015','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Nein')
-;
-
--- 2025-11-13T13:46:04.853Z
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=544062 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
-;
-
--- Reference Item: Yes_No_Empty -> N_Nein
--- 2025-11-13T13:46:12.379Z
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='No',Updated=TO_TIMESTAMP('2025-11-13 14:46:12.379','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=544062
-;
-
--- Reference: Yes_No_Empty
--- Value: E
--- ValueName: Leer
--- 2025-11-13T13:46:31.172Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,542020,544063,TO_TIMESTAMP('2025-11-13 14:46:30.382','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Leer',TO_TIMESTAMP('2025-11-13 14:46:30.382','YYYY-MM-DD HH24:MI:SS.US'),100,'E','Leer')
-;
-
--- 2025-11-13T13:46:31.236Z
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=544063 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
-;
-
--- Reference Item: Yes_No_Empty -> E_Leer
--- 2025-11-13T13:46:40.204Z
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Empty',Updated=TO_TIMESTAMP('2025-11-13 14:46:40.204','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=544063
+-- Process: BusinessPartnerAccountSheetReport(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- ParameterName: p_IsSOTrx
+-- 2025-11-13T13:47:06.953Z
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=540528,Updated=TO_TIMESTAMP('2025-11-13 14:47:06.953','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=541756
 ;
 
 -- Process: BusinessPartnerAccountSheetReport(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- ParameterName: p_IsSOTrx
--- 2025-11-13T13:47:06.953Z
-UPDATE AD_Process_Para SET AD_Reference_Value_ID=542020,Updated=TO_TIMESTAMP('2025-11-13 14:47:06.953','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=541756
+-- 2025-11-13T16:35:15.001Z
+UPDATE AD_Process_Para SET DefaultValue='Y',Updated=TO_TIMESTAMP('2025-11-13 17:35:15.001','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=541756
 ;
 
 -- 2025-11-13T10:10:17.254Z
@@ -105,8 +47,8 @@ UPDATE AD_Process_Para SET AD_Element_ID=584207, ColumnName='p_IsSOTrx',Updated=
 
 -- Value: BusinessPartnerAccountSheetReport
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
--- 2025-11-13T10:29:07.439Z
-UPDATE AD_Process SET SQLStatement='SELECT * FROM BusinessPartnerAccountSheetReport(@C_BPartner_ID@, ''@DateFrom@''::date, ''@DateTo@''::date, @#AD_Client_ID@, @AD_Org_ID@, ''@p_IsSOTrx/NULL@'')',Updated=TO_TIMESTAMP('2025-11-13 11:29:07.266','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=584661
+-- 2025-11-13T16:42:51.768Z
+UPDATE AD_Process SET SQLStatement='SELECT * FROM BusinessPartnerAccountSheetReport(@C_BPartner_ID@, ''@DateFrom@''::date, ''@DateTo@''::date, @#AD_Client_ID@, @AD_Org_ID@, @p_IsSOTrx/quotedIfNotDefault/NULL@, ''@#AD_Language@'')',Updated=TO_TIMESTAMP('2025-11-13 17:42:51.503','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=584661
 ;
 
 -- 2025-11-13T10:17:45.774Z
