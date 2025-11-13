@@ -314,33 +314,31 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 			// Otherwise, if the current trx fails, the workpackage will have been created, but not have been flagged as "ReadyForProcessing" (which sucks).
 			setTrxName(workPackage, _trxName);
 
+			// Set the Async batch if provided
+			if (asyncBatchSet)
+			{
+				workPackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
+			}
+			if (userInChargeId != null)
+			{
+				workPackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
+			}
+			
 			@SuppressWarnings("deprecation") // Suppressing the warning, because *this class* is the workpackage builder to be used
-			final I_C_Queue_WorkPackage workpackage = workPackageQueue.enqueueWorkPackage(
+			final I_C_Queue_WorkPackage enqueuedWorkpackage = workPackageQueue.enqueueWorkPackage(
 					workPackage,
 					workPackagePriority);
 
-			try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(workpackage))
+			try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(enqueuedWorkpackage))
 			{
-				// Set the Async batch if provided
-				// TODO: optimize this and set everything in one shot and then save it.
-				if (asyncBatchSet)
-				{
-					workpackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
-				}
-
-				if (userInChargeId != null)
-				{
-					workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
-				}
-
 				// Create workpackage parameters
 				if (_parametersBuilder != null)
 				{
-					_parametersBuilder.setC_Queue_WorkPackage(workpackage);
+					_parametersBuilder.setC_Queue_WorkPackage(enqueuedWorkpackage);
 					_parametersBuilder.build();
 				}
 
-				createWorkpackageElements(workPackageQueue, workpackage);
+				createWorkpackageElements(workPackageQueue, enqueuedWorkpackage);
 
 				//
 				// Lock enqueued workpackage elements
@@ -353,9 +351,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 				//
 				// Actually mark the workpackage as ready for processing
 				// NOTE: method also accepts null transaction and in that case it will immediately mark as ready for processing
-				workPackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
+				workPackageQueue.markReadyForProcessingAfterTrxCommit(enqueuedWorkpackage, _trxName);
 			}
-			return workpackage;
+			return enqueuedWorkpackage;
 		}
 	}
 }
