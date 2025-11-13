@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -122,10 +122,12 @@ public class ShipmentService implements IShipmentService
 		if (request.isWaitForShipments())
 		{
 			// The thread will wait until the schedules are processed, because the next call might contain the same shipment schedules as the current one.
-			return asyncBatchService.executeBatch(() -> {
-				validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
-				return enqueueShipmentSchedules(request);
-			}, request.getAsyncBatchId());
+			return asyncBatchService.executeBatch(
+					() -> {
+						validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
+						return enqueueShipmentSchedules(request);
+					},
+					request.getAsyncBatchId());
 		}
 		else
 		{
@@ -335,6 +337,7 @@ public class ShipmentService implements IShipmentService
 	{
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
+				.asyncBatchId(request.getAsyncBatchId())
 				.scheduleIds(request.getScheduleIds())
 				.onlyLUIds(request.getOnlyLUIds())
 				.quantityType(request.getQuantityTypeToUse())
