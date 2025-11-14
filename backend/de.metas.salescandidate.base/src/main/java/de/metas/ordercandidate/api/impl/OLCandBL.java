@@ -232,7 +232,6 @@ public class OLCandBL implements IOLCandBL
 
 	@Nullable
 	@Override
-	@Nullable
 	public InvoiceRule getInvoiceRule(
 			@NonNull final I_C_OLCand olCandRecord,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
