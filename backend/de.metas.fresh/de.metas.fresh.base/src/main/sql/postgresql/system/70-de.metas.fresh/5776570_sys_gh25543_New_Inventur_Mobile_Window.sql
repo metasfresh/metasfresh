@@ -2835,13 +2835,8 @@ UPDATE AD_Field SET DefaultValue='Y',Updated=TO_TIMESTAMP('2025-11-12 20:14:11.8
 UPDATE AD_Column SET IsAutoApplyValidationRule='Y',Updated=TO_TIMESTAMP('2025-11-14 08:47:02.338000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=12797
 ;
 
--- Name: C_DocType Default_Material Inventory
--- 2025-11-14T08:51:47.792Z
-INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540758,'C_DocType.DocBaseType=''MMI'' AND C_DocType.IsDefault=''Y''',TO_TIMESTAMP('2025-11-14 08:51:47.106000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Document Type Physical Inventory','D','Y','C_DocType Default_Material Inventory','S',TO_TIMESTAMP('2025-11-14 08:51:47.106000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
 -- Field: Inventur Mobile(541969,D) -> Bestandszählung(548510,D) -> Belegart
 -- Column: M_Inventory.C_DocType_ID
--- 2025-11-14T08:52:52.871Z
-UPDATE AD_Field SET AD_Reference_ID=18, AD_Reference_Value_ID=170, AD_Val_Rule_ID=540758,Updated=TO_TIMESTAMP('2025-11-14 08:52:52.870000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=756059
+-- 2025-11-14T13:34:05.303Z
+UPDATE AD_Field SET DefaultValue='@SQL=SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType=''MMI'' AND AD_Org_ID=@#AD_Org_ID@ ORDER BY  IsDefault=''Y'' DESC LIMIT 1',Updated=TO_TIMESTAMP('2025-11-14 13:34:05.303000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=756059
 ;
