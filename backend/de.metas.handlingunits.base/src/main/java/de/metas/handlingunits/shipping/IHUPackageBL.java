@@ -3,6 +3,7 @@ package de.metas.handlingunits.shipping;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.product.PackageDimensions;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
@@ -10,6 +11,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+
 import java.util.List;
 import java.util.Set;
 
@@ -42,4 +44,13 @@ public interface IHUPackageBL extends ISingletonService
 	 */
 	void unassignShipmentFromPackages(I_M_InOut shipment);
 
+	/**
+	 * Checks if given HU is suitable for adding to shipper transportation.
+	 *
+	 * @return true if HU is eligible for adding to shipper transportation.
+	 */
+	boolean isEligibleForAddingToShipperTransportation(@NonNull I_M_HU hu);
+
+	@NonNull
+	PackageDimensions getPackageDimensions(@NonNull I_M_HU hu);
 }

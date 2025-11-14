@@ -62,4 +62,7 @@ public class Product
 	boolean stocked;
 	@Nullable CommodityNumberId commodityNumberId;
 	@Nullable String procurementStatus;
+	boolean selfPacked;
+	@NonNull PackageDimensions packageDimensions;
+
 }

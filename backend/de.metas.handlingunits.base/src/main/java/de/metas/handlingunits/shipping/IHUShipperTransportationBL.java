@@ -68,13 +68,6 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	void generateShipments(Properties ctx, IHUQueryBuilder husQueryBuilder);
 
 	/**
-	 * Checks if given HU is suitable for adding to shipper transportation.
-	 *
-	 * @return true if HU is eligible for adding to shipper transportation.
-	 */
-	boolean isEligibleForAddingToShipperTransportation(@Nullable I_M_HU hu);
-
-	/**
 	 * @return shipping packages for HU, filtered by it's package partner and location
 	 */
 	List<I_M_ShippingPackage> getShippingPackagesForHU(I_M_HU hu);
@@ -92,4 +85,5 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	I_M_ShipperTransportation getById(ShipperTransportationId shipperTransportationId);
 
 	void processShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId);
+
 }
