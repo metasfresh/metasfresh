@@ -1,24 +1,8 @@
-package de.metas.location.geocoding.interceptor;
-
-import de.metas.event.IEventBusFactory;
-import de.metas.event.Topic;
-import de.metas.location.LocationId;
-import de.metas.location.geocoding.asynchandler.LocationGeocodeEventRequest;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 /*
  * #%L
- * metasfresh-pharma
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +20,23 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 
+package de.metas.location.geocoding.interceptor;
+
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.location.LocationId;
+import de.metas.location.geocoding.GeocodingService;
+import de.metas.location.geocoding.asynchandler.LocationGeocodeEventRequest;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
 @Component
 @Interceptor(I_C_Location.class)
 public class C_Location
@@ -43,19 +44,24 @@ public class C_Location
 	public static final Topic EVENTS_TOPIC = Topic.distributed("de.metas.location.geocoding.events");
 
 	private final IEventBusFactory eventBusFactory;
+	private final GeocodingService geocodingService;
 
-	public C_Location(final IEventBusFactory eventBusFactory)
+	public C_Location(@NonNull final IEventBusFactory eventBusFactory,
+					  @NonNull final GeocodingService geocodingService)
 	{
 		this.eventBusFactory = eventBusFactory;
+		this.geocodingService = geocodingService;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void onNewLocation(final I_C_Location locationRecord)
 	{
 		final LocationId locationId = LocationId.ofRepoId(locationRecord.getC_Location_ID());
-
-		Services.get(ITrxManager.class)
-				.runAfterCommit(() -> fireLocationGeocodeRequest(locationId));
+		if (geocodingService.isServiceAvailable())
+		{
+			Services.get(ITrxManager.class)
+					.runAfterCommit(() -> fireLocationGeocodeRequest(locationId));
+		}
 	}
 
 	@ModelChange(
