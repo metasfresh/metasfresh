@@ -231,35 +231,35 @@ BEGIN
     -- Compute rolling sum
     WITH endingBalanceSum AS
              (
-                 SELECT --
-                        t.rowid,
-                        t.endingBalance
-                            + sum(case
-                                      WHEN dt.docbasetype = 'ARR' and t.isSoTrx = 'Y' THEN -1 * t.amount
-                                      WHEN dt.docbasetype = 'APP' and t.isSoTrx = 'N' THEN -1 * t.amount
-                                                                                      ELSE t.amount
-                                  end)
-                              OVER ( ORDER BY t.dateacct, t.created, t.documentno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) endingBalance,
-                        t.amount                                                                                                     currentAmount,
-                        dt.docbasetype,
-                        t.isSoTrx
-                 FROM temp_BusinessPartnerAccountSheetReport t
-                          LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
+				SELECT --
+					   t.rowid,
+					   t.endingBalance
+						   + sum(case
+									 WHEN dt.docbasetype = 'ARR' and t.isSoTrx = 'Y' THEN -1 * t.amount
+									 WHEN dt.docbasetype = 'APP' and t.isSoTrx = 'N' THEN -1 * t.amount
+									 ELSE t.amount
+						   end)
+							 OVER ( ORDER BY t.dateacct, t.created, t.documentno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) endingBalance,
+					   t.amount                                                                                                     currentAmount,
+					   dt.docbasetype,
+                       t.isSoTrx
+				FROM temp_BusinessPartnerAccountSheetReport t
+				LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
              ),
 
          finalData AS
              (
-                 SELECT --
-                        ebs.rowid,
-                        ebs.endingBalance,
-                        (ebs.endingBalance -
-                         (case
-                              WHEN ebs.docbasetype = 'ARR' and ebs.isSoTrx = 'Y' THEN -1 * ebs.currentAmount
-                              WHEN ebs.docbasetype = 'APP' and ebs.isSoTrx = 'N' THEN -1 * ebs.currentAmount
-                                                                                 ELSE ebs.currentAmount
-                          end)
-                            ) as beginningBalance
-                 FROM endingBalanceSum ebs
+				SELECT --
+					   ebs.rowid,
+					   ebs.endingBalance,
+					   (ebs.endingBalance -
+						(case
+							 WHEN ebs.docbasetype = 'ARR' and ebs.isSoTrx = 'Y' THEN -1 * ebs.currentAmount
+							 WHEN ebs.docbasetype = 'APP' and ebs.isSoTrx = 'N' THEN -1 * ebs.currentAmount
+							 ELSE ebs.currentAmount
+							end)
+						   ) as beginningBalance
+				FROM endingBalanceSum ebs
              )
     UPDATE temp_BusinessPartnerAccountSheetReport t
     SET endingBalance    = d.endingBalance,
