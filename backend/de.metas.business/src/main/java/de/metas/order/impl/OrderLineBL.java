@@ -1064,7 +1064,8 @@ public class OrderLineBL implements IOrderLineBL
 		if (effectiveBillPartnerId != null)
 		{
 			final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
-			isTaxExempt = billBPartnerRecord.isTaxExempt();
+			// Only set if TRUE - otherwise leave null (don't filter)
+			isTaxExempt = billBPartnerRecord.isTaxExempt() ?  Boolean.TRUE : null;
 		}
 		else
 		{
