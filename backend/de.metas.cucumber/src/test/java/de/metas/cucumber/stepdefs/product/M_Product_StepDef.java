@@ -306,6 +306,11 @@ public class M_Product_StepDef
 					productRecord.setGrossWeight_UOM_ID(grossWeight.getUomId().getRepoId());
 				});
 
+		tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsSelfPacked).ifPresent(productRecord::setIsSelfPacked);
+		tableRow.getAsOptionalInt(I_M_Product.COLUMNNAME_LengthInCm).ifPresent(productRecord::setLengthInCm);
+		tableRow.getAsOptionalInt(I_M_Product.COLUMNNAME_WidthInCm).ifPresent(productRecord::setWidthInCm);
+		tableRow.getAsOptionalInt(I_M_Product.COLUMNNAME_HeightInCm).ifPresent(productRecord::setHeightInCm);
+
 		final boolean isSold = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsSold).orElseTrue();
 		final boolean isPurchased = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsPurchased).orElseTrue();
 

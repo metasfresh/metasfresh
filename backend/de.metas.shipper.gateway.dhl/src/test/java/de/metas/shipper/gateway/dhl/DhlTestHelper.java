@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.CurrencyRepository;
 import de.metas.location.CountryCode;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
@@ -41,7 +42,6 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperId;
@@ -354,6 +354,7 @@ class DhlTestHelper
 		final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo = CreateDraftDeliveryOrderRequest.PackageInfo.builder()
 				.packageId(firstDeliveryOrderParcel.getPackageId())
 				.weightInKg(firstDeliveryOrderParcel.getGrossWeightKg())
+				.packageDimension(firstDeliveryOrderParcel.getPackageDimensions())
 				.build();
 
 		//
@@ -396,4 +397,5 @@ class DhlTestHelper
 				packageDimensions,
 				customDeliveryData);
 	}
+
 }

@@ -1,14 +1,8 @@
-package de.metas.shipper.gateway.spi.model;
-
-import lombok.Builder;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-
 /*
  * #%L
- * de.metas.shipper.gateway.api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,23 +20,18 @@ import lombok.extern.jackson.Jacksonized;
  * #L%
  */
 
-@Value
-public class PackageDimensions
+package de.metas.postgrest.process.json;
+
+import de.metas.postgrest.process.PostgRESTProcessExecutor;
+
+public class Sales_Order_Dynamics_JSON extends PostgRESTProcessExecutor
 {
-	int lengthInCM;
-	int widthInCM;
-	int heightInCM;
-
-	/**
-	 * Note: dimensions may be <= 0 which can stand for "not specified".
-	 */
-	@Builder
-	@Jacksonized
-	private PackageDimensions(final int lengthInCM, final int widthInCM, final int heightInCM)
+	@Override
+	protected final CustomPostgRESTParameters beforePostgRESTCall()
 	{
-		this.lengthInCM = lengthInCM;
-		this.widthInCM = widthInCM;
-		this.heightInCM = heightInCM;
+		return CustomPostgRESTParameters.builder()
+				.storeJsonFile(!isCalledViaAPI())
+				.expectSingleResult(true) // because we export exactly one record, we don't want the JSON to be an array
+				.build();
 	}
-
 }

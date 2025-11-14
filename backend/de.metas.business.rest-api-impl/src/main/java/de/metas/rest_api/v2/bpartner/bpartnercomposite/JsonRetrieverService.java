@@ -595,6 +595,10 @@ public class JsonRetrieverService
 				return Optional.empty();
 			}
 		}
+		else if (ExternalIdentifier.Type.VALUE.equals(bpartnerIdentifier.getType()))
+		{
+			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofValue(orgId, bpartnerIdentifier.asValue());
+		}
 		else if (ExternalIdentifier.Type.GLN.equals(bpartnerIdentifier.getType()))
 		{
 			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofGLN(orgId, bpartnerIdentifier.asGLN());
