@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.health.json;
 
-import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -11,12 +10,12 @@ import java.util.Map;
 import java.util.Set;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class JsonWindowHealthCheckRequest
 {
-	@Nullable ImmutableSet<AdWindowId> onlyAdWindowIds;
-	
+	@Nullable Set<AdWindowId> onlyAdWindowIds;
+
 	@Nullable Set<String> knownContextVariables;
-	@Nullable Map<String, Set<String>> knownMissingContextVariables;
+	@Nullable Map<String, String> knownMissingContextVariables;
 }
