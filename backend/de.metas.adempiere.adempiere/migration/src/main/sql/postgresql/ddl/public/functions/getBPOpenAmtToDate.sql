@@ -49,9 +49,9 @@ BEGIN
                                        p_DateType := v_dateType,
                                        p_Date := p_Date,
                                        p_Result_Currency_ID := p_C_Currency_ID
-                                    )
+                                   )
                               )
-                      )
+                          )
 
 
     FROM t;
