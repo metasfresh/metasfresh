@@ -43,7 +43,8 @@ BEGIN
         targetCurrencyCode     text,
         rowid                  NUMERIC,
         ad_org_id              NUMERIC,
-        doctype                text
+        doctype                text,
+        issotrx                bpchar
     );
     v_time := logDebug('created empty temporary table', v_time);
 
@@ -69,7 +70,7 @@ BEGIN
                    AND i.c_bpartner_id = p_c_bpartner_id
                    AND i.dateacct >= p_dateFrom
                    AND i.dateacct <= p_dateTo
-                   AND i.issotrx = COALESCE(p_isSoTrx, i.issotrx)
+                   AND (p_isSoTrx IS NULL OR i.issotrx = p_isSoTrx)
                    AND i.docstatus IN ('CO', 'CL')
                    AND (COALESCE(p_ad_org_id, 0) <= 0 OR i.ad_org_id = p_ad_org_id)
                  UNION ALL
@@ -90,7 +91,7 @@ BEGIN
                    AND p.c_bpartner_id = p_c_bpartner_id
                    AND p.dateacct >= p_dateFrom
                    AND p.dateacct <= p_dateTo
-                   AND p.isreceipt = COALESCE(p_isSoTrx, p.isreceipt)
+                   AND (p_isSoTrx IS NULL OR p.isreceipt = p_isSoTrx)
                    AND p.docstatus IN ('CO', 'CL')
                    AND (COALESCE(p_ad_org_id, 0) <= 0 OR p.ad_org_id = p_ad_org_id)
                  UNION ALL
@@ -113,7 +114,7 @@ BEGIN
                    AND p.c_bpartner_id = p_c_bpartner_id
                    AND hal.dateacct >= p_dateFrom
                    AND hal.dateacct <= p_dateTo
-                   AND p.isreceipt = COALESCE(p_isSoTrx, p.isreceipt)
+                   AND (p_isSoTrx IS NULL OR p.isreceipt = p_isSoTrx)
                    AND p.docstatus IN ('CO', 'CL')
                    AND (COALESCE(p_ad_org_id, 0) <= 0 OR hal.ad_org_id = p_ad_org_id)
              )
@@ -187,7 +188,7 @@ BEGIN
     WITH correctAmounts AS
              (
                  SELECT --
-                        t.rowid,
+                        t.documentno,
                         (CASE
 							WHEN dt.docbasetype IN ('ARC', 'APC') THEN -1 * t.amount
                                                                    ELSE t.amount
@@ -198,30 +199,37 @@ BEGIN
     UPDATE temp_BusinessPartnerAccountSheetReport t
     SET amount = c.amount
     FROM correctAmounts c
-    WHERE c.rowid = t.rowid;
+    WHERE c.documentno = t.documentno;
 
     GET DIAGNOSTICS v_temp = ROW_COUNT;
     v_time := logDebug('Update amount by document type', v_time);
 
+    UPDATE temp_BusinessPartnerAccountSheetReport t
+    SET beginningBalance = getBPOpenAmtToDate(
+            p_ad_client_id,
+            p_ad_org_id,
+            (p_dateFrom - INTERVAL '1 day')::date,
+            p_c_bpartner_id,
+            (SELECT c.c_currency_id
+             FROM c_currency c
+                      INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
+                      INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
+             LIMIT 1),
+            'Y',
+            t.IsSOTrx),
+        endingBalance    = getBPOpenAmtToDate(
+                p_ad_client_id,
+                p_ad_org_id,
+                (p_dateFrom - INTERVAL '1 day')::date,
+                p_c_bpartner_id,
+                (SELECT c.c_currency_id
+                 FROM c_currency c
+                          INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
+                          INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
+                 LIMIT 1),
+                'Y',
+                t.IsSOTrx);
 
-    --
-    -- Update the beginning and end balances with the initial "Open Invoice Amount to Date"
-    UPDATE temp_BusinessPartnerAccountSheetReport
-    SET beginningBalance = t.OpenInvoiceAmountToDate,
-        endingBalance    = t.OpenInvoiceAmountToDate
-    FROM (
-             SELECT getBPOpenAmtToDate(p_ad_client_id,
-                                       p_ad_org_id,
-                                       (p_dateFrom - INTERVAL '1 days')::date,
-                                       p_c_bpartner_id,
-                                       (SELECT c.c_currency_id
-                                        FROM c_currency c
-                                                 INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
-                                                 INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
-                                        LIMIT 1),
-                                       'Y'::text,
-                                       p_isSoTrx) OpenInvoiceAmountToDate
-         ) t;
 
     GET DIAGNOSTICS v_temp = ROW_COUNT;
     v_time := logDebug('Update beginning and end balance with "BP Open Invoices Amount to Date"', v_time);
@@ -232,14 +240,14 @@ BEGIN
     WITH endingBalanceSum AS
              (
 				SELECT --
-					   t.rowid,
+					   t.documentno,
 					   t.endingBalance
 						   + sum(case
 									 WHEN dt.docbasetype = 'ARR' and t.isSoTrx = 'Y' THEN -1 * t.amount
 									 WHEN dt.docbasetype = 'APP' and t.isSoTrx = 'N' THEN -1 * t.amount
 									 ELSE t.amount
 						   end)
-							 OVER ( ORDER BY t.dateacct, t.created, t.documentno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) endingBalance,
+							 OVER ( ORDER BY t.isSoTrx,t.dateacct, t.created, t.documentno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) endingBalance,
 					   t.amount                                                                                                     currentAmount,
 					   dt.docbasetype,
                        t.isSoTrx
@@ -250,7 +258,7 @@ BEGIN
          finalData AS
              (
 				SELECT --
-					   ebs.rowid,
+					   ebs.documentno,
 					   ebs.endingBalance,
 					   (ebs.endingBalance -
 						(case
@@ -265,7 +273,7 @@ BEGIN
     SET endingBalance    = d.endingBalance,
         beginningBalance = d.beginningBalance
     FROM finalData d
-    WHERE t.rowid = d.rowid;
+    WHERE t.documentno = d.documentno;
 
     v_time := logDebug('finished calculating rolling sum', v_time);
 
@@ -283,7 +291,7 @@ BEGIN
                         t.description,
                         t.created
                  FROM temp_BusinessPartnerAccountSheetReport t
-                 ORDER BY t.dateacct, t.created, t.documentno;
+                 ORDER BY t.issotrx, t.dateacct, t.created, t.documentno;
 END;
 $BODY$
     LANGUAGE plpgsql
