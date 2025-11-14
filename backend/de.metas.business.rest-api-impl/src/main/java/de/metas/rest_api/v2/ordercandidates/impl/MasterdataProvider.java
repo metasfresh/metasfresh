@@ -1,9 +1,32 @@
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -30,12 +53,13 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.lang.SOTrx;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.payment.paymentterm.repository.PaymentTermQuery.PaymentTermQueryBuilder;
 import de.metas.pricing.PricingSystemId;
@@ -66,28 +90,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/*
- * #%L
- * de.metas.ordercandidate.rest-api-impl
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public final class MasterdataProvider
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
@@ -103,6 +105,7 @@ public final class MasterdataProvider
 	private final JsonRetrieverService jsonRetrieverService;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final ExternalSystemRepository externalSystemRepository;
+	private final BPartnerEffectiveBL bPartnerEffectiveBL;
 
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
@@ -112,7 +115,8 @@ public final class MasterdataProvider
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final JsonRetrieverService jsonRetrieverService,
-			@NonNull final ExternalSystemRepository externalSystemRepository)
+			@NonNull final ExternalSystemRepository externalSystemRepository,
+			@NonNull final BPartnerEffectiveBL bPartnerEffectiveBL)
 	{
 		this.permissionService = permissionService;
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
@@ -122,6 +126,7 @@ public final class MasterdataProvider
 
 		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
 		this.productMasterDataProvider = new ProductMasterDataProvider(productLookupService);
+		this.bPartnerEffectiveBL = bPartnerEffectiveBL;
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
@@ -443,6 +448,15 @@ public final class MasterdataProvider
 					.setParameter("ExternalIdentifier", externalIdentifier.getType())
 					.setParameter("RawValue", externalIdentifier.getRawValue());
 		}
+	}
+
+	public boolean isAutoInvoice(@NonNull final JsonOLCandCreateRequest request, @NonNull final BPartnerId bpartnerId)
+	{
+		if(request.getIsAutoInvoice() != null)
+		{
+			return request.getIsAutoInvoice();
+		}
+		return bPartnerEffectiveBL.getById(bpartnerId).isAutoInvoice(SOTrx.SALES);
 	}
 
 	public PaymentRule getPaymentRule(final JsonOLCandCreateRequest request)

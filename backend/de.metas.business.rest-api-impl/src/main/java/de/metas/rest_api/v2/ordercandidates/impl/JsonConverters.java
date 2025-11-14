@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -29,6 +51,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.impl.DocTypeService;
 import de.metas.ordercandidate.api.AssignSalesRepRule;
@@ -62,28 +85,6 @@ import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
-
-/*
- * #%L
- * de.metas.ordercandidate.rest-api
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Service
 @RequiredArgsConstructor
@@ -197,6 +198,7 @@ public class JsonConverters
 				.orElse(DocSubType.ANY);
 
 		final BPartnerInfo bPartnerInfo = masterdataProvider.getBPartnerInfoNotNull(request.getBpartner(), orgId);
+		final BPartnerInfo billBPartnerInfo = masterdataProvider.getBPartnerInfo(request.getBillBPartner(), orgId).orElse(null);
 
 		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());
 
@@ -209,6 +211,9 @@ public class JsonConverters
 		final String deliveryRule = CoalesceUtil.firstNotBlank(request.getDeliveryRule(),
 				bpartnerDAO.getById(bPartnerInfo.getBpartnerId()).getDeliveryRule());
 
+		final boolean isAutoInvoice = billBPartnerInfo != null ? masterdataProvider.isAutoInvoice(request, billBPartnerInfo.getBpartnerId())
+				: masterdataProvider.isAutoInvoice(request, bPartnerInfo.getBpartnerId());
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -220,7 +225,7 @@ public class JsonConverters
 				.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(request.getExternalSystemCode())))
 				//
 				.bpartner(bPartnerInfo)
-				.billBPartner(masterdataProvider.getBPartnerInfo(request.getBillBPartner(), orgId).orElse(null))
+				.billBPartner(billBPartnerInfo)
 				.dropShipBPartner(masterdataProvider.getBPartnerInfo(request.getDropShipBPartner(), orgId).orElse(null))
 				.handOverBPartner(masterdataProvider.getBPartnerInfo(request.getHandOverBPartner(), orgId).orElse(null))
 				//
@@ -256,6 +261,8 @@ public class JsonConverters
 
 				.shipperId(shipperId)
 
+				.isAutoInvoice(isAutoInvoice)
+				.invoiceRule(InvoiceRule.ofNullableCode(request.getInvoiceRule()))
 				.paymentRule(paymentRule)
 
 				.salesRepId(salesRepId)

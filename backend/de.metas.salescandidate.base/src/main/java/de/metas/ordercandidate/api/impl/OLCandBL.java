@@ -153,9 +153,9 @@ public class OLCandBL implements IOLCandBL
 			return PricingSystemId.ofRepoId(olCand.getM_PricingSystem_ID());
 		}
 
-		if (bPartnerOrderParams != null && bPartnerOrderParams.getPricingSystemId().isPresent())
+		if (bPartnerOrderParams != null && bPartnerOrderParams.getPricingSystemId() != null)
 		{
-			return bPartnerOrderParams.getPricingSystemId().get();
+			return bPartnerOrderParams.getPricingSystemId();
 		}
 
 		if (orderDefaults != null && orderDefaults.getPricingSystemId() != null)
@@ -232,6 +232,7 @@ public class OLCandBL implements IOLCandBL
 
 	@Nullable
 	@Override
+	@Nullable
 	public InvoiceRule getInvoiceRule(
 			@NonNull final I_C_OLCand olCandRecord,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
@@ -243,9 +244,9 @@ public class OLCandBL implements IOLCandBL
 			return olCandInvoiceRule;
 		}
 
-		if (bPartnerOrderParams != null && bPartnerOrderParams.getInvoiceRule().isPresent())
+		if (bPartnerOrderParams != null)
 		{
-			return bPartnerOrderParams.getInvoiceRule().get();
+			return bPartnerOrderParams.getInvoiceRule();
 		}
 		if (orderDefaults != null)
 		{
@@ -281,7 +282,7 @@ public class OLCandBL implements IOLCandBL
 				: PaymentTermId.ofRepoIdOrNull(orderCandidateRecord.getC_PaymentTerm_ID());
 
 		final PaymentTermId bpartnerOrderParamsPaymentTermId = bPartnerOrderParams == null ? null
-				: bPartnerOrderParams.getPaymentTermId().orElse(null);
+				: bPartnerOrderParams.getPaymentTermId();
 
 		final PaymentTermId orderDefaultsPaymentTermId = orderDefaults == null ? null
 				: orderDefaults.getPaymentTermId();
