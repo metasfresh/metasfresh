@@ -103,6 +103,8 @@ public enum PaymentRule implements ReferenceListAwareEnum
 		return this == Check;
 	}
 
+	public boolean isOnCredit() {return OnCredit.equals(this);}
+
 	public boolean isDirectDebit()
 	{
 		return this == DirectDebit;
