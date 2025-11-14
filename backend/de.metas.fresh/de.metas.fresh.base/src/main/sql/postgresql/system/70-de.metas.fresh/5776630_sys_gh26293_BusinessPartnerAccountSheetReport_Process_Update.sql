@@ -12,12 +12,6 @@ UPDATE AD_Process_Para SET AD_Reference_Value_ID=540528,Updated=TO_TIMESTAMP('20
 UPDATE AD_Process SET SQLStatement='SELECT * FROM BusinessPartnerAccountSheetReport_Union(p_c_bpartner_id => @C_BPartner_ID@,p_dateFrom => ''@DateFrom@''::date, p_dateTo => ''@DateTo@''::date, p_ad_client_id => @#AD_Client_ID@, p_ad_org_id => @AD_Org_ID@, p_isSoTrx => @p_IsSOTrx/quotedIfNotDefault/NULL@, p_ad_language => ''@#AD_Language@'')',Updated=TO_TIMESTAMP('2025-11-14 16:17:15.878','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=584661
 ;
 
--- Process: BusinessPartnerAccountSheetReport(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
--- ParameterName: IsSOTrx
--- 2025-11-14T15:18:14.811Z
-UPDATE AD_Process_Para SET AD_Element_ID=1106, ColumnName='IsSOTrx',Updated=TO_TIMESTAMP('2025-11-14 16:18:14.81','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=541756
-;
-
 -- 2025-11-14T15:18:14.905Z
 /* DDL */  select update_Process_Para_Translation_From_AD_Element(1106)
 ;
@@ -76,3 +70,8 @@ UPDATE AD_Menu_Trl SET Name='Geschäftspartner Kontenblatt',Updated=TO_TIMESTAMP
 UPDATE AD_Menu SET Name='Geschäftspartner Kontenblatt' WHERE AD_Menu_ID=541440
 ;
 
+-- Process: BusinessPartnerAccountSheetReport(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- ParameterName: IsSOTrx
+-- 2025-11-14T16:17:48.849Z
+UPDATE AD_Process_Para SET DefaultValue='Y', IsMandatory='N',Updated=TO_TIMESTAMP('2025-11-14 17:17:48.849','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=541756
+;
