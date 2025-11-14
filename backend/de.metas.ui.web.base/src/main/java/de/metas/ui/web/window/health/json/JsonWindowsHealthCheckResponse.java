@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.window.health.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Value
-public class JsonWindowsHealthResponse
+public class JsonWindowsHealthCheckResponse
 {
 	String took;
 	int countTotal;
@@ -53,7 +53,7 @@ public class JsonWindowsHealthResponse
 
 	@Builder
 	@Jacksonized
-	private JsonWindowsHealthResponse(
+	private JsonWindowsHealthCheckResponse(
 			@Nullable final String took,
 			final int countTotal,
 			@Nullable final List<Entry> errors,
