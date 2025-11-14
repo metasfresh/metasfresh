@@ -283,7 +283,7 @@ public class DocTypeDAO implements IDocTypeDAO
 			docNoSequenceId = -1;
 		}
 
-		final I_C_DocType dt = newInstance(I_C_DocType.class);
+		final I_C_DocType dt = newInstance(I_C_DocType.class, ctx);
 		dt.setAD_Org_ID(0);
 		dt.setDocBaseType(request.getDocBaseType().getCode());
 		dt.setName(name);
