@@ -22,15 +22,13 @@ package de.metas.payment.esr;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.organization.OrgId;
 import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
 import de.metas.util.Services;
 
@@ -42,7 +40,6 @@ import de.metas.util.Services;
  */
 public final class ESRConstants
 {
-	public final static String ENTITYTYPE = "de.metas.payment.esr";
 	private final static String SYSCONFIG_Enabled = "de.metas.payment.esr.Enabled"; // i.e. <ENTITYTYPE>.Enabled
 
 	public final static String DOCUMENT_REFID_ReferenceNo_Type_ReferenceNumber = "ESRReferenceNumber";
@@ -71,8 +68,6 @@ public final class ESRConstants
 	public static final String ESRTRXTYPE_ReverseBooking = "00" + ESRTRXTYPE_REVERSE_LAST_DIGIT;
 
 	public static final String ESRTRXTYPE_CORRECTION_LAST_DIGIT = "8";
-
-	public static final List<String> ESRTRXTYPES_Control = Arrays.asList(ESRTRXTYPE_Payment, ESRTRXTYPE_Receipt);
 
 	/**
 	 * <code>AD_Message</code> value for the error message to be used when an ESR line has no selected action.
@@ -103,6 +98,21 @@ public final class ESRConstants
 
 	public static final String ESR_ASYNC_BATCH_DESC = "ESR Import process";
 
+	public static final AdMessageKey MSG_AMBIGOUS_REFERENCE = AdMessageKey.of("ESR_CAMT54_Ambigous_Reference");
+
+	public static final AdMessageKey MSG_MISSING_ESR_REFERENCE = AdMessageKey.of("ESR_CAMT54_Missing_ESR_Reference");
+
+	public static final BigDecimal CTRL_QTY_AT_LEAST_ONE_NULL = BigDecimal.ONE.negate();
+
+	public static final BigDecimal  CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
+
+	public static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
+
+	public static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P = AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
+
+	public static final AdMessageKey MSG_MULTIPLE_TRANSACTIONS_TYPES = AdMessageKey.of("ESR_CAMT54_MultipleTransactionsTypes");
+
+
 	private ESRConstants()
 	{
 	}
@@ -128,13 +138,4 @@ public final class ESRConstants
 				Env.getAD_Client_ID(ctx) // AD_Client_ID
 		);
 	}
-
-	/**
-	 * Sets (and persist in database) if the ESR module shall be enabled.
-	 */
-	public static void setEnabled(final Properties ctx, final boolean enabled)
-	{
-		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_Enabled, enabled, Env.getClientId(ctx), OrgId.ANY);
-	}
-
 }
