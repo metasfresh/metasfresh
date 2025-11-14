@@ -99,6 +99,10 @@ public class C_Tax_StepDef
 		tableRow.getAsOptionalIdentifier(I_C_Tax.COLUMNNAME_AD_Org_ID)
 				.map(orgTable::getId)
 				.ifPresent(orgId -> taxRecord.setAD_Org_ID(orgId.getRepoId()));
+		tableRow.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsTaxExempt)
+				.ifPresent(taxRecord::setIsTaxExempt);
+		tableRow.getAsOptionalInt(I_C_Tax.COLUMNNAME_SeqNo)
+				.ifPresent(taxRecord::setSeqNo);
 
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 

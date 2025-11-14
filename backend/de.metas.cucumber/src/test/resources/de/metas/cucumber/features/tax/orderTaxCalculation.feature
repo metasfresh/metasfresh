@@ -12,9 +12,10 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | AD_Org_ID.Identifier | Name                     | Value           |
       | switzerland_org      | Switzerland Organization | switzerland_org |
     And metasfresh contains C_Tax
-      | Identifier        | C_TaxCategory_ID.InternalName | Name                  | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | OPT.AD_Org_ID.Identifier |
-      | switzerland_tax   | Normal                        | switzerland_tax_S0151 | 2021-04-02 | 2.5  | CH                       | CH                        | switzerland_org          |
-      | swiss-to-neth_tax | Normal                        | swiss-to-neth_tax     | 2021-04-02 | 2.5  | CH                       | NL                        | switzerland_org          |
+      | Identifier             | C_TaxCategory_ID.InternalName | Name                  | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | OPT.AD_Org_ID.Identifier | IsTaxExempt | SeqNo |
+      | switzerland_tax        | Normal                        | switzerland_tax_S0151 | 2021-04-02 | 2.5  | CH                       | CH                        | switzerland_org          | N           | 10    |
+      | swiss-to-neth_tax      | Normal                        | swiss-to-neth_tax     | 2021-04-02 | 2.5  | CH                       | NL                        | switzerland_org          | N           | 20    |
+      | switzerland_tax_exempt | Normal                        | switzerland_tax_S0151 | 2021-04-02 | 0    | CH                       | CH                        | switzerland_org          | Y           | 40    |
     And metasfresh contains M_Products:
       | Identifier    | Value         | Name          | OPT.AD_Org_ID.Identifier |
       | product_S0151 | product_S0151 | product_S0151 | switzerland_org          |
@@ -40,18 +41,21 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | pp_Switzerland_Purchase | plv_Switzerland_Purchase          | product_S0151           | 10.0     | PCE               | Normal                        |
       | pp_Netherlands_Purchase | plv_Netherlands_Purchase          | product_S0151           | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier   | Name                 | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.AD_Org_ID.Identifier | OPT.AD_OrgBP_ID.Identifier |
-      | bpartner_1   | BPartnerNameS0151    | ps_1                          | Y            | Y              | switzerland_org          |                            |
-      | org_bpartner | OrgBPartnerNameS0151 | ps_1                          |              |                | switzerland_org          | switzerland_org            |
+      | Identifier   | Name                 | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.AD_Org_ID.Identifier | OPT.AD_OrgBP_ID.Identifier | IsTaxExemt |
+      | bpartner_1   | BPartnerNameS0151    | ps_1                          | Y            | Y              | switzerland_org          |                            | N          |
+      | org_bpartner | OrgBPartnerNameS0151 | ps_1                          |              |                | switzerland_org          | switzerland_org            | N          |
+      | bpartner_2   | BPartnerNameS0483    | ps_1                          | Y            | Y              | switzerland_org          |                            | Y          |
     And metasfresh contains C_Location:
-      | C_Location_ID.Identifier | CountryCode | OPT.AD_Org_ID.Identifier |
-      | location_Switzerland     | CH          | switzerland_org          |
-      | location_Netherlands     | NL          | switzerland_org          |
+      | C_Location_ID.Identifier       | CountryCode | OPT.AD_Org_ID.Identifier |
+      | location_Switzerland           | CH          | switzerland_org          |
+      | location_Netherlands           | NL          | switzerland_org          |
+      | location_Switzerland_taxexempt | CH          | switzerland_org          |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier                  | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault | OPT.Name                          | OPT.C_Location_ID.Identifier |
-      | bp_location_Switzerland     | 0123456789011 | bpartner_1               | Y                   | Y                   | Bpartner_Switzerland_Location     | location_Switzerland         |
-      | bp_location_Netherlands     | 0123456789012 | bpartner_1               | Y                   | Y                   | Bpartner_Netherlands_Location     | location_Netherlands         |
-      | org_Bp_location_Switzerland | 0123456789013 | org_bpartner             | Y                   | Y                   | Org_Bpartner_Switzerland_Location | location_Switzerland         |
+      | Identifier                        | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault | OPT.Name                                | OPT.C_Location_ID.Identifier   |
+      | bp_location_Switzerland           | 0123456789011 | bpartner_1               | Y                   | Y                   | Bpartner_Switzerland_Location           | location_Switzerland           |
+      | bp_location_Netherlands           | 0123456789012 | bpartner_1               | Y                   | Y                   | Bpartner_Netherlands_Location           | location_Netherlands           |
+      | org_Bp_location_Switzerland       | 0123456789013 | org_bpartner             | Y                   | Y                   | Org_Bpartner_Switzerland_Location       | location_Switzerland           |
+      | bp_location_Switzerland_taxExempt | 0123456789014 | bpartner_2               | Y                   | Y                   | Bpartner_Switzerland_Location_TaxExempt | location_Switzerland_taxexempt |
     And metasfresh contains AD_OrgInfo:
       | AD_OrgInfo_ID.Identifier | AD_Org_ID.Identifier | Org_BPartner_ID.Identifier | OrgBP_Location_ID.Identifier |
       | switzerland_org_info     | switzerland_org      | org_bpartner               | org_Bp_location_Switzerland  |
@@ -331,3 +335,42 @@ Feature: Validate tax calculation for orders taking into account dropship locati
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Effective_ID.Identifier |
       | invoiceCand_1                     | o_1                       | ol_1                          | 0            | swiss-to-neth_tax                 |
+
+  @Id:S0483_100
+  Scenario: Calculate tax for sales order that has IsDropShip flag set to false and order's C_BPartnerLocation.Country == organization's C_BPartnerLocation.Country
+  _Given 2x C_Tax records -> one configured for Switzerland with TaxExempt and one for Switzerland, without TaxExempt
+  _When completing one sales C_Order with C_BPartnerLocation in Switzerland and the AD_Org located in Switzerland
+  _Then the C_Tax_ID on C_OrderLine should be the one configured for TaxExempt
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | o_1_t      | true    | bpartner_2               | 2022-08-18  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID  | QtyEntered |
+      | ol_1_t     | o_1_t                 | product_S0151 | 1          |
+
+    When the order identified by o_1_t is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID | C_Order_ID | DateOrdered | M_Product_ID  | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | C_Tax_ID               |
+      | ol_1_t         | o_1_t      | 2022-08-18  | product_S0151 | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax_exempt |
+
+  @Id:S0483_200
+  Scenario: Calculate tax for sales order that has IsDropShip flag set to false and order's C_BPartnerLocation.Country == organization's C_BPartnerLocation.Country
+  _Given 2x C_Tax records -> 2 configured for Switzerland with TaxExempt and one for Switzerland, without TaxExempt
+  _When completing one sales C_Order with C_BPartnerLocation in Switzerland and the AD_Org located in Switzerland
+  _Then the C_Tax_ID on C_OrderLine should be the one configured for TaxExempt with the lowest seqNo
+    When  metasfresh contains C_Tax
+      | Identifier               | C_TaxCategory_ID.InternalName | Name                  | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | AD_Org_ID       | IsTaxExempt | SeqNo |
+      | switzerland_tax_exempt_2 | Normal                        | switzerland_tax_S0151 | 2021-04-02 | 0    | CH                       | CH                        | switzerland_org | Y           | 30    |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | o_2_t      | true    | bpartner_2    | 2022-08-18  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID  | QtyEntered |
+      | ol_2_t     | o_2_t      | product_S0151 | 1          |
+
+    When the order identified by o_2_t is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID | C_Order_ID | DateOrdered | M_Product_ID  | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | C_Tax_ID                 |
+      | ol_2_t         | o_2_t      | 2022-08-18  | product_S0151 | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax_exempt_2 |

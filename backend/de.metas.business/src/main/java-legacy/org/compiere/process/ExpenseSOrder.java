@@ -21,10 +21,12 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
@@ -48,7 +50,8 @@ import java.sql.Timestamp;
  */
 public class ExpenseSOrder extends JavaProcess
 {
-	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	/** BPartner */
 	private int p_C_BPartner_ID = 0;
@@ -308,7 +311,7 @@ public class ExpenseSOrder extends JavaProcess
 		{
 			ol.setC_UOM_ID(tel.getC_UOM_ID());
 		}
-		ol.setTax();
+		orderLineBL.setTax(ol);
 		if (!ol.save())
 		{
 			throw new IllegalStateException("Cannot save Order Line");

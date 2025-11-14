@@ -51,9 +51,12 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
@@ -66,8 +69,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Location;
@@ -84,6 +91,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -125,26 +133,29 @@ import static org.compiere.util.TimeUtil.asZonedDateTimeNonNull;
 
 public class OrderLineBL implements IOrderLineBL
 {
-	private static final AdMessageKey MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = AdMessageKey.of("de.metas.order.CounterDocMissingMappedProduct");
-	private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
+	@NonNull private static final AdMessageKey MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = AdMessageKey.of("de.metas.order.CounterDocMissingMappedProduct");
+	@NonNull private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
 
-	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
+	@NonNull private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final ITaxDAO taxDAO =Services.get(ITaxDAO.class);
+	@NonNull private final IWarehouseAdvisor warehouseAdvisor =	Services.get(IWarehouseAdvisor.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private IOrderBL orderBL()
 	{
@@ -1033,4 +1044,58 @@ public class OrderLineBL implements IOrderLineBL
 		return BPartnerId.optionalOfRepoId(orderLine.getC_BPartner_ID());
 	}
 
+	@Override
+	public void setTax(@NonNull final org.compiere.model.I_C_OrderLine  orderLine)
+	{
+		final I_C_Order orderRecord = orderBL().getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		final TaxCategoryId taxCategoryId = getTaxCategoryId(orderLine);
+
+		final WarehouseId warehouseId = warehouseAdvisor.evaluateWarehouse(orderLine);
+		final CountryId countryFromId = warehouseBL.getCountryId(warehouseId);
+
+		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId();
+
+		final boolean isSOTrx = orderRecord.isSOTrx();
+		final Timestamp taxDate = orderLine.getDatePromised();
+
+		final BPartnerId effectiveBillPartnerId = orderBL().getEffectiveBillPartnerId(orderRecord);
+		final Boolean isTaxExempt;
+		if (effectiveBillPartnerId != null)
+		{
+			final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
+			isTaxExempt = billBPartnerRecord.isTaxExempt();
+		}
+		else
+		{
+			isTaxExempt = null;
+		}
+
+		final Tax tax = taxDAO.getBy(TaxQuery.builder()
+				.fromCountryId(countryFromId)
+				.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
+				.bPartnerLocationId(bpLocationId)
+				.warehouseId(warehouseId)
+				.dateOfInterest(taxDate)
+				.taxCategoryId(taxCategoryId)
+				.soTrx(SOTrx.ofBoolean(isSOTrx))
+				.isTaxExempt(isTaxExempt)
+				.build());
+
+		if (tax == null)
+		{
+			TaxNotFoundException.builder()
+					.taxCategoryId(taxCategoryId)
+					.isSOTrx(isSOTrx)
+					.isTaxExempt(isTaxExempt)
+					.billDate(taxDate)
+					.billFromCountryId(countryFromId)
+					.billToC_Location_ID(bpLocationId.getLocationCaptureId())
+					.build()
+					.throwOrLogWarning(true, logger);
+		}
+
+		orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
+		orderLine.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
+	}
 }
