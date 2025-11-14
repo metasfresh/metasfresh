@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.async
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.async.api;
 
 import de.metas.async.AsyncBatchId;
@@ -18,28 +40,6 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
-
-/*
- * #%L
- * de.metas.async
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public interface IWorkPackageBuilder
 {
@@ -168,7 +168,7 @@ public interface IWorkPackageBuilder
 	 * Overloading set async batch, to enable setting async batch also by id (optional).
 	 * If the asyncBatchId is not set, it will be inherited.
 	 */
-	IWorkPackageBuilder setC_Async_Batch_ID(@Nullable AsyncBatchId asyncBatchId);
+	IWorkPackageBuilder setAsyncBatchId(@Nullable AsyncBatchId asyncBatchId);
 
 	I_C_Queue_WorkPackage buildWithPackageProcessor();
 

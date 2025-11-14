@@ -154,7 +154,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 
 		invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx())
-				.setC_Async_Batch(asyncBatch)
+				.setAsyncBatchId(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()))
 				.setInvoicingParams(getIInvoicingParams())
 				.setFailIfNothingEnqueued(true)
 				.enqueueInvoiceCandidateIds(invoiceCandIds);

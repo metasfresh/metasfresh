@@ -398,7 +398,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 					.setUserInChargeId(userIdInCharge)
 					.parameters(parameters)
 					.addElements(modelsToEnqueue)
-					.setC_Async_Batch_ID(asyncBatchId)
+					.setAsyncBatchId(asyncBatchId)
 					.buildAndEnqueue();
 		}
 

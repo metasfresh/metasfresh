@@ -69,6 +69,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -353,6 +354,10 @@ public class ShipmentService implements IShipmentService
 		return trxManager.callInNewTrx(() -> groupSchedulesByAsyncBatch0(scheduleIds));
 	}
 
+	/**
+	 * Group the given shipmentschedules according to their async-batch-id, <b>but</b> create a new async-batch-id for each old one.
+	 * That's because we will want to register an async-batch-observer for each group, and therefore we need new "unspend" async batches.
+	 */
 	@NonNull
 	private ImmutableMap<AsyncBatchId, ShipmentScheduleAndJobScheduleIdSet> groupSchedulesByAsyncBatch0(@NonNull final ShipmentScheduleAndJobScheduleIdSet scheduleIds2)
 	{
@@ -362,6 +367,8 @@ public class ShipmentService implements IShipmentService
 		final HashSet<ShipmentScheduleAndJobScheduleId> scheduleIdsWithoutAsyncBatchId = new HashSet<>();
 		final ArrayList<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedulesWithoutAsyncBatchId = new ArrayList<>();
 
+		final HashMap<AsyncBatchId,AsyncBatchId> oldToNewAsyncBatchId = new HashMap<>();
+		
 		for (final ShipmentScheduleAndJobScheduleId shipmentScheduleAndJobScheduleId : scheduleIds2)
 		{
 			final ShipmentScheduleId shipmentScheduleId = shipmentScheduleAndJobScheduleId.getShipmentScheduleId();
@@ -371,15 +378,16 @@ public class ShipmentService implements IShipmentService
 				continue;
 			}
 
-			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID());
-			if (asyncBatchId == null)
+			final AsyncBatchId oldAsyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID());
+			if (oldAsyncBatchId == null)
 			{
 				scheduleIdsWithoutAsyncBatchId.add(shipmentScheduleAndJobScheduleId);
 				shipmentSchedulesWithoutAsyncBatchId.add(shipmentSchedule);
 			}
 			else
 			{
-				scheduleIdsByAsyncBatchId.put(asyncBatchId, shipmentScheduleAndJobScheduleId);
+				final AsyncBatchId newAsyncBatchId = oldToNewAsyncBatchId.computeIfAbsent(oldAsyncBatchId, k -> asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule));
+				scheduleIdsByAsyncBatchId.put(newAsyncBatchId, shipmentScheduleAndJobScheduleId);
 			}
 		}
 
