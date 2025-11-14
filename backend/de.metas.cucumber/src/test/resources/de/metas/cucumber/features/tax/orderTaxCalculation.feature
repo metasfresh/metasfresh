@@ -41,7 +41,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | pp_Switzerland_Purchase | plv_Switzerland_Purchase          | product_S0151           | 10.0     | PCE               | Normal                        |
       | pp_Netherlands_Purchase | plv_Netherlands_Purchase          | product_S0151           | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier   | Name                 | M_PricingSystem_ID | IsVendor | IsCustomer | AD_Org_ID       | AD_OrgBP_ID     | IsTaxExemt |
+      | Identifier   | Name                 | M_PricingSystem_ID | IsVendor | IsCustomer | AD_Org_ID       | AD_OrgBP_ID     | IsTaxExempt |
       | bpartner_1   | BPartnerNameS0151    | ps_1               | Y        | Y          | switzerland_org |                 | N          |
       | org_bpartner | OrgBPartnerNameS0151 | ps_1               |          |            | switzerland_org | switzerland_org | N          |
       | bpartner_2   | BPartnerNameS0483    | ps_1               | Y        | Y          | switzerland_org |                 | Y          |
