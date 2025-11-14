@@ -104,6 +104,8 @@ public enum PaymentRule implements ReferenceListAwareEnum
 	}
 
 	public boolean isOnCredit() {return OnCredit.equals(this);}
+	public boolean isPayPal() {return PayPal.equals(this);}
+	public boolean isSettlement() {return Settlement.equals(this);}
 
 	public boolean isDirectDebit()
 	{

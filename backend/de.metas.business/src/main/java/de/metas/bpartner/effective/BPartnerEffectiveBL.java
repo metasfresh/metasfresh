@@ -138,17 +138,19 @@ public class BPartnerEffectiveBL
 
 		//noinspection DataFlowIssue
 		bPartnerBuilder.paymentRule(getEffectiveValue(
-				bPartnerRecord,
+				bPartnerRecord, bpGroup, bpParentGroup,
 				I_C_BPartner::getPaymentRule,
-				PaymentRule::ofCode,
+				I_C_BP_Group::getPaymentRule,
+				PaymentRule::ofNullableCode,
 				() -> PaymentRule.OnCredit) // same as bPartnerRecord mandatory column default
 		);
 
 		//noinspection DataFlowIssue
 		bPartnerBuilder.poPaymentRule(getEffectiveValue(
-				bPartnerRecord,
+				bPartnerRecord, bpGroup, bpParentGroup,
 				I_C_BPartner::getPaymentRulePO,
-				PaymentRule::ofCode,
+				I_C_BP_Group::getPaymentRulePO,
+				PaymentRule::ofNullableCode,
 				() -> PaymentRule.OnCredit) // same as bPartnerRecord mandatory column default
 		);
 
