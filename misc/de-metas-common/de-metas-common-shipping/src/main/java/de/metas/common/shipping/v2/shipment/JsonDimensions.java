@@ -1,14 +1,8 @@
-package de.metas.shipper.gateway.spi.model;
-
-import lombok.Builder;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-
 /*
  * #%L
- * de.metas.shipper.gateway.api
+ * de-metas-common-shipping
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,23 +20,18 @@ import lombok.extern.jackson.Jacksonized;
  * #L%
  */
 
+package de.metas.common.shipping.v2.shipment;
+
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
 @Value
-public class PackageDimensions
+@Builder
+@Jacksonized
+public class JsonDimensions
 {
-	int lengthInCM;
-	int widthInCM;
-	int heightInCM;
-
-	/**
-	 * Note: dimensions may be <= 0 which can stand for "not specified".
-	 */
-	@Builder
-	@Jacksonized
-	private PackageDimensions(final int lengthInCM, final int widthInCM, final int heightInCM)
-	{
-		this.lengthInCM = lengthInCM;
-		this.widthInCM = widthInCM;
-		this.heightInCM = heightInCM;
-	}
-
+	int length;
+	int width;
+	int height;
 }

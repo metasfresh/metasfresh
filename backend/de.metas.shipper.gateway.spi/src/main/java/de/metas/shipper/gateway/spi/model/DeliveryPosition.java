@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.spi.model;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.product.PackageDimensions;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;

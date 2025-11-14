@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -60,6 +60,13 @@ public class OrgAndBPartnerCompositeLookupKeyList
 		return ofSingleLookupKey(
 				orgId, BPartnerCompositeLookupKey.ofMetasfreshId(metasfreshId)
 		);
+	}
+
+	public static OrgAndBPartnerCompositeLookupKeyList ofValue(
+			@NonNull final OrgId orgId,
+			@NonNull final String value)
+	{
+		return ofSingleLookupKey(orgId, BPartnerCompositeLookupKey.ofCode(value));
 	}
 
 	public static OrgAndBPartnerCompositeLookupKeyList ofGLN(

@@ -105,7 +105,7 @@ pull_request_rules:
           - label=ops:without_review_approval
     actions:
       merge:
-        method: merge
+        method: squash
 
   - name: Automatic merge commit (not squash) successful PRs
     conditions:
@@ -118,5 +118,5 @@ pull_request_rules:
           - label=ops:without_review_approval
     actions:
       merge:
-        method: squash
+        method: merge
 
