@@ -6,49 +6,66 @@
 UPDATE AD_Process_Para SET AD_Reference_Value_ID=540528,Updated=TO_TIMESTAMP('2025-11-13 14:47:06.953','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=541756
 ;
 
--- Process: BusinessPartnerAccountSheetReport(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
--- ParameterName: p_IsSOTrx
--- 2025-11-13T16:35:15.001Z
-UPDATE AD_Process_Para SET DefaultValue='Y',Updated=TO_TIMESTAMP('2025-11-13 17:35:15.001','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=541756
-;
-
--- 2025-11-13T10:10:17.254Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584207,0,'p_IsSOTrx',TO_TIMESTAMP('2025-11-13 11:10:16.484','YYYY-MM-DD HH24:MI:SS.US'),100,'Legt fest, welche Transaktionsarten im Bericht berücksichtigt werden: * Ja → Nur Verkaufstransaktionen * Nein → Nur Einkaufstransaktionen * Leer → Verkaufs- und Einkaufstransaktionen','D','Legt fest, welche Transaktionsarten im Bericht berücksichtigt werden:
-* Ja → Nur Verkaufstransaktionen
-* Nein → Nur Einkaufstransaktionen
-* Leer → Verkaufs- und Einkaufstransaktionen','Y','Verkaufstransaktion','Verkaufstransaktion',TO_TIMESTAMP('2025-11-13 11:10:16.484','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
-
--- 2025-11-13T10:10:17.313Z
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584207 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-
--- Element: p_IsSOTrx
--- 2025-11-13T10:10:43.258Z
-UPDATE AD_Element_Trl SET Description='Determines which transaction types are included in the report: * Yes → Only sales transactions * No → Only purchase transactions * Empty → Both sales and purchase transactions', Help='Determines which transaction types are included in the report:
-* Yes → Only sales transactions
-* No → Only purchase transactions
-* Empty → Both sales and purchase transactions', IsTranslated='Y',Updated=TO_TIMESTAMP('2025-11-13 11:10:43.258','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=584207 AND AD_Language='en_US'
-;
-
--- 2025-11-13T10:10:43.406Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584207,'en_US')
+-- Value: BusinessPartnerAccountSheetReport
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2025-11-14T15:17:16.070Z
+UPDATE AD_Process SET SQLStatement='SELECT * FROM BusinessPartnerAccountSheetReport_Union(p_c_bpartner_id => @C_BPartner_ID@,p_dateFrom => ''@DateFrom@''::date, p_dateTo => ''@DateTo@''::date, p_ad_client_id => @#AD_Client_ID@, p_ad_org_id => @AD_Org_ID@, p_isSoTrx => @p_IsSOTrx/quotedIfNotDefault/NULL@, p_ad_language => ''@#AD_Language@'')',Updated=TO_TIMESTAMP('2025-11-14 16:17:15.878','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=584661
 ;
 
 -- Process: BusinessPartnerAccountSheetReport(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
--- ParameterName: p_IsSOTrx
--- 2025-11-13T10:11:00.095Z
-UPDATE AD_Process_Para SET AD_Element_ID=584207, ColumnName='p_IsSOTrx',Updated=TO_TIMESTAMP('2025-11-13 11:11:00.095','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=541756
+-- ParameterName: IsSOTrx
+-- 2025-11-14T15:18:14.811Z
+UPDATE AD_Process_Para SET AD_Element_ID=1106, ColumnName='IsSOTrx',Updated=TO_TIMESTAMP('2025-11-14 16:18:14.81','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=541756
 ;
 
--- 2025-11-13T10:11:00.150Z
-/* DDL */  select update_Process_Para_Translation_From_AD_Element(584207)
+-- 2025-11-14T15:18:14.905Z
+/* DDL */  select update_Process_Para_Translation_From_AD_Element(1106)
 ;
 
 -- Value: BusinessPartnerAccountSheetReport
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
--- 2025-11-14T12:52:52.788Z
-UPDATE AD_Process SET SQLStatement='SELECT * FROM BusinessPartnerAccountSheetReport(p_c_bpartner_id => @C_BPartner_ID@,p_dateFrom => ''@DateFrom@''::date, p_dateTo => ''@DateTo@''::date, p_ad_client_id => @#AD_Client_ID@, p_ad_org_id => @AD_Org_ID@, p_isSoTrx => @p_IsSOTrx/quotedIfNotDefault/NULL@, p_ad_language => ''@#AD_Language@'')',Updated=TO_TIMESTAMP('2025-11-14 13:52:52.604','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=584661
+-- 2025-11-14T15:21:01.444Z
+UPDATE AD_Process SET Description='Verkaufstransaktion parameter: Legt fest, welche Transaktionsarten im Bericht berücksichtigt werden:
+* Ja → Nur Verkaufstransaktionen
+* Nein → Nur Einkaufstransaktionen
+* Leer → Verkaufs- und Einkaufstransaktionen
+',Updated=TO_TIMESTAMP('2025-11-14 16:21:01.258','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=584661
+;
+
+-- 2025-11-14T15:21:01.512Z
+UPDATE AD_Process_Trl trl SET Description='Verkaufstransaktion parameter: Legt fest, welche Transaktionsarten im Bericht berücksichtigt werden:
+* Ja → Nur Verkaufstransaktionen
+* Nein → Nur Einkaufstransaktionen
+* Leer → Verkaufs- und Einkaufstransaktionen
+' WHERE AD_Process_ID=584661 AND AD_Language='de_DE'
+;
+
+-- Name: BusinessPartnerAccountSheetReport
+-- Action Type: P
+-- Process: BusinessPartnerAccountSheetReport(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- 2025-11-14T15:21:01.824Z
+UPDATE AD_Menu SET Description='Verkaufstransaktion parameter: Legt fest, welche Transaktionsarten im Bericht berücksichtigt werden:
+* Ja → Nur Verkaufstransaktionen
+* Nein → Nur Einkaufstransaktionen
+* Leer → Verkaufs- und Einkaufstransaktionen
+', IsActive='Y', Name='BusinessPartnerAccountSheetReport',Updated=TO_TIMESTAMP('2025-11-14 16:21:01.824','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Menu_ID=541440
+;
+
+-- 2025-11-14T15:21:01.888Z
+UPDATE AD_Menu_Trl trl SET Description='Verkaufstransaktion parameter: Legt fest, welche Transaktionsarten im Bericht berücksichtigt werden:
+* Ja → Nur Verkaufstransaktionen
+* Nein → Nur Einkaufstransaktionen
+* Leer → Verkaufs- und Einkaufstransaktionen
+',Name='BusinessPartnerAccountSheetReport' WHERE AD_Menu_ID=541440 AND AD_Language='de_DE'
+;
+
+-- Process: BusinessPartnerAccountSheetReport(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- 2025-11-14T15:21:43.319Z
+UPDATE AD_Process_Trl SET Description='Sales transaction parameter: Determines which transaction types are included in the report:
+
+* Yes → Only sales transactions
+* No → Only purchase transactions
+* Blank → Sales and purchase transactions',Updated=TO_TIMESTAMP('2025-11-14 16:21:43.319','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584661
 ;
 
 -- 2025-11-13T10:17:45.774Z
