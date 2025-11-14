@@ -71,6 +71,32 @@ public class BPartnerEffectiveBLTest
 	}
 
 	@Test
+	public void getEffectiveValue_parentGroupIsUsedTest()
+	{
+		final BPartnerId bPartnerId = setup()
+				.parentBPGroup_PricingSystemId(PricingSystemId.ofRepoId(1))
+				.parentBPGroup_poPricingSystemId(PricingSystemId.ofRepoId(2))
+				.parentBPGroup_PaymentTermId(PaymentTermId.ofRepoId(3))
+				.parentBPGroup_poPaymentTermId(PaymentTermId.ofRepoId(4))
+				.parentBPGroup_PaymentRule(PaymentRule.PayPal)
+				.parentBPGroup_poPaymentRule(PaymentRule.PayPal)
+				.parentBPGroup_InvoiceRule(InvoiceRule.OrderCompletelyDelivered)
+				.parentBPGroup_isAutoInvoice(true)
+				.build();
+		final BPartnerEffective bPartnerEffective = bpartnerEffectiveBL.getById(bPartnerId);
+		assertThat(PricingSystemId.equals(bPartnerEffective.getPricingSystemId(SOTrx.SALES), PricingSystemId.ofRepoId(1))).isTrue();
+		assertThat(PricingSystemId.equals(bPartnerEffective.getPricingSystemId(SOTrx.PURCHASE), PricingSystemId.ofRepoId(2))).isTrue();
+		assertThat(PaymentTermId.equals(bPartnerEffective.getPaymentTermId(SOTrx.SALES), PaymentTermId.ofRepoId(3))).isTrue();
+		assertThat(PaymentTermId.equals(bPartnerEffective.getPaymentTermId(SOTrx.PURCHASE), PaymentTermId.ofRepoId(4))).isTrue();
+		assertThat(bPartnerEffective.getPaymentRule(SOTrx.SALES).isPayPal()).isTrue();
+		assertThat(bPartnerEffective.getPaymentRule(SOTrx.PURCHASE).isPayPal()).isTrue();
+		assertThat(bPartnerEffective.getInvoiceRule(SOTrx.SALES).isOrderCompletelyDelivered()).isTrue();
+		assertThat(bPartnerEffective.getInvoiceRule(SOTrx.PURCHASE).isAfterDelivery()).isTrue();
+		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.SALES)).isTrue();
+		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE)).isFalse();
+	}
+
+	@Test
 	public void getEffectiveValue_childGroupIsUsedTest()
 	{
 		final BPartnerId bPartnerId = setup()
