@@ -132,42 +132,42 @@ BEGIN
                                                 targetCurrencyCode,
                                                 doctype,
                                                 issotrx)
-    SELECT--
-          i.beginningBalance,
-          i.amount,
-          i.endingBalance,
-          i.dateacct,
-          i.description,
-          i.c_doctype_id,
-          i.documentno,
-          i.created,
-          i.c_currency_id,
-          row_number() OVER (),
-          i.ad_org_id,
-          (SELECT iso_code
-           FROM c_currency c
-                    INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
-                    INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
-           LIMIT 1)      targetCurrencyCode,
-          (CASE
-               when i.c_doctype_id < 0 THEN
-                   (select coalesce(rt.name, r.name) as doctype
-                    from ad_ref_list r
-                             join ad_ref_list_trl rt
-                                  on r.ad_ref_list_id = rt.ad_ref_list_id and rt.ad_language = p_ad_language
-                    where ad_reference_id = 183
-                      and value = 'CMA'
-                   )
-                                       ELSE
-                   (SELECT dtt.name
-                    FROM c_doctype dt
-                             INNER JOIN c_doctype_trl dtt ON dt.c_doctype_id = dtt.c_doctype_id
-                    WHERE dtt.ad_language = p_ad_language
-                      AND i.c_doctype_id = dt.c_doctype_id)
-           END
-              )::text AS docType,
+	SELECT--
+		  i.beginningBalance,
+		  i.amount,
+		  i.endingBalance,
+		  i.dateacct,
+		  i.description,
+		  i.c_doctype_id,
+		  i.documentno,
+		  i.created,
+		  i.c_currency_id,
+		  row_number() OVER (),
+		  i.ad_org_id,
+		  (SELECT iso_code
+		   FROM c_currency c
+					INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
+					INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
+		   LIMIT 1)      targetCurrencyCode,
+		  (CASE
+			   when i.c_doctype_id < 0 THEN
+				   (select coalesce(rt.name, r.name) as doctype
+					from ad_ref_list r
+							 join ad_ref_list_trl rt
+								  on r.ad_ref_list_id = rt.ad_ref_list_id and rt.ad_language = p_ad_language
+					where ad_reference_id = 183
+					  and value = 'CMA'
+				   )
+			   ELSE
+				   (SELECT dtt.name
+					FROM c_doctype dt
+							 INNER JOIN c_doctype_trl dtt ON dt.c_doctype_id = dtt.c_doctype_id
+					WHERE dtt.ad_language = p_ad_language
+					  AND i.c_doctype_id = dt.c_doctype_id)
+			  END
+			  )::text AS docType,
           i.issotrx
-    FROM invoicesAndPaymentsInPeriod i;
+	FROM invoicesAndPaymentsInPeriod i;
 
     GET DIAGNOSTICS v_temp = ROW_COUNT;
     v_time := logDebug('inserted invoices and payments: ' || v_temp || ' records', v_time);
@@ -189,11 +189,11 @@ BEGIN
                  SELECT --
                         t.rowid,
                         (CASE
-                             WHEN dt.docbasetype IN ('ARC', 'APC') THEN -1 * t.amount
+							WHEN dt.docbasetype IN ('ARC', 'APC') THEN -1 * t.amount
                                                                    ELSE t.amount
-                         END) amount
+                            END) amount
                  FROM temp_BusinessPartnerAccountSheetReport t
-                          LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
+                 LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
              )
     UPDATE temp_BusinessPartnerAccountSheetReport t
     SET amount = c.amount
@@ -290,15 +290,15 @@ $BODY$
     VOLATILE;
 
 COMMENT ON FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text) IS
-    'How to run:
+'How to run:
 
-    SELECT*
-    FROM BusinessPartnerAccountSheetReport(2000252,
-                                           ''1111-1-1''::date,
-                                           ''3333-1-1''::date,
-                                           1000000)
-    ;
-    ';
+SELECT*
+FROM BusinessPartnerAccountSheetReport(2000252,
+                                       ''1111-1-1''::date,
+                                       ''3333-1-1''::date,
+                                       1000000)
+;
+';
 
 /*
 How to run:
