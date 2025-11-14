@@ -2831,8 +2831,8 @@ UPDATE AD_Field SET DefaultValue='Y',Updated=TO_TIMESTAMP('2025-11-12 20:14:11.8
 ;
 
 -- Column: M_Inventory.C_DocType_ID
--- 2025-11-14T08:47:02.338Z
-UPDATE AD_Column SET IsAutoApplyValidationRule='Y',Updated=TO_TIMESTAMP('2025-11-14 08:47:02.338000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=12797
+-- 2025-11-14T13:16:29.349Z
+UPDATE AD_Column SET IsAutoApplyValidationRule='N',Updated=TO_TIMESTAMP('2025-11-14 13:16:29.349000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=12797
 ;
 
 -- Field: Inventur Mobile(541969,D) -> Bestandszählung(548510,D) -> Belegart
