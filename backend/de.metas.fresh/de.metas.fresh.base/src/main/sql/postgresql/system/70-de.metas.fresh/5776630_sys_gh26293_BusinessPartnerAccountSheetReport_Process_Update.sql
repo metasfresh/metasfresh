@@ -48,7 +48,7 @@ UPDATE AD_Process_Para SET AD_Element_ID=584207, ColumnName='p_IsSOTrx',Updated=
 -- Value: BusinessPartnerAccountSheetReport
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
 -- 2025-11-13T16:42:51.768Z
-UPDATE AD_Process SET SQLStatement='SELECT * FROM BusinessPartnerAccountSheetReport_Union(@C_BPartner_ID@, ''@DateFrom@''::date, ''@DateTo@''::date, @#AD_Client_ID@, @AD_Org_ID@, @p_IsSOTrx/quotedIfNotDefault/NULL@, ''@#AD_Language@'')',Updated=TO_TIMESTAMP('2025-11-13 17:42:51.503','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=584661
+UPDATE AD_Process SET SQLStatement='SELECT * FROM BusinessPartnerAccountSheetReport(@C_BPartner_ID@, ''@DateFrom@''::date, ''@DateTo@''::date, @#AD_Client_ID@, @AD_Org_ID@, @p_IsSOTrx/quotedIfNotDefault/NULL@, ''@#AD_Language@'')',Updated=TO_TIMESTAMP('2025-11-13 17:42:51.503','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=584661
 ;
 
 -- 2025-11-13T10:17:45.774Z
