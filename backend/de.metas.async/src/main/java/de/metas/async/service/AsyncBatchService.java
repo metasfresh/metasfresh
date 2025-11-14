@@ -148,21 +148,22 @@ public class AsyncBatchService
 		final Optional<Instant> startMonitoringFrom = asyncBatchObserver.getStartMonitoringTimestamp(asyncBatchId);
 
 		if (!startMonitoringFrom.isPresent())
-		{
-			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: C_Async_Batch_ID: {} not monitored! Return empty list!", asyncBatchId.getRepoId());
+		{ 
+			// Consider removing the call to loggables altogether. If the asyncBatch is not observers, we actually don't for it here.
+			Loggables.withLogger(logger, Level.DEBUG).addLog("*** getWorkPackagesFromCurrentRun: C_Async_Batch_ID: {} is not monitored; =>Return empty list", asyncBatchId.getRepoId());
 			return ImmutableList.of();
 		}
 
 		final List<I_C_Queue_WorkPackage> workPackages = asyncBatchDAO.retrieveWorkPackages(asyncBatch, trxName);
 
-		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs BEFORE filter: {}!",
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs BEFORE filter: {}",
 				asyncBatchId, startMonitoringFrom.get(), workPackages.size());
 
 		final List<I_C_Queue_WorkPackage> filteredWPs = workPackages.stream()
 				.filter(workPackage -> qualifiesForBatchProcessingStatus(workPackage, startMonitoringFrom.get()))
 				.collect(ImmutableList.toImmutableList());
 
-		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs AFTER filter: {}!",
+		Loggables.withLogger(logger, Level.INFO).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {}, startMonitoringFrom: {}, WPs AFTER filter: {}",
 				asyncBatchId, startMonitoringFrom.get(), filteredWPs.size());
 
 		return filteredWPs;
