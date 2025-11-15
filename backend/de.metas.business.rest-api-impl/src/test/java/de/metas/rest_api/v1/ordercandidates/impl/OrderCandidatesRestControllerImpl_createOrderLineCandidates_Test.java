@@ -198,7 +198,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		SpringContextHolder.registerJUnitBean(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
 
-		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
+		olCandBL = new OLCandBL(bpartnerBL, BPartnerOrderParamsRepository.newInstanceForUnitTesting());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
 		final I_AD_Org defaultOrgRecord;
