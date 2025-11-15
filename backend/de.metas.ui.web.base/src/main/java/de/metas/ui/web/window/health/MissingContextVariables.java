@@ -129,6 +129,115 @@ class MissingContextVariables
 			.put("S_Resource/236.M_Product/417.S_ExpenseType_ID.DisplayLogic", "ProductTypeType")
 			.build();
 
+	private static final ImmutableMap<String, String> KNOWN_MISSING_CONTEXT_VARIABLES_IN_LOOKUPS = ImmutableMap.<String, String>builder()
+			.put("AD_Find/221.AD_Column_ID.LookupDescriptor", "Find_Table_ID")
+			.put("AD_User/293.C_Order/564.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("AD_User/293.C_Order/564.HandOver_User_ID.LookupDescriptor", "HandOver_Partner_Override_ID")
+			.put("AD_WF_Node/541047.AD_Column_ID.LookupDescriptor", "AD_Table_ID")
+			.put("AD_WF_NodeNext/540339.AD_WF_Next_ID.LookupDescriptor", "AD_Workflow_ID")
+			.put("C_BP_BankAccount/540337.C_BP_BankAccount_InvoiceAutoAllocateRule/543994.C_DocTypeInvoice_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BP_Group/192.C_BPartner/778.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/123.C_BPartner/223.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/123.C_BPartner/224.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/123.C_BPartner/541154.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/123.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/176.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/242.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/254.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/291.C_Order/551.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_BPartner/291.C_Order/551.HandOver_User_ID.LookupDescriptor", "HandOver_Partner_Override_ID")
+			.put("C_BPartner/291.M_InOut/552.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_BPartner/291.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/336.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/53033.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/540354.C_BPartner/540845.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/540354.C_BPartner/540846.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/540354.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/540366.C_Flatrate_Term/540876.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_BPartner/540366.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/540409.C_BPartner/541014.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/540409.C_BPartner/541015.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/540409.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner/540676.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_BPartner_QuickInput/540327.C_DocTypeTarget_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_DunningDoc/540155.C_DunningDoc_Line/540431.C_DunningLevel_ID.LookupDescriptor", "C_DunningRun_ID,C_Dunning_ID")
+			.put("C_Flatrate_Data/540112.C_Flatrate_Term/540340.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_Flatrate_Data/540112.C_Flatrate_Term/544605.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_Flatrate_Term/540359.C_Flatrate_DataEntry/540860.C_Period_ID.LookupDescriptor", "C_Calendar_Invoicing_ID")
+			.put("C_Flatrate_Term/540359.C_Flatrate_DataEntry/540860.C_UOM_ID.LookupDescriptor", "UOMType")
+			.put("C_Flatrate_Term/540359.C_Flatrate_DataEntry/540861.C_Period_ID.LookupDescriptor", "C_Calendar_Invoicing_ID")
+			.put("C_Flatrate_Term/540359.C_Flatrate_DataEntry/540861.C_UOM_ID.LookupDescriptor", "UOMType")
+			.put("C_Flatrate_Term/540359.C_Flatrate_DataEntry/540862.C_Period_ID.LookupDescriptor", "C_Calendar_Invoicing_ID")
+			.put("C_Flatrate_Term/540359.C_Flatrate_DataEntry/540862.C_UOM_ID.LookupDescriptor", "UOMType")
+			.put("C_Flatrate_Term/540359.C_SubscriptionProgress/540880.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_Flatrate_Term/540359.C_SubscriptionProgress/540886.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_Flatrate_Term/540359.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_Invoice_Candidate/540092.M_PricingSystem_ID.LookupDescriptor", "C_BPartner_Location_ID")
+			.put("C_Invoice_Candidate/540093.M_PricingSystem_ID.LookupDescriptor", "C_BPartner_Location_ID")
+			.put("C_Invoice_Candidate/540126.M_PricingSystem_ID.LookupDescriptor", "C_BPartner_Location_ID")
+			.put("C_Invoice_Candidate/540983.M_PricingSystem_ID.LookupDescriptor", "C_BPartner_Location_ID")
+			.put("C_OLCand/540095.Bill_BPartner_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_OLCand/540127.Bill_BPartner_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_OLCand/541952.Bill_BPartner_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_OLCandProcessor/540079.M_Warehouse_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_Order/143.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_Order/143.HandOver_User_ID.LookupDescriptor", "HandOver_Partner_Override_ID")
+			.put("C_Order/181.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_Order/181.HandOver_User_ID.LookupDescriptor", "HandOver_Partner_Override_ID")
+			.put("C_Order/540071.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_Order/540071.HandOver_User_ID.LookupDescriptor", "HandOver_Partner_Override_ID")
+			.put("C_Order/540072.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("C_Order/540072.HandOver_User_ID.LookupDescriptor", "HandOver_Partner_Override_ID")
+			.put("C_OrderLine/540019.C_Charge_ID.LookupDescriptor", "C_DocTypeTarget_ID")
+			.put("C_OrderLine/540019.C_Flatrate_Conditions_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_OrderLine/540019.M_HU_PI_Item_Product_ID.LookupDescriptor", "M_PriceList_ID")
+			.put("C_OrderLine/540019.M_Product_ID.LookupDescriptor", "M_PriceList_ID")
+			.put("C_OrderLine/540019.M_Warehouse_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_Phonecall_Schedule/540607.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_Project/130.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_Project/286.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_Project/540668.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_Project/540680.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_Project/541015.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_RecurrentPayment/540030.C_RecurrentPaymentLine/540118.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_RfQ/315.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_SalesRegion/152.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("C_SubscriptionProgress/540361.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("DD_Order_Candidate/541807.M_HU_PI_Item_Product_ID.LookupDescriptor", "DD_Order_ID")
+			.put("DD_Order_Candidate/541807.M_LocatorTo_ID.LookupDescriptor", "M_Warehouse_To_ID")
+			.put("EDI_Desadv/540256.M_InOut/540664.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("M_DiscountSchema/233.DiscountType.LookupDescriptor", "IsSOTrx")
+			.put("M_DiscountSchema/337.DiscountType.LookupDescriptor", "IsSOTrx")
+			.put("M_DiscountSchema/540433.DiscountType.LookupDescriptor", "IsSOTrx")
+			.put("M_ForecastLine/541900.C_Period_ID.LookupDescriptor", "C_Year_ID")
+			.put("M_ForecastLine/541900.M_HU_PI_Item_Product_ID.LookupDescriptor", "M_PriceList_ID")
+			.put("M_InOut/169.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("M_InOut/184.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("M_InOut/53097.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("M_InOut/53098.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("M_InOut/540322.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("M_InOut/540323.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("M_InOut/541014.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
+			.put("M_InventoryLine/540458.C_Charge_ID.LookupDescriptor", "C_DocType_ID")
+			.put("M_InventoryLine/540458.M_HU_PI_Item_Product_ID.LookupDescriptor", "C_BPartner_ID,MovementDate")
+			.put("M_InventoryLine/540458.M_Locator_ID.LookupDescriptor", "M_Warehouse_ID")
+			.put("M_Material_Tracking/540226.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("M_Movement/170.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("M_Product/140.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("M_Product/344.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("M_Product/53010.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("M_Product/540410.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("M_Product_Category/144.M_Product/407.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("PP_Cost_Collector/53011.PP_Order_Node_ID.LookupDescriptor", "PP_Order_Workflow_ID")
+			.put("PP_Cost_Collector/53014.PP_Order_Node_ID.LookupDescriptor", "PP_Order_Workflow_ID")
+			.put("PP_Order_Candidate/541316.M_HU_PI_Item_Product_ID.LookupDescriptor", "C_BPartner_ID,M_PriceList_ID")
+			.put("PP_Order_Candidate/541756.M_HU_PI_Item_Product_ID.LookupDescriptor", "C_BPartner_ID,M_PriceList_ID")
+			.put("RV_R_Group_Prospect/540013.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("S_ExpenseType/234.M_Product/411.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("S_Resource/236.M_Product/417.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.put("W_Store/350.SalesRep_ID.LookupDescriptor", "IsSOTrx")
+			.build();
+
 	private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
 	@NonNull private final ImmutableSetMultimap<ContextPath, String> all;
@@ -142,24 +251,23 @@ class MissingContextVariables
 			@Nullable final Map<String, String> knownMissing)
 	{
 		final HashMultimap<ContextPath, String> all = HashMultimap.create();
+		addAll(all, KNOWN_MISSING_CONTEXT_VARIABLES_DEFAULTS);
+		addAll(all, KNOWN_MISSING_CONTEXT_VARIABLES_IN_LOOKUPS);
+		addAll(all, knownMissing);
+		this.all = ImmutableSetMultimap.copyOf(all);
+		
+		this.reportedMissingButNotUsed = TreeMultimap.create(this.all);
+	}
 
-		KNOWN_MISSING_CONTEXT_VARIABLES_DEFAULTS.forEach((pathStr, contextVariables) -> {
+	private static void addAll(final HashMultimap<ContextPath, String> target, @Nullable Map<String, String> source)
+	{
+		if (source == null || source.isEmpty()) {return;}
+
+		source.forEach((pathStr, contextVariables) -> {
 			final ContextPath path = ContextPath.ofJson(pathStr);
 			COMMA_SPLITTER.splitToList(contextVariables)
-					.forEach(missingContextVariable -> all.put(path, missingContextVariable));
+					.forEach(missingContextVariable -> target.put(path, missingContextVariable));
 		});
-
-		if (knownMissing != null)
-		{
-			knownMissing.forEach((pathStr, contextVariables) -> {
-				final ContextPath path = ContextPath.ofJson(pathStr);
-				COMMA_SPLITTER.splitToList(contextVariables)
-						.forEach(contextVariable -> all.put(path, contextVariable));
-			});
-		}
-
-		this.all = ImmutableSetMultimap.copyOf(all);
-		this.reportedMissingButNotUsed = TreeMultimap.create(this.all);
 	}
 
 	public void recordContextVariableUsed(final ContextPath path, final String contextVariable, boolean wasFound)
