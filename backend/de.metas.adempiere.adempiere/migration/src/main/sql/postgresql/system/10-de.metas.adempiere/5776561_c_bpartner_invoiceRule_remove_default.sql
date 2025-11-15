@@ -27,3 +27,6 @@
 UPDATE AD_Column SET DefaultValue='',Updated=TO_TIMESTAMP('2025-11-12 18:23:25.851000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=4429
 ;
 
+-- 2025-11-15T14:22:09.696Z
+INSERT INTO t_alter_column values('c_bpartner','InvoiceRule','CHAR(1)',null,null)
+;
