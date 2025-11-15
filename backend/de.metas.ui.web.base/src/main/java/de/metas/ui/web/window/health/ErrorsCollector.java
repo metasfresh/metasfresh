@@ -22,7 +22,7 @@ class ErrorsCollector
 
 	@NonNull private final String adLanguage;
 	@NonNull private final ArrayList<JsonWindowsHealthCheckResponse.Entry> errors = new ArrayList<>();
-	@NonNull @Getter private AdWindowId currentWindowId;
+	@Nullable @Getter private AdWindowId currentWindowId;
 	@Nullable private String _currentWindowName;
 
 	@Builder
@@ -48,6 +48,7 @@ class ErrorsCollector
 
 	public void setCurrentWindow(@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
+		setCurrentWindow(entityDescriptor.getWindowId().toAdWindowId(), entityDescriptor.getCaption().translate(adLanguage));
 	}
 
 	public void setCurrentWindow(@NonNull final AdWindowId windowId, @Nullable final String windowName)

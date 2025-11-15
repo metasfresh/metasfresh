@@ -1,10 +1,8 @@
-package de.metas.async.processor.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.async.processor.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.async.processor.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
@@ -201,7 +201,7 @@ class WorkpackageProcessorTask implements Runnable
 			markStartProcessing(workPackage);
 
 			//
-			// Process WorkPackage in it's own transaction
+			// Process WorkPackage in its own transaction
 			if (workPackageProcessorWrapped.isRunInTransaction())
 			{
 				final ITrxManager trxManager = Services.get(ITrxManager.class);

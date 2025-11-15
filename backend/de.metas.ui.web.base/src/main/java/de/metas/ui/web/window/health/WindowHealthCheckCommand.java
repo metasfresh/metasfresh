@@ -100,6 +100,8 @@ public class WindowHealthCheckCommand
 			}
 			finally
 			{
+				errorsCollector.clearCurrentWindow();
+				
 				System.gc();
 
 				// final Runtime runtime = Runtime.getRuntime();
@@ -145,9 +147,5 @@ public class WindowHealthCheckCommand
 				.execute();
 	}
 
-	private static String formatBytes(long bytes)
-	{
-		return String.format("%.2f MB", bytes / (1024.0 * 1024.0));
-	}
-
+	// private static String formatBytes(long bytes) {return String.format("%.2f MB", bytes / (1024.0 * 1024.0));}
 }
