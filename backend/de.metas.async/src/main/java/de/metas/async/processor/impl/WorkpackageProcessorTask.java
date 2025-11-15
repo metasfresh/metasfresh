@@ -201,7 +201,7 @@ class WorkpackageProcessorTask implements Runnable
 			markStartProcessing(workPackage);
 
 			//
-			// Process WorkPackage in it's own transaction
+			// Process WorkPackage in its own transaction
 			if (workPackageProcessorWrapped.isRunInTransaction())
 			{
 				final ITrxManager trxManager = Services.get(ITrxManager.class);

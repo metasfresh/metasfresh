@@ -105,7 +105,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 
 		workPackageQueueFactory.getQueueForEnqueuing(ctx, CreateMissingShipmentSchedulesWorkpackageProcessor.class)
 				.newWorkPackage()
-				.setC_Async_Batch_ID(asyncBatchId)
+				.setAsyncBatchId(asyncBatchId)
 				.bindToTrxName(ctxAware.getTrxName())
 				.buildAndEnqueue();
 		return true;
