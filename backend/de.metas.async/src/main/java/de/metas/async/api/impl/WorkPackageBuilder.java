@@ -264,7 +264,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 
-		return setC_Async_Batch_ID(asyncBatchId);
+		return setAsyncBatchId(asyncBatchId);
 	}
 
 	@Override
@@ -276,7 +276,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@Override
-	public WorkPackageBuilder setC_Async_Batch_ID(@Nullable final AsyncBatchId asyncBatchId)
+	public WorkPackageBuilder setAsyncBatchId(@Nullable final AsyncBatchId asyncBatchId)
 	{
 		if (asyncBatchId == null)
 		{

@@ -50,8 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
-
 @Service
 public class AutoProcessingOLCandService
 {
@@ -119,9 +117,7 @@ public class AutoProcessingOLCandService
 			final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveShipmentLinesForOrderId(orderIds);
 			Loggables.withLogger(logger, Level.INFO).addLog("Retrieved {} M_InOutLines for {} C_Order_IDs", shipmentLines.size(), orderIds.size());
 
-			// again, now we need a new async-batch
-			final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
-			invoiceService.generateInvoicesFromShipmentLines(shipmentLines, asyncBatchId);
+			invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
 		}
 
 		if (request.isCloseOrder())
