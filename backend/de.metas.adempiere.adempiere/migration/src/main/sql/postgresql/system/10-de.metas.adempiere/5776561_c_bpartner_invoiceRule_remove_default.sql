@@ -30,3 +30,6 @@ UPDATE AD_Column SET DefaultValue='',Updated=TO_TIMESTAMP('2025-11-12 18:23:25.8
 -- 2025-11-15T14:22:09.696Z
 INSERT INTO t_alter_column values('c_bpartner','InvoiceRule','CHAR(1)',null,null)
 ;
+
+alter table c_bpartner alter column InvoiceRule drop default
+;
