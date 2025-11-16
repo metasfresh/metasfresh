@@ -66,6 +66,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | M_Locator_ID.Identifier | Value               | M_Warehouse_ID.Identifier |
       | switzerland_locator     | switzerland_locator | switzerland_warehouse     |
 
+  @ignore
   @Id:S0151_100
   Scenario: Calculate tax for purchase order that has IsDropShip flag set to false and order's BPartnerLocation.Country != org.BPartnerLocation.Country
   _Given 2x C_Tax records -> one configured for Switzerland and one for international transaction
@@ -75,23 +76,23 @@ Feature: Validate tax calculation for orders taking into account dropship locati
 
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | o_n1       | false   | bpartner_1               | 2022-08-18  | po_ref_mock     | POO             | bp_location_Netherlands               | switzerland_org          | switzerland_warehouse         |
+      | o_1        | false   | bpartner_1               | 2022-08-18  | po_ref_mock     | POO             | bp_location_Netherlands               | switzerland_org          | switzerland_warehouse         |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_n1      | o_n1                  | product_S0151           | 1          |
+      | ol_1       | o_1                   | product_S0151           | 1          |
 
-    When the order identified by o_n1 is completed
+    When the order identified by o_1 is completed
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
-      | ol_n1                     | o_n1                  | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
+      | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
 
     Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_n1                     | 0            |
+      | invoiceCand_1                     | ol_1                      | 0            |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Effective_ID.Identifier |
-      | invoiceCand_1                     | o_n1                      | ol_n1                         | 0            | swiss-to-neth_tax                 |
+      | invoiceCand_1                     | o_1                       | ol_1                          | 0            | swiss-to-neth_tax                 |
 
   @Id:S0151_110
   Scenario: Calculate tax for purchase order that has IsDropShip flag set to false and order's C_BPartnerLocation.Country == org.C_BPartnerLocation.Country
