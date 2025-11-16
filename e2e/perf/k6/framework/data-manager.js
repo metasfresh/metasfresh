@@ -25,7 +25,7 @@ import { randomItem } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import { generateBPartnerUpsert } from './data-generators.js';
 
 export class DataManager {
-  constructor({ bpartnerFiles = [] } = {}) {
+  constructor({ bpartnerFiles = [], auditDataFile = null } = {}) {
     this.existingBPartnerUpserts = [];
     for (const filePath of bpartnerFiles) {
       const arr = new SharedArray(`bp-${filePath}`, () => {
@@ -38,6 +38,21 @@ export class DataManager {
       });
       this.existingBPartnerUpserts.push(...arr);
     }
+
+    // Load audit data if provided
+    this.auditRequests = [];
+    if (auditDataFile) {
+      this.auditRequests = new SharedArray('audit-requests', () => {
+        try {
+          const data = JSON.parse(open(auditDataFile));
+          return data.requests || [];
+        } catch (e) {
+          console.error(`Failed to load audit data from ${auditDataFile}: ${e.message}`);
+          return [];
+        }
+      });
+    }
+    this.auditIndex = 0;
   }
 
   getBPartnerUpsert(strategy = 'mixed', existingRatio = 0.7) {
@@ -90,6 +105,55 @@ export class DataManager {
       }
     }
     return result;
+  }
+
+  /**
+   * Get the next audit request for replay
+   * @param {string} mode - 'sequential' or 'random'
+   * @returns {Object|null} - Audit request object or null if no data
+   */
+  getNextAuditRequest(mode = 'sequential') {
+    if (!this.auditRequests || this.auditRequests.length === 0) {
+      return null;
+    }
+
+    if (mode === 'random') {
+      return deepClone(randomItem(this.auditRequests));
+    }
+
+    // Sequential mode
+    const request = this.auditRequests[this.auditIndex % this.auditRequests.length];
+    this.auditIndex++;
+    return deepClone(request);
+  }
+
+  /**
+   * Get total count of loaded audit requests
+   * @returns {number}
+   */
+  getAuditRequestCount() {
+    return this.auditRequests ? this.auditRequests.length : 0;
+  }
+
+  /**
+   * Filter audit requests by method
+   * @param {string} method - HTTP method (GET, POST, PUT, DELETE, PATCH)
+   * @returns {Array} - Filtered audit requests
+   */
+  getAuditRequestsByMethod(method) {
+    if (!this.auditRequests) return [];
+    return this.auditRequests.filter(req => req.method === method);
+  }
+
+  /**
+   * Filter audit requests by path pattern
+   * @param {RegExp|string} pattern - Path pattern to match
+   * @returns {Array} - Filtered audit requests
+   */
+  getAuditRequestsByPath(pattern) {
+    if (!this.auditRequests) return [];
+    const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
+    return this.auditRequests.filter(req => regex.test(req.path));
   }
 }
 

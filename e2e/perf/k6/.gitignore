@@ -1,0 +1,23 @@
+# Node.js
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-error.log*
+
+# Configuration (contains secrets)
+audit-replay.env
+
+# Generated/Extracted Data
+test-data/extracted-api-audit.json
+test-data/*-requests.json
+
+# Results
+results/
+*.json.gz
+
+# K6 Output
+k6-*.json
+summary.json
+
+# Logs
+*.log
