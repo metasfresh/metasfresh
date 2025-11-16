@@ -79,7 +79,7 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        piip.name                                              AS HUName,
 
        CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'QtyInvoicedInPriceUOM') = 'N' THEN
+         WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'QtyInvoicedInPriceUOM') = 'N' THEN
                il.QtyInvoicedInPriceUOM
        END as QtyInvoicedInPriceUOM,
        CASE
@@ -97,7 +97,7 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        il.Discount,
        COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS UOM,
        CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'UOMSymbol') = 'N' THEN
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'UOMSymbol') = 'N' THEN
                COALESCE(puomt.UOMSymbol, puom.UOMSymbol)
        END AS PriceUOM,
 
