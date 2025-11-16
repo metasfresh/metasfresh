@@ -34,11 +34,11 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import lombok.Getter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 {
+	@Getter
 	private static class TestableWorkpackageProcessorTask extends WorkpackageProcessorTask
 	{
 		private boolean afterWorkpackageProcessedInvoked = false;
@@ -57,7 +58,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 				final IWorkpackageProcessor workPackageProcessor,
 				final I_C_Queue_WorkPackage workPackage,
 				final IWorkpackageLogsRepository logsRepository,
-				PerformanceMonitoringService perfMonService)
+				final PerformanceMonitoringService perfMonService)
 		{
 			super(queueProcessor, workPackageProcessor, workPackage, logsRepository, perfMonService);
 		}
@@ -68,10 +69,6 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 			afterWorkpackageProcessedInvoked = true;
 		}
 
-		public boolean isAfterWorkpackageProcessedInvoked()
-		{
-			return afterWorkpackageProcessedInvoked;
-		}
 	}
 
 	private MockedQueueProcessor queueProcessor;
@@ -95,128 +92,127 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		InterfaceWrapperHelper.save(workpackage);
 	}
 
-	@Override
-	protected void afterTestCustomized()
-	{
-	}
+    private void assertAfterWorkpackageProcessedInvoked(final TestableWorkpackageProcessorTask task)
+    {
+        assertThat(task.isAfterWorkpackageProcessedInvoked())
+                .as("afterWorkpackageProcessed() method should be invoked for " + task)
+                .isTrue();
+    }
 
-	private void assertAfterWorkpackageProcessedInvoked(final TestableWorkpackageProcessorTask task)
-	{
-		Assertions.assertTrue(task.isAfterWorkpackageProcessedInvoked(), "afterWorkpackageProcessed() method should be invoked for " + task);
-	}
+    /**
+     * Test case: {@link IWorkpackageProcessor} returns Result.SUCCESS
+     */
+    @Test
+    public void testProcessSuccess()
+    {
+        final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> IWorkpackageProcessor.Result.SUCCESS;
+        final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+        task.run();
 
-	/**
-	 * Test case: {@link IWorkpackageProcessor} returns Result.SUCCESS
-	 */
-	@Test
-	public void testProcessSuccess()
-	{
-		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> IWorkpackageProcessor.Result.SUCCESS;
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
-		task.run();
+        assertAfterWorkpackageProcessedInvoked(task);
+        assertThat(workpackage.isError()).as("Invalid IsError").isFalse();
+        assertThat(workpackage.getAD_Issue_ID()).as("Invalid AD_Issue").isZero();
+        assertThat(workpackage.isProcessed()).as("Invalid Processed").isTrue();
+    }
 
-		assertAfterWorkpackageProcessedInvoked(task);
-		Assertions.assertFalse(workpackage.isError(), "Invalid IsError");
-		Assertions.assertNull(workpackage.getAD_Issue(), "Invalid AD_Issue");
-		Assertions.assertTrue(workpackage.isProcessed(), "Invalid Processed");
-	}
+    /**
+     * Test case: {@link IWorkpackageProcessor} throws an exception
+     */
+    @Test
+    public void testProcessError()
+    {
+        final String processingErrorMsg = "test-error";
+        final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
+            throw new RuntimeException(processingErrorMsg);
+        };
+        final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+        task.run();
 
-	/**
-	 * Test case: {@link IWorkpackageProcessor} throws an exception
-	 */
-	@Test
-	public void testProcessError()
-	{
-		final String processingErrorMsg = "test-error";
-		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
-			throw new RuntimeException(processingErrorMsg);
-		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
-		task.run();
+        assertAfterWorkpackageProcessedInvoked(task);
+        assertThat(workpackage.isProcessed()).as("Invalid Processed").isFalse();
+        assertThat(workpackage.isError()).as("Invalid IsError").isTrue();
+        assertThat(workpackage.getAD_Issue_ID()).as("Invalid AD_Issue").isGreaterThan(0);
 
-		assertAfterWorkpackageProcessedInvoked(task);
-		Assertions.assertFalse(workpackage.isProcessed(), "Invalid Processed");
-		Assertions.assertTrue(workpackage.isError(), "Invalid IsError");
-		Assertions.assertNotNull(workpackage.getAD_Issue(), "Invalid AD_Issue");
+        final String expectedErrorMessage = RuntimeException.class.getSimpleName() + ": " + processingErrorMsg;
+        assertThat(workpackage.getErrorMsg()).as("Invalid ErrorMsg").startsWith(expectedErrorMessage);
+    }
 
-		final String expectedErrorMessage = RuntimeException.class.getSimpleName() + ": " + processingErrorMsg;
-		assertThat(workpackage.getErrorMsg()).as("Invalid ErrorMsg").startsWith(expectedErrorMessage);
-	}
+    /**
+     * Test case: {@link IWorkpackageProcessor} throws {@link WorkpackageSkipRequestException}
+     */
+    @Test
+    public void testProcessSkip()
+    {
+        final String skipReason = "test-skip";
+        final int skipTimeoutMillis = 12345;
+        final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
+            throw WorkpackageSkipRequestException.createWithTimeout(skipReason, skipTimeoutMillis);
+        };
+        final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+        task.run();
 
-	/**
-	 * Test case: {@link IWorkpackageProcessor} throws {@link WorkpackageSkipRequestException}
-	 */
-	@Test
-	public void testProcessSkip()
-	{
-		final String skipReason = "test-skip";
-		final int skipTimeoutMillis = 12345;
-		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
-			throw WorkpackageSkipRequestException.createWithTimeout(skipReason, skipTimeoutMillis);
-		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
-		task.run();
+        assertAfterWorkpackageProcessedInvoked(task);
+        assertThat(workpackage.isProcessed()).as("Invalid Processed").isFalse();
+        assertThat(workpackage.isError()).as("Invalid IsError").isFalse();
+        assertThat(workpackage.getSkippedAt()).as("Invalid SkippedAt").isNotNull();
+        assertThat(workpackage.getSkipped_Last_Reason()).as("Invalid Skipped_Last_Reason").startsWith(skipReason);
+        assertThat(workpackage.getSkipTimeoutMillis()).as("Invalid SkipTimeoutMillis").isEqualTo(skipTimeoutMillis);
+        assertThat(workpackage.getSkipped_Count()).as("Invalid Skipped_Count").isEqualTo(1);
+    }
 
-		assertAfterWorkpackageProcessedInvoked(task);
-		Assertions.assertFalse(workpackage.isProcessed(), "Invalid Processed");
-		Assertions.assertFalse(workpackage.isError(), "Invalid IsError");
-		Assertions.assertNotNull(workpackage.getSkippedAt(), "Invalid SkippedAt");
-		assertThat(workpackage.getSkipped_Last_Reason()).as("Invalid Skipped_Last_Reason").startsWith(skipReason);
-		Assertions.assertEquals(skipTimeoutMillis, workpackage.getSkipTimeoutMillis(), "Invalid SkipTimeoutMillis");
-		Assertions.assertEquals(1, workpackage.getSkipped_Count(), "Invalid Skipped_Count");
-	}
+    @Test
+    public void testProcessSkipOnDeadLock()
+    {
+        final int skipTimeoutMillis = 5000; // for now this needs to be kept in sync with the code under test
+        final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
+            throw new DBDeadLockDetectedException(null, null);
+        };
+        final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+        task.run();
 
-	@Test
-	public void testProcessSkipOnDeadLock()
-	{
-		final int skipTimeoutMillis = 5000; // for now this needs to be kept in sync with the code under test
-		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
-			throw new DBDeadLockDetectedException(null, null);
-		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
-		task.run();
+        assertAfterWorkpackageProcessedInvoked(task);
+        assertThat(workpackage.isProcessed()).as("Invalid Processed").isFalse();
+        assertThat(workpackage.isError()).as("Invalid IsError").isFalse();
+        assertThat(workpackage.getSkippedAt()).as("Invalid SkippedAt").isNotNull();
 
-		assertAfterWorkpackageProcessedInvoked(task);
-		Assertions.assertFalse(workpackage.isProcessed(), "Invalid Processed");
-		Assertions.assertFalse(workpackage.isError(), "Invalid IsError");
-		Assertions.assertNotNull(workpackage.getSkippedAt(), "Invalid SkippedAt");
+        assertThat(workpackage.getSkipped_Last_Reason())
+                .as("Invalid Skipped_Last_Reason")
+                .startsWith("Deadlock detected");
+        assertThat(workpackage.getSkipTimeoutMillis()).as("Invalid SkipTimeoutMillis").isEqualTo(skipTimeoutMillis);
+        assertThat(workpackage.getSkipped_Count()).as("Invalid Skipped_Count").isEqualTo(1);
+    }
 
-		Assertions.assertTrue(workpackage.getSkipped_Last_Reason().startsWith("Deadlock detected"), "Invalid Skipped_Last_Reason");
-		Assertions.assertEquals(skipTimeoutMillis, workpackage.getSkipTimeoutMillis(), "Invalid SkipTimeoutMillis");
-		Assertions.assertEquals(1, workpackage.getSkipped_Count(), "Invalid Skipped_Count");
-	}
+    /**
+     * Test case: {@link IWorkpackageProcessor} throws {@link WorkpackageSkipRequestException} multiple times. The counter shall be updated correctly
+     */
+    @Test
+    public void testProcessSkipSuccesive()
+    {
+        final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
+            throw WorkpackageSkipRequestException.create("test-skip");
+        };
 
-	/**
-	 * Test case: {@link IWorkpackageProcessor} throws {@link WorkpackageSkipRequestException} multiple times. The counter shall be updated correctly
-	 */
-	@Test
-	public void testProcessSkipSuccesive()
-	{
-		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
-			throw WorkpackageSkipRequestException.create("test-skip");
-		};
+        for (int i = 1; i <= 10; i++)
+        {
+            final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+            task.run();
+            assertThat(workpackage.getSkipped_Count()).as("Invalid Skipped_Count").isEqualTo(i);
+        }
+    }
 
-		for (int i = 1; i <= 10; i++)
-		{
-			final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
-			task.run();
-			Assertions.assertEquals(i, workpackage.getSkipped_Count(), "Invalid Skipped_Count");
-		}
-	}
+    /**
+     * Test case: {@link IWorkpackageProcessor} returns an invalid value
+     */
+    @Test
+    public void testProcessInvalidReturnValue()
+    {
+        final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> null;
+        final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
+        task.run();
 
-	/**
-	 * Test case: {@link IWorkpackageProcessor} returns an invalid value
-	 */
-	@Test
-	public void testProcessInvalidReturnValue()
-	{
-		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> null;
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
-		task.run();
-
-		assertAfterWorkpackageProcessedInvoked(task);
-		Assertions.assertFalse(workpackage.isProcessed(), "Invalid Processed");
-		Assertions.assertTrue(workpackage.isError(), "Invalid IsError");
-		Assertions.assertNotNull(workpackage.getAD_Issue(), "Invalid AD_Issue");
-	}
+        assertAfterWorkpackageProcessedInvoked(task);
+        assertThat(workpackage.isProcessed()).as("Invalid Processed").isFalse();
+        assertThat(workpackage.isError()).as("Invalid IsError").isTrue();
+        assertThat(workpackage.getAD_Issue_ID()).as("Invalid AD_Issue_ID").isGreaterThan(0);
+    }
 }
