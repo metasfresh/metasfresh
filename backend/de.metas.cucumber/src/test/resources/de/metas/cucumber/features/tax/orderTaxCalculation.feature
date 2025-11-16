@@ -13,8 +13,8 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | switzerland_org      | Switzerland Organization | switzerland_org |
     And metasfresh contains C_Tax
       | Identifier             | C_TaxCategory_ID.InternalName | Name                         | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | OPT.AD_Org_ID.Identifier | IsTaxExempt | SeqNo |
-      | switzerland_tax        | Normal                        | switzerland_tax_S0151        | 2021-04-02 | 2.5  | CH                       | CH                        | switzerland_org          |             |       |
-      | swiss-to-neth_tax      | Normal                        | swiss-to-neth_tax            | 2021-04-02 | 2.5  | CH                       | NL                        | switzerland_org          |             |       |
+      | switzerland_tax        | Normal                        | switzerland_tax_S0151        | 2021-04-02 | 2.5  | CH                       | CH                        | switzerland_org          |             | 10    |
+      | swiss-to-neth_tax      | Normal                        | swiss-to-neth_tax            | 2021-04-02 | 2.5  | CH                       | NL                        | switzerland_org          |             | 10    |
       | switzerland_tax_exempt | Normal                        | switzerland_tax_exempt_S0483 | 2021-04-02 | 0    | CH                       | CH                        | switzerland_org          | Y           | 40    |
     And metasfresh contains M_Products:
       | Identifier    | Value         | Name          | OPT.AD_Org_ID.Identifier |
@@ -66,7 +66,6 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | M_Locator_ID.Identifier | Value               | M_Warehouse_ID.Identifier |
       | switzerland_locator     | switzerland_locator | switzerland_warehouse     |
 
-  @ignore
   @Id:S0151_100
   Scenario: Calculate tax for purchase order that has IsDropShip flag set to false and order's BPartnerLocation.Country != org.BPartnerLocation.Country
   _Given 2x C_Tax records -> one configured for Switzerland and one for international transaction
