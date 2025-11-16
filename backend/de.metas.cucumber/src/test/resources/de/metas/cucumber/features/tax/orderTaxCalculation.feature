@@ -337,13 +337,13 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | invoiceCand_10                    | o_10                      | ol_10                         | 0            | swiss-to-neth_tax                 |
 
   @Id:S0483_100
-  Scenario: Calculate tax for sales order that has IsDropShip flag set to false and order's C_BPartnerLocation.Country == organization's C_BPartnerLocation.Country
+  Scenario: Calculate tax for sales order using a tax exempt
   _Given 2x C_Tax records -> one configured for Switzerland with TaxExempt and one for Switzerland, without TaxExempt
   _When completing one sales C_Order with C_BPartnerLocation in Switzerland and the AD_Org located in Switzerland
   _Then the C_Tax_ID on C_OrderLine should be the one configured for TaxExempt
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | o_1_t      | true    | bpartner_2               | 2022-08-18  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
+      | o_1_t      | true    | bpartner_2               | 2022-08-18  | switzerland_org          | switzerland_warehouse         |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID  | QtyEntered |
       | ol_1_t     | o_1_t                 | product_S0151 | 1          |
@@ -355,7 +355,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | ol_1_t         | o_1_t      | 2022-08-18  | product_S0151 | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax_exempt |
 
   @Id:S0483_200
-  Scenario: Calculate tax for sales order that has IsDropShip flag set to false and order's C_BPartnerLocation.Country == organization's C_BPartnerLocation.Country
+  Scenario: Calculate tax for sales order using a tax exempt, choosing from 2 taxes with TaxExempt on Y
   _Given 2x C_Tax records -> 2 configured for Switzerland with TaxExempt and one for Switzerland, without TaxExempt
   _When completing one sales C_Order with C_BPartnerLocation in Switzerland and the AD_Org located in Switzerland
   _Then the C_Tax_ID on C_OrderLine should be the one configured for TaxExempt with the lowest seqNo
@@ -363,8 +363,8 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | Identifier               | C_TaxCategory_ID.InternalName | Name                          | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | AD_Org_ID       | IsTaxExempt | SeqNo |
       | switzerland_tax_exempt_2 | Normal                        | switzerland_tax_exemt_2_S0483 | 2021-04-02 | 0    | CH                       | CH                        | switzerland_org | Y           | 30    |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | o_2_t      | true    | bpartner_2    | 2022-08-18  |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
+      | o_2_t      | true    | bpartner_2    | 2022-08-18  | switzerland_org          | switzerland_warehouse         |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID  | QtyEntered |
       | ol_2_t     | o_2_t      | product_S0151 | 1          |
