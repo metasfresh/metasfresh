@@ -4,8 +4,8 @@
   "description": "K6 load testing tools for metasfresh with API audit replay capability",
   "type": "module",
   "scripts": {
-    "extract": "node extract-api-audit.js",
-    "extract:help": "node extract-api-audit.js --help"
+    "extract": "node audit-replay/extract-api-audit.js",
+    "extract:help": "node audit-replay/extract-api-audit.js --help"
   },
   "keywords": [
     "k6",

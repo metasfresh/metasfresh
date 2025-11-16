@@ -24,6 +24,11 @@ The tool consists of three main components:
 - **PostgreSQL access** - To the source database containing API audit data
 - **Network access** - To the target metasfresh instance
 
+## Documentation
+
+- **[SCALING_GUIDE.md](./SCALING_GUIDE.md)** - Performance limits, memory requirements, and scaling strategies
+- **[API_AUDIT_REPLAY_DESIGN.md](./API_AUDIT_REPLAY_DESIGN.md)** - Technical design and architecture
+
 ## Quick Start
 
 ### 1. Install Dependencies
@@ -119,11 +124,29 @@ EXTRACTED_DATA_FILE=./test-data/my-previous-extraction.json
 ./run-audit-replay.sh
 ```
 
+### Scenario 5: Replay Specific Request ID Range
+
+```bash
+# Extract and replay a specific range of requests by ID
+MIN_ID=1000000
+MAX_ID=1000100
+ITERATIONS=auto
+
+# Run
+./run-audit-replay.sh
+```
+
+This is useful when you:
+- Know the exact request IDs that caused issues
+- Want to replay a specific sequence of requests
+- Need to debug a particular range of audit entries
+
 ## Manual Usage
 
 ### Extract Audit Data Manually
 
 ```bash
+# Extract by time range
 node extract-api-audit.js \
   --db-host localhost \
   --db-port 5432 \
@@ -136,6 +159,17 @@ node extract-api-audit.js \
   --status PROCESSED \
   --output ./test-data/extracted-requests.json \
   --limit 5000
+
+# Extract by ID range
+node extract-api-audit.js \
+  --db-host localhost \
+  --db-port 5432 \
+  --db-name metasfresh \
+  --db-user metasfresh \
+  --db-password metasfresh \
+  --min-id 1000000 \
+  --max-id 1000050 \
+  --output ./test-data/specific-requests.json
 ```
 
 ### Run K6 Test Manually
@@ -161,6 +195,8 @@ k6 run --out json=results.json replay-api-audit.js
 | `--db-name` | Database name | `metasfresh` |
 | `--db-user` | Database user | `metasfresh` |
 | `--db-password` | Database password | `metasfresh` |
+| `--min-id` | Minimum API_Request_Audit_ID | None |
+| `--max-id` | Maximum API_Request_Audit_ID | None |
 | `--start-time` | Start time (ISO 8601) | None (all time) |
 | `--end-time` | End time (ISO 8601) | None (all time) |
 | `--path-filter` | SQL LIKE pattern for paths | `%` (all paths) |
@@ -280,6 +316,38 @@ The extraction produces a JSON file with this structure:
 2. Verify the extraction step completed successfully
 3. Check database connection settings
 4. Verify the time range and filters match existing data
+
+### Issue: Path filter not working on Windows (Git Bash)
+
+**Symptom:** SQL shows path like `C:/Program Files/Git/api/v2/%` instead of `/api/v2/%`
+
+**Cause:** Git Bash on Windows has a "POSIX path conversion" feature that automatically converts anything starting with `/` to a Windows path when passing to Windows executables (like node.exe). It thinks `/api/v2/%` is a Unix path, but it's just a string pattern!
+
+**Solution:** This is now fixed in the script (uses `MSYS_NO_PATHCONV=1` to disable path conversion). Make sure you're using the latest version of `run-audit-replay.sh`.
+
+**Alternative:** Run the extraction directly with Node.js and disable path conversion:
+```bash
+MSYS_NO_PATHCONV=1 node extract-api-audit.js --path-filter "/api/v2/%" ...
+```
+
+Or use PowerShell/CMD instead of Git Bash.
+
+### Debugging: See the SQL queries
+
+**Use `--show-sql` to see what queries will be executed:**
+
+```bash
+# Via script
+SHOW_SQL=true ./run-audit-replay.sh
+
+# Or directly
+node extract-api-audit.js --show-sql \
+  --start-time "2025-11-14T07:00:00Z" \
+  --end-time "2025-11-14T22:00:00Z" \
+  --path-filter "/api/v2/%"
+```
+
+This will show the SQL queries and exit without running them (and without attempting k6 replay).
 
 ### Error: "Database connection failed"
 

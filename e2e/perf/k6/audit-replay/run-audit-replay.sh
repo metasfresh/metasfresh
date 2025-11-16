@@ -46,6 +46,8 @@ SOURCE_DB_USER="${SOURCE_DB_USER:-metasfresh}"
 SOURCE_DB_PASSWORD="${SOURCE_DB_PASSWORD:-metasfresh}"
 
 # Extraction Filters
+MIN_ID="${MIN_ID:-}"
+MAX_ID="${MAX_ID:-}"
 START_TIME="${START_TIME:-}"
 END_TIME="${END_TIME:-}"
 PATH_FILTER="${PATH_FILTER:-/api/v2/%}"
@@ -64,6 +66,7 @@ TARGET_AUTH_TOKEN="${TARGET_AUTH_TOKEN:-}"
 # Load Test Configuration
 VUS="${VUS:-50}"
 DURATION="${DURATION:-300s}"
+ITERATIONS="${ITERATIONS:-0}"  # 0=duration mode, >0=iterations, 'auto'=match request count
 THINK_TIME="${THINK_TIME:-1}"
 REPLAY_MODE="${REPLAY_MODE:-sequential}"
 COMPARE_RESPONSES="${COMPARE_RESPONSES:-false}"
@@ -76,6 +79,10 @@ HTML_REPORT="${HTML_REPORT:-./results/audit-replay-report.html}"
 # Operational Flags
 SKIP_EXTRACTION="${SKIP_EXTRACTION:-false}"
 SKIP_REPLAY="${SKIP_REPLAY:-false}"
+
+# Debug Flags
+DEBUG="${DEBUG:-false}"
+SHOW_SQL="${SHOW_SQL:-false}"
 
 # ==================== Functions ====================
 
@@ -95,6 +102,9 @@ print_config() {
   echo "  User: ${SOURCE_DB_USER}"
   echo ""
   echo "Extraction Filters:"
+  if [ -n "$MIN_ID" ] || [ -n "$MAX_ID" ]; then
+    echo "  ID Range: ${MIN_ID:-No min} - ${MAX_ID:-No max}"
+  fi
   echo "  Start Time: ${START_TIME:-Not set}"
   echo "  End Time: ${END_TIME:-Not set}"
   echo "  Path Filter: ${PATH_FILTER}"
@@ -104,11 +114,19 @@ print_config() {
   echo ""
   echo "Target Instance:"
   echo "  Base URL: ${TARGET_BASE_URL}"
-  echo "  Auth Token: ${TARGET_AUTH_TOKEN:+Set (hidden)}${TARGET_AUTH_TOKEN:-Not set}"
+  if [ -n "$TARGET_AUTH_TOKEN" ]; then
+    echo "  Auth Token: Set (hidden)"
+  else
+    echo "  Auth Token: Not set"
+  fi
   echo ""
   echo "Load Test:"
   echo "  VUs: ${VUS}"
-  echo "  Duration: ${DURATION}"
+  if [ "$ITERATIONS" != "0" ]; then
+    echo "  Mode: ITERATIONS (${ITERATIONS})"
+  else
+    echo "  Mode: DURATION (${DURATION})"
+  fi
   echo "  Think Time: ${THINK_TIME}s"
   echo "  Replay Mode: ${REPLAY_MODE}"
   echo "  Compare Responses: ${COMPARE_RESPONSES}"
@@ -135,33 +153,52 @@ extract_audit_data() {
   # Ensure output directory exists
   mkdir -p "$(dirname "$EXTRACTED_DATA_FILE")"
 
-  # Build extraction command
-  EXTRACT_CMD="node extract-api-audit.js \
-    --db-host \"$SOURCE_DB_HOST\" \
-    --db-port \"$SOURCE_DB_PORT\" \
-    --db-name \"$SOURCE_DB_NAME\" \
-    --db-user \"$SOURCE_DB_USER\" \
-    --db-password \"$SOURCE_DB_PASSWORD\" \
-    --path-filter \"$PATH_FILTER\" \
-    --status \"$STATUS_FILTER\" \
-    --output \"$EXTRACTED_DATA_FILE\" \
-    --limit \"$MAX_REQUESTS\" \
-    --exclude-headers \"$EXCLUDE_HEADERS\""
+  # Build extraction command using arrays to avoid path conversion issues
+  EXTRACT_ARGS=(
+    "--db-host" "$SOURCE_DB_HOST"
+    "--db-port" "$SOURCE_DB_PORT"
+    "--db-name" "$SOURCE_DB_NAME"
+    "--db-user" "$SOURCE_DB_USER"
+    "--db-password" "$SOURCE_DB_PASSWORD"
+    "--path-filter" "$PATH_FILTER"
+    "--status" "$STATUS_FILTER"
+    "--output" "$EXTRACTED_DATA_FILE"
+    "--limit" "$MAX_REQUESTS"
+    "--exclude-headers" "$EXCLUDE_HEADERS"
+  )
+
+  if [ -n "$MIN_ID" ]; then
+    EXTRACT_ARGS+=("--min-id" "$MIN_ID")
+  fi
+
+  if [ -n "$MAX_ID" ]; then
+    EXTRACT_ARGS+=("--max-id" "$MAX_ID")
+  fi
 
   if [ -n "$START_TIME" ]; then
-    EXTRACT_CMD="$EXTRACT_CMD --start-time \"$START_TIME\""
+    EXTRACT_ARGS+=("--start-time" "$START_TIME")
   fi
 
   if [ -n "$END_TIME" ]; then
-    EXTRACT_CMD="$EXTRACT_CMD --end-time \"$END_TIME\""
+    EXTRACT_ARGS+=("--end-time" "$END_TIME")
   fi
 
   if [ "$INCLUDE_RESPONSES" = "true" ]; then
-    EXTRACT_CMD="$EXTRACT_CMD --include-responses"
+    EXTRACT_ARGS+=("--include-responses")
+  fi
+
+  if [ "$DEBUG" = "true" ]; then
+    EXTRACT_ARGS+=("--debug")
+  fi
+
+  if [ "$SHOW_SQL" = "true" ]; then
+    EXTRACT_ARGS+=("--show-sql")
   fi
 
   echo "Running extraction..."
-  eval "$EXTRACT_CMD"
+
+  # Disable Git Bash path conversion on Windows (prevents /api/v2/% from becoming C:/Program Files/Git/api/v2/%)
+  MSYS_NO_PATHCONV=1 node extract-api-audit.js "${EXTRACT_ARGS[@]}"
 
   if [ $? -ne 0 ]; then
     echo "ERROR: Extraction failed"
@@ -180,6 +217,11 @@ run_load_test() {
     return
   fi
 
+  if [ "$SHOW_SQL" = "true" ]; then
+    echo "Skipping replay (SHOW_SQL=true - debug mode)"
+    return
+  fi
+
   # Ensure results directory exists
   mkdir -p "$(dirname "$RESULTS_FILE")"
 
@@ -193,6 +235,7 @@ run_load_test() {
   THINK_TIME="$THINK_TIME" \
   VUS="$VUS" \
   DURATION="$DURATION" \
+  ITERATIONS="$ITERATIONS" \
   COMPARE_RESPONSES="$COMPARE_RESPONSES" \
   REPLACE_AUTH_TOKEN="$REPLACE_AUTH_TOKEN" \
   k6 run \
@@ -209,28 +252,22 @@ run_load_test() {
 }
 
 generate_report() {
-  print_banner "Step 3: Generating Report"
+  print_banner "Step 3: Results Summary"
 
   if [ ! -f "$RESULTS_FILE" ]; then
     echo "WARNING: Results file not found: $RESULTS_FILE"
-    echo "Skipping report generation"
     return
   fi
 
-  # Check if k6 report command is available
-  if ! command -v k6 &> /dev/null; then
-    echo "WARNING: k6 command not found. Cannot generate HTML report."
-    return
-  fi
-
-  # Try to generate HTML report (this may not be available in all k6 versions)
-  echo "Attempting to generate HTML report..."
-
-  # For now, just provide a summary from the JSON results
-  echo "Results saved to: $RESULTS_FILE"
+  echo "✓ Results saved to: $RESULTS_FILE"
   echo ""
-  echo "To view detailed results, use a k6 report viewer or analyze the JSON file."
-  echo "You can also use: k6 cloud login && k6 cloud $RESULTS_FILE"
+  echo "View results summary:"
+  echo "  ./view-results.sh $RESULTS_FILE"
+  echo ""
+  echo "Or generate an HTML report with:"
+  echo "  1. k6-reporter: https://github.com/benc-uk/k6-reporter"
+  echo "  2. k6-html-reporter: npm install -g k6-html-reporter"
+  echo "  3. k6 Cloud: k6 cloud login && k6 cloud $RESULTS_FILE"
 }
 
 print_summary() {
@@ -243,10 +280,7 @@ print_summary() {
     echo "  ✓ Extracted data: $EXTRACTED_DATA_FILE"
   fi
   if [ -f "$RESULTS_FILE" ]; then
-    echo "  ✓ Results: $RESULTS_FILE"
-  fi
-  if [ -f "$HTML_REPORT" ]; then
-    echo "  ✓ HTML Report: $HTML_REPORT"
+    echo "  ✓ Results (JSON): $RESULTS_FILE"
   fi
   echo ""
 }

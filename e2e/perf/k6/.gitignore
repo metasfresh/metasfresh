@@ -5,11 +5,11 @@ npm-debug.log*
 yarn-error.log*
 
 # Configuration (contains secrets)
-audit-replay.env
+audit-replay/audit-replay.env
 
 # Generated/Extracted Data
-test-data/extracted-api-audit.json
-test-data/*-requests.json
+audit-replay/test-data/extracted-api-audit.json
+audit-replay/test-data/*-requests.json
 
 # Results
 results/
@@ -21,3 +21,4 @@ summary.json
 
 # Logs
 *.log
+

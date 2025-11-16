@@ -23,7 +23,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Counter, Gauge, Rate, Trend } from 'k6/metrics';
-import { DataManager } from './framework/data-manager.js';
+import { DataManager } from './../framework/data-manager.js';
 
 // ==================== Configuration ====================
 
@@ -60,17 +60,52 @@ if (totalRequests === 0) {
   throw new Error('No audit requests loaded. Please check AUDIT_DATA_FILE path.');
 }
 
+// ITERATIONS: 0 = use duration, >0 = use iterations, 'auto' = match request count
+// Must be calculated AFTER totalRequests is known
+let ITERATIONS = 0;
+if (__ENV.ITERATIONS === 'auto') {
+  ITERATIONS = totalRequests;
+  console.log(`ITERATIONS=auto detected. Will execute exactly ${ITERATIONS} requests.`);
+} else if (__ENV.ITERATIONS) {
+  ITERATIONS = parseInt(__ENV.ITERATIONS);
+}
+
 // ==================== K6 Options ====================
 
-export const options = {
-  vus: VUS,
-  duration: DURATION,
-  thresholds: {
-    'audit_replay_success': ['rate>0.95'], // 95% success rate
-    'audit_replay_duration': ['p(95)<5000'], // 95% under 5s
-    'http_req_failed': ['rate<0.05'], // Less than 5% failures
-  },
+// Build options dynamically based on execution mode
+const buildOptions = () => {
+  const opts = {};
+
+  // Only set thresholds for load testing (duration mode)
+  // For exact replay (iterations mode), we just want to see what happens
+  if (ITERATIONS === 0) {
+    opts.thresholds = {
+      'audit_replay_success': ['rate>0.95'], // 95% success rate
+      'audit_replay_duration': ['p(95)<5000'], // 95% under 5s
+      'http_req_failed': ['rate<0.05'], // Less than 5% failures
+    };
+  }
+
+  if (ITERATIONS > 0) {
+    // Iterations mode: run exactly N iterations (perfect for exact replay)
+    opts.scenarios = {
+      replay: {
+        executor: 'shared-iterations',
+        vus: VUS,
+        iterations: ITERATIONS,
+        maxDuration: '1h', // Safety timeout
+      }
+    };
+  } else {
+    // Duration mode: run for a fixed time (for load testing)
+    opts.vus = VUS;
+    opts.duration = DURATION;
+  }
+
+  return opts;
 };
+
+export const options = buildOptions();
 
 // ==================== Helper Functions ====================
 
@@ -85,9 +120,14 @@ function prepareHeaders(originalHeaders) {
     headers['Content-Type'] = 'application/json';
   }
 
+  // Set Accept header if not present
+  if (!headers['Accept'] && !headers['accept']) {
+    headers['accept'] = 'application/json';
+  }
+
   // Replace authorization token if configured
   if (REPLACE_AUTH_TOKEN && AUTH_TOKEN) {
-    headers['Authorization'] = `Bearer ${AUTH_TOKEN}`;
+    headers['Authorization'] = `${AUTH_TOKEN}`;
   }
 
   // Remove headers that should not be replayed
@@ -101,21 +141,13 @@ function prepareHeaders(originalHeaders) {
 }
 
 /**
- * Build full URL from base URL and path
+ * Build full URL from base URL and RequestURI
+ * Simply appends the RequestURI to BASE_URL
  */
-function buildUrl(path) {
-  // Strip /api/v2 prefix if present in path and BASE_URL already has it
-  let cleanPath = path;
-  if (BASE_URL.includes('/api/v2') && path.startsWith('/api/v2')) {
-    cleanPath = path.substring(7); // Remove '/api/v2'
-  }
-
-  // Ensure proper URL construction
-  if (cleanPath.startsWith('/')) {
-    return `${BASE_URL}${cleanPath}`;
-  } else {
-    return `${BASE_URL}/${cleanPath}`;
-  }
+function buildUrl(requestUri) {
+  // RequestURI should already be a proper URI path (e.g., /api/v2/orders/sales)
+  // Just append it to BASE_URL
+  return `${BASE_URL}${requestUri}`;
 }
 
 /**
@@ -125,6 +157,24 @@ function executeAuditRequest(auditRequest) {
   const url = buildUrl(auditRequest.path);
   const headers = prepareHeaders(auditRequest.headers || {});
   const body = auditRequest.body;
+
+  // Debug logging (only first iteration)
+  if (__ITER === 0) {
+    console.log(`  URL: ${url}`);
+    console.log(`  Method: ${auditRequest.method}`);
+    console.log(`  Headers:`);
+    Object.entries(headers).forEach(([key, value]) => {
+      // Mask Authorization header for security
+      if (key.toLowerCase() === 'authorization') {
+        console.log(`    ${key}: ${value.substring(0, 8)}...`);
+      } else {
+        console.log(`    ${key}: ${value}`);
+      }
+    });
+    if (body) {
+      console.log(`  Body (first 200 chars): ${body.substring(0, 200)}...`);
+    }
+  }
 
   // Execute request
   const startTime = Date.now();
@@ -136,6 +186,17 @@ function executeAuditRequest(auditRequest) {
   );
   const duration = Date.now() - startTime;
 
+  // Debug logging (only first iteration)
+  if (__ITER === 0) {
+    console.log(`  Response: ${response.status} (${duration}ms)`);
+    if (auditRequest.expectedHttpCode) {
+      console.log(`  Expected: ${auditRequest.expectedHttpCode}`);
+    }
+    if (response.status >= 400) {
+      console.log(`  Error body: ${response.body.substring(0, 500)}`);
+    }
+  }
+
   // Record metrics
   auditReplayDuration.add(duration);
 
@@ -143,7 +204,7 @@ function executeAuditRequest(auditRequest) {
   const statusMatches = !auditRequest.expectedHttpCode ||
     response.status === parseInt(auditRequest.expectedHttpCode);
 
-  check(response, {
+  const checks = check(response, {
     'status matches expected': () => statusMatches,
     'response time acceptable': () => response.timings.duration < 10000,
     'no request failure': () => !response.error,
@@ -155,9 +216,17 @@ function executeAuditRequest(auditRequest) {
   if (!statusMatches) {
     auditUnexpectedStatus.add(1);
     console.warn(
-      `Status mismatch for ${auditRequest.method} ${auditRequest.path}: ` +
+      `⚠️  Status mismatch for ${auditRequest.method} ${auditRequest.path}: ` +
       `expected ${auditRequest.expectedHttpCode}, got ${response.status}`
     );
+  }
+
+  // Log check failures
+  if (!checks['status matches expected'] || !checks['no request failure']) {
+    console.error(`❌ Request failed: ${auditRequest.method} ${auditRequest.path}`);
+    if (response.error) {
+      console.error(`   Error: ${response.error}`);
+    }
   }
 
   // Compare response times if original data available
@@ -209,7 +278,15 @@ export function setup() {
   console.log(`Total Requests: ${totalRequests}`);
   console.log(`Replay Mode: ${REPLAY_MODE}`);
   console.log(`VUs: ${VUS}`);
-  console.log(`Duration: ${DURATION}`);
+
+  if (ITERATIONS > 0) {
+    console.log(`Execution Mode: ITERATIONS (${ITERATIONS} total)`);
+    console.log(`  Each request will be executed once`);
+  } else {
+    console.log(`Execution Mode: DURATION (${DURATION})`);
+    console.log(`  Requests will loop continuously for ${DURATION}`);
+  }
+
   console.log(`Think Time: ${THINK_TIME}s`);
   console.log(`Replace Auth Token: ${REPLACE_AUTH_TOKEN}`);
   console.log(`Compare Responses: ${COMPARE_RESPONSES}`);
@@ -228,6 +305,11 @@ export default function (data) {
   if (!auditRequest) {
     console.error('No audit request returned from data manager');
     return;
+  }
+
+  // Debug logging (only on first few iterations)
+  if (__ITER < 3) {
+    console.log(`[VU ${__VU}, Iter ${__ITER}] Executing: ${auditRequest.method} ${auditRequest.path}`);
   }
 
   // Update current index metric
@@ -249,5 +331,15 @@ export function teardown(data) {
   console.log('========================================');
   console.log(`Total Duration: ${duration.toFixed(2)}s`);
   console.log(`Total Audit Requests Available: ${data.totalRequests}`);
+
+  if (ITERATIONS > 0) {
+    console.log(`Executed: ${ITERATIONS} iterations (exact replay mode)`);
+  }
+
+  console.log('========================================');
+  console.log('\nTo view detailed results:');
+  console.log('  1. Check the JSON output file (if configured with --out)');
+  console.log('  2. Use k6 Cloud: k6 cloud <results.json>');
+  console.log('  3. Or use k6-reporter: https://github.com/benc-uk/k6-reporter');
   console.log('========================================');
 }

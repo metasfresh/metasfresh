@@ -20,7 +20,7 @@
  * #L%
  */
 
-#!/usr/bin/env node
+// #!/usr/bin/env node
 
 import pg from 'pg';
 import yargs from 'yargs';
@@ -78,6 +78,16 @@ const argv = yargs(hideBin(process.argv))
     type: 'string',
     demandOption: false
   })
+  .option('min-id', {
+    description: 'Minimum API_Request_Audit_ID (inclusive)',
+    type: 'number',
+    demandOption: false
+  })
+  .option('max-id', {
+    description: 'Maximum API_Request_Audit_ID (inclusive)',
+    type: 'number',
+    demandOption: false
+  })
   .option('path-filter', {
     alias: 'f',
     description: 'SQL LIKE pattern for path filtering (e.g., "/api/v2/%")',
@@ -111,6 +121,16 @@ const argv = yargs(hideBin(process.argv))
     type: 'boolean',
     default: true
   })
+  .option('show-sql', {
+    description: 'Output the SQL query and exit (for debugging)',
+    type: 'boolean',
+    default: false
+  })
+  .option('debug', {
+    description: 'Enable debug output (shows SQL queries)',
+    type: 'boolean',
+    default: false
+  })
   .help()
   .alias('help', 'h')
   .parse();
@@ -130,16 +150,25 @@ const dbConfig = {
 /**
  * Build SQL query based on filters
  */
-function buildQuery(includeResponses) {
+function buildQuery(includeResponses, countOnly = false) {
   const params = [];
   const whereClauses = [];
   let paramIndex = 1;
 
   // Base query
-  let query = `
+  let query = '';
+
+  if (countOnly) {
+    query = `
+    SELECT COUNT(*) as total
+    FROM API_Request_Audit r
+  `;
+  } else {
+    query = `
     SELECT
       r.API_Request_Audit_ID,
       r.Method,
+      r.RequestURI,
       r.Path,
       r.Body as RequestBody,
       r.HttpHeaders as RequestHeaders,
@@ -149,31 +178,44 @@ function buildQuery(includeResponses) {
       r.Status
   `;
 
-  if (includeResponses) {
-    query += `,
+    if (includeResponses) {
+      query += `,
       resp.HttpCode as ExpectedHttpCode,
       resp.Body as ExpectedResponseBody,
       resp.HttpHeaders as ResponseHeaders,
       resp.Time as ResponseTime,
       EXTRACT(EPOCH FROM (resp.Time - r.Time)) * 1000 as ActualResponseTime_ms
     `;
-  }
+    }
 
-  query += `
+    query += `
     FROM API_Request_Audit r
   `;
 
-  if (includeResponses) {
-    query += `
+    if (includeResponses) {
+      query += `
     LEFT JOIN API_Response_Audit resp
       ON r.API_Request_Audit_ID = resp.API_Request_Audit_ID
     `;
+    }
   }
 
   // Add WHERE clauses
   if (argv.status) {
     whereClauses.push(`r.Status = $${paramIndex}`);
     params.push(argv.status);
+    paramIndex++;
+  }
+
+  if (argv.minId) {
+    whereClauses.push(`r.API_Request_Audit_ID >= $${paramIndex}`);
+    params.push(argv.minId);
+    paramIndex++;
+  }
+
+  if (argv.maxId) {
+    whereClauses.push(`r.API_Request_Audit_ID <= $${paramIndex}`);
+    params.push(argv.maxId);
     paramIndex++;
   }
 
@@ -196,16 +238,32 @@ function buildQuery(includeResponses) {
   }
 
   if (whereClauses.length > 0) {
-    query += `WHERE ${whereClauses.join(' AND ')}`;
+    query += `
+    WHERE ${whereClauses.join(' AND ')}`;
   }
 
-  query += `
+  if (!countOnly) {
+    query += `
     ORDER BY r.Time ASC
     LIMIT $${paramIndex}
   `;
-  params.push(argv.limit);
+    params.push(argv.limit);
+  }
 
   return { query, params };
+}
+
+/**
+ * Format SQL query with parameters for display
+ */
+function formatQueryForDisplay(query, params) {
+  let formattedQuery = query;
+  params.forEach((param, index) => {
+    const placeholder = `$${index + 1}`;
+    const value = typeof param === 'string' ? `'${param}'` : param;
+    formattedQuery = formattedQuery.replace(placeholder, value);
+  });
+  return formattedQuery;
 }
 
 /**
@@ -244,7 +302,8 @@ function transformRow(row) {
   const request = {
     id: row.api_request_audit_id,
     method: row.method,
-    path: row.path,
+    path: row.requesturi || row.path,  // Use RequestURI (the actual URI path), fallback to Path if not available
+    originalPath: row.path,  // Keep original path for reference
     body: row.requestbody,
     headers: filterHeaders(row.requestheaders, argv.excludeHeaders),
     timestamp: row.requesttime,
@@ -280,10 +339,13 @@ async function extractAuditData() {
     console.log('✓ Connected to database');
     client.release();
 
-    // Build and execute query
-    const { query, params } = buildQuery(argv.includeResponses);
+    // Build queries
+    const countQueryObj = buildQuery(argv.includeResponses, true);
+    const dataQueryObj = buildQuery(argv.includeResponses, false);
 
     console.log('\nExtraction filters:');
+    if (argv.minId) console.log(`  Min ID: ${argv.minId}`);
+    if (argv.maxId) console.log(`  Max ID: ${argv.maxId}`);
     if (argv.startTime) console.log(`  Start time: ${argv.startTime}`);
     if (argv.endTime) console.log(`  End time: ${argv.endTime}`);
     console.log(`  Path filter: ${argv.pathFilter}`);
@@ -291,8 +353,50 @@ async function extractAuditData() {
     console.log(`  Limit: ${argv.limit}`);
     console.log(`  Include responses: ${argv.includeResponses}`);
 
-    console.log('\nExecuting query...');
-    const result = await pool.query(query, params);
+    // Show SQL if requested
+    if (argv.showSql || argv.debug) {
+      console.log('\n========== COUNT QUERY ==========');
+      console.log(formatQueryForDisplay(countQueryObj.query, countQueryObj.params));
+      console.log('\n========== DATA QUERY ==========');
+      console.log(formatQueryForDisplay(dataQueryObj.query, dataQueryObj.params));
+      console.log('=================================\n');
+
+      if (argv.showSql) {
+        console.log('Exiting (--show-sql flag set)');
+        process.exit(0);
+      }
+    }
+
+    // First, count matching requests
+    console.log('\nChecking how many requests match filters...');
+    const countResult = await pool.query(countQueryObj.query, countQueryObj.params);
+    const totalMatching = parseInt(countResult.rows[0].total);
+
+    console.log(`✓ Found ${totalMatching} requests matching filters`);
+
+    if (totalMatching === 0) {
+      console.log('\n⚠️  WARNING: No requests found matching your filters!');
+      console.log('\nTroubleshooting tips:');
+      console.log('1. Check the time range - are there requests in that period?');
+      console.log('   Try: SELECT MIN(Time), MAX(Time) FROM API_Request_Audit;');
+      console.log('\n2. Check the path filter - does it match any paths?');
+      console.log('   Try: SELECT DISTINCT Path FROM API_Request_Audit LIMIT 10;');
+      console.log('\n3. Check the status filter - are there PROCESSED requests?');
+      console.log('   Try: SELECT Status, COUNT(*) FROM API_Request_Audit GROUP BY Status;');
+      console.log('\n4. Try removing all filters temporarily:');
+      console.log('   --path-filter "%" --status "" (and remove time filters)');
+      console.log('\nRun with --show-sql to see the exact query being executed.');
+      process.exit(1);
+    }
+
+    if (totalMatching < argv.limit) {
+      console.log(`  Note: Will extract all ${totalMatching} requests (less than limit of ${argv.limit})`);
+    } else {
+      console.log(`  Note: Will extract first ${argv.limit} requests (total matching: ${totalMatching})`);
+    }
+
+    console.log('\nExecuting extraction query...');
+    const result = await pool.query(dataQueryObj.query, dataQueryObj.params);
 
     console.log(`✓ Retrieved ${result.rows.length} requests`);
 
@@ -352,13 +456,16 @@ async function extractAuditData() {
         console.log(`    ${method}: ${count}`);
       });
 
-    console.log('\n  Top 10 paths:');
+    console.log('\n  Top 10 request URIs:');
     Object.entries(pathCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
       .forEach(([path, count]) => {
         console.log(`    ${path}: ${count}`);
       });
+
+    console.log('\n  Note: Using RequestURI column for replay (actual URI path on server)');
+    console.log('        Path column contains original full URL for reference');
 
     if (argv.includeResponses) {
       const avgResponseTime = requests

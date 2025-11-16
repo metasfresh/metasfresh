@@ -12,7 +12,8 @@ This document describes the design for a k6-based load testing tool that retriev
 **Key Columns:**
 - `API_Request_Audit_ID` - Primary key
 - `Method` - HTTP method (GET, POST, PUT, DELETE, PATCH)
-- `Path` - Full request path with query parameters
+- `RequestURI` - **Actual URI path on server** (e.g., `/api/v2/orders/sales`) - **Used for replay**
+- `Path` - Full original URL from client (may include original server name)
 - `Body` - Complete request JSON/text payload
 - `HttpHeaders` - JSON-serialized headers
 - `Status` - RECEIVED, PROCESSED, ERROR, ACK_ERROR
@@ -20,6 +21,8 @@ This document describes the design for a k6-based load testing tool that retriev
 - `AD_User_ID`, `AD_Role_ID`, `AD_Org_ID` - User context
 - `RemoteAddr`, `RemoteHost` - Client information
 - `UI_Trace_ExternalId` - Correlation ID
+
+**Important:** The tool uses `RequestURI` for replay, not `Path`. The `RequestURI` contains the actual URI path that was requested on the server (e.g., `/api/v2/orders/sales/candidates/bulk`), while `Path` may contain the full original URL including the source server name (e.g., `http://sourceserver.com/api/v2/orders/sales/candidates/bulk`).
 
 **Related Table:** `API_Response_Audit`
 - `HttpCode` - Response status code
@@ -89,7 +92,8 @@ DURATION="500s"
 SELECT
   r.API_Request_Audit_ID,
   r.Method,
-  r.Path,
+  r.RequestURI,        -- Actual URI path (used for replay)
+  r.Path,              -- Original full URL (for reference)
   r.Body as RequestBody,
   r.HttpHeaders as RequestHeaders,
   r.Time,
@@ -113,6 +117,7 @@ ORDER BY r.Time ASC;
       "id": 12345,
       "method": "PUT",
       "path": "/api/v2/bpartner",
+      "originalPath": "http://sourceserver.com/api/v2/bpartner",
       "body": "{...}",
       "headers": {
         "Content-Type": "application/json",
@@ -126,6 +131,8 @@ ORDER BY r.Time ASC;
   ]
 }
 ```
+
+**Note:** `path` contains the RequestURI (what gets replayed), `originalPath` contains the full original URL (for reference).
 
 **CLI Options:**
 ```bash
