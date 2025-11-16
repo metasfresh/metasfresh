@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -128,6 +128,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	@Nullable
 	private List<SqlQueryUnion<T>> unions;
+
+	private boolean forUpdateSkipLocked = false;
 
 	protected TypedSqlQuery(
 			@NonNull final Properties ctx,
@@ -276,6 +278,20 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public TypedSqlQuery<T> setOrderBy(final IQueryOrderBy orderBy)
 	{
 		this.queryOrderBy = orderBy;
+		return this;
+	}
+
+	/**
+	 * Enable PostgreSQL FOR UPDATE SKIP LOCKED clause for optimized concurrent row locking.
+	 * When enabled, the query will lock returned rows and automatically skip rows that are already locked by other transactions.
+	 * This is useful for work queue implementations where multiple processors poll concurrently.
+	 *
+	 * @param forUpdateSkipLocked true to add FOR UPDATE SKIP LOCKED to the query
+	 * @return this query instance for method chaining
+	 */
+	public TypedSqlQuery<T> setForUpdateSkipLocked(final boolean forUpdateSkipLocked)
+	{
+		this.forUpdateSkipLocked = forUpdateSkipLocked;
 		return this;
 	}
 
@@ -1245,6 +1261,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			{
 				sqlBuffer.append("\n ORDER BY ").append(orderBy);
 			}
+		}
+
+		// Add FOR UPDATE SKIP LOCKED clause if enabled
+		// This must come after ORDER BY but before LIMIT
+		if (forUpdateSkipLocked)
+		{
+			sqlBuffer.append("\n FOR UPDATE SKIP LOCKED");
 		}
 
 		String sql = sqlBuffer.toString();
