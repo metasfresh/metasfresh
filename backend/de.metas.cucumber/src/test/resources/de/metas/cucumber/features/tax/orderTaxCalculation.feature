@@ -15,7 +15,6 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | Identifier             | C_TaxCategory_ID.InternalName | Name                         | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | OPT.AD_Org_ID.Identifier | IsTaxExempt | SeqNo |
       | switzerland_tax        | Normal                        | switzerland_tax_S0151        | 2021-04-02 | 2.5  | CH                       | CH                        | switzerland_org          |             | 10    |
       | swiss-to-neth_tax      | Normal                        | swiss-to-neth_tax            | 2021-04-02 | 2.5  | CH                       | NL                        | switzerland_org          |             | 20    |
-      | switzerland_tax_exempt | Normal                        | switzerland_tax_exempt_S0483 | 2021-04-02 | 0    | CH                       | CH                        | switzerland_org          | Y           | 40    |
     And metasfresh contains M_Products:
       | Identifier    | Value         | Name          | OPT.AD_Org_ID.Identifier |
       | product_S0151 | product_S0151 | product_S0151 | switzerland_org          |
@@ -67,42 +66,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | switzerland_locator     | switzerland_locator | switzerland_warehouse     |
 
   @Id:S0151_100
-  Scenario: Calculate tax for purchase order that has IsDropShip flag set to false and order's BPartnerLocation.Country != org.BPartnerLocation.Country
-  _Given 2x C_Tax records -> one configured for Switzerland and one for international transaction
-  _When completing one purchase C_Order with C_BPartnerLocation in Netherlands and the AD_Org located in Switzerland
-  _Then the C_Tax_ID on C_OrderLine should be the one configured for international transaction
-  _And the C_Tax_Effective_ID on C_InvoiceCandidate should be the one configured for international transaction
-
-    Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | o_1        | false   | bpartner_1               | 2022-08-18  | po_ref_mock     | POO             | bp_location_Netherlands               | switzerland_org          | switzerland_warehouse         |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | product_S0151           | 1          |
-
-    When the order identified by o_1 is completed
-
-    Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
-      | ol_1                      | o_1                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
-
-    Then after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                      | 0            |
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Effective_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                          | 0            | swiss-to-neth_tax                 |
-
-  @Id:S0151_110
-  Scenario: Calculate tax for purchase order that has IsDropShip flag set to false and order's C_BPartnerLocation.Country == org.C_BPartnerLocation.Country
-  _Given 2x C_Tax records -> one configured for Switzerland and one for international transaction
-  _When completing one purchase C_Order with C_BPartnerLocation in Switzerland and the AD_Org located in Switzerland
-  _Then the C_Tax_ID on C_OrderLine should be the one configured for Switzerland
-  _And the C_Tax_Effective_ID on C_InvoiceCandidate should be the one configured for Switzerland
-
-    Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | o_2        | false   | bpartner_1               | 2022-08-18  | po_ref_mock     | POO             | bp_location_Switzerland               | switzerland_org          | switzerland_warehouse         |
+  Scenario: Calculate tax fo  | 2022-08-18  | po_ref_mock     | POO             | bp_location_Switzerland               | switzerland_org          | switzerland_warehouse         |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | product_S0151           | 1          |
@@ -138,121 +102,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
-      | ol_3                      | o_3                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
-
-    Then after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_3                     | ol_3                      | 0            |
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Effective_ID.Identifier |
-      | invoiceCand_3                     | o_3                       | ol_3                          | 0            | swiss-to-neth_tax                 |
-
-  @Id:S0151_130
-  Scenario: Calculate tax for purchase order that has IsDropShip flag set to true and order's Dropship_Location.Country == org.C_BPartnerLocation.Country
-  _Given 2x C_Tax records -> one configured for Switzerland and one for international transaction
-  _When completing one purchase C_Order with C_BPartnerLocation in Switzerland, DropShip_Location in Switzerland and the AD_Org located in Switzerland
-  _Then the C_Tax_ID on C_OrderLine should be the one configured for Switzerland
-  _And the C_Tax_Effective_ID on C_InvoiceCandidate should be the one configured Switzerland
-
-    Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DropShip_Location_ID.Identifier |
-      | o_4        | false   | bpartner_1               | 2022-08-18  | po_ref_mock     | POO             | bp_location_Switzerland               | switzerland_org          | switzerland_warehouse         | bp_location_Switzerland             |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_4       | o_4                   | product_S0151           | 1          |
-
-    When the order identified by o_4 is completed
-
-    Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
-      | ol_4                      | o_4                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax         |
-
-    Then after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_4                     | ol_4                      | 0            |
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Effective_ID.Identifier |
-      | invoiceCand_4                     | o_4                       | ol_4                          | 0            | switzerland_tax                   |
-
-  @Id:S0151_140
-  Scenario: Calculate tax for sales order that has IsDropShip flag set to false and order's C_BPartnerLocation.Country != organization's C_BPartnerLocation.Country
-  _Given 2x C_Tax records -> one configured for Switzerland and one for international transaction
-  _When completing one sales C_Order with C_BPartnerLocation in Netherlands and the AD_Org located in Switzerland
-  _Then the C_Tax_ID on C_OrderLine should be the one configured for international transaction
-  _And the C_Tax_Effective_ID on C_InvoiceCandidate should be the one configured for international transaction
-
-    Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | o_5        | true    | bpartner_1               | 2022-08-18  | po_ref_mock     | bp_location_Netherlands               | switzerland_org          | switzerland_warehouse         |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_5       | o_5                   | product_S0151           | 1          |
-
-    When the order identified by o_5 is completed
-
-    Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
-      | ol_5                      | o_5                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | swiss-to-neth_tax       |
-
-    Then after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_5                     | ol_5                      | 0            |
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Effective_ID.Identifier |
-      | invoiceCand_5                     | o_5                       | ol_5                          | 0            | swiss-to-neth_tax                 |
-
-  @Id:S0151_150
-  Scenario: Calculate tax for sales order that has IsDropShip flag set to false and order's C_BPartnerLocation.Country == org.C_BPartnerLocation.Country
-  _Given 2x C_Tax records -> one configured for Switzerland and one for international transaction
-  _When completing one sales C_Order with C_BPartnerLocation in Switzerland and the AD_Org located in Switzerland
-  _Then the C_Tax_ID on C_OrderLine should be the one configured for Switzerland
-  _And the C_Tax_Effective_ID on C_InvoiceCandidate should be the one configured for Switzerland
-
-    Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | o_6        | true    | bpartner_1               | 2022-08-18  | po_ref_mock     | bp_location_Switzerland               | switzerland_org          | switzerland_warehouse         |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_6       | o_6                   | product_S0151           | 1          |
-
-    When the order identified by o_6 is completed
-
-    Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
-      | ol_6                      | o_6                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax         |
-
-    Then after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_6                     | ol_6                      | 0            |
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Effective_ID.Identifier |
-      | invoiceCand_6                     | o_6                       | ol_6                          | 0            | switzerland_tax                   |
-
-  @Id:S0151_160
-  Scenario: Calculate tax for sales order that has IsDropShip flag set to true and order's Dropship_Location.Country != org.C_BPartnerLocation.Country
-  _Given 2x C_Tax records -> one configured for Switzerland and one for international transaction
-  _When completing one sales C_Order with C_BPartnerLocation in Netherlands, DropShip_Location in Switzerland and the AD_Org located in Switzerland
-  _Then the C_Tax_ID on C_OrderLine should be the one configured for Switzerland
-  _And the C_Tax_Effective_ID on C_InvoiceCandidate should be the one configured for Switzerland
-
-    Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.IsDropShip | OPT.DropShip_Location_ID.Identifier |
-      | o_7        | true    | bpartner_1               | 2022-08-18  | po_ref_mock     | bp_location_Netherlands               | switzerland_org          | switzerland_warehouse         | Y              | bp_location_Switzerland             |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_7       | o_7                   | product_S0151           | 1          |
-
-    When the order identified by o_7 is completed
-
-    Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Tax_ID.Identifier |
-      | ol_7                      | o_7                   | 2022-08-18  | product_S0151           | 0            | 1          | 0           | 10    | 0        | EUR          | true      | switzerland_tax         |
-
-    Then after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_7                     | ol_7                      | 0            |
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Effective_ID.Identifier |
+      | ol_3                      | o_3 te_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Tax_Effective_ID.Identifier |
       | invoiceCand_7                     | o_7                       | ol_7                          | 0            | switzerland_tax                   |
 
   @Id:S0151_170
@@ -341,7 +191,9 @@ Feature: Validate tax calculation for orders taking into account dropship locati
   _Given 2x C_Tax records -> one configured for Switzerland with TaxExempt and one for Switzerland, without TaxExempt
   _When completing one sales C_Order with C_BPartnerLocation in Switzerland and the AD_Org located in Switzerland
   _Then the C_Tax_ID on C_OrderLine should be the one configured for TaxExempt
-    Given metasfresh contains C_Orders:
+   When metasfresh contains C_Tax
+      | switzerland_tax_exempt | Normal                        | switzerland_tax_exempt_S0483 | 2021-04-02 | 0    | CH                       | CH                        | switzerland_org          | Y           | 40    |
+   And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
       | o_1_t      | true    | bpartner_2               | 2022-08-18  | switzerland_org          | switzerland_warehouse         |
     And metasfresh contains C_OrderLines:
