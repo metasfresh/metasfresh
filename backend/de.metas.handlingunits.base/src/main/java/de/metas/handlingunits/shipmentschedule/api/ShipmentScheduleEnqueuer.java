@@ -219,7 +219,7 @@ public class ShipmentScheduleEnqueuer
 							.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
 							.bindToTrxName(localCtx.getTrxName())
-							.setC_Async_Batch_ID(workPackageParameters.getAsyncBatchId()) // don't rely on the shipment schedule to have an asyncBatchId.
+							.setAsyncBatchId(workPackageParameters.getAsyncBatchId()) // don't rely on the shipment schedule to have an asyncBatchId.
 					;
 					
 					workpackageBuilder

@@ -23,7 +23,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.base.Joiner;
-import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
@@ -89,7 +89,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private boolean _failOnInvoiceCandidateError = false; // "false" for backward compatibility
 	private BigDecimal _totalNetAmtToInvoiceChecksum;
 	private IInvoicingParams _invoicingParams;
-	private I_C_Async_Batch _asyncBatch = null;
+	private AsyncBatchId _asyncBatchId = null;
 	private IWorkpackagePrioStrategy _priority = null;
 
 	private boolean setWorkpackageADPInstanceCreatorId = true;
@@ -161,7 +161,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setInvoiceCandidatesLock(icLock)
 				.setInvoicingParams(getInvoicingParams())
-				.setC_Async_Batch(_asyncBatch);
+				.setAsyncBatchId(_asyncBatchId);
 
 		if (setWorkpackageADPInstanceCreatorId)
 		{
@@ -428,9 +428,9 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setC_Async_Batch(final I_C_Async_Batch asyncBatch)
+	public IInvoiceCandidateEnqueuer setAsyncBatchId(final AsyncBatchId asyncBatchId)
 	{
-		_asyncBatch = asyncBatch;
+		_asyncBatchId = asyncBatchId;
 		return this;
 	}
 
