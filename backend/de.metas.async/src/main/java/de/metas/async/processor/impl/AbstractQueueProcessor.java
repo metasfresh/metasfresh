@@ -216,9 +216,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		{
 			if (!success)
 			{
-				logger.info("Submitting for processing next workPackage failed. Trying to unlock {}.", workPackage);
-				queue.unlockNoFail(workPackage);
-
+				logger.info("Submitting for processing next workPackage failed. workPackage={}.", workPackage);
 				getEventDispatcher().unregisterListeners(workPackage.getC_Queue_WorkPackage_ID());
 			}
 		}
