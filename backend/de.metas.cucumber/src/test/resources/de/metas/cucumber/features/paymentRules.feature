@@ -295,25 +295,25 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
   @from:cucumber
   Scenario: Payment rule 'DirectDebit' inherited from partner, correctly propagates when DocType is changed
     Given metasfresh contains C_BPartners:
-      | Identifier | IsCustomer | M_PricingSystem_ID | PaymentRule |
-      | bpartner_1 | Y          | pricingSys_1       | D           |
+      | Identifier    | IsCustomer | M_PricingSystem_ID | PaymentRule |
+      | bpartner_dd_1 | Y          | pricingSys_1       | D           |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | location_1 | bpartner_1    | Y               | Y               |
+      | Identifier    | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | location_dd_1 | bpartner_dd_1 | Y               | Y               |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | PaymentRule | DocBaseType | DocSubType |
-      | order_so   | true    | bpartner_1    | 2022-03-20  | pricingSys_1       | D           | SOO         | PR         |
+      | Identifier  | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | PaymentRule | DocBaseType | DocSubType |
+      | order_dd_so | true    | bpartner_dd_1 | 2022-03-20  | pricingSys_1       | D           | SOO         | PR         |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | order_so              | product_1               | 10         |
+      | Identifier | C_Order_ID  | M_Product_ID | QtyEntered |
+      | ol_dd_1    | order_dd_so | product_1    | 10         |
     And update order
-      | C_Order_ID | DocBaseType | DocSubType |
-      | order_so   | SOO         | SO         |
+      | C_Order_ID  | DocBaseType | DocSubType |
+      | order_dd_so | SOO         | SO         |
 
     # C_Order.PaymentRule => same C_Order.PaymentRule
     Then validate the created orders
-      | C_Order_ID | PaymentRule |
-      | order_so   | D           |
+      | C_Order_ID  | PaymentRule |
+      | order_dd_so | D           |
 
 
   @from:cucumber
