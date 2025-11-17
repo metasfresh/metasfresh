@@ -22,7 +22,7 @@ const translations = {
     DocumentNo: 'Dokument Nr',
     Product: 'Produkt',
     ProductValue: 'Artikelnummer',
-    Locator: 'Lagerort',
+    Locator: 'Lagerplatz',
     QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
     QtyToPick_Total: 'Pick Menge (total)',
@@ -36,7 +36,7 @@ const translations = {
     PackingItemName: 'Packvorschrift',
     BestBeforeDate: 'MHD',
     LotNo: 'Lot-Nr',
-    DropToLocator: 'Ziel Lagerort',
+    DropToLocator: 'Ziel Lagerplatz',
     cancelText: 'Abbrechen',
     closeText: 'Schließen',
     clearText: 'Lösen',
@@ -45,6 +45,7 @@ const translations = {
     Back: 'Zurück',
     Home: 'Home',
     filter: {
+      filterByQtyAvailableAtPickFromLocator: 'Nur mit Bestand',
       showResults: 'Ergebnisse anzeigen (%(count)s)',
       clearFilters: 'Filter löschen',
     },
@@ -85,7 +86,7 @@ const translations = {
     },
     huManager: {
       missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
-      scanLuOrLocator: 'Scannen LU oder Lagerort',
+      scanLuOrLocator: 'Scannen LU oder Lagerplatz',
     },
     picking: {
       PickingLine: 'Pick Zeile',
@@ -133,8 +134,8 @@ const translations = {
       target: 'Soll',
       picked: 'Ist',
       scanHU: 'Scan HU',
-      scanLocator: 'Scan Ziel Lagerort',
-      invalidLocatorQRCode: 'Lagerort QR ungültig',
+      scanLocator: 'Scan Ziel Lagerplatz',
+      invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
       qrcode: {
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Bereitstellungsauftrag überein',

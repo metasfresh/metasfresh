@@ -124,11 +124,13 @@ public class M_Element extends X_AD_Element
 			return null;
 		}
 
-		final String columnNameNormalized = StringUtils.trimBlankToNull(columnName);
+		String columnNameNormalized = StringUtils.trimBlankToNull(columnName);
 		if (columnNameNormalized == null)
 		{
 			return null;
 		}
+
+		columnNameNormalized = StringUtils.ucFirst(columnNameNormalized);
 
 		assertColumnNameDoesNotExist(columnNameNormalized, adElementId);
 		return columnNameNormalized;

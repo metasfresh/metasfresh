@@ -823,7 +823,12 @@ public class JsonPersisterService
 		{
 			bpartner.setName3(StringUtils.trim(jsonBPartner.getName3()));
 		}
-
+		
+		if (jsonBPartner.isLookupLabelSet())
+		{
+			bpartner.setGlnLookupLabel(StringUtils.trim(jsonBPartner.getLookupLabel()));
+		}
+		
 		if (jsonBPartner.isCustomerSet())
 		{
 			if (jsonBPartner.getCustomer() == null)

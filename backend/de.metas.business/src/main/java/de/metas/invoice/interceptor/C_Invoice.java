@@ -17,9 +17,8 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.InvoicePayScheduleService;
-import de.metas.order.paymentschedule.OrderPayScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -58,20 +57,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class C_Invoice // 03771
 {
-	private final PaymentReservationService paymentReservationService;
-	private final OrderPayScheduleService orderPayScheduleService;
-	private final InvoicePayScheduleService invoicePayScheduleService;
-	private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final PaymentReservationService paymentReservationService;
+	@NonNull private final IDocumentLocationBL documentLocationBL;
 
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)
@@ -406,23 +404,13 @@ public class C_Invoice // 03771
 		invoiceBL.setInvoiceLineTaxes(invoice);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_DateInvoiced })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateOrderPaySchedules(@NonNull final I_C_Invoice invoice)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
 		if (orderId != null && invoice.getDateInvoiced() != null)
 		{
-			orderPayScheduleService.updatePayScheduleStatus(orderId);
-		}
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createOrderPaySchedules(@NonNull final I_C_Invoice invoice)
-	{
-		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
-		if (orderId != null)
-		{
-			invoicePayScheduleService.createInvoicePaySchedules(invoice);
+			orderBL.syncDateInvoicedFromInvoice(orderId, invoice);
 		}
 	}
 }

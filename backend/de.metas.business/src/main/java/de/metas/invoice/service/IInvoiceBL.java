@@ -42,6 +42,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
+import de.metas.invoice.service.impl.InvoiceTotal;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.order.OrderId;
@@ -157,7 +158,7 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
-	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+	List<I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
 
@@ -217,6 +218,8 @@ public interface IInvoiceBL extends ISingletonService
 			@NonNull I_C_Invoice invoice,
 			@NonNull BigDecimal openAmt,
 			@NonNull InvoicePaymentStatus paymentStatus);
+
+	InvoiceTotal extractGrandTotal(@NonNull I_C_Invoice invoice);
 
 	InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull I_C_Invoice invoice);
 
@@ -440,4 +443,6 @@ public interface IInvoiceBL extends ISingletonService
 	Instant getUniqueInvoiceDateForOrderId(@NonNull OrderId orderId);
 
 	Amount retrieveOpenAmt(InvoiceId invoiceId);
+
+	void save(@NonNull I_C_Invoice invoice);
 }

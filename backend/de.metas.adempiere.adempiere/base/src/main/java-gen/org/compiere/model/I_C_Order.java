@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
@@ -289,6 +311,29 @@ public interface I_C_Order
 	int getBill_User_ID();
 
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
+	 * Set B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBLDate (@Nullable java.sql.Timestamp BLDate);
+
+	/**
+	 * Get B/L Date.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getBLDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_BLDate = new ModelColumn<>(I_C_Order.class, "BLDate", null);
+	String COLUMNNAME_BLDate = "BLDate";
 
 	/**
 	 * Set Address.
@@ -1464,6 +1509,29 @@ public interface I_C_Order
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
+	 * Set ETA.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setETA (@Nullable java.sql.Timestamp ETA);
+
+	/**
+	 * Get ETA.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getETA();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ETA = new ModelColumn<>(I_C_Order.class, "ETA", null);
+	String COLUMNNAME_ETA = "ETA";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -1506,6 +1574,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_ExternalPurchaseOrderURL = new ModelColumn<>(I_C_Order.class, "ExternalPurchaseOrderURL", null);
 	String COLUMNNAME_ExternalPurchaseOrderURL = "ExternalPurchaseOrderURL";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Order.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Freight Amount.
@@ -1731,6 +1820,27 @@ public interface I_C_Order
 	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
+	 * Set Invoice date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceDate (@Nullable java.sql.Timestamp InvoiceDate);
+
+	/**
+	 * Get Invoice date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getInvoiceDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_InvoiceDate = new ModelColumn<>(I_C_Order.class, "InvoiceDate", null);
+	String COLUMNNAME_InvoiceDate = "InvoiceDate";
+
+	/**
 	 * Set Invoice Rule.
 	 * Frequency and method of invoicing
 	 *
@@ -1823,6 +1933,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsApproved = new ModelColumn<>(I_C_Order.class, "IsApproved", null);
 	String COLUMNNAME_IsApproved = "IsApproved";
+
+	/**
+	 * Set Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoice (boolean IsAutoInvoice);
+
+	/**
+	 * Get Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoInvoice();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsAutoInvoice = new ModelColumn<>(I_C_Order.class, "IsAutoInvoice", null);
+	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
 
 	/**
 	 * Set Credit Approved.
@@ -3193,25 +3324,4 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_Weight = new ModelColumn<>(I_C_Order.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
-
-	/**
-	 * Set External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystem_ID (int ExternalSystem_ID);
-
-	/**
-	 * Get External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternalSystem_ID();
-
-	ModelColumn<I_C_Order, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Order.class, "ExternalSystem_ID", null);
-	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }

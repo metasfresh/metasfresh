@@ -1,19 +1,16 @@
 package de.metas.payment.paymentterm;
 
-import de.metas.cache.CCache;
+import com.google.common.collect.ImmutableSet;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.util.Util.ArrayKey;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import java.util.Collection;
+import java.util.Collections;
 
 /*
  * #%L
@@ -40,88 +37,44 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class PaymentTermService
 {
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
-	private final CCache<ArrayKey, PaymentTermId> cache = CCache.newCache(I_C_PaymentTerm.Table_Name, 10, CCache.EXPIREMINUTES_Never);
-
-	/**
-	 * @param basePaymentTermId may be null
-	 * @param discount          may be null
-	 */
-	public PaymentTermId getOrCreateDerivedPaymentTerm(
-			@Nullable final PaymentTermId basePaymentTermId,
-			@Nullable final Percent discount)
-	{
-		if (basePaymentTermId == null)
-		{
-			return null; // the caller gave us no base to derive from
-		}
-		if (discount == null)
-		{
-			return basePaymentTermId; // the caller did not specify a change, so we return the base we got
-		}
-
-		final ArrayKey key = ArrayKey.of(basePaymentTermId, discount);
-		return cache.getOrLoad(key, () -> getOrCreateDerivedPaymentTerm0(basePaymentTermId, discount));
-	}
-
-	private PaymentTermId getOrCreateDerivedPaymentTerm0(
-			@NonNull final PaymentTermId basePaymentTermId,
-			@NonNull final Percent discount)
-	{
-		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getRecordById(basePaymentTermId);
-
-		// see if the designed payment term already exists
-		final I_C_PaymentTerm existingDerivedPaymentTermRecord = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_PaymentTerm.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsValid, true)
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount, discount.toBigDecimal())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Client_ID, basePaymentTermRecord.getAD_Client_ID())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID, basePaymentTermRecord.getAD_Org_ID())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount2, basePaymentTermRecord.getDiscount2())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_DiscountDays2, basePaymentTermRecord.getDiscountDays2())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AfterDelivery, basePaymentTermRecord.isAfterDelivery())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthCutoff, basePaymentTermRecord.getFixMonthCutoff())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthDay, basePaymentTermRecord.getFixMonthDay())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthOffset, basePaymentTermRecord.getFixMonthOffset())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_GraceDays, basePaymentTermRecord.getGraceDays())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsDueFixed, basePaymentTermRecord.isDueFixed())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsNextBusinessDay, basePaymentTermRecord.isNextBusinessDay())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDay, basePaymentTermRecord.getNetDay())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDays, basePaymentTermRecord.getNetDays())
-				.orderBy().addColumn(I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID).endOrderBy()
-				.create()
-				.first();
-		if (existingDerivedPaymentTermRecord != null)
-		{
-			return PaymentTermId.ofRepoId(existingDerivedPaymentTermRecord.getC_PaymentTerm_ID());
-		}
-
-		final I_C_PaymentTerm newPaymentTerm = newInstance(I_C_PaymentTerm.class);
-		InterfaceWrapperHelper.copyValues(basePaymentTermRecord, newPaymentTerm);
-		newPaymentTerm.setDiscount(discount.toBigDecimal());
-
-		final String newName = basePaymentTermRecord.getName() + " (=>" + discount.toBigDecimal() + " %)";
-		newPaymentTerm.setName(newName);
-		saveRecord(newPaymentTerm);
-
-		return PaymentTermId.ofRepoId(newPaymentTerm.getC_PaymentTerm_ID());
-	}
-
+	@NonNull
 	public PaymentTerm getById(@NonNull final PaymentTermId paymentTermId)
 	{
 		return paymentTermRepository.getById(paymentTermId);
 	}
 
-	public boolean hasPaySchedule(@NonNull final PaymentTermId paymentTermId)
+	@Nullable
+	public PaymentTermId getOrCreateDerivedPaymentTerm(@Nullable final PaymentTermId basePaymentTermId, @Nullable final Percent discount)
 	{
-		return paymentTermRepository.hasPaySchedule(paymentTermId);
+		return paymentTermRepository.getOrCreateDerivedPaymentTerm(basePaymentTermId, discount);
 	}
 
-	public PaymentTermBreak getPaymentTermBreakById(@NonNull final PaymentTermBreakId id)
+	@NonNull
+	public Percent getPaymentTermDiscount(PaymentTermId paymentTermId)
 	{
-		return paymentTermRepository.getPaymentTermBreakById(id);
+		return paymentTermRepository.getById(paymentTermId).getDiscount();
 	}
 
+	public void validateNow(@NonNull final PaymentTermId paymentTermId)
+	{
+		validateNow(ImmutableSet.of(paymentTermId));
+	}
+
+	public void validateBeforeCommit(final PaymentTermId paymentTermId)
+	{
+		trxManager.accumulateAndProcessBeforeCommit(
+				"PaymentTermService.validateBeforeCommit",
+				Collections.singleton(paymentTermId),
+				this::validateNow
+		);
+	}
+
+	private void validateNow(@NonNull final Collection<PaymentTermId> paymentTermIds)
+	{
+		paymentTermRepository.newLoaderAndSaver()
+				.syncStateToDatabase(ImmutableSet.copyOf(paymentTermIds));
+	}
 }

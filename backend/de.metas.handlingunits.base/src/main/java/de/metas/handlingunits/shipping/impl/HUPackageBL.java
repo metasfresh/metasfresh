@@ -2,26 +2,42 @@ package de.metas.handlingunits.shipping.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.handlingunits.shipping.IHUPackageBL;
-import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.organization.OrgId;
+import de.metas.product.PackageDimensions;
+import de.metas.product.Product;
+import de.metas.product.ProductRepository;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
@@ -59,12 +75,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class HUPackageBL implements IHUPackageBL
 {
+	private final static AdMessageKey MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES = AdMessageKey.of("SelfPackedProductWithNoDefinedSizes");
+	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	// services
-	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 	private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@Override
 	public void destroyHUPackage(final org.compiere.model.I_M_Package mpackage)
@@ -124,6 +144,11 @@ public class HUPackageBL implements IHUPackageBL
 			mpackage.setPackageWeight(request.getWeightInKg());
 		}
 
+		final PackageDimensions packageDimensions = getPackageDimensions(hu);
+		mpackage.setLengthInCm(packageDimensions.getLengthInCM());
+		mpackage.setWidthInCm(packageDimensions.getWidthInCM());
+		mpackage.setHeightInCm(packageDimensions.getHeightInCM());
+
 		save(mpackage);
 
 		final I_M_Package_HU mpackageHU = newInstance(I_M_Package_HU.class, mpackage);
@@ -159,7 +184,7 @@ public class HUPackageBL implements IHUPackageBL
 
 		// Make sure our HU is eligible for shipper transportation.
 		// We do this check and we throw exception because it could be an internal development error.
-		if (!huShipperTransportationBL.isEligibleForAddingToShipperTransportation(hu))
+		if (!isEligibleForAddingToShipperTransportation(hu))
 		{
 			Check.errorIf(true, HUException.class,
 					"Internal error: The HU used to search the M_Package is not eligible for shipper transportation." + "\n @M_InOut_ID@: {}", hu);
@@ -266,5 +291,57 @@ public class HUPackageBL implements IHUPackageBL
 		}
 
 		return Optional.of(inOutIds.iterator().next());
+	}
+
+	@Override
+	public boolean isEligibleForAddingToShipperTransportation(@NonNull final I_M_HU hu)
+	{
+		//
+		// Only Top Level HUs can be added to shipper transportation
+		//
+		// NOTE: the method which is retrieving the HUs to generate shipment from them is getting only the LUs:
+		// de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.retrieveCandidates(I_C_Queue_WorkPackage, String)
+		return handlingUnitsBL.isTopLevel(hu);
+	}
+
+	@Override
+	public @NonNull PackageDimensions getPackageDimensions(@NonNull final I_M_HU hu)
+	{
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+
+		final Set<HuPackingMaterialId> packingMaterialIds = handlingUnitsBL.getHUPackingMaterialIds(huId);
+
+		if (!packingMaterialIds.isEmpty())
+		{
+			// this needs to blow up if multiple packing materials are found.
+			final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.getById(CollectionUtils.singleElement(packingMaterialIds));
+			final UomId toUomId = uomDAO.getUomIdByX12DE355(X12DE355.CENTIMETRE);
+			return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
+		}
+		else
+		{
+			//Loaded here to avoid recursion
+			final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
+
+			final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory().getProductStorages(hu);
+			if (productStorages.size() > 1)
+			{
+				//Multiple products stored in HU, there's no chance we can infer the dimensions of the package.
+				return PackageDimensions.UNSPECIFIED;
+			}
+			final IHUProductStorage singleHUProductStorage = productStorages.iterator().next();
+			final Product product = productRepository.getById(singleHUProductStorage.getProductId());
+			final PackageDimensions dimensions = product.getPackageDimensions();
+			if (!product.isSelfPacked())
+			{
+				return PackageDimensions.UNSPECIFIED;
+			}
+			if (dimensions.isUnspecified())
+			{
+				throw new AdempiereException(MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES, product.getValue());
+			}
+			final Quantity qtyInStockingUOM = singleHUProductStorage.getQtyInStockingUOM();
+			return PackageDimensions.ofProductDimensionsAndQty(dimensions, qtyInStockingUOM);
+		}
 	}
 }

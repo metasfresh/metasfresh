@@ -1,5 +1,5 @@
 import WFLaunchersScreen from '../containers/wfLaunchersScreen/WFLaunchersScreen';
-import WFLaunchersFiltersScreen from '../containers/wfLaunchersScreen/WFLaunchersFiltersScreen';
+import WFLaunchersFiltersScreen from '../containers/wfLaunchersScreen/filters/WFLaunchersFiltersScreen';
 import WFLaunchersScanBarcodeScreen from '../containers/wfLaunchersScreen/WFLaunchersScanBarcodeScreen';
 
 export const appLaunchersLocation = ({ applicationId }) => `/${applicationId}/launchers`;

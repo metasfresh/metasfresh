@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,13 +25,10 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -42,6 +39,8 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.DocTypeId;
@@ -105,10 +104,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasFound;
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasNotFound;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -341,7 +340,6 @@ public class C_Invoice_Candidate_StepDef
 					row.getAsOptionalString(COLUMNNAME_InvoiceRule_Override)
 							.ifPresent(invoiceRule -> recompute.set(StringUtils.compare(invoiceRule, invoiceCandidate.getInvoiceRule_Override()) != 0));
 
-
 					if (recompute.get())
 					{
 						final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = InvoiceCandidateIdsSelection.ofIdsSet(
@@ -358,7 +356,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@Then("validate invoice candidate")
-	public void validate_invoice_candidate(@NonNull final DataTable dataTable) throws Throwable
+	public void validate_invoice_candidate(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
@@ -476,7 +474,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@And("validate C_Invoice_Candidate:")
-	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable) throws Throwable
+	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
@@ -610,8 +608,10 @@ public class C_Invoice_Candidate_StepDef
 
 	public void generateInvoices(final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
-		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
+		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
+
+		waitUntilValid(invoiceCandidateIds, 120);
+		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
 	@And("invoice candidates are not billable")
@@ -629,8 +629,7 @@ public class C_Invoice_Candidate_StepDef
 			ImmutableSet<InvoiceId> invoiceIds = ImmutableSet.of();
 			try
 			{
-				final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
-				invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId), asyncBatchId);
+				invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
 			}
 			catch (final AdempiereException adempiereException)
 			{
@@ -667,7 +666,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@And("^after not more than (.*)s, C_Invoice_Candidates are not marked as 'to recompute'$")
-	public void check_not_marked_as_to_recompute(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void check_not_marked_as_to_recompute(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
@@ -722,10 +721,9 @@ public class C_Invoice_Candidate_StepDef
 
 					final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 					invoicingParams.setIgnoreInvoiceSchedule(false);
-					invoicingParams.setSupplementMissingPaymentTermIds(true);
 					invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
 
-					final boolean completeInvoices = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + PARA_IsCompleteInvoices, true);
+					final boolean completeInvoices = row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 					invoicingParams.setCompleteInvoices(completeInvoices);
 
 					StepDefUtil.tryAndWait(timeoutSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
@@ -944,14 +942,29 @@ public class C_Invoice_Candidate_StepDef
 		waitUntilValid(invoiceCandidateId, timeoutSec);
 	}
 
-	public void waitUntilValid(final InvoiceCandidateId invoiceCandidateId, final int timeoutSec) throws InterruptedException
+	public void waitUntilValid(final Set<InvoiceCandidateId> invoiceCandidateIds, final int timeoutSec)
 	{
+		if (invoiceCandidateIds.isEmpty()) {return;}
+
 		final Supplier<Boolean> isInvoiceCandidateValidated = () -> queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addInArrayFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds)
 				.create()
 				.count() == 0;
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
+		try
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
+		}
+		catch (InterruptedException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.setParameter("invoiceCandidateIds", invoiceCandidateIds);
+		}
+	}
+
+	public void waitUntilValid(final InvoiceCandidateId invoiceCandidateId, final int timeoutSec)
+	{
+		waitUntilValid(ImmutableSet.of(invoiceCandidateId), timeoutSec);
 	}
 
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> retrieveInvoiceCandidate(final @NonNull IQuery<I_C_Invoice_Candidate> query)
@@ -1253,7 +1266,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@NonNull
-	private String getInvoiceCandidateExceptionDetails(
+	private static String getInvoiceCandidateExceptionDetails(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
 			@NonNull final ResultSet resultSet,
 			@NonNull final String invoiceCandIdentifier) throws SQLException
@@ -1267,42 +1280,5 @@ public class C_Invoice_Candidate_StepDef
 				+ ", "
 				+ COLUMNNAME_QtyWithIssues_Effective + ":" + "I_->" + invoiceCandidate.getQtyWithIssues_Effective() + " - ResultSet->" + resultSet.getBigDecimal(COLUMNNAME_QtyWithIssues_Effective)
 				+ "]";
-	}
-
-	public void manuallyRecomputeInvoiceCandidate(
-			@NonNull final Throwable throwable,
-			@NonNull final Map<String, String> row,
-			final int timeoutSec) throws Throwable
-	{
-		logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "
-				+ "Error message: {}", timeoutSec, throwable.getMessage());
-
-		final String invoiceCandIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = Optional
-				.ofNullable(invoiceCandIdentifier)
-				.flatMap(invoiceCandTable::getOptional);
-
-		if (!invoiceCandidate.isPresent())
-		{
-			logger.warn("*** C_Invoice_Candidate was not previously loaded => cannot invalidate!");
-			throw throwable;
-		}
-
-		final int noOfInvalidatedCandidates = invoiceCandDAO.invalidateCand(invoiceCandidate.get());
-
-		if (noOfInvalidatedCandidates != 1)
-		{
-			throw new AdempiereException("Invoice candidate has not been invalidated !")
-					.appendParametersToMessage()
-					.setParameter("InvoiceCandidateId", invoiceCandidate.get().getC_Invoice_Candidate_ID());
-		}
-
-		final Supplier<Boolean> isInvoiceCandidateValidated = () -> queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidate.get().getC_Invoice_Candidate_ID())
-				.create()
-				.count() == 0;
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
 	}
 }

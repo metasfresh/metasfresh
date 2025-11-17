@@ -25,11 +25,9 @@ import static de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
 public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 {
 	@NonNull private final ImmutableList<WorkflowLauncher> launchers;
-	@Getter @NonNull private final ImmutableList<OrderBy> orderByFields;
-	@Getter @Nullable private final PrintableScannedCode filterByQRCode;
-
-	@Getter
-	@NonNull private final Instant timestamp;
+	@NonNull @Getter private final ImmutableList<OrderBy> orderByFields;
+	@Nullable @Getter private final PrintableScannedCode filterByQRCode;
+	@NonNull @Getter private final Instant timestamp;
 
 	@Builder
 	private WorkflowLaunchersList(
@@ -65,4 +63,6 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 		return Objects.equals(this.launchers, other.launchers)
 				&& Objects.equals(this.filterByQRCode, other.filterByQRCode);
 	}
+
+	public ImmutableList<WorkflowLauncher> toList() {return launchers;}
 }

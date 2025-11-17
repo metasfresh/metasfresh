@@ -27,6 +27,7 @@ public class MobileApplicationInfo
 	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
+	boolean showFilterByQtyAvailableAtPickFromLocator;
 	boolean showInMainMenu;
 	int sortNo;
 	@NonNull @Singular ImmutableMap<String, Object> applicationParameters;
@@ -44,6 +45,7 @@ public class MobileApplicationInfo
 			final boolean showFilterByQRCode,
 			final boolean showFilters,
 			final boolean showFilterByDocumentNo,
+			final boolean showFilterByQtyAvailableAtPickFromLocator,
 			@Nullable final Boolean showInMainMenu,
 			@Nullable final Integer sortNo,
 			@NonNull @Singular final ImmutableMap<String, Object> applicationParameters)
@@ -57,6 +59,7 @@ public class MobileApplicationInfo
 		this.showFilterByQRCode = showFilterByQRCode;
 		this.showFilters = showFilters;
 		this.showFilterByDocumentNo = showFilterByDocumentNo;
+		this.showFilterByQtyAvailableAtPickFromLocator = showFilterByQtyAvailableAtPickFromLocator;
 		this.showInMainMenu = showInMainMenu != null ? showInMainMenu : true;
 		this.sortNo = sortNo != null ? sortNo : 100;
 		this.applicationParameters = applicationParameters;

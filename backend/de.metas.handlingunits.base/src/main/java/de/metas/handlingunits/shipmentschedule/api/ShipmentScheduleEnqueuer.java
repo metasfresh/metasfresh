@@ -1,10 +1,8 @@
-package de.metas.handlingunits.shipmentschedule.api;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +20,11 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
+package de.metas.handlingunits.shipmentschedule.api;
+
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IWorkPackageBuilder;
@@ -148,7 +147,7 @@ public class ShipmentScheduleEnqueuer
 			}
 		});
 
-		return result.getValue();
+		return result.getValueNotNull();
 	}
 
 	@NonNull
@@ -220,8 +219,9 @@ public class ShipmentScheduleEnqueuer
 							.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
 							.bindToTrxName(localCtx.getTrxName())
-							.setC_Async_Batch_ID(AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID()));
-
+							.setAsyncBatchId(workPackageParameters.getAsyncBatchId()) // don't rely on the shipment schedule to have an asyncBatchId.
+					;
+					
 					workpackageBuilder
 							.parameters()
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_OnlyLUIds, RepoIdAwares.toCommaSeparatedString(workPackageParameters.getOnlyLUIds()))

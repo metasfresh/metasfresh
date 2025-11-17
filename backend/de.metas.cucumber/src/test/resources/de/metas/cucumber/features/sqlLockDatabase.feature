@@ -6,6 +6,7 @@ Feature: DB-Based Locking
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
   Scenario: Acquiring a lock on an not-yet-locked record succeeds

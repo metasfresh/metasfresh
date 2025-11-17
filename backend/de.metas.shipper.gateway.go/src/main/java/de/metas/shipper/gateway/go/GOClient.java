@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.go.GOClientLogEvent.GOClientLogEventBuilder;
 import de.metas.shipper.gateway.go.schema.Fehlerbehandlung;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
@@ -27,7 +28,6 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.HWBNumber;
 import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PhoneNumber;
@@ -550,6 +550,7 @@ public class GOClient implements ShipperGatewayClient
 	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
 	{
 		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
 				.shipperProduct(JsonShipperProduct.builder()
 						.code(GOShipperProduct.Overnight.getCode())
 						.build())

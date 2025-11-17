@@ -2,7 +2,7 @@
  * #%L
  * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -68,7 +68,8 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
-import static de.metas.ordercandidate.api.async.C_OLCandToOrderWorkpackageProcessor.OLCandProcessor_ID;
+import static de.metas.ordercandidate.api.async.C_OLCandToOrderWorkpackageProcessor.PARAM_OLCandProcessor_ID;
+import static de.metas.ordercandidate.api.async.C_OLCandToOrderWorkpackageProcessor.PARAM_PROPAGATE_ASYNC_BATCH_ID_TO_ORDER_RECORD;
 import static org.compiere.util.Env.getCtx;
 
 @Service
@@ -94,7 +95,8 @@ public class C_OLCandToOrderEnqueuer
 		this.olCandProcessingHelper = olCandProcessingHelper;
 	}
 
-	public OlCandEnqueueResult enqueueBatch(@NonNull final AsyncBatchId asyncBatchId)
+	public OlCandEnqueueResult enqueueBatch(@NonNull final AsyncBatchId asyncBatchId,
+											final boolean propagateAsyncIdsToShipmentSchduleWPs)
 	{
 		// IMPORTANT: we shall create the selection out of transaction because
 		// else the selection (T_Selection) won't be available when creating the main lock for records of this selection.
@@ -103,23 +105,28 @@ public class C_OLCandToOrderEnqueuer
 				.create()
 				.createSelection();
 
-		return lockAndEnqueueSelection(batchSelectionId, asyncBatchId);
+		return lockAndEnqueueSelection(batchSelectionId, asyncBatchId, propagateAsyncIdsToShipmentSchduleWPs);
 	}
 
 	@NonNull
 	public OlCandEnqueueResult enqueueSelection(@NonNull final PInstanceId selectionId)
 	{
 		final AsyncBatchId asyncBatchId = null;
-		return lockAndEnqueueSelection(selectionId, asyncBatchId);
+		final boolean propagateAsyncBatchIdToOrderRecord = false;
+
+		return lockAndEnqueueSelection(selectionId, asyncBatchId, propagateAsyncBatchIdToOrderRecord);
 	}
 
 	@NonNull
-	private OlCandEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId selectionId, @Nullable final AsyncBatchId asyncBatchId)
+	private OlCandEnqueueResult lockAndEnqueueSelection(
+			@NonNull final PInstanceId selectionId,
+			@Nullable final AsyncBatchId asyncBatchId,
+			final boolean propagateAsyncBatchIdToOrderRecord)
 	{
 		final ILock mainLock = lockSelection(selectionId);
 		try (final ILockAutoCloseable ignored = mainLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
 		{
-			return enqueueSelectionInTrx(mainLock, selectionId, asyncBatchId);
+			return enqueueSelectionInTrx(mainLock, selectionId, asyncBatchId, propagateAsyncBatchIdToOrderRecord);
 		}
 	}
 
@@ -127,7 +134,8 @@ public class C_OLCandToOrderEnqueuer
 	private OlCandEnqueueResult enqueueSelectionInTrx(
 			@NonNull final ILock mainLock,
 			@NonNull final PInstanceId selectionId,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final AsyncBatchId asyncBatchId,
+			final boolean propagateAsyncBatchIdToOrderRecord)
 	{
 		final OLCandProcessorDescriptor descriptor = olCandProcessorRepo.getById(C_OlCandProcessor_ID_Default);
 
@@ -136,6 +144,7 @@ public class C_OLCandToOrderEnqueuer
 				.orderLineCandSelectionId(selectionId)
 				.olCandProcessorDescriptor(descriptor)
 				.asyncBatchId(asyncBatchId)
+				.propagateAsyncBatchIdToOrderRecord(propagateAsyncBatchIdToOrderRecord)
 				.build();
 
 		final OlCandEnqueueResult result = new OlCandEnqueueResult(enqueueWorkPackages(request));
@@ -191,7 +200,11 @@ public class C_OLCandToOrderEnqueuer
 
 				if (workPackageBuilder == null)
 				{
-					workPackageBuilder = initiateWorkPackageBuilder(workPackageQueue, request.getMainLock(), request.getAsyncBatchId());
+					workPackageBuilder = initiateWorkPackageBuilder(
+							workPackageQueue,
+							request.getMainLock(),
+							request.getAsyncBatchId(),
+							request.isPropagateAsyncBatchIdToOrderRecord());
 				}
 
 				workPackageBuilder.addElement(candidateRecordReference);
@@ -223,12 +236,14 @@ public class C_OLCandToOrderEnqueuer
 	private IWorkPackageBuilder initiateWorkPackageBuilder(
 			@NonNull final IWorkPackageQueue workPackageQueue,
 			@NonNull final ILock mainLock,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final AsyncBatchId asyncBatchId,
+			final boolean propagateAsyncBatchIdToOrderRecord)
 	{
 		final IWorkPackageBuilder workpackageBuilder = workPackageQueue.newWorkPackage()
 				// we want the enqueuing user to be notified on problems
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
-				.parameter(OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
+				.parameter(PARAM_PROPAGATE_ASYNC_BATCH_ID_TO_ORDER_RECORD, propagateAsyncBatchIdToOrderRecord)
+				.parameter(PARAM_OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
 
 		Optional.ofNullable(asyncBatchId)
 				.map(asyncBatchDAO::retrieveAsyncBatchRecordOutOfTrx)
@@ -297,5 +312,7 @@ public class C_OLCandToOrderEnqueuer
 
 		@Nullable
 		AsyncBatchId asyncBatchId;
+
+		boolean propagateAsyncBatchIdToOrderRecord;
 	}
 }

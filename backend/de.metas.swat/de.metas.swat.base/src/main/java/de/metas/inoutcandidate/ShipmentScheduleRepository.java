@@ -40,7 +40,6 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -48,18 +47,16 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -74,17 +71,18 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_ExportStatus;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_PreparationDate;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Processed;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_CanBeExportedFrom;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMN_QtyToDeliver;
@@ -108,11 +106,71 @@ public class ShipmentScheduleRepository
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
-	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
+	public ImmutableList<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
+		return getMapBy(query).values().asList();
+	}
+
+	public ImmutableMap<ShipmentScheduleId, ShipmentSchedule> getMapBy(@NonNull final ShipmentScheduleQuery query)
+	{
+		final List<I_M_ShipmentSchedule> records = toSqlQuery(query)
+				.create()
+				.list();
+
+		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentSchedule> result = ImmutableMap.builder();
+		for (final I_M_ShipmentSchedule record : records)
+		{
+			result.put(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()), ofRecord(record));
+		}
+		return result.build();
+	}
+
+	@NonNull
+	private IQueryBuilder<I_M_ShipmentSchedule> toSqlQuery(@NonNull final ShipmentScheduleQuery query)
+	{
+		if (query.isAny())
+		{
+			throw new AdempiereException("Any query is not allowed");
+		}
+
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_AD_Client_ID, ClientId.METASFRESH);
+
+		if (!query.getShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(COLUMNNAME_M_ShipmentSchedule_ID, query.getShipmentScheduleIds());
+		}
+
+		if (query.getQueryFilter() != null)
+		{
+			queryBuilder.filter(query.getQueryFilter());
+		}
+
+		if (query.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, query.getProductId());
+		}
+		if (query.getWarehouseId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
+		}
+		if (query.getShipperId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID, query.getShipperId());
+		}
+		if (query.getAttributesKey() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
+		}
+		if (query.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		}
+		if (query.isOnlyNonZeroReservedQty())
+		{
+			queryBuilder.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyReserved, 0);
+		}
 
 		if (query.getExportStatus() != null)
 		{
@@ -123,7 +181,7 @@ public class ShipmentScheduleRepository
 
 		if (canBeExportedFrom != null)
 		{
-			if (query.onlyIfAllFromOrderExportable)
+			if (query.isOnlyIfAllFromOrderExportable())
 			{
 				final IQuery<I_C_Order> orderIdsWithSchedulesForTheFuture = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 						.addCompareFilter(I_M_ShipmentSchedule.COLUMNNAME_CanBeExportedFrom, GREATER, canBeExportedFrom)
@@ -141,7 +199,7 @@ public class ShipmentScheduleRepository
 
 		if (!query.isIncludeInvalid())
 		{
-			if (query.onlyIfAllFromOrderExportable)
+			if (query.isOnlyIfAllFromOrderExportable())
 			{
 				final IQuery<I_C_Order> orderIdsWithInvalidSchedules = queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
 						.andCollect(I_M_ShipmentSchedule_Recompute.COLUMN_M_ShipmentSchedule_ID)
@@ -159,9 +217,9 @@ public class ShipmentScheduleRepository
 				queryBuilder.addNotInSubQueryFilter(COLUMNNAME_M_ShipmentSchedule_ID, I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, recomputeQuery);
 			}
 		}
-		if (!query.includeWithQtyToDeliverZero)
+		if (!query.isIncludeWithQtyToDeliverZero())
 		{
-			if (query.onlyIfAllFromOrderExportable)
+			if (query.isOnlyIfAllFromOrderExportable())
 			{
 				final IQuery<I_C_Order> orderIdsWithZeroQtyToDeliver = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 						.addCompareFilter(COLUMN_QtyToDeliver, LESS_OR_EQUAL, BigDecimal.ZERO)
@@ -182,7 +240,20 @@ public class ShipmentScheduleRepository
 			queryBuilder.addNotEqualsFilter(COLUMNNAME_Processed, true);
 		}
 
-		if (query.fromCompleteOrderOrNullOrder)
+		if (query.isOnlyNonZeroReservedQty())
+		{
+			queryBuilder.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyReserved, 0);
+		}
+
+		if (query.getPreparationDate() != null)
+		{
+			queryBuilder.addCoalesceEqualsFilter(
+					query.getPreparationDate(),
+					DateTruncQueryFilterModifier.DAY,
+					COLUMNNAME_PreparationDate_Override, COLUMNNAME_PreparationDate);
+		}
+
+		if (query.isFromCompleteOrderOrNullOrder())
 		{
 			final IQuery<I_C_Order> completedOrClosedOdrersQuery = queryBL.createQueryBuilder(I_C_Order.class)
 					.addInArrayFilter(I_C_Order.COLUMN_DocStatus, X_C_Order.DOCSTATUS_Closed, X_C_Order.DOCSTATUS_Completed)
@@ -199,7 +270,7 @@ public class ShipmentScheduleRepository
 			queryBuilder.setLimit(query.getLimit());
 		}
 
-		if (query.orderByOrderId)
+		if (query.isOrderByOrderId())
 		{
 			queryBuilder.orderBy()
 					.addColumn(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, Direction.Ascending, Nulls.First)
@@ -211,17 +282,7 @@ public class ShipmentScheduleRepository
 					.orderBy(COLUMNNAME_M_ShipmentSchedule_ID);
 		}
 
-		final List<I_M_ShipmentSchedule> records = queryBuilder
-				.create()
-				.list();
-
-		final ImmutableList.Builder<ShipmentSchedule> result = ImmutableList.builder();
-		for (final I_M_ShipmentSchedule record : records)
-		{
-			final ShipmentSchedule shipmentSchedule = ofRecord(record);
-			result.add(shipmentSchedule);
-		}
-		return result.build();
+		return queryBuilder;
 	}
 
 	private ShipmentSchedule ofRecord(final I_M_ShipmentSchedule record)
@@ -257,10 +318,11 @@ public class ShipmentScheduleRepository
 				.dateOrdered(TimeUtil.asLocalDateTime(record.getDateOrdered()))
 				.deliveryDateEffective(TimeUtil.asLocalDate(record.getDeliveryDate_Effective()))
 				.isProcessed(record.isProcessed())
+				.isClosed(record.isClosed())
+				.isActive(record.isActive())
 				.carrierAdvisingStatus(CarrierAdviseStatus.ofCode(record.getCarrier_Advising_Status()))
 				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
-				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()))
-				.clearCarrierServices();//to make it obvious they are not loaded here
+				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()));
 
 		return shipmentScheduleBuilder.build();
 	}
@@ -390,7 +452,6 @@ public class ShipmentScheduleRepository
 			final ImmutableSet<AttributeSetInstanceId> targetAsiIds = shipmentScheduleSegment.getAttributes()
 					.stream()
 					.map(ShipmentScheduleAttributeSegment::getAttributeSetInstanceId)
-					.filter(Objects::nonNull)
 					.filter(asiId -> !asiId.equals(AttributeSetInstanceId.NONE))
 					.collect(ImmutableSet.toImmutableSet());
 
@@ -400,7 +461,7 @@ public class ShipmentScheduleRepository
 		return shipmentScheduleStream;
 	}
 
-	public ShipmentSchedule loadByPackageId(final @NonNull PackageId packageId)
+	public List<ShipmentSchedule> loadByPackageId(final @NonNull PackageId packageId)
 	{
 		//TODO Adrian verify if there's a cleaner way to get the associated shipment schedule.
 		return queryBL.createQueryBuilder(I_M_Package.class)
@@ -410,82 +471,13 @@ public class ShipmentScheduleRepository
 				.andCollect(I_M_InOutLine.COLUMN_C_OrderLine_ID)
 				.andCollectChildren(I_M_ShipmentSchedule.COLUMN_C_OrderLine_ID)
 				.create()
-				.firstOptional()
+				.stream()
 				.map(this::ofRecord)
-				.orElseThrow(() -> new AdempiereException("No shipment schedule found for package " + packageId));
+				.collect(Collectors.toList());
 	}
 
-	public List<ShipmentScheduleId> listIdsByQuery(@NonNull final ShipmentScheduleQuery query)
+	public ImmutableSet<ShipmentScheduleId> getIdsByQuery(@NonNull final ShipmentScheduleQuery query)
 	{
-		if (query.getProductId() == null &&
-				query.getWarehouseId() == null &&
-				query.getAttributesKey() == null &&
-				query.getOrgId() == null)
-		{
-			throw new AdempiereException("At least one of the following parameters must be set: productId, warehouseId, attributesKey, orgId");
-		}
-		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter();
-		if (query.getProductId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, query.getProductId());
-		}
-		if (query.getWarehouseId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
-		}
-		if (query.getAttributesKey() != null)
-		{
-			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
-		}
-		if (query.getOrgId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID, query.getOrgId());
-		}
-		if (query.isOnlyNonZeroQty())
-		{
-			queryBuilder.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyReserved, 0);
-		}
-		return queryBuilder.create().listIds(ShipmentScheduleId::ofRepoId);
-	}
-
-	@Value
-	@Builder
-	public static class ShipmentScheduleQuery
-	{
-		@NonNull
-		@Builder.Default
-		QueryLimit limit = QueryLimit.NO_LIMIT;
-
-		Instant canBeExportedFrom;
-
-		APIExportStatus exportStatus;
-
-		@Builder.Default
-		boolean includeWithQtyToDeliverZero = false;
-
-		@Builder.Default
-		boolean includeInvalid = false;
-
-		@Builder.Default
-		boolean includeProcessed = false;
-
-		@Builder.Default
-		boolean fromCompleteOrderOrNullOrder = false;
-
-		@Builder.Default
-		boolean orderByOrderId = false;
-
-		/**
-		 * Only export a shipment schedule if its order does not have any schedule which is not yet ready to be exported.
-		 */
-		@Builder.Default
-		boolean onlyIfAllFromOrderExportable = false;
-
-		@Nullable OrgId orgId;
-		@Nullable AttributesKey attributesKey;
-		@Nullable ProductId productId;
-		@Nullable WarehouseId warehouseId;
-		@Builder.Default boolean onlyNonZeroQty = false;
+		return toSqlQuery(query).create().idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
 }

@@ -52,7 +52,7 @@ public class CarrierProductRepository
 				.build();
 	}
 
-	@Nullable
+	@NonNull
 	public CarrierProduct getOrCreateCarrierProduct(@NonNull final ShipperId shipperId, @NonNull final String code, @NonNull final String name)
 	{
 		final CarrierProduct cachedShipperProductByCode = getCachedShipperProductByCode(shipperId, code);
@@ -94,6 +94,7 @@ public class CarrierProductRepository
 						.orElse(null));
 	}
 
+	@NonNull
 	private CarrierProduct createShipperProduct(@NonNull final ShipperId shipperId, @NonNull final String code, @NonNull final String name)
 	{
 		final I_Carrier_Product po = InterfaceWrapperHelper.newInstance(I_Carrier_Product.class);

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -262,7 +262,7 @@ public class JsonShipmentService
 	{
 		final List<I_M_InOutLine> shipmentLines = shipmentService.retrieveInOutLineByShipScheduleId(generateShipmentsRequest.getScheduleIds());
 
-		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines, generateShipmentsRequest.getAsyncBatchId());
+		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
 
 		return invoiceIds.stream()
 				.map(invoiceId -> jsonInvoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))

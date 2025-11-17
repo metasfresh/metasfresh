@@ -1,4 +1,26 @@
 
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.inventory;
 
 import com.google.common.collect.ImmutableSet;
@@ -30,7 +52,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -86,6 +110,7 @@ public final class InventoryRepository
 	{
 	}
 
+	@Nullable
 	private InventoryLoaderAndSaver newLoaderAndSaver()
 	{
 		return InventoryLoaderAndSaver.builder()
@@ -115,6 +140,7 @@ public final class InventoryRepository
 		return newLoaderAndSaver().toInventory(inventoryRecord);
 	}
 
+	@Nullable
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(@Nullable final I_M_Inventory inventoryRecord)
 	{
 		return newLoaderAndSaver().extractDocBaseAndSubTypeOrNull(inventoryRecord);
@@ -187,6 +213,7 @@ public final class InventoryRepository
 			inventoryRecord.setC_DocType_ID(request.getDocTypeId().getRepoId());
 		}
 
+		inventoryRecord.setPOReference(request.getPoReference());
 		saveRecord(inventoryRecord);
 
 		return toInventory(inventoryRecord);
@@ -313,5 +340,25 @@ public final class InventoryRepository
 	{
 		return newLoaderAndSaver().streamReferences(query);
 	}
+
+	public void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId)
+	{
+		// update M_InventoryLine
+		final ICompositeQueryUpdater<org.compiere.model.I_M_InventoryLine> updaterInventoryLine = queryBL.createCompositeQueryUpdater(org.compiere.model.I_M_InventoryLine.class)
+				.addSetColumnFromColumn(org.compiere.model.I_M_InventoryLine.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(org.compiere.model.I_M_InventoryLine.COLUMNNAME_QtyBook));
+
+		queryBL.createQueryBuilder(org.compiere.model.I_M_InventoryLine.class)
+				.addEqualsFilter(org.compiere.model.I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.create().update(updaterInventoryLine);
+
+		// update M_InventoryLine_HU
+		final ICompositeQueryUpdater<I_M_InventoryLine_HU> updaterInventoryLineHU = queryBL.createCompositeQueryUpdater(I_M_InventoryLine_HU.class)
+				.addSetColumnFromColumn(I_M_InventoryLine_HU.COLUMNNAME_QtyCount, ModelColumnNameValue.forColumnName(I_M_InventoryLine_HU.COLUMNNAME_QtyBook));
+
+		queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
+				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.create().update(updaterInventoryLineHU);
+	}
+
 }
 

@@ -69,6 +69,9 @@ public class TaxQuery
 	@Nullable
 	CountryId shippingCountryId;
 
+	@Nullable
+	Boolean isTaxExempt;
+
 	@Builder
 	public TaxQuery(
 			@NonNull final OrgId orgId,
@@ -79,7 +82,8 @@ public class TaxQuery
 			@NonNull final SOTrx soTrx,
 			@Nullable final TaxCategoryId taxCategoryId,
 			@Nullable final BPartnerId bPartnerId,
-			@Nullable final CountryId shippingCountryId)
+			@Nullable final CountryId shippingCountryId,
+			@Nullable final Boolean isTaxExempt)
 	{
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;
@@ -101,5 +105,7 @@ public class TaxQuery
 		}
 
 		this.shippingCountryId = shippingCountryId;
+
+		this.isTaxExempt = isTaxExempt;
 	}
 }

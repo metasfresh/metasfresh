@@ -1,22 +1,8 @@
-package de.metas.shipper.gateway.commons.async;
-
-import de.metas.async.AsyncBatchId;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.shipper.gateway.commons.CarrierAdviseCommand;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.compiere.util.Env;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * de.metas.shipper.gateway.go
+ * de.metas.shipper.gateway.commons
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,6 +20,20 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+package de.metas.shipper.gateway.commons.async;
+
+import de.metas.async.AsyncBatchId;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.shipper.gateway.commons.CarrierAdviseCommand;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+
 public class AdviseDeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
 
@@ -46,7 +46,7 @@ public class AdviseDeliveryOrderWorkpackageProcessor extends WorkpackageProcesso
 		workPackageQueueFactory
 				.getQueueForEnqueuing(AdviseDeliveryOrderWorkpackageProcessor.class)
 				.newWorkPackage()
-				.setC_Async_Batch_ID(asyncBatchId)
+				.setAsyncBatchId(asyncBatchId)
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.bindToThreadInheritedTrx()
 				.parameters()

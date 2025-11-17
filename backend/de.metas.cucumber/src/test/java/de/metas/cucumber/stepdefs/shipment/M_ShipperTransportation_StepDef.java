@@ -24,13 +24,17 @@ package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Package_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.order.OrderId;
+import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -43,6 +47,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_InOut;
@@ -67,11 +72,15 @@ public class M_ShipperTransportation_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_BPartner_StepDefData bPartnerTable;
 
+
 	private final M_InOut_StepDefData shipmentTable;
 	private final C_Order_StepDefData orderTable;
 
-	public final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
+
 
 	@And("validate M_ShipperTransportation:")
 	public void validateM_ShipperTransportation(@NonNull final DataTable dataTable)
@@ -179,6 +188,19 @@ public class M_ShipperTransportation_StepDef
 				.forEach(this::createM_ShippingPackage);
 	}
 
+
+	@And("^C_Order_AddTo_M_ShipperTransportation is invoked for order (.*) and transportation order: (.*)")
+	public void addOrderToShipperTransportation(@NonNull final String orderIdentifier, @NonNull final String transportationOrderIdentifier)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderTable.get(orderIdentifier)
+				.getC_Order_ID());
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(deliveryInstructionTable.get(transportationOrderIdentifier)
+				.getM_ShipperTransportation_ID());
+
+		purchaseOrderToShipperTransportationService.addPurchaseOrderToShipperTransportation(orderId, shipperTransportationId);
+	}
+
+
 	public void createM_ShippingPackage(@NonNull final DataTableRow row)
 	{
 		final I_M_ShippingPackage shippingPackageRecord = newInstance(I_M_ShippingPackage.class);
@@ -251,4 +273,13 @@ public class M_ShipperTransportation_StepDef
 
 		deliveryInstructionTable.putOrReplace(tableRow.getAsIdentifier(), record);
 	}
+
+	@And("^the transport order identified by (.*) is completed$")
+	public void completeTransportOrder(@NonNull final String orderIdentifier)
+	{
+		final I_M_ShipperTransportation transportOrder = deliveryInstructionTable.get(orderIdentifier);
+		transportOrder.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(transportOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
 }

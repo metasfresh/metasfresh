@@ -74,7 +74,6 @@ public class OrderPaySchedule
 				final DueDateAndStatus dueDateAndStatus = context.computeDueDate(termBreak);
 				line.applyAndProcess(dueDateAndStatus);
 			}
-
 		}
 	}
 

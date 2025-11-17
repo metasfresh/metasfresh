@@ -1,11 +1,14 @@
 package de.metas.bpartner.service.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -18,6 +21,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
@@ -53,7 +57,10 @@ final class GLNLoadingCache
 {
 	private final CCache<GLN, GLNLocations> cache = CCache.<GLN, GLNLocations>builder()
 			.tableName(I_C_BPartner_Location.Table_Name)
+			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.build();
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public Optional<BPartnerId> getSingleBPartnerId(@NonNull final GLNQuery glnsQuery)
 	{
@@ -107,49 +114,69 @@ final class GLNLoadingCache
 	public ImmutableSet<BPartnerLocationId> getBPartnerLocationIds(@NonNull final GLNQuery glnsQuery)
 	{
 		final ImmutableSet<OrgId> onlyOrgIds = glnsQuery.getOnlyOrgIds();
+		final String glnLookupLabel = glnsQuery.getGlnLookupLabel();
 
 		return getGLNLocations(glnsQuery)
 				.stream()
-				.flatMap(glnLocation -> glnLocation.streamBPartnerLocationIds(onlyOrgIds))
+				.flatMap(glnLocation -> glnLocation.streamBPartnerLocationIds(onlyOrgIds, glnLookupLabel))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
 	private Collection<GLNLocations> getGLNLocations(@NonNull final GLNQuery glnsQuery)
 	{
-		final boolean outOfTrx = glnsQuery.isOutOfTrx();
-		if (outOfTrx)
+		if (glnsQuery.isOutOfTrx())
 		{
-			return cache.getAllOrLoad(glnsQuery.getGlns(), glns -> retrieveGLNLocationsMap(glns, outOfTrx));
+			return cache.getAllOrLoad(glnsQuery.getGlns(), glns -> retrieveGLNLocationsMap(glnsQuery));
 		}
 		else
 		{
-			return retrieveGLNLocationsMap(glnsQuery.getGlns(), outOfTrx).values();
+			return retrieveGLNLocationsMap(glnsQuery).values();
 		}
 	}
 
-	private Map<GLN, GLNLocations> retrieveGLNLocationsMap(@NonNull final Collection<GLN> glns, final boolean outOfTrx)
+	@VisibleForTesting
+	Map<GLN, GLNLocations> retrieveGLNLocationsMap(@NonNull final GLNQuery glnsQuery)
 	{
-		Check.assumeNotEmpty(glns, "glns is not empty");
+		final Collection<GLN> glns = Check.assumeNotEmpty(glnsQuery.getGlns(), "glns is not empty for glnsQuery={}", glnsQuery);
 
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder;
-		if (outOfTrx)
+		if (glnsQuery.isOutOfTrx())
 		{
-			queryBuilder = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_C_BPartner_Location.class);
+			queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_BPartner_Location.class);
 		}
 		else
 		{
-			queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class);
+			queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Location.class);
 		}
 
-		final ImmutableListMultimap<GLN, GLNLocation> locationsByGLN = queryBuilder
-				.addInArrayFilter(I_C_BPartner_Location.COLUMN_GLN, GLN.toStringSet(glns))
+		final IQueryBuilder<I_C_BPartner_Location> locationQueryBuilder = queryBuilder
+				.addInArrayFilter(I_C_BPartner_Location.COLUMN_GLN, GLN.toStringSet(glns));
+
+		final ImmutableListMultimap<BPartnerId, I_C_BPartner_Location> bpartnerId2Locations = locationQueryBuilder
 				.create()
 				.stream()
-				.map(record -> toGLNLocation(record))
-				.collect(GuavaCollectors.toImmutableListMultimap(GLNLocation::getGln));
+				.collect(GuavaCollectors.toImmutableListMultimap(bpl -> BPartnerId.ofRepoId(bpl.getC_BPartner_ID())));
 
-		return locationsByGLN.asMap()
+		final ImmutableMap<BPartnerId, I_C_BPartner> bpartnerId2BPartner =
+				queryBL
+						.createQueryBuilder(I_C_BPartner.class)
+						.addInArrayFilter(I_C_BPartner.COLUMN_C_BPartner_ID, bpartnerId2Locations.keySet())
+						.create().list()
+						.stream()
+						.collect(GuavaCollectors.toImmutableMapByKey(bp -> BPartnerId.ofRepoId(bp.getC_BPartner_ID())));
+
+		final ImmutableListMultimap.Builder<GLN, GLNLocation> locationsByGLN = ImmutableListMultimap.builder();
+		for (final I_C_BPartner_Location bPartnerLocation : bpartnerId2Locations.values())
+		{
+			final I_C_BPartner bPartner = bpartnerId2BPartner.get(BPartnerId.ofRepoId(bPartnerLocation.getC_BPartner_ID()));
+			final GLNLocation glnLocation = toGLNLocation(
+					bPartnerLocation,
+					bPartner.getLookup_Label());
+			locationsByGLN.put(glnLocation.getGlnWithLabel().getGln(), glnLocation);
+		}
+
+		return locationsByGLN.build().asMap()
 				.entrySet()
 				.stream()
 				.map(e -> GLNLocations.builder()
@@ -159,11 +186,15 @@ final class GLNLoadingCache
 				.collect(GuavaCollectors.toImmutableMapByKey(GLNLocations::getGln));
 	}
 
-	private static GLNLocation toGLNLocation(final I_C_BPartner_Location record)
+	private static GLNLocation toGLNLocation(
+			@NonNull final I_C_BPartner_Location record,
+			@Nullable final String glnLookupLabel)
 	{
+		final String gln = Check.assumeNotNull(record.getGLN(), "we can be sure that this point that the GLN is not null");
+
 		return GLNLocation.builder()
-				.gln(GLN.ofString(record.getGLN()))
 				.orgId(OrgId.ofRepoIdOrAny(record.getAD_Org_ID()))
+				.glnWithLabel(GlnWithLabel.ofGLN(GLN.ofString(gln), glnLookupLabel))
 				.bpLocationId(BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
 				.build();
 	}
@@ -183,10 +214,12 @@ final class GLNLoadingCache
 		 * @param onlyOrgIds {@code null} or empty means "no restriction".
 		 */
 		@NonNull
-		Stream<BPartnerLocationId> streamBPartnerLocationIds(@Nullable final Set<OrgId> onlyOrgIds)
+		Stream<BPartnerLocationId> streamBPartnerLocationIds(
+				@Nullable final Set<OrgId> onlyOrgIds,
+				@Nullable final String glnLookupLabel)
 		{
 			return locations.stream()
-					.filter(location -> location.isMatching(onlyOrgIds))
+					.filter(location -> location.isMatching(onlyOrgIds, glnLookupLabel))
 					.map(GLNLocation::getBpLocationId);
 		}
 	}
@@ -196,7 +229,7 @@ final class GLNLoadingCache
 	private static class GLNLocation
 	{
 		@NonNull
-		GLN gln;
+		GlnWithLabel glnWithLabel;
 
 		@NonNull
 		OrgId orgId;
@@ -204,7 +237,22 @@ final class GLNLoadingCache
 		@NonNull
 		BPartnerLocationId bpLocationId;
 
-		boolean isMatching(@Nullable final Set<OrgId> onlyOrgIds)
+		boolean isMatching(@Nullable final Set<OrgId> onlyOrgIds,
+						   @Nullable final String glnLookupLabel)
+		{
+			return isMatchingLookupLabel(glnLookupLabel) && isMatchingOrgId(onlyOrgIds);
+		}
+
+		private boolean isMatchingLookupLabel(@Nullable final String glnLookupLabel)
+		{
+			if (Check.isBlank(glnLookupLabel))
+			{
+				return true;
+			}
+			return glnLookupLabel.equals(glnWithLabel.getLabel());
+		}
+
+		private boolean isMatchingOrgId(@Nullable final Set<OrgId> onlyOrgIds)
 		{
 			if (onlyOrgIds == null || onlyOrgIds.isEmpty())
 			{

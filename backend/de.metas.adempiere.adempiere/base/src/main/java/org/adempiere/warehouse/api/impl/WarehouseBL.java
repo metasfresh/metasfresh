@@ -257,6 +257,12 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByWarehouseId(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseDAO.getLocatorIdsByWarehouseIds(ImmutableSet.of(warehouseId));
+	}
+
+	@Override
 	public I_M_Locator getLocatorByRepoId(final int locatorRepoId)
 	{
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);

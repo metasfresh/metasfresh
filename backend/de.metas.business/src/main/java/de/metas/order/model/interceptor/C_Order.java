@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,7 +46,7 @@ import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
-import de.metas.order.paymentschedule.OrderPayScheduleService;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -90,30 +90,31 @@ import java.util.Optional;
 @Callout(I_C_Order.class)
 public class C_Order
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBPGroupDAO groupDAO = Services.get(IBPGroupDAO.class);
-	private final IBPartnerBL bpartnerBL;
-	private final OrderLineDetailRepository orderLineDetailRepository;
-	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
-	private final IDocumentLocationBL documentLocationBL;
-	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
-	private final OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPGroupDAO groupDAO = Services.get(IBPGroupDAO.class);
+	@NonNull private final IBPartnerBL bpartnerBL;
+	@NonNull private final OrderLineDetailRepository orderLineDetailRepository;
+	@NonNull private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
+	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
+	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
+	private static final AdMessageKey MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("OrderAssignedToProcessedTransportationOrder");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
@@ -237,18 +238,7 @@ public class C_Order
 			return; // nothing to do yet
 		}
 
-		final int c_Incoterms;
-
-		if (order.isSOTrx())
-		{
-			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
-		}
-		else
-		{
-			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
-		}
-
-		order.setC_Incoterms_ID(c_Incoterms);
+		orderBL.setIncoterms(order);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
@@ -365,12 +355,12 @@ public class C_Order
 		orderLinePricingConditions.failForMissingPricingConditions(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createMPackages(final I_C_Order order)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
+	public void deleteShippingPackageIfPossible(final I_C_Order order)
 	{
-		if (!order.isSOTrx())
+		if (!purchaseOrderToShipperTransportationService.deleteShippingPackagesForOrderIfPossible(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
-			purchaseOrderToShipperTransportationService.addPurchaseOrderToCurrentShipperTransportation(order);
+			throw new AdempiereException(MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
 		}
 	}
 
@@ -637,10 +627,9 @@ public class C_Order
 		orderPayScheduleService.deleteByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_LC_Date })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_LC_Date, I_C_Order.COLUMNNAME_ETA, I_C_Order.COLUMNNAME_BLDate, I_C_Order.COLUMNNAME_InvoiceDate })
 	public void updateOrderPaySchedules(final I_C_Order order)
 	{
-		orderPayScheduleService.updatePayScheduleStatus(OrderId.ofRepoId(order.getC_Order_ID()));
+		orderPayScheduleService.updatePayScheduleStatus(order);
 	}
-
 }

@@ -1,14 +1,21 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
+import de.metas.ui.web.window.model.DocumentStandardAction;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -93,4 +100,53 @@ public class JSONDocumentPermissions
 		}
 		return logicExpressionRevaluator;
 	}
+
+	public Set<DocumentStandardAction> getStandardActions(@NonNull final Document document)
+	{
+		final HashSet<DocumentStandardAction> standardActions = new HashSet<>(document.getStandardActions());
+
+		Boolean allowWindowEdit = null;
+		Boolean allowDocumentEdit = null;
+
+		for (final Iterator<DocumentStandardAction> it = standardActions.iterator(); it.hasNext(); )
+		{
+			final DocumentStandardAction action = it.next();
+
+			if (action.isDocumentWriteAccessRequired())
+			{
+				if (allowDocumentEdit == null)
+				{
+					allowDocumentEdit = DocumentPermissionsHelper.canEdit(document, permissions);
+				}
+
+				if (!allowDocumentEdit)
+				{
+					it.remove();
+					continue;
+				}
+			}
+
+			if (action.isWindowWriteAccessRequired())
+			{
+				if (allowWindowEdit == null)
+				{
+					final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+					final AdWindowId adWindowId = entityDescriptor.getDocumentType().isWindow()
+							? entityDescriptor.getWindowId().toAdWindowId()
+							: null;
+					allowWindowEdit = adWindowId != null && permissions.checkWindowPermission(adWindowId).hasWriteAccess();
+				}
+
+				if (!allowWindowEdit)
+				{
+					it.remove();
+					//noinspection UnnecessaryContinue
+					continue;
+				}
+			}
+		}
+
+		return ImmutableSet.copyOf(standardActions);
+	}
+
 }

@@ -5,6 +5,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
@@ -13,6 +14,7 @@ import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -92,12 +94,14 @@ public interface DraftDeliveryOrderCreator
 			@Nullable String poReference;
 			@Nullable String description;
 			@Nullable BigDecimal weightInKg;
+			@NonNull PackageDimensions packageDimension;
 
 			public BigDecimal getWeightInKgOr(final BigDecimal minValue) {return weightInKg != null ? weightInKg.max(minValue) : minValue;}
 		}
 	}
 
 	@Value
+	@EqualsAndHashCode(exclude = "carrierServices")
 	class DeliveryOrderKey
 	{
 		@NonNull ShipperId shipperId;

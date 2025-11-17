@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.async
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.async.spi;
 
 import com.google.common.base.MoreObjects;
@@ -29,28 +51,6 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static de.metas.async.AsyncBatchId.NONE_ASYNC_BATCH_ID;
-
-/*
- * #%L
- * de.metas.async
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  * Template class for implementing algorithms which are collecting items, group them in workpackages and submit the workpackages when the transaction is committed.
@@ -398,13 +398,18 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 					.setUserInChargeId(userIdInCharge)
 					.parameters(parameters)
 					.addElements(modelsToEnqueue)
-					.setC_Async_Batch_ID(asyncBatchId)
+					.setAsyncBatchId(asyncBatchId)
 					.buildAndEnqueue();
 		}
 
 		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageQueue workPackageQueue)
 		{
-			batchId2Models.forEach((key, models) -> createAndSubmitWorkpackage(workPackageQueue, models, AsyncBatchId.toAsyncBatchIdOrNull(key)));
+			for (final Map.Entry<AsyncBatchId, List<Object>> entry : batchId2Models.entrySet())
+			{
+				final AsyncBatchId key = entry.getKey();
+				final List<Object> value = entry.getValue();
+				createAndSubmitWorkpackage(workPackageQueue, value, AsyncBatchId.toAsyncBatchIdOrNull(key));
+			}
 		}
 
 		private boolean hasNoModels()

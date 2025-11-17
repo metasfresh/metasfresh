@@ -2,7 +2,7 @@
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -91,6 +91,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
@@ -111,9 +112,9 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -766,7 +767,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()), SOTrx.ofBoolean(icRecord.isSOTrx()));
 
 		final PaymentTermId paymentTermIdToUse = paymentTermRepository
-				.retrievePaymentTermId(paymentTermQuery)
+				.firstIdOnly(paymentTermQuery)
 				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
 						.appendParametersToMessage()
 						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
@@ -2533,6 +2534,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			@NonNull final PInstanceId pInstanceId)
 	{
 		return invoiceCandDAO.createSelectionByQuery(multiQuery, pInstanceId);
+	}
+
+	@Override
+	public ImmutableSet<InvoiceCandidateId> getIdsByQuery(@NonNull final InvoiceCandidateQuery query)
+	{
+		return invoiceCandDAO.getIdsByQuery(query);
 	}
 
 	@Override

@@ -1,13 +1,37 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.shipping.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.api.ShipperTransportationReference;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -23,10 +47,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,10 +64,11 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@NonNull
 	@Override
 	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId shipperItransportationId)
 	{
-		final I_M_ShipperTransportation shipperTransportation = load(shipperItransportationId.getRepoId(), I_M_ShipperTransportation.class);
+		final I_M_ShipperTransportation shipperTransportation = retrieve(shipperItransportationId);
 		if (shipperTransportation == null)
 		{
 			throw new AdempiereException("@NotFound@: " + shipperItransportationId);
@@ -124,13 +150,75 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 	private IQuery<I_M_ShipperTransportation> toSqlQuery(final @NonNull ShipperTransportationQuery query)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, query.getShipperId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, query.getShipperBPartnerAndLocationId().getBpartnerId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID, query.getShipperBPartnerAndLocationId().getRepoId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DateDoc, TimeUtil.asTimestamp(query.getShipDate()))
-				.create();
+		if (query.isAny())
+		{
+			throw new AdempiereException("Any query is not allowed");
+		}
+		final IQueryBuilder<I_M_ShipperTransportation> builder;
+
+		final Collection<OrderId> orderIds = query.getOrderIds();
+		final Collection<OrderLineId> orderLineIds = query.getOrderLineIds();
+		if (!orderIds.isEmpty() || !orderLineIds.isEmpty())
+		{
+			final IQueryBuilder<I_M_ShippingPackage> shippingPackageBuilder = queryBL.createQueryBuilder(I_M_ShippingPackage.class);
+
+			if (!orderIds.isEmpty())
+			{
+				shippingPackageBuilder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderIds);
+			}
+			if (!orderLineIds.isEmpty())
+			{
+				shippingPackageBuilder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineIds);
+			}
+
+			builder = shippingPackageBuilder
+					.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+					.addOnlyActiveRecordsFilter();
+		}
+		else
+		{
+			builder = queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+					.addOnlyActiveRecordsFilter();
+		}
+
+		final ShipperId shipperId = query.getShipperId();
+		if (shipperId != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, shipperId);
+		}
+
+		final BPartnerLocationId shipperBPartnerAndLocationId = query.getShipperBPartnerAndLocationId();
+		if (shipperBPartnerAndLocationId != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, shipperBPartnerAndLocationId.getBpartnerId())
+					.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID, shipperBPartnerAndLocationId.getRepoId());
+		}
+
+		final OrgId orgId = query.getOrgId();
+		if (orgId != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
+		final LocalDate shipDate = query.getShipDate();
+		if (shipDate != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DateDoc, TimeUtil.asTimestamp(shipDate));
+		}
+
+		final ShipperTransportationId shipperTransportationToExclude = query.getShipperTransportationToExclude();
+		if (shipperTransportationToExclude != null)
+		{
+			builder.addNotEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationToExclude);
+		}
+
+		final Boolean processed = query.getProcessed();
+		if (processed != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, processed);
+		}
+
+		return builder.create();
 	}
 
 	@Override
@@ -145,37 +233,6 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.orElseGet(() -> create(request));
 	}
 
-	@NonNull
-	@Override
-	public Optional<ShipperTransportationReference> getEarliestShipperTransportationByOrderId(final OrderId orderId)
-	{
-		final I_M_ShipperTransportation record = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
-				.orderBy(I_M_ShipperTransportation.COLUMNNAME_DateDoc)
-				.create()
-				.first();
-
-		if (record == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(toShipperTransportationReference(record));
-
-	}
-
-	private static ShipperTransportationReference toShipperTransportationReference(@NotNull final I_M_ShipperTransportation record)
-	{
-		final ShipperTransportationId id = ShipperTransportationId.ofRepoId(record.getM_ShipperTransportation_ID());
-		return ShipperTransportationReference.builder()
-				.id(id)
-				.billOfLadingDate(TimeUtil.asInstant(record.getBLDate()))
-				.ETADate(TimeUtil.asInstant(record.getETA()))
-				.build();
-	}
-
 	@Override
 	public ImmutableList<OrderId> retrieveOrderIds(@NonNull final ShipperTransportationId shipperTransportationId)
 	{
@@ -186,5 +243,19 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.create()
 				.listDistinct(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, OrderId.class);
 
+	}
+
+	@Override
+	public Collection<I_M_ShipperTransportation> getByQuery(@NonNull final ShipperTransportationQuery query)
+	{
+		return toSqlQuery(query)
+				.list();
+	}
+
+	@Override
+	public boolean anyMatch(@NonNull final ShipperTransportationQuery query)
+	{
+		return toSqlQuery(query)
+				.anyMatch();
 	}
 }
