@@ -34,7 +34,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.TimeUtil;
 

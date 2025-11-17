@@ -34,7 +34,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.PickingSlotId;
@@ -73,7 +72,6 @@ import static de.metas.handlingunits.picking.job.service.PickingJobService.PICKI
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class PickingJob implements PickingJobHeaderOrLine
 {
-	@NonNull private static final AdMessageKey MSG_AccessCannotChange = AdMessageKey.of("AccessCannotChange");
 	@NonNull @Getter private final PickingJobId id;
 
 	@NonNull private final PickingJobHeader header;
@@ -435,14 +433,6 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		}
 
 		return withChangedLines(line -> line.withChangedSteps(stepIds, stepMapper));
-	}
-
-	public void assertCanUpdate(@NonNull final UserId userId)
-	{
-		if (!UserId.equals(this.getLockedBy(), userId))
-		{
-			throw new AdempiereException(MSG_AccessCannotChange);
-		}
 	}
 
 	@Value
