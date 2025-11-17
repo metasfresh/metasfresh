@@ -85,10 +85,10 @@ test('Simple picking test', async ({ page }) => {
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
-    await PickingJobScreen.pickHU({ 
+    await PickingJobScreen.pickHU({
         qrCode: masterdata.handlingUnits.HU1.qrCode,
         isScanDirectly: true,
-        expectQtyEntered: '3' 
+        expectQtyEntered: '3'
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
     await Backend.expect({
@@ -372,4 +372,26 @@ test('Close LU / Reopen LU', async ({ page }) => {
 
     await PickingJobScreen.clickReopenLUButton();
     await SelectPickTargetLUScreen.waitForScreen();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Check launcher already started indicator', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+
+    await PickingJobsListScreen.expectJobButtons([
+        { salesOrderId: masterdata.salesOrders.SO1.id, alreadyStarted: false }
+    ]);
+
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.goBack();
+
+    await PickingJobsListScreen.expectJobButtons([
+        { salesOrderId: masterdata.salesOrders.SO1.id, alreadyStarted: true }
+    ]);
 });

@@ -76,6 +76,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
@@ -102,6 +103,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
@@ -224,8 +226,11 @@ public class PickingJobService implements PickingSlotListener
 	{
 		return PickingJobCandidateRetrieveCommand.builder()
 				.packagingDAO(packagingDAO)
+				.handlingUnitsBL(handlingUnitsBL)
+				.warehouseBL(warehouseBL)
 				.configRepository(mobileUIPickingUserProfileRepository)
 				.pickingJobScheduleService(pickingJobScheduleService)
+				.workplaceService(workplaceService)
 				//
 				.query(query)
 				//

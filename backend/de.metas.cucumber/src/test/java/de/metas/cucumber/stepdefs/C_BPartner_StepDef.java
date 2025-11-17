@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
@@ -95,6 +96,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsTaxExempt;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Lookup_Label;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
@@ -118,6 +120,7 @@ public class C_BPartner_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
 	@NonNull private final C_Dunning_StepDefData dunningTable;
+	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 	@NonNull private final TestContext restTestContext;
@@ -230,10 +233,11 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setName(valueAndName.getName());
 		bPartnerRecord.setValue(valueAndName.getValue());
 		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
-		
+
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
 		bPartnerRecord.setIsCustomer(row.getAsOptionalBoolean(COLUMNNAME_IsCustomer).orElseFalse());
+		bPartnerRecord.setIsTaxExempt(row.getAsOptionalBoolean(COLUMNNAME_IsTaxExempt).orElseFalse());
 		bPartnerRecord.setIsSalesRep(row.getAsOptionalBoolean(COLUMNNAME_IsSalesRep).orElseFalse());
 		bPartnerRecord.setAD_Org_ID(orgId);
 		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
@@ -308,6 +312,10 @@ public class C_BPartner_StepDef
 					.build()).getRepoId());
 		}
 
+		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID)
+				.map(paymentTermTable::getId)
+				.ifPresent(paymentTermId -> bPartnerRecord.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
+
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRulePO, PaymentRule.class).ifPresent(paymentRulePO -> bPartnerRecord.setPaymentRulePO(paymentRulePO.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PO_InvoiceRule, InvoiceRule.class).ifPresent(poInvoiceRule -> bPartnerRecord.setPO_InvoiceRule(poInvoiceRule.getCode()));
@@ -340,7 +348,7 @@ public class C_BPartner_StepDef
 			}
 
 			InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
-			
+
 			// if a location was cretaed "on-they-fly", add it to bPartnerLocationTable.
 			// if no C_BPartner_Location_ID-identifer was given, use the C_BPartner_ID identifier
 			final StepDefDataIdentifier locationIdentifier =
@@ -363,7 +371,7 @@ public class C_BPartner_StepDef
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getName()));
 		row.getAsOptionalIdentifier("REST.Context.C_BPartner_ID")
 				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getC_BPartner_ID()));
-		
+
 	}
 
 	private void changeBPartner(@NonNull final DataTableRow row)

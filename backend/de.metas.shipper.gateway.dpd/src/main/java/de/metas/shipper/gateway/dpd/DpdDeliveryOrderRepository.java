@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.location.CountryCode;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
@@ -36,7 +37,6 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;

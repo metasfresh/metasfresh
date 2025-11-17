@@ -31,6 +31,8 @@ import de.metas.document.DocumentNoFilter;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.mobile.application.MobileApplicationId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
@@ -55,8 +57,6 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -160,6 +160,7 @@ public class WorkflowRestController
 				.userId(Env.getLoggedUserId())
 				.filterByQRCode(query.getFilterByQRCode())
 				.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+				.filterByQtyAvailableAtPickFromLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 				.facetIds(CollectionUtils.toImmutableSetOrNullIfEmpty(query.getFacetIds()))
 				.limit(query.isCountOnly() ? QueryLimit.NO_LIMIT : null)
 				.build();
@@ -175,6 +176,7 @@ public class WorkflowRestController
 						.applicationId(query.getApplicationId())
 						.userId(Env.getLoggedUserId())
 						.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+						.filterByQtyAvailableAtPickFromLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 						.activeFacetIds(CollectionUtils.toImmutableSetOrEmpty(query.getActiveFacetIds()))
 						.build()
 		);

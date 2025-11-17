@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +22,12 @@
 
 package de.metas.async.api;
 
+/**
+ * Implementations have the job of enqueuing workpackages. 
+ * See {@link de.metas.async.service.AsyncBatchService#executeBatch(java.util.function.Supplier, de.metas.async.AsyncBatchId)}.
+ */
 @FunctionalInterface
 public interface IEnqueueResult
 {
-	IEnqueueResult ONE_WORKPACKAGE_ENQUEUED = () -> 1;
-
 	int getWorkpackageEnqueuedCount();
 }

@@ -113,7 +113,6 @@ public final class StringUtils
 		return str.substring(start, end);
 	}
 
-
 	@NonNull
 	public static Optional<String> trimBlankToOptional(@Nullable final String str)
 	{
@@ -225,7 +224,7 @@ public final class StringUtils
 				Check.errorIf(true, "Unexpected parameter TruncateAt={}; lenght={}; string={}", side, maxLength, string);
 				result = ""; // won't be reached;
 		}
-		
+
 		if (onTrunc != null && !Objects.equals(string, result))
 		{
 			onTrunc.accept(string, result);
@@ -1137,6 +1136,29 @@ public final class StringUtils
 		}
 
 		return params;
+	}
 
+	public static String ucFirst(@Nullable final String str)
+	{
+		if (str == null || str.isEmpty())
+		{
+			return str;
+		}
+
+		char first = str.charAt(0);
+		if (!Character.isLetter(first))
+		{
+			return str;
+		}
+
+		final char capital = Character.toUpperCase(first);
+		if(first == capital)
+		{
+			return str;
+		}
+
+		final StringBuilder sb = new StringBuilder(str);
+		sb.setCharAt(0, capital);
+		return sb.toString();
 	}
 }

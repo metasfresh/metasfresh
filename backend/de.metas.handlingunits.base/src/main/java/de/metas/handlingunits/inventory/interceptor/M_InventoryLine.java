@@ -39,7 +39,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 
 @Interceptor(I_M_InventoryLine.class)
 @Callout(I_M_InventoryLine.class)

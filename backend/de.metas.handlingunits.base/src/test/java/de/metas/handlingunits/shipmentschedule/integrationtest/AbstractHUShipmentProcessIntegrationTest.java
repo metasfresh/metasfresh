@@ -44,6 +44,7 @@ import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
@@ -57,6 +58,7 @@ import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
+import de.metas.product.ProductRepository;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.user.UserGroupRepository;
@@ -108,6 +110,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 {
 	// Services
 	protected IHUShipperTransportationBL huShipperTransportationBL;
+	protected IHUPackageBL huPackageBL;
 	protected IHUPackageDAO huPackageDAO;
 
 	// Config: Product
@@ -216,9 +219,11 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// this.huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
 		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
+		SpringContextHolder.registerJUnitBean(ProductRepository.newInstanceForUnitTesting());
 
 		huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 		huPackageDAO = Services.get(IHUPackageDAO.class);
+		huPackageBL = Services.get(IHUPackageBL.class);
 
 		// Masterdata: Shipper Transportation
 		{
@@ -336,7 +341,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		{
 			//
 			// Add our aggregated HU to Shipper Transportation
-			assertThat(huShipperTransportationBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU)).as("HU is not eligible for shipper transportation: " + afterAggregation_HU).isTrue();
+			assertThat(huPackageBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU)).as("HU is not eligible for shipper transportation: " + afterAggregation_HU).isTrue();
 			huShipperTransportationBL
 					.addHUsToShipperTransportation(
 							ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()),

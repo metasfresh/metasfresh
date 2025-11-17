@@ -1,10 +1,8 @@
-package de.metas.async.processor.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.async.processor.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.async.processor.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
@@ -201,7 +201,7 @@ class WorkpackageProcessorTask implements Runnable
 			markStartProcessing(workPackage);
 
 			//
-			// Process WorkPackage in it's own transaction
+			// Process WorkPackage in its own transaction
 			if (workPackageProcessorWrapped.isRunInTransaction())
 			{
 				final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -283,6 +283,9 @@ class WorkpackageProcessorTask implements Runnable
 		}
 		finally
 		{
+			workPackage.setLockedAt(null); // Clear lock - workpackage is done
+			queueDAO.save(workPackage);
+			
 			afterWorkpackageProcessed();
 			loggable.flush();
 		}
@@ -441,16 +444,7 @@ class WorkpackageProcessorTask implements Runnable
 		contextFactory.setThreadInheritedWorkpackageAsyncBatch(null);
 		contextFactory.setThreadInheritedPriority(null);
 
-		try
-		{
-			queueProcessor.getQueue().unlock(workPackage);
-		}
-		catch (final Exception e)
-		{
-			markError(workPackage, AdempiereException.wrapIfNeeded(e));
-		}
-
-		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
+		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in the exterior
 		queueProcessor.notifyWorkpackageProcessed(workPackage, workPackageProcessorOriginal);
 	}
 
@@ -524,13 +518,11 @@ class WorkpackageProcessorTask implements Runnable
 
 		// clear it up; we don't have any issues this time
 		workPackage.setErrorMsg(null);
-		workPackage.setAD_Issue(null);
+		workPackage.setAD_Issue_ID(0);
 
 		workPackage.setProcessed(true);
 
 		setLastEndTime(workPackage); // update statistics
-
-		queueDAO.save(workPackage);
 
 		createAndFireEventWithStatus(workPackage, DONE);
 	}
@@ -554,6 +546,7 @@ class WorkpackageProcessorTask implements Runnable
 		workPackage.setSkippedAt(skippedAt);
 		workPackage.setSkipTimeoutMillis(skipTimeoutMillis);
 		workPackage.setSkipped_Count(skippedCount + 1);
+		workPackage.setLockedAt(null); // Clear lock so it can be retried
 
 		if (skippedCount <= 0 || workPackage.getSkipped_First_Time() == null)
 		{
@@ -561,8 +554,6 @@ class WorkpackageProcessorTask implements Runnable
 		}
 
 		setLastEndTime(workPackage); // update statistics
-
-		queueDAO.save(workPackage);
 
 		final String processorName;
 		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoIdOrNull(workPackage.getC_Queue_PackageProcessor_ID());
@@ -605,10 +596,9 @@ class WorkpackageProcessorTask implements Runnable
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
 		workPackage.setAD_Issue_ID(AdIssueId.toRepoId(issueId));
+		workPackage.setLockedAt(null); // Clear lock (allows retry if isAllowRetryOnError=true)
 
 		setLastEndTime(workPackage); // update statistics
-
-		queueDAO.save(workPackage);
 
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;

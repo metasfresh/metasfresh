@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.async
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package de.metas.async.model;
 
@@ -12,7 +34,7 @@ import java.util.Properties;
 public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_Queue_WorkPackage, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2134246769L;
+	private static final long serialVersionUID = 1120785445L;
 
     /** Standard Constructor */
     public X_C_Queue_WorkPackage (final Properties ctx, final int C_Queue_WorkPackage_ID, @Nullable final String trxName)
@@ -47,18 +69,6 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Issue getAD_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
-	}
-
-	@Override
-	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
 	}
 
 	@Override
@@ -158,15 +168,15 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public I_C_Async_Batch getC_Async_Batch()
+	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Async_Batch_ID, I_C_Async_Batch.class);
+		return get_ValueAsPO(COLUMNNAME_C_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class);
 	}
 
 	@Override
-	public void setC_Async_Batch(final I_C_Async_Batch C_Async_Batch)
+	public void setC_Async_Batch(final de.metas.async.model.I_C_Async_Batch C_Async_Batch)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Async_Batch_ID, I_C_Async_Batch.class, C_Async_Batch);
+		set_ValueFromPO(COLUMNNAME_C_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class, C_Async_Batch);
 	}
 
 	@Override
@@ -185,15 +195,15 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public I_C_Queue_PackageProcessor getC_Queue_PackageProcessor()
+	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Queue_PackageProcessor_ID, I_C_Queue_PackageProcessor.class);
+		return get_ValueAsPO(COLUMNNAME_C_Queue_PackageProcessor_ID, de.metas.async.model.I_C_Queue_PackageProcessor.class);
 	}
 
 	@Override
-	public void setC_Queue_PackageProcessor(final I_C_Queue_PackageProcessor C_Queue_PackageProcessor)
+	public void setC_Queue_PackageProcessor(final de.metas.async.model.I_C_Queue_PackageProcessor C_Queue_PackageProcessor)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Queue_PackageProcessor_ID, I_C_Queue_PackageProcessor.class, C_Queue_PackageProcessor);
+		set_ValueFromPO(COLUMNNAME_C_Queue_PackageProcessor_ID, de.metas.async.model.I_C_Queue_PackageProcessor.class, C_Queue_PackageProcessor);
 	}
 
 	@Override
@@ -227,13 +237,13 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setErrorMsg (final @Nullable String ErrorMsg)
+	public void setErrorMsg (final @Nullable java.lang.String ErrorMsg)
 	{
 		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
 	}
 
 	@Override
-	public String getErrorMsg()
+	public java.lang.String getErrorMsg() 
 	{
 		return get_ValueAsString(COLUMNNAME_ErrorMsg);
 	}
@@ -311,14 +321,15 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setLocked (final boolean Locked)
+	public void setLockedAt (final @Nullable java.sql.Timestamp LockedAt)
 	{
-		throw new IllegalArgumentException ("Locked is virtual column");	}
+		set_Value (COLUMNNAME_LockedAt, LockedAt);
+	}
 
 	@Override
-	public boolean isLocked() 
+	public java.sql.Timestamp getLockedAt() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Locked);
+		return get_ValueAsTimestamp(COLUMNNAME_LockedAt);
 	}
 
 	/** 
@@ -337,13 +348,13 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	/** Minor = 9 */
 	public static final String PRIORITY_Minor = "9";
 	@Override
-	public void setPriority (final String Priority)
+	public void setPriority (final java.lang.String Priority)
 	{
 		set_Value (COLUMNNAME_Priority, Priority);
 	}
 
 	@Override
-	public String getPriority()
+	public java.lang.String getPriority() 
 	{
 		return get_ValueAsString(COLUMNNAME_Priority);
 	}
@@ -358,6 +369,18 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setSkippedAt (final @Nullable java.sql.Timestamp SkippedAt)
+	{
+		set_Value (COLUMNNAME_SkippedAt, SkippedAt);
+	}
+
+	@Override
+	public java.sql.Timestamp getSkippedAt() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_SkippedAt);
 	}
 
 	@Override
@@ -385,27 +408,15 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setSkipped_Last_Reason (final @Nullable String Skipped_Last_Reason)
+	public void setSkipped_Last_Reason (final @Nullable java.lang.String Skipped_Last_Reason)
 	{
 		set_Value (COLUMNNAME_Skipped_Last_Reason, Skipped_Last_Reason);
 	}
 
 	@Override
-	public String getSkipped_Last_Reason()
+	public java.lang.String getSkipped_Last_Reason() 
 	{
 		return get_ValueAsString(COLUMNNAME_Skipped_Last_Reason);
-	}
-
-	@Override
-	public void setSkippedAt (final @Nullable java.sql.Timestamp SkippedAt)
-	{
-		set_Value (COLUMNNAME_SkippedAt, SkippedAt);
-	}
-
-	@Override
-	public java.sql.Timestamp getSkippedAt() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_SkippedAt);
 	}
 
 	@Override

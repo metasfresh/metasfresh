@@ -37,6 +37,7 @@ public class JsonSalesOrderCreateRequest
 		@NonNull BigDecimal qty;
 		@Nullable Identifier piItemProduct;
 		@Nullable List<Schedule> schedules;
+		@Nullable Identifier workplace;
 	}
 
 	//

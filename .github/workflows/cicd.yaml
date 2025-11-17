@@ -121,6 +121,21 @@ jobs:
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: Extract metasfresh-client
+        run: |
+          CONTAINER_ID=$(docker create metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }})
+          docker cp \
+            "$CONTAINER_ID":/backend/metasfresh-dist/dist/target/dist/deploy/download/metasfresh-client.zip \
+            ./metasfresh-client.zip
+          docker rm "$CONTAINER_ID"
+
+      - name: Upload metasfresh-client
+        uses: actions/upload-artifact@v4
+        with:
+          name: metasfresh-client
+          path: metasfresh-client.zip
+          retention-days: 5
+
       - name: build-backend-dist
         run: |
           docker buildx build \

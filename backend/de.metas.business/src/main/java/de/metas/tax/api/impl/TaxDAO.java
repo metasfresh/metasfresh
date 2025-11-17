@@ -385,6 +385,12 @@ public class TaxDAO implements ITaxDAO
 			loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
 		}
 
+		if (taxQuery.getIsTaxExempt() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_IsTaxExempt, taxQuery.getIsTaxExempt());
+			loggable.addLog("IsTaxExempt={}", taxQuery.getIsTaxExempt());
+		}
+
 		final BPartnerId bpartnerId = taxQuery.getBPartnerId();
 
 		final VATIdentifier bpVATaxID = Optional.ofNullable( taxQuery.getBPartnerLocationId())
