@@ -121,10 +121,9 @@ export const PickingJobScreen = {
     }),
 
     pickHU: async ({ qrCode, isScanDirectly, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
-        if(isScanDirectly) {
+        if (isScanDirectly) {
             await BarcodeScannerComponent.type(qrCode);
-        }
-        else {
+        } else {
             await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
             await PickingJobScanHUScreen.waitForScreen();
             await PickingJobScanHUScreen.typeQRCode(qrCode);
@@ -157,6 +156,11 @@ export const PickingJobScreen = {
                 expect(classes).toContain(`indicator-color-${color}`);
             });
         }
+    }),
+
+    clickPickAllButton: async () => await step(`${NAME} - Click Pick All button`, async () => {
+        await page.getByTestId('pickAll-button').tap();
+        await PickingJobsListScreen.waitForScreen();
     }),
 
     abort: async () => await step(`${NAME} - Abort`, async () => {

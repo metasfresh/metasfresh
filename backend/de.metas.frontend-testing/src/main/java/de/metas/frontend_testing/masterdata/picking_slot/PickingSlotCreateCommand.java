@@ -37,6 +37,7 @@ public class PickingSlotCreateCommand
 				.isDynamic(true)
 				.bpartnerAndLocationId(bpartnerLocationId)
 				.build());
+		context.putIdentifier(identifier, pickingSlot.getPickingSlotId());
 
 		return JsonPickingSlotCreateResponse.builder()
 				.id(pickingSlot.getPickingSlotId())
