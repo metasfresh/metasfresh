@@ -192,8 +192,7 @@ public class CalloutOrder extends CalloutEngine
 
 		order.setInvoiceRule(getDefaultInvoiceRule());
 
-		// Payment Rule - POS Order
-		// Invoice Rule - POS Order
+		// Invoice Rule, Payment Rule - POS Order
 		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
 			order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
