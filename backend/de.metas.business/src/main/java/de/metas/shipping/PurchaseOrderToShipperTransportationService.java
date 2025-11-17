@@ -158,7 +158,6 @@ public class PurchaseOrderToShipperTransportationService
 		final List<I_C_OrderLine> orderLinesWithoutLUQty = getUnassignedOrderLines(orderLines.stream()
 				.filter(ol -> !orderLinesWithLUQty.contains(ol) && !ol.isPackagingMaterial())
 				.collect(Collectors.toList()));
-		getUnassignedOrderLines(orderLinesWithoutLUQty);
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 479216404L;
+	private static final long serialVersionUID = 1763517836L;
 
     /** Standard Constructor */
     public X_M_Shipper (final Properties ctx, final int M_Shipper_ID, @Nullable final String trxName)
@@ -110,6 +110,30 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setPickupTimeFrom (final java.sql.Timestamp PickupTimeFrom)
+	{
+		set_Value (COLUMNNAME_PickupTimeFrom, PickupTimeFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getPickupTimeFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PickupTimeFrom);
+	}
+
+	@Override
+	public void setPickupTimeTo (final java.sql.Timestamp PickupTimeTo)
+	{
+		set_Value (COLUMNNAME_PickupTimeTo, PickupTimeTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getPickupTimeTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PickupTimeTo);
 	}
 
 	/** 
