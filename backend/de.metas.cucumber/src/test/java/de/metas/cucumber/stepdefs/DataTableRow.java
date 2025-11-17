@@ -59,6 +59,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -763,6 +764,23 @@ public class DataTableRow
 	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseLocalDateTime(valueStr, columnName));
+	}
+
+	public Optional<LocalTime> getAsOptionalLocalTime(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseLocalTime(valueStr, columnName));
+	}
+
+	private LocalTime parseLocalTime(@NonNull final String valueStr, final @NonNull String columnName)
+	{
+		try
+		{
+			return LocalTime.parse(valueStr);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnName + "` has invalid LocalTime `" + valueStr + "`");
+		}
 	}
 
 	@NonNull

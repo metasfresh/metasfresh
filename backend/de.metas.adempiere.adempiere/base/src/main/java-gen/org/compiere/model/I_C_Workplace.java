@@ -143,6 +143,29 @@ public interface I_C_Workplace
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Max. Picking Jobs.
+	 * Specifies the maximum number of picking jobs allowed for this workplace.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMaxPickingJobs (int MaxPickingJobs);
+
+	/**
+	 * Get Max. Picking Jobs.
+	 * Specifies the maximum number of picking jobs allowed for this workplace.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMaxPickingJobs();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_MaxPickingJobs = new ModelColumn<>(I_C_Workplace.class, "MaxPickingJobs", null);
+	String COLUMNNAME_MaxPickingJobs = "MaxPickingJobs";
+
+	/**
 	 * Set Picking Slot.
 	 *
 	 * <br>Type: Search
@@ -205,6 +228,29 @@ public interface I_C_Workplace
 
 	ModelColumn<I_C_Workplace, Object> COLUMN_Name = new ModelColumn<>(I_C_Workplace.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Order Picking Type.
+	 * Defines the method used to pick items for an order.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrderPickingType (@Nullable java.lang.String OrderPickingType);
+
+	/**
+	 * Get Order Picking Type.
+	 * Defines the method used to pick items for an order.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOrderPickingType();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_OrderPickingType = new ModelColumn<>(I_C_Workplace.class, "OrderPickingType", null);
+	String COLUMNNAME_OrderPickingType = "OrderPickingType";
 
 	/**
 	 * Set Pick From Locator.

@@ -231,6 +231,48 @@ public interface I_M_Shipper
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Pickup Time From.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickupTimeFrom (java.sql.Timestamp PickupTimeFrom);
+
+	/**
+	 * Get Pickup Time From.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getPickupTimeFrom();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_PickupTimeFrom = new ModelColumn<>(I_M_Shipper.class, "PickupTimeFrom", null);
+	String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
+
+	/**
+	 * Set Abholung Uhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickupTimeTo (java.sql.Timestamp PickupTimeTo);
+
+	/**
+	 * Get Abholung Uhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getPickupTimeTo();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_PickupTimeTo = new ModelColumn<>(I_M_Shipper.class, "PickupTimeTo", null);
+	String COLUMNNAME_PickupTimeTo = "PickupTimeTo";
+
+	/**
 	 * Set Shipper Gateway.
 	 *
 	 * <br>Type: List
