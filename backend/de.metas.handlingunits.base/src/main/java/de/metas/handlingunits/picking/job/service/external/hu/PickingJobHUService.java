@@ -257,7 +257,7 @@ public class PickingJobHUService
 		}
 	}
 
-	private void reservePickFromHU(@NonNull final PickingJobStep step, @NonNull final BPartnerId customerId)
+	private void reservePickFromHU(@NonNull final PickingJobStep step, @Nullable final BPartnerId customerId)
 	{
 		huReservationService.makeReservation(
 						ReserveHUsRequest.builder()
