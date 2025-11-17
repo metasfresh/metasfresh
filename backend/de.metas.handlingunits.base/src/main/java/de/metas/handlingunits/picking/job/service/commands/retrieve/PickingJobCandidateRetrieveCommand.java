@@ -3,24 +3,21 @@ package de.metas.handlingunits.picking.job.service.commands.retrieve;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
-import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.api.IWarehouseBL;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -32,12 +29,9 @@ public class PickingJobCandidateRetrieveCommand
 {
 	//
 	// Services
-	@NonNull private final IPackagingDAO packagingDAO;
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
-	@NonNull private final IWarehouseBL warehouseBL;
-	@NonNull private final MobileUIPickingUserProfileRepository configRepository;
+	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
+	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
-	@NonNull private final WorkplaceService workplaceService;
 
 	//
 	// Params
@@ -68,7 +62,7 @@ public class PickingJobCandidateRetrieveCommand
 			return Stream.of();
 		}
 
-		return packagingDAO.stream(query.toPackageableQueryBuilder().onlyShipmentScheduleIds(jobSchedules.keySet()).build());
+		return shipmentScheduleService.stream(query.toPackageableQueryBuilder().onlyShipmentScheduleIds(jobSchedules.keySet()).build());
 	}
 
 	@Nullable
@@ -135,7 +129,7 @@ public class PickingJobCandidateRetrieveCommand
 
 	private void add(@NonNull final ScheduledPackageable item)
 	{
-		final PickingJobAggregationType aggregationType = configRepository.getAggregationType(item.getCustomerId());
+		final PickingJobAggregationType aggregationType = configService.getAggregationType(item.getCustomerId());
 		switch (aggregationType)
 		{
 			case SALES_ORDER:

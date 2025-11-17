@@ -31,14 +31,20 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
+import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
@@ -188,32 +194,53 @@ public class PickingJobTestHelper
 		final PickingJobLockService pickingJobLockService = new PickingJobLockService(new InMemoryShipmentScheduleLockRepository());
 		documentLocationBL = DummyDocumentLocationBL.newInstanceForUnitTesting();
 		pickingJobScheduleService = PickingJobScheduleService.newInstanceForUnitTesting();
+		final PickingJobWarehouseService warehouseService = new PickingJobWarehouseService();
+		final HULabelService huLabelService = new HULabelService(
+				new HULabelConfigService(new HULabelConfigRepository()),
+				huQRCodeService
+		);
+
+		final MobileUIPickingUserProfileService configService = new MobileUIPickingUserProfileService(
+				mobileProfileRepository,
+				new PickingConfigRepositoryV2()
+		);
+
+		final PickingJobBPartnerService bpartnerService = new PickingJobBPartnerService(bpartnerBL, documentLocationBL);
+
+		final PickingJobHUService huService = new PickingJobHUService(
+				configService,
+				warehouseService,
+				huQRCodeService,
+				huLabelService,
+				huReservationService,
+				inventoryService);
+
+		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
+				new PickingJobSalesOrderService(),
+				warehouseService,
+				bpartnerService,
+				new PickingJobProductService(),
+				pickingJobSlotService,
+				pickingJobLockService,
+				huService,
+				mobileProfileRepository
+		);
+
 		pickingJobService = new PickingJobService(
+				bpartnerService,
+				warehouseService,
+				new PickingJobProductService(),
+				new PickingJobShipmentScheduleService(),
 				pickingJobRepository,
 				pickingJobLockService,
 				pickingJobSlotService,
 				pickingCandidateService,
-				new PickingJobHUReservationService(huReservationService),
-				new DefaultPickingJobLoaderSupportingServicesFactory(
-						pickingJobSlotService,
-						bpartnerBL,
-						huQRCodeService,
-						mobileProfileRepository,
-						pickingJobLockService
-				),
-				new PickingConfigRepositoryV2(),
+				defaultPickingJobLoaderSupportingServicesFactory,
 				PickingShipmentService.newInstanceForUnitTesting(),
-				huQRCodeService,
-				new HULabelService(
-						new HULabelConfigService(new HULabelConfigRepository()),
-						huQRCodeService
-				),
-				inventoryService,
-				huReservationService,
 				workplaceService,
-				mobileProfileRepository,
-				documentLocationBL,
-				pickingJobScheduleService
+				configService,
+				pickingJobScheduleService,
+				huService
 		);
 
 		huTracer = new HUTracerInstance()

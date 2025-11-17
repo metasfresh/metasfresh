@@ -35,8 +35,6 @@ import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
-import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
-import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
@@ -45,6 +43,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingSlotSuggestions;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.picking.qrcode.PickingSlotQRCode;
@@ -52,6 +52,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -252,5 +253,10 @@ public class PickingJobRestService
 	public PickingSlotSuggestions getPickingSlotsSuggestions(@NonNull final PickingJob pickingJob)
 	{
 		return pickingJobService.getPickingSlotsSuggestions(pickingJob);
+	}
+
+	public void pickAll(final PickingJobId pickingJobId, final @NotNull UserId callerId)
+	{
+		pickingJobService.pickAll(pickingJobId, callerId);
 	}
 }

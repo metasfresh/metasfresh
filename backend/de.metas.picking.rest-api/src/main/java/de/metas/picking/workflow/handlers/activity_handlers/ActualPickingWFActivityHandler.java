@@ -89,8 +89,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.actualPicking");
 	public static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
 
-	private static final AdMessageKey LAST_PICKED_HU_BEST_BEFORE_DATE = AdMessageKey
-			.of("de.metas.picking.workflow.handlers.activity_handlers.LAST_PICKED_HU_BEST_BEFORE_DATE");
+	private static final AdMessageKey LAST_PICKED_HU_BEST_BEFORE_DATE = AdMessageKey.of("de.metas.picking.workflow.handlers.activity_handlers.LAST_PICKED_HU_BEST_BEFORE_DATE");
 
 	@VisibleForTesting
 	public static final String PROP_pickingJob = "pickingJob";
