@@ -5,7 +5,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2022-03-22T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2022-03-22T13:30:13+00:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     And metasfresh contains M_Products:
@@ -290,6 +290,30 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
     Then validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus | OPT.PaymentRule |
       | clonedOrder_po        | bpartner_1               | location_1                        | 2022-03-22  | POO         | EUR          | A            | P               | false     | DR        | D               |
+
+
+  @from:cucumber
+  Scenario: Payment rule 'DirectDebit' inherited from partner, correctly propagates when DocType is changed
+    Given metasfresh contains C_BPartners:
+      | Identifier | IsCustomer | M_PricingSystem_ID | PaymentRule |
+      | bpartner_1 | Y          | pricingSys_1       | D           |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | location_1 | bpartner_1    | Y               | Y               |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | PaymentRule | DocBaseType | DocSubType |
+      | order_so   | true    | bpartner_1    | 2022-03-20  | pricingSys_1       | D           | SOO         | PR         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | order_so              | product_1               | 10         |
+    And update order
+      | C_Order_ID | DocBaseType | DocSubType |
+      | order_so   | SOO         | SO         |
+
+    # C_Order.PaymentRule => same C_Order.PaymentRule
+    Then validate the created orders
+      | C_Order_ID | PaymentRule |
+      | order_so   | D           |
 
 
   @from:cucumber
