@@ -12,9 +12,10 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | AD_Org_ID.Identifier | Name                     | Value           |
       | switzerland_org      | Switzerland Organization | switzerland_org |
     And metasfresh contains C_Tax
-      | Identifier        | C_TaxCategory_ID.InternalName | Name                  | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | OPT.AD_Org_ID.Identifier | IsTaxExempt | SeqNo |
-      | switzerland_tax   | Normal                        | switzerland_tax_S0151 | 2021-04-02 | 2.5  | CH                       | CH                        | switzerland_org          |             | 10    |
-      | swiss-to-neth_tax | Normal                        | swiss-to-neth_tax     | 2021-04-02 | 2.5  | CH                       | NL                        | switzerland_org          |             | 20    |
+      | Identifier             | C_TaxCategory_ID.InternalName | Name                         | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | OPT.AD_Org_ID.Identifier | IsTaxExempt | SeqNo | TypeOfDestCountry    |
+      | switzerland_tax        | Normal                        | switzerland_tax_S0151        | 2021-04-02 | 2.5  | CH                       | CH                        | switzerland_org          |             | 10    | DOMESTIC             |
+      | swiss-to-neth_tax      | Normal                        | swiss-to-neth_tax            | 2021-04-02 | 2.5  | CH                       | NL                        | switzerland_org          |             | 20    | WITHIN_COUNTRY_AREA |
+      | switzerland_tax_exempt | Normal                        | switzerland_tax_exempt_S0483 | 2021-04-02 | 0    | CH                       | CH                        | switzerland_org          | Y           | 40    | DOMESTIC             |
     And metasfresh contains M_Products:
       | Identifier    | Value         | Name          | OPT.AD_Org_ID.Identifier |
       | product_S0151 | product_S0151 | product_S0151 | switzerland_org          |
@@ -340,9 +341,7 @@ Feature: Validate tax calculation for orders taking into account dropship locati
   _Given 2x C_Tax records -> one configured for Switzerland with TaxExempt and one for Switzerland, without TaxExempt
   _When completing one sales C_Order with C_BPartnerLocation in Switzerland and the AD_Org located in Switzerland
   _Then the C_Tax_ID on C_OrderLine should be the one configured for TaxExempt
-    When  metasfresh contains C_Tax
-      | switzerland_tax_exempt | Normal | switzerland_tax_exempt_S0483 | 2021-04-02 | 0 | CH | CH | switzerland_org | Y | 40 |
-    And metasfresh contains C_Orders:
+    Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
       | o_1_t      | true    | bpartner_2               | 2022-08-18  | switzerland_org          | switzerland_warehouse         |
     And metasfresh contains C_OrderLines:
