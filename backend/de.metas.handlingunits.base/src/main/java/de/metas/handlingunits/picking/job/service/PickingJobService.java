@@ -109,10 +109,10 @@ public class PickingJobService implements PickingSlotListener
 		return pickingJobRepository.getById(pickingJobId, loadingSupportingServices);
 	}
 
-	public void updateById(@NonNull final PickingJobId pickingJobId, @NonNull UnaryOperator<PickingJob> updater)
+	public PickingJob updateById(@NonNull final PickingJobId pickingJobId, @NonNull UnaryOperator<PickingJob> updater)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
-		pickingJobRepository.updateById(pickingJobId, loadingSupportingServices, updater);
+		return pickingJobRepository.updateById(pickingJobId, loadingSupportingServices, updater);
 	}
 
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
@@ -140,7 +140,7 @@ public class PickingJobService implements PickingSlotListener
 				.build().execute();
 	}
 
-	public PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(@NonNull final PickingJob pickingJob)
+	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
 		return PickingJobCompleteCommand.builder()
 				.configService(configService)
@@ -151,7 +151,8 @@ public class PickingJobService implements PickingSlotListener
 				.huService(huService)
 				.shipmentService(shipmentService)
 				//
-				.pickingJob(pickingJob);
+				.pickingJob(pickingJob)
+				.execute();
 	}
 
 	public PickingJob abort(@NonNull final PickingJob pickingJob)
@@ -287,16 +288,7 @@ public class PickingJobService implements PickingSlotListener
 		{
 			case PICK:
 			{
-				return PickingJobPickCommand.builder()
-						.productService(productService)
-						.bpartnerService(bpartnerService)
-						.warehouseService(warehouseService)
-						.shipmentScheduleService(shipmentScheduleService)
-						.configService(configService)
-						.pickingJobService(this)
-						.pickingJobRepository(pickingJobRepository)
-						.pickingSlotService(pickingSlotService)
-						.huService(huService)
+				return newPickCommand()
 						//
 						.pickingJob(pickingJob)
 						.pickingJobLineId(event.getPickingLineId())
@@ -340,6 +332,20 @@ public class PickingJobService implements PickingSlotListener
 				throw new AdempiereException("Unhandled event type: " + event);
 			}
 		}
+	}
+
+	public PickingJobPickCommand.PickingJobPickCommandBuilder newPickCommand()
+	{
+		return PickingJobPickCommand.builder()
+				.productService(productService)
+				.bpartnerService(bpartnerService)
+				.warehouseService(warehouseService)
+				.shipmentScheduleService(shipmentScheduleService)
+				.configService(configService)
+				.pickingJobService(this)
+				.pickingJobRepository(pickingJobRepository)
+				.pickingSlotService(pickingSlotService)
+				.huService(huService);
 	}
 
 	public void unassignAllByUserId(@NonNull final UserId userId)
@@ -687,40 +693,14 @@ public class PickingJobService implements PickingSlotListener
 		return pickingSlotService.getPickingSlotsSuggestions(deliveryLocations);
 	}
 
-	public void pickAll(final PickingJobId pickingJobId, final @NotNull UserId callerId)
+	public PickingJob pickAll(final PickingJobId pickingJobId, final @NotNull UserId callerId)
 	{
-		PickingJobPickAllCommand.builder()
+		return PickingJobPickAllCommand.builder()
 				.pickingJobService(this)
 				.pickingJobId(pickingJobId)
 				.callerId(callerId)
 				.build()
 				.execute();
-
-		PickingJobPickAllCommand.builder()
-				.pickingJobService(this)
-				.pickingJobRepository(pickingJobRepository)
-				.huService(huService)
-				//
-				.pickingJobId(pickingJobId)
-				.callerId(callerId)
-				// .pickFromKey(event.getPickFromKey())
-				// .pickFromQRCode(event.getQrCode())
-				// .qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
-				// .isPickWholeTU(event.isPickWholeTU())
-				// .checkIfAlreadyPacked(event.isCheckIfAlreadyPacked())
-				// .createInventoryForMissingQty(true)
-				// .qtyRejectedBD(event.getQtyRejected())
-				// .qtyRejectedReasonCode(event.getQtyRejectedReasonCode())
-				// .catchWeightBD(event.getCatchWeight())
-				// .isSetBestBeforeDate(event.isSetBestBeforeDate())
-				// .bestBeforeDate(event.getBestBeforeDate())
-				// .isSetLotNo(event.isSetLotNo())
-				// .lotNo(event.getLotNo())
-				// .isCloseTarget(event.isCloseTarget())
-				//
-				.build()
-				.execute();
-
 	}
 
 }

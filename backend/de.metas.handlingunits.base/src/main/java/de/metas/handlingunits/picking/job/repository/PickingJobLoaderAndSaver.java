@@ -137,13 +137,18 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void updateById(@NonNull PickingJobId pickingJobId, @NonNull UnaryOperator<PickingJob> updater)
+	public PickingJob updateById(@NonNull PickingJobId pickingJobId, @NonNull UnaryOperator<PickingJob> updater)
 	{
 		final PickingJob pickingJob = loadById(pickingJobId);
 		final PickingJob pickingJobChanged = updater.apply(pickingJob);
 		if (!Objects.equals(pickingJob, pickingJobChanged))
 		{
-			save(pickingJob);
+			save(pickingJobChanged);
+			return pickingJobChanged;
+		}
+		else
+		{
+			return pickingJob;
 		}
 	}
 

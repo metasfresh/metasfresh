@@ -168,8 +168,7 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
-		return pickingJobService.prepareToComplete(pickingJob)
-				.execute();
+		return pickingJobService.complete(pickingJob);
 	}
 
 	public ADRefList getQtyRejectedReasons()
@@ -255,8 +254,8 @@ public class PickingJobRestService
 		return pickingJobService.getPickingSlotsSuggestions(pickingJob);
 	}
 
-	public void pickAll(final PickingJobId pickingJobId, final @NotNull UserId callerId)
+	public PickingJob pickAll(final PickingJobId pickingJobId, final @NotNull UserId callerId)
 	{
-		pickingJobService.pickAll(pickingJobId, callerId);
+		return pickingJobService.pickAll(pickingJobId, callerId);
 	}
 }

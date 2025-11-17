@@ -271,11 +271,11 @@ public class PickingRestController
 		}
 	}
 
-	@GetMapping("/job/{wfProcessId}/pickAll")
-	public void pickAllAndComplete(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	@PostMapping("/job/{wfProcessId}/pickAll")
+	public WFProcess pickAllAndComplete(@PathVariable("wfProcessId") final String wfProcessIdStr)
 	{
 		assertApplicationAccess();
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
-		pickingMobileApplication.pickAll(wfProcessId, getLoggedUserId());
+		return pickingMobileApplication.pickAll(wfProcessId, getLoggedUserId());
 	}
 }

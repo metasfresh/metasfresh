@@ -1,8 +1,8 @@
 package de.metas.handlingunits.picking.job.service.commands.pick_all;
 
+import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
-import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -16,24 +16,36 @@ public class PickingJobPickAllCommand
 	// services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final PickingJobService pickingJobService;
-	@NonNull private final PickingJobRepository pickingJobRepository;
-	@NonNull private final PickingJobHUService huService;
 
 	// params
 	@NonNull PickingJobId pickingJobId;
 	@NonNull UserId callerId;
 
-	public void execute()
+	public PickingJob execute()
 	{
-		trxManager.runInThreadInheritedTrx(this::executeInTrx);
+		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 
-	private void executeInTrx()
+	private PickingJob executeInTrx()
 	{
-		// _pickingJob.assertNotProcessed();
+		return pickingJobService.updateById(pickingJobId, pickingJob -> {
+			pickingJob.assertNotProcessed();
 
-		// updateById(pickingJobId, pickingJob -> {
-		// 	pickingJob.assertCanUpdate(callerId);
-		// });
+			PickingJob pickingJobChanged = pickingJob;
+
+			for (PickingJobLine line : pickingJob.getLines())
+			{
+				pickingJobChanged = pickingJobService.newPickCommand()
+						.pickingJob(pickingJobChanged)
+						.pickingJobLineId(line.getId())
+						.qtyToPickBD(line.getQtyRemainingToPick().toBigDecimal())
+						// TODO DO NOT SAVE
+						//
+						.build()
+						.execute();
+			}
+
+			return pickingJobService.complete(pickingJobChanged);
+		});
 	}
 }

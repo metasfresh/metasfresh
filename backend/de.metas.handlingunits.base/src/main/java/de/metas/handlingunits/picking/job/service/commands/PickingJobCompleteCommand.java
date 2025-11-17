@@ -59,6 +59,7 @@ public class PickingJobCompleteCommand
 		this.initialPickingJob0 = pickingJob;
 	}
 
+	@SuppressWarnings("unused")
 	public static class PickingJobCompleteCommandBuilder
 	{
 		public PickingJob execute() {return build().execute();}

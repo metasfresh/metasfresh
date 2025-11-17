@@ -621,9 +621,10 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		return pickingJobRestService.getClosedLUs(pickingJob, lineId);
 	}
 
-	public void pickAll(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	public WFProcess pickAll(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
 		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
-		pickingJobRestService.pickAll(pickingJobId, callerId);
+		final PickingJob pickingJob = pickingJobRestService.pickAll(pickingJobId, callerId);
+		return toWFProcess(pickingJob);
 	}
 }

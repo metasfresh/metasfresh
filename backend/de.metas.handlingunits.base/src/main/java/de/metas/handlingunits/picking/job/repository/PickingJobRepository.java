@@ -61,12 +61,12 @@ public class PickingJobRepository
 		PickingJobLoaderAndSaver.forSaving().save(pickingJob);
 	}
 
-	public void updateById(
+	public PickingJob updateById(
 			@NonNull PickingJobId pickingJobId,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
 			@NonNull UnaryOperator<PickingJob> updater)
 	{
-		PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
 				.updateById(pickingJobId, updater);
 	}
 
