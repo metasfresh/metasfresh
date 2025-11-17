@@ -119,6 +119,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 					.process(this::prepareHttpRequestForTokenAuth)
 				.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth))
 					.process(this::prepareHttpRequestForOAuth)
+				.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.HMAC))
+					.process(this::prepareHttpRequestForHmacAuth)
 				.otherwise()
 					.throwException(new RuntimeCamelException("Unsupported authentication type"))
 			.end()
@@ -212,6 +214,20 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, endpointParameters.getToken());
+		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
+		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void prepareHttpRequestForHmacAuth(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemOutboundEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.HMAC);
+
+		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
 		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
