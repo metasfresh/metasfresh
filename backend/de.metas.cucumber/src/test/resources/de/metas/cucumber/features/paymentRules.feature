@@ -299,7 +299,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | bpartner_dd_1 | Y          | pricingSys_1       | D           |
     And metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | PaymentRule | DocBaseType | DocSubType |
-      | order_dd_so | true    | bpartner_dd_1 | 2022-03-20  | pricingSys_1       | D           | SOO         | PR         |
+      | order_dd_so | true    | bpartner_dd_1 | 2022-03-20  | pricingSys_1       | B           | SOO         | PR         |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID  | M_Product_ID | QtyEntered |
       | ol_dd_1    | order_dd_so | product_1    | 10         |
