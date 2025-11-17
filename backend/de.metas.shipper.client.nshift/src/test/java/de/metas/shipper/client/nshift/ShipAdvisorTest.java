@@ -73,6 +73,8 @@ public class ShipAdvisorTest
 						.houseNo("2")
 						.build())
 				.pickupDate("2025-10-02")
+				.pickupTimeFrom("08:00:00")
+				.pickupTimeTo("17:00")
 				.pickupNote("Pickup note")
 				.deliveryAddress(JsonAddress.builder()
 						.bpartnerId(123)

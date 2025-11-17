@@ -31,11 +31,14 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Value
 @Builder
 public class CreateShipperTransportationRequest
 {
+	public static final LocalTime DEFAULT_PICKUP_TIME_FROM = LocalTime.of(8, 0);
+	public static final LocalTime DEFAULT_PICKUP_TIME_TO = LocalTime.of(17, 0);
 	@NonNull
 	OrgId orgId;
 
@@ -47,6 +50,10 @@ public class CreateShipperTransportationRequest
 
 	@NonNull
 	LocalDate shipDate;
+
+	@NonNull @Builder.Default LocalTime pickupTimeFrom = DEFAULT_PICKUP_TIME_FROM;
+
+	@NonNull @Builder.Default LocalTime pickupTimeTo = DEFAULT_PICKUP_TIME_TO;
 
 	/**
 	 * Should be {@code false} if metasfresh on-the-fly-picked HUs, but the user doesn't need to know which ones.

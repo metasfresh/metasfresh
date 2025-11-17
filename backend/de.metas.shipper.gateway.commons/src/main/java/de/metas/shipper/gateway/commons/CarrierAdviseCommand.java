@@ -69,6 +69,8 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -123,7 +125,7 @@ public class CarrierAdviseCommand
 					.getClientFactory(shipperGatewayId)
 					.newClientForShipperId(shipperId);
 
-			final JsonDeliveryAdvisorRequest request = createAdvisorRequest(shipmentSchedule, client);
+			final JsonDeliveryAdvisorRequest request = createAdvisorRequest(shipperId, shipmentSchedule, client);
 			logger.debug("AdviseShipment request: {}", request);
 			final JsonDeliveryAdvisorResponse response = client.adviseShipment(request);
 			logger.debug("AdviseShipment response: {}", response);
@@ -146,15 +148,18 @@ public class CarrierAdviseCommand
 		return shipmentScheduleService.getById(shipmentScheduleId);
 	}
 
-	private JsonDeliveryAdvisorRequest createAdvisorRequest(@NonNull final ShipmentSchedule shipmentSchedule, final ShipperGatewayClient client)
+	private JsonDeliveryAdvisorRequest createAdvisorRequest(final ShipperId shipperId, @NonNull final ShipmentSchedule shipmentSchedule, final ShipperGatewayClient client)
 	{
 		if (shipmentSchedule.getDateOrdered() == null)
 		{
 			throw new AdempiereException("shipmentSchedule.dateOrdered is null");
 		}
+		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
 
 		return JsonDeliveryAdvisorRequest.builder()
 				.pickupDate(shipmentSchedule.getDateOrdered().toLocalDate().toString())
+				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()).toString())
+				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()).toString())
 				.pickupAddress(getJsonPickupAddress(shipmentSchedule))
 				.deliveryAddress(getJsonDeliveryAddress(shipmentSchedule))
 				.shipperConfig(Objects.requireNonNull(client.getJsonShipperConfig()))
