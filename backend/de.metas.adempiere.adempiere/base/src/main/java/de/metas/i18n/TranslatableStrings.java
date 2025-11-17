@@ -368,7 +368,7 @@ public class TranslatableStrings
 
 	public static ITranslatableString parse(@Nullable final String text)
 	{
-		if (text == null || text.isEmpty())
+		if (Check.isBlank(text))
 		{
 			return TranslatableStrings.empty();
 		}

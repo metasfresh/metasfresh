@@ -46,6 +46,7 @@ import java.util.Set;
 /* package */ final class HUPIItemProductQuery implements IHUPIItemProductQuery
 {
 	private int huPIItemId = -1;
+	@Nullable
 	private ImmutableSet<ProductId> onlyProductIds = null;
 	@Nullable
 	private PriceListVersionId priceListVersionId = null;

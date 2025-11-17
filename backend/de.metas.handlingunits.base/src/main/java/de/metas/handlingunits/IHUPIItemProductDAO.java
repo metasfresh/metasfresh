@@ -22,7 +22,9 @@
 
 package de.metas.handlingunits;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -54,6 +56,8 @@ import java.util.Set;
 public interface IHUPIItemProductDAO extends ISingletonService
 {
 	HUPIItemProduct getById(@NonNull HUPIItemProductId id);
+
+	ImmutableList<HUPIItemProduct> retrieveByGTIN(@NonNull GTIN gtin);
 
 	@NonNull I_M_HU_PI_Item_Product getRecordById(@NonNull HUPIItemProductId id);
 

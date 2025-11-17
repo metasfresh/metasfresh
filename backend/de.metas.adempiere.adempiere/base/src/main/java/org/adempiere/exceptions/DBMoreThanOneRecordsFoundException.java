@@ -42,12 +42,12 @@ public class DBMoreThanOneRecordsFoundException extends DBException
 {
 	public static final AdMessageKey MSG_QueryMoreThanOneRecordsFound = AdMessageKey.of("QueryMoreThanOneRecordsFound");
 
-	public DBMoreThanOneRecordsFoundException(String detailMessage)
+	public DBMoreThanOneRecordsFoundException(@Nullable final String detailMessage)
 	{
 		this(TranslatableStrings.parse(detailMessage));
 	}
 
-	public DBMoreThanOneRecordsFoundException(@Nullable ITranslatableString detailMessage)
+	public DBMoreThanOneRecordsFoundException(@Nullable final ITranslatableString detailMessage)
 	{
 		super(buildMsg(detailMessage));
 	}

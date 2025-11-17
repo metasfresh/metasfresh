@@ -121,9 +121,6 @@ public interface IHUPIItemProductQuery
 
 	void setAllowAnyPartner(final boolean allowAnyPartner);
 
-	/**
-	 * task: https://metasfresh.atlassian.net/browse/FRESH-386
-	 */
 	// @formatter:off
 	void setM_Product_Packaging_ID(int packagingProductId);
 	int getM_Product_Packaging_ID();
