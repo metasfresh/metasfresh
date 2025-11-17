@@ -65,8 +65,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_BestBeforeDate;
-
 @Service
 @RequiredArgsConstructor
 public class PickingJobHUService
