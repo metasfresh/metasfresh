@@ -83,7 +83,7 @@ test('Pick less than a LU because ordered qty is less than an LU', async ({ page
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "76 PCE", qtyTUs: 19, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "76 PCE", qtyTUs: 19, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
                     }
                 }
             },
@@ -100,7 +100,7 @@ test('Pick less than a LU because ordered qty is less than an LU', async ({ page
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "76 PCE", qtyTUs: 19, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                        qtyPicked: [{ qtyPicked: "76 PCE", qtyTUs: 19, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
                     }
                 }
             },
@@ -140,7 +140,7 @@ test('Pick entire LU which is exactly the qty that was ordered', async ({ page }
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "80 PCE", qtyTUs: 20, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'HU1', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "80 PCE", qtyTUs: 20, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'HU1', processed: false, shipmentLineId: '-' }]
                     }
                 }
             },
@@ -156,7 +156,7 @@ test('Pick entire LU which is exactly the qty that was ordered', async ({ page }
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "80 PCE", qtyTUs: 20, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'HU1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                        qtyPicked: [{ qtyPicked: "80 PCE", qtyTUs: 20, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'HU1', processed: true, shipmentLineId: 'shipmentLineId1' }]
                     }
                 }
             },
@@ -195,7 +195,7 @@ test('Pick entire LU but less then ordered', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "80 PCE", qtyTUs: 20, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'HU1', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "80 PCE", qtyTUs: 20, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'HU1', processed: false, shipmentLineId: '-' }]
                     }
                 }
             },
@@ -211,7 +211,7 @@ test('Pick entire LU but less then ordered', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "80 PCE", qtyTUs: 20, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'HU1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                        qtyPicked: [{ qtyPicked: "80 PCE", qtyTUs: 20, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'HU1', processed: true, shipmentLineId: 'shipmentLineId1' }]
                     }
                 }
             },
