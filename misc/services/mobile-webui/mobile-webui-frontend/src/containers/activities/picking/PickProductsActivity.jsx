@@ -31,12 +31,14 @@ import { postPickAll } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastErrorFromObj } from '../../../utils/toast';
 import { trl } from '../../../utils/translations';
+import { useApplicationInfoParameters } from '../../../reducers/applications';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const history = useMobileNavigation();
   const dispatch = useDispatch();
+  const { allowQuickPackAll } = useApplicationInfoParameters({ applicationId });
   const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
 
   const isUserEditable = isUserEditableFunc({ activity });
@@ -115,16 +117,18 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
           );
         })}
 
-      <ButtonWithIndicator
-        testId={'pickAll-button'}
-        caption={trl('activities.picking.pickAll')}
-        onClick={() => {
-          return postPickAll({ wfProcessId })
-            .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-            .then(() => history.push(pickingJobsListLocation({ applicationId })))
-            .catch(toastErrorFromObj);
-        }}
-      />
+      {allowQuickPackAll && (
+        <ButtonWithIndicator
+          testId={'pickAll-button'}
+          caption={trl('activities.picking.pickAll')}
+          onClick={() => {
+            return postPickAll({ wfProcessId })
+              .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+              .then(() => history.push(pickingJobsListLocation({ applicationId })))
+              .catch(toastErrorFromObj);
+          }}
+        />
+      )}
     </div>
   );
 };

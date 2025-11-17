@@ -292,6 +292,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
+	 * Set Allow Quick Pack All.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowQuickPackAll (boolean IsAllowQuickPackAll);
+
+	/**
+	 * Get Allow Quick Pack All.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowQuickPackAll();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowQuickPackAll = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowQuickPackAll", null);
+	String COLUMNNAME_IsAllowQuickPackAll = "IsAllowQuickPackAll";
+
+	/**
 	 * Set Allow picking with no rejected qty reason.
 	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
 	 *

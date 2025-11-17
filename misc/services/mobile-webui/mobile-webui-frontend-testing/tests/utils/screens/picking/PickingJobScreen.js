@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -159,8 +159,15 @@ export const PickingJobScreen = {
     }),
 
     clickPickAllButton: async () => await step(`${NAME} - Click Pick All button`, async () => {
-        await page.getByTestId('pickAll-button').tap();
+        const button = pickAllButton();
+        await button.tap();
+        await button.waitFor({ state: 'attached', timeout: VERY_FAST_ACTION_TIMEOUT });
         await PickingJobsListScreen.waitForScreen();
+    }),
+
+    expectPickAllButtonHidden: async () => await step(`${NAME} - Expect Pick All button to be hidden`, async () => {
+        let button = page.getByTestId('pickAll-button');
+        await button.waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
     }),
 
     abort: async () => await step(`${NAME} - Abort`, async () => {
@@ -200,3 +207,5 @@ const expectLineButtonAttribute = async ({ lineButton, attribute, value }) => aw
     const lineButtonInfo = lineButton.locator('.picking-row-info');
     await expect(lineButtonInfo).toHaveAttribute(attribute, value);
 });
+
+const pickAllButton = () => page.getByTestId('pickAll-button');

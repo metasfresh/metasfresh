@@ -103,6 +103,7 @@ public class MobileUIPickingUserProfileRepository
 				.isFilterByBarcode(profileRecord.isFilterByBarcode())
 				.isActiveWorkplaceRequired(profileRecord.isActiveWorkplaceRequired())
 				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
+				.isAllowQuickPackAll(profileRecord.isAllowQuickPackAll())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -216,6 +217,7 @@ public class MobileUIPickingUserProfileRepository
 			profileRecord.setIsFilterByBarcode(profile.isFilterByBarcode());
 			profileRecord.setIsActiveWorkplaceRequired(profile.isActiveWorkplaceRequired());
 			profileRecord.setIsConsideredOnlyScheduledJobs(profile.isConsiderOnlyJobScheduledToWorkplace());
+			profileRecord.setIsAllowQuickPackAll(profile.isAllowQuickPackAll());
 			updateRecord(profileRecord, profile.getDefaultPickingJobOptions());
 			InterfaceWrapperHelper.saveRecord(profileRecord);
 			profileId = MobileUIPickingUserProfileId.ofRepoId(profileRecord.getMobileUI_UserProfile_Picking_ID());

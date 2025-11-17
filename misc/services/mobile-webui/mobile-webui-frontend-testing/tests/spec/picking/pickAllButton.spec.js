@@ -5,7 +5,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({ allowQuickPackAll = true } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -15,6 +15,7 @@ const createMasterdata = async () => {
                     aggregationType: "sales_order",
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
+                    allowQuickPackAll,
                     shipOnCloseLU: false,
                     pickTo: ['CU', 'LU_CU'],
                     allowCompletingPartialPickingJob: false,
@@ -59,7 +60,7 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick using Pick All button', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdata({ allowQuickPackAll: true });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -100,3 +101,17 @@ test('Pick using Pick All button', async ({ page }) => {
 
 });
 
+// noinspection JSUnusedLocalSymbols
+test('Expect Pick All button hidden when feature is not active', async ({ page }) => {
+    const masterdata = await createMasterdata({ allowQuickPackAll: false });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+    await PickingJobScreen.expectPickAllButtonHidden();
+
+});
