@@ -103,6 +103,9 @@ public class C_Tax_StepDef
 				.ifPresent(taxRecord::setIsTaxExempt);
 		tableRow.getAsOptionalInt(I_C_Tax.COLUMNNAME_SeqNo)
 				.ifPresent(taxRecord::setSeqNo);
+		tableRow.getAsOptionalString(I_C_Tax.COLUMNNAME_TypeOfDestCountry)
+				.ifPresent(taxRecord::setTypeOfDestCountry);
+
 
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 
