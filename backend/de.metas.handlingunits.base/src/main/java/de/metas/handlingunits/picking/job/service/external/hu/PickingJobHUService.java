@@ -16,6 +16,8 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -50,6 +52,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
@@ -62,6 +65,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_BestBeforeDate;
+
 @Service
 @RequiredArgsConstructor
 public class PickingJobHUService
@@ -70,6 +75,7 @@ public class PickingJobHUService
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull @Getter private final HUQRCodesService huQRCodesService;
@@ -118,6 +124,12 @@ public class PickingJobHUService
 	}
 
 	public LocatorId getLocatorId(@NonNull final HuId huId) {return handlingUnitsBL.getLocatorId(huId);}
+
+	@Nullable
+	public IAttributeValue getAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		return huAttributesBL.getAttributeValue(hu, attributeCode);
+	}
 
 	public boolean isLoadingUnit(final I_M_HU hu) {return handlingUnitsBL.isLoadingUnit(hu);}
 

@@ -4,9 +4,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.gs1.GS1ProductCodesCollection;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +24,8 @@ import javax.annotation.Nullable;
 @RequiredArgsConstructor
 public class PickingJobProductService
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull
 	public ProductInfo getById(@NonNull final ProductId productId)
@@ -52,4 +56,6 @@ public class PickingJobProductService
 	{
 		return productBL.isValidEAN13Product(ean13, expectedProductId, bpartnerId);
 	}
+
+	public ITranslatableString getUOMSymbolById(@NonNull final UomId uomId) {return uomDAO.getUOMSymbolById(uomId);}
 }
