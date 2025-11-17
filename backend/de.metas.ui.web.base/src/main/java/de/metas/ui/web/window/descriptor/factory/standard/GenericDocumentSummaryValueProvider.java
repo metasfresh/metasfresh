@@ -75,7 +75,35 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 			return new GenericDocumentSummaryValueProvider(fieldValuesExtractors);
 		}
 
+		fieldValuesExtractors = extractFieldNamesFromCompositeLookup(entityDescriptor);
+		if (fieldValuesExtractors != null && !fieldValuesExtractors.isEmpty())
+		{
+			return new GenericDocumentSummaryValueProvider(fieldValuesExtractors);
+		}
 		return EMPTY;
+	}
+
+	private static List<FieldValueExtractor> extractFieldNamesFromCompositeLookup(final DocumentEntityDescriptor.Builder entityDescriptor)
+	{
+		try
+		{
+			final List<DocumentFieldDescriptor.Builder> idFields = entityDescriptor.getIdFieldBuilders();
+			if (idFields.isEmpty() || idFields.size() == 1)
+			{
+				return ImmutableList.of();
+			}
+
+			return idFields.stream()
+					.filter(field -> !field.isVirtualField())
+					.map(field -> new GenericFieldValueExtractor(field.getFieldName()))
+					.collect(Collectors.toList());
+
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed extracting composite field names for record's lookup for {}. Ignored.", entityDescriptor, ex);
+			return ImmutableList.of();
+		}
 	}
 
 	private static List<FieldValueExtractor> extractFieldNamesFromLookup(final DocumentEntityDescriptor.Builder entityDescriptor)
