@@ -618,11 +618,7 @@ public class PickingJobPickCommand
 	@NonNull
 	private HUInfo computePickFromHUIdAndQRCode()
 	{
-		if (pickFromHUQRCode == null)
-		{
-			throw new AdempiereException(NO_QR_CODE_ERROR_MSG);
-		}
-		else if (pickFromHUQRCode instanceof PickOnTheFlyQRCode)
+		if (pickFromHUQRCode instanceof PickOnTheFlyQRCode)
 		{
 			return createPickFromHUOnTheFly();
 		}

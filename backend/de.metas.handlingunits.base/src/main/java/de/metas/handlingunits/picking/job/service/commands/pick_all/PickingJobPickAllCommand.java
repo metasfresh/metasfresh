@@ -28,24 +28,21 @@ public class PickingJobPickAllCommand
 
 	private PickingJob executeInTrx()
 	{
-		return pickingJobService.updateById(pickingJobId, pickingJob -> {
-			pickingJob.assertNotProcessed();
+		PickingJob pickingJob = pickingJobService.getById(pickingJobId);
+		pickingJob.assertNotProcessed();
 
-			PickingJob pickingJobChanged = pickingJob;
+		PickingJob pickingJobChanged = pickingJob;
 
-			for (PickingJobLine line : pickingJob.getLines())
-			{
-				pickingJobChanged = pickingJobService.newPickCommand()
-						.pickingJob(pickingJobChanged)
-						.pickingJobLineId(line.getId())
-						.qtyToPickBD(line.getQtyRemainingToPick().toBigDecimal())
-						// TODO DO NOT SAVE
-						//
-						.build()
-						.execute();
-			}
+		for (PickingJobLine line : pickingJob.getLines())
+		{
+			pickingJobChanged = pickingJobService.newPickCommand()
+					.pickingJob(pickingJobChanged)
+					.pickingJobLineId(line.getId())
+					.qtyToPickBD(line.getQtyRemainingToPick().toBigDecimal())
+					//
+					.build().execute();
+		}
 
-			return pickingJobService.complete(pickingJobChanged);
-		});
+		return pickingJobService.complete(pickingJobChanged);
 	}
 }

@@ -121,6 +121,12 @@ const postEvent = (event) => {
   return axios.post(`${apiBasePath}/picking/event`, event).then((response) => unboxAxiosResponse(response));
 };
 
+export const postPickAll = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/pickAll`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const closePickingJobLine = ({ wfProcessId, lineId }) => {
   return axios
     .post(`${apiBasePath}/picking/closeLine`, { wfProcessId, pickingLineId: lineId })

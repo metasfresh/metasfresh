@@ -128,6 +128,7 @@ const translations = {
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr kommissionieren als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',
       pickingSlot: 'Kommissionier Fach  ',
+      pickAll: 'Schnelldruck',
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',

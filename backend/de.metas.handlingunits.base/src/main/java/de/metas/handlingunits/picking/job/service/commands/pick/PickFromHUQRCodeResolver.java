@@ -22,6 +22,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Builder
@@ -37,12 +38,16 @@ class PickFromHUQRCodeResolver
 
 	@NonNull
 	public HUInfo resolve(
-			@NonNull final IHUQRCode pickFromHUQRCode,
+			@Nullable final IHUQRCode pickFromHUQRCode,
 			@NonNull final ProductId productId,
 			@NonNull final BPartnerId customerId,
 			@NonNull final WarehouseId warehouseId)
 	{
-		if (pickFromHUQRCode instanceof HUQRCode)
+		if (pickFromHUQRCode == null)
+		{
+			return findFirstByWarehouseAndProduct(warehouseId, productId);
+		}
+		else if (pickFromHUQRCode instanceof HUQRCode)
 		{
 			final HUQRCode huQRCode = (HUQRCode)pickFromHUQRCode;
 			final HuId huId = huService.getHuIdByQRCode(huQRCode);
