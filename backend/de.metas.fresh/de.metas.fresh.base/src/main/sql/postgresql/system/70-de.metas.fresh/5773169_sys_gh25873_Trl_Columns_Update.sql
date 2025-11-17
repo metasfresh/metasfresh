@@ -198,6 +198,9 @@ INSERT INTO t_alter_column values('ad_ui_section_trl','Description','VARCHAR(200
 UPDATE AD_Column SET FieldLength=120,Updated=TO_TIMESTAMP('2025-10-23 13:05:35.715000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=156
 ;
 
+INSERT INTO t_alter_column values('ad_window','Name','VARCHAR(120)',null,null)
+;
+
 -- Column: C_DocType_Trl.DocumentNote
 -- 2025-10-23T13:06:13.316Z
 UPDATE AD_Column SET FieldLength=2048,Updated=TO_TIMESTAMP('2025-10-23 13:06:13.316000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=3135
@@ -269,6 +272,28 @@ INSERT INTO t_alter_column values('m_allergen_trace','Description','VARCHAR(255)
 -- 2025-10-23T13:11:48.933Z
 --INSERT INTO t_alter_column values('m_allergen_trace','Name','VARCHAR(60)',null,null)
 --;
+
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 -- Column: M_FoodAdvice.Name
 -- 2025-10-23T13:12:10.414Z
