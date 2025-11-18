@@ -38,6 +38,7 @@ import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
@@ -627,5 +628,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
 		final PickingJob pickingJob = pickingJobRestService.pickAll(pickingJobId, callerId);
 		return toWFProcess(pickingJob);
+	}
+
+	public PickingJobQtyAvailable getQtyAvailable(final WFProcessId wfProcessId, final @NotNull UserId callerId)
+	{
+		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
+		return pickingJobRestService.getQtyAvailable(pickingJobId, callerId);
 	}
 }

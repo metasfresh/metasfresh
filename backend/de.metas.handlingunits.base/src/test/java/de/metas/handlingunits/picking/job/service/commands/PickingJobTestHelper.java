@@ -232,7 +232,6 @@ public class PickingJobTestHelper
 				pickingCandidateService,
 				defaultPickingJobLoaderSupportingServicesFactory,
 				PickingShipmentService.newInstanceForUnitTesting(),
-				workplaceService,
 				configService,
 				pickingJobScheduleService,
 				huService
