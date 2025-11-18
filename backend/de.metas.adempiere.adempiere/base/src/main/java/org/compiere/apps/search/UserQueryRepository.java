@@ -14,6 +14,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.ColumnDisplayTypeProvider;
 import org.compiere.model.I_AD_UserQuery;
@@ -167,7 +168,7 @@ public class UserQueryRepository
 	private static final List<I_AD_UserQuery> retrieveAD_UserQueries(final Properties ctx, final int adTabId, final int adUserId)
 	{
 		final IQueryBuilder<I_AD_UserQuery> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UserQuery.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyContextClientOrSystem()
+				.addInArrayFilter(I_AD_UserQuery.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH, ClientId.SYSTEM)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_UserQuery.COLUMNNAME_AD_Tab_ID, adTabId)
 				//
