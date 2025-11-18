@@ -48,11 +48,11 @@ class PickingWorkflowLaunchersProviderTest
 	private void setupServices()
 	{
 		this.launchersProvider = new PickingWorkflowLaunchersProvider(
-				new PickingJobRestService(helper.pickingJobService, helper.mobileProfileRepository),
-				helper.mobileProfileRepository,
+				helper.configService,
+				helper.bpartnerService,
+				new PickingJobRestService(helper.pickingJobService, helper.configService),
 				helper.workplaceService,
 				new DisplayValueProviderService(helper.documentLocationBL),
-				helper.documentLocationBL,
 				new ScannedProductCodeResolver(new EDIProductLookupService())
 		);
 

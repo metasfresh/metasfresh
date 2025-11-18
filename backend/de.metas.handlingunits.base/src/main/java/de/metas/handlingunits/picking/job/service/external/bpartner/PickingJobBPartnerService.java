@@ -6,6 +6,7 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RenderedAddressProvider;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,4 +42,8 @@ public class PickingJobBPartnerService
 		return documentLocationBL.getDocumentLocations(bpartnerLocationIds);
 	}
 
+	public RenderedAddressProvider newRenderedAddressProvider()
+	{
+		return documentLocationBL.newRenderedAddressProvider();
+	}
 }

@@ -137,11 +137,13 @@ public class PickingJobTestHelper
 	private final HUTestHelper huTestHelper;
 	private final HUQRCodesRepository huQRCodesRepository;
 	private final IProductBL productBL;
-	public final MobileUIPickingUserProfileRepository mobileProfileRepository;
+	public final MobileUIPickingUserProfileRepository configRepository;
+	public final MobileUIPickingUserProfileService configService;
 	public final PickingJobService pickingJobService;
 	public final HUTracerInstance huTracer;
 	public final DummyDocumentLocationBL documentLocationBL;
 	public final PickingJobScheduleService pickingJobScheduleService;
+	public final PickingJobBPartnerService bpartnerService;
 
 	//
 	// Master data
@@ -179,7 +181,11 @@ public class PickingJobTestHelper
 		final HUQRCodesService huQRCodeService = HUQRCodesService.newInstanceForUnitTesting();
 		this.workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
-		this.mobileProfileRepository = new MobileUIPickingUserProfileRepository();
+		this.configRepository = new MobileUIPickingUserProfileRepository();
+		this.configService = new MobileUIPickingUserProfileService(
+				configRepository,
+				new PickingConfigRepositoryV2()
+		);
 		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
 				new PickingConfigRepository(),
 				pickingCandidateRepository,
@@ -200,12 +206,8 @@ public class PickingJobTestHelper
 				huQRCodeService
 		);
 
-		final MobileUIPickingUserProfileService configService = new MobileUIPickingUserProfileService(
-				mobileProfileRepository,
-				new PickingConfigRepositoryV2()
-		);
 
-		final PickingJobBPartnerService bpartnerService = new PickingJobBPartnerService(bpartnerBL, documentLocationBL);
+		this.bpartnerService = new PickingJobBPartnerService(bpartnerBL, documentLocationBL);
 
 		final PickingJobHUService huService = new PickingJobHUService(
 				configService,
@@ -223,7 +225,7 @@ public class PickingJobTestHelper
 				pickingJobSlotService,
 				pickingJobLockService,
 				huService,
-				mobileProfileRepository
+				configRepository
 		);
 
 		pickingJobService = new PickingJobService(
@@ -307,7 +309,7 @@ public class PickingJobTestHelper
 
 	public void updateMobileProfile(UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
-		mobileProfileRepository.update(updater);
+		configRepository.update(updater);
 	}
 
 	public OrderAndLineId createOrderAndLineId(final String documentNo)

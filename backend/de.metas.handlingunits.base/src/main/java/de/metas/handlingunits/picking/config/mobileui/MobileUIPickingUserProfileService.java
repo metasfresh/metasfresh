@@ -16,6 +16,12 @@ public class MobileUIPickingUserProfileService
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepositoryV2;
 
 	@NonNull
+	public MobileUIPickingUserProfile getProfile()
+	{
+		return profileRepository.getProfile();
+	}
+
+	@NonNull
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId)
 	{
 		return profileRepository.getPickingJobOptions(customerId);

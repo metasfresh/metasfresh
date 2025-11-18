@@ -28,7 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
@@ -67,7 +67,7 @@ public class PickingJobRestService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final PickingJobService pickingJobService;
-	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
+	private final MobileUIPickingUserProfileService configService;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -221,7 +221,7 @@ public class PickingJobRestService
 	}
 
 	@NonNull
-	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return configService.getPickingJobOptions(customerId);}
 
 	@NonNull
 	public List<HuId> getClosedLUs(
