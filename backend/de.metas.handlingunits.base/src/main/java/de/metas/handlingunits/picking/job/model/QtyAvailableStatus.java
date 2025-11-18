@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 public enum QtyAvailableStatus
 {
+	// NOTE: keep in sync with QtyAvailableStatus.js
 	NOT_AVAILABLE,
 	PARTIALLY_AVAILABLE,
 	FULLY_AVAILABLE,
