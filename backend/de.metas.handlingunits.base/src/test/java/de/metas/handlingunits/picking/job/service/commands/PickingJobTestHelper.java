@@ -28,9 +28,7 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
@@ -137,7 +135,6 @@ public class PickingJobTestHelper
 	private final HUTestHelper huTestHelper;
 	private final HUQRCodesRepository huQRCodesRepository;
 	private final IProductBL productBL;
-	public final MobileUIPickingUserProfileRepository configRepository;
 	public final MobileUIPickingUserProfileService configService;
 	public final PickingJobService pickingJobService;
 	public final HUTracerInstance huTracer;
@@ -181,11 +178,7 @@ public class PickingJobTestHelper
 		final HUQRCodesService huQRCodeService = HUQRCodesService.newInstanceForUnitTesting();
 		this.workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
-		this.configRepository = new MobileUIPickingUserProfileRepository();
-		this.configService = new MobileUIPickingUserProfileService(
-				configRepository,
-				new PickingConfigRepositoryV2()
-		);
+		this.configService = MobileUIPickingUserProfileService.newInstanceForUnitTesting();
 		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
 				new PickingConfigRepository(),
 				pickingCandidateRepository,
@@ -206,7 +199,6 @@ public class PickingJobTestHelper
 				huQRCodeService
 		);
 
-
 		this.bpartnerService = new PickingJobBPartnerService(bpartnerBL, documentLocationBL);
 
 		final PickingJobHUService huService = new PickingJobHUService(
@@ -218,14 +210,14 @@ public class PickingJobTestHelper
 				inventoryService);
 
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
+				configService,
 				new PickingJobSalesOrderService(),
 				warehouseService,
 				bpartnerService,
 				new PickingJobProductService(),
 				pickingJobSlotService,
 				pickingJobLockService,
-				huService,
-				configRepository
+				huService
 		);
 
 		pickingJobService = new PickingJobService(
@@ -309,7 +301,7 @@ public class PickingJobTestHelper
 
 	public void updateMobileProfile(UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
-		configRepository.update(updater);
+		configService.update(updater);
 	}
 
 	public OrderAndLineId createOrderAndLineId(final String documentNo)

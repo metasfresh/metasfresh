@@ -31,7 +31,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
@@ -109,21 +109,21 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private static final AdMessageKey MSG_Caption_ScanPickingSlot = AdMessageKey.of("mobileui.picking.activity.scanPickingSlot");
 	private static final AdMessageKey MSG_Caption_PickLines = AdMessageKey.of("mobileui.picking.activity.pickLines");
 
+	private final MobileUIPickingUserProfileService profileService;
 	private final PickingJobRestService pickingJobRestService;
 	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final DisplayValueProviderService displayValueProviderService;
-	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	public PickingMobileApplication(
+			@NonNull final MobileUIPickingUserProfileService profileService,
 			@NonNull final PickingJobRestService pickingJobRestService,
 			@NonNull final PickingWorkflowLaunchersProvider wfLaunchersProvider,
-			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
 			@NonNull final DisplayValueProviderService displayValueProviderService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
 		this.wfLaunchersProvider = wfLaunchersProvider;
 		this.displayValueProviderService = displayValueProviderService;
-		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
+		this.profileService = profileService;
 	}
 
 	@Override
@@ -132,7 +132,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@Override
 	public @NonNull MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
 	{
-		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final MobileUIPickingUserProfile profile = profileService.getProfile();
 
 		return applicationInfo.toBuilder()
 				.requiresWorkplace(profile.isActiveWorkplaceRequired())
@@ -192,7 +192,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
 
-		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final MobileUIPickingUserProfile profile = profileService.getProfile();
 		final DisplayValueProvider displayValueProvider = displayValueProviderService.newDisplayValueProvider(profile);
 
 		final ImmutableList<WFProcessHeaderProperty> entries = profile.getDetailFieldsInOrder()
@@ -414,7 +414,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private PickingJob processStepEvents(@NonNull final PickingJob pickingJob, @NonNull final Collection<JsonPickingStepEvent> jsonEvents)
 	{
-		final PickingJobOptions pickingJobOptions = mobileUIPickingUserProfileRepository.getPickingJobOptions(pickingJob.getCustomerId());
+		final PickingJobOptions pickingJobOptions = profileService.getPickingJobOptions(pickingJob.getCustomerId());
 
 		final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
 				.map(json -> fromJson(json, pickingJob, pickingJobOptions))

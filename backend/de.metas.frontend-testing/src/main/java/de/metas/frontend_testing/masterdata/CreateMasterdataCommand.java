@@ -263,7 +263,7 @@ public class CreateMasterdataCommand
 
 		return MobileConfigCommand.builder()
 				.mobileConfigService(services.mobileConfigService)
-				.mobilePickingConfigRepository(services.mobilePickingConfigRepository)
+				.mobilePickingConfigService(services.mobilePickingConfigService)
 				.mobileDistributionConfigRepository(services.mobileDistributionConfigRepository)
 				.mobileManufacturingConfigRepository(services.mobileManufacturingConfigRepository)
 				//

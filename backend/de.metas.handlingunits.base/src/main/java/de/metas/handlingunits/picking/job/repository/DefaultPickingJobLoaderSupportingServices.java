@@ -6,7 +6,7 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
@@ -61,7 +61,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobHUService huService;
-	@NonNull private final MobileUIPickingUserProfileRepository profileRepository;
+	@NonNull private final MobileUIPickingUserProfileService profileService;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
 	private final HashMap<BPartnerId, String> bpartnerNamesCache = new HashMap<>();
@@ -70,7 +70,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
 
 	@Override
-	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return profileRepository.getPickingJobOptions(customerId);}
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return profileService.getPickingJobOptions(customerId);}
 
 	@Override
 	public void warmUpCachesFrom(@NonNull final ScheduledPackageableList items)
