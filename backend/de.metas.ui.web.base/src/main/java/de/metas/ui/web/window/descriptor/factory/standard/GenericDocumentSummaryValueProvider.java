@@ -83,6 +83,9 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		return EMPTY;
 	}
 
+	/**
+	 * Similar to {@link #extractFieldNamesFromLookup(DocumentEntityDescriptor.Builder)}, but handles only composite key lookups.
+	 */
 	private static List<FieldValueExtractor> extractFieldNamesFromCompositeLookup(final DocumentEntityDescriptor.Builder entityDescriptor)
 	{
 		try
@@ -96,9 +99,9 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 
 			return idFields.stream()
 					.filter(field -> !field.isVirtualField())
-					.map(field -> new GenericFieldValueExtractor(field.getFieldName()))
+					.map(DocumentFieldDescriptor.Builder::getFieldName)
+					.map(GenericFieldValueExtractor::new)
 					.collect(ImmutableList.toImmutableList());
-
 		}
 		catch (final Exception ex)
 		{
