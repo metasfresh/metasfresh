@@ -1,4 +1,4 @@
-package de.metas.picking.workflow.lauchers;
+package de.metas.handlingunits.picking.job.service.external.hu;
 
 import de.metas.quantity.MixedQuantity;
 import de.metas.quantity.Quantity;

@@ -1,4 +1,4 @@
-package de.metas.picking.workflow.lauchers;
+package de.metas.handlingunits.picking.job.service.external.hu;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -13,6 +13,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
@@ -23,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-class ProductAvailableStocks
+public class ProductAvailableStocks
 {
 	// Services
 	@NonNull final IHandlingUnitsBL handlingUnitsBL;
@@ -34,7 +35,7 @@ class ProductAvailableStocks
 	// State
 	@NonNull private final HashMap<ProductId, ProductAvailableStock> map = new HashMap<>();
 
-	@Builder
+	@Builder(access = AccessLevel.PACKAGE)
 	private ProductAvailableStocks(
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final Set<LocatorId> pickFromLocatorIds)
@@ -63,15 +64,23 @@ class ProductAvailableStocks
 
 	private PickingJobCandidateProduct allocate(final PickingJobCandidateProduct product)
 	{
-		final ProductId productId = product.getProductId();
 		final Quantity qtyToDeliver = product.getQtyToDeliver();
-		final Quantity qtyAvailableToPick = allocateQty(productId, qtyToDeliver).toZeroIfNegative();
+		if (qtyToDeliver == null)
+		{
+			return product;
+		}
+
+		final ProductId productId = product.getProductId();
+		final Quantity qtyAvailableToPick = allocateQty(productId, qtyToDeliver);
+
 		return product.withQtyAvailableToPick(qtyAvailableToPick);
 	}
 
-	public Quantity allocateQty(final ProductId productId, final Quantity qty)
+	public Quantity allocateQty(@NonNull final ProductId productId, @NonNull final Quantity qtyToDeliver)
 	{
-		return getByProductId(productId).allocateQty(qty);
+		return getByProductId(productId)
+				.allocateQty(qtyToDeliver)
+				.toZeroIfNegative();
 	}
 
 	private ProductAvailableStock getByProductId(final ProductId productId)
