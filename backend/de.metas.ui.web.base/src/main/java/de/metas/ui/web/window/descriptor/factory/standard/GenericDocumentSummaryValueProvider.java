@@ -90,13 +90,14 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 			final List<DocumentFieldDescriptor.Builder> idFields = entityDescriptor.getIdFieldBuilders();
 			if (idFields.isEmpty() || idFields.size() == 1)
 			{
+				//only handle composite key lookups. The more common surrogate PK is handled in #extractFieldNamesFromLookup()
 				return ImmutableList.of();
 			}
 
 			return idFields.stream()
 					.filter(field -> !field.isVirtualField())
 					.map(field -> new GenericFieldValueExtractor(field.getFieldName()))
-					.collect(Collectors.toList());
+					.collect(ImmutableList.toImmutableList());
 
 		}
 		catch (final Exception ex)
