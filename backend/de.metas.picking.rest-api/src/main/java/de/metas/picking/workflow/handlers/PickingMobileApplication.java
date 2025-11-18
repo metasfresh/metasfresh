@@ -140,6 +140,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.showFilters(true)
 				.showFilterByQRCode(profile.isFilterByBarcode())
 				.showFilterByQtyAvailableAtPickFromLocator(true)
+				.applicationParameter("allowQuickPackAll", profile.isAllowQuickPackAll())
 				.build();
 	}
 
@@ -619,5 +620,12 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		wfProcess.assertHasAccess(callerId);
 		final PickingJob pickingJob = getPickingJob(wfProcess);
 		return pickingJobRestService.getClosedLUs(pickingJob, lineId);
+	}
+
+	public WFProcess pickAll(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
+		final PickingJob pickingJob = pickingJobRestService.pickAll(pickingJobId, callerId);
+		return toWFProcess(pickingJob);
 	}
 }

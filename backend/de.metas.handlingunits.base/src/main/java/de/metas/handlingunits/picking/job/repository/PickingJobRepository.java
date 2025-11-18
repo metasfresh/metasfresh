@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,6 +59,15 @@ public class PickingJobRepository
 	public void save(@NonNull final PickingJob pickingJob)
 	{
 		PickingJobLoaderAndSaver.forSaving().save(pickingJob);
+	}
+
+	public PickingJob updateById(
+			@NonNull PickingJobId pickingJobId,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
+			@NonNull UnaryOperator<PickingJob> updater)
+	{
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+				.updateById(pickingJobId, updater);
 	}
 
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final ValueRestriction<UserId> pickerId, @NonNull final PickingJobLoaderSupportingServices loadingSupportServices)

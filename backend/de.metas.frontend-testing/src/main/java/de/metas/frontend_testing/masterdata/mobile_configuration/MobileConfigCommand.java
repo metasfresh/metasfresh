@@ -89,7 +89,8 @@ public class MobileConfigCommand
 					.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
 					.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode())
 					.isActiveWorkplaceRequired(picking.getActiveWorkplaceRequired() != null ? picking.getActiveWorkplaceRequired() : false)
-					.isConsiderOnlyJobScheduledToWorkplace(picking.getConsiderOnlyJobScheduledToWorkplace() != null ? picking.getConsiderOnlyJobScheduledToWorkplace() : false);
+					.isConsiderOnlyJobScheduledToWorkplace(picking.getConsiderOnlyJobScheduledToWorkplace() != null ? picking.getConsiderOnlyJobScheduledToWorkplace() : false)
+					.isAllowQuickPackAll(picking.getAllowQuickPackAll() != null ? picking.getAllowQuickPackAll() : false);
 
 			if (picking.getAllowPickingAnyCustomer() != null)
 			{

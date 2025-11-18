@@ -3,10 +3,9 @@ package de.metas.picking.workflow.lauchers;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
@@ -20,6 +19,7 @@ import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetHandlers;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
@@ -66,11 +66,11 @@ public class PickingWorkflowLaunchersProvider
 	private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final MobileUIPickingUserProfileService configService;
+	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobRestService pickingJobRestService;
-	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final DisplayValueProviderService displayValueProviderService;
-	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final ScannedProductCodeResolver scannedProductCodeResolver;
 
 	private final CCache<UserId, SynchronizedMutable<ComputedWorkflowLaunchers>> launchersCache = CCache.<UserId, SynchronizedMutable<ComputedWorkflowLaunchers>>builder().build();
@@ -99,7 +99,7 @@ public class PickingWorkflowLaunchersProvider
 
 	private ComputedWorkflowLaunchers computeLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
-		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final MobileUIPickingUserProfile profile = configService.getProfile();
 		final UserId userId = query.getUserId();
 		final Workplace workplace = workplaceService.getWorkplaceByUserId(userId).orElse(null);
 		boolean returnNoResult = false;
@@ -282,7 +282,7 @@ public class PickingWorkflowLaunchersProvider
 		final UserId userId = query.getUserId();
 		final PickingJobQuery.Facets activeFacets = PickingJobFacetHandlers.toPickingJobFacetsQuery(query.getActiveFacetIds());
 
-		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final MobileUIPickingUserProfile profile = configService.getProfile();
 		final ImmutableList<PickingJobFacetGroup> groups = profile.getFilterGroupsInOrder();
 		if (groups.isEmpty())
 		{
@@ -298,7 +298,7 @@ public class PickingWorkflowLaunchersProvider
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
 						.build(),
 				CollectingParameters.builder()
-						.addressProvider(documentLocationBL.newRenderedAddressProvider())
+						.addressProvider(bpartnerService.newRenderedAddressProvider())
 						.groupsInOrder(groups)
 						.activeFacets(activeFacets)
 						.build());

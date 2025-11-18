@@ -146,9 +146,9 @@ test('Product based aggregation', async ({ page }) => {
                         P1: {
                             qtyPicked: [
                                 // TODO find out why is not processed/shipped?!
-                                { qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, vhuId: 'tu11', tu: 'tu11', lu: 'lu11', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "24 PCE", qtyTUs: 6, qtyLUs: 1, vhuId: 'tu12', tu: 'tu12', lu: 'lu12', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "28 PCE", qtyTUs: 7, qtyLUs: 1, vhuId: 'tu13', tu: 'tu13', lu: 'lu13', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, vhu: 'tu11', tu: 'tu11', lu: 'lu11', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "24 PCE", qtyTUs: 6, qtyLUs: 1, vhu: 'tu12', tu: 'tu12', lu: 'lu12', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "28 PCE", qtyTUs: 7, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu13', processed: false, shipmentLineId: '-' },
                             ]
                         }
                     }
@@ -226,10 +226,10 @@ test('Product based aggregation', async ({ page }) => {
                         P2: {
                             qtyPicked: [
                                 // TODO find out why is not processed/shipped?!
-                                { qtyPicked: "21 PCE", qtyTUs: 7, qtyLUs: 1, vhuId: 'tu21', tu: 'tu21', lu: 'P2_HU', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "18 PCE", qtyTUs: 6, qtyLUs: 1, vhuId: 'tu22', tu: 'tu22', lu: 'lu21', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "3 PCE", qtyTUs: 1, qtyLUs: 1, vhuId: 'tu23', tu: 'tu23', lu: 'P2_HU_2', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "12 PCE", qtyTUs: 4, qtyLUs: 1, vhuId: 'tu24', tu: 'tu24', lu: 'P2_HU_2', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "21 PCE", qtyTUs: 7, qtyLUs: 1, vhu: 'tu21', tu: 'tu21', lu: 'P2_HU', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "18 PCE", qtyTUs: 6, qtyLUs: 1, vhu: 'tu22', tu: 'tu22', lu: 'lu21', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "3 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu23', tu: 'tu23', lu: 'P2_HU_2', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "12 PCE", qtyTUs: 4, qtyLUs: 1, vhu: 'tu24', tu: 'tu24', lu: 'P2_HU_2', processed: false, shipmentLineId: '-' },
                             ]
                         }
                     }

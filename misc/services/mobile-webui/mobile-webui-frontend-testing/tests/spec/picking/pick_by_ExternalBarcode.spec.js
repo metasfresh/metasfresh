@@ -79,7 +79,7 @@ test('Pick by scanning ExternalBarcode attribute', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
                     }
                 }
             }
@@ -97,7 +97,7 @@ test('Pick by scanning ExternalBarcode attribute', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
                     }
                 }
             }
