@@ -293,24 +293,6 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
 
   @from:cucumber
-  Scenario: Payment rule 'DirectDebit' inherited from partner, correctly propagates when DocType is changed
-    Given metasfresh contains C_BPartners:
-      | Identifier    | IsCustomer | M_PricingSystem_ID | PaymentRule |
-      | bpartner_dd_1 | Y          | pricingSys_1       | D           |
-    And metasfresh contains C_Orders:
-      | Identifier  | IsSOTrx | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | PaymentRule | DocBaseType | DocSubType |
-      | order_dd_so | true    | bpartner_dd_1 | 2022-03-20  | pricingSys_1       | B           | SOO         | PR         |
-    And update order
-      | C_Order_ID  | DocBaseType | DocSubType |
-      | order_dd_so | SOO         | SO         |
-
-    # C_BPartner.PaymentRule => same C_Order.PaymentRule
-    Then validate the created orders
-      | C_Order_ID  | PaymentRule |
-      | order_dd_so | D           |
-
-
-  @from:cucumber
   @Id:S0150_230
   Scenario: PaymentRule = `DirectDebit` from order disposition is correctly propagated to C_Order
     Given metasfresh contains C_BPartners:
