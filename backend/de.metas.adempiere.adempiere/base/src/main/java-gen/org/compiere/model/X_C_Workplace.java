@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplace, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -397019579L;
+	private static final long serialVersionUID = -437627729L;
 
     /** Standard Constructor */
     public X_C_Workplace (final Properties ctx, final int C_Workplace_ID, @Nullable final String trxName)
@@ -149,5 +149,32 @@ public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplac
 	public int getPickFrom_Locator_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PickFrom_Locator_ID);
+	}
+
+	/** 
+	 * PriorityRule AD_Reference_ID=154
+	 * Reference name: _PriorityRule
+	 */
+	public static final int PRIORITYRULE_AD_Reference_ID=154;
+	/** High = 3 */
+	public static final String PRIORITYRULE_High = "3";
+	/** Medium = 5 */
+	public static final String PRIORITYRULE_Medium = "5";
+	/** Low = 7 */
+	public static final String PRIORITYRULE_Low = "7";
+	/** Urgent = 1 */
+	public static final String PRIORITYRULE_Urgent = "1";
+	/** Minor = 9 */
+	public static final String PRIORITYRULE_Minor = "9";
+	@Override
+	public void setPriorityRule (final @Nullable java.lang.String PriorityRule)
+	{
+		set_Value (COLUMNNAME_PriorityRule, PriorityRule);
+	}
+
+	@Override
+	public java.lang.String getPriorityRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_PriorityRule);
 	}
 }
