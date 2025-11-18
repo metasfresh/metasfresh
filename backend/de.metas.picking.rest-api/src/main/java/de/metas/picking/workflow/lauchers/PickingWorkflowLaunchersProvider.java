@@ -20,6 +20,7 @@ import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetHandlers;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
@@ -39,7 +40,6 @@ import de.metas.workflow.rest_api.model.WorkflowLauncherIndicator;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workplace.Workplace;
-import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +69,7 @@ public class PickingWorkflowLaunchersProvider
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobRestService pickingJobRestService;
-	@NonNull private final WorkplaceService workplaceService;
+	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final DisplayValueProviderService displayValueProviderService;
 	@NonNull private final ScannedProductCodeResolver scannedProductCodeResolver;
 
@@ -101,7 +101,7 @@ public class PickingWorkflowLaunchersProvider
 	{
 		final MobileUIPickingUserProfile profile = configService.getProfile();
 		final UserId userId = query.getUserId();
-		final Workplace workplace = workplaceService.getWorkplaceByUserId(userId).orElse(null);
+		final Workplace workplace = warehouseService.getWorkplaceByUserId(userId).orElse(null);
 		boolean returnNoResult = false;
 
 		//noinspection RedundantIfStatement
@@ -202,7 +202,7 @@ public class PickingWorkflowLaunchersProvider
 	@Nullable
 	private ProductAvailableStocks createProductsAvailableStocksOrNull(@NonNull final Workplace workplace)
 	{
-		final Set<LocatorId> pickFromLocatorIds = workplaceService.getPickFromLocatorIds(workplace);
+		final Set<LocatorId> pickFromLocatorIds = warehouseService.getPickFromLocatorIds(workplace);
 		if (pickFromLocatorIds.isEmpty())
 		{
 			return null;
@@ -293,7 +293,7 @@ public class PickingWorkflowLaunchersProvider
 				PickingJobQuery.builder()
 						.userId(userId)
 						.onlyCustomerIds(profile.getPickOnlyCustomerIds())
-						.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+						.warehouseId(warehouseService.getWarehouseIdByUserId(userId).orElse(null))
 						.salesOrderDocumentNo(query.getFilterByDocumentNo())
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
 						.build(),

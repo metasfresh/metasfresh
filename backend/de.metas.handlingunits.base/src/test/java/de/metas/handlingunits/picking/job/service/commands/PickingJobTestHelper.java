@@ -131,7 +131,8 @@ public class PickingJobTestHelper
 	private final IBPartnerBL bpartnerBL;
 	private final IOrderBL orderBL;
 	private final PackagingDAO packagingDAO;
-	public final WorkplaceService workplaceService;
+	public final PickingJobWarehouseService warehouseService;
+	private final WorkplaceService workplaceService;
 	private final HUTestHelper huTestHelper;
 	private final HUQRCodesRepository huQRCodesRepository;
 	private final IProductBL productBL;
@@ -176,7 +177,6 @@ public class PickingJobTestHelper
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final HUQRCodesService huQRCodeService = HUQRCodesService.newInstanceForUnitTesting();
-		this.workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		this.configService = MobileUIPickingUserProfileService.newInstanceForUnitTesting();
 		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
@@ -193,7 +193,8 @@ public class PickingJobTestHelper
 		final PickingJobLockService pickingJobLockService = new PickingJobLockService(new InMemoryShipmentScheduleLockRepository());
 		documentLocationBL = DummyDocumentLocationBL.newInstanceForUnitTesting();
 		pickingJobScheduleService = PickingJobScheduleService.newInstanceForUnitTesting();
-		final PickingJobWarehouseService warehouseService = new PickingJobWarehouseService();
+		this.workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+		this.warehouseService = new PickingJobWarehouseService(workplaceService);
 		final HULabelService huLabelService = new HULabelService(
 				new HULabelConfigService(new HULabelConfigRepository()),
 				huQRCodeService
