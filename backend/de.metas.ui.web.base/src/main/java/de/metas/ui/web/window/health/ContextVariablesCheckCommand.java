@@ -106,7 +106,7 @@ class ContextVariablesCheckCommand
 					{
 						throw wrapException(ex)
 								.setParameter("TableName", entityDescriptor.getTableNameOrNull())
-								.setParameter("AD_Tab_ID", entityDescriptor.getAdTabId());
+								.setParameter("AD_Tab_ID", entityDescriptor.getAdTabIdOrNull());
 					}
 				}
 		);

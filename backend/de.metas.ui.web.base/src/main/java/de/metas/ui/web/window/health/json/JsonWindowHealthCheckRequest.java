@@ -16,6 +16,7 @@ public class JsonWindowHealthCheckRequest
 {
 	@Nullable Set<AdWindowId> onlyAdWindowIds;
 
+	@Nullable Boolean checkContextVariables;
 	@Nullable Set<String> knownContextVariables;
 	@Nullable Map<String, String> knownMissingContextVariables;
 }

@@ -393,6 +393,11 @@ public class DocumentEntityDescriptor
 		return adTabId.orElseThrow(() -> new IllegalStateException("No TableName defined for " + this));
 	}
 
+	public AdTabId getAdTabIdOrNull()
+	{
+		return adTabId.orElse(null);
+	}
+
 	// legacy
 
 	/**

@@ -1029,6 +1029,7 @@ public class WindowRestController
 	{
 		return healthCheck(JsonWindowHealthCheckRequest.builder()
 				.onlyAdWindowIds(RepoIdAwares.ofCommaSeparatedSet(windowIdsCommaSeparated, AdWindowId.class))
+				.checkContextVariables(false)
 				.build());
 	}
 

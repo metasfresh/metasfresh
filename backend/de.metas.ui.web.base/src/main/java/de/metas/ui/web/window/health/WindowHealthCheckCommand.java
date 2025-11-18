@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 
 public class WindowHealthCheckCommand
 {
-	private static final int MAX_ERRORS = 4000;
 	//
 	// Services
 	@NonNull private static final Logger logger = LogManager.getLogger(WindowHealthCheckCommand.class);
@@ -28,8 +27,13 @@ public class WindowHealthCheckCommand
 	@NonNull private final DocumentDescriptorFactory documentDescriptorFactory;
 
 	//
+	// Constants
+	private static final int MAX_ERRORS = 4000;
+
+	//
 	// Params
 	@NonNull private final ImmutableSet<AdWindowId> onlyAdWindowIds;
+	private final boolean checkContextVariables;
 
 	//
 	// State
@@ -49,6 +53,7 @@ public class WindowHealthCheckCommand
 		this.errorsCollector = ErrorsCollector.builder()
 				.adLanguage(Env.getADLanguageOrBaseLanguage())
 				.build();
+		this.checkContextVariables = request.getCheckContextVariables() != null ? request.getCheckContextVariables() : true;
 		this.rootContextVariables = ContextVariables.newGlobalContext()
 				.withKnownMissing(request.getKnownContextVariables());
 		this.missingContextVariables = MissingContextVariables.builder()
@@ -89,19 +94,19 @@ public class WindowHealthCheckCommand
 
 				windowStopwatch.stop();
 				logger.info("testWindows [{}/{}] Window `{}` ({}) is OK (took: {})",
-						countCurrent, countTotal, errorsCollector.getCurrentWindowName(), errorsCollector.getCurrentWindowId().getRepoId(), windowStopwatch);
+						countCurrent, countTotal, errorsCollector.getCurrentWindowName(), AdWindowId.toRepoId(errorsCollector.getCurrentWindowId()), windowStopwatch);
 			}
 			catch (final Exception ex)
 			{
 				windowStopwatch.stop();
 				logger.info("testWindows [{}/{}] Window `{}` ({}) is NOK: {} (took {})",
-						countCurrent, countTotal, errorsCollector.getCurrentWindowName(), errorsCollector.getCurrentWindowId().getRepoId(), windowStopwatch, ex.getLocalizedMessage());
+						countCurrent, countTotal, errorsCollector.getCurrentWindowName(), AdWindowId.toRepoId(errorsCollector.getCurrentWindowId()), windowStopwatch, ex.getLocalizedMessage());
 				errorsCollector.collectError(DocumentLayoutBuildException.extractCause(ex));
 			}
 			finally
 			{
 				errorsCollector.clearCurrentWindow();
-				
+
 				System.gc();
 
 				// final Runtime runtime = Runtime.getRuntime();
@@ -138,6 +143,8 @@ public class WindowHealthCheckCommand
 
 	private void checkContextVariables(final DocumentEntityDescriptor entityDescriptor)
 	{
+		if (!checkContextVariables) {return;}
+		
 		ContextVariablesCheckCommand.builder()
 				.missingContextVariables(missingContextVariables)
 				.errorsCollector(errorsCollector)

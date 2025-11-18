@@ -78,7 +78,7 @@ class ContextVariables
 	public ContextVariables newChildContext(@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
 		return ContextVariables.builder()
-				.name("Entity: " + entityDescriptor.getTableName())
+				.name("Entity: " + ContextPath.extractName(entityDescriptor))
 				.parent(this)
 				.contextVariables(extractFieldNames(entityDescriptor))
 				.build();

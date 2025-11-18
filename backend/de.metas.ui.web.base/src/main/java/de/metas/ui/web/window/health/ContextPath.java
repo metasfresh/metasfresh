@@ -10,9 +10,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.stream.Collectors;
@@ -45,7 +45,17 @@ class ContextPath implements Comparable<ContextPath>
 
 	public static ContextPath root(@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
-		return new ContextPath(ImmutableList.of(ContextPathElement.ofNameAndId(entityDescriptor.getTableName(), entityDescriptor.getWindowId().toInt())));
+
+		return new ContextPath(ImmutableList.of(ContextPathElement.ofNameAndId(
+				extractName(entityDescriptor),
+				entityDescriptor.getWindowId().toInt())
+		));
+	}
+
+	static String extractName(final @NonNull DocumentEntityDescriptor entityDescriptor)
+	{
+		final String tableName = entityDescriptor.getTableNameOrNull();
+		return tableName != null ? tableName : entityDescriptor.getInternalName();
 	}
 
 	@Override
@@ -76,7 +86,10 @@ class ContextPath implements Comparable<ContextPath>
 
 	public ContextPath newChild(@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
-		return newChild(ContextPathElement.ofNameAndId(entityDescriptor.getTableName(), entityDescriptor.getAdTabId().getRepoId()));
+		return newChild(ContextPathElement.ofNameAndId(
+				extractName(entityDescriptor),
+				AdTabId.toRepoId(entityDescriptor.getAdTabIdOrNull())
+		));
 	}
 
 	private ContextPath newChild(@NonNull final ContextPathElement element)
@@ -131,11 +144,6 @@ class ContextPathElement
 	public static ContextPathElement ofName(@NonNull final String name) {return new ContextPathElement(name, -1);}
 
 	public static ContextPathElement ofNameAndId(@NonNull final String name, final int id) {return new ContextPathElement(name, id > 0 ? id : -1);}
-
-	private static @NotNull ContextPathElement getContextPathElement(final @NotNull DocumentEntityDescriptor entityDescriptor, final String tableName)
-	{
-		return new ContextPathElement(tableName, entityDescriptor.getAdTabId().getRepoId());
-	}
 
 	@Override
 	public String toString() {return toJson();}
