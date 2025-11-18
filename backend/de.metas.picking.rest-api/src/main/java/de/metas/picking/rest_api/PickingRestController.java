@@ -270,4 +270,12 @@ public class PickingRestController
 					.setParameter("parsedHUQRCode type", parsedHUQRCode.getClass().getSimpleName());
 		}
 	}
+
+	@PostMapping("/job/{wfProcessId}/pickAll")
+	public WFProcess pickAllAndComplete(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		return pickingMobileApplication.pickAll(wfProcessId, getLoggedUserId());
+	}
 }

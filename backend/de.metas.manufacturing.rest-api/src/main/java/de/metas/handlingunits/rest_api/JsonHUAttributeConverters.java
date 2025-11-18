@@ -46,7 +46,7 @@ public class JsonHUAttributeConverters
 		}
 	}
 
-	private static Object toDisplayValue_fromLocalDateTime(@NonNull final LocalDateTime value, @NonNull final String adLanguage)
+	private static String toDisplayValue_fromLocalDateTime(@NonNull final LocalDateTime value, @NonNull final String adLanguage)
 	{
 		final LocalDate date = value.toLocalDate();
 		if (value.equals(date.atStartOfDay()))
@@ -59,7 +59,7 @@ public class JsonHUAttributeConverters
 		}
 	}
 
-	private static Object toDisplayValue_fromLocalDate(@NonNull final LocalDate value, @NonNull final String adLanguage)
+	private static String toDisplayValue_fromLocalDate(@NonNull final LocalDate value, @NonNull final String adLanguage)
 	{
 		return TranslatableStrings.date(value).translate(adLanguage);
 	}

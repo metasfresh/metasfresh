@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -121,10 +121,9 @@ export const PickingJobScreen = {
     }),
 
     pickHU: async ({ qrCode, isScanDirectly, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
-        if(isScanDirectly) {
+        if (isScanDirectly) {
             await BarcodeScannerComponent.type(qrCode);
-        }
-        else {
+        } else {
             await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
             await PickingJobScanHUScreen.waitForScreen();
             await PickingJobScanHUScreen.typeQRCode(qrCode);
@@ -157,6 +156,18 @@ export const PickingJobScreen = {
                 expect(classes).toContain(`indicator-color-${color}`);
             });
         }
+    }),
+
+    clickPickAllButton: async () => await step(`${NAME} - Click Pick All button`, async () => {
+        const button = pickAllButton();
+        await button.tap();
+        await button.waitFor({ state: 'attached', timeout: VERY_FAST_ACTION_TIMEOUT });
+        await PickingJobsListScreen.waitForScreen();
+    }),
+
+    expectPickAllButtonHidden: async () => await step(`${NAME} - Expect Pick All button to be hidden`, async () => {
+        let button = page.getByTestId('pickAll-button');
+        await button.waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
     }),
 
     abort: async () => await step(`${NAME} - Abort`, async () => {
@@ -196,3 +207,5 @@ const expectLineButtonAttribute = async ({ lineButton, attribute, value }) => aw
     const lineButtonInfo = lineButton.locator('.picking-row-info');
     await expect(lineButtonInfo).toHaveAttribute(attribute, value);
 });
+
+const pickAllButton = () => page.getByTestId('pickAll-button');

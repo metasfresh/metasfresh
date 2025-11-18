@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service.commands.pick;
+package de.metas.handlingunits.picking.job.service.external.shipmentschedule;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -17,7 +17,7 @@ import java.util.Optional;
 @Value
 @Builder
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-class ShipmentScheduleInfo
+public class ShipmentScheduleInfo
 {
 	@NonNull ClientAndOrgId clientAndOrgId;
 	@NonNull WarehouseId warehouseId;

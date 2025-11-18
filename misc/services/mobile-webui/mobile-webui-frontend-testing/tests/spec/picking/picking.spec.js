@@ -96,7 +96,7 @@ test('Simple picking test', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
                     }
                 }
             }
@@ -114,7 +114,7 @@ test('Simple picking test', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
                     }
                 }
             }
@@ -148,7 +148,7 @@ test('Pick - unpick', async ({ page }) => {
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: {
-                            qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                            qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
                         }
                     }
                 }
@@ -181,10 +181,10 @@ test('Pick - unpick', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
-                            { qtyPicked: "-4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
-                            { qtyPicked: "-4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
-                            { qtyPicked: "-4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
+                            { qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
+                            { qtyPicked: "-4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
+                            { qtyPicked: "-4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
+                            { qtyPicked: "-4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
                         ]
                     }
                 }
@@ -267,7 +267,7 @@ test.describe('Picking Job Completion', () => {
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: {
-                            qtyPicked: [{ qtyPicked: "8 PCE", qtyTUs: 2, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                            qtyPicked: [{ qtyPicked: "8 PCE", qtyTUs: 2, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
                         }
                     }
                 }
@@ -321,7 +321,7 @@ test('Ship on close LU', async ({ page }) => {
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: {
-                            qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                            qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
                         }
                     }
                 },
@@ -342,7 +342,7 @@ test('Ship on close LU', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
                     }
                 }
             },

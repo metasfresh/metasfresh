@@ -4,6 +4,7 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 import {
+  pickingJobsListLocation,
   pickingLineScanScreenLocation,
   pickingLineScreenLocation,
   pickingScanScreenLocation,
@@ -25,11 +26,19 @@ import {
 import { isCurrentTargetEligibleForActivityAndLine } from '../../../reducers/wfProcesses/picking/isCurrentTargetEligibleForLine';
 import { BarcodeScannerButton } from '../../../components/BarcodeScannerButton';
 import { usePickProductsScan } from './PickProductsScanScreen';
+import { useDispatch } from 'react-redux';
+import { postPickAll } from '../../../api/picking';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { toastErrorFromObj } from '../../../utils/toast';
+import { trl } from '../../../utils/translations';
+import { useApplicationInfoParameters } from '../../../reducers/applications';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const history = useMobileNavigation();
+  const dispatch = useDispatch();
+  const { allowQuickPackAll } = useApplicationInfoParameters({ applicationId });
   const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
 
   const isUserEditable = isUserEditableFunc({ activity });
@@ -107,6 +116,19 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
             </React.Fragment>
           );
         })}
+
+      {allowQuickPackAll && (
+        <ButtonWithIndicator
+          testId={'pickAll-button'}
+          caption={trl('activities.picking.pickAll')}
+          onClick={() => {
+            return postPickAll({ wfProcessId })
+              .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+              .then(() => history.push(pickingJobsListLocation({ applicationId })))
+              .catch(toastErrorFromObj);
+          }}
+        />
+      )}
     </div>
   );
 };

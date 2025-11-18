@@ -192,11 +192,11 @@ test('Leich+Mehl', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: 'cu2', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: 'cu3', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: 'cu4', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: 'cu5', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu2', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu3', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu4', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu5', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
@@ -275,7 +275,7 @@ test('GS1', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "7.520 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "7.520 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
@@ -318,7 +318,7 @@ test('EAN13 with prefix 28', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "0.261 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.261 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
@@ -385,7 +385,7 @@ test('EAN13 with prefix 29', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "0.574 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.574 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
@@ -469,7 +469,7 @@ test('Custom QR code format', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "9.999 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "9.999 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
