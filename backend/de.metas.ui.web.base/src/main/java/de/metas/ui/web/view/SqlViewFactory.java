@@ -204,11 +204,6 @@ public class SqlViewFactory implements IViewFactory
 		{
 			return null;
 		}
-		else if (referencedDocumentPath.isComposedKey())
-		{
-			// document with composed keys does not support references
-			return null;
-		}
 		else
 		{
 			return webuiDocumentReferencesService.getDocumentReferenceFilter(

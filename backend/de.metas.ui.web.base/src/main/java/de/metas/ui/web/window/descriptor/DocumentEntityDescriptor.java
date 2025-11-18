@@ -699,7 +699,8 @@ public class DocumentEntityDescriptor
 			return idFieldBuilders.size() == 1 ? idFieldBuilders.get(0).getFieldName() : null;
 		}
 
-		private List<DocumentFieldDescriptor.Builder> getIdFieldBuilders()
+		@NonNull
+		public List<DocumentFieldDescriptor.Builder> getIdFieldBuilders()
 		{
 			return _fieldBuilders
 					.values()
