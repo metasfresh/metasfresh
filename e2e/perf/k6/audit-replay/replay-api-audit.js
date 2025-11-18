@@ -230,7 +230,7 @@ function executeAuditRequest(auditRequest) {
   }
 
   // Compare response times if original data available
-  if (auditRequest.actualResponseTime) {
+  if (auditRequest.actualResponseTime != null && typeof auditRequest.actualResponseTime === 'number') {
     const diff = duration - auditRequest.actualResponseTime;
     auditResponseTimeDiff.add(diff);
 
