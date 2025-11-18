@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.CoalesceUtil;
@@ -128,20 +127,20 @@ public class PickingJobTestHelper
 
 	//
 	// Services
-	private final IBPartnerBL bpartnerBL;
-	private final IOrderBL orderBL;
-	private final PackagingDAO packagingDAO;
 	public final PickingJobWarehouseService warehouseService;
-	private final WorkplaceService workplaceService;
-	private final HUTestHelper huTestHelper;
-	private final HUQRCodesRepository huQRCodesRepository;
-	private final IProductBL productBL;
 	public final MobileUIPickingUserProfileService configService;
 	public final PickingJobService pickingJobService;
 	public final HUTracerInstance huTracer;
-	public final DummyDocumentLocationBL documentLocationBL;
 	public final PickingJobScheduleService pickingJobScheduleService;
 	public final PickingJobBPartnerService bpartnerService;
+	public final PickingJobHUService huService;
+	//
+	private final IProductBL productBL;
+	private final IOrderBL orderBL;
+	private final PackagingDAO packagingDAO;
+	private final WorkplaceService workplaceService;
+	private final HUTestHelper huTestHelper;
+	private final HUQRCodesRepository huQRCodesRepository;
 
 	//
 	// Master data
@@ -163,7 +162,6 @@ public class PickingJobTestHelper
 		// because most of the tests are using snapshot testing.
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
-		bpartnerBL = Services.get(IBPartnerBL.class);
 		orderBL = Services.get(IOrderBL.class);
 		packagingDAO = (PackagingDAO)Services.get(IPackagingDAO.class);
 
@@ -175,6 +173,11 @@ public class PickingJobTestHelper
 		SpringContextHolder.registerJUnitBean(pickingCandidateRepository); // needed for HUPickingSlotBL
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		this.bpartnerService = new PickingJobBPartnerService(
+				bpartnerBL,
+				DummyDocumentLocationBL.newInstanceForUnitTesting()
+		);
+
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final HUQRCodesService huQRCodeService = HUQRCodesService.newInstanceForUnitTesting();
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
@@ -191,7 +194,6 @@ public class PickingJobTestHelper
 				PickingSlotService.newInstanceForUnitTesting(),
 				pickingJobRepository);
 		final PickingJobLockService pickingJobLockService = new PickingJobLockService(new InMemoryShipmentScheduleLockRepository());
-		documentLocationBL = DummyDocumentLocationBL.newInstanceForUnitTesting();
 		pickingJobScheduleService = PickingJobScheduleService.newInstanceForUnitTesting();
 		this.workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		this.warehouseService = new PickingJobWarehouseService(workplaceService);
@@ -200,9 +202,7 @@ public class PickingJobTestHelper
 				huQRCodeService
 		);
 
-		this.bpartnerService = new PickingJobBPartnerService(bpartnerBL, documentLocationBL);
-
-		final PickingJobHUService huService = new PickingJobHUService(
+		this.huService = new PickingJobHUService(
 				configService,
 				warehouseService,
 				huQRCodeService,
@@ -375,7 +375,7 @@ public class PickingJobTestHelper
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(sched.getC_Order_ID()));
 
 		final BPartnerLocationId shipToBPLocationId = BPartnerLocationId.ofRepoId(sched.getC_BPartner_ID(), sched.getC_BPartner_Location_ID());
-		final String bpName = bpartnerBL.getBPartnerName(shipToBPLocationId.getBpartnerId());
+		final String bpName = bpartnerService.getBPartnerName(shipToBPLocationId.getBpartnerId());
 
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 		final UomId uomId = productBL.getStockUOMId(productId);

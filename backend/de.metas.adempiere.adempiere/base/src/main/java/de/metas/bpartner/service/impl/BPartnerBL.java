@@ -951,4 +951,16 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BPartner bpartner = getById(bpartnerId);
 		return bpartner.isInvoiceEmailCcToMember();
 	}
+	
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+	}
+
+	@Override
+	public List<I_C_BPartner_Location> getBPartnerLocationsByIds(final Set<BPartnerLocationId> bpartnerLocationIds)
+	{
+		return bpartnersRepo.retrieveBPartnerLocationsByIds(bpartnerLocationIds);
+	}
 }

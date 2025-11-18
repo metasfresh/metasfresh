@@ -3,7 +3,6 @@ package de.metas.picking.workflow.lauchers;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
@@ -20,6 +19,8 @@ import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetHandlers;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.handlingunits.picking.job.service.external.hu.ProductAvailableStocks;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.picking.workflow.DisplayValueProvider;
@@ -31,7 +32,6 @@ import de.metas.product.ScannedProductCodeResolver;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
-import de.metas.util.Services;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
@@ -46,7 +46,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -55,7 +54,6 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
 
@@ -65,11 +63,11 @@ public class PickingWorkflowLaunchersProvider
 {
 	private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobRestService pickingJobRestService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
+	@NonNull private final PickingJobHUService huService;
 	@NonNull private final DisplayValueProviderService displayValueProviderService;
 	@NonNull private final ScannedProductCodeResolver scannedProductCodeResolver;
 
@@ -120,7 +118,7 @@ public class PickingWorkflowLaunchersProvider
 			}
 		}
 
-		final ProductAvailableStocks productsAvailableStocks = workplace != null ? createProductsAvailableStocksOrNull(workplace) : null;
+		final ProductAvailableStocks productsAvailableStocks = workplace != null ? huService.newAvailableStocksProvider(workplace) : null;
 
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
@@ -197,21 +195,6 @@ public class PickingWorkflowLaunchersProvider
 		}
 
 		return toComputedWorkflowLaunchers(query, currentResult);
-	}
-
-	@Nullable
-	private ProductAvailableStocks createProductsAvailableStocksOrNull(@NonNull final Workplace workplace)
-	{
-		final Set<LocatorId> pickFromLocatorIds = warehouseService.getPickFromLocatorIds(workplace);
-		if (pickFromLocatorIds.isEmpty())
-		{
-			return null;
-		}
-
-		return ProductAvailableStocks.builder()
-				.handlingUnitsBL(handlingUnitsBL)
-				.pickFromLocatorIds(pickFromLocatorIds)
-				.build();
 	}
 
 	@NotNull

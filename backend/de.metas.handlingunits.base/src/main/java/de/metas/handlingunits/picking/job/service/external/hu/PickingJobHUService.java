@@ -48,6 +48,7 @@ import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
+import de.metas.workplace.Workplace;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -290,4 +291,20 @@ public class PickingJobHUService
 
 		huReservationService.deleteReservationsByDocumentRefs(reservationDocRefs);
 	}
+
+	@Nullable
+	public ProductAvailableStocks newAvailableStocksProvider(@NonNull final Workplace workplace)
+	{
+		final Set<LocatorId> pickFromLocatorIds = warehouseService.getPickFromLocatorIds(workplace);
+		if (pickFromLocatorIds.isEmpty())
+		{
+			return null;
+		}
+
+		return ProductAvailableStocks.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.pickFromLocatorIds(pickFromLocatorIds)
+				.build();
+	}
+
 }

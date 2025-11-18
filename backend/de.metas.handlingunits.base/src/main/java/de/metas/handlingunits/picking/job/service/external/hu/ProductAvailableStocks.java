@@ -1,4 +1,4 @@
-package de.metas.picking.workflow.lauchers;
+package de.metas.handlingunits.picking.job.service.external.hu;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-class ProductAvailableStocks
+public class ProductAvailableStocks
 {
 	// Services
 	@NonNull final IHandlingUnitsBL handlingUnitsBL;
