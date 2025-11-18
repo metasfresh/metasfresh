@@ -64,7 +64,7 @@ public class DistributionRestService
 			final @NonNull DistributionJobHUReservationService distributionJobHUReservationService,
 			final @NonNull HUQRCodesService huQRCodesService,
 			final @NonNull InventoryService inventoryService,
-			final @NonNull HUAccessService huAccessService, 
+			final @NonNull HUAccessService huAccessService,
 			final @NonNull LocatorScannedCodeResolverService locatorScannedCodeResolver)
 	{
 		this.ddOrderService = ddOrderService;

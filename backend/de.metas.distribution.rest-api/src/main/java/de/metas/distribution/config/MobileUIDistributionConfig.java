@@ -1,6 +1,7 @@
 package de.metas.distribution.config;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
@@ -8,4 +9,5 @@ import lombok.Value;
 public class MobileUIDistributionConfig
 {
 	boolean allowPickingAnyHU;
+	@NonNull CaptionFormat captionFormat;
 }

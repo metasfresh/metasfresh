@@ -3,28 +3,25 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.workflows_api.facets.DistributionFacetIdsCollection;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Service;
 
-class DistributionWorkflowLaunchersProvider
+@Service
+@RequiredArgsConstructor
+public class DistributionWorkflowLaunchersProvider
 {
-	private final DistributionRestService distributionRestService;
-	private final DistributionLauncherCaptionProvider captionProvider;
-
-	public DistributionWorkflowLaunchersProvider(
-			final @NonNull DistributionRestService distributionRestService)
-	{
-		this.distributionRestService = distributionRestService;
-		this.captionProvider = new DistributionLauncherCaptionProvider();
-	}
+	@NonNull private final DistributionRestService distributionRestService;
+	@NonNull private final DistributionLauncherCaptionProvider captionProvider;
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{

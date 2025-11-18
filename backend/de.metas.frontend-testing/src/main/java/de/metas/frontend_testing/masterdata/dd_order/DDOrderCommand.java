@@ -29,7 +29,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -58,6 +57,7 @@ public class DDOrderCommand
 	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final DDOrderService ddOrderService;
+	@NonNull private final DistributionLauncherCaptionProvider captionProvider;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonDDOrderRequest request;
@@ -110,7 +110,7 @@ public class DDOrderCommand
 		final DDOrderReference ddOrderReference = toDDOrderReference(ddOrder);
 		return JsonDDOrderResponse.builder()
 				.documentNo(ddOrder.getDocumentNo())
-				.launcherCaption(computeLauncherCaption(ddOrderReference).translate(context.getAdLanguage()))
+				.launcherCaption(computeLauncherCaption(ddOrderReference))
 				.launcherTestId(ddOrderReference.getTestId())
 				.warehouseFromFacetId(DistributionFacetId.ofWarehouseFromId(fromWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
 				.warehouseToFacetId(DistributionFacetId.ofWarehouseFromId(toWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
@@ -167,10 +167,9 @@ public class DDOrderCommand
 		return CollectionUtils.singleElement(collector.getCollectedItems());
 	}
 
-	private static WorkflowLauncherCaption computeLauncherCaption(final DDOrderReference ddOrderReference)
+	private String computeLauncherCaption(final DDOrderReference ddOrderReference)
 	{
-		final DistributionLauncherCaptionProvider captionProvider = new DistributionLauncherCaptionProvider();
-		return captionProvider.compute(ddOrderReference);
+		return captionProvider.compute(ddOrderReference).translate(context.getAdLanguage());
 	}
 
 }
