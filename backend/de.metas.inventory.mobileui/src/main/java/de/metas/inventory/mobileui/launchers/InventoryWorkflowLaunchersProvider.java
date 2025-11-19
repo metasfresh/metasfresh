@@ -5,17 +5,20 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inventory.InventoryQuery;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncher.WorkflowLauncherBuilder;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.service.Constants;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +32,7 @@ import static de.metas.inventory.mobileui.rest_api.mappers.WFProcessMapper.toWFP
 @RequiredArgsConstructor
 public class InventoryWorkflowLaunchersProvider
 {
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final InventoryJobReferenceMapperService mapperService;
@@ -42,7 +46,7 @@ public class InventoryWorkflowLaunchersProvider
 		final UserId userId = query.getUserId();
 		final Workplace workplace = workplaceService.getWorkplaceByUserId(userId).orElse(null);
 		final WarehouseId warehouseId = workplace != null ? workplace.getWarehouseId() : null;
-		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
+		final QueryLimit limit = query.getLimit().orElseGet(this::getLaunchersLimit);
 
 		//
 		// Already started jobs
@@ -112,4 +116,11 @@ public class InventoryWorkflowLaunchersProvider
 		);
 	}
 
+	public QueryLimit getLaunchersLimit()
+	{
+		final int limitInt = sysConfigBL.getIntValue(Constants.SYSCONFIG_LaunchersLimit, -100);
+		return limitInt == -100
+				? Constants.DEFAULT_LaunchersLimit
+				: QueryLimit.ofInt(limitInt);
+	}
 }

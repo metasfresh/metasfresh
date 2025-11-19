@@ -3,7 +3,8 @@ import React, { useEffect } from 'react';
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { appLaunchersLocation } from '../../routes/launchers';
-import { useFilterByQRCode } from './WFLaunchersScreen';
+
+import { useFilterByQRCode } from './useFilterByQRCode';
 
 const WFLaunchersScanBarcodeScreen = () => {
   const { applicationId, history } = useScreenDefinition({

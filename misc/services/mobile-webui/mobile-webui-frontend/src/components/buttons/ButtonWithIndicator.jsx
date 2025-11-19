@@ -107,12 +107,7 @@ const ButtonWithIndicator = ({
             {children}
           </div>
         </div>
-        <Indicators
-          parentTestId={testId}
-          completeStatus={completeStatus}
-          indicator1={indicator1}
-          indicator2={indicator2}
-        />
+        <Indicators completeStatus={completeStatus} indicator1={indicator1} indicator2={indicator2} />
       </div>
     </button>
   );
@@ -145,7 +140,7 @@ export default ButtonWithIndicator;
 //
 //
 
-const Indicators = ({ parentTestId, completeStatus, indicator1, indicator2 }) => {
+const Indicators = ({ completeStatus, indicator1, indicator2 }) => {
   const hasIndicators = completeStatus || indicator1 || indicator2;
   if (!hasIndicators) return null;
 
@@ -153,17 +148,12 @@ const Indicators = ({ parentTestId, completeStatus, indicator1, indicator2 }) =>
 
   return (
     <div className={cx('right-btn-side', { 'is-justify-content-center': isJustifyContentInCenter })}>
-      <Indicator
-        testId={parentTestId ? `${parentTestId}-Indicator` : 'indicator'}
-        indicator={indicator1}
-        completeStatus={completeStatus}
-      />
-      <Indicator testId={parentTestId ? `${parentTestId}-Indicator2` : 'indicator2'} indicator={indicator2} />
+      <Indicator testId="indicator" indicator={indicator1} completeStatus={completeStatus} />
+      <Indicator testId="indicator2" indicator={indicator2} />
     </div>
   );
 };
 Indicators.propTypes = {
-  parentTestId: PropTypes.string,
   completeStatus: PropTypes.string,
   indicator1: PropTypes.string,
   indicator2: PropTypes.string,

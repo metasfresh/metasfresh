@@ -1,91 +1,193 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.common.util.pair.ImmutablePair;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
+import de.metas.distribution.config.DistributionJobCaptionFormat;
+import de.metas.distribution.config.DistributionJobCaptionFormatItem;
+import de.metas.distribution.config.MobileUIDistributionConfigRepository;
+import de.metas.distribution.service.external.DistributionProductService;
+import de.metas.distribution.service.external.DistributionSourceDocService;
+import de.metas.distribution.service.external.DistributionWarehouseService;
+import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.order.IOrderBL;
 import de.metas.organization.IOrgDAO;
-import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.NonNull;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_Order;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.model.I_PP_Order;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.LocatorId;
+import org.eevolution.model.X_DD_Order;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Service
+@RequiredArgsConstructor
 public class DistributionLauncherCaptionProvider
 {
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final MobileUIDistributionConfigRepository configRepository;
+	@NonNull private final DistributionWarehouseService warehouseService;
+	@NonNull private final DistributionProductService productService;
+	@NonNull private final DistributionSourceDocService sourceDocService;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+
+	private static final String CAPTION_SEPARATOR = " | ";
 
 	public WorkflowLauncherCaption compute(@NonNull final DDOrderReference ddOrderReference)
 	{
+		final DistributionJobCaptionFormat format = configRepository.getConfig().getCaptionFormat();
+		
 		final TranslatableStringBuilder captionBuilder = TranslatableStrings.builder();
-		getSourceDocumentTypeAndNo(ddOrderReference)
-				.ifPresent(sourceDocTypeAndNo -> captionBuilder
-						.append(sourceDocTypeAndNo.getLeft())
-						.append(" ")
-						.append(sourceDocTypeAndNo.getRight())
-						.append(" | "));
 
-		captionBuilder
-				.append(warehouseBL.getWarehouseName(ddOrderReference.getFromWarehouseId()))
-				.append(" > ")
-				.append(warehouseBL.getWarehouseName(ddOrderReference.getToWarehouseId()))
-				.append(" | ")
-				.appendDateTime(ddOrderReference.getDisplayDate().toZonedDateTime(orgDAO::getTimeZone));
-
-		if (ddOrderReference.getPlantId() != null)
+		for (final DistributionJobCaptionFormatItem formatItem : format.getItems())
 		{
-			captionBuilder.append(" | ").append(ppOrderBL.getResourceName(ddOrderReference.getPlantId()));
-		}
+			final ITranslatableString captionItem = computeItem(ddOrderReference, formatItem);
+			if (TranslatableStrings.isBlank(captionItem))
+			{
+				continue;
+			}
 
-		if (ddOrderReference.getProductId() != null)
-		{
-			captionBuilder.append(" | ").append(productBL.getProductValueAndName(ddOrderReference.getProductId()));
-		}
-
-		if (ddOrderReference.getQty() != null)
-		{
-			captionBuilder.append(" | ").appendQty(ddOrderReference.getQty().toBigDecimal(), ddOrderReference.getQty().getUOMSymbol());
+			if (!captionBuilder.isEmpty())
+			{
+				captionBuilder.append(CAPTION_SEPARATOR);
+			}
+			captionBuilder.append(captionItem);
 		}
 
 		return WorkflowLauncherCaption.of(captionBuilder.build());
 	}
 
-	@NonNull
-	private Optional<ImmutablePair<ITranslatableString, String>> getSourceDocumentTypeAndNo(@NonNull final DDOrderReference ddOrderReference)
+	private ITranslatableString computeItem(@NonNull final DDOrderReference ddOrderReference, @NonNull final DistributionJobCaptionFormatItem formatItem)
 	{
-		final ITranslatableString docTypeName;
-		final String documentNo;
+		switch (formatItem.getField())
+		{
+			case LocatorFrom:
+				return extractLocatorFrom(ddOrderReference);
+			case LocatorTo:
+				return extractLocatorTo(ddOrderReference);
+			case WarehouseFrom:
+				return extractWarehouseFrom(ddOrderReference);
+			case WarehouseTo:
+				return extractWarehouseTo(ddOrderReference);
+			case Plant:
+				return extractPlant(ddOrderReference);
+			case PickDate:
+				return extractPickDate(ddOrderReference);
+			case Qty:
+				return extractQty(ddOrderReference);
+			case ProductGTIN:
+				return extractGTIN(ddOrderReference);
+			case ProductValueAndName:
+				return extractProductValueAndName(ddOrderReference);
+			case SourceDoc:
+				return extractSourceDoc(ddOrderReference);
+			case Priority:
+				return extractPriority(ddOrderReference);
+			default:
+				return TranslatableStrings.empty();
+		}
+	}
+
+	private ITranslatableString extractLocatorFrom(final @NotNull DDOrderReference ddOrderReference)
+	{
+		final LocatorId fromLocatorId = ddOrderReference.getFromLocatorId();
+		return fromLocatorId != null
+				? TranslatableStrings.anyLanguage(warehouseService.getLocatorName(fromLocatorId))
+				: TranslatableStrings.empty();
+	}
+
+	private ITranslatableString extractLocatorTo(final @NotNull DDOrderReference ddOrderReference)
+	{
+		final LocatorId toLocatorId = ddOrderReference.getToLocatorId();
+		return toLocatorId != null
+				? TranslatableStrings.anyLanguage(warehouseService.getLocatorName(toLocatorId))
+				: TranslatableStrings.empty();
+	}
+
+	private static ITranslatableString extractPriority(final @NotNull DDOrderReference ddOrderReference)
+	{
+		final String priority = StringUtils.trimBlankToNull(ddOrderReference.getPriority());
+		return priority != null
+				? TranslatableStrings.adRefList(X_DD_Order.PRIORITYRULE_AD_Reference_ID, priority)
+				: TranslatableStrings.empty();
+	}
+
+	private ITranslatableString extractWarehouseFrom(final @NotNull DDOrderReference ddOrderReference)
+	{
+		return TranslatableStrings.anyLanguage(warehouseService.getWarehouseName(ddOrderReference.getFromWarehouseId()));
+	}
+
+	private ITranslatableString extractWarehouseTo(final @NotNull DDOrderReference ddOrderReference)
+	{
+		return TranslatableStrings.anyLanguage(warehouseService.getWarehouseName(ddOrderReference.getToWarehouseId()));
+	}
+
+	private ITranslatableString extractPickDate(final @NotNull DDOrderReference ddOrderReference)
+	{
+		return TranslatableStrings.dateAndTime(ddOrderReference.getDisplayDate().toZonedDateTime(orgDAO::getTimeZone));
+	}
+
+	private ITranslatableString extractPlant(final @NotNull DDOrderReference ddOrderReference)
+	{
+		final ResourceId plantId = ddOrderReference.getPlantId();
+		return plantId != null
+				? TranslatableStrings.anyLanguage(sourceDocService.getPlantName(plantId))
+				: TranslatableStrings.empty();
+	}
+
+	private static ITranslatableString extractQty(final @NotNull DDOrderReference ddOrderReference)
+	{
+		final Quantity qty = ddOrderReference.getQty();
+		return qty != null
+				? TranslatableStrings.builder().appendQty(qty.toBigDecimal(), qty.getUOMSymbol()).build()
+				: TranslatableStrings.empty();
+	}
+
+	private ITranslatableString extractProductValueAndName(final @NotNull DDOrderReference ddOrderReference)
+	{
+		final ProductId productId = ddOrderReference.getProductId();
+		return productId != null
+				? TranslatableStrings.anyLanguage(productService.getProductValueAndName(productId))
+				: TranslatableStrings.empty();
+	}
+
+	private @NotNull ITranslatableString extractGTIN(final @NotNull DDOrderReference ddOrderReference)
+	{
+		return Optional.ofNullable(ddOrderReference.getProductId())
+				.flatMap(productService::getGTIN)
+				.map(GTIN::getAsString)
+				.map(TranslatableStrings::anyLanguage)
+				.orElse(TranslatableStrings.empty());
+	}
+
+	@NonNull
+	private ITranslatableString extractSourceDoc(@NonNull final DDOrderReference ddOrderReference)
+	{
+		ImmutablePair<ITranslatableString, String> documentTypeAndNo;
 		if (ddOrderReference.getSalesOrderId() != null)
 		{
-			final I_C_Order order = orderBL.getById(ddOrderReference.getSalesOrderId());
-			docTypeName = docTypeBL.getNameById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
-			documentNo = order.getDocumentNo();
+			documentTypeAndNo = sourceDocService.getDocumentTypeAndName(ddOrderReference.getSalesOrderId());
 		}
 		else if (ddOrderReference.getPpOrderId() != null)
 		{
-			final I_PP_Order ppOrder = ppOrderBL.getById(ddOrderReference.getPpOrderId());
-			docTypeName = docTypeBL.getNameById(DocTypeId.ofRepoId(ppOrder.getC_DocType_ID()));
-			documentNo = ppOrder.getDocumentNo();
+			documentTypeAndNo = sourceDocService.getDocumentTypeAndName(ddOrderReference.getPpOrderId());
 		}
 		else
 		{
-			return Optional.empty();
+			return TranslatableStrings.empty();
 		}
 
-		return Optional.of(ImmutablePair.of(docTypeName, documentNo));
+		return TranslatableStrings.builder()
+				.append(documentTypeAndNo.getLeft())
+				.append(" ")
+				.append(documentTypeAndNo.getRight())
+				.build();
 	}
 
 }

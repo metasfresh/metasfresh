@@ -2,6 +2,7 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
@@ -10,6 +11,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.workflow.rest_api.model.WFActivity;
@@ -20,11 +23,10 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -32,21 +34,14 @@ import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 @Component
+@RequiredArgsConstructor
 public class DistributionMobileApplication implements WorkflowBasedMobileApplication
 {
 	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("distribution");
 
-	private final DistributionRestService distributionRestService;
-	private final DistributionWorkflowLaunchersProvider wfLaunchersProvider;
-
-	public DistributionMobileApplication(
-			@NonNull final DistributionRestService distributionRestService)
-	{
-		this.distributionRestService = distributionRestService;
-		this.wfLaunchersProvider = new DistributionWorkflowLaunchersProvider(distributionRestService);
-
-	}
+	@NonNull private final DistributionRestService distributionRestService;
+	@NonNull private final DistributionWorkflowLaunchersProvider wfLaunchersProvider;
 
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
@@ -55,8 +50,12 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@NonNull
 	public MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
 	{
+		final MobileUIDistributionConfig config = distributionRestService.getConfig();
+
 		return applicationInfo.toBuilder()
 				.showFilters(true)
+				.maxStartedLaunchers(config.getMaxStartedLaunchers())
+				.isAllowStartNextJobOnly(config.isAllowStartNextJobOnly())
 				.build();
 	}
 
@@ -177,9 +176,9 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 						.value(job.getDocumentNo())
 						.build())
 				.entry(WFProcessHeaderProperty.builder()
-							   .caption(TranslatableStrings.adElementOrMessage("PickDate"))
-							   .value(job.getPickDate())
-							   .build())
+						.caption(TranslatableStrings.adElementOrMessage("PickDate"))
+						.value(job.getPickDate())
+						.build())
 				.entry(WFProcessHeaderProperty.builder()
 						.caption(TranslatableStrings.adElementOrMessage("DateRequired"))
 						.value(job.getDateRequired())
@@ -212,9 +211,9 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		if (Check.isNotBlank(job.getPlantName()))
 		{
 			builder.entry(WFProcessHeaderProperty.builder()
-								  .caption(TranslatableStrings.adElementOrMessage("PP_Plant_ID"))
-								  .value(job.getPlantName())
-								  .build());
+					.caption(TranslatableStrings.adElementOrMessage("PP_Plant_ID"))
+					.value(job.getPlantName())
+					.build());
 		}
 
 		return builder.build();

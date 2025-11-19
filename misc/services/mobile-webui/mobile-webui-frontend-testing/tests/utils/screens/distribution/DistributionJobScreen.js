@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { FAST_ACTION_TIMEOUT, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { DistributionLineScreen } from './DistributionLineScreen';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { DistributionJobsListScreen } from './DistributionJobsListScreen';
@@ -32,7 +32,7 @@ export const DistributionJobScreen = {
         }
         if (color !== undefined) {
             await expectClasses({
-                locator: lineButton.locator(`[data-testid="line-${index}-button-Indicator"]`),
+                locator: lineButton.locator(`[data-testid="indicator"]`),
                 expectedClasses: `indicator-color-${color}`
             });
         }
@@ -65,6 +65,19 @@ export const DistributionJobScreen = {
         await DistributionDropAllToScreen.typeQRCode(dropToLocatorQRCode);
         await DistributionJobScreen.waitForScreen();
     }),
+
+    abort: async () => await step(`${NAME} - Abort`, async () => {
+        await page.locator('#abort-button').tap();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await DistributionJobsListScreen.waitForScreen();
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+        await DistributionJobsListScreen.waitForScreen();
+    }),
+
 };
 
 const lineButtonLocator = ({ index }) => {

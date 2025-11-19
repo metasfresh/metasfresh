@@ -3,6 +3,8 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADRefList;
 import de.metas.dao.ValueRestriction;
+import de.metas.distribution.config.DistributionJobSorting;
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -41,6 +43,7 @@ import java.util.stream.Stream;
 public class DistributionRestService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final MobileUIDistributionConfigRepository configRepository;
 	@NonNull private final DDOrderService ddOrderService;
 	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	@NonNull private final DistributionJobHUReservationService distributionJobHUReservationService;
@@ -64,9 +67,10 @@ public class DistributionRestService
 			final @NonNull DistributionJobHUReservationService distributionJobHUReservationService,
 			final @NonNull HUQRCodesService huQRCodesService,
 			final @NonNull InventoryService inventoryService,
-			final @NonNull HUAccessService huAccessService, 
+			final @NonNull HUAccessService huAccessService,
 			final @NonNull LocatorScannedCodeResolverService locatorScannedCodeResolver)
 	{
+		this.configRepository = configRepository;
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.distributionJobHUReservationService = distributionJobHUReservationService;
@@ -87,6 +91,8 @@ public class DistributionRestService
 				.ppOrderBL(ppOrderBL)
 				.build();
 	}
+
+	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
 	public ADRefList getQtyRejectedReasons()
 	{
@@ -128,7 +134,7 @@ public class DistributionRestService
 
 		//
 		// Already started jobs
-		streamDDOrdersAssignedTo(responsibleId)
+		streamDDOrdersAssignedTo(responsibleId, query.getSorting())
 				.forEach(ddOrder -> collector.collect(ddOrder, true));
 
 		//
@@ -145,8 +151,7 @@ public class DistributionRestService
 	{
 		final DistributionFacetIdsCollection activeFacetIds = query.getActiveFacetIds();
 		return DDOrderQuery.builder()
-				.orderBy(DDOrderQuery.OrderBy.PriorityRule)
-				.orderBy(DDOrderQuery.OrderBy.DatePromised)
+				.orderBys(query.getSorting().toDDOrderQueryOrderBys())
 				.docStatus(DocStatus.Completed)
 				.responsibleId(ValueRestriction.isNull())
 				.warehouseFromIds(activeFacetIds.getWarehouseFromIds())
@@ -160,13 +165,12 @@ public class DistributionRestService
 				.build();
 	}
 
-	private Stream<I_DD_Order> streamDDOrdersAssignedTo(final @NonNull UserId responsibleId)
+	private Stream<I_DD_Order> streamDDOrdersAssignedTo(@NonNull final UserId responsibleId, @NonNull DistributionJobSorting sorting)
 	{
 		return ddOrderService.streamDDOrders(DDOrderQuery.builder()
 				.docStatus(DocStatus.Completed)
 				.responsibleId(ValueRestriction.equalsTo(responsibleId))
-				.orderBy(DDOrderQuery.OrderBy.PriorityRule)
-				.orderBy(DDOrderQuery.OrderBy.DatePromised)
+				.orderBys(sorting.toDDOrderQueryOrderBys())
 				.build());
 	}
 
@@ -279,7 +283,7 @@ public class DistributionRestService
 	public void abortAll(@NonNull final UserId responsibleId)
 	{
 		final DistributionJobLoader loader = newLoader();
-		final ImmutableList<DistributionJob> jobs = streamDDOrdersAssignedTo(responsibleId)
+		final ImmutableList<DistributionJob> jobs = streamDDOrdersAssignedTo(responsibleId, DistributionJobSorting.DEFAULT)
 				.map(loader::load)
 				.collect(ImmutableList.toImmutableList());
 		if (jobs.isEmpty())

@@ -2,8 +2,6 @@ package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.distribution.config.MobileUIDistributionConfig;
-import de.metas.distribution.config.MobileUIDistributionConfig.MobileUIDistributionConfigBuilder;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.picking.config.mobileui.AllowedPickToStructures;
@@ -237,24 +235,15 @@ public class MobileConfigCommand
 
 	private JsonMobileConfigResponse.Distribution updateDistributionConfig()
 	{
-		final JsonMobileConfigRequest.Distribution distribution = request.getDistribution();
-		if (distribution == null)
+		if (request.getDistribution() == null)
 		{
 			return null;
 		}
 
-		final MobileUIDistributionConfigBuilder newConfigBuilder = mobileDistributionConfigRepository.getConfig().toBuilder();
-		if (distribution.getAllowPickingAnyHU() != null)
-		{
-			newConfigBuilder.allowPickingAnyHU(distribution.getAllowPickingAnyHU());
-		}
-
-		final MobileUIDistributionConfig newConfig = newConfigBuilder.build();
-		mobileDistributionConfigRepository.save(newConfig);
-
-		return JsonMobileConfigResponse.Distribution.builder()
-				.allowPickingAnyHU(newConfig.isAllowPickingAnyHU())
-				.build();
+		return MobileConfigDistributionCommand.builder()
+				.mobileDistributionConfigRepository(mobileDistributionConfigRepository)
+				.request(request.getDistribution())
+				.build().execute();
 	}
 
 	private JsonMobileConfigResponse.Manufacturing updateManufacturingConfig()

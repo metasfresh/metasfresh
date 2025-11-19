@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -75,6 +76,13 @@ public class JsonMobileConfigRequest
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+		@Nullable String captionFormat;
+		@Nullable String orderBys;
+
+		@Nullable QueryLimit maxLaunchers;
+		@Nullable QueryLimit maxStartedLaunchers;
+		@Nullable Boolean allowStartNextJobOnly;
+
 	}
 
 	//

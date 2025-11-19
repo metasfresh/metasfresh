@@ -1,9 +1,10 @@
 package org.adempiere.ad.column.callout;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -120,7 +121,6 @@ public class AD_Column
 		final I_AD_Table table = adTableDAO.retrieveTable(adTableId);
 
 		String entityType = table.getEntityType();
-
 		if (ENTITYTYPE_Dictionary.equals(entityType))
 		{
 			entityType = element.getEntityType();
@@ -136,6 +136,11 @@ public class AD_Column
 		}
 
 		updateIsExcludeFromZoomTargets(column);
+
+		if ("Line".equals(elementColumnName) || "SeqNo".equals(elementColumnName))
+		{
+			column.setDefaultValue(computeDefaultValue_Line(table, column));
+		}
 	}
 
 	private void setTypeAndLength(final I_AD_Column column)
@@ -484,4 +489,37 @@ public class AD_Column
 		column.setAD_Reference_Value_ID(ReferenceId.toRepoId(suggestion.getReferenceValueId()));
 		column.setFieldLength(suggestion.getFieldLength());
 	}
+
+	private String computeDefaultValue_Line(final I_AD_Table table, final I_AD_Column column)
+	{
+		if (table.isView()) {return null;}
+
+		if (!Check.isBlank(column.getColumnSQL())) {return null;}
+
+		final String columnName = column.getColumnName();
+		final String tableName = table.getTableName();
+		final ImmutableSet<String> parentColumnNames = adTableDAO.retrieveColumnsForTable(table)
+				.stream()
+				.filter(c -> c.getAD_Column_ID() != column.getAD_Column_ID())
+				.filter(I_AD_Column::isParent)
+				.map(I_AD_Column::getColumnName)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (parentColumnNames.isEmpty()) {return null;}
+
+		final StringBuilder sqlWhereClause = new StringBuilder();
+		parentColumnNames.forEach(parentColumnName -> {
+			if (sqlWhereClause.length() > 0)
+			{
+				sqlWhereClause.append(" AND ");
+			}
+			sqlWhereClause.append("t.").append(parentColumnName).append("=@").append(parentColumnName).append("@");
+		});
+
+		return "@SQL="
+				+ "SELECT CEILING(COALESCE(MAX(t." + columnName + "), 0) / 10) * 10 + 10"
+				+ " FROM " + tableName + " t"
+				+ " WHERE " + sqlWhereClause;
+	}
+
 }
