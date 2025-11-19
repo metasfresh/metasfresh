@@ -32,7 +32,7 @@ export const DistributionJobScreen = {
         }
         if (color !== undefined) {
             await expectClasses({
-                locator: lineButton.locator(`[data-testid="line-${index}-button-Indicator"]`),
+                locator: lineButton.locator(`[data-testid="indicator"]`),
                 expectedClasses: `indicator-color-${color}`
             });
         }

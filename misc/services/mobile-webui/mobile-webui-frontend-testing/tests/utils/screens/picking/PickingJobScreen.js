@@ -151,7 +151,7 @@ export const PickingJobScreen = {
         }
         if (color !== undefined) {
             await step(`${NAME} - Expect line button color='${color}'`, async () => {
-                const indicator = lineButton.locator(`[data-testid="line-0-${index - 1}-button-Indicator"]`);
+                const indicator = lineButton.locator(`[data-testid="indicator"]`);
                 const classes = await indicator.getAttribute('class');
                 expect(classes).toContain(`indicator-color-${color}`);
             });
