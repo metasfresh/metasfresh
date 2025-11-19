@@ -558,6 +558,7 @@ public class PaymentAllocationServiceTest
 	private BPartnerId createBPartnerId()
 	{
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		saveRecord(bpartnerRecord);
 		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
