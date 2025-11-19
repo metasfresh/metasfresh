@@ -183,7 +183,7 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
 	 */
-	Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull BPartnerId bpartnerId, @NonNull SOTrx isSOTrx);
+	Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull BPartnerId bpartnerId, @NonNull SOTrx soTrx);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 

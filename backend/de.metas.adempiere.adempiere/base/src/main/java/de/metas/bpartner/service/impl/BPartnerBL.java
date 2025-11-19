@@ -728,11 +728,11 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx isSOTrx)
+	public Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
 	{
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 
-		final Optional<PaymentRule> bpartnerPaymentRule = PaymentRule.optionalOfCode( isSOTrx.isSales()
+		final Optional<PaymentRule> bpartnerPaymentRule = PaymentRule.optionalOfCode( soTrx.isSales()
 				? bpartner.getPaymentRule()
 				: bpartner.getPaymentRulePO());
 		if (bpartnerPaymentRule.isPresent())
@@ -743,7 +743,7 @@ public class BPartnerBL implements IBPartnerBL
 		// No payment rule in BP. Fallback to group.
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(bpGroupId);
-		return PaymentRule.optionalOfCode( isSOTrx.isSales()
+		return PaymentRule.optionalOfCode( soTrx.isSales()
 				? bpGroup.getPaymentRule()
 				: bpGroup.getPaymentRulePO());
 	}
