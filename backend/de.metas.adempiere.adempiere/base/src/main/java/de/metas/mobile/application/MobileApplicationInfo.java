@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -22,6 +23,8 @@ public class MobileApplicationInfo
 	@NonNull MobileApplicationId id;
 	@NonNull ITranslatableString caption;
 	@NonNull ImmutableList<MobileApplicationAction> actions;
+	@NonNull QueryLimit maxStartedLaunchers;
+	boolean isAllowStartNextJobOnly;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
 	boolean showFilterByQRCode;
@@ -40,6 +43,8 @@ public class MobileApplicationInfo
 			@NonNull final MobileApplicationId id,
 			@NonNull final ITranslatableString caption,
 			@Nullable final List<MobileApplicationAction> actions,
+			@Nullable final QueryLimit maxStartedLaunchers,
+			final boolean isAllowStartNextJobOnly,
 			final boolean requiresWorkstation,
 			final boolean requiresWorkplace,
 			final boolean showFilterByQRCode,
@@ -54,6 +59,8 @@ public class MobileApplicationInfo
 		this.id = id;
 		this.caption = caption;
 		this.actions = actions != null && !actions.isEmpty() ? ImmutableList.copyOf(actions) : ImmutableList.of();
+		this.maxStartedLaunchers = maxStartedLaunchers != null ? maxStartedLaunchers : QueryLimit.NO_LIMIT;
+		this.isAllowStartNextJobOnly = isAllowStartNextJobOnly;
 		this.requiresWorkstation = requiresWorkstation;
 		this.requiresWorkplace = requiresWorkplace;
 		this.showFilterByQRCode = showFilterByQRCode;

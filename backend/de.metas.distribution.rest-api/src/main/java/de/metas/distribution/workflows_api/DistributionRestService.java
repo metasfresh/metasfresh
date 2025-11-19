@@ -3,6 +3,7 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADRefList;
 import de.metas.dao.ValueRestriction;
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -41,6 +42,7 @@ import java.util.stream.Stream;
 public class DistributionRestService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final MobileUIDistributionConfigRepository configRepository;
 	@NonNull private final DDOrderService ddOrderService;
 	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	@NonNull private final DistributionJobHUReservationService distributionJobHUReservationService;
@@ -67,6 +69,7 @@ public class DistributionRestService
 			final @NonNull HUAccessService huAccessService,
 			final @NonNull LocatorScannedCodeResolverService locatorScannedCodeResolver)
 	{
+		this.configRepository = configRepository;
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.distributionJobHUReservationService = distributionJobHUReservationService;
@@ -87,6 +90,8 @@ public class DistributionRestService
 				.ppOrderBL(ppOrderBL)
 				.build();
 	}
+
+	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
 	public ADRefList getQtyRejectedReasons()
 	{

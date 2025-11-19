@@ -33,7 +33,7 @@ public class DistributionWorkflowLaunchersProvider
 		final ImmutableList<WorkflowLauncher> launchers = distributionRestService.streamJobReferencesForUser(
 						DDOrderReferenceQuery.builder()
 								.responsibleId(query.getUserId())
-								.suggestedLimit(query.getLimit().orElse(QueryLimit.NO_LIMIT))
+								.suggestedLimit(query.getLimit().orElseGet(this::getMaxLaunchers))
 								.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
 								.build()
 				)
@@ -44,6 +44,11 @@ public class DistributionWorkflowLaunchersProvider
 				.launchers(launchers)
 				.timestamp(SystemTime.asInstant())
 				.build();
+	}
+
+	private QueryLimit getMaxLaunchers()
+	{
+		return distributionRestService.getConfig().getMaxLaunchers();
 	}
 
 	private WorkflowLauncher toWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)

@@ -2,6 +2,7 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
@@ -49,8 +50,12 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@NonNull
 	public MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
 	{
+		final MobileUIDistributionConfig config = distributionRestService.getConfig();
+
 		return applicationInfo.toBuilder()
 				.showFilters(true)
+				.maxStartedLaunchers(config.getMaxStartedLaunchers())
+				.isAllowStartNextJobOnly(config.isAllowStartNextJobOnly())
 				.build();
 	}
 

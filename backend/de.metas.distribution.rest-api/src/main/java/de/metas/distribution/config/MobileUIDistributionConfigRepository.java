@@ -5,6 +5,7 @@ import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_MobileUI_UserProfile_DD;
 import org.compiere.model.I_MobileUI_UserProfile_DD_CaptionItem;
@@ -81,6 +82,9 @@ public class MobileUIDistributionConfigRepository
 		return MobileUIDistributionConfig.builder()
 				.allowPickingAnyHU(record.isAllowPickingAnyHU())
 				.captionFormat(captionFormat)
+				.maxLaunchers(QueryLimit.ofInt(record.getMaxLaunchers()))
+				.maxStartedLaunchers(QueryLimit.ofInt(record.getMaxStartedLaunchers()))
+				.isAllowStartNextJobOnly(record.isAllowStartNextJobOnly())
 				.build();
 	}
 
@@ -89,8 +93,12 @@ public class MobileUIDistributionConfigRepository
 		final I_MobileUI_UserProfile_DD record = retrieveRecord()
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_DD.class));
 
-		record.setIsAllowPickingAnyHU(newConfig.isAllowPickingAnyHU());
 		record.setIsActive(true);
+		record.setIsAllowPickingAnyHU(newConfig.isAllowPickingAnyHU());
+		
+		record.setMaxLaunchers(newConfig.getMaxLaunchers().toIntOrZero());
+		record.setMaxStartedLaunchers(newConfig.getMaxStartedLaunchers().toIntOrZero());
+		record.setIsAllowStartNextJobOnly(newConfig.isAllowStartNextJobOnly());
 
 		InterfaceWrapperHelper.save(record);
 	}

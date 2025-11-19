@@ -28,6 +28,7 @@ const WFLauncherButton = ({
   showWarningSign,
   indicator,
   testId,
+  disabled,
 }) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
@@ -53,7 +54,7 @@ const WFLauncherButton = ({
       showWarningSign={showWarningSign}
       indicator1={indicator}
       indicator2={startedWFProcessId ? WorkflowLauncherIndicator.JOB_ALREADY_STARTED : null}
-      disabled={false}
+      disabled={disabled}
       onClick={handleClick}
     />
   );
@@ -67,6 +68,7 @@ WFLauncherButton.propTypes = {
   showWarningSign: PropTypes.bool,
   indicator: PropTypes.string,
   testId: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 export default WFLauncherButton;
