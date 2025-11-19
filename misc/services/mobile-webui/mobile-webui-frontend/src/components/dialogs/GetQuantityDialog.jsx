@@ -21,6 +21,7 @@ import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
+import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
@@ -43,9 +44,8 @@ const GetQuantityDialog = ({
   catchWeightUom,
   customQRCodeFormats,
   //
-  isShowBestBeforeDate = false,
+  readAttributes = [],
   bestBeforeDate: bestBeforeDateParam = '',
-  isShowLotNo = false,
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
   //
@@ -54,6 +54,9 @@ const GetQuantityDialog = ({
   onQtyChange,
   onCloseDialog,
 }) => {
+  const isShowBestBeforeDate = readAttributes.includes(PickAttribute.BestBeforeDate);
+  const isShowLotNo = readAttributes.includes(PickAttribute.LotNo);
+
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
     promptQuestion: '',
@@ -546,9 +549,8 @@ GetQuantityDialog.propTypes = {
   scaleTolerance: PropTypes.object,
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
-  isShowBestBeforeDate: PropTypes.bool,
+  readAttributes: PropTypes.array,
   bestBeforeDate: PropTypes.string,
-  isShowLotNo: PropTypes.bool,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
   customQRCodeFormats: PropTypes.array,
