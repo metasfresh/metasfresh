@@ -327,7 +327,7 @@ const GetQuantityDialog = ({
       <Dialog className="get-qty-dialog">
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
-          <>
+          <form onSubmit={() => onDialogYes({ isCloseTarget: false })}>
             <div className="table-container">
               <table className="table">
                 <tbody>
@@ -500,7 +500,7 @@ const GetQuantityDialog = ({
                 testId="cancel-button"
               />
             </div>
-          </>
+          </form>
         )}
       </Dialog>
     </div>
