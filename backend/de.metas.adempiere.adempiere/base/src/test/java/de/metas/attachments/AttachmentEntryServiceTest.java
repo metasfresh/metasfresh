@@ -73,14 +73,20 @@ public class AttachmentEntryServiceTest
 		// assert that bpartnerRecord's attachments are unchanged
 		final List<AttachmentEntry> bpartnerRecordEntries = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
 		assertThat(bpartnerRecordEntries).hasSize(2);
+		
 		// we need to compare them without linked records because productRecordEntries.get(1) now also has the product; also note that the younger entry is first in the list
-		assertThat(bpartnerRecordEntries.get(1).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
+		bpartnerRecordEntries.get(1).removeAllLinkedRecords();
+		bpartnerAttachmentEntry1.removeAllLinkedRecords();
+		assertThat(bpartnerRecordEntries.get(1).getLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.getLinkedRecords());
 		assertThat(bpartnerRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry2);
 
 		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
 		assertThat(productRecordEntries).hasSize(1);
+		
 		// we need to compare them without linked records because productRecordEntries.get(0) has the product and bpartnerAttachmentEntry1 has the bpartner
-		assertThat(productRecordEntries.get(0).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
+		productRecordEntries.get(0).removeAllLinkedRecords();
+		bpartnerAttachmentEntry1.removeAllLinkedRecords();
+		assertThat(productRecordEntries.get(0).getLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.getLinkedRecords());
 	}
 
 	@Test
@@ -93,14 +99,20 @@ public class AttachmentEntryServiceTest
 		// invoke the method under test
 		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
 
-		// the entries to productRecord shall not be changed by the addition uf an entry for bpartnerRecord
+		// the entries to productRecord shall not be changed by the addition of an entry for bpartnerRecord
 		assertThat(productRecordEntries).hasSize(1);
+
 		// we need to compare them without linked records because productRecordEntries.get(0) has the product and bpartnerAttachmentEntry1 has the bpartner
-		assertThat(productRecordEntries.get(0).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
+		productRecordEntries.get(0).removeAllLinkedRecords();
+		bpartnerAttachmentEntry1.removeAllLinkedRecords();
+		assertThat(productRecordEntries.get(0).getLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.getLinkedRecords());
 	}
 
+	/**
+	 * Unattached an entry that wasn't attached in the first place
+	 */
 	@Test
-	public void deleteEntryForModel()
+	public void deleteEntryForModel_Noop()
 	{
 		final I_M_Product productRecord2 = newInstance(I_M_Product.class);
 		saveRecord(productRecord2);
@@ -109,16 +121,40 @@ public class AttachmentEntryServiceTest
 
 		attachmentEntryService.createAttachmentLinks(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
 
-		// invoke the method under test
-		attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);
+		// invoke the method under test - shall not do anything??
+		final AttachmentEntry entryWithRemovedLink = attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);
 
 		assertThat(attachmentEntryService.getByReferencedRecord(productRecord)).isEmpty();
 
 		final List<AttachmentEntry> entriesOfProductRecord2 = attachmentEntryService.getByReferencedRecord(productRecord2);
 		assertThat(entriesOfProductRecord2).hasSize(1);
-		assertThat(entriesOfProductRecord2.get(0)).isEqualTo(entry);
+		assertThat(entriesOfProductRecord2.get(0)).isEqualTo(entryWithRemovedLink);
 	}
 
+	@Test
+	public void deleteEntryForModel()
+	{
+		// given
+		final I_M_Product productRecord2 = newInstance(I_M_Product.class);
+		saveRecord(productRecord2);
+
+		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(productRecord, "product", "product.data".getBytes());
+
+		attachmentEntryService.createAttachmentLinks(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
+
+		// when
+		final AttachmentEntry entryWithRemovedLink = attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);
+		
+		// then
+		assertThat(entryWithRemovedLink.getLinkedRecords()).containsExactly(TableRecordReference.of(productRecord2));
+		
+		assertThat(attachmentEntryService.getByReferencedRecord(productRecord)).isEmpty();
+
+		final List<AttachmentEntry> entriesOfProductRecord2 = attachmentEntryService.getByReferencedRecord(productRecord2);
+		assertThat(entriesOfProductRecord2).hasSize(1);
+		assertThat(entriesOfProductRecord2.get(0)).isEqualTo(entryWithRemovedLink);
+	}
+	
 	@Test
 	public void createNewAttachment_with_tags()
 	{

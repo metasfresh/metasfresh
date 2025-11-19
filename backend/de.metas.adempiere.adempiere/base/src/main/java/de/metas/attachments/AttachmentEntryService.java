@@ -251,10 +251,10 @@ public class AttachmentEntryService
 
 		for (final AttachmentEntry entry : entries)
 		{
-			AttachmentEntry updatedEntry = entry;
+			final AttachmentEntry updatedEntry = entry;
 			for (final Object referencedRecord : referencedRecords)
 			{
-				updatedEntry = updatedEntry.withAdditionalLinkedRecord(TableRecordReference.of(referencedRecord));
+				updatedEntry.addLinkedRecord(TableRecordReference.of(referencedRecord));
 			}
 			result.add(updatedEntry);
 		}
@@ -268,7 +268,7 @@ public class AttachmentEntryService
 
 		if (!Check.isEmpty(attachmentLinksRequest.getLinksToAdd()))
 		{
-			updatedEntry = updatedEntry.withAdditionalLinkedRecords(attachmentLinksRequest.getLinksToAdd());
+			updatedEntry.addLinkedRecords(attachmentLinksRequest.getLinksToAdd());
 		}
 
 		if (attachmentLinksRequest.getTagsToAdd() != null)
@@ -278,7 +278,7 @@ public class AttachmentEntryService
 
 		if (!Check.isEmpty(attachmentLinksRequest.getLinksToRemove()))
 		{
-			updatedEntry = updatedEntry.withRemovedLinkedRecords(attachmentLinksRequest.getLinksToRemove());
+			updatedEntry.removeLinkedRecords(attachmentLinksRequest.getLinksToRemove());
 		}
 
 		if (attachmentLinksRequest.getTagsToRemove() != null)
@@ -309,8 +309,8 @@ public class AttachmentEntryService
 			@NonNull final AttachmentEntry attachment)
 	{
 		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
-		final AttachmentEntry withRemovedLinkedRecord = attachment.withRemovedLinkedRecord(tableRecordReference);
-		final AttachmentEntry withRemovedLinkedRecordAndId = attachmentEntryRepository.save(withRemovedLinkedRecord);
+		attachment.removedLinkedRecord(tableRecordReference);
+		final AttachmentEntry withRemovedLinkedRecordAndId = attachmentEntryRepository.save(attachment);
 
 		if (withRemovedLinkedRecordAndId.getLinkedRecords().isEmpty())
 		{

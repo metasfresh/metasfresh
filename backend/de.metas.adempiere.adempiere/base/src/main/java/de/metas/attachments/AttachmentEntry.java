@@ -1,8 +1,11 @@
 package de.metas.attachments;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.CreatedUpdatedInfo;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
@@ -39,13 +42,27 @@ public class AttachmentEntry
 	@Getter
 	AttachmentTags tags;
 
-	/** The records to which this instance is attached. */
-	Set<TableRecordReference> linkedRecords;
+	/**
+	 * The record-references to which this instance is attached, as loaded by the repo.
+	 */
+	ImmutableSet<TableRecordReference> linkedRecords;
 
-	Map<TableRecordReference, String> linkedRecord2AttachmentName;
+	/**
+	 * Record-References that were added since the instance was loaded. Will be synched to DB on the next repo-save.
+	 */
+	@Getter(AccessLevel.PACKAGE)
+	Set<TableRecordReference> linkedRecordsToAdd = new HashSet<>();
+
+	/**
+	 * Record-References that were removed since the instance was loaded. Will be synched to DB on the next repo-save.
+	 */
+	@Getter(AccessLevel.PACKAGE)
+	Set<TableRecordReference> linkedRecordsToRemove = new HashSet<>();
+
+	ImmutableMap<TableRecordReference, String> linkedRecord2AttachmentName;
 
 	CreatedUpdatedInfo createdUpdatedInfo;
-	
+
 	@lombok.Builder(toBuilder = true)
 	private AttachmentEntry(
 			@Nullable final AttachmentEntryId id,
@@ -66,10 +83,10 @@ public class AttachmentEntry
 
 		this.tags = tags != null ? tags : AttachmentTags.EMPTY;
 
-		this.linkedRecords = linkedRecords;
-		this.linkedRecord2AttachmentName = linkedRecord2AttachmentName;
-		
-		this.createdUpdatedInfo=createdUpdatedInfo;
+		this.linkedRecords = ImmutableSet.copyOf(linkedRecords);
+		this.linkedRecord2AttachmentName = linkedRecord2AttachmentName == null ? null : ImmutableMap.copyOf(linkedRecord2AttachmentName);
+
+		this.createdUpdatedInfo = createdUpdatedInfo;
 
 		switch (type)
 		{
@@ -79,15 +96,28 @@ public class AttachmentEntry
 				break;
 			case URL:
 				this.mimeType = null;
-				this.url = Preconditions.checkNotNull(url, "url");
+				this.url = Check.assumeNotNull(url, "url may not be null for this={}", this);
 				break;
 			case LocalFileURL:
 				this.mimeType = mimeType != null ? mimeType : MimeType.getMimeType(this.name);
-				this.url = Preconditions.checkNotNull(url, "url");
+				this.url = Check.assumeNotNull(url, "url may not be null for this={}", this);
 				break;
 			default:
 				throw new AdempiereException("Attachment entry type not supported: " + type);
 		}
+	}
+
+	/**
+	 * @return the record-references to which the entry was attached when loaded by the repo, plus the references added meanwhile, minus the references removed meanwhile.
+	 */
+	public ImmutableSet<TableRecordReference> getLinkedRecords()
+	{
+		final Set<TableRecordReference> result = new HashSet<>();
+		result.addAll(linkedRecords);
+		result.addAll(linkedRecordsToAdd);
+		result.removeAll(linkedRecordsToRemove);
+
+		return ImmutableSet.copyOf(result);
 	}
 
 	public String toStringX()
@@ -107,78 +137,65 @@ public class AttachmentEntry
 		return name.endsWith(".gif") || name.endsWith(".jpg") || name.endsWith(".png");
 	}
 
-	public AttachmentEntry withAdditionalLinkedRecord(@NonNull final TableRecordReference modelRef)
+	public void addLinkedRecord(@NonNull final TableRecordReference modelRef)
 	{
 		if (getLinkedRecords().contains(modelRef))
 		{
-			return this;
+			return;
 		}
-		return toBuilder().linkedRecord(modelRef).build();
+		linkedRecordsToAdd.add(modelRef);
 	}
 
-	public AttachmentEntry withAdditionalTag(@NonNull final String tagName, @NonNull final String tagValue)
+	public void removedLinkedRecord(@NonNull final TableRecordReference modelRef)
 	{
-		return toBuilder()
-				.tags(getTags().withTag(tagName, tagValue))
-				.build();
+		linkedRecordsToRemove.add(modelRef);
 	}
 
-	public AttachmentEntry withRemovedLinkedRecord(@NonNull final TableRecordReference modelRef)
+	public void removeAllLinkedRecords()
 	{
-		final HashSet<TableRecordReference> linkedRecords = new HashSet<>(getLinkedRecords());
-		if (linkedRecords.remove(modelRef))
-		{
-			return toBuilder().clearLinkedRecords().linkedRecords(linkedRecords).build();
-		}
-		else
-		{
-			return this;
-		}
+		linkedRecordsToAdd.clear();
+		linkedRecordsToRemove.addAll(linkedRecords);
 	}
 
-	public AttachmentEntry withoutLinkedRecords()
+	public void addLinkedRecords(@Nullable final List<TableRecordReference> additionalLinkedRecords)
 	{
-		return toBuilder().clearLinkedRecords().build();
+		if (additionalLinkedRecords == null)
+		{
+			return;
+		}
+
+		linkedRecordsToAdd.addAll(additionalLinkedRecords);
+		additionalLinkedRecords.forEach(this.linkedRecordsToRemove::remove);
 	}
 
-	public AttachmentEntry withAdditionalLinkedRecords(@NonNull final List<TableRecordReference> additionalLinkedRecords)
+	public void removeLinkedRecords(@Nullable final List<TableRecordReference> linkedRecordsToRemove)
 	{
-		if (getLinkedRecords().containsAll(additionalLinkedRecords))
+		if (linkedRecordsToRemove == null)
 		{
-			return this;
+			return;
 		}
-
-		final Set<TableRecordReference> tmp = new HashSet<>(getLinkedRecords());
-		tmp.addAll(additionalLinkedRecords);
-
-		return toBuilder().linkedRecords(tmp).build();
-	}
-
-	public AttachmentEntry withRemovedLinkedRecords(@NonNull final List<TableRecordReference> linkedRecordsToRemove)
-	{
-		final HashSet<TableRecordReference> linkedRecords = new HashSet<>(getLinkedRecords());
-		if (linkedRecords.removeAll(linkedRecordsToRemove))
-		{
-			return toBuilder().clearLinkedRecords().linkedRecords(linkedRecords).build();
-		}
-		else
-		{
-			return this;
-		}
+		this.linkedRecordsToRemove.addAll(linkedRecordsToRemove);
+		linkedRecordsToRemove.forEach(this.linkedRecordsToAdd::remove);
 	}
 
 	public AttachmentEntry withAdditionalTag(@NonNull final AttachmentTags attachmentTags)
 	{
-		return toBuilder()
+		final AttachmentEntry build = toBuilder()
 				.tags(getTags().withTags(attachmentTags))
 				.build();
+		build.linkedRecordsToAdd.addAll(this.linkedRecordsToAdd);
+		build.linkedRecordsToRemove.addAll(this.linkedRecordsToRemove);
+		return build;
 	}
 
 	public AttachmentEntry withoutTags(@NonNull final AttachmentTags attachmentTags)
 	{
-		return toBuilder()
+		final AttachmentEntry build = toBuilder()
 				.tags(getTags().withoutTags(attachmentTags))
 				.build();
+		build.linkedRecordsToAdd.addAll(this.linkedRecordsToAdd);
+		build.linkedRecordsToRemove.addAll(this.linkedRecordsToRemove);
+		return build;
 	}
 
 	/**
@@ -193,12 +210,13 @@ public class AttachmentEntry
 		}
 
 		return CoalesceUtil.coalesceNotNull(
-				linkedRecord2AttachmentName.get(tableRecordReference), 
+				linkedRecord2AttachmentName.get(tableRecordReference),
 				filename);
 	}
 
 	public boolean hasLinkToRecord(@NonNull final TableRecordReference tableRecordReference)
 	{
-		return linkedRecords.contains(tableRecordReference);
+		return (linkedRecords.contains(tableRecordReference) || linkedRecordsToAdd.contains(tableRecordReference))
+				&& !linkedRecordsToRemove.contains(tableRecordReference);
 	}
 }

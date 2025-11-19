@@ -23,7 +23,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -150,7 +149,7 @@ public class AttachmentEntryRepository
 
 	public void updateAttachmentEntryData(
 			@NonNull final AttachmentEntryId attachmentEntryId,
-			@NonNull final byte[] data)
+			final byte[] data)
 	{
 		final I_AD_AttachmentEntry entryRecord = retrieveAttachmentEntryRecordInTrx(attachmentEntryId);
 		if (X_AD_AttachmentEntry.TYPE_Data.equals(entryRecord.getType()))
@@ -181,7 +180,7 @@ public class AttachmentEntryRepository
 		final Map<TableRecordReference, String> recordReference2AttachmentName = attachmentMultiRefRecords.stream()
 				.filter(multiRefRecord -> Check.isNotBlank(multiRefRecord.getFileName_Override()))
 				.collect(Collectors.toMap(multiRefRecord -> TableRecordReference.of(multiRefRecord.getAD_Table_ID(), multiRefRecord.getRecord_ID()),
-										  I_AD_Attachment_MultiRef::getFileName_Override));
+						I_AD_Attachment_MultiRef::getFileName_Override));
 
 		builder.linkedRecord2AttachmentName(recordReference2AttachmentName);
 
@@ -229,8 +228,6 @@ public class AttachmentEntryRepository
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final I_AD_AttachmentEntry attachmententryRecord)
 	{
-		final Set<TableRecordReference> attachmentReferences = new HashSet<>(attachmentEntry.getLinkedRecords());
-
 		// delete superflous
 		if (attachmentEntry.getId() != null)
 		{
@@ -240,18 +237,16 @@ public class AttachmentEntryRepository
 				final TableRecordReference recordReference = TableRecordReference.of(
 						attachmentMultiRefRecord.getAD_Table_ID(),
 						attachmentMultiRefRecord.getRecord_ID());
-				final boolean recordReferenceWasIncluded = attachmentReferences.remove(recordReference);
-				if (!recordReferenceWasIncluded)
+				if (attachmentEntry.getLinkedRecordsToRemove().contains(recordReference))
 				{
 					deleteRecord(attachmentMultiRefRecord);
 				}
 			}
 		}
 
-
-		// create missing
+		// create new
 		// i.e. iterate the references that did not yet have an I_AD_Attachment_MultiRef record
-		for (final TableRecordReference attachmentReference : attachmentReferences)
+		for (final TableRecordReference attachmentReference : attachmentEntry.getLinkedRecordsToAdd())
 		{
 			final I_AD_Attachment_MultiRef attachmentMultiRefRecord = newInstance(I_AD_Attachment_MultiRef.class);
 			attachmentMultiRefRecord.setAD_AttachmentEntry(attachmententryRecord);
@@ -290,6 +285,11 @@ public class AttachmentEntryRepository
 
 	public void delete(@NonNull final AttachmentEntry attachmentEntry)
 	{
+		if(attachmentEntry.getId() == null)
+		{
+			return;
+		}
+
 		deleteAllAttachmentMultiRefs(attachmentEntry.getId());
 
 		Services.get(IQueryBL.class).createQueryBuilder(I_AD_AttachmentEntry.class)
@@ -298,7 +298,8 @@ public class AttachmentEntryRepository
 				.delete();
 	}
 
-	private static byte[] getBinaryDataFromLocalFileURL(@NonNull final URI uri){
+	private static byte[] getBinaryDataFromLocalFileURL(@NonNull final URI uri)
+	{
 		try
 		{
 			final URL url = uri.toURL();
@@ -320,7 +321,7 @@ public class AttachmentEntryRepository
 		if (AttachmentEntryType.LocalFileURL.equals(type))
 		{
 			Check.assumeNotNull(record.getURL(), "AD_AttachmentEntry.URL cannot be null for type = {}, AD_AttachmentEntry_ID = {}",
-								AttachmentEntryType.LocalFileURL.getCode(), record.getAD_AttachmentEntry_ID());
+					AttachmentEntryType.LocalFileURL.getCode(), record.getAD_AttachmentEntry_ID());
 
 			return getBinaryDataFromLocalFileURL(URI.create(record.getURL()));
 		}
