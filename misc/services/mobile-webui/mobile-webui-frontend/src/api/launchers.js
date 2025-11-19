@@ -8,8 +8,21 @@ import { toQRCodeString } from '../utils/qrCode/hu';
 /**
  * @summary Get the list of available launchers
  */
-export const getLaunchers = ({ applicationId, filterByQRCodeString, filters, facets, countOnly = false }) => {
-  const facetIds = facets ? facets.map((facet) => facet.facetId) : null;
+export const getLaunchers = ({
+  applicationId,
+  filterByQRCodeString,
+  filters,
+  facetIds: facetIdsParam,
+  facets: facetsParam,
+  countOnly = false,
+}) => {
+  let facetIds = null;
+  if (facetIdsParam) {
+    facetIds = facetIdsParam;
+  } else if (facetsParam) {
+    facetIds = facetsParam ? facetsParam.map((facet) => facet.facetId) : null;
+  }
+
   return axios
     .post(`${apiBasePath}/userWorkflows/launchers/query`, {
       ...filters,
