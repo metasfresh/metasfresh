@@ -234,7 +234,7 @@ public class JsonResponseBPartner
 					+ "Purchase payment term for this business partner.")
 	@JsonProperty(VENDOR_PAYMENTTERM)
 	@JsonInclude(Include.NON_NULL)
-	JsonResponsePaymentTerm vednorPaymentTerm;
+	JsonResponsePaymentTerm vendorPaymentTerm;
 
 	@ApiModelProperty(
 			value = "This translates to `C_BPartner.C_Incoterms_Customer_ID` (lookup to C_Incoterms).\n"
@@ -328,7 +328,7 @@ public class JsonResponseBPartner
 		this.eori = eori;
 		this.eInvoiceBuyerReference = eInvoiceBuyerReference;
 		this.customerPaymentTerm = customerPaymentTerm;
-		this.vednorPaymentTerm = vendorPaymentTerm;
+		this.vendorPaymentTerm = vendorPaymentTerm;
 		this.customerIncoterms = customerIncoterms;
 
 		this.changeInfo = changeInfo;

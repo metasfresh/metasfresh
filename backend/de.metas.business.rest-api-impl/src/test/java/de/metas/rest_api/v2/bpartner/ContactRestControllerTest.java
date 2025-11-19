@@ -53,6 +53,7 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.job.JobRepository;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.title.TitleRepository;
@@ -140,6 +141,7 @@ class ContactRestControllerTest
 				new TitleRepository(),
 				new CurrencyRepository(),
 				new JobRepository(),
+				new PaymentTermService(),
 				externalReferenceRestControllerService,
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 

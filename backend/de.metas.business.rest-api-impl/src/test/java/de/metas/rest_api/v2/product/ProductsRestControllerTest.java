@@ -48,6 +48,7 @@ import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersReposi
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.logging.LogManager;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
@@ -148,6 +149,7 @@ public class ProductsRestControllerTest
 				new TitleRepository(),
 				currencyRepository,
 				new JobRepository(),
+				new PaymentTermService(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 

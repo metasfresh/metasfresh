@@ -36,6 +36,7 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -95,6 +96,7 @@ class JsonRetrieverServiceTest
 				new TitleRepository(),
 				new CurrencyRepository(),
 				new JobRepository(),
+				new PaymentTermService(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
