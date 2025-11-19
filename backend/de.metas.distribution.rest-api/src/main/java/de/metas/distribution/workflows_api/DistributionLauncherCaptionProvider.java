@@ -1,8 +1,8 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.common.util.pair.ImmutablePair;
-import de.metas.distribution.config.CaptionFormat;
-import de.metas.distribution.config.CaptionFormatItem;
+import de.metas.distribution.config.DistributionJobCaptionFormat;
+import de.metas.distribution.config.DistributionJobCaptionFormatItem;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.service.external.DistributionProductService;
 import de.metas.distribution.service.external.DistributionSourceDocService;
@@ -41,11 +41,11 @@ public class DistributionLauncherCaptionProvider
 
 	public WorkflowLauncherCaption compute(@NonNull final DDOrderReference ddOrderReference)
 	{
-		final CaptionFormat format = configRepository.getConfig().getCaptionFormat();
+		final DistributionJobCaptionFormat format = configRepository.getConfig().getCaptionFormat();
 		
 		final TranslatableStringBuilder captionBuilder = TranslatableStrings.builder();
 
-		for (final CaptionFormatItem formatItem : format.getItems())
+		for (final DistributionJobCaptionFormatItem formatItem : format.getItems())
 		{
 			final ITranslatableString captionItem = computeItem(ddOrderReference, formatItem);
 			if (TranslatableStrings.isBlank(captionItem))
@@ -63,7 +63,7 @@ public class DistributionLauncherCaptionProvider
 		return WorkflowLauncherCaption.of(captionBuilder.build());
 	}
 
-	private ITranslatableString computeItem(@NonNull final DDOrderReference ddOrderReference, @NonNull final CaptionFormatItem formatItem)
+	private ITranslatableString computeItem(@NonNull final DDOrderReference ddOrderReference, @NonNull final DistributionJobCaptionFormatItem formatItem)
 	{
 		switch (formatItem.getField())
 		{

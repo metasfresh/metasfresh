@@ -6,7 +6,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class CaptionFormatItem
+public class DistributionJobCaptionFormatItem
 {
 	@NonNull DistributionJobCaptionField field;
 }

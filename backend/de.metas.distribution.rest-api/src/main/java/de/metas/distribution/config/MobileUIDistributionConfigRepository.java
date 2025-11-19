@@ -25,14 +25,14 @@ public class MobileUIDistributionConfigRepository
 
 	private static final MobileUIDistributionConfig DEFAULT_CONFIG = MobileUIDistributionConfig.builder()
 			.allowPickingAnyHU(false)
-			.captionFormat(CaptionFormat.ofNonEmptyList(ImmutableList.of(
-					CaptionFormatItem.builder().field(DistributionJobCaptionField.SourceDoc).build(),
-					CaptionFormatItem.builder().field(DistributionJobCaptionField.WarehouseFrom).build(),
-					CaptionFormatItem.builder().field(DistributionJobCaptionField.WarehouseTo).build(),
-					CaptionFormatItem.builder().field(DistributionJobCaptionField.PickDate).build(),
-					CaptionFormatItem.builder().field(DistributionJobCaptionField.Plant).build(),
-					CaptionFormatItem.builder().field(DistributionJobCaptionField.ProductValueAndName).build(),
-					CaptionFormatItem.builder().field(DistributionJobCaptionField.Qty).build()
+			.captionFormat(DistributionJobCaptionFormat.ofNonEmptyList(ImmutableList.of(
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.SourceDoc).build(),
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.WarehouseFrom).build(),
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.WarehouseTo).build(),
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.PickDate).build(),
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.Plant).build(),
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.ProductValueAndName).build(),
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.Qty).build()
 			)))
 			.sorting(DistributionJobSorting.DEFAULT)
 			.build();
@@ -64,7 +64,7 @@ public class MobileUIDistributionConfigRepository
 				.firstOnlyOptional();
 	}
 
-	private Optional<CaptionFormat> retrieveCaptionFormat(final int MobileUI_UserProfile_DD_ID)
+	private Optional<DistributionJobCaptionFormat> retrieveCaptionFormat(final int MobileUI_UserProfile_DD_ID)
 	{
 		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_DD_CaptionItem.class)
 				.addOnlyActiveRecordsFilter()
@@ -72,12 +72,12 @@ public class MobileUIDistributionConfigRepository
 				.orderBy(I_MobileUI_UserProfile_DD_CaptionItem.COLUMNNAME_SeqNo)
 				.stream()
 				.map(MobileUIDistributionConfigRepository::fromRecord)
-				.collect(CaptionFormat.collect());
+				.collect(DistributionJobCaptionFormat.collect());
 	}
 
-	private static CaptionFormatItem fromRecord(I_MobileUI_UserProfile_DD_CaptionItem record)
+	private static DistributionJobCaptionFormatItem fromRecord(I_MobileUI_UserProfile_DD_CaptionItem record)
 	{
-		return CaptionFormatItem.builder()
+		return DistributionJobCaptionFormatItem.builder()
 				.field(DistributionJobCaptionField.ofCode(record.getFieldName()))
 				.build();
 	}

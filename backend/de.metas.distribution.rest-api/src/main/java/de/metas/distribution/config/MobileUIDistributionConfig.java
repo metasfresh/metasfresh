@@ -11,7 +11,7 @@ import org.adempiere.ad.dao.QueryLimit;
 public class MobileUIDistributionConfig
 {
 	boolean allowPickingAnyHU;
-	@NonNull CaptionFormat captionFormat;
+	@NonNull DistributionJobCaptionFormat captionFormat;
 	@NonNull DistributionJobSorting sorting;
 	
 	@NonNull @Default QueryLimit maxLaunchers = QueryLimit.NO_LIMIT;
