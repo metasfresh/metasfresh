@@ -180,6 +180,8 @@ public interface IBPartnerBL extends ISingletonService
 	@Nullable
 	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
 
+	Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull BPartnerId bpartnerId, boolean isSOTrx);
+
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
 	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
