@@ -31,7 +31,7 @@ public enum JsonEndpointAuthType
 {
 	Token,
 	OAuth,
-	HMAC
+	SAS
 	;
 }
 

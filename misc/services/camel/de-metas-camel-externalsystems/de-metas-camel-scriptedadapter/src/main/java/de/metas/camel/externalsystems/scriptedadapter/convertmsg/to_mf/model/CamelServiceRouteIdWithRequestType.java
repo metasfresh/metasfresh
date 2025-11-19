@@ -37,6 +37,7 @@ import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
 import de.metas.common.rest_api.v2.adprocess.JsonAdProcessRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
@@ -72,7 +73,8 @@ public enum CamelServiceRouteIdWithRequestType
 	MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI(ExternalSystemCamelConstants.MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI, UpsertProductPriceList.class, true),
 	MF_UPSERT_PRODUCT_V2_CAMEL_URI(ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI, ProductUpsertCamelRequest.class, true),
 	MF_CREATE_PURCHASE_CANDIDATE_V2_CAMEL_URI(ExternalSystemCamelConstants.MF_CREATE_PURCHASE_CANDIDATE_V2_CAMEL_URI, PurchaseCandidateCamelRequest.class, false),
-	MF_UPSERT_WAREHOUSE_V2_CAMEL_URI(ExternalSystemCamelConstants.MF_UPSERT_WAREHOUSE_V2_CAMEL_URI, WarehouseUpsertCamelRequest.class, true);
+	MF_UPSERT_WAREHOUSE_V2_CAMEL_URI(ExternalSystemCamelConstants.MF_UPSERT_WAREHOUSE_V2_CAMEL_URI, WarehouseUpsertCamelRequest.class, true),
+	MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI(ExternalSystemCamelConstants.MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI, JsonPurchaseCandidatesRequest.class, false);
 
 	@NonNull
 	private final String routeId;

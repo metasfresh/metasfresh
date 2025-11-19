@@ -32,4 +32,5 @@ public interface ScriptedAdapterConstants
 	String PREFIX_IMPORT_AUTHORITY = "IMPORT:";
 	String PROPERTY_ENDPOINT_NAME = "endpointName";
 	String FIELD_ERROR_MESSAGE = "errorMessage";
+	String EXCEPTION_PREFIX = "Exception - ";
 }

@@ -39,7 +39,7 @@ public enum OutboundEndpointAuthType implements ReferenceListAwareEnum
 {
 	Token(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_Token),
 	OAuth(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_OAuth),
-	HMAC(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_HMAC)
+	SAS(X_ExternalSystem_Outbound_Endpoint.AUTHTYPE_SAS)
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<OutboundEndpointAuthType> index = ReferenceListAwareEnums.index(values());

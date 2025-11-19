@@ -1,10 +1,10 @@
 -- Run mode: SWING_CLIENT
 
 -- Reference: ExternalSystem_Outbound_Endpoint_AuthType
--- Value: HMAC
--- ValueName: HMAC
+-- Value: SAS
+-- ValueName: SAS
 -- 2025-11-17T13:52:40.541Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,544066,542017,TO_TIMESTAMP('2025-11-17 13:52:40.246000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'HMAC-Signatur-basierte Authentifizierung','D','Y','HMAC',TO_TIMESTAMP('2025-11-17 13:52:40.246000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'HMAC','HMAC')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,544066,542017,TO_TIMESTAMP('2025-11-17 13:52:40.246000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'SAS-Signatur-basierte Authentifizierung','D','Y','SAS',TO_TIMESTAMP('2025-11-17 13:52:40.246000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'SAS','SAS')
 ;
 
 -- 2025-11-17T13:52:40.558Z
