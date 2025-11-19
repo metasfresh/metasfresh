@@ -180,7 +180,10 @@ public interface IBPartnerBL extends ISingletonService
 	@Nullable
 	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
 
-	Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull BPartnerId bpartnerId, boolean isSOTrx);
+	/**
+	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
+	 */
+	Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull BPartnerId bpartnerId, @NonNull SOTrx isSOTrx);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
@@ -255,11 +258,6 @@ public interface IBPartnerBL extends ISingletonService
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 
 	Optional<PaymentTermId> getPaymentTermIdForBPartner(BPartnerId bpartnerId, SOTrx soTrx);
-
-	/**
-	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
-	 */
-	Optional<PaymentRule> getPaymentRuleForBPartner(BPartnerId bpartnerId);
 
 	boolean isSalesRep(BPartnerId bpartnerId);
 

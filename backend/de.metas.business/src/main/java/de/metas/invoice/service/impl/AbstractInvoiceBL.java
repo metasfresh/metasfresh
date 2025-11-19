@@ -784,7 +784,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				: Optional.empty();
 
 		final Optional<PaymentTermId> paymentTermId = bpartnerBL.getPaymentTermIdForBPartner(bpartnerId, soTrx);
-		final Optional<PaymentRule> paymentRule = bpartnerBL.getPaymentRuleForBPartner(bpartnerId);
+		final Optional<PaymentRule> paymentRule = bpartnerBL.getPaymentRuleForBPartner(bpartnerId,soTrx);
 
 		final I_M_PriceList priceList = getPriceList(billBPartnerLocationId, soTrx, date);
 
