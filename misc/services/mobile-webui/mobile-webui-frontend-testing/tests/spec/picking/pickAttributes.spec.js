@@ -89,13 +89,13 @@ test('Expect picking directly without dialog', async ({ page }) => {
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: true, shipmentLineId: 'shipmentLine1' }]
+                        qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: true, shipmentLineId: 'shipmentLine1' }]
                     },
                 }
             }
         },
         hus: {
-            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
             vhu1: { huStatus: 'E', storages: { P1: '1 PCE' } },
         }
     });
