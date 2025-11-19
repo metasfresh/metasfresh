@@ -24,6 +24,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
@@ -40,6 +41,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateComma
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.get_qty_available.PickingJobGetQtyAvailableCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
 import de.metas.handlingunits.picking.job.service.commands.retrieve.PickingJobCandidateRetrieveCommand;
@@ -61,13 +63,11 @@ import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -97,7 +97,6 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final PickingShipmentService shipmentService;
-	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
@@ -132,7 +131,7 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobSlotService(pickingSlotService)
 				.huService(huService)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
-				.workplaceService(workplaceService)
+				.warehouseService(warehouseService)
 				.pickingJobScheduleService(pickingJobScheduleService)
 				//
 				.request(request)
@@ -693,14 +692,27 @@ public class PickingJobService implements PickingSlotListener
 		return pickingSlotService.getPickingSlotsSuggestions(deliveryLocations);
 	}
 
-	public PickingJob pickAll(final PickingJobId pickingJobId, final @NotNull UserId callerId)
+	public PickingJob pickAll(@NonNull final PickingJobId pickingJobId, final @NonNull UserId callerId)
 	{
 		return PickingJobPickAllCommand.builder()
 				.pickingJobService(this)
+				//
 				.pickingJobId(pickingJobId)
 				.callerId(callerId)
-				.build()
-				.execute();
+				//
+				.build().execute();
 	}
 
+	public PickingJobQtyAvailable getQtyAvailable(@NonNull final PickingJobId pickingJobId, final @NonNull UserId callerId)
+	{
+		return PickingJobGetQtyAvailableCommand.builder()
+				.pickingJobService(this)
+				.warehouseService(warehouseService)
+				.huService(huService)
+				//
+				.pickingJobId(pickingJobId)
+				.callerId(callerId)
+				//
+				.build().execute();
+	}
 }

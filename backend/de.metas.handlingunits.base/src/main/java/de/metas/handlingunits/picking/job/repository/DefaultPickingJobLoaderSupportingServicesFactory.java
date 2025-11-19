@@ -1,6 +1,6 @@
 package de.metas.handlingunits.picking.job.repository;
 
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DefaultPickingJobLoaderSupportingServicesFactory implements PickingJobLoaderSupportingServicesFactory
 {
+	@NonNull private final MobileUIPickingUserProfileService profileService;
 	@NonNull private final PickingJobSalesOrderService orderService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobBPartnerService bpartnerService;
@@ -23,7 +24,6 @@ public class DefaultPickingJobLoaderSupportingServicesFactory implements Picking
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobHUService huService;
-	@NonNull private final MobileUIPickingUserProfileRepository profileRepository;
 
 	@Override
 	public PickingJobLoaderSupportingServices createLoaderSupportingServices()
@@ -36,7 +36,7 @@ public class DefaultPickingJobLoaderSupportingServicesFactory implements Picking
 				.pickingSlotService(pickingSlotService)
 				.pickingJobLockService(pickingJobLockService)
 				.huService(huService)
-				.profileRepository(profileRepository)
+				.profileService(profileService)
 				.build();
 	}
 }

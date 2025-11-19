@@ -156,3 +156,9 @@ export const getScannedHUQRCodeInfo = ({ qrCode }) => {
     .get(toUrl(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode }))
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const getQtyAvailable = ({ wfProcessId }) => {
+  return axios
+    .get(`${apiBasePath}/picking/job/${wfProcessId}/qtyAvailable`)
+    .then((response) => unboxAxiosResponse(response));
+};

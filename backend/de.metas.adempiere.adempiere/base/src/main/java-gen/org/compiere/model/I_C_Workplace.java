@@ -273,6 +273,29 @@ public interface I_C_Workplace
 	String COLUMNNAME_PickFrom_Locator_ID = "PickFrom_Locator_ID";
 
 	/**
+	 * Set Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriorityRule (@Nullable java.lang.String PriorityRule);
+
+	/**
+	 * Get Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPriorityRule();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_PriorityRule = new ModelColumn<>(I_C_Workplace.class, "PriorityRule", null);
+	String COLUMNNAME_PriorityRule = "PriorityRule";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

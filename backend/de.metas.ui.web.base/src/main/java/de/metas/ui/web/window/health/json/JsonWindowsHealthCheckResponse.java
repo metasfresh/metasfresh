@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.window.health.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Value
-public class JsonWindowsHealthResponse
+public class JsonWindowsHealthCheckResponse
 {
 	String took;
 	int countTotal;
@@ -51,13 +51,17 @@ public class JsonWindowsHealthResponse
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<Entry> skipped;
 
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable JsonContextVariablesResponse contextVariables;
+
 	@Builder
 	@Jacksonized
-	private JsonWindowsHealthResponse(
+	private JsonWindowsHealthCheckResponse(
 			@Nullable final String took,
 			final int countTotal,
 			@Nullable final List<Entry> errors,
-			@Nullable final List<Entry> skipped)
+			@Nullable final List<Entry> skipped,
+			@Nullable JsonContextVariablesResponse contextVariables)
 	{
 		this.took = took;
 		this.errors = errors != null ? errors : ImmutableList.of();
@@ -65,9 +69,11 @@ public class JsonWindowsHealthResponse
 		this.countTotal = countTotal;
 		this.countErrors = this.errors.size();
 		this.countSkipped = this.skipped.size();
+		this.contextVariables = contextVariables;
 
 		this.errorWindowIds = this.errors.stream()
 				.map(entry -> entry.getWindowId().toJson())
+				.distinct()
 				.collect(Collectors.joining(","));
 	}
 

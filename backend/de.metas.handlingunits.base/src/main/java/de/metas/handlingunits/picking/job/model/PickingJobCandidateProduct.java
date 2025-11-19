@@ -34,20 +34,7 @@ public class PickingJobCandidateProduct
 			return Optional.empty();
 		}
 
-		final Quantity qtyNotAvailable = qtyToDeliver.subtract(qtyAvailableToPick);
-
-		if (qtyNotAvailable.signum() <= 0)
-		{
-			return Optional.of(QtyAvailableStatus.FULLY_AVAILABLE);
-		}
-		else if (qtyAvailableToPick.signum() > 0)
-		{
-			return Optional.of(QtyAvailableStatus.PARTIALLY_AVAILABLE);
-		}
-		else
-		{
-			return Optional.of(QtyAvailableStatus.NOT_AVAILABLE);
-		}
+		return Optional.of(QtyAvailableStatus.computeOfQtyRequiredAndQtyAvailable(qtyToDeliver, qtyAvailableToPick));
 	}
 }
 

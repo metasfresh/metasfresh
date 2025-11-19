@@ -8,7 +8,7 @@ import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.picking.config.mobileui.AllowedPickToStructures;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
@@ -36,7 +36,7 @@ import java.util.List;
 public class MobileConfigCommand
 {
 	@NonNull private final MobileConfigService mobileConfigService;
-	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
+	@NonNull private final MobileUIPickingUserProfileService mobilePickingConfigService;
 	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
 	@NonNull private final MobileUIManufacturingConfigRepository mobileManufacturingConfigRepository;
 
@@ -83,7 +83,7 @@ public class MobileConfigCommand
 			return null;
 		}
 
-		mobilePickingConfigRepository.update((profile) -> {
+		mobilePickingConfigService.update((profile) -> {
 			final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
 					.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
 					.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
@@ -100,7 +100,7 @@ public class MobileConfigCommand
 			return newProfileBuilder.build();
 		});
 
-		final MobileUIPickingUserProfile newProfile = mobilePickingConfigRepository.getProfile(); // reload to make sure we are returning exactly what's in DB
+		final MobileUIPickingUserProfile newProfile = mobilePickingConfigService.getProfile(); // reload to make sure we are returning exactly what's in DB
 
 		// guard against common config errors
 		if (newProfile.getDefaultPickingJobOptions().getAllowedPickToStructures().toAllowedSet().isEmpty())

@@ -32,13 +32,19 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastErrorFromObj } from '../../../utils/toast';
 import { trl } from '../../../utils/translations';
 import { useApplicationInfoParameters } from '../../../reducers/applications';
+import { usePickingJobQtyAvailable } from './usePickingJobQtyAvailable';
+import { QtyAvailableStatus } from '../../../constants/QtyAvailableStatus';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
 const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
   const history = useMobileNavigation();
   const dispatch = useDispatch();
+
   const { allowQuickPackAll } = useApplicationInfoParameters({ applicationId });
+  const qtyAvailable = usePickingJobQtyAvailable({ wfProcessId, enabled: allowQuickPackAll });
+  const isShowQuickPackAllButton = allowQuickPackAll && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
+
   const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
 
   const isUserEditable = isUserEditableFunc({ activity });
@@ -117,7 +123,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
           );
         })}
 
-      {allowQuickPackAll && (
+      {isShowQuickPackAllButton && (
         <ButtonWithIndicator
           testId={'pickAll-button'}
           caption={trl('activities.picking.pickAll')}
