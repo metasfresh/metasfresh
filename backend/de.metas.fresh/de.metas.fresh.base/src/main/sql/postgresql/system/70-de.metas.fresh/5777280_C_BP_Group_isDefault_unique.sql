@@ -21,3 +21,4 @@ WHERE isdefault = 'Y'
 
 CREATE UNIQUE INDEX idx_c_bp_group_defaults ON c_bp_group (ad_client_id, ad_org_id) WHERE isdefault = 'Y'
 ;
+
