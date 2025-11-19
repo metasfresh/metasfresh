@@ -2,6 +2,7 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.workflows_api.facets.DistributionFacetIdsCollection;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
@@ -12,7 +13,6 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
@@ -30,10 +30,12 @@ public class DistributionWorkflowLaunchersProvider
 			throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
 		}
 
+		final MobileUIDistributionConfig config = distributionRestService.getConfig();
+
 		final ImmutableList<WorkflowLauncher> launchers = distributionRestService.streamJobReferencesForUser(
-						DDOrderReferenceQuery.builder()
+						newDDOrderReferenceQuery()
 								.responsibleId(query.getUserId())
-								.suggestedLimit(query.getLimit().orElseGet(this::getMaxLaunchers))
+								.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
 								.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
 								.build()
 				)
@@ -46,9 +48,11 @@ public class DistributionWorkflowLaunchersProvider
 				.build();
 	}
 
-	private QueryLimit getMaxLaunchers()
+	private DDOrderReferenceQuery.DDOrderReferenceQueryBuilder newDDOrderReferenceQuery()
 	{
-		return distributionRestService.getConfig().getMaxLaunchers();
+		final MobileUIDistributionConfig config = distributionRestService.getConfig();
+		return DDOrderReferenceQuery.builder()
+				.sorting(config.getSorting());
 	}
 
 	private WorkflowLauncher toWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
@@ -85,7 +89,7 @@ public class DistributionWorkflowLaunchersProvider
 	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final WorkflowLaunchersFacetQuery query)
 	{
 		return distributionRestService.getFacets(
-						DDOrderReferenceQuery.builder()
+						newDDOrderReferenceQuery()
 								.responsibleId(query.getUserId())
 								.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getActiveFacetIds()))
 								.build()

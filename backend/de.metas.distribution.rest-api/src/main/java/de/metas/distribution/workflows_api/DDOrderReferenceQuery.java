@@ -1,5 +1,6 @@
 package de.metas.distribution.workflows_api;
 
+import de.metas.distribution.config.DistributionJobSorting;
 import de.metas.distribution.workflows_api.facets.DistributionFacetIdsCollection;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -15,4 +16,5 @@ public class DDOrderReferenceQuery
 	@NonNull UserId responsibleId;
 	@NonNull @Default QueryLimit suggestedLimit = QueryLimit.NO_LIMIT;
 	@NonNull @Default DistributionFacetIdsCollection activeFacetIds = DistributionFacetIdsCollection.EMPTY;
+	@NonNull @Default DistributionJobSorting sorting = DistributionJobSorting.DEFAULT;
 }

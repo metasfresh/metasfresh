@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 
@@ -24,7 +25,7 @@ import java.util.Set;
 public class DDOrderQuery
 {
 	@NonNull @Singular ImmutableList<OrderBy> orderBys;
-	
+
 	@Nullable DocStatus docStatus;
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
 	@Nullable Set<WarehouseId> warehouseFromIds;
@@ -39,10 +40,17 @@ public class DDOrderQuery
 	//
 	//
 	//
+	@Value(staticConstructor = "of")
+	public static class OrderBy
+	{
+		@NonNull OrderByField field;
+		@NonNull Direction direction;
+	}
 
-	public enum OrderBy
+	public enum OrderByField
 	{
 		PriorityRule,
 		DatePromised,
+		SeqNo,
 	}
 }

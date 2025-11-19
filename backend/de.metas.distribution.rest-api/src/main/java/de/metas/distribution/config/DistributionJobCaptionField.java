@@ -8,7 +8,7 @@ import org.compiere.model.X_MobileUI_UserProfile_DD_CaptionItem;
 
 @RequiredArgsConstructor
 @Getter
-public enum DistributionJobField implements ReferenceListAwareEnum
+public enum DistributionJobCaptionField implements ReferenceListAwareEnum
 {
 	LocatorFrom(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_LocatorFrom),
 	LocatorTo(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_LocatorTo),
@@ -23,9 +23,9 @@ public enum DistributionJobField implements ReferenceListAwareEnum
 	Priority(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_Priority),
 	;
 
-	private static final ReferenceListAwareEnums.ValuesIndex<DistributionJobField> index = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<DistributionJobCaptionField> index = ReferenceListAwareEnums.index(values());
 
 	private final String code;
 
-	public static DistributionJobField ofCode(final String code) {return index.ofCode(code);}
+	public static DistributionJobCaptionField ofCode(final String code) {return index.ofCode(code);}
 }

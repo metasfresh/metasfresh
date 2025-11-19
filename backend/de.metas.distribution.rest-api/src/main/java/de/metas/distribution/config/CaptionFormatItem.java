@@ -8,5 +8,5 @@ import lombok.Value;
 @Builder
 public class CaptionFormatItem
 {
-	@NonNull DistributionJobField field;
+	@NonNull DistributionJobCaptionField field;
 }
