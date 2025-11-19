@@ -72,7 +72,7 @@ public class QueryLimitTest
 	public void toIntOr()
 	{
 		assertThat(QueryLimit.NO_LIMIT.toIntOr(Integer.MAX_VALUE)).isEqualTo(Integer.MAX_VALUE);
-		assertThat(QueryLimit.ofInt(1).toIntOr(Integer.MAX_VALUE)).isEqualTo(1);
+		assertThat(QueryLimit.ofInt(1).toIntOr(Integer.MAX_VALUE)).isOne();
 	}
 
 	@Test
