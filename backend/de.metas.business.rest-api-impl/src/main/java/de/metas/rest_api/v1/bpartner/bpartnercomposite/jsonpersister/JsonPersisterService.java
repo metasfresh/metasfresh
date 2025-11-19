@@ -98,7 +98,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -745,7 +745,7 @@ public class JsonPersisterService
 		}
 		if (bpartner.getGroupId() == null)
 		{
-			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Check.assumeNotNull(bpartnerComposite.getOrgId(),
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, Check.assumeNotNull(bpartnerComposite.getOrgId(),
 					"orgId was meanwhile set to bpartnerComposite={}", bpartnerComposite));
 			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup(clientAndOrgId);
 			if (!optionalBPGroup.isPresent())

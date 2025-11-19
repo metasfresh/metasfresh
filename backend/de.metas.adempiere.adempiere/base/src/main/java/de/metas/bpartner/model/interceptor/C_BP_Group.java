@@ -67,7 +67,7 @@ public class C_BP_Group
 		}
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(bpGroup.getAD_Client_ID(), bpGroup.getAD_Org_ID());
-		final I_C_BP_Group previousDefault = bpGroupDAO.getDefaultByClientId(clientAndOrgId);
+		final I_C_BP_Group previousDefault = bpGroupDAO.getDefaultByClientOrgId(clientAndOrgId);
 		if (previousDefault == null)
 		{
 			return;

@@ -532,7 +532,7 @@ public class MBPartner extends X_C_BPartner
 		if (bpGroupId == null)
 		{
 			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID());
-			m_group = bpGroupsRepo.getDefaultByClientId(clientAndOrgId);
+			m_group = bpGroupsRepo.getDefaultByClientOrgId(clientAndOrgId);
 		}
 		else
 		{

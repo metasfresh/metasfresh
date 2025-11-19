@@ -77,7 +77,7 @@ public class BPGroupDAO implements IBPGroupDAO
 
 	@Override
 	@Nullable
-	public I_C_BP_Group getDefaultByClientId(@NonNull final ClientAndOrgId clientAndOrgId)
+	public I_C_BP_Group getDefaultByClientOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final BPGroupId bpGroupId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BP_Group.class)

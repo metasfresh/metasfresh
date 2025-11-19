@@ -62,7 +62,7 @@ public class BPGroupRepository
 	public Optional<BPGroup> getDefaultGroup(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final I_C_BP_Group groupRecord = Services.get(IBPGroupDAO.class)
-				.getDefaultByClientId(clientAndOrgId);
+				.getDefaultByClientOrgId(clientAndOrgId);
 
 		return ofRecord(groupRecord);
 	}

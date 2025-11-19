@@ -1,4 +1,4 @@
-SELECT backup_table('c_bp_group ', 'c_bp_group_backup_20251118')
+SELECT backup_table('c_bp_group ')
 ;
 
 CREATE TEMP TABLE c_bp_group_first_defaults AS

@@ -47,7 +47,7 @@ public interface IBPGroupDAO extends ISingletonService
 	BPGroupId getBPGroupByBPartnerId(BPartnerId bpartnerId);
 
 	@Nullable
-	I_C_BP_Group getDefaultByClientId(ClientAndOrgId clientAndOrgId);
+	I_C_BP_Group getDefaultByClientOrgId(ClientAndOrgId clientAndOrgId);
 
 	BPartnerNameAndGreetingStrategyId getBPartnerNameAndGreetingStrategyId(@NonNull BPGroupId bpGroupId);
 
