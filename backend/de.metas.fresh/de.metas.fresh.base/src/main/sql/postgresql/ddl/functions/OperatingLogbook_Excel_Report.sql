@@ -47,9 +47,7 @@ CREATE OR REPLACE FUNCTION report.OperatingLogbook_Excel_Report(IN p_MovementDat
                 QuantityInTons          numeric,
                 WasteCodeNumber         varchar,
                 WasteProducerName       varchar,
-                WasteProducerNo         varchar,
                 WasteDisposalName       varchar,
-                WasteDisposalNo         varchar,
                 WasteCodeNumber2        varchar,
                 QuantityInTons2         numeric,
                 SubmissionDate          date,
@@ -58,26 +56,25 @@ CREATE OR REPLACE FUNCTION report.OperatingLogbook_Excel_Report(IN p_MovementDat
     LANGUAGE sql
 AS
 $$
-SELECT 'B + T Eingang'                                          AS ServicePerformed,
-       inv.DocumentNo                                           AS InvoiceDocumentNo,
-       ord.DocumentNo                                           AS PurchaseOrderDocumentNo,
-       io.MovementDate                                          AS TakeoverDate,
-       iol.MovementQty                                          AS QuantityInTons,
-       COALESCE(prod.AVV_No, prod.value)                        AS WasteCodeNumber,
+SELECT 'B + T Eingang'                                                                       AS ServicePerformed,
+       inv.DocumentNo                                                                        AS InvoiceDocumentNo,
+       ord.DocumentNo                                                                        AS PurchaseOrderDocumentNo,
+       io.MovementDate                                                                       AS TakeoverDate,
+       iol.MovementQty                                                                       AS QuantityInTons,
+       COALESCE(prod.AVV_No, prod.value)                                                     AS WasteCodeNumber,
 
-       bp_supplier.Name                                         AS WasteProducerName,
-       COALESCE(bp_supplier.WasteProducerNo, bp_supplier.Value) AS WasteProducerNo,
+       bp_supplier.Name || E'\n' || COALESCE(bp_supplier.WasteProducerNo, bp_supplier.Value) AS WasteProducerName,
 
-       COALESCE(bp_dest_wh.Name, bp_dest_org.Name)              AS WasteDisposalName,
-       COALESCE(
+       COALESCE(bp_dest_wh.Name, bp_dest_org.Name) || E'\n' || COALESCE(
                COALESCE(bp_dest_wh.WasteDisposerNo, bp_dest_wh.Value),
                COALESCE(bp_dest_org.WasteDisposerNo, bp_dest_org.Value)
-       )                                                        AS WasteDisposalNo,
+                                                               )                             AS WasteDisposalName,
 
-       prod.AVV_No                                              AS WasteCodeNumber2,
-       iol.MovementQty                                          AS QuantityInTons2,
-       io.MovementDate                                          AS SubmissionDate,
-       NULL                                                     AS Comments -- empty for now
+
+       prod.AVV_No                                                                           AS WasteCodeNumber2,
+       iol.MovementQty                                                                       AS QuantityInTons2,
+       io.MovementDate                                                                       AS SubmissionDate,
+       NULL                                                                                  AS Comments -- empty for now
 
 FROM M_InOut io
          INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
@@ -114,26 +111,24 @@ UNION ALL
 -- ========================================
 -- PART 2: Material Receipts (B + T) - Dropship Warehouses
 -- ========================================
-SELECT 'B + T'                                                  AS ServicePerformed,
-       inv.DocumentNo                                           AS InvoiceDocumentNo,
-       ord.DocumentNo                                           AS PurchaseOrderDocumentNo,
-       io.MovementDate                                          AS TakeoverDate,
-       iol.MovementQty                                          AS QuantityInTons,
-       COALESCE(prod.AVV_No, prod.value)                        AS WasteCodeNumber,
+SELECT 'B + T'                                                                               AS ServicePerformed,
+       inv.DocumentNo                                                                        AS InvoiceDocumentNo,
+       ord.DocumentNo                                                                        AS PurchaseOrderDocumentNo,
+       io.MovementDate                                                                       AS TakeoverDate,
+       iol.MovementQty                                                                       AS QuantityInTons,
+       COALESCE(prod.AVV_No, prod.value)                                                     AS WasteCodeNumber,
 
-       bp_supplier.Name                                         AS WasteProducerName,
-       COALESCE(bp_supplier.WasteProducerNo, bp_supplier.Value) AS WasteProducerNo,
+       bp_supplier.Name || E'\n' || COALESCE(bp_supplier.WasteProducerNo, bp_supplier.Value) AS WasteProducerName,
 
-       COALESCE(bp_dest_wh.Name, bp_dest_org.Name)              AS WasteDisposalName,
-       COALESCE(
+       COALESCE(bp_dest_wh.Name, bp_dest_org.Name) || E'\n' || COALESCE(
                COALESCE(bp_dest_wh.WasteDisposerNo, bp_dest_wh.Value),
                COALESCE(bp_dest_org.WasteDisposerNo, bp_dest_org.Value)
-       )                                                        AS WasteDisposalNo,
+                                                               )                             AS WasteDisposalName,
 
-       prod.AVV_No                                              AS WasteCodeNumber2,
-       iol.MovementQty                                          AS QuantityInTons2,
-       io.MovementDate                                          AS SubmissionDate,
-       NULL                                                     AS Comments
+       prod.AVV_No                                                                           AS WasteCodeNumber2,
+       iol.MovementQty                                                                       AS QuantityInTons2,
+       io.MovementDate                                                                       AS SubmissionDate,
+       NULL                                                                                  AS Comments
 
 FROM M_InOut io
          INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
@@ -169,25 +164,24 @@ UNION ALL
 -- ========================================
 -- PART 3: Customer Shipments (H + M)
 -- ========================================
-SELECT 'H + M'                                                  AS ServicePerformed,
-       inv_sales.DocumentNo                                     AS InvoiceDocumentNo,
-       ord_sales.DocumentNo                                     AS PurchaseOrderDocumentNo,
-       io.MovementDate                                          AS TakeoverDate,
-       iol.MovementQty                                          AS QuantityInTons,
-       COALESCE(prod.AVV_No, prod.value)                        AS WasteCodeNumber,
+SELECT 'H + M'                                                                               AS ServicePerformed,
+       inv_sales.DocumentNo                                                                  AS InvoiceDocumentNo,
+       ord_sales.DocumentNo                                                                  AS PurchaseOrderDocumentNo,
+       io.MovementDate                                                                       AS TakeoverDate,
+       iol.MovementQty                                                                       AS QuantityInTons,
+       COALESCE(prod.AVV_No, prod.value)                                                     AS WasteCodeNumber,
 
-       COALESCE(bp_wh_source.Name, bp_org_source.Name)          AS WasteProducerName,
-       COALESCE(
+       COALESCE(bp_wh_source.Name, bp_org_source.Name) || E'\n' || COALESCE(
                COALESCE(bp_wh_source.WasteProducerNo, bp_wh_source.Value),
                COALESCE(bp_org_source.WasteProducerNo, bp_org_source.Value)
-       )                                                        AS WasteProducerNo,
+                                                                   )                         AS WasteProducerName,
 
-       bp_customer.Name                                         AS WasteDisposalName,
-       COALESCE(bp_customer.WasteDisposerNo, bp_customer.Value) AS WasteDisposalNo,
-       prod.AVV_No                                              AS WasteCodeNumber2,
-       iol.MovementQty                                          AS QuantityInTons2,
-       io.MovementDate                                          AS SubmissionDate,
-       NULL                                                     AS Comments
+       bp_customer.Name || E'\n' || COALESCE(bp_customer.WasteDisposerNo, bp_customer.Value) AS WasteDisposalName,
+
+       prod.AVV_No                                                                           AS WasteCodeNumber2,
+       iol.MovementQty                                                                       AS QuantityInTons2,
+       io.MovementDate                                                                       AS SubmissionDate,
+       NULL                                                                                  AS Comments
 
 FROM M_InOut io
          INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
